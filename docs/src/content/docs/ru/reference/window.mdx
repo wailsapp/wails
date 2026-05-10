@@ -1,0 +1,503 @@
+---
+title: API окна
+description: Полный справочник по API окна
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Обзор
+
+API окна предоставляет методы для управления внешним видом, поведением и жизненным циклом окна. Доступ осуществляется через экземпляры окна или менеджер окон.
+
+**Основные операции:**
+- Создание и отображение окон
+- Управление размером, положением и состоянием
+- Обработка событий окна
+- Управление содержимым окна
+- Настройка внешнего вида и поведения
+
+## Видимость
+
+### Show()
+
+Отображает окно. Если окно было скрыто, оно становится видимым.
+
+```go
+func (w *Window) Show()
+```
+
+**Пример:**
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### Hide()
+
+Скрывает окно, не закрывая его. Окно остается в памяти и может быть показано снова.
+
+```go
+func (w *Window) Hide()
+```
+
+**Пример:**
+```go
+// Временно скрыть окно
+window.Hide()
+
+// Показать его снова позже
+window.Show()
+```
+
+**Сценарии использования:**
+- Приложения в системном трее, которые сворачиваются в трей
+- Мастер-формы, где окна используются повторно
+- Временное скрытие во время выполнения операций
+
+### Close()
+
+Закрывает окно. Это вызывает событие `WindowClosing`.
+
+```go
+func (w *Window) Close()
+```
+
+**Пример:**
+```go
+window.Close()
+```
+
+**Примечание:** Если зарегистрированный хук вызывает `event.Cancel()`, закрытие будет предотвращено.
+
+## Свойства окна
+
+### SetTitle()
+
+Устанавливает текст заголовка окна.
+
+```go
+func (w *Window) SetTitle(title string)
+```
+
+**Параметры:**
+- `title` - Новый заголовок окна
+
+**Пример:**
+```go
+window.SetTitle("Моё приложение - Документ.txt")
+```
+
+### Name()
+
+Возвращает уникальный идентификатор имени окна.
+
+```go
+func (w *Window) Name() string
+```
+
+**Пример:**
+```go
+name := window.Name()
+fmt.Println("Имя окна:", name)
+
+// Позже получить окно по имени
+window := app.GetWindowByName(name)
+```
+
+## Размер и положение
+
+### SetSize()
+
+Устанавливает размеры окна в пикселях.
+
+```go
+func (w *Window) SetSize(width, height int)
+```
+
+**Параметры:**
+- `width` - Ширина окна в пикселях
+- `height` - Высота окна в пикселях
+
+**Пример:**
+```go
+window.SetSize(1024, 768)
+```
+
+### Size()
+
+Возвращает текущие размеры окна.
+
+```go
+func (w *Window) Size() (width, height int)
+```
+
+**Пример:**
+```go
+width, height := window.Size()
+fmt.Printf("Размер окна: %dx%d\n", width, height)
+```
+
+### SetMinSize() / SetMaxSize()
+
+Устанавливает минимальные и максимальные размеры окна.
+
+```go
+func (w *Window) SetMinSize(width, height int)
+func (w *Window) SetMaxSize(width, height int)
+```
+
+**Пример:**
+```go
+// Предотвратить слишком маленькое окно
+window.SetMinSize(800, 600)
+
+// Предотвратить слишком большое окно
+window.SetMaxSize(1920, 1080)
+```
+
+### SetPosition()
+
+Устанавливает положение окна относительно верхнего левого угла экрана.
+
+```go
+func (w *Window) SetPosition(x, y int)
+```
+
+**Параметры:**
+- `x` - Горизонтальная позиция в пикселях
+- `y` - Вертикальная позиция в пикселях
+
+**Пример:**
+```go
+// Позиционировать окно в верхнем левом углу
+window.SetPosition(0, 0)
+
+// Позиционировать окно на 100px от верхнего левого угла
+window.SetPosition(100, 100)
+```
+
+### Position()
+
+Возвращает текущее положение окна.
+
+```go
+func (w *Window) Position() (x, y int)
+```
+
+**Пример:**
+```go
+x, y := window.Position()
+fmt.Printf("Окно находится в (%d, %d)\n", x, y)
+```
+
+### Centre()
+
+Центрирует окно на экране.
+
+```go
+func (w *Window) Centre()
+```
+
+**Пример:**
+```go
+window := app.Window.New()
+window.Centre()
+window.Show()
+```
+
+**Примечание:** Центрирование относительно основного монитора. Для конфигураций с несколькими мониторами см. API экранов.
+
+### SetFocus()
+
+Выводит окно на передний план и передает ему фокус клавиатуры.
+
+```go
+func (w *Window) SetFocus()
+```
+
+**Пример:**
+```go
+// Вывести окно на передний план
+window.SetFocus()
+```
+
+## Состояние окна
+
+### Minimise() / UnMinimise()
+
+Сворачивает окно в панель задач/док или восстанавливает его.
+
+```go
+func (w *Window) Minimise()
+func (w *Window) UnMinimise()
+```
+
+**Пример:**
+```go
+// Свернуть окно
+window.Minimise()
+
+// Восстановить из свернутого состояния
+window.UnMinimise()
+```
+
+### Maximise() / UnMaximise()
+
+Разворачивает окно на весь экран или восстанавливает его до предыдущего размера.
+
+```go
+func (w *Window) Maximise()
+func (w *Window) UnMaximise()
+```
+
+**Пример:**
+```go
+// Развернуть окно
+window.Maximise()
+
+// Восстановить предыдущий размер
+window.UnMaximise()
+```
+
+### Fullscreen() / UnFullscreen()
+
+Входит в полноэкранный режим или выходит из него.
+
+```go
+func (w *Window) Fullscreen()
+func (w *Window) UnFullscreen()
+```
+
+**Пример:**
+```go
+// Войти в полноэкранный режим
+window.Fullscreen()
+
+// Выйти из полноэкранного режима
+window.UnFullscreen()
+```
+
+### IsMinimised() / IsMaximised() / IsFullscreen()
+
+Проверяет текущее состояние окна.
+
+```go
+func (w *Window) IsMinimised() bool
+func (w *Window) IsMaximised() bool
+func (w *Window) IsFullscreen() bool
+```
+
+**Пример:**
+```go
+if window.IsMinimised() {
+    window.UnMinimise()
+}
+
+if window.IsMaximised() {
+    fmt.Println("Окно развернуто")
+}
+
+if window.IsFullscreen() {
+    window.UnFullscreen()
+}
+```
+
+## Содержимое окна
+
+### SetURL()
+
+Переходит к определенному URL внутри окна.
+
+```go
+func (w *Window) SetURL(url string)
+```
+
+**Параметры:**
+- `url` - URL для перехода (может быть `http://wails.localhost/` для встроенных ресурсов)
+
+**Пример:**
+```go
+// Перейти к встроенной странице
+window.SetURL("http://wails.localhost/settings.html")
+
+// Перейти к внешнему URL (если разрешено)
+window.SetURL("https://wails.io")
+```
+
+### SetHTML()
+
+Устанавливает содержимое окна напрямую из строки HTML.
+
+```go
+func (w *Window) SetHTML(html string)
+```
+
+**Параметры:**
+- `html` - HTML-контент для отображения
+
+**Пример:**
+```go
+html := `
+<!DOCTYPE html>
+<html>
+<head><title>Динамический контент</title></head>
+<body>
+    <h1>Привет из Go!</h1>
+    <p>Этот контент был сгенерирован динамически.</p>
+</body>
+</html>
+`
+window.SetHTML(html)
+```
+
+**Сценарии использования:**
+- Генерация динамического контента
+- Простые окна без процесса сборки фронтенда
+- Страницы ошибок или загрузочные экраны
+
+### Reload()
+
+Перезагружает текущее содержимое окна.
+
+```go
+func (w *Window) Reload()
+```
+
+**Пример:**
+```go
+// Перезагрузить текущую страницу
+window.Reload()
+```
+
+**Примечание:** Полезно во время разработки или когда требуется обновление контента.
+
+## События окна
+
+Wails предоставляет два метода для обработки событий окна:
+
+- **OnWindowEvent()** - Подписка на события окна (не позволяет предотвратить их)
+- **RegisterHook()** - Подключение к событиям окна (позволяет предотвратить их, вызвав `event.Cancel()`)
+
+### OnWindowEvent()
+
+Регистрирует обратный вызов для событий окна.
+
+```go
+func (w *Window) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(event *WindowEvent),
+) func()
+```
+
+**Возвращает:** Функцию очистки для удаления слушателя событий
+
+**Пример:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Подписаться на фокус окна
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Окно получило фокус")
+})
+
+// Подписаться на потерю фокуса окна
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Окно потеряло фокус")
+})
+
+// Подписаться на изменение размера окна
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    app.Logger.Info("Размер окна изменен")
+})
+```
+
+**Основные события окна:**
+- `events.Common.WindowClosing` - Окно собирается закрыться
+- `events.Common.WindowFocus` - Окно получило фокус
+- `events.Common.WindowLostFocus` - Окно потеряло фокус
+- `events.Common.WindowDidMove` - Окно перемещено
+- `events.Common.WindowDidResize` - Окно изменено по размеру
+- `events.Common.WindowMinimise` - Окно свернуто
+- `events.Common.WindowMaximise` - Окно развернуто
+- `events.Common.WindowFullscreen` - Окно вошло в полноэкранный режим-------|-------------|
+| `LinuxMenuStyleMenuBar` | Традиционная панель меню под заголовком окна (по умолчанию) |
+| `LinuxMenuStylePrimaryMenu` | Кнопка основного меню в заголовке окна (стиль GNOME) |
+
+**Пример:**
+```go
+window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "My Application",
+    Linux: application.LinuxWindow{
+        MenuStyle: application.LinuxMenuStylePrimaryMenu,
+    },
+})
+window.SetMenu(menu)
+```
+
+**Примечание:** Стиль основного меню отображает кнопку «гамбургер» (☰) в заголовке окна, следуя рекомендациям GNOME Human Interface Guidelines. Это рекомендуемый стиль для современных приложений GNOME.
+
+## Полный пример
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Window API Demo",
+    })
+
+    // Create window with options
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My Application",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    // Configure window behavior
+    window.SetResizable(true)
+    window.SetMinSize(800, 600)
+    window.SetMaxSize(1920, 1080)
+
+    // Set up event hooks
+    window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+        // Confirm before closing
+        result, _ := app.Dialog.Question().
+            SetTitle("Confirm Close").
+            SetMessage("Are you sure you want to close this window?").
+            SetButtons("Yes", "No").
+            Show()
+
+        if result == "No" {
+            e.Cancel()
+        }
+    })
+
+    // Listen for window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application (Active)")
+        app.Logger.Info("Window gained focus")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.SetTitle("My Application")
+        app.Logger.Info("Window lost focus")
+    })
+
+    // Position and show window
+    window.Centre()
+    window.Show()
+
+    app.Run()
+}
+```

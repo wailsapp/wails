@@ -1,0 +1,722 @@
+---
+title: API меню
+description: Полная справочная информация по API меню
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Обзор
+
+API меню предоставляет методы для создания и управления меню приложения, контекстными меню и меню в системном трее.
+
+**Типы меню:**
+- **Меню приложения** - Верхняя панель меню (Файл, Правка и т. д.)
+- **Контекстные меню** - Меню, вызываемые правой кнопкой мыши
+- **Меню системного трея** - Меню в области уведомлений
+
+## Создание меню
+
+### NewMenu()
+
+Создает новое меню.
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**Пример:**
+```go
+menu := app.NewMenu()
+```
+
+## Методы меню
+
+### Add()
+
+Добавляет пункт меню в меню.
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**Параметры:**
+- `label` - Текст, отображаемый для пункта меню
+
+**Возвращает:** Созданный пункт меню
+
+**Пример:**
+```go
+item := menu.Add("Открыть файл")
+item.OnClick(func(ctx *application.Context) {
+    // Обработка клика
+})
+```
+
+### AddSubmenu()
+
+Добавляет подменю в меню.
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**Параметры:**
+- `label` - Метка подменю
+
+**Возвращает:** Созданное подменю
+
+**Пример:**
+```go
+fileMenu := menu.AddSubmenu("Файл")
+fileMenu.Add("Создать")
+fileMenu.Add("Открыть")
+fileMenu.Add("Сохранить")
+```
+
+### AddSeparator()
+
+Добавляет визуальную разделительную линию между пунктами меню.
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**Пример:**
+```go
+menu.Add("Копировать")
+menu.Add("Вставить")
+menu.AddSeparator()
+menu.Add("Выделить всё")
+```
+
+**Рекомендация:** Используйте разделители для группировки связанных пунктов меню.
+
+### AddCheckbox()
+
+Добавляет пункт меню с флажком.
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**Параметры:**
+- `label` - Метка флажка
+- `checked` - Начальное состояние (отмечен/не отмечен)
+
+**Пример:**
+```go
+darkMode := menu.AddCheckbox("Тёмная тема", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // Переключение тёмной темы
+})
+```
+
+### AddRadio()
+
+Добавляет пункт меню с радиокнопкой (взаимоисключающая группа).
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**Параметры:**
+- `label` - Метка радиокнопки
+- `checked` - Начальное состояние (отмечен/не отмечен)
+
+**Пример:**
+```go
+// Создание группы радиокнопок для режимов просмотра
+viewMenu := menu.AddSubmenu("Вид")
+listView := viewMenu.AddRadio("Список", true)
+gridView := viewMenu.AddRadio("Сетка", false)
+treeView := viewMenu.AddRadio("Дерево", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+Обновляет меню, чтобы отразить любые изменения, внесенные в пункты меню.
+
+```go
+func (m *Menu) Update()
+```
+
+**Пример:**
+```go
+item.SetEnabled(false)
+menu.Update()  // Обязательно вызвать для применения изменений
+```
+
+**Важно:** Всегда вызывайте `Update()` после изменения свойств пунктов меню.
+
+## Методы пунктов меню
+
+### OnClick()
+
+Регистрирует обработчик клика для пункта меню.
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**Параметры:**
+- `callback` - Функция, вызываемая при клике по пункту
+
+**Возвращает:** Пункт меню (для цепочки вызовов)
+
+**Пример:**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("Пункт меню нажат")
+    app.Logger.Info("Пользователь нажал пункт меню")
+})
+```
+
+### SetLabel()
+
+Изменяет метку пункта меню.
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**Пример:**
+```go
+item.SetLabel("Сохранить как...")
+menu.Update()
+```
+
+### SetEnabled()
+
+Включает или отключает пункт меню.
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**Пример:**
+```go
+// Отключение сохранения, когда документ не открыт
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**Распространенный паттерн:**
+```go
+// Обновление состояния меню в зависимости от состояния приложения
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+Устанавливает состояние отметки для пунктов меню с флажком или радиокнопкой.
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**Пример:**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+Возвращает текущее состояние отметки.
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**Пример:**
+```go
+if darkModeItem.Checked() {
+    // Тёмная тема включена
+}
+```
+
+### SetAccelerator()
+
+Устанавливает сочетание клавиш для пункта меню.
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**Параметры:**
+- `accelerator` - Сочетание клавиш (например, "Ctrl+S", "Cmd+Q")
+
+**Формат акселератора:**
+- **Модификаторы:** `Ctrl`, `Cmd`, `Alt`, `Shift`
+- **Клавиши:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace` и т. д.
+- **Платформа:** Используйте `Cmd` на macOS, `Ctrl` на Windows/Linux
+
+**Пример:**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**Пример с учетом платформы:**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+Устанавливает всплывающую подсказку, которая появляется при наведении курсора на пункт меню.
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**Пример:**
+```go
+item.SetTooltip("Открывает файл с диска")
+```
+
+### SetHidden()
+
+Показывает или скрывает пункт меню.
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**Пример:**
+```go
+// Скрытие отладочного меню в релизной версии
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## Меню приложения
+
+### app.Menu.Set()
+
+Устанавливает главное меню приложения.
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
+```
+
+**Пример:**
+```go
+menu := app.NewMenu()
+
+// Меню Файл
+fileMenu := menu.AddSubmenu("Файл")
+fileMenu.Add("Создать").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("Открыть").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("Сохранить").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("Выход").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Меню Правка
+editMenu := menu.AddSubmenu("Правка")
+editMenu.Add("Отменить").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("Повторить").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("Вырезать").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("Копировать").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("Вставить").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.Menu.Set(menu)
+```
+
+**Примечания по платформам:**
+- **macOS:** Меню отображается в верхней панели меню
+- **Windows/Linux:** Меню отображается в заголовке окна
+- **macOS:** Автоматически добавляет меню приложения с именем приложения
+
+## Контекстные меню
+
+### app.ContextMenu.Add()
+
+Регистрирует контекстное меню (меню правой кнопки мыши) с определенным именем.
+
+```go
+func (cm *ContextMenuManager) Add(name string, menu *Menu)
+```
+
+**Параметры:**
+- `name` - Уникальный идентификатор контекстного меню
+- `menu` - Меню для отображения
+
+**Go:**
+
+```go
+// Создание контекстного меню
+contextMenu := app.NewMenu()
+contextMenu.Add("Вырезать").OnClick(cut)
+contextMenu.Add("Копировать").OnClick(copy)
+contextMenu.Add("Вставить").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("Выделить всё").OnClick(selectAll)
+
+// Регистрация
+app.RegisterContextMenu("editor", contextMenu)
+```
+
+**HTML:**
+
+```html
+<!-- Вызов контекстного меню по правому клику -->
+<div data-wails-context-menu="editor">
+    Нажмите правую кнопку мыши здесь для контекстного меню
+</div>
+```
+
+**Динамические контекстные меню:**
+```go
+// Обновление контекстного меню в зависимости от выделения
+func updateContextMenu() {
+    contextMenu := app.NewMenu()
+
+    if hasSelection {
+        contextMenu.Add("Вырезать").OnClick(cut)
+        contextMenu.Add("Копировать").OnClick(copy)
+    }
+
+    contextMenu.Add("Вставить").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.RegisterContextMenu("editor", contextMenu)
+}
+```
+
+## Меню системного трея
+
+### app.SystemTray.New()
+
+Создает новый значок в системном трее.
+
+```go
+func (sm *SystemTrayManager) New() *SystemTray
+```
+
+**Пример:**
+```go
+tray := app.SystemTray.New()
+```
+
+### SetIcon()Устанавливает значок системного трея.
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**Пример:**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+Устанавливает меню для системного трея.
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**Пример:**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.SetFocus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+Устанавливает всплывающую подсказку, отображаемую при наведении курсора на значок в трее.
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+```
+
+**Пример:**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+Обрабатывает нажатие левой кнопкой мыши по значку в трее.
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**Пример:**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.SetFocus()
+    }
+})
+```
+
+## Полные примеры
+
+### Стандартное меню приложения
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.Application) *application.Menu {
+    menu := app.NewMenu()
+
+    // Меню Файл
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // Создать новый документ
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // Открыть диалог выбора файла
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // Сохранить документ
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // Меню Правка
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // Меню Вид
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // Переключить темный режим
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // Меню Справка
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // Открыть документацию
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Показать диалог "О программе"
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.Menu.Set(menu)
+
+    window := app.Window.New()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### Приложение с системным треем
+
+```go
+func setupSystemTray(app *application.Application, window *application.Window) {
+    // Создать системный трей
+    tray := app.SystemTray.New()
+
+    // Установить значок
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // Обработка нажатия левой кнопкой мыши по значку в трее
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.SetFocus()
+        }
+    })
+
+    // Создать меню трея
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.SetFocus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // Открыть окно настроек
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Показать диалог "О программе"
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### Динамическое обновление меню
+
+```go
+type Editor struct {
+    app         *application.Application
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.Menu.Set(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // Обновить пункты меню в зависимости от текущего состояния
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // Логика сохранения
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## Лучшие практики
+
+### ✅ Следует
+
+- **Использовать стандартные ускорители** - Следуйте соглашениям платформы (Ctrl+C для копирования и т.д.)
+- **Вызывать Update() после изменений** - В противном случае меню не отразит изменения
+- **Группировать связанные пункты** - Используйте разделители для организации пунктов меню
+- **Отключать недоступные действия** - Не скрывайте, а отключайте с помощью SetEnabled(false)
+- **Использовать понятные метки** - Будьте лаконичны и описательны
+- **Следовать соглашениям платформы** - Паттерны меню macOS отличаются от Windows/Linux
+
+### ❌ Не следует
+
+- **Не забывайте про Update()** - Самая распространенная ошибка
+- **Не вложен слишком глубоко** - Держите меню не более 2-3 уровней
+- **Не используйте неоднозначные метки** - "Process" против "Process Document"
+- **Не усложняйте** - Держите меню простыми и сфокусированными
+- **Не смешивайте метафоры** - Последовательное именование и организация
+
+## Примечания для конкретных платформ
+
+### macOS
+
+- Меню приложения добавляется автоматически с именем приложения
+- Используйте `Cmd` вместо `Ctrl` для ускорителей
+- Пункты "About", "Preferences" и "Quit" в меню приложения по умолчанию
+
+### Windows/Linux
+
+- Автоматическое меню приложения отсутствует
+- Используйте `Ctrl` для ускорителей
+- Пункт "Exit" обычно находится в меню Файл

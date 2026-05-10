@@ -1,0 +1,614 @@
+---
+title: Пользовательские URL-протоколы
+description: Зарегистрируйте пользовательские схемы URL для запуска вашего приложения по ссылкам
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Пользовательские URL-протоколы (также называемые схемами URL) позволяют вашему приложению запускаться, когда пользователи нажимают на ссылки с вашим пользовательским протоколом, например `myapp://action` или `myapp://open/document`.
+
+## Обзор
+
+Пользовательские протоколы обеспечивают:
+- **Глубокие ссылки**: Запуск вашего приложения с конкретными данными
+- **Интеграция с браузером**: Обработка ссылок с веб-страниц
+- **Ссылки в электронной почте**: Открытие вашего приложения из почтовых клиентов
+- **Взаимодействие между приложениями**: Запуск из других приложений
+
+**Пример**: `myapp://open/document?id=123` запускает ваше приложение и открывает документ 123.
+
+## Конфигурация
+
+Определите пользовательские протоколы в параметрах вашего приложения:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "My awesome application",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "myapp",
+                Description: "My Application Protocol",
+                Role:        "Editor",  // macOS only
+            },
+        },
+    })
+
+    // Register handler for protocol events
+    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        url := event.Context().ClickedURL()
+        handleCustomURL(url)
+    })
+
+    app.Run()
+}
+
+func handleCustomURL(url string) {
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
+    println("Received URL:", url)
+}
+```
+
+## Обработчик протокола
+
+Подписывайтесь на события протокола для обработки входящих URL:
+
+```go
+app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+    url := event.Context().ClickedURL()
+
+    // Parse the URL
+    parsedURL, err := parseCustomURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Handle different actions
+    switch parsedURL.Action {
+    case "open":
+        openDocument(parsedURL.DocumentID)
+    case "settings":
+        showSettings()
+    case "user":
+        showUser Profile(parsedURL.UserID)
+    default:
+        app.Logger.Warn("Unknown action:", parsedURL.Action)
+    }
+})
+```
+
+## Структура URL
+
+Проектируйте четкие, иерархические структуры URL:
+
+```
+myapp://action/resource?param=value
+
+Examples:
+myapp://open/document?id=123
+myapp://settings/theme?mode=dark
+myapp://user/profile?username=john
+```
+
+**Рекомендации:**
+- Используйте строчные имена схем
+- Делайте схемы короткими и запоминающимися
+- Используйте иерархические пути для ресурсов
+- Включайте параметры запроса для необязательных данных
+- Экранируйте специальные символы в URL
+
+## Регистрация на платформах
+
+Пользовательские протоколы регистрируются по-разному на каждой платформе.
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+
+### Установщик Windows NSIS
+
+**Wails v3 автоматически регистрирует пользовательские протоколы** при использовании установщиков NSIS.
+
+#### Автоматическая регистрация
+
+При сборке вашего приложения с помощью `wails3 build` установщик NSIS:
+1. Автоматически регистрирует все протоколы, определенные в `application.Options.Protocols`
+2. Связывает протоколы с исполняемым файлом вашего приложения
+3. Настраивает соответствующие записи реестра
+4. Удаляет ассоциации протоколов при удалении
+
+**Дополнительная конфигурация не требуется!**
+
+#### Как это работает
+
+Шаблон NSIS включает встроенные макросы:
+- `wails.associateCustomProtocols` - регистрирует протоколы во время установки
+- `wails.unassociateCustomProtocols` - удаляет протоколы во время удаления
+
+Эти макросы автоматически вызываются на основе вашей конфигурации `Protocols`.
+
+#### Ручная регистрация в реестре (для продвинутых пользователей)
+
+Если вам нужна ручная регистрация (вне NSIS):
+
+```batch
+@echo off
+REM Register custom protocol
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /ve /d "URL:My Application Protocol" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp" /v "URL Protocol" /t REG_SZ /d "" /f
+REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"%1\"" /f
+```
+
+#### Тестирование
+
+Проверьте регистрацию вашего протокола:
+
+```powershell
+# Open protocol URL from PowerShell
+Start-Process "myapp://test/action"
+
+# Or from command prompt
+start myapp://test/action
+```
+
+### Пакет Windows MSIX
+
+Пользовательские протоколы также автоматически регистрируются при использовании упаковки MSIX.
+
+#### Автоматическая регистрация
+
+При сборке вашего приложения с помощью MSIX манифест автоматически включает регистрации протоколов из конфигурации протоколов `build/config.yml`.
+
+Сгенерированный манифест включает:
+
+```xml
+<uap:Extension Category="windows.protocol">
+  <uap:Protocol Name="myapp">
+    <uap:DisplayName>My Application Protocol</uap:DisplayName>
+  </uap:Protocol>
+</uap:Extension>
+```
+
+#### Универсальные ссылки (связь веб-приложения)
+
+Windows поддерживает **связь веб-приложения**, которая работает аналогично универсальным ссылкам на macOS. При развертывании вашего приложения в виде пакета MSIX вы можете включить HTTPS-ссылки для прямого запуска вашего приложения.
+
+<Aside type="note">
+Связь веб-приложения требует ручной конфигурации манифеста. Пользовательские схемы протоколов автоматически настраиваются из `build/config.yml`, но связанные домены должны быть добавлены вручную в ваш манифест MSIX.
+</Aside>
+
+Чтобы включить связь веб-приложения, следуйте [руководству Microsoft по связи веб-приложений](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Вам нужно:
+
+1. **Вручную добавить обработчик URI приложения в ваш манифест MSIX** (`build/windows/msix/app_manifest.xml`):
+   ```xml
+   <uap3:Extension Category="windows.appUriHandler">
+     <uap3:AppUriHandler>
+       <uap3:Host Name="myawesomeapp.com"/>
+     </uap3:AppUriHandler>
+   </uap3:Extension>
+   ```
+
+2. **Настройте `windows-app-web-link` на вашем сайте:** Разместите файл `windows-app-web-link` по адресу `https://myawesomeapp.com/.well-known/windows-app-web-link`. Этот файл должен содержать информацию о пакете вашего приложения и пути, которые он обрабатывает.
+
+Когда ссылка веб-приложения запускает ваше приложение, вы получите то же событие `ApplicationOpenedWithURL`, что и при использовании пользовательских схем протоколов.
+
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+
+### Конфигурация Info.plist
+
+На macOS протоколы регистрируются через ваш файл `Info.plist`.
+
+#### Автоматическая конфигурация
+
+Wails автоматически генерирует `Info.plist` с вашими протоколами при сборке с помощью `wails3 build`.
+
+Протоколы из `application.Options.Protocols` добавляются в:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>My Application Protocol</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+    </dict>
+</array>
+```
+
+#### Тестирование
+
+```bash
+# Open protocol URL from terminal
+open "myapp://test/action"
+
+# Check registered handlers
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
+```
+
+#### Универсальные ссылки
+
+В дополнение к пользовательским схемам протоколов, macOS также поддерживает **универсальные ссылки**, которые позволяют вашему приложению запускаться обычными HTTPS-ссылками (например, `https://myawesomeapp.com/path`). Универсальные ссылки обеспечивают бесшовный пользовательский опыт между вашим веб-приложением и настольным приложением.
+
+<Aside type="caution">
+Универсальные ссылки требуют, чтобы ваше приложение macOS было **подписано кодом** с действующим сертификатом разработчика Apple и профилем provisioning. Неподписанные сборки или сборки с ad-hoc подписью не смогут открывать универсальные ссылки. Убедитесь, что ваше приложение правильно подписано перед тестированием.
+</Aside>
+
+Чтобы включить универсальные ссылки, следуйте [руководству Apple по поддержке универсальных ссылок в вашем приложении](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Вам нужно:
+
+1. **Добавить разрешения** в ваш `entitlements.plist`:
+   ```xml```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+     <string>applinks:myawesomeapp.com</string>
+   </array>
+   ```
+
+2. **Добавьте `NSUserActivityTypes` в `Info.plist`**:
+   ```xml
+   <key>NSUserActivityTypes</key>
+   <array>
+     <string>NSUserActivityTypeBrowsingWeb</string>
+   </array>
+   ```
+
+3. **Настройте `apple-app-site-association` на вашем сайте**: Разместите файл `apple-app-site-association` по адресу `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+
+Когда Universal Link запускает ваше приложение, вы получите то же событие `ApplicationOpenedWithURL`, поэтому код обработки будет идентичен обработке пользовательских схем URL.
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+
+### Запись в Desktop Entry
+
+В Linux протоколы регистрируются через файлы `.desktop`.
+
+#### Автоматическая конфигурация
+
+Wails генерирует файл desktop entry с обработчиками протоколов при сборке с помощью `wails3 build`.
+
+**Исправлено в v3**: Шаблон Linux desktop теперь корректно включает обработку протоколов.
+
+Сгенерированный файл desktop включает:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/usr/bin/myapp %u
+MimeType=x-scheme-handler/myapp;
+```
+
+#### Ручная регистрация
+
+При необходимости вручную установите файл desktop:
+
+```bash
+# Скопируйте файл desktop
+cp myapp.desktop ~/.local/share/applications/
+
+# Обновите базу данных desktop
+update-desktop-database ~/.local/share/applications/
+
+# Зарегистрируйте обработчик протокола
+xdg-mime default myapp.desktop x-scheme-handler/myapp
+```
+
+#### Тестирование
+
+```bash
+# Откройте URL протокола
+xdg-open "myapp://test/action"
+
+# Проверьте зарегистрированный обработчик
+xdg-mime query default x-scheme-handler/myapp
+```
+
+  </TabItem>
+</Tabs>
+
+## Полный пример
+
+Вот полный пример обработки нескольких действий протокола:
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/url"
+    "strings"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type App struct {
+    app    *application.Application
+    window *application.WebviewWindow
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "DeepLink Demo",
+        Description: "Custom protocol demonstration",
+        Protocols: []application.Protocol{
+            {
+                Scheme:      "deeplink",
+                Description: "DeepLink Demo Protocol",
+                Role:        "Editor",
+            },
+        },
+    })
+
+    myApp := &App{app: app}
+    myApp.setup()
+
+    app.Run()
+}
+
+func (a *App) setup() {
+    // Создаем окно
+    a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DeepLink Demo",
+        Width:  800,
+        Height: 600,
+        URL:    "http://wails.localhost/",
+    })
+
+    // Обрабатываем URL пользовательского протокола
+    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
+        customURL := event.Context().ClickedURL()
+        a.handleDeepLink(customURL)
+    })
+}
+
+func (a *App) handleDeepLink(rawURL string) {
+    // Парсим URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Failed to parse URL:", err)
+        return
+    }
+
+    // Выводим окно на передний план
+    a.window.Show()
+    a.window.SetFocus()
+
+    // Извлекаем путь и параметры
+    path := strings.Trim(parsedURL.Path, "/")
+    query := parsedURL.Query()
+
+    // Обрабатываем разные действия
+    parts := strings.Split(path, "/")
+    if len(parts) == 0 {
+        return
+    }
+
+    action := parts[0]
+
+    switch action {
+    case "open":
+        if len(parts) >= 2 {
+            resource := parts[1]
+            id := query.Get("id")
+            a.openResource(resource, id)
+        }
+
+    case "settings":
+        section := ""
+        if len(parts) >= 2 {
+            section = parts[1]
+        }
+        a.openSettings(section)
+
+    case "user":
+        if len(parts) >= 2 {
+            username := parts[1]
+            a.openUserProfile(username)
+        }
+
+    default:
+        a.app.Logger.Warn("Unknown action:", action)
+    }
+}
+
+func (a *App) openResource(resourceType, id string) {
+    fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
+    // Отправляем событие во фронтенд
+    a.app.Event.Emit("navigate", map[string]string{
+        "type": resourceType,
+        "id":   id,
+    })
+}
+
+func (a *App) openSettings(section string) {
+    fmt.Printf("Opening settings section: %s\n", section)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page":    "settings",
+        "section": section,
+    })
+}
+
+func (a *App) openUserProfile(username string) {
+    fmt.Printf("Opening user profile: %s\n", username)
+    a.app.Event.Emit("navigate", map[string]string{
+        "page": "user",
+        "user": username,
+    })
+}
+```
+
+## Интеграция с фронтендом
+
+Обработайте события навигации во фронтенде:
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Слушаем события навигации от обработчика протокола
+Events.On('navigate', (event) => {
+    const { type, id, page, section, user } = event.data
+
+    if (type === 'document') {
+        // Открываем документ с ID
+        router.push(`/document/${id}`)
+    } else if (page === 'settings') {
+        // Открываем настройки
+        router.push(`/settings/${section}`)
+    } else if (page === 'user') {
+        // Открываем профиль пользователя
+        router.push(`/user/${user}`)
+    }
+})
+```
+
+## Вопросы безопасности
+
+### Проверяйте все входные данные
+
+Всегда проверяйте и очищайте URL из внешних источников:
+
+```go
+func (a *App) handleDeepLink(rawURL string) {
+    // Парсим URL
+    parsedURL, err := url.Parse(rawURL)
+    if err != nil {
+        a.app.Logger.Error("Invalid URL:", err)
+        return
+    }
+
+    // Проверяем схему
+    if parsedURL.Scheme != "myapp" {
+        a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
+        return
+    }
+
+    // Проверяем путь
+    path := strings.Trim(parsedURL.Path, "/")
+    if !isValidPath(path) {
+        a.app.Logger.Warn("Invalid path:", path)
+        return
+    }
+
+    // Очищаем параметры
+    params := sanitizeQueryParams(parsedURL.Query())
+
+    // Обрабатываем проверенный URL
+    a.processDeepLink(path, params)
+}
+
+func isValidPath(path string) bool {
+    // Разрешаем только буквенно-цифровые символы и косые черты
+    validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
+    return validPath.MatchString(path)
+}
+
+func sanitizeQueryParams(query url.Values) map[string]string {
+    sanitized := make(map[string]string)
+    for key, values := range query {
+        if len(values) > 0 {
+            // Берем первое значение и очищаем его
+            sanitized[key] = sanitizeString(values[0])
+        }
+    }
+    return sanitized
+}
+```
+
+### Предотвращайте атаки внедрения
+
+Никогда не выполняйте URL напрямую как код или SQL:
+
+```go
+// ❌ НЕ ДЕЛАЙТЕ: Выполняйте содержимое URL
+func badHandler(url string) {
+    exec.Command("sh", "-c", url).Run() // ОПАСНО!
+}
+
+// ✅ ДЕЛАЙТЕ: Парсите и проверяйте
+func goodHandler(url string) {
+    parsed, _ := url.Parse(url)
+    action := parsed.Query().Get("action")
+
+    // Белый список разрешенных действий
+    allowed := map[string]bool{
+        "open":     true,
+        "settings": true,
+        "help":     true,
+    }
+
+    if allowed[action] {
+        handleAction(action)
+    }
+}
+```
+
+## Тестирование
+
+### Ручное тестирование
+
+Тестируйте обработчики протоколов во время разработки:
+
+**Windows:**
+```powershell
+Start-Process "myapp://test/action?id=123"
+```
+
+**macOS:**
+```bash
+open "myapp://test/action?id=123"
+```
+
+**Linux:**
+```bash
+xdg-open "myapp://test/action?id=123"
+```
+
+### Тестирование через HTML
+
+Создайте тестовую HTML-страницу:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protocol Test</title>
+</head>
+<body>
+    <h1>Custom Protocol Test Links</h1>
+
+    <ul>
+        <li><a href="myapp://open/document?id=123">Open Document 123</a></li>
+        <li><a href="myapp://settings/theme?mode=dark">Dark Mode Settings</a></li>
+        <li><a href="myapp://user/profile?username=john">User Profile</a></li>
+    </ul>
+</body>
+</html>
+```
+
+## Устранение неполадок
+
+### Протокол не зарегистрирован
+
+**Windows:**
+- Проверьте реестр: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- Переустановите с помощью установщика NSIS
+- Убедитесь, что установщик запущен с соответствующими правами
+
+**macOS:**---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры](https://github.com/wailsapp/wails/tree/master/v3/examples).

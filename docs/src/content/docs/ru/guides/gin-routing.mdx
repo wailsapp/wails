@@ -1,0 +1,263 @@
+---
+title: Использование Gin для маршрутизации
+description: Полное руководство по интеграции веб-фреймворка Gin с приложениями Wails v3
+---
+
+В этом руководстве показано, как интегрировать [веб-фреймворк Gin](https://github.com/gin-gonic/gin) с Wails v3. Gin — это высокопроизводительный HTTP веб-фреймворк, написанный на Go, который упрощает создание веб-приложений и API.
+
+## Введение
+
+Wails v3 предоставляет гибкую систему активов, которая позволяет использовать любой HTTP-обработчик, включая популярные веб-фреймворки, такие как Gin. Эта интеграция позволяет вам:
+
+- Предоставлять веб-контент с использованием маршрутизации и промежуточного ПО Gin
+- Создавать RESTful API, доступные из вашего приложения Wails
+- Использовать возможности Gin, сохраняя интеграцию с десктопным приложением Wails
+
+## Настройка Gin с Wails
+
+Для интеграции Gin с Wails вам нужно создать маршрутизатор Gin и настроить его в качестве обработчика активов в вашем приложении Wails. Вот пошаговое руководство:
+
+### 1. Установка зависимостей
+
+Сначала убедитесь, что пакет Gin установлен:
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. Создание промежуточного ПО для Gin
+
+Создайте функцию промежуточного ПО, которая будет обрабатывать интеграцию между Wails и Gin:
+
+```go
+// GinMiddleware создает промежуточное ПО, которое передает запросы в Gin, если они не обрабатываются Wails
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Позвольте Wails обрабатывать маршрут `/wails`
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Позвольте Gin обрабатывать все остальное
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+Это промежуточное ПО передает все HTTP-запросы в маршрутизатор Gin.
+
+### 3. Настройка вашего маршрутизатора Gin
+
+Настройте ваш маршрутизатор Gin с маршрутами, промежуточным ПО и обработчиками:
+
+```go
+// Создаем новый маршрутизатор Gin
+ginEngine := gin.New() // Используем New() вместо Default() для добавления пользовательского промежуточного ПО
+
+// Добавляем промежуточное ПО
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // Ваше пользовательское промежуточное ПО
+
+// Определяем маршруты
+ginEngine.GET("/", func(c *gin.Context) {
+    // Предоставляем вашу главную страницу
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Hello from Gin API!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. Интеграция с приложением Wails
+
+Настройте ваше приложение Wails для использования маршрутизатора Gin в качестве обработчика активов:
+
+```go
+// Создаем новое приложение Wails
+app := application.New(application.Options{
+    Name:        "Gin Example",
+    Description: "A demo of using Gin with Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// Создаем окно
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Wails + Gin Example",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // Это загрузит маршрут, обрабатываемый Gin
+})
+```
+
+## Предоставление статического контента
+
+Используйте пакет `embed` Go для встраивания статических файлов в ваш бинарный файл:
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+Для разработки предоставляйте файлы напрямую с диска, используя `ginEngine.Static("/static", "./static")`.
+
+## Пользовательское промежуточное ПО
+
+Gin позволяет создавать пользовательское промежуточное ПО для различных целей. Вот пример промежуточного ПО для логирования:
+
+```go
+// LoggingMiddleware — это промежуточное ПО Gin, которое логирует детали запроса
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Запускаем таймер
+        startTime := time.Now()
+
+        // Обрабатываем запрос
+        c.Next()
+
+        // Вычисляем задержку
+        latency := time.Since(startTime)
+
+        // Логируем детали запроса
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## Обработка API-запросов
+
+Gin упрощает создание RESTful API. Вот как определить конечные точки API:
+
+```go
+// GET конечная точка
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// POST конечная точка с привязкой JSON
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // Обрабатываем нового пользователя...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// Параметры пути
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // Находим пользователя по ID...
+    c.JSON(http.StatusOK, user)
+})
+
+// Параметры запроса
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // Выполняем поиск...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## Использование возможностей Wails
+
+Ваш веб-контент, предоставляемый Gin, может взаимодействовать с возможностями Wails с помощью пакета `@wailsio/runtime`.
+
+### Обработка событий
+
+Зарегистрируйте обработчики событий в Go:
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Received event: %v", event.Data)
+})
+```
+
+Вызовите из JavaScript с использованием runtime:
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Hello from frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## Расширенная конфигурация
+
+### Настройка режима Gin
+
+Установите Gin в режим релиза для продакшена:
+
+```go
+gin.SetMode(gin.ReleaseMode)  // Используйте gin.DebugMode для разработки
+ginEngine := gin.New()
+```
+
+### Обработка WebSocket
+
+Вы можете интегрировать WebSocket с Gin, используя библиотеки, такие как Gorilla WebSocket:
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // Разрешаем все подключения
+    },
+}
+
+// В вашем обработчике маршрута:
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // Обрабатываем подключение WebSocket...
+})
+```
+
+## Лучшие практики
+
+- **Используйте пакет embed Go:** Встраивайте статические файлы в ваш бинарный файл для лучшего распространения.
+- **Разделяйте обязанности:** Держите логику вашего API отдельно от логики вашего UI.
+- **Обработка ошибок:** Реализуйте правильную обработку ошибок как в маршрутах Gin, так и во фронтенд-коде.
+- **Безопасность:** Будьте внимательны к вопросам безопасности, особенно при обработке пользовательского ввода.
+- **Производительность:** Используйте режим релиза Gin в продакшене для лучшей производительности.
+- **Тестирование:** Пишите тесты для ваших маршрутов Gin, используя утилиты тестирования Gin.
+
+## Заключение
+
+Интеграция Gin с Wails обеспечивает мощную комбинацию для создания десктопных приложений с использованием веб-технологий. Производительность и набор функций Gin дополняют возможности интеграции Wails с десктопом, позволяя вам создавать сложные приложения, использующие лучшие стороны обоих миров.
+
+Для получения дополнительной информации обратитесь к [документации Gin](https://github.com/gin-gonic/gin) и [документации Wails](https://wails.io).

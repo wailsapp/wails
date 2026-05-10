@@ -1,0 +1,365 @@
+---
+title: Лучшие практики привязок
+description: Шаблоны проектирования и лучшие практики для привязок Go-JavaScript
+sidebar:
+  order: 4
+---
+
+## Лучшие практики привязок
+
+Следуйте **проверенным шаблонам** проектирования привязок, чтобы создавать чистые, производительные и безопасные интерфейсы. Это руководство охватывает принципы проектирования API, оптимизацию производительности, шаблоны безопасности, обработку ошибок и стратегии тестирования для поддерживаемых приложений.
+
+## Принципы проектирования API
+
+### 1. Единая ответственность
+
+Каждый сервис должен иметь одну четкую цель:
+
+```go
+// ❌ Плохо: Объект-бог
+type AppService struct {
+    // Делает всё подряд
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ Хорошо: Сфокусированные сервисы
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. Понятные имена методов
+
+Используйте описательные имена, ориентированные на действие:
+
+```go
+// ❌ Плохо: Непонятные имена
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ Хорошо: Понятные имена
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. Согласованные типы возвращаемых значений
+
+Всегда явно возвращайте ошибки:
+
+```go
+// ❌ Плохо: Несогласованная обработка ошибок
+func (s *Service) GetData() interface{}  // Как обрабатывать ошибки?
+func (s *Service) SaveData(data string)  // Тихие сбои?
+
+// ✅ Хорошо: Явные ошибки
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. Валидация входных данных
+
+Валидируйте все входные данные на стороне Go:
+
+```go
+// ❌ Плохо: Нет валидации
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ Хорошо: Сначала валидация
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // Валидация email
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // Валидация пароля
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // Хеширование пароля
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## Шаблоны производительности
+
+### 1. Пакетные операции
+
+Уменьшайте количество вызовов моста путем группировки:
+
+```go
+// ❌ Плохо: N вызовов
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N вызовов моста
+}
+
+// ✅ Хорошо: 1 вызов
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 вызов моста
+```
+
+### 2. Пагинация
+
+Не возвращайте огромные наборы данных:
+
+```go
+// ❌ Плохо: Возвращает всё
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // Может быть миллионы записей
+}
+
+// ✅ Хорошо: Пагинированный ответ
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // Валидация
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // Получение общего количества
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // Получение страницы
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. Кэширование
+
+Кэшируйте дорогостоящие операции:
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Проверка кэша
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // Получение данных
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Сохранение в кэш
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // Планирование истечения срока
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. Потоковая передача с помощью событий
+
+Используйте события для потоковой передачи данных:
+
+```go
+// ❌ Плохо: Опрос
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript опрашивает
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ Хорошо: События
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // Подсчет строк
+    for scanner.Scan() {
+        total++
+    }
+    
+    // Обработка
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // Отправка прогресса
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript прослушивает
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## Шаблоны безопасности
+
+### 1. Санитизация входных данных
+
+Всегда очищайте пользовательский ввод:
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // Санитизация
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // Валидация длины
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. Аутентификация
+
+Защищайте чувствительные операции:
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // Создание сессии
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры привязок](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

@@ -1,0 +1,391 @@
+---
+title: Сырые сообщения
+description: Реализация пользовательской коммуникации от фронтенда к бэкенду для приложений, критичных к производительности
+sidebar:
+  order: 10
+---
+
+Сырые сообщения (Raw Messages) обеспечивают канал связи низкого уровня между вашим фронтендом и бэкендом, обходя стандартную систему привязок. Это решение жертвует удобством ради скорости.
+
+## Когда использовать сырые сообщения
+
+Сырые сообщения лучше всего подходят для экстремальных случаев:
+
+- **Обновления с высокой частотой** - Тысячи сообщений в секунду, где важна каждая микросекунда
+- **Пользовательские протоколы сообщений** - Когда вам нужен полный контроль над форматом данных в канале связи
+
+:::tip
+Для большинства случаев использования рекомендуются стандартные [привязки сервисов](/ru/features/bindings/services), так как они обеспечивают типобезопасность, автоматическую сериализацию и лучший опыт разработки при пренебрежимо малых накладных расходах.
+:::
+
+## Настройка бэкенда
+
+Настройте `RawMessageHandler` в параметрах вашего приложения:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
+
+            // Process the message and respond via events
+            response := processMessage(message)
+            window.EmitEvent("raw-response", response)
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Name:  "main",
+    })
+
+    app.Run()
+}
+
+func processMessage(message string) map[string]any {
+    // Your custom message processing logic
+    return map[string]any{
+        "received": message,
+        "status":   "processed",
+    }
+}
+```
+
+### Подпись обработчика
+
+```go
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
+```
+
+| Параметр | Тип | Описание |
+|-----------|------|-------------|
+| `window` | `Window` | Окно, отправившее сообщение |
+| `message` | `string` | Содержимое сырого сообщения |
+| `originInfo` | `*application.OriginInfo` | Информация об источнике сообщения |
+
+#### Структура OriginInfo
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| Поле | Тип | Описание |
+|-------|------|-------------|
+| `Origin` | `string` | URL источника документа, отправившего сообщение |
+| `TopOrigin` | `string` | URL верхнеуровневого источника (может отличаться от Origin во фреймах) |
+| `IsMainFrame` | `bool` | Является ли сообщение отправленным из основного фрейма |
+
+#### Доступность в зависимости от платформы
+
+- **macOS**: предоставляются `Origin` и `IsMainFrame`
+- **Windows**: предоставляются `Origin` и `TopOrigin`
+- **Linux**: предоставляется только `Origin`
+
+### Проверка источника
+
+:::caution
+Никогда не предполагайте, что сообщение безопасно, просто потому что оно поступило в ваш обработчик. Информация об источнике должна быть проверена перед выполнением чувствительных операций или операций, изменяющих состояние.
+:::
+
+**Всегда проверяйте источник входящих сообщений перед их обработкой.** Параметр `originInfo` предоставляет критически важную информацию безопасности, которую необходимо проверить для предотвращения несанкционированного доступа.
+Вредоносный контент, скомпрометированный контент или непреднамеренные скрипты могут отправлять сырые сообщения. Без проверки источника вы можете обрабатывать команды из ненадежных источников. Используйте `originInfo`, чтобы убедиться, что сообщения поступают из ожидаемых источников.
+
+### Ключевые моменты проверки
+
+- **Всегда проверяйте `Origin`** - Убедитесь, что источник соответствует ожидаемым доверенным источникам (обычно `wails://wails` или `http://wails.localhost` для локальных ресурсов или конкретного источника вашего приложения)
+- **Проверяйте `IsMainFrame`** (macOS) - Будьте в курсе, если сообщение поступает из iframe, так как это может указывать на встроенный контент с другим контекстом безопасности
+- **Используйте `TopOrigin`** (Windows) - Проверяйте верхнеуровневый источник при работе с фреймированным контентом
+- **Отклоняйте неожиданные источники** - Отказывайте в обработке сообщений от источников, которые вы явно не разрешили, обеспечивая безопасное поведение
+
+
+:::note
+Сообщения, префикс которых начинается с `wails:`, зарезервированы для внутренней коммуникации Wails и не будут переданы в ваш обработчик.
+:::
+
+## Настройка фронтенда
+
+Отправляйте сырые сообщения с помощью `System.invoke()`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        // Send raw message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('input').value
+            System.invoke(message)
+        })
+
+        // Listen for response
+        Events.On('raw-response', (event) => {
+            console.log('Response:', event.data)
+        })
+    </script>
+</head>
+<body>
+    <input type="text" id="input" placeholder="Enter message" />
+    <button id="send">Send</button>
+</body>
+</html>
+```
+
+### Использование готовой сборки
+
+Если вы не используете npm, получите доступ к `invoke` через глобальный объект `wails`:
+
+```html
+<script type="module" src="/wails/runtime.js"></script>
+<script>
+    window.onload = function() {
+        document.getElementById('send').onclick = function() {
+            wails.System.invoke('my-message')
+        }
+    }
+</script>
+```
+
+## Структурированные сообщения
+
+Для сложных данных сериализуйте их в JSON:
+
+### Фронтенд
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+const command = {
+    action: 'update',
+    payload: {
+        id: 123,
+        value: 'new value'
+    }
+}
+
+System.invoke(JSON.stringify(command))
+```
+
+### Бэкенд
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    var cmd struct {
+        Action  string `json:"action"`
+        Payload struct {
+            ID    int    `json:"id"`
+            Value string `json:"value"`
+        } `json:"payload"`
+    }
+
+    if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+        window.EmitEvent("error", err.Error())
+        return
+    }
+
+    switch cmd.Action {
+    case "update":
+        // Handle update
+        result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
+        window.EmitEvent("update-complete", result)
+    default:
+        window.EmitEvent("error", "unknown action")
+    }
+}
+```
+
+## Сравнение производительности
+
+| Подход | Накладные расходы | Типобезопасность | Случай использования |
+|----------|----------|-------------|----------|
+| Привязки сервисов | Выше | Полная | Общего назначения |
+| Сырые сообщения | Минимальные | Ручная | Высокая частота, критичная к производительности |
+
+### Пример бенчмарка
+
+Сырые сообщения могут обрабатывать значительно больше сообщений в секунду по сравнению с привязками сервисов для простых полезной нагрузки:
+
+```go
+// Raw message handler - minimal overhead
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Direct string processing, no reflection or marshaling
+    counter++
+}
+```
+
+## Полный пример
+
+Ниже приведен полный пример реализации простого протокола команд:### main.go
+
+```go
+package main
+
+import (
+    "embed"
+    "encoding/json"
+    "fmt"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+type Command struct {
+    Type string          `json:"type"`
+    Data json.RawMessage `json:"data"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            var cmd Command
+            if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+                window.EmitEvent("error", map[string]string{"error": err.Error()})
+                return
+            }
+
+            switch cmd.Type {
+            case "ping":
+                window.EmitEvent("pong", map[string]any{
+                    "time":   time.Now().UnixMilli(),
+                    "window": window.Name(),
+                })
+            case "echo":
+                var text string
+                json.Unmarshal(cmd.Data, &text)
+                window.EmitEvent("echo", text)
+            default:
+                window.EmitEvent("error", map[string]string{
+                    "error": fmt.Sprintf("unknown command: %s", cmd.Type),
+                })
+            }
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Raw Message Demo",
+        Name:  "main",
+        Width: 400,
+        Height: 300,
+    })
+
+    app.Run()
+}
+```
+
+### assets/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Message Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px 20px; }
+        #output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Raw Message Demo</h1>
+
+    <button id="ping">Ping</button>
+    <button id="echo">Echo "Hello"</button>
+
+    <div id="output">Waiting for response...</div>
+
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        const output = document.getElementById('output')
+
+        function send(type, data) {
+            System.invoke(JSON.stringify({ type, data }))
+        }
+
+        document.getElementById('ping').onclick = () => send('ping')
+        document.getElementById('echo').onclick = () => send('echo', 'Hello')
+
+        Events.On('pong', (e) => {
+            output.textContent = `Pong from ${e.data.window} at ${e.data.time}`
+        })
+
+        Events.On('echo', (e) => {
+            output.textContent = `Echo: ${e.data}`
+        })
+
+        Events.On('error', (e) => {
+            output.textContent = `Error: ${e.data.error}`
+        })
+    </script>
+</body>
+</html>
+```
+
+## Лучшие практики
+
+### Что делать
+
+- Используйте сырые сообщения только для действительно критичных к производительности участков кода
+- Реализуйте корректную обработку ошибок в вашем обработчике
+- Используйте события для отправки ответов обратно во фронтенд
+- Используйте JSON для структурированных данных
+- Обработка сообщений должна быть быстрой, чтобы не блокировать выполнение
+
+### Чего не делать
+
+- Не используйте сырые сообщения, если достаточно обычных привязок (bindings)
+- Не забывайте проверять входящие сообщения
+- Не блокируйте обработчик длительными операциями (используйте горутины)
+- Не игнорируйте параметр `window`, если ответы должны направляться в конкретные окна
+
+## Особенности работы с несколькими окнами
+
+Параметр `window` идентифицирует окно, отправившее сообщение, что позволяет:
+
+- Отправлять ответы в правильное окно
+- Реализовывать поведение, специфичное для конкретного окна
+- Отслеживать источники сообщений для отладки
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Ответить только отправившему окну
+    window.EmitEvent("response", result)
+
+    // Или отправить всем окнам
+    app.Event.Emit("broadcast", result)
+}
+```
+
+## Следующие шаги
+
+- [Service Bindings](/ru/features/bindings/services) - Стандартный подход для большинства приложений
+- [Events](/ru/guides/events-reference) - Система событий для коммуникации от бэкенда к фронтенду
+- [Performance](/ru/guides/performance) - Общая оптимизация производительности

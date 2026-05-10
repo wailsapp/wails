@@ -1,0 +1,312 @@
+---
+title: Сборка сервера
+description: Запуск приложений Wails в виде HTTP-серверов без создания нативных окон GUI
+sidebar:
+    order: 52
+    badge:
+        text: Экспериментально
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Экспериментальная функция">
+Режим сервера является экспериментальным и может измениться в будущих выпусках.
+</Aside>
+
+Wails v3 поддерживает режим сервера, позволяя запускать ваше приложение в виде чистого HTTP-сервера без создания нативных окон или необходимости в зависимостях GUI. Это позволяет развертывать одно и то же приложение Wails на серверах, в контейнерах и в веб-браузерах.
+
+## Обзор
+
+Режим сервера полезен для:
+
+- **Развертывания в Docker/контейнерах** - Запуск без зависимостей от X11/Wayland
+- **Серверных приложений** - Развертывание в виде веб-сервера, доступного через браузер
+- **Доступа только через веб** - Использование одной кодовой базы для десктопных и веб-приложений
+- **Тестирования в CI/CD** - Запуск интеграционных тестов без сервера отображения (display server)
+- **Микросервисов** - Использование привязок Wails в безголовых (headless) бэкенд-сервисах
+
+## Быстрый старт
+
+Режим сервера включается с помощью тега сборки `server`. Код вашего приложения остается прежним — вы просто собираете его с этим тегом:
+
+```bash
+# Используя Taskfile (рекомендуется)
+wails3 task build:server
+wails3 task run:server
+
+# Или сборка напрямую через Go
+go build -tags server -o myapp-server .
+```
+
+Вот минимальный пример:
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        // Параметры сервера используются при сборке с флагом -tags server
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starting application...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+Один и тот же код может быть собран для десктопа (без тега) или для режима сервера (с `-tags server`).
+
+## Конфигурация
+
+### ServerOptions
+
+Настройте HTTP-сервер с помощью `ServerOptions`:
+
+```go
+Server: application.ServerOptions{
+    // Хост, к которому привязаться. По умолчанию: "localhost"
+    // Используйте "0.0.0.0" для прослушивания всех интерфейсов
+    Host: "localhost",
+
+    // Порт для прослушивания. По умолчанию: 8080
+    Port: 8080,
+
+    // Таймаут чтения запроса. По умолчанию: 30s
+    ReadTimeout: 30 * time.Second,
+
+    // Таймаут записи ответа. По умолчанию: 30s
+    WriteTimeout: 30 * time.Second,
+
+    // Таймаут неактивного соединения. По умолчанию: 120s
+    IdleTimeout: 120 * time.Second,
+
+    // Таймаут плавного завершения работы. По умолчанию: 30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // Конфигурация TLS (необязательно)
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## Возможности
+
+### Точка проверки состояния (Health Check)
+
+Точка проверки состояния автоматически доступна по адресу `/health`:
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+Это полезно для:
+- Проб liveness/readiness в Kubernetes
+- Проверки состояния балансировщиков нагрузки
+- Систем мониторинга
+
+### Привязки сервисов (Service Bindings)
+
+Все привязки сервисов работают идентично режиму десктопа:
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+
+// Регистрация в опциях
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+Фронтенд может вызывать эти привязки с помощью стандартного Wails runtime:
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### События
+
+События работают двунаправленно в режиме сервера:
+
+- **От фронтенда к бэкенду**: События, испускаемые из браузера, отправляются через HTTP и принимаются вашими обработчиками событий Go
+- **От бэкенда к фронтенду**: События, испускаемые из Go, транслируются всем подключенным браузерам через WebSocket
+
+Каждая вкладка браузера представлена как "окно" с уникальным именем (`browser-1`, `browser-2` и т.д.), доступное через `event.Sender`:
+
+```go
+// Прослушивание событий от браузеров
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Event from %s: %v", event.Sender, event.Data)
+    // event.Sender будет "browser-1", "browser-2" и т.д.
+})
+
+// Испускание событий всем подключенным браузерам
+app.Event.Emit("server-update", data)
+```
+
+Со стороны фронтенда:
+
+```javascript
+// Испускание события серверу (и всем другим браузерам)
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// Прослушивание событий от сервера
+wails.Events.On('server-update', (event) => {
+    console.log('Update from server:', event.data);
+});
+```
+
+### Плавное завершение работы (Graceful Shutdown)
+
+Сервер обрабатывает сигналы `SIGINT` и `SIGTERM` плавно:
+
+1. Прекращает принимать новые соединения
+2. Ожидает завершения активных запросов (до `ShutdownTimeout`)
+3. Запускает хуки `OnShutdown`
+4. Останавливает сервисы в обратном порядке
+
+## Отличия от режима десктопа
+
+| Возможность | Режим десктопа | Режим сервера |
+|---------|-------------|-------------|
+| Нативные окна | Создаются | Окна браузера (`browser-N`) |
+| Системный трей | Доступен | Не доступен |
+| Нативные диалоги | Доступны | Не доступны |
+| Меню приложения | Доступно | Не доступно |
+| Информация о экране | Доступна | Возвращает ошибку |
+| Привязки сервисов | Работает | Работает |
+| События | Работает | Работает (через WebSocket) |
+| Ресурсы (Assets) | Через webview | Через HTTP |
+| Требуется CGO | Да | Нет |
+
+### Поведение API окон
+
+В режиме сервера API, связанные с окнами, обрабатываются безопасно:
+
+- `app.Window.NewWithOptions()` - Выводит предупреждение, возвращает nil
+- `app.Hide()` / `app.Show()` - No-op (ничего не делает)
+- `app.Screen.GetPrimary()` - Возвращает ошибку
+
+Это позволяет коду, ссылающемуся на окна, выполняться без сбоев, хотя операции с окнами не оказывают эффекта.
+
+## Сборка для продакшена
+
+### Использование Task (Рекомендуется)
+
+Проекты, созданные с помощью `wails3 init`, включают задачу `build:server`:
+
+```bash
+# Сборка для режима сервера
+wails3 task build:server
+
+# Сборка и запуск
+wails3 task run:server
+```
+
+### Ручная сборка
+
+```bash
+# Сборка с режимом сервера
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Проекты Wails включают готовый к использованию набор файлов для Docker. Чтобы собрать и запустить ваше приложение в контейнере:
+
+```bash
+# Сборка Docker-образа
+wails3 task build:docker
+
+# Запуск
+wails3 task run:docker
+```
+
+Вот и всё! Ваше приложение будет доступно по адресу `http://localhost:8080`.
+
+Вы можете настроить сборку с помощью нескольких опций:
+
+```bash
+# Использование пользовательского тега образа
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# Запуск на другом порту
+wails3 task run:docker PORT=3000
+```
+
+Сгенерированный `Dockerfile.server` создает минимальный образ на основе distroless. Он автоматически обрабатывает привязку сети, поэтому ваше приложение будет доступно извне контейнера.
+
+### Docker Compose
+
+Для более сложных развертываний вот конфигурация Docker Compose с проверкой состояния:
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+Пример проверки состояния использует `wget`. Если вы используете базовый образ distroless, вам нужно либо включить бинарный файл проверки состояния в ваш образ, либо использовать внешний механизм проверки состояния (например, опцию `curl` Docker или sidecar-контейнер).
+:::
+
+### Пользовательский Dockerfile
+
+Если вам нужен больший контроль, вы можете создать свой собственный Dockerfile. Главное, что нужно помнить, — это установка `WAILS_SERVER_HOST=0.0.0.0`, чтобы сервер принимал соединения извне контейнера:
+
+```dockerfile
+# Этап сборки
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .----------|-------------|---------|
+| `WAILS_SERVER_HOST` | Сетевой интерфейс для привязки | `localhost` |
+| `WAILS_SERVER_PORT` | Порт для прослушивания | `8080` |
+
+Они имеют приоритет над `ServerOptions` в вашем коде, именно поэтому в примерах Docker устанавливается `WAILS_SERVER_HOST=0.0.0.0` — это позволяет контейнеру принимать внешние подключения без необходимости вносить какие-либо изменения в ваше приложение.
+
+## См. также
+
+- [Custom Transport](/docs/guides/custom-transport) - Для расширенной настройки IPC
+- [Services](/docs/concepts/services) - Документация по привязке сервисов
+- [Events](/docs/guides/events-reference) - Документация по системе событий

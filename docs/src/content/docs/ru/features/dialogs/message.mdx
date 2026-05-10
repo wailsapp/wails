@@ -1,0 +1,384 @@
+---
+title: Диалоги сообщений
+description: Отображение информации, предупреждений, ошибок и вопросов
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Диалоги сообщений
+
+Wails предоставляет **нативные диалоги сообщений** с внешним видом, соответствующим платформе: информационные, предупреждающие, ошибочные и вопросные диалоги с настраиваемыми заголовками, сообщениями и кнопками. Простой API, нативное поведение, доступность по умолчанию.
+
+## Создание диалогов
+
+Диалоги сообщений доступны через менеджер `app.Dialog`:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+Все методы возвращают объект `*MessageDialog`, который можно настроить с помощью цепочки методов.
+
+## Информационный диалог
+
+Отображение информационных сообщений:
+
+```go
+app.Dialog.Info().
+    SetTitle("Успех").
+    SetMessage("Файл успешно сохранён!").
+    Show()
+```
+
+**Сценарии использования:**
+- Подтверждения успеха
+- Уведомления о завершении
+- Информационные сообщения
+- Обновления статуса
+
+**Пример — подтверждение сохранения:**
+
+```go
+func saveFile(app *application.App, path string, data []byte) error {
+    if err := os.WriteFile(path, data, 0644); err != nil {
+        return err
+    }
+
+    app.Dialog.Info().
+        SetTitle("Файл сохранён").
+        SetMessage(fmt.Sprintf("Сохранено в %s", filepath.Base(path))).
+        Show()
+
+    return nil
+}
+```
+
+## Диалог предупреждения
+
+Отображение предупреждений:
+
+```go
+app.Dialog.Warning().
+    SetTitle("Предупреждение").
+    SetMessage("Это действие нельзя отменить.").
+    Show()
+```
+
+**Сценарии использования:**
+- Нештатные предупреждения
+- Уведомления об устаревании
+- Предостережения
+- Потенциальные проблемы
+
+**Пример — предупреждение о месте на диске:**
+
+```go
+func checkDiskSpace(app *application.App) {
+    available := getDiskSpace()
+
+    if available < 100*1024*1024 { // Менее 100 МБ
+        app.Dialog.Warning().
+            SetTitle("Мало места на диске").
+            SetMessage(fmt.Sprintf("Доступно только %d МБ.", available/(1024*1024))).
+            Show()
+    }
+}
+```
+
+## Диалог ошибки
+
+Отображение ошибок:
+
+```go
+app.Dialog.Error().
+    SetTitle("Ошибка").
+    SetMessage("Не удалось подключиться к серверу.").
+    Show()
+```
+
+**Сценарии использования:**
+- Сообщения об ошибках
+- Уведомления о сбоях
+- Обработка исключений
+- Критические проблемы
+
+**Пример — сетевая ошибка:**
+
+```go
+func fetchData(app *application.App, url string) ([]byte, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Сетевая ошибка").
+            SetMessage(fmt.Sprintf("Не удалось подключиться: %v", err)).
+            Show()
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    return io.ReadAll(resp.Body)
+}
+```
+
+## Вопросной диалог
+
+Задаёт вопросы пользователям и обрабатывает ответы через обратные вызовы кнопок:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Подтверждение").
+    SetMessage("Сохранить изменения перед закрытием?")
+
+save := dialog.AddButton("Сохранить")
+save.OnClick(func() {
+    saveChanges()
+})
+
+dontSave := dialog.AddButton("Не сохранять")
+dontSave.OnClick(func() {
+    // Продолжить без сохранения
+})
+
+cancel := dialog.AddButton("Отмена")
+cancel.OnClick(func() {
+    // Не закрывать
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Сценарии использования:**
+- Подтверждение действий
+- Вопросы типа «Да/Нет»
+- Выбор из нескольких вариантов
+- Принятие решений пользователем
+
+**Пример — несохранённые изменения:**
+
+```go
+func closeDocument(app *application.App) {
+    if !hasUnsavedChanges() {
+        doClose()
+        return
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Несохранённые изменения").
+        SetMessage("Вы хотите сохранить изменения?")
+
+    save := dialog.AddButton("Сохранить")
+    save.OnClick(func() {
+        if saveDocument() {
+            doClose()
+        }
+    })
+
+    dontSave := dialog.AddButton("Не сохранять")
+    dontSave.OnClick(func() {
+        doClose()
+    })
+
+    cancel := dialog.AddButton("Отмена")
+    // У кнопки «Отмена» нет обратного вызова — она просто закрывает диалог
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+## Параметры диалога
+
+### Заголовок и сообщение
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Операция завершена").
+    SetMessage("Все файлы успешно обработаны.")
+```
+
+**Рекомендации:**
+- **Заголовок:** Краткий, описательный (2–5 слов)
+- **Сообщение:** Ясное, конкретное, побуждающее к действию
+- **Избегайте жаргона:** Используйте простой язык
+
+### Кнопки
+
+**Одна кнопка (Информация/Предупреждение/Ошибка):**
+
+Диалоги информации, предупреждения и ошибки отображают кнопку «OK» по умолчанию:
+
+```go
+app.Dialog.Info().
+    SetMessage("Готово!").
+    Show()
+```
+
+Вы также можете добавить пользовательские кнопки:
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Готово!")
+ok := dialog.AddButton("Понятно!")
+dialog.SetDefaultButton(ok)
+dialog.Show()
+```
+
+**Несколько кнопок (Вопрос):**
+
+Используйте `AddButton()` для добавления кнопок, которая возвращает объект `*Button`, который можно настроить:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Выберите действие")
+
+option1 := dialog.AddButton("Вариант 1")
+option1.OnClick(func() {
+    handleOption1()
+})
+
+option2 := dialog.AddButton("Вариант 2")
+option2.OnClick(func() {
+    handleOption2()
+})
+
+option3 := dialog.AddButton("Вариант 3")
+option3.OnClick(func() {
+    handleOption3()
+})
+
+dialog.Show()
+```
+
+**Кнопки по умолчанию и отмены:**
+
+Используйте `SetDefaultButton()` для указания кнопки, которая выделяется и активируется клавишей Enter.
+Используйте `SetCancelButton()` для указания кнопки, которая активируется клавишей Escape.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Удалить файл?")
+
+deleteBtn := dialog.AddButton("Удалить")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Отмена")
+// Обратный вызов не нужен — просто закрывает диалог
+
+dialog.SetDefaultButton(cancelBtn)  // Безопасный вариант по умолчанию
+dialog.SetCancelButton(cancelBtn)   // Escape вызывает Отмену
+dialog.Show()
+```
+
+Вы также можете использовать цепочечные методы `SetAsDefault()` и `SetAsCancel()` у кнопок:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Удалить файл?")
+
+dialog.AddButton("Удалить").OnClick(func() {
+    performDelete()
+})
+
+dialog.AddButton("Отмена").SetAsDefault().SetAsCancel()
+
+dialog.Show()
+```
+
+**Рекомендации:**
+- **1–3 кнопки:** Не перегружайте пользователя
+- **Понятные метки:** «Сохранить», а не «OK»
+- **Безопасный вариант по умолчанию:** Недеструктивное действие
+- **Порядок имеет значение:** Наиболее вероятное действие первым (кроме «Отмена»)
+
+### Пользовательский значок
+
+Установите пользовательский значок для диалога:
+
+```go
+app.Dialog.Info().
+    SetTitle("Пример с пользовательским значком").
+    SetMessage("Использование пользовательского значка").
+    SetIcon(myIconBytes).
+    Show()
+```
+
+### Привязка к окну
+
+Привязка к конкретному окну:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Вопрос, специфичный для окна").
+    AttachToWindow(window)
+
+dialog.AddButton("OK")
+dialog.Show()
+```
+
+**Преимущества:**
+- Диалог появляется в правильном окне
+- Окно-родитель блокируется во время показа
+- Улучшенный UX для многооконных приложений
+
+## Полные примеры
+
+### Подтверждение деструктивного действия
+
+```go
+func deleteFiles(app *application.App, paths []string) {
+    // Подтверждение удаления
+    message := fmt.Sprintf("Удалить %d файл(ов)?", len(paths))
+    if len(paths) == 1 {
+        message = fmt.Sprintf("Удалить %s?", filepath.Base(paths[0]))
+    }
+
+    dialog := app.Dialog.Question().
+        SetTitle("Подтверждение удаления").
+        SetMessage(message)
+
+    deleteBtn := dialog.AddButton("Удалить")
+    deleteBtn.OnClick(func() {
+        // Выполнение удаления
+        var errs []error
+        for _, path := range paths {
+            if err := os.Remove(path); err != nil {
+                errs = append(errs, err)
+            }
+        }
+
+        // Отображение результата
+        if len(errs) > 0 {
+            app.Dialog.Error().
+                SetTitle("Удаление не удалось").
+                SetMessage(fmt.Sprintf("Не удалось удалить %d файл(ов)", len(errs))).
+                Show()
+        } else {
+            app.Dialog.Info().
+                SetTitle("Удаление завершено").
+                SetMessage(fmt.Sprintf("Удалено %d файл(ов)", len(paths))).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Отмена")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### Подтверждение выхода
+
+```go---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры диалогов](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

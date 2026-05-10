@@ -1,0 +1,388 @@
+---
+title: Меню системного трея
+description: Добавьте интеграцию с системным треем (областью уведомлений) в ваше приложение
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Меню системного трея
+
+Wails предоставляет **единые API для системного трея**, которые работают на всех платформах. Создавайте иконки в трее с меню, прикрепляйте окна и обрабатывайте клики с нативным поведением платформы для фоновых приложений, сервисов и утилит быстрого доступа.
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## Быстрый старт
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**Результат:** Иконка в системном трее с меню на всех платформах.
+
+## Создание системного трея
+
+### Базовый системный трей
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### С иконкой
+
+Иконки должны быть встроены:
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**Требования к иконкам:**
+
+| Платформа | Размер | Формат | Примечания |
+|----------|------|--------|-------|
+| **Windows** | 16x16 или 32x32 | PNG, ICO | Область уведомлений |
+| **macOS** | 18x18 до 22x22 | PNG | Панель меню, рекомендуется шаблон |
+| **Linux** | 22x22 до 48x48 | PNG, SVG | Зависит от DE |
+
+### Шаблонные иконки (macOS)
+
+Шаблонные иконки автоматически адаптируются к светлому/темному режиму:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**Рекомендации по шаблонным иконкам:**
+- Используйте только черный и прозрачный цвета
+- Черный становится белым в темном режиме
+- Называйте файл с суффиксом `Template`: `iconTemplate.png`
+- [Руководство по дизайну](https://bjango.com/articles/designingmenubarextras/)
+
+## Добавление меню
+
+Меню системного трея работают как меню приложения:
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**Для всех типов элементов меню** см. [Справочник по меню](/ru/features/menus/reference).
+
+## Прикрепление окон
+
+Прикрепите окно к иконке трея для автоматического показа/скрытия:
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**Поведение:**
+- Окно начинается скрытым
+- **Левый клик по иконке трея** → Переключить видимость окна
+- **Правый клик по иконке трея** → Показать меню (если установлено)
+- Окно позиционируется рядом с иконкой трея
+
+**Пример: Всплывающее окно**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## Обработчики кликов
+
+Обрабатывайте клики по иконке трея:
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**Поддержка платформ:**
+
+| Событие | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Зависит |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Зависит |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Зависит |
+
+## Динамические обновления
+
+Обновляйте иконку трея и меню динамически:
+
+### Изменение иконки
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### Обновление меню
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[Всегда вызывайте Update()]
+После изменения состояния меню **вызовите `menu.Update()`**. См. [Справочник по меню](/features/menus/reference#enabled-state).
+:::
+
+### Перестройка меню
+
+Для значительных изменений перестройте все меню:
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | Полностью функционально - иконка появляется/исчезает из области уведомлений |
+| **macOS** | ✅ | ✅ | Элемент панели меню показывается/скрывается |
+| **Linux** | ✅ | ✅ | Зависит от окружения рабочего стола |
+
+**Сценарии использования:**
+- Временно скрыть иконку трея на основе предпочтений пользователя
+- Режим без интерфейса, когда иконка трея появляется только при необходимости
+- Переключение видимости на основе состояния приложения
+
+**Пример — условная видимость в трее:**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// Показывать трей только когда доступны обновления
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## Очистка
+
+Уничтожьте иконку трея, когда работа завершена:
+
+```go
+// В OnShutdown
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**Важно:** Всегда уничтожайте системный трей при завершении работы, чтобы освободить ресурсы.
+
+## Рекомендации
+
+### ✅ Делайте
+
+- **Используйте шаблонные иконки на macOS** - Адаптируются к тёмной теме
+- **Делайте метки короткими** - Максимум 3-5 символов
+- **Предусматривайте подсказки на Windows** - Помогает пользователям идентифицировать ваше приложение
+- **Тестируйте на всех платформах** - Поведение различается
+- **Корректно обрабатывайте клики** - Левый клик для основного действия, правый клик для меню
+- **Обновляйте иконку в зависимости от статуса** - Визуальная обратная связь важна
+- **Уничтожайте при завершении работы** - Освобождайте ресурсы
+
+### ❌ Не делайте
+
+- **Не используйте большие иконки** - Следуйте рекомендациям платформы
+- **Не используйте длинные метки** - Они будут усечены
+- **Не забывайте про тёмную тему** - Тестируйте на macOS в тёмной теме
+- **Не блокируйте обработчики кликов** - Делайте их быстрыми
+- **Не забывайте про menu.Update()** - После изменения состояния меню
+- **Не предполагайте поддержку трея** - Некоторые окружения рабочего стола Linux не поддерживают его
+
+## Устранение неполадок
+
+### Иконка трея не появляется
+
+**Возможные причины:**
+1. Формат иконки не поддерживается
+2. Размер иконки слишком большой или слишком маленький---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры системного трея](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).

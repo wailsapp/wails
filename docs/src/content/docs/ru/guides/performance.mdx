@@ -1,0 +1,341 @@
+---
+title: Оптимизация производительности
+description: Оптимизируйте ваше приложение Wails для максимальной производительности
+sidebar:
+  order: 9
+---
+
+## Обзор
+
+Оптимизируйте ваше приложение Wails по скорости, эффективности использования памяти и отзывчивости.
+
+## Оптимизация фронтенда
+
+### Размер бандла
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
+}
+```
+
+### Разделение кода (Code Splitting)
+
+```javascript
+// Ленивая загрузка компонентов
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Settings />
+    </Suspense>
+  )
+}
+```
+
+### Оптимизация ресурсов
+
+```javascript
+// Оптимизация изображений
+import { defineConfig } from 'vite'
+import imagemin from 'vite-plugin-imagemin'
+
+export default defineConfig({
+  plugins: [
+    imagemin({
+      gifsicle: { optimizationLevel: 3 },
+      optipng: { optimizationLevel: 7 },
+      svgo: { plugins: [{ removeViewBox: false }] },
+    }),
+  ],
+})
+```
+
+## Оптимизация бэкенда
+
+### Эффективные биндинги
+
+```go
+// ❌ Плохо: Возвращать всё подряд
+func (s *Service) GetAllData() []Data {
+    return s.db.FindAll() // Может быть огромный объём данных
+}
+
+// ✅ Хорошо: Пагинация
+func (s *Service) GetData(page, size int) (*PagedData, error) {
+    return s.db.FindPaged(page, size)
+}
+```
+
+### Кэширование
+
+```go
+type CachedService struct {
+    cache *lru.Cache
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Проверка кэша
+    if val, ok := s.cache.Get(key); ok {
+        return val, nil
+    }
+    
+    // Загрузка и кэширование
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    s.cache.Add(key, data)
+    return data, nil
+}
+```
+
+### Горутины для длительных операций
+
+```go
+func (s *Service) ProcessLargeFile(path string) error {
+    // Обработка в фоновом режиме
+    go func() {
+        result, err := s.process(path)
+        if err != nil {
+            s.app.Event.Emit("process-error", err.Error())
+            return
+        }
+        s.app.Event.Emit("process-complete", result)
+    }()
+    
+    return nil
+}
+```
+
+## Оптимизация памяти
+
+### Избегайте утечек памяти
+
+```go
+// ❌ Плохо: Утечка горутины
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    go func() {
+        for range ticker.C {
+            s.poll()
+        }
+    }()
+    // ticker никогда не останавливается!
+}
+
+// ✅ Хорошо: Правильная очистка
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    s.stopChan = make(chan bool)
+    
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.poll()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *Service) StopPolling() {
+    close(s.stopChan)
+}
+```
+
+### Пулы ресурсов
+
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func processData(data []byte) []byte {
+    buf := bufferPool.Get().(*bytes.Buffer)
+    defer bufferPool.Put(buf)
+    
+    buf.Reset()
+    buf.Write(data)
+    // Обработка...
+    return buf.Bytes()
+}
+```
+
+## Оптимизация событий
+
+### Дебаунс событий
+
+```javascript
+// Дебаунс частых событий
+let debounceTimer
+function handleInput(value) {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+        UpdateData(value)
+    }, 300)
+}
+```
+
+### Пакетные обновления
+
+```go
+type BatchProcessor struct {
+    items []Item
+    mu    sync.Mutex
+    timer *time.Timer
+}
+
+func (b *BatchProcessor) Add(item Item) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    
+    b.items = append(b.items, item)
+    
+    if b.timer == nil {
+        b.timer = time.AfterFunc(100*time.Millisecond, b.flush)
+    }
+}
+
+func (b *BatchProcessor) flush() {
+    b.mu.Lock()
+    items := b.items
+    b.items = nil
+    b.timer = nil
+    b.mu.Unlock()
+    
+    // Обработка пакета
+    processBatch(items)
+}
+```
+
+## Оптимизация сборки
+
+### Размер бинарного файла
+
+```bash
+# Удаление отладочных символов
+wails3 build -ldflags "-s -w"
+
+# Дополнительное уменьшение размера бинарного файла
+go build -ldflags="-s -w" -trimpath
+```
+
+### Скорость компиляции
+
+```bash
+# Использование кэша сборки
+go build -buildmode=default
+
+# Параллельная компиляция
+go build -p 8
+```
+
+## Профилирование
+
+### Профилирование CPU
+
+```go
+import "runtime/pprof"
+
+func profileCPU() {
+    f, _ := os.Create("cpu.prof")
+    defer f.Close()
+    
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+    
+    // Код для профилирования
+}
+```
+
+### Профилирование памяти
+
+```go
+import "runtime/pprof"
+
+func profileMemory() {
+    f, _ := os.Create("mem.prof")
+    defer f.Close()
+    
+    runtime.GC()
+    pprof.WriteHeapProfile(f)
+}
+```
+
+### Анализ профилей
+
+```bash
+# Просмотр профиля CPU
+go tool pprof cpu.prof
+
+# Просмотр профиля памяти
+go tool pprof mem.prof
+
+# Веб-интерфейс
+go tool pprof -http=:8080 cpu.prof
+```
+
+## Лучшие практики
+
+### ✅ Делайте
+
+- Профилируйте перед оптимизацией
+- Кэшируйте дорогие операции
+- Используйте пагинацию для больших наборов данных
+- Применяйте дебаунс для частых событий
+- Используйте пулы ресурсов
+- Очищайте горутины
+- Оптимизируйте размер бандла
+- Используйте ленивую загрузку
+
+### ❌ Не делайте
+
+- Не оптимизируйте преждевременно
+- Не игнорируйте утечки памяти
+- Не блокируйте основной поток
+- Не возвращайте огромные наборы данных
+- Не пропускайте профилирование
+- Не забывайте об очистке
+
+## Чек-лист производительности
+
+- [ ] Оптимизирован бандл фронтенда
+- [ ] Изображения сжаты
+- [ ] Реализовано разделение кода (Code Splitting)
+- [ ] Методы бэкенда используют пагинацию
+- [ ] Реализовано кэширование
+- [ ] Горутины очищены
+- [ ] События с дебаунсом
+- [ ] Размер бинарного файла оптимизирован
+- [ ] Профилирование выполнено
+- [ ] Утечки памяти исправлены
+
+## Следующие шаги
+
+- [Архитектура](/ru/guides/architecture) - Шаблоны архитектуры приложений
+- [Тестирование](/ru/guides/testing) - Тестирование вашего приложения
+- [Сборка](/guides/building) - Сборка оптимизированных бинарных файлов

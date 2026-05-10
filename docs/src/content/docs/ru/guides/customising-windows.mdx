@@ -1,0 +1,130 @@
+---
+title: Настройка окон в Wails
+description: Настройте внешний вид и поведение окон в ваших приложениях Wails
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Актуальные платформы: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails предоставляет API для управления внешним видом и функциональностью
+кнопок окна. Эта функциональность доступна в Windows и macOS, но
+не в Linux.
+
+## Установка состояний кнопок окна
+
+Состояния кнопок определяются перечислением `ButtonState`:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: Кнопка включена и видна.
+- `ButtonDisabled`: Кнопка видна, но отключена (серая).
+- `ButtonHidden`: Кнопка скрыта из заголовка окна.
+
+Состояния кнопок можно устанавливать при создании окна или во время выполнения.
+
+### Установка состояний кнопок при создании окна
+
+При создании нового окна можно установить начальное состояние кнопок, используя
+структуру `WebviewWindowOptions`:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+В приведенном выше примере кнопка сворачивания скрыта, кнопка разворачивания
+неактивна (серая), а кнопка закрытия активна.
+
+### Установка состояний кнопок во время выполнения
+
+Вы также можете изменять состояния кнопок во время выполнения, используя следующие методы
+интерфейса `Window`:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### Платформенные различия
+
+Функциональность состояний кнопок немного по-разному работает в Windows и
+macOS:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Отключить Min/Max/Close | Отключает Min/Max/Close | Отключает Min/Max/Close |
+| Скрыть Min            | Отключает Min          | Скрывает кнопку Min    |
+| Скрыть Max            | Отключает Max          | Скрывает кнопку Max    |
+| Скрыть Close          | Скрывает все элементы  | Скрывает Close         |
+
+Примечание: В Windows невозможно скрыть кнопки Min/Max по отдельности.
+Однако, если отключить обе, это скроет оба элемента управления и оставит видимой
+только кнопку закрытия.
+
+### Управление стилем окна (Windows)
+
+Чтобы управлять стилем заголовка окна в Windows, можно использовать поле `ExStyle`
+в структуре `WebviewWindowOptions`:
+
+Пример:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+Другие параметры, влияющие на расширенный стиль окна, будут переопределены
+этой настройкой:
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

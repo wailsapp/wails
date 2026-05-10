@@ -1,0 +1,359 @@
+---
+title: Справочник по меню
+description: Полный справочник по типам элементов меню, свойствам и методам
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Справочник по меню
+
+Полный справочник по типам элементов меню, свойствам и динамическому поведению. Создавайте профессиональные, отзывчивые меню с флажками, радиогруппами, разделителями и динамическими обновлениями.
+
+## Типы элементов меню
+
+### Обычные элементы меню
+
+Самый распространённый тип — отображает текст и запускает действие:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**Используйте для:** Команд, действий, открытия окон
+
+### Флажки (Checkboxes)
+
+Элементы меню с переключением состояния (отмечен/не отмечен):
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = изначально отмечен
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**Используйте для:** Булевых настроек, переключателей функций, опций отображения
+
+**Важно:** Состояние отмеченности автоматически переключается при клике.
+
+### Радиогруппы
+
+Взаимоисключающие варианты — может быть выбран только один:
+
+```go
+menu.AddRadio("Small", true)   // true = изначально выбран
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**Используйте для:** Взаимоисключающих выборов (размер, тема, режим)
+
+**Как работает группировка:**
+- Соседние радиокнопки автоматически образуют группу
+- Выбор одного элемента снимает выделение с остальных в группе
+- Разделяйте группы разделителем или обычным элементом
+
+**Пример с несколькими группами:**
+
+```go
+// Группа 1: Размер
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// Группа 2: Тема
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### Вложенные меню
+
+Вложенные структуры меню для организации:
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // Обработка клика
+})
+submenu.Add("Submenu Item 2")
+```
+
+**Используйте для:** Группировки связанных элементов, уменьшения визуального шума
+
+**Лимит вложенности:** Большинство платформ поддерживают 2–3 уровня. Избегайте более глубокой вложенности.
+
+### Разделители
+
+Визуальные разделители между элементами меню:
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**Используйте для:** Визуальной группировки связанных элементов
+
+**Рекомендация:** Не начинайте и не заканчивайте меню разделителями.
+
+## Свойства элементов меню
+
+### Метка (Label)
+
+Текст, отображаемый для элемента меню:
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// Получение текущей метки
+label := menuItem.Label()
+```
+
+**Динамические метки:**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // Важно для Windows!
+    
+    // Выполнение проверки обновлений
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### Состояние доступности (Enabled State)
+
+Управление тем, можно ли взаимодействовать с элементом меню:
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // Серый, нельзя кликнуть
+
+// Включение позже
+menuItem.SetEnabled(true)
+menu.Update()  // Важно: вызывайте это после изменения состояния доступности!
+
+// Проверка текущего состояния
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Поведение меню в Windows]
+В Windows меню необходимо перестраивать при изменении его состояния. **Всегда вызывайте `menu.Update()` после включения/отключения элементов меню**, особенно если элемент был создан в отключённом состоянии.
+
+**Почему:** В Windows меню перестраивается с нуля при обновлении. Если вы не вызываете `Update()`, обработчики кликов могут срабатывать некорректно.
+:::
+
+**Пример: Динамическое включение/отключение**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // Изначально отключён
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// При изменении выделения
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // Критично для Windows!
+}
+```
+
+**Распространённый паттерн: Включение по условию**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// Вызывайте при любом изменении состояния
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### Состояние отмеченности (Checked State)
+
+Для элементов с флажками и радиокнопками: управление или запрос их состояния отмеченности:
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// Запрос состояния
+isChecked := checkbox.Checked()
+```
+
+**Автопереключение:** Флажки автоматически переключаются при клике. Вам не нужно вызывать `SetChecked()` в обработчике клика.
+
+**Ручное управление:**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// Синхронизация с внешним состоянием
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### Ускорители (Горячие клавиши)
+
+Добавление горячих клавиш к элементам меню:
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**Формат ускорителя:**
+- `CmdOrCtrl` — Cmd на macOS, Ctrl на Windows/Linux
+- `Shift`, `Alt`, `Option` — модификаторы
+- `A-Z`, `0-9` — буквенные/цифровые клавиши
+- `F1-F12` — функциональные клавиши
+- `Enter`, `Space`, `Backspace` и др. — специальные клавиши
+
+**Примеры:**
+
+```go
+"CmdOrCtrl+S"           // Сохранить
+"CmdOrCtrl+Shift+S"     // Сохранить как
+"CmdOrCtrl+W"           // Закрыть окно
+"CmdOrCtrl+Q"           // Выйти
+"F5"                    // Обновить
+"CmdOrCtrl+,"           // Настройки (стандарт macOS)
+"Alt+F4"                // Закрыть (стандарт Windows)
+```
+
+**Платформозависимые ускорители:**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### Подсказка (Tooltip)
+
+Добавление текста при наведении на элементы меню (поддержка зависит от платформы):
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**Поддержка платформ:**
+- **Windows:** ✅ Поддерживается
+- **macOS:** ❌ Не поддерживается (подсказки не являются стандартом для меню)
+- **Linux:** ⚠️ Зависит от окружения рабочего стола
+
+### Состояние скрытия (Hidden State)
+
+Скрытие элементов меню без их удаления:
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // Скрыт
+
+// Показ в сборках для отладки
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**Используйте для:** Опций отладки, флагов функций, условных возможностей
+
+## Обработка событий
+
+### Обработчик OnClick
+
+Выполнение кода при клике на элемент меню:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // Обработка клика
+    fmt.Println("Clicked!")
+})
+```
+
+**Контекст предоставляет:**
+- `ctx.ClickedMenuItem()` — элемент меню, по которому кликнули
+- Контекст окна (если из меню окна)
+- Контекст приложения
+
+**Пример: Доступ к элементу меню в обработчике**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### Несколько обработчиков
+
+Можно установить несколько обработчиков (последний переопределяет предыдущие):
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// Это заменяет первый обработчик
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**Рекомендация:** Устанавливайте обработчик один раз, используйте условную логику внутри, если необходимо.
+
+## Динамические меню
+
+### Обновление элементов меню
+
+**Золотое правило:** Всегда вызывайте `menu.Update()` после изменения состояния меню.
+
+```go
+// ✅ Правильно
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ Неправильно (особенно для Windows)
+menuItem.SetEnabled(true)
+// Забыли вызвать Update() — обработчики кликов могут не работать!
+```
+
+**Почему это важно:****Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры меню](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).

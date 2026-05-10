@@ -1,0 +1,245 @@
+---
+title: Расширение Wails
+description: Практическое руководство по добавлению новых функций и платформ в Wails v3
+sidebar:
+  order: 8
+---
+
+> Wails создан так, чтобы его можно было **модифицировать**.  
+> Каждый основной подсистемный компонент написан на Go, и вы можете читать, изменять и публиковать его код.  
+> На этой странице показано, _с чего_ начать и _как_ сохранять кроссплатформенность, когда вы:
+
+* Добавляете **Сервис** (файловый сервер, KV-хранилище, пользовательский IPC…)
+* Создаете **новую команду CLI** (`wails3 <foo>`)
+* Расширяете **Runtime** (API окон, диалоги, события)
+* Внедряете **возможность платформы** (Wayland, Apple Vision OS…)
+* Сохраняете **кроссплатформенную совместимость**, не тоня в тегах `//go:build`
+
+---
+
+## 1. Добавление сервиса
+
+Сервисы — это фоновые компоненты Go, доступные приложениям через `application.Context`.
+
+```
+internal/service/
+├── template/            # Шаблоны для новых сервисов
+│   ├── template.go
+│   └── README.md
+└── service.go           # Регистрация + интерфейсы жизненного цикла
+```
+
+### 1.1 Определение сервиса
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 Реализация `service.Service`
+
+```go
+func (s *Service) Init(ctx *application.Context) error { return nil }
+func (s *Service) Shutdown() error                     { return nil }
+```
+
+### 1.3 Регистрация генератора
+
+*Добавьте в* `internal/generator/collect/services.go`
+
+```go
+services.Register("chat", chat.New)
+```
+
+> Теперь `wails3 generate` генерирует привязки, чтобы JS мог вызывать
+> `window.backend.chat.Send("hi")`.
+
+### 1.4 Публикация примера
+
+Скопируйте `v3/examples/services/` и внесите необходимые изменения.
+
+---
+
+## 2. Написание новой команды CLI
+
+Логика CLI находится в `internal/commands/`.  
+Каждая команда — это **один файл**, который регистрирует себя в `init()`.
+
+### 2.1 Создание файла
+
+`v3/internal/commands/hello.go`
+
+```go
+package commands
+
+import (
+    "github.com/spf13/cobra"
+)
+
+func init() {
+    Add(&cobra.Command{
+        Use:   "hello",
+        Short: "Prints Hello World",
+        RunE: func(cmd *cobra.Command, args []string) error {
+            cmd.Println("Hello Wails!")
+            return nil
+        },
+    })
+}
+```
+
+`Add()` регистрирует команду в корне `cmd/wails3/main.go`.
+
+### 2.2 Перекомпиляция CLI
+
+```
+go install ./v3/cmd/wails3
+wails3 hello
+```
+
+Если вашей команде нужна интеграция с **Taskfile**, используйте вспомогательные функции из
+`internal/commands/task_wrapper.go`.
+
+---
+
+## 3. Модификация Runtime
+
+Общие причины для изменений:
+
+* Новая функция окна (`SetOpacity`, `Shake`, …)
+* Дополнительный диалог (`ColorPicker`)
+* Системное API (яркость экрана)
+
+### 3.1 Публичное API
+
+Добавьте в `pkg/application/window.go`:
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) {
+    w.ctx.Call("window:setOpacity", o)
+}
+```
+
+### 3.2 Обработчик сообщений
+
+Создайте `messageprocessor_window_opacity.go`:
+
+```go
+const MsgSetOpacity = "window:setOpacity"
+
+func init() { register(MsgSetOpacity, handleSetOpacity) }
+
+func handleSetOpacity(ctx *Context, params json.RawMessage) ([]byte, error) {
+    var req struct {
+        ID      uint64  `json:"id"`
+        Opacity float32 `json:"o"`
+    }
+    json.Unmarshal(params, &req)
+    return nil, runtime.SetOpacity(req.ID, req.Opacity)
+}
+```
+
+### 3.3 Реализация для платформы
+
+```
+internal/runtime/
+    webview_window_darwin.go
+    webview_window_linux.go
+    webview_window_windows.go
+```
+
+Добавьте `SetOpacity()` в каждый файл, используя теги сборки.  
+Если платформа не поддерживает эту функцию, верните `ErrCapability`.
+
+### 3.4 Флаг возможности
+
+Экспонируйте через `internal/capabilities`.
+
+```go
+const CapOpacity = "window:opacity"
+```
+
+Файлы runtime `*_darwin.go` и т.д. должны вызывать `registerCapability(CapOpacity)` при
+успешной инициализации.
+
+Приложения могут проверять наличие возможности:
+
+```go
+if application.HasCapability(application.CapOpacity) { ... }
+```
+
+---
+
+## 4. Добавление новых возможностей платформы
+
+Пример: буфер обмена **Wayland** в Linux.
+
+1. Скопируйте `internal/runtime/clipboard_linux.go`.
+2. Разделите файл:
+   * `clipboard_linux_x11.go` → `//go:build linux && !wayland`
+   * `clipboard_linux_wayland.go` → `//go:build linux && wayland`
+3. Добавьте флаг CLI `--tags wayland` в `internal/commands/dev.go`
+   (`goEnv.BuildTags += ",wayland"`).
+4. Задокументируйте в **Asset Server** и README.
+
+> Делайте теги сборки по умолчанию минимальными; резервируйте опциональные теги для узкоспециализированных функций.
+
+---
+
+## 5. Чек-лист кроссплатформенной совместимости
+
+| ✅ Шаг | Зачем |
+|---------|-----|
+| Предоставлять **каждый** публичный метод во всех файлах платформ (даже если это заглушка) | Поддерживает успешную сборку на всех ОС/архитектурах |
+| Изолировать платформенно-зависимые части за **возможностями** | Позволяет приложениям корректно деградировать |
+| Сначала использовать **чистый Go**, CGO только при необходимости | Упрощает кросс-компиляцию |
+| Тестировать с помощью `task matrix:test` | Запускает `go test ./...` на linux/mac/windows в Docker |
+| Документировать новые теги сборки в `docs/getting-started/installation.mdx` | Пользователи должны знать о флагах |
+
+---
+
+## 6. Отладочные сборки и скорость итераций
+
+* `wails3 dev -tags debug` добавляет дополнительные хуки логирования (`logger_dev*.go`).
+* Используйте `task reload` для пересборки runtime без перезапуска всего приложения.
+* Детектор гонок: `wails3 dev -race` (см. `pkg/application/RACE.md`).
+
+---
+
+## 7. Вклад в основной проект
+
+1. Откройте **issue**, чтобы обсудить идею и дизайн.
+2. Следуйте описанным выше методам для реализации.
+3. Добавьте:
+   * Юнит-тесты (`*_test.go`)
+   * Пример (`v3/examples/<feat>/`)
+   * Документацию (этот файл или справочник API)
+4. Убедитесь, что `go vet`, `golangci-lint` и CI-матрик проходят успешно.
+
+---
+
+### Быстрые ссылки
+
+| Область | Расположение |
+|------|----------|
+| Фреймворк сервисов | `internal/service/` |
+| Ядро CLI          | `internal/commands/` |
+| Runtime для каждой ОС    | `internal/runtime/` |
+| Вспомогательные средства возможностей| `internal/capabilities/` |
+| DSL Taskfile      | `tasks/Taskfile.yml` |
+| Тесты матрицы разработки  | `tasks/events/generate.go` |
+
+---
+
+Теперь у вас есть **дорожная карта** для адаптации Wails под свои нужды: добавляйте сервисы, используйте магию CLI, модифицируйте runtime или внедряйте совершенно новые функции ОС.  
+Удачного расширения!

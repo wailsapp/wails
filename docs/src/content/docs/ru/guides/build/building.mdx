@@ -1,0 +1,121 @@
+---
+title: Сборка приложений
+description: Соберите и упакуйте ваше приложение Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 использует [Task](https://taskfile.dev) в качестве системы сборки. Команды `wails3 build` и `wails3 package` являются удобными обертками вокруг Task.
+
+## Сборка
+
+Сборка для текущей платформы:
+
+```bash
+wails3 build
+```
+
+Сборка для конкретной платформы:
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# С указанием архитектуры
+wails3 build GOOS=darwin GOARCH=arm64
+
+# Также работает стиль задания переменных окружения
+GOOS=windows wails3 build
+```
+
+Результаты сборки помещаются в директорию `bin/`.
+
+<Aside type="tip">
+Кросс-компиляция под macOS или Linux с другой платформы требует Docker. См. [Кроссплатформенная сборка](/ru/guides/build/cross-platform) для настройки.
+</Aside>
+
+## Разработка
+
+Запустите ваше приложение с горячей перезагрузкой:
+
+```bash
+wails3 dev
+```
+
+Это запускает наблюдателя за файлами, который пересобирает и перезапускает ваше приложение при изменении файлов. Сервер разработки фронтенда по умолчанию работает на порту 9245.
+
+```bash
+# Пользовательский порт
+wails3 dev -port 3000
+
+# Включение HTTPS
+wails3 dev -s
+```
+
+## Упаковка
+
+Упакуйте ваше приложение для распространения:
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+Это создает пакеты, специфичные для платформы:
+- **Windows**: установщик NSIS — см. [Упаковка для Windows](/ru/guides/build/windows)
+- **macOS**: пакет приложения (`.app`) — см. [Упаковка для macOS](/ru/guides/build/macos)
+- **Linux**: AppImage, deb и rpm — см. [Упаковка для Linux](/ru/guides/build/linux)
+
+## Пользовательские теги сборки
+
+Передавайте пользовательские теги сборки Go с помощью флага `-tags`:
+
+```bash
+# Сборка с экспериментальной поддержкой GTK4 в Linux
+wails3 build -tags gtk4
+
+# Сборка в режиме сервера (без GUI, без CGO)
+wails3 build -tags server
+
+# Комбинация нескольких тегов
+wails3 build -tags gtk4,customtag
+```
+
+Теги передаются как `EXTRA_TAGS` в лежащий в основе Taskfile. См. [Сборка сервера](/ru/guides/server-build) и [Упаковка для Linux - GTK4](/guides/build/linux#gtk4-support-experimental) для подробностей.
+
+## Использование Task напрямую
+
+Для большего контроля используйте Task напрямую:
+
+```bash
+# Список доступных задач
+wails3 task --list
+
+# Подробный вывод
+wails3 task build -v
+
+# Пробный запуск (dry run)
+wails3 task --dry
+
+# Принудительная пересборка
+wails3 task build -f
+
+# Передача переменных
+wails3 task darwin:build ARCH=amd64
+```
+
+Задачи, специфичные для платформы, такие как `linux:create:deb` или `darwin:build:universal`, доступны только через Task.
+
+## Генерация ресурсов
+
+Пересоздайте иконки или обновите конфигурацию сборки:
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

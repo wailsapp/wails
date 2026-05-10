@@ -1,0 +1,1003 @@
+---
+title: Параметры окна
+description: Полный справочник по WebviewWindowOptions
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Параметры конфигурации окна
+
+Wails предоставляет исчерпывающую конфигурацию окна с десятками параметров для размера, положения, внешнего вида и поведения. Этот справочник охватывает все доступные параметры для Windows, macOS и Linux, являясь **полным справочником** для `WebviewWindowOptions`. Каждый параметр, каждая платформа, с примерами и ограничениями.
+
+## Структура WebviewWindowOptions
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+    
+    // Size and Position
+    Width     int
+    Height    int
+    X         int
+    Y         int
+    MinWidth  int
+    MinHeight int
+    MaxWidth  int
+    MaxHeight int
+    
+    // Initial State
+    Hidden          bool
+    Frameless       bool
+    Resizable       bool
+    AlwaysOnTop     bool
+    Fullscreen      bool
+    Minimised       bool
+    Maximised       bool
+    WindowState     WindowState
+    
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    
+    // Content
+    URL  string
+    HTML string
+    
+    // Assets
+    Assets application.AssetOptions
+    
+    // Security
+    ContentProtectionEnabled bool
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Lifecycle
+    OnClose   func() bool
+    OnDestroy func()
+
+    // Platform-Specific
+    Mac     MacOptions
+    Windows WindowsOptions
+    Linux   LinuxOptions
+}
+```
+
+## Основные параметры
+
+### Name
+
+**Тип:** `string`  
+**По умолчанию:** Автоматически сгенерированный UUID  
+**Платформа:** Все
+
+```go
+Name: "main-window"
+```
+
+**Назначение:** Уникальный идентификатор для последующего поиска окон.
+
+**Рекомендации:**
+- Используйте описательные имена: `"main"`, `"settings"`, `"about"`
+- Используйте kebab-case: `"file-browser"`, `"color-picker"`
+- Делайте их короткими и запоминающимися
+
+**Пример:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// Позже...
+settings := app.GetWindowByName("settings-window")
+```
+
+### Title
+
+**Тип:** `string`  
+**По умолчанию:** Имя приложения  
+**Платформа:** Все
+
+```go
+Title: "My Application"
+```
+
+**Назначение:** Текст, отображаемый в заголовке окна и на панели задач.
+
+**Динамическое обновление:**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**Тип:** `int` (пиксели)  
+**По умолчанию:** 800 x 600  
+**Платформа:** Все  
+**Ограничения:** Должны быть положительными
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**Назначение:** Начальный размер окна в логических пикселях.
+
+**Примечания:**
+- Wails автоматически обрабатывает масштабирование DPI
+- Используйте логические пиксели, а не физические
+- Учитывайте минимальное разрешение экрана (1024x768)
+
+**Примеры размеров:**
+
+| Сценарий использования | Ширина | Высота |
+|----------|-------|--------|
+| Маленькая утилита | 400 | 300 |
+| Стандартное приложение | 1024 | 768 |
+| Большое приложение | 1440 | 900 |
+| Full HD | 1920 | 1080 |
+
+### X / Y
+
+**Тип:** `int` (пиксели)  
+**По умолчанию:** По центру экрана  
+**Платформа:** Все
+
+```go
+X: 100,  // 100px от левого края
+Y: 100,  // 100px от верхнего края
+```
+
+**Назначение:** Начальная позиция окна.
+
+**Система координат:**
+- (0, 0) — верхний левый угол основного экрана
+- Положительное X направлено вправо
+- Положительное Y направлено вниз
+
+**Пример:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "coordinate-window",
+    InitialPosition: application.WindowXY, // использовать систему координат
+    X:    100,
+    Y:    100,
+})
+```
+
+**Рекомендация:** Используйте `Center()` для центрирования окна:
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**Тип:** `int` (пиксели)  
+**По умолчанию:** 0 (без минимума)  
+**Платформа:** Все
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**Назначение:** Предотвращение слишком маленького размера окна.
+
+**Сценарии использования:**
+- Предотвращение сломанной верстки
+- Обеспечение удобства использования
+- Сохранение соотношения сторон
+
+**Пример:**
+
+```go
+// Предотвращение размера окна меньше 400x300
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**Тип:** `int` (пиксели)  
+**По умолчанию:** 0 (без максимума)  
+**Платформа:** Все
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**Назначение:** Предотвращение слишком большого размера окна.
+
+**Сценарии использования:**
+- Приложения фиксированного размера
+- Предотвращение чрезмерного использования ресурсов
+- Соблюдение ограничений дизайна
+
+## Параметры состояния
+
+### Hidden
+
+**Тип:** `bool`
+**По умолчанию:** `false`
+**Платформа:** Все
+
+```go
+Hidden: true,
+```
+
+**Назначение:** Создание окна без его отображения.
+
+**Сценарии использования:**
+- Фоновые окна
+- Окна, отображаемые по требованию
+- Загрузочные экраны (создать, загрузить, затем показать)
+- Предотвращение белой вспышки при загрузке контента
+
+**Улучшения на платформах:**
+- **Windows:** Исправлена белая вспышка окна — окно остается невидимым до вызова `Show()`
+- **macOS:** Полная поддержка
+- **Linux:** Полная поддержка
+
+**Рекомендуемый паттерн для плавной загрузки:**
+
+```go
+// Создание скрытого окна
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main-window",
+    Hidden: true,
+    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Соответствует вашей теме
+})
+
+// Загрузка контента в скрытом режиме
+// ... контент загружается ...
+
+// Показ окна, когда оно готово (без вспышки!)
+window.Show()
+```
+
+**Пример:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// Показ окна при необходимости
+settings.Show()
+```
+
+### Frameless
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформа:** Все
+
+```go
+Frameless: true,
+```
+
+**Назначение:** Удаление заголовка и рамок окна.
+
+**Сценарии использования:**
+- Пользовательское оформление окна
+- Загрузочные экраны
+- Киоск-приложения
+- Окна с пользовательским дизайном
+
+**Важно:** Вам потребуется реализовать:
+- Перетаскивание окна
+- Кнопки закрытия/сворачивания/разворачивания
+- Маржеры изменения размера (если окно изменяется по размеру)
+
+**См. [Frameless Windows](/ru/features/windows/frameless) для подробностей.**
+
+### Resizable
+
+**Тип:** `bool`  
+**По умолчанию:** `true`  
+**Платформа:** Все
+
+```go
+Resizable: false,
+```
+
+**Назначение:** Разрешить/запретить изменение размера окна.
+
+**Сценарии использования:**
+- Приложения фиксированного размера
+- Загрузочные экраны
+- Диалоговые окна
+
+**Примечание:** Пользователи все еще могут разворачивать окно на весь экран или использовать полноэкранный режим, если вы не запретите и это.
+
+### AlwaysOnTop
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформа:** Все
+
+```go
+AlwaysOnTop: true,
+```
+
+**Назначение:** Держать окно поверх всех остальных окон.
+
+**Сценарии использования:**
+- Плавающие панели инструментов
+- Уведомления
+- Картинка в картинке
+- Таймеры
+
+**Примечания по платформам:**
+- **macOS:** Полная поддержка
+- **Windows:** Полная поддержка
+- **Linux:** Зависит от менеджера окон
+
+### Fullscreen
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформа:** Все
+
+```go
+Fullscreen: true,
+```
+
+**Назначение:** Запуск в полноэкранном режиме.
+
+**Поведение на платформах:**
+- **macOS:** Создает новое пространство (виртуальный рабочий стол)
+- **Windows:** Закрывает панель задач
+- **Linux:** Зависит от окружения рабочего стола
+
+**Переключение во время выполнения:**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+```
+
+### Minimised / Maximised
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформа:** Все
+
+```go
+Minimised: true,  // Начать свернутым
+Maximised: true,  // Начать развернутым
+```
+
+**Назначение:** Установить начальное состояние окна.
+
+**Примечание:** Не устанавливайте оба значения в `true` — поведение не определено.
+
+### WindowState
+
+**Тип:** перечисление `WindowState`  
+**По умолчанию:** `WindowStateNormal`  
+**Платформа:** Все
+
+```go
+WindowState: application.WindowStateMaximised,
+```
+
+**Значения:**
+- `WindowStateNormal` — Обычное окно
+- `WindowStateMinimised` — Свернутое
+- `WindowStateMaximised` — Развернутое
+- `WindowStateFullscreen` — Полноэкранное
+- `WindowStateHidden` — Скрытое
+
+**Предпочтительнее отдельных флагов:**
+
+```go
+// ✅ Предпочтительно
+WindowState: application.WindowStateMaximised,
+
+// ❌ Избегать
+Maximised: true,
+```
+
+## Параметры внешнего вида
+
+### BackgroundColour
+
+**Тип:** структура `RGBA`  
+**По умолчанию:** Белый (255, 255, 255, 255)  
+**Платформа:** Все
+
+```go
+BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+```
+
+**Назначение:** Цвет фона окна до загрузки контента.
+
+**Сценарии использования:**
+- Соответствие теме вашего приложения
+- Предотвращение белой вспышки на темных темах
+- Плавный опыт загрузки
+
+**Пример:**
+
+```go
+// Темная тема
+BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+
+// Светлая тема```go
+BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+```
+
+**Вспомогательный метод:**
+
+```go
+window.SetBackgroundColour(30, 30, 30, 255)
+```
+
+### BackgroundType
+
+**Тип:** `BackgroundType` enum  
+**По умолчанию:** `BackgroundTypeSolid`  
+**Платформы:** macOS, Windows (частично)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**Значения:**
+- `BackgroundTypeSolid` - Сплошной цвет
+- `BackgroundTypeTransparent` - Полностью прозрачный
+- `BackgroundTypeTranslucent` - Полупрозрачное размытие
+
+**Поддержка платформ:**
+- **macOS:** Поддерживаются все типы
+- **Windows:** Transparent и Translucent (Windows 11+)
+- **Linux:** Только Solid
+
+**Пример (macOS):**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacOptions{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## Параметры содержимого
+
+### URL
+
+**Тип:** `string`  
+**По умолчанию:** Пусто (загрузка из ресурсов)  
+**Платформы:** Все
+
+```go
+URL: "https://example.com",
+```
+
+**Назначение:** Загрузка внешнего URL вместо встроенных ресурсов.
+
+**Сценарии использования:**
+- Разработка (загрузка с dev-сервера)
+- Веб-приложения
+- Гибридные приложения
+
+**Пример:**
+
+```go
+// Разработка
+URL: "http://localhost:5173",
+
+// Продакшн
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+### HTML
+
+**Тип:** `string`  
+**По умолчанию:** Пусто  
+**Платформы:** Все
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**Назначение:** Загрузка HTML-строки напрямую.
+
+**Сценарии использования:**
+- Простые окна
+- Генерируемый контент
+- Тестирование
+
+**Пример:**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets
+
+**Тип:** `AssetOptions`  
+**По умолчанию:** Наследуется от приложения  
+**Платформы:** Все
+
+```go
+Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+},
+```
+
+**Назначение:** Предоставление встроенных ресурсов фронтенда.
+
+**Подробнее см. в разделе [Build System](/ru/concepts/build-system).**
+
+### UseApplicationMenu
+
+**Тип:** `bool`
+**По умолчанию:** `false`
+**Платформы:** Windows, Linux (не влияет на macOS)
+
+```go
+UseApplicationMenu: true,
+```
+
+**Назначение:** Использовать меню приложения (установленное через `app.Menu.Set()`) для этого окна.
+
+На **macOS** эта опция не влияет, так как macOS всегда использует глобальное меню приложения в верхней части экрана.
+
+На **Windows** и **Linux** окна по умолчанию не отображают меню. Установка `UseApplicationMenu: true` указывает окну использовать меню на уровне приложения, обеспечивая простое кроссплатформенное решение.
+
+**Пример:**
+
+```go
+// Установите меню приложения один раз
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// Все окна с UseApplicationMenu будут отображать это меню
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // Также получает меню приложения
+})
+```
+
+**Примечания:**
+- Если установлены как `UseApplicationMenu`, так и меню, специфичное для окна, приоритет имеет меню окна.
+- Это упрощает кроссплатформенный код, устраняя необходимость проверок ОС во время выполнения.
+- Полную документацию по меню см. в разделе [Application Menus](/ru/features/menus/application).
+
+## Параметры ввода
+
+### EnableFileDrop
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформы:** Все
+
+```go
+EnableFileDrop: true,
+```
+
+**Назначение:** Включить перетаскивание файлов из операционной системы в окно.
+
+При включении:
+- Файлы, перетащенные из файловых менеджеров, можно перетащить в ваше приложение
+- Событие `WindowFilesDropped` срабатывает с путями перетащенных файлов
+- Элементы с атрибутом `data-file-drop-target` предоставляют подробную информацию о перетаскивании
+
+**Сценарии использования:**
+- Интерфейсы загрузки файлов
+- Редакторы документов
+- Импорт медиа
+- Любые приложения, принимающие файлы
+
+**Пример:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// Обработка перетащенных файлов
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**Зоны сброса в HTML:**
+
+```html
+<!-- Отметьте элементы как цели для сброса -->
+<div id="upload" data-file-drop-target>
+    Перетащите файлы сюда
+</div>
+```
+
+**Полную документацию см. в разделе [File Drop](/ru/features/drag-and-drop/files).**
+
+## Параметры безопасности
+
+### ContentProtectionEnabled
+
+**Тип:** `bool`  
+**По умолчанию:** `false`  
+**Платформы:** Windows (10+), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**Назначение:** Предотвратить захват содержимого окна на экране.
+
+**Поддержка платформ:**
+- **Windows:** Windows 10 build 19041+ (полная), более старые версии (частичная)
+- **macOS:** Полная поддержка
+- **Linux:** Не поддерживается
+
+**Сценарии использования:**
+- Банковские приложения
+- Менеджеры паролей
+- Медицинские записи
+- Конфиденциальные документы
+
+**Важные примечания:**
+1. Не предотвращает физическую фотографию экрана
+2. Некоторые инструменты могут обойти защиту
+3. Является частью комплексной безопасности, а не единственной защитой
+4. Окна DevTools не защищены автоматически
+
+**Пример:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// Переключение во время выполнения
+window.SetContentProtection(true)
+```
+
+## Параметры жизненного цикла
+
+### OnClose
+
+**Тип:** `func() bool`  
+**По умолчанию:** `nil` (всегда разрешать закрытие)  
+**Платформы:** Все
+
+```go
+OnClose: func() bool {
+    // Верните false, чтобы отменить закрытие
+    // Верните true, чтобы разрешить закрытие
+    return true
+},
+```
+
+**Назначение:** Обработка событий закрытия окна, с возможностью предотвращения закрытия.
+
+**Сценарии использования:**
+- Подтверждение перед закрытием при несохраненных изменениях
+- Сохранение состояния перед закрытием
+- Предотвращение случайного закрытия
+
+**Пример:**
+
+```go
+OnClose: func() bool {
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+},
+```
+
+**Важно:** Вызывается только действиями пользователя (нажатием кнопки X), а не `window.Destroy()`.
+
+### OnDestroy
+
+**Тип:** `func()`  
+**По умолчанию:** `nil`  
+**Платформы:** Все
+
+```go
+OnDestroy: func() {
+    // Код очистки
+    fmt.Println("Window destroyed")
+},
+```
+
+**Назначение:** Очистка при уничтожении окна.
+
+**Сценарии использования:**
+- Освобождение ресурсов
+- Закрытие соединений
+- Обновление состояния приложения
+
+**Пример:**
+
+```go
+OnDestroy: func() {
+    // Закрытие соединения с базой данных
+    if db != nil {
+        db.Close()
+    }
+    
+    // Удаление из списка окон
+    removeWindow(window.ID())
+},
+```
+
+## Специфичные для платформы параметры### Опции для macOS
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` — делает заголовок окна прозрачным, позволяя контенту расширяться в область заголовка
+- `Hide` — полностью скрывает заголовок окна
+- `HideTitle` — скрывает только текст заголовка
+- `FullSizeContent` — расширяет контент на весь размер окна
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` — стандартный непрозрачный фон
+- `MacBackdropTranslucent` — размытый полупрозрачный фон
+- `MacBackdropTransparent` — полностью прозрачный фон
+
+**InvisibleTitleBarHeight** (`int`)
+- Высота невидимой области заголовка (для перетаскивания окна)
+- Работает только тогда, когда область перетаскивания нативного заголовка скрыта, т. е. когда окно без рамки (`Frameless: true`) или использует прозрачный заголовок (`AppearsTransparent: true`)
+- Не влияет на стандартные окна с видимым заголовком
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` — стандартный уровень окна (по умолчанию)
+- `MacWindowLevelFloating` — плавает над обычными окнами
+- `MacWindowLevelTornOffMenu` — уровень вырванного меню
+- `MacWindowLevelModalPanel` — уровень модальной панели
+- `MacWindowLevelMainMenu` — уровень главного меню
+- `MacWindowLevelStatus` — уровень окна статуса
+- `MacWindowLevelPopUpMenu` — уровень всплывающего меню
+- `MacWindowLevelScreenSaver` — уровень экранной заставки
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+Управляет поведением окна в пространствах (Spaces) и полноэкранном режиме macOS. Это битовые маски, которые можно комбинировать с помощью побитового ИЛИ (`|`).
+
+**Поведение в пространствах (Spaces):**
+- `MacWindowCollectionBehaviorDefault` — использует FullScreenPrimary (по умолчанию, обратно совместимо)
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` — окно отображается во всех пространствах
+- `MacWindowCollectionBehaviorMoveToActiveSpace` — перемещается в активное пространство при показе
+- `MacWindowCollectionBehaviorManaged` — стандартное поведение управляемого окна
+- `MacWindowCollectionBehaviorTransient` — временное/транзиентное окно
+- `MacWindowCollectionBehaviorStationary` — остаётся на месте при переключении пространств
+
+**Циклическое переключение окон:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` — включено в циклическое переключение по Cmd+`
+- `MacWindowCollectionBehaviorIgnoresCycle` — исключено из циклического переключения по Cmd+`
+
+**Поведение в полноэкранном режиме:**
+- `MacWindowCollectionBehaviorFullScreenPrimary` — может переходить в полноэкранный режим
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` — может накладываться на полноэкранные приложения
+- `MacWindowCollectionBehaviorFullScreenNone` — отключает возможность полноэкранного режима
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` — позволяет плиточное расположение рядом (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` — предотвращает плиточное расположение (macOS 10.11+)
+
+**Пример — окно в стиле Spotlight:**
+
+```go
+// Окно, которое появляется во всех пространствах И может накладываться на полноэкранные приложения
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**Пример — одно поведение:**
+
+```go
+// Окно, которое может появляться поверх полноэкранных приложений
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Опции для Windows
+
+```go
+Windows: application.WindowsOptions{
+    DisableWindowIcon:      false,
+    WindowBackdropType:     application.WindowsBackdropTypeAuto,
+    CustomTheme:            nil,
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableWindowIcon** (`bool`)
+- Убирает иконку из заголовка окна
+- Более чистый внешний вид
+
+**WindowBackdropType** (`WindowsBackdropType`)
+- `WindowsBackdropTypeAuto` — системный выбор по умолчанию
+- `WindowsBackdropTypeNone` — без фона
+- `WindowsBackdropTypeMica` — материал Mica (Windows 11)
+- `WindowsBackdropTypeAcrylic` — материал Acrylic (Windows 11)
+- `WindowsBackdropTypeTabbed` — материал Tabbed (Windows 11)
+
+**CustomTheme** (`*WindowsTheme`)
+- Пользовательская цветовая тема
+- Переопределяет системные цвета
+
+**DisableFramelessWindowDecorations** (`bool`)
+- Отключает стандартные декорации для окон без рамки
+- Для пользовательского оформления окна (chrome)
+
+**Пример:**
+
+```go
+Windows: application.WindowsOptions{
+    WindowBackdropType: application.WindowsBackdropTypeMica,
+    DisableWindowIcon:  true,
+},
+```
+
+### Опции для Linux
+
+```go
+Linux: application.LinuxOptions{
+    Icon:                []byte{/* PNG data */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- Иконка окна (формат PNG)
+- Отображается в заголовке окна и панели задач
+
+**WindowIsTranslucent** (`bool`)
+- Включает полупрозрачность окна
+- Требует поддержки композитора
+
+**Пример:**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxOptions{
+    Icon: icon,
+},
+```
+
+## Параметры окон на уровне приложения
+
+Некоторые параметры, специфичные для Windows, должны настраиваться на уровне приложения, а не для каждого окна отдельно. Это связано с тем, что WebView2 использует единую среду браузера для каждого пути пользовательских данных.
+
+### Флаги браузера
+
+Флаги браузера WebView2 управляют экспериментальными функциями и поведением во **всех окнах** вашего приложения. Их необходимо задавать в `application.Options.Windows`:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // Включить экспериментальные функции WebView2
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // Отключить определенные функции
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Всегда отключено в Wails
+        },
+
+        // Дополнительные аргументы командной строки Chromium
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- Список флагов функций WebView2 для включения
+- См. [флаги браузера WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) для получения списка доступных флагов
+- Пример: `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- Список флагов функций WebView2 для отключения
+- Wails автоматически отключает `msSmartScreenProtection`
+- Пример: `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- Аргументы командной строки Chromium, передаваемые процессу браузера
+- Должны включать префикс `--` (например, `"--remote-debugging-port=9222"`)
+- См. [переключатели командной строки Chromium](https://peter.sh/experiments/chromium-command-line-switches/) для получения списка доступных аргументов
+
+:::caution[Важно]
+Эти флаги применяются глобально ко ВСЕМ окнам, поскольку WebView2 использует единую среду браузера для каждого пути пользовательских данных. Вы не можете использовать разные флаги браузера для разных окон.
+:::
+
+**Полный пример:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // Включить функцию перетаскиваемых регионов
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // Включить удаленную отладку
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // Все окна будут использовать флаги браузера, настроенные выше
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```---
+
+**Возникли вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или посмотрите [примеры](https://github.com/wailsapp/wails/tree/master/v3/examples).

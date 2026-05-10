@@ -1,0 +1,831 @@
+---
+title: API диалогов
+description: Полный справочник по нативным API диалогов
+sidebar:
+  order: 5
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Обзор
+
+API диалогов предоставляет методы для отображения нативных файловых диалогов и диалогов сообщений. Доступ к диалогам осуществляется через менеджер `app.Dialog`.
+
+**Типы диалогов:**
+- **Файловые диалоги** - диалоги открытия и сохранения файлов
+- **Диалоги сообщений** - диалоги информации, ошибки, предупреждения и вопроса
+
+Все диалоги являются **нативными диалогами ОС**, которые соответствуют внешнему виду и поведению платформы.
+
+## Доступ к диалогам
+
+Диалоги доступны через менеджер `app.Dialog`:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+## Файловые диалоги
+
+### OpenFile()
+
+Создает диалог открытия файла.
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**Пример:**
+```go
+dialog := app.Dialog.OpenFile()
+```
+
+### Методы OpenFileDialogStruct
+
+#### SetTitle()
+
+Устанавливает заголовок диалога.
+
+```go
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
+```
+
+**Пример:**
+```go
+dialog.SetTitle("Выберите изображение")
+```
+
+#### AddFilter()
+
+Добавляет фильтр типов файлов.
+
+```go
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
+```
+
+**Параметры:**
+- `displayName` - описание фильтра, отображаемое пользователю (например, "Изображения", "Документы")
+- `pattern` - список расширений, разделенных точкой с запятой (например, "*.png;*.jpg")
+
+**Пример:**
+```go
+dialog.AddFilter("Изображения", "*.png;*.jpg;*.gif").
+    AddFilter("Документы", "*.pdf;*.docx").
+    AddFilter("Все файлы", "*.*")
+```
+
+#### SetDirectory()
+
+Устанавливает начальную директорию.
+
+```go
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
+```
+
+**Пример:**
+```go
+homeDir, _ := os.UserHomeDir()
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+Включает или отключает выбор директорий.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+**Пример (выбор папки):**
+```go
+// Выбор папок вместо файлов
+path, err := app.Dialog.OpenFile().
+    SetTitle("Выберите папку").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+#### CanChooseFiles()
+
+Включает или отключает выбор файлов.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+Включает или отключает создание новых директорий.
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+Показывает или скрывает скрытые файлы.
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Привязывает диалог к конкретному окну.
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+Отображает диалог и возвращает выбранный файл.
+
+```go
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**Возвращает:**
+- `string` - путь к выбранному файлу (пустая строка, если отменено)
+- `error` - ошибка, если диалог не удался
+
+**Пример:**
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Выберите изображение").
+    AddFilter("Изображения", "*.png;*.jpg;*.gif").
+    PromptForSingleSelection()
+
+if err != nil {
+    // Пользователь отменил или произошла ошибка
+    return
+}
+
+// Использование выбранного файла
+processFile(path)
+```
+
+#### PromptForMultipleSelection()
+
+Отображает диалог и возвращает несколько выбранных файлов.
+
+```go
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
+```
+
+**Возвращает:**
+- `[]string` - массив путей к выбранным файлам
+- `error` - ошибка, если диалог не удался
+
+**Пример:**
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Выберите изображения").
+    AddFilter("Изображения", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### SaveFile()
+
+Создает диалог сохранения файла.
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**Пример:**
+```go
+dialog := app.Dialog.SaveFile()
+```
+
+### Методы SaveFileDialogStruct
+
+#### SetTitle()
+
+Устанавливает заголовок диалога.
+
+```go
+func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+```
+
+#### SetFilename()
+
+Устанавливает имя файла по умолчанию.
+
+```go
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
+```
+
+**Пример:**
+```go
+dialog.SetFilename("document.pdf")
+```
+
+#### AddFilter()
+
+Добавляет фильтр типов файлов.
+
+```go
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
+```
+
+**Пример:**
+```go
+dialog.AddFilter("PDF документ", "*.pdf").
+    AddFilter("Текстовый документ", "*.txt")
+```
+
+#### SetDirectory()
+
+Устанавливает начальную директорию.
+
+```go
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Привязывает диалог к конкретному окну.
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+Отображает диалог и возвращает путь сохранения.
+
+```go
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**Пример:**
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("Сохранить документ").
+    SetFilename("untitled.pdf").
+    AddFilter("PDF документ", "*.pdf").
+    PromptForSingleSelection()
+
+if err != nil {
+    // Пользователь отменил
+    return
+}
+
+// Сохранение в выбранный путь
+saveDocument(path)
+```
+
+### Выбор папки
+
+Отдельного `SelectFolderDialog` нет. Используйте `OpenFile()` с опциями директории:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Выберите выходную папку").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    // Пользователь отменил
+    return
+}
+
+// Использование выбранной папки
+outputDir = path
+```
+
+## Диалоги сообщений
+
+Все диалоги сообщений возвращают `*MessageDialog` и имеют общие методы.
+
+### Info()
+
+Создает диалог информации.
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**Пример:**
+```go
+app.Dialog.Info().
+    SetTitle("Успех").
+    SetMessage("Файл успешно сохранен!").
+    Show()
+```
+
+### Error()
+
+Создает диалог ошибки.
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+**Пример:**
+```go
+app.Dialog.Error().
+    SetTitle("Ошибка").
+    SetMessage("Не удалось сохранить файл: " + err.Error()).
+    Show()
+```
+
+### Warning()
+
+Создает диалог предупреждения.
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+**Пример:**
+```go
+app.Dialog.Warning().
+    SetTitle("Предупреждение").
+    SetMessage("Это действие нельзя отменить.").
+    Show()
+```
+
+### Question()
+
+Создает диалог вопроса с пользовательскими кнопками.
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**Пример:**
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Подтверждение").
+    SetMessage("Вы хотите сохранить изменения?")
+
+save := dialog.AddButton("Сохранить")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Не сохранять")
+dontSave.OnClick(func() {
+    // Продолжить без сохранения
+})
+
+cancel := dialog.AddButton("Отмена")
+cancel.OnClick(func() {
+    // Ничего не делать
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+### Методы MessageDialog
+
+#### SetTitle()
+
+Устанавливает заголовок диалога.
+
+```go
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
+```
+
+#### SetMessage()
+
+Устанавливает сообщение диалога.
+
+```go
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+Устанавливает пользовательскую иконку для диалога.
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```#### AddButton()
+
+Добавляет кнопку в диалоговое окно и возвращает объект кнопки для дальнейшей настройки.
+
+```go
+func (d *MessageDialog) AddButton(label string) *Button
+```
+
+**Возвращает:** `*Button` — экземпляр кнопки для дальнейшей настройки.
+
+**Пример:**
+```go
+button := dialog.AddButton("OK")
+button.OnClick(func() {
+    // Обработка нажатия
+})
+```
+
+#### SetDefaultButton()
+
+Устанавливает кнопку по умолчанию (активируется нажатием клавиши Enter).
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**Пример:**
+```go
+yes := dialog.AddButton("Yes")
+no := dialog.AddButton("No")
+dialog.SetDefaultButton(yes)
+```
+
+#### SetCancelButton()
+
+Устанавливает кнопку отмены (активируется нажатием клавиши Escape).
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**Пример:**
+```go
+ok := dialog.AddButton("OK")
+cancel := dialog.AddButton("Cancel")
+dialog.SetCancelButton(cancel)
+```
+
+#### AttachToWindow()
+
+Привязывает диалоговое окно к конкретному окну приложения.
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
+```
+
+#### Show()
+
+Отображает диалоговое окно. Ответы пользователя обрабатываются через колбэки кнопок.
+
+```go
+func (d *MessageDialog) Show()
+```
+
+**Примечание:** `Show()` не возвращает значение. Используйте колбэки кнопок для обработки ответов пользователя.
+
+### Методы кнопок
+
+#### OnClick()
+
+Устанавливает функцию-колбэк, которая вызывается при нажатии на кнопку.
+
+```go
+func (b *Button) OnClick(callback func()) *Button
+```
+
+#### SetAsDefault()
+
+Помечает эту кнопку как кнопку по умолчанию.
+
+```go
+func (b *Button) SetAsDefault() *Button
+```
+
+#### SetAsCancel()
+
+Помечает эту кнопку как кнопку отмены.
+
+```go
+func (b *Button) SetAsCancel() *Button
+```
+
+## Полные примеры
+
+### Пример выбора файла
+
+```go
+type FileService struct {
+    app *application.App
+}
+
+func (s *FileService) OpenImage() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SaveDocument(defaultName string) (string, error) {
+    path, err := s.app.Dialog.SaveFile().
+        SetTitle("Save Document").
+        SetFilename(defaultName).
+        AddFilter("PDF Document", "*.pdf").
+        AddFilter("Text Document", "*.txt").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SelectOutputFolder() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Output Folder").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### Пример диалога подтверждения
+
+```go
+func (s *Service) DeleteItem(app *application.App, id string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage("Are you sure you want to delete this item?")
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    // Отмена ничего не делает
+
+    dialog.SetDefaultButton(cancelBtn) // По умолчанию — Отмена для безопасности
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### Диалог сохранения изменений
+
+```go
+func (s *Editor) PromptSaveChanges(app *application.App) {
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes before closing?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        s.Save()
+        s.Close()
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        s.Close()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // Отмена ничего не делает, диалог закрывается
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### Обработка нескольких файлов
+
+```go
+func (s *Service) ProcessMultipleFiles(app *application.App) error {
+    // Выбор нескольких файлов
+    paths, err := app.Dialog.OpenFile().
+        SetTitle("Select Files to Process").
+        AddFilter("Images", "*.png;*.jpg").
+        PromptForMultipleSelection()
+
+    if err != nil {
+        return err
+    }
+
+    if len(paths) == 0 {
+        app.Dialog.Info().
+            SetTitle("No Files Selected").
+            SetMessage("Please select at least one file.").
+            Show()
+        return nil
+    }
+
+    // Обработка файлов
+    for _, path := range paths {
+        err := processFile(path)
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Processing Error").
+                SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
+                Show()
+            continue
+        }
+    }
+
+    // Отображение завершения
+    app.Dialog.Info().
+        SetTitle("Complete").
+        SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
+        Show()
+
+    return nil
+}
+```
+
+### Обработка ошибок с помощью диалогов
+
+```go
+func (s *Service) SaveFile(app *application.App, data []byte) error {
+    // Выбор места сохранения
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save File").
+        SetFilename("data.json").
+        AddFilter("JSON File", "*.json").
+        PromptForSingleSelection()
+
+    if err != nil {
+        // Пользователь отменил — это не ошибка
+        return nil
+    }
+
+    // Попытка сохранения
+    err = os.WriteFile(path, data, 0644)
+    if err != nil {
+        // Отображение диалога с ошибкой
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return err
+    }
+
+    // Отображение успеха
+    app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+
+    return nil
+}
+```
+
+### Значения по умолчанию для разных платформ
+
+```go
+import (
+    "os"
+    "path/filepath"
+    "runtime"
+)
+
+func (s *Service) GetDefaultDirectory() string {
+    homeDir, _ := os.UserHomeDir()
+
+    switch runtime.GOOS {
+    case "windows":
+        return filepath.Join(homeDir, "Documents")
+    case "darwin":
+        return filepath.Join(homeDir, "Documents")
+    case "linux":
+        return filepath.Join(homeDir, "Documents")
+    default:
+        return homeDir
+    }
+}
+
+func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
+        SetTitle("Open File").
+        SetDirectory(s.GetDefaultDirectory()).
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+}
+```
+
+## Лучшие практики
+
+### Что делать
+
+- **Используйте нативные диалоги** — они соответствуют визуальному стилю платформы
+- **Указывайте понятные заголовки** — помогайте пользователям понять цель действия
+- **Устанавливайте подходящие фильтры** — направляйте пользователей к нужным типам файлов
+- **Обрабатывайте отмену** — проверяйте наличие ошибок (пользователь мог отменить действие)
+- **Показывайте подтверждение для деструктивных действий** — используйте диалоги типа Question
+- **Предоставляйте обратную связь** — используйте диалоги типа Info для сообщений об успехе
+- **Устанавливайте разумные значения по умолчанию** — директория по умолчанию, имя файла и т. д.
+- **Используйте колбэки для действий кнопок** — правильно обрабатывайте ответы пользователя
+
+### Чего не делать
+
+- **Не игнорируйте ошибки** — отмена пользователем возвращает ошибку
+- **Не используйте неоднозначные метки кнопок** — будьте конкретны: "Сохранить"/"Отмена"
+- **Не злоупотребляйте диалогами** — они прерывают рабочий процесс
+- **Не показывайте ошибки при отмене** — это нормальное действие
+- **Не забывайте про фильтры файлов** — помогайте пользователям находить нужные файлы
+- **Не хардкодьте пути** — используйте os.UserHomeDir() или аналогичные функции
+
+## Типы диалогов по платформам
+
+### macOS
+
+- Диалоги выезжают сверху из строки заголовка
+- Стиль "Sheet" (лист), привязанный к родительскому окну
+- Нативный внешний вид macOS
+
+### Windows
+
+- Стандартные диалоги Windows
+- Соответствует руководствам по дизайну Windows
+- Современный внешний вид Windows 10/11
+
+### Linux
+
+- Диалоги GTK на системах на базе GTK
+- Диалоги Qt на системах на базе Qt
+- Соответствует среде рабочего стола--------|------|------|-------|
+| `ShowHiddenFiles()` | ✅ Работает | ❌ Без эффекта | Пользователь управляет через переключатель в интерфейсе диалога (Ctrl+H или меню) |
+| `CanCreateDirectories()` | ✅ Работает | ❌ Без эффекта | Всегда включено в портале |
+| `ResolvesAliases()` | ✅ Работает | ❌ Без эффекта | Портал обрабатывает разрешение символических ссылок |
+| `SetButtonText()` | ✅ Работает | ✅ Работает | Пользовательский текст кнопки принятия работает |
+
+**Почему существуют эти ограничения:** Диалоги GTK4, основанные на портале, делегируют управление интерфейсом среде рабочего стола (GNOME, KDE и т.д.). Это сделано намеренно — портал обеспечивает единообразный пользовательский опыт (UX) в различных приложениях и уважает предпочтения пользователя.
+
+:::note
+Приведённая выше таблица показывает поведение GTK4 при сборке с флагом `-tags gtk4`. По умолчанию Wails использует GTK3, который предоставляет полный контроль над этими параметрами диалога.
+:::
+
+## Распространённые шаблоны
+
+### Шаблон «Сохранить как»
+
+```go
+func (s *Service) SaveAs(app *application.App, currentPath string) (string, error) {
+    // Извлечь имя файла из текущего пути
+    filename := filepath.Base(currentPath)
+
+    // Показать диалог сохранения
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save As").
+        SetFilename(filename).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### Шаблон «Открыть недавнее»
+
+```go
+func (s *Service) OpenRecent(app *application.App, recentPath string) error {
+    // Проверить, существует ли файл по-прежнему
+    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
+        dialog := app.Dialog.Question().
+            SetTitle("File Not Found").
+            SetMessage("The file no longer exists. Remove from recent files?")
+
+        remove := dialog.AddButton("Remove")
+        remove.OnClick(func() {
+            s.removeFromRecent(recentPath)
+        })
+
+        cancel := dialog.AddButton("Cancel")
+        dialog.SetCancelButton(cancel)
+        dialog.Show()
+
+        return err
+    }
+
+    return s.openFile(recentPath)
+}
+```

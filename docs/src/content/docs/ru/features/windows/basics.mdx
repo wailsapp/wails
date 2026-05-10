@@ -1,0 +1,417 @@
+---
+title: Основы работы с окнами
+description: Создание и управление окнами приложения в Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Управление окнами
+
+Wails предоставляет **единый API управления окнами**, который работает на всех платформах. Создавайте окна, контролируйте их поведение и управляйте несколькими окнами с полным контролем над созданием, внешним видом, поведением и жизненным циклом.
+
+## Быстрый старт
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**Вот и всё!** У вас есть кроссплатформенное окно.
+
+## Создание окон
+
+### Базовое окно
+
+Самый простой способ создать окно:
+
+```go
+window := app.Window.New()
+```
+
+**Что вы получаете:**
+- Размер по умолчанию (800x600)
+- Заголовок по умолчанию (имя приложения)
+- WebView, готовый к работе с вашим фронтендом
+- Нативный внешний вид платформы
+
+### Окно с параметрами
+
+Создайте окно с пользовательской конфигурацией:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**Основные параметры:**
+
+| Параметр | Тип | Описание |
+|--------|------|-------------|
+| `Title` | `string` | Заголовок окна |
+| `Width` | `int` | Ширина окна в пикселях |
+| `Height` | `int` | Высота окна в пикселях |
+| `X` | `int` | Позиция X (от левого края) |
+| `Y` | `int` | Позиция Y (от верхнего края) |
+| `AlwaysOnTop` | `bool` | Держать окно поверх других |
+| `Frameless` | `bool` | Убрать заголовок и рамки |
+| `Hidden` | `bool` | Скрыть при запуске |
+| `MinWidth` | `int` | Минимальная ширина |
+| `MinHeight` | `int` | Минимальная высота |
+| `MaxWidth` | `int` | Максимальная ширина |
+| `MaxHeight` | `int` | Максимальная высота |
+
+**Смотрите [Параметры окна](/ru/features/windows/options) для полного списка.**
+
+### Именованные окна
+
+Давайте окнам имена для удобного поиска:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+mainWindow := app.GetWindowByName("main-window")
+if mainWindow != nil {
+    mainWindow.Show()
+}
+```
+
+**Сценарии использования:**
+- Несколько окон (главное, настройки, о программе)
+- Поиск окон из разных частей кода
+- Взаимодействие между окнами
+
+## Управление окнами
+
+### Показ и скрытие
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**Сценарии использования:**
+- Загрузочные экраны (показать, затем скрыть)
+- Окна настроек (скрывать, когда не нужны)
+- Всплывающие окна (показывать по требованию)
+
+### Позиция и размер
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**Система координат:**
+- (0, 0) — левый верхний угол основного экрана
+- Положительное значение X идёт вправо
+- Положительное значение Y идёт вниз
+
+### Состояние окна
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**Переходы между состояниями:**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### Заголовок и внешний вид
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour
+window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### Закрытие окон
+
+```go
+// Close window
+window.Close()
+
+// Destroy window (force close)
+window.Destroy()
+```
+
+**Разница:**
+- `Close()` — вызывает событие закрытия, может быть отменено
+- `Destroy()` — немедленное уничтожение, не может быть отменено
+
+## Поиск окон
+
+### По имени
+
+```go
+window := app.GetWindowByName("settings")
+if window != nil {
+    window.Show()
+}
+```
+
+### По ID
+
+Каждое окно имеет уникальный ID:
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+foundWindow := app.GetWindowByID(id)
+```
+
+### Текущее окно
+
+Получите окно, которое сейчас в фокусе:
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### Все окна
+
+Получите все окна:
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## Жизненный цикл окна
+
+### Создание
+
+```go
+app.OnWindowCreation(func(window *application.WebviewWindow) {
+    fmt.Printf("Window created: %s\n", window.Name())
+    
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Закрытие
+
+```go
+window.OnClose(func() bool {
+    // Return false to cancel close
+    // Return true to allow close
+    
+    if hasUnsavedChanges() {
+        result := showConfirmdialog("Unsaved changes. Close anyway?")
+        return result == "yes"
+    }
+    return true
+})
+```
+
+**Важно:** `OnClose` работает только для закрытий, инициированных пользователем (нажатие на кнопку X). Он не предотвращает `window.Destroy()`.
+
+### Уничтожение
+
+```go
+window.OnDestroy(func() {
+    fmt.Println("Window destroyed")
+    // Cleanup resources
+})
+```
+
+## Несколько окон
+
+### Создание нескольких окон
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### Взаимодействие между окнами
+
+Окна могут взаимодействовать через события:
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.WailsEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**Смотрите [События](/ru/features/events/system) для подробностей.**
+
+### Родительские и дочерние окна
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Child Window",
+    Parent: mainWindow,  // Set parent
+})
+```
+
+**Поведение:**
+- Дочернее окно закрывается при закрытии родительского
+- Дочернее окно остаётся поверх родительского (на некоторых платформах)
+- Дочернее окно сворачивается вместе с родительским (на некоторых платформах)
+
+**Поддержка платформ:**
+- **macOS:** Полная поддержка
+- **Windows:** Частичная поддержка
+- **Linux:** Зависит от окружения рабочего стола
+
+## Специфичные для платформы функции
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Специфичные для Windows функции:**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+    
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    
+    // Set window icon
+    window.SetIcon(iconBytes)
+    ```
+    
+    **Snap Assist:**
+    Показывает варианты компоновки Windows 11 для окна.
+    
+    **Мигание в панели задач:**
+    Полезно для уведомлений, когда окно свёрнуто.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Специфичные для macOS функции:**
+
+    ```go
+    // Transparent title bar---
+
+**Возникли вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами работы с окнами](https://github.com/wailsapp/wails/tree/master/v3/examples).

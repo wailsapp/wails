@@ -1,0 +1,459 @@
+---
+title: Руководство по событиям
+description: Практическое руководство по использованию событий в Wails v3 для взаимодействия компонентов приложения и управления его жизненным циклом
+---
+
+**ПРИМЕЧАНИЕ: Это руководство находится в стадии разработки**
+
+# Руководство по событиям
+
+События — это сердце коммуникации в приложениях Wails. Они позволяют различным частям вашего приложения взаимодействовать друг с другом без жесткой связности. В этом руководстве мы подробно разберем все, что вам нужно знать об эффективном использовании событий в вашем приложении Wails.
+
+## Понимание событий Wails
+
+Представьте события как сообщения, которые транслируются по всему вашему приложению. Любая часть вашего приложения может прослушивать эти сообщения и реагировать соответствующим образом. Это особенно полезно для:
+
+- **Реагирования на изменения окна**: Знать, когда ваше окно сворачивается, разворачивается или перемещается
+- **Обработки системных событий**: Реагировать на изменения темы или события питания
+- **Создания собственной логики приложения**: Создавать свои собственные события для таких функций, как обновление данных или действия пользователя
+- **Взаимодействия между компонентами**: Позволить различным частям вашего приложения общаться без прямых зависимостей
+
+## Соглашение об именовании событий
+
+Все события Wails следуют шаблону с пространством имен, чтобы четко указывать их происхождение:
+
+- `common:` - Кроссплатформенные события, работающие на Windows, macOS и Linux
+- `windows:` - События, специфичные для Windows
+- `mac:` - События, специфичные для macOS  
+- `linux:` - События, специфичные для Linux
+
+Например:
+- `common:WindowFocus` - Окно получило фокус (работает везде)
+- `windows:APMSuspend` - Система переходит в режим ожидания (только Windows)
+- `mac:ApplicationDidBecomeActive` - Приложение стало активным (только macOS)
+
+## Начало работы с событиями
+
+### Прослушивание событий (Frontend)
+
+Самый распространенный случай использования — прослушивание событий в коде frontend:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Слушаем, когда окно получает фокус
+Events.On('common:WindowFocus', () => {
+    console.log('Окно теперь в фокусе!');
+    // Возможно, обновите некоторые данные или возобновите анимации
+});
+
+// Слушаем изменения темы
+Events.On('common:ThemeChanged', (event) => {
+    console.log('Тема изменена:', event.data);
+    // Обновите тему вашего приложения соответствующим образом
+});
+
+// Слушаем пользовательские события от вашего Go backend
+Events.On('my-app:data-updated', (event) => {
+    console.log('Данные обновлены:', event.data);
+    // Обновите ваш UI новыми данными
+});
+```
+
+### Отправка событий (Backend)
+
+Из вашего Go-кода вы можете отправлять события, которые frontend может прослушивать:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func (s *Service) UpdateData() {
+    // Выполняем обработку данных...
+
+    // Уведомляем frontend
+    app := application.Get()
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
+            "timestamp": time.Now(),
+            "count": 42,
+        },
+	)
+}
+```
+
+### Отправка событий (Frontend)
+
+Хотя это используется не так часто, вы также можете отправлять события из вашего frontend, которые может прослушивать ваш Go-код:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Событие без данных
+Events.Emit('myapp:close-window')
+
+// Событие с данными
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+Если вы используете TypeScript во frontend и [регистрируете типизированные события](#typed-events-with-typecheck) в вашем Go-коде, вы получите автодополнение/проверку имен событий и проверку типов данных.
+
+### Удаление слушателей событий
+
+Всегда очищайте слушатели событий, когда они больше не нужны:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Сохраняем ссылку на обработчик
+const focusHandler = () => {
+    console.log('Окно в фокусе');
+};
+
+// Добавляем слушателя
+Events.On('common:WindowFocus', focusHandler);
+
+// Позже удаляем его, когда он больше не нужен
+Events.Off('common:WindowFocus', focusHandler);
+
+// Или удаляем всех слушателей для события
+Events.Off('common:WindowFocus');
+```
+
+## Распространенные случаи использования
+
+### 1. Пауза/Возобновление при потере/получении фокуса окна
+
+Многим приложениям нужно приостанавливать определенные действия при потере окном фокуса:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. Реагирование на изменения темы
+
+Держите ваше приложение в синхронизации с системной темой:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDark;
+
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. Обработка перетаскивания файлов
+
+Сделайте так, чтобы ваше приложение принимало перетаскиваемые файлы:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+
+    files.forEach(file => {
+        console.log('Файл перетащен:', file);
+        // Обработка перетащенных файлов
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. Управление жизненным циклом окна
+
+Реагируйте на изменения состояния окна:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowClosing', () => {
+    // Сохраните данные пользователя перед закрытием
+    saveApplicationState();
+
+    // Вы также можете предотвратить закрытие, вернув false
+    // из зарегистрированного обработчика закрытия окна
+});
+
+Events.On('common:WindowMaximise', () => {
+    // Настройте UI для развернутого вида
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // Верните UI в нормальное состояние
+    adjustLayoutForNormal();
+});
+```
+
+### 5. Платформо-специфичные функции
+
+Обрабатывайте события, специфичные для платформы, когда это необходимо:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Управление питанием, специфичное для Windows
+Events.On('windows:APMSuspend', () => {
+    console.log('Система переходит в спящий режим');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('Система проснулась');
+    refreshData();
+});
+
+// Жизненный цикл приложения, специфичный для macOS
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('Приложение собирается завершиться');
+    performCleanup();
+});
+```
+
+## Создание пользовательских событий
+
+Вы можете создавать свои собственные события для нужд, специфичных для приложения.
+
+### Backend (Go)
+
+```go
+// Отправляем пользовательское событие при изменении данных
+
+func (s *Service) ProcessUserData(userData UserData) error {
+    // Обрабатываем данные...
+
+    app := application.Get()
+    // Уведомляем всех слушателей
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
+            "userId": userData.ID,
+            "status": "completed",
+            "timestamp": time.Now(),
+        },
+    )
+    return nil
+}
+
+// Отправляем периодические обновления
+func (s *Service) StartMonitoring() {
+    app := application.Get()
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := s.collectStats()
+            app.Event.Emit("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### Frontend (JavaScript)
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Слушаем наши пользовательские события
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+
+    showNotification(`Обработка пользователя ${userId} завершена: ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## Типизированные события с проверкой типов
+
+Wails v3 поддерживает типизированные события с полной проверкой типов TypeScript через регистрацию событий и автоматическую генерацию привязок.
+
+### Регистрация пользовательских событий
+
+Вызовите `application.RegisterEvent` во время инициализации, чтобы зарегистрировать имена пользовательских событий с их типами данных:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}-------|-------------|-------------|
+| `common:ApplicationStarted` | Приложение полностью запущено | Инициализация приложения, загрузка сохраненного состояния |
+| `common:WindowRuntimeReady` | Среда выполнения Wails готова | Начать вызовы API Wails |
+| `common:ThemeChanged` | Изменилась системная тема | Обновить внешний вид приложения |
+| `common:WindowFocus` | Окно получило фокус | Возобновить действия, обновить данные |
+| `common:WindowLostFocus` | Окно потеряло фокус | Приостановить действия, сохранить состояние |
+| `common:WindowMinimise` | Окно было свернуто | Приостановить рендеринг, снизить использование ресурсов |
+| `common:WindowMaximise` | Окно было развернуто | Настроить макет для полноэкранного режима |
+| `common:WindowRestore` | Окно восстановлено из свернутого/развернутого состояния | Вернуться к нормальному макету |
+| `common:WindowClosing` | Окно собирается закрыться | Сохранить данные, освободить ресурсы |
+| `common:WindowFilesDropped` | Файлы перетащены на окно | Обработать импорт файлов |
+| `common:WindowDidResize` | Окно было изменено по размеру | Настроить макет, перерисовать графики |
+| `common:WindowDidMove` | Окно было перемещено | Обновить функции, зависящие от позиции |
+
+### События, специфичные для платформы
+
+#### События Windows
+
+Ключевые события для приложений Windows:
+
+| Событие | Описание | Сценарий использования |
+|-------|-------------|----------|
+| `windows:SystemThemeChanged` | Изменилась тема Windows | Обновить цвета приложения |
+| `windows:APMSuspend` | Система переходит в режим ожидания | Сохранить состояние, приостановить операции |
+| `windows:APMResumeSuspend` | Система вышла из режима ожидания | Восстановить состояние, обновить данные |
+| `windows:APMPowerStatusChange` | Изменился статус питания | Настроить параметры производительности |
+
+#### События macOS
+
+Важные события для приложений macOS:
+
+| Событие | Описание | Сценарий использования |
+|-------|-------------|----------|
+| `mac:ApplicationDidBecomeActive` | Приложение стало активным | Возобновить операции |
+| `mac:ApplicationDidResignActive` | Приложение стало неактивным | Приостановить операции |
+| `mac:ApplicationWillTerminate` | Приложение собирается завершиться | Финальная очистка |
+| `mac:WindowDidEnterFullScreen` | Переход в полноэкранный режим | Настроить интерфейс для полноэкранного режима |
+| `mac:WindowDidExitFullScreen` | Выход из полноэкранного режима | Восстановить обычный интерфейс |
+
+#### События Linux
+
+Основные события окон Linux:
+
+| Событие | Описание | Сценарий использования |
+|-------|-------------|----------|
+| `linux:SystemThemeChanged` | Изменилась тема рабочего стола | Обновить тему приложения |
+| `linux:WindowFocusIn` | Окно получило фокус | Возобновить действия |
+| `linux:WindowFocusOut` | Окно потеряло фокус | Приостановить действия |
+| `linux:WindowLoadStarted` | WebView начал загрузку | Показать индикатор загрузки |
+| `linux:WindowLoadRedirected` | WebView перенаправлен | Отслеживать перенаправления навигации |
+| `linux:WindowLoadCommitted` | WebView зафиксировал загрузку | Данные начинают поступать |
+| `linux:WindowLoadFinished` | WebView завершил загрузку | Скрыть индикатор загрузки, внедрить JS/CSS |
+
+## Лучшие практики
+
+### 1. Используйте пространства имен событий
+
+При создании пользовательских событий используйте пространства имен, чтобы избежать конфликтов:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Good - namespaced events
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// Avoid - generic names that might conflict
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. Очищайте слушатели
+
+Всегда удаляйте слушатели событий при размонтировании компонентов:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// React example
+useEffect(() => {
+    const handler = (event) => {
+        // Handle event
+    };
+
+    Events.On('common:WindowResize', handler);
+
+    // Cleanup
+    return () => {
+        Events.Off('common:WindowResize', handler);
+    };
+}, []);
+```
+
+### 3. Учитывайте различия платформ
+
+Проверяйте доступность платформы при использовании событий, специфичных для платформы:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Platform-specific events can be registered unconditionally;
+// they will simply never fire on unsupported platforms.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
+```
+
+### 4. Не злоупотребляйте событиями
+
+Хотя события мощны, не используйте их для всего:
+
+- ✅ Используйте события для: Системных уведомлений, изменений жизненного цикла, широковещательных обновлений
+- ❌ Избегайте использования событий для: Возврата значений из функций, обновлений отдельных компонентов, синхронных операций
+
+## Отладка событий
+
+Для отладки проблем с событиями:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Log all events (development only)
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[Event Registered] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[Event Fired] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## Источник истины
+
+Полный список доступных событий можно найти в исходном коде Wails:
+- События фронтенда: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- События бэкенда: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)Всегда обращайтесь к этим файлам для получения наиболее актуальной информации о названиях событий и их доступности.
+
+## Итоги
+
+События в Wails обеспечивают мощный и слабо связанный способ обработки взаимодействия в вашем приложении. Следуя шаблонам и практикам, описанным в этом руководстве, вы сможете создавать отзывчивые приложения, учитывающие особенности платформы, которые плавно реагируют на изменения в системе и действия пользователя.
+
+Помните: начинайте с общих событий для обеспечения кроссплатформенной совместимости, добавляйте платформо-зависимые события при необходимости и всегда очищайте свои слушатели событий, чтобы предотвратить утечки памяти.

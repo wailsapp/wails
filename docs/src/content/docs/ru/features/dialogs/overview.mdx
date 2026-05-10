@@ -1,0 +1,376 @@
+---
+title: Обзор диалогов
+description: Отображение нативных системных диалогов в вашем приложении
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Нативные диалоги
+
+Wails предоставляет **нативные системные диалоги**, которые работают на всех платформах: диалоги сообщений (информация, предупреждение, ошибка, вопрос), диалоги файлов (открытие, сохранение, папка) и пользовательские диалоговые окна с нативным для платформы внешним видом и поведением.
+
+## Быстрый старт
+
+```go
+// Диалог информации
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// Диалог вопроса с обработчиками кнопок
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// Диалог открытия файла
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**Вот и всё!** Нативные диалоги с минимальным количеством кода.
+
+## Доступ к диалогам
+
+Диалоги доступны через менеджер `app.Dialog`:
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## Типы диалогов
+
+### Диалог информации
+
+Отображение простых сообщений:
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**Сценарии использования:**
+- Сообщения об успехе
+- Информационные уведомления
+- Подтверждения завершения
+
+### Диалог предупреждения
+
+Отображение предупреждений:
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**Сценарии использования:**
+- Нештатные предупреждения
+- Уведомления об устаревании
+- Предостережения
+
+### Диалог ошибки
+
+Отображение ошибок:
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**Сценарии использования:**
+- Сообщения об ошибках
+- Уведомления о сбоях
+- Обработка исключений
+
+### Диалог вопроса
+
+Задаёт вопросы пользователям и обрабатывает ответы через обработчики кнопок:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**Сценарии использования:**
+- Подтверждение действий
+- Вопросы Да/Нет
+- Множественный выбор
+
+## Файловые диалоги
+
+### Диалог открытия файла
+
+Выбор файлов для открытия:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**Множественный выбор:**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### Диалог сохранения файла
+
+Выбор места для сохранения:
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### Диалог выбора папки
+
+Выбор каталога с использованием диалога открытия файла с включённым выбором каталогов:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## Параметры диалога
+
+### Заголовок и сообщение
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### Кнопки
+
+**Кнопка по умолчанию для простых диалогов:**
+
+Диалоги Info, Warning и Error отображают кнопку "OK" по умолчанию:
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**Пользовательские кнопки для диалогов вопроса:**
+
+Используйте `AddButton()` для добавления кнопок, которая возвращает `*Button`, который можно настроить с помощью обработчиков:
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// Обработчик не требуется - просто закрывает диалог
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**Кнопки по умолчанию и отмены:**
+
+Используйте `SetDefaultButton()` для указания кнопки, которая выделяется и активируется клавишей Enter.
+Используйте `SetCancelButton()` для указания кнопки, которая активируется клавишей Escape.
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // Безопасный вариант выделен по умолчанию
+dialog.SetCancelButton(cancelBtn)   // Escape активирует Cancel
+dialog.Show()
+```
+
+### Привязка к окну
+
+Привязка диалога к конкретному окну:
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**Поведение:**
+- Диалог отображается по центру родительского окна
+- Родительское окно отключается во время показа диалога
+- Диалог перемещается вместе с родительским окном (macOS)
+
+## Поведение на платформах
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Диалоги macOS:**
+    
+    - Нативный вид NSAlert
+    - Следование системной теме (светлая/тёмная)
+    - Поддержка навигации с клавиатуры
+    - Стандартные сочетания клавиш (⌘. для Cancel)
+    - Встроенные функции доступности
+    - Вид "листа" (sheet) при привязке к окну
+    
+    **Пример:**
+    ```go
+    // Отображается как sheet на macOS
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Диалоги Windows:**
+    
+    - Нативный вид TaskDialog
+    - Следование системной теме
+    - Поддержка навигации с клавиатуры
+    - Стандартные сочетания клавиш (Esc для Cancel)
+    - Встроенные функции доступности
+    - Модальность относительно родительского окна
+    
+    **Пример:**
+    ```go
+    // Модальный диалог на Windows
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Диалоги Linux:**
+    
+    - Вид GTK диалога
+    - Следование теме рабочего стола
+    - Поддержка навигации с клавиатуры
+    - Интеграция с окружением рабочего стола
+    - Зависит от DE (GNOME, KDE и др.)
+    
+    **Пример:**
+    ```go
+    // GTK диалог на Linux
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## Распространённые паттерны
+
+### Подтверждение перед деструктивным действием
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры диалогов](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

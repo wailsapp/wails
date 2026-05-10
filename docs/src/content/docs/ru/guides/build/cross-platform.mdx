@@ -1,0 +1,296 @@
+---
+title: Кроссплатформенная сборка
+description: Сборка для нескольких платформ с одной машины
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+## Быстрый старт
+
+Wails v3 поддерживает сборку для Windows, macOS и Linux с любой хостовой операционной системы. Система сборки автоматически определяет вашу среду и выбирает правильный метод компиляции.
+
+**Хотите выполнить кросс-компиляцию для macOS и Linux?** Один раз выполните настройку образов Docker (загрузка около 800 МБ):
+
+```bash
+wails3 task setup:docker
+```
+
+Затем выполните сборку для любой платформы:
+
+```bash
+# Сборка для текущей платформы (по умолчанию для production)
+wails3 build
+
+# Сборка для конкретных платформ
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# Сборка для архитектуры ARM64
+wails3 build GOOS=windows GOARCH=arm64
+wails3 build GOOS=darwin GOARCH=arm64
+wails3 build GOOS=linux GOARCH=arm64
+
+# Также работает стиль с переменными окружения
+GOOS=darwin GOARCH=arm64 wails3 build
+```
+
+### Windows
+
+Windows — самая простая цель для кросс-компиляции, так как по умолчанию не требует CGO.
+
+```bash
+wails3 build GOOS=windows
+```
+
+Это работает с любой хостовой ОС без дополнительной настройки. Встроенная кросс-компиляция Go справляется со всем сама.
+
+**Если вашему приложению требуется CGO** (например, вы используете библиотеку C или пакет, зависящий от CGO), вам понадобится Docker при сборке с macOS или Linux:
+
+```bash
+# Одноразовая настройка
+wails3 task setup:docker
+
+# Сборка с включённым CGO
+wails3 task windows:build CGO_ENABLED=1
+```
+
+Taskfile обнаруживает `CGO_ENABLED=1` на хостах, отличных от Windows, и автоматически использует образ Docker.
+
+### macOS
+
+Сборка для macOS требует CGO для интеграции WebView, что означает необходимость специального инструмента для кросс-компиляции.
+
+```bash
+# Сборка для Apple Silicon (arm64) — по умолчанию
+wails3 build GOOS=darwin
+
+# Сборка для Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+
+# Сборка универсального бинарного файла (обе архитектуры)
+wails3 task darwin:build:universal
+```
+
+**С Linux или Windows** вам сначала нужно настроить Docker:
+
+```bash
+wails3 task setup:docker
+```
+
+После построения образов система сборки обнаруживает, что вы не находитесь на macOS, и автоматически использует Docker. Вам не нужно изменять команды сборки.
+
+Обратите внимание, что кросс-скомпилированные бинарные файлы macOS не подписаны кодом. Вам нужно подписать их на macOS или в CI перед распространением.
+
+### Linux
+
+Сборка для Linux требует CGO для интеграции WebView.
+
+```bash
+wails3 build GOOS=linux
+
+# Сборка для конкретной архитектуры
+wails3 build GOOS=linux GOARCH=amd64
+wails3 build GOOS=linux GOARCH=arm64
+```
+
+**С macOS или Windows** вам сначала нужно настроить Docker:
+
+```bash
+wails3 task setup:docker
+```
+
+Система сборки обнаруживает, что вы не находитесь на Linux, и автоматически использует Docker.
+
+**На Linux без компилятора C** система сборки проверяет наличие `gcc` или `clang`. Если ни один из них не найден, она переходит к использованию Docker. Это полезно для минимальных контейнеров или систем, где не установлены инструменты сборки. Вы можете либо:
+
+1. Установить компилятор C: `sudo apt install build-essential` (Debian/Ubuntu) или `sudo pacman -S base-devel` (Arch)
+2. Построить образ Docker и позволить ему использоваться автоматически
+
+### Архитектура ARM
+
+Все платформы поддерживают кросс-компиляцию ARM64 с помощью `GOARCH`:
+
+```bash
+# Windows ARM64 (Surface Pro X, Windows on ARM)
+wails3 build GOOS=windows GOARCH=arm64
+
+# Linux ARM64 (Raspberry Pi 4/5, AWS Graviton)
+wails3 build GOOS=linux GOARCH=arm64
+
+# macOS ARM64 (Apple Silicon — это значение по умолчанию на macOS)
+wails3 build GOOS=darwin GOARCH=arm64
+
+# macOS Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+```
+
+Образ Docker включает цели кросс-компилятора Zig как для amd64, так и для arm64 на всех платформах, поэтому сборки ARM работают с любого хоста:
+
+| Сборка ARM64 для | С Windows | С macOS | С Linux |
+|-----------------|----------|------------|------------|
+| **Windows ARM64** | Нативный Go | Нативный Go | Нативный Go |
+| **macOS ARM64** | Docker | Нативный | Docker |
+| **Linux ARM64** | Docker | Docker | Docker* |
+
+*Сборка Linux ARM64 с Linux x86_64 использует Docker, потому что кросс-компиляция CGO требует другого набора инструментов.
+
+## Как это работает
+
+### Матрица кросс-компиляции
+
+| Хост → Цель | Windows | macOS | Linux |
+|---------------|---------|-------|-------|
+| **Windows**   | Нативный  | Docker | Docker |
+| **macOS**     | Нативный Go | Нативный | Docker |
+| **Linux**     | Нативный Go | Docker | Нативный |
+
+- **Нативный** = Нативный набор инструментов платформы, без дополнительной настройки
+- **Нативный Go** = Встроенная кросс-компиляция Go (`CGO_ENABLED=0`)
+- **Docker** = Образ Docker с кросс-компилятором Zig
+
+### Требования CGO
+
+| Цель | Требуется CGO | Метод кросс-компиляции |
+|--------|--------------|--------------------------|
+| Windows | Нет (по умолчанию) | Нативный Go. Docker только если `CGO_ENABLED=1` |
+| macOS | Да | Docker с macOS SDK |
+| Linux | Да | Docker, или нативный, если доступен компилятор C |
+
+### Автоматическое определение
+
+Taskfiles автоматически выбирают правильный метод сборки на основе вашей среды:
+
+- **Цель Windows:** По умолчанию использует нативную кросс-компиляцию Go. Если вы явно установите `CGO_ENABLED=1` на хосте, отличном от Windows, она переключится на Docker.
+- **Цель macOS:** Автоматически использует Docker, когда вы не находитесь на macOS. Никакого ручного вмешательства не требуется.
+- **Цель Linux:** Проверяет наличие `gcc` или `clang`. Использует нативную компиляцию, если они найдены, в противном случае переходит к Docker.
+
+### Образ Docker
+
+Wails использует один образ Docker (`wails-cross`), который может собирать для всех платформ. В качестве кросс-компилятора используется [Zig](https://ziglang.org/), который может нацеливаться на любую платформу с любого хоста. Для целей darwin включён macOS SDK.
+
+```bash
+wails3 task setup:docker
+```
+
+Вы можете проверить, готов ли образ, запустив `wails3 doctor`.
+
+### macOS SDK
+
+Образ Docker загружает macOS SDK из [joseluisq/macosx-sdks](https://github.com/joseluisq/macosx-sdks) во время процесса построения образа. Это необходимо, потому что для компиляции CGO требуются заголовочные файлы macOS.
+
+По умолчанию образ использует **macOS SDK 14.5** (Sonoma). Чтобы использовать другую версию, перестройте образ с помощью:
+
+```bash
+docker build -t wails-cross \
+  --build-arg MACOS_SDK_VERSION=15.0 \
+  -f build/docker/Dockerfile.cross build/docker/
+```
+
+Смотрите [доступные версии SDK](https://github.com/joseluisq/macosx-sdks/releases) для вариантов.
+
+**Важно:** Wails не распространяет macOS SDK. Пользователи несут ответственность за ознакомление с условиями лицензии Apple на SDK перед использованием этой функции.
+
+## Интеграция CI/CD
+
+Для релизов в продакшене мы рекомендуем использовать CI/CD с нативными раннерами для каждой платформы. Это полностью избегает кросс-компиляции и гарантирует, что вы получите правильно подписанные бинарные файлы.
+
+```yaml
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+          - os: macos-latest
+            goos: darwin
+          - os: windows-latest
+            goos: windows
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Build
+        run: wails3 build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.goos }}
+          path: bin/
+```
+
+## Устранение неполадок
+
+### Образ Docker не найден
+
+```
+Docker image 'wails-cross' not found.
+```
+
+Выполните `wails3 task setup:docker` для построения образа Docker. Это нужно сделать только один раз.
+
+### Демон Docker не запущен
+
+```
+Docker is required for cross-compilation. Please install Docker.
+```
+
+Запустите Docker Desktop или демон Docker. На Linux может потребоваться выполнить `sudo systemctl start docker`.### Отсутствие компилятора C на Linux
+
+Если при сборке на Linux вы видите ошибки, связанные с CGO, у вас есть два варианта:
+
+1. **Установите компилятор C:**
+   - Debian/Ubuntu: `sudo apt install build-essential`
+   - Arch Linux: `sudo pacman -S base-devel`
+   - Fedora: `sudo dnf install gcc`
+
+2. **Используйте Docker:** Выполните `wails3 task setup:docker`, и Taskfile будет использовать его автоматически, когда компилятор не обнаружен.
+
+### Несигнатурированные бинарные файлы macOS
+
+Кросс-скомпилированные бинарные файлы macOS не имеют кодовой подписи. Apple требует кодовую подпись для распространения, поэтому вам нужно:
+
+1. Подписать бинарный файл на машине macOS, или
+2. Подписать его в CI с использованием macOS runner
+
+Подробности см. в разделе [Подписание приложений](/ru/guides/build/signing).
+
+### Создание универсальных бинарных файлов
+
+Универсальные бинарные файлы (объединяющие arm64 и amd64) можно собрать на любой платформе:
+
+```bash
+wails3 task darwin:build:universal
+```
+
+На Linux и Windows Wails использует встроенную команду `wails3 tool lipo` (на базе [konoui/lipo](https://github.com/konoui/lipo)) для объединения бинарных файлов. Это создает один бинарный файл, который нативно работает как на Apple Silicon, так и на Intel Mac.
+
+## Следующие шаги
+
+- [Сборка приложений](/ru/guides/build/building) - Основные команды сборки и параметры
+- [Подписание приложений](/ru/guides/build/signing) - Кодовая подпись для распространения

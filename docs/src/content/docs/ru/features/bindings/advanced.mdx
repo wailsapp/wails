@@ -1,0 +1,342 @@
+---
+title: Продвинутое связывание
+description: Продвинутые техники связывания, включая директивы, внедрение кода и пользовательские идентификаторы
+sidebar:
+  order: 3
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Это руководство охватывает продвинутые техники настройки и оптимизации процесса генерации связываний в Wails v3.
+
+## Настройка генерируемого кода с помощью директив
+
+### Внедрение пользовательского кода
+
+Директива `//wails:inject` позволяет внедрять пользовательский код JavaScript/TypeScript в генерируемые связывания:
+
+```go
+//wails:inject console.log("Hello from Wails!");
+type MyService struct {}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello, " + name
+}
+```
+
+Это внедрит указанный код в генерируемый файл JavaScript/TypeScript для сервиса `MyService`.
+
+Вы также можете использовать условное внедрение для целевых форматов вывода:
+
+```go
+//wails:inject j*:console.log("Hello JS!");  // Только JavaScript
+//wails:inject t*:console.log("Hello TS!");  // Только TypeScript
+```
+
+### Включение дополнительных файлов
+
+Директива `//wails:include` позволяет включать дополнительные файлы вместе с генерируемыми связываниями:
+
+```go
+//wails:include js/*.js
+package mypackage
+```
+
+Эта директива обычно используется в комментариях документации пакета для включения дополнительных файлов JavaScript/TypeScript вместе с генерируемыми связываниями.
+
+### Пометка внутренних типов и методов
+
+Директива `//wails:internal` помечает тип или метод как внутренний, предотвращая его экспорт во фронтенд:
+
+```go
+//wails:internal
+type InternalModel struct {
+    Field string
+}
+
+//wails:internal
+func (s *MyService) InternalMethod() {}
+```
+
+Это полезно для типов и методов, которые используются только внутри вашего Go-кода и не должны быть доступны на фронтенде.
+
+### Игнорирование методов
+
+Директива `//wails:ignore` полностью игнорирует метод во время генерации связываний:
+
+```go
+//wails:ignore
+func (s *MyService) IgnoredMethod() {}
+```
+
+Это похоже на `//wails:internal`, но полностью игнорирует метод, а не помечает его как внутренний.
+
+### Пользовательские идентификаторы методов
+
+Директива `//wails:id` указывает пользовательский идентификатор для метода, переопределяя стандартный идентификатор на основе хеша:
+
+```go
+//wails:id 42
+func (s *MyService) CustomIDMethod() {}
+```
+
+Это может быть полезно для поддержания совместимости при рефакторинге кода.
+
+## Работа со сложными типами
+
+### Вложенные структуры
+
+Генератор связываний автоматически обрабатывает вложенные структуры:
+
+```go
+type Address struct {
+    Street string
+    City   string
+    State  string
+    Zip    string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Address: Address{
+            Street: "123 Main St",
+            City:   "Anytown",
+            State:  "CA",
+            Zip:    "12345",
+        },
+    }
+}
+```
+
+Сгенерированный код JavaScript/TypeScript будет включать классы как для `Person`, так и для `Address`.
+
+### Карты и срезы
+
+Карты и срезы также обрабатываются автоматически:
+
+```go
+type Person struct {
+    Name       string
+    Attributes map[string]string
+    Friends    []string
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Attributes: map[string]string{
+            "hair": "brown",
+            "eyes": "blue",
+        },
+        Friends: []string{"Jane", "Bob", "Alice"},
+    }
+}
+```
+
+В JavaScript карты представлены как объекты, а срезы как массивы. В TypeScript карты представлены как `Record<K, V>`, а срезы как `T[]`.
+
+### Обобщённые типы
+
+Генератор связываний поддерживает обобщённые типы:
+
+```go
+type Result[T any] struct {
+    Data  T
+    Error string
+}
+
+func (s *MyService) GetResult() Result[string] {
+    return Result[string]{
+        Data:  "Hello, World!",
+        Error: "",
+    }
+}
+```
+
+Сгенерированный код TypeScript будет включать обобщённый класс для `Result`:
+
+```typescript
+export class Result<T> {
+    "Data": T;
+    "Error": string;
+
+    constructor(source: Partial<Result<T>> = {}) {
+        if (!("Data" in source)) {
+            this["Data"] = null as any;
+        }
+        if (!("Error" in source)) {
+            this["Error"] = "";
+        }
+
+        Object.assign(this, source);
+    }
+
+    static createFrom<T>(source: string | object = {}): Result<T> {
+        let parsedSource = typeof source === "string" ? JSON.parse(source) : source;
+        return new Result<T>(parsedSource as Partial<Result<T>>);
+    }
+}
+```
+
+### Интерфейсы
+
+Генератор связываний может генерировать интерфейсы TypeScript вместо классов с помощью флага `-i`:
+
+```bash
+wails3 generate bindings -ts -i
+```
+
+Это сгенерирует интерфейсы TypeScript для всех моделей:
+
+```typescript
+export interface Person {
+    Name: string;
+    Attributes: Record<string, string>;
+    Friends: string[];
+}
+```
+
+## Оптимизация генерации связываний
+
+### Использование имён вместо идентификаторов
+
+По умолчанию генератор связываний использует идентификаторы на основе хеша для вызовов методов. Вы можете использовать флаг `-names` для использования имён вместо них:
+
+```bash
+wails3 generate bindings -names
+```
+
+Это сгенерирует код, использующий имена методов вместо идентификаторов:
+
+```javascript
+export function Greet(name) {
+    let $resultPromise = $Call.ByName("Greet", name);
+    return $resultPromise;
+}
+```
+
+Это может сделать сгенерированный код более читаемым и удобным для отладки, но может быть немного менее эффективным.
+
+### Встраивание времени выполнения
+
+По умолчанию сгенерированный код импортирует время выполнения Wails из пакета npm `@wailsio/runtime`. Вы можете использовать флаг `-b` для встраивания времени выполнения вместе с сгенерированным кодом:
+
+```bash
+wails3 generate bindings -b
+```
+
+Это включит код времени выполнения непосредственно в сгенерированные файлы, устраняя необходимость в пакете npm.
+
+### Отключение файлов индекса
+
+Если вам не нужны файлы индекса, вы можете использовать флаг `-noindex` для отключения их генерации:
+
+```bash
+wails3 generate bindings -noindex
+```
+
+Это может быть полезно, если вы предпочитаете импортировать сервисы и модели непосредственно из их соответствующих файлов.
+
+## Примеры из реальной практики
+
+### Сервис аутентификации
+
+Вот пример сервиса аутентификации с пользовательскими директивами:
+
+```go
+package auth
+
+//wails:inject console.log("Auth service initialized");
+type AuthService struct {
+    // Приватные поля
+    users map[string]User
+}
+
+type User struct {
+    Username string
+    Email    string
+    Role     string
+}
+
+type LoginRequest struct {
+    Username string
+    Password string
+}
+
+type LoginResponse struct {
+    Success bool
+    User    User
+    Token   string
+    Error   string
+}
+
+// Login аутентифицирует пользователя
+func (s *AuthService) Login(req LoginRequest) LoginResponse {
+    // Реализация...
+}
+
+// GetCurrentUser возвращает текущего пользователя
+func (s *AuthService) GetCurrentUser() User {
+    // Реализация...
+}
+
+// Внутренний вспомогательный метод
+//wails:internal
+func (s *AuthService) validateCredentials(username, password string) bool {
+    // Реализация...
+}
+```
+
+### Сервис обработки данных
+
+Вот пример сервиса обработки данных с обобщёнными типами:
+
+```go
+package data
+
+type ProcessingResult[T any] struct {
+    Data  T
+    Error string
+}
+
+type DataService struct {}
+
+// Process обрабатывает данные и возвращает результат
+func (s *DataService) Process(data string) ProcessingResult[map[string]int] {
+    // Реализация...
+}
+
+// ProcessBatch обрабатывает несколько элементов данных
+func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]int] {
+    // Реализация...
+}
+
+// Внутренний вспомогательный метод
+//wails:internal
+func (s *DataService) parseData(data string) (map[string]int, error) {
+    // Реализация...
+}
+```
+
+### Условное внедрение кода
+
+Вот пример условного внедрения кода для разных форматов вывода:
+
+```go
+//wails:inject j*:/**
+//wails:inject j*: * @param {string} arg
+//wails:inject j*: * @returns {Promise<void>}
+//wails:inject j*: */
+//wails:inject j*:export async function CustomMethod(arg) {
+//wails:inject t*:export async function CustomMethod(arg: string): Promise<void> {
+//wails:inject     await InternalMethod("Hello " + arg + "!");//wails:inject }
+type Service struct{}
+```
+
+Это вставляет различный код для выходов JavaScript и TypeScript, предоставляя соответствующие аннотации типов для каждого языка.

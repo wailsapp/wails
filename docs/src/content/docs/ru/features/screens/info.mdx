@@ -1,0 +1,343 @@
+---
+title: Информация о экранах
+description: Получение информации о дисплеях и мониторах
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Информация о экранах
+
+Wails предоставляет **единый API для работы с экранами**, который работает на всех платформах. Получайте информацию об экранах, обнаруживайте несколько мониторов, запрашивайте свойства экранов (размер, положение, DPI), определяйте основной дисплей и обрабатывайте масштабирование DPI с помощью согласованного кода.
+
+## Быстрый старт
+
+```go
+// Получить все экраны
+screens := app.Screen.GetAll()
+
+for _, screen := range screens {
+    fmt.Printf("Экран: %s (%dx%d)\n", 
+        screen.Name, screen.Width, screen.Height)
+}
+
+// Получить основной экран
+primary := app.Screens.GetPrimary()
+fmt.Printf("Основной: %s\n", primary.Name)
+```
+
+**Вот и всё!** Кроссплатформенная информация об экранах.
+
+## Получение информации об экранах
+
+### Все экраны
+
+```go
+screens := app.Screen.GetAll()
+
+for _, screen := range screens {
+    fmt.Printf("ID: %s\n", screen.ID)
+    fmt.Printf("Имя: %s\n", screen.Name)
+    fmt.Printf("Размер: %dx%d\n", screen.Width, screen.Height)
+    fmt.Printf("Положение: %d,%d\n", screen.X, screen.Y)
+    fmt.Printf("Масштаб: %.2f\n", screen.ScaleFactor)
+    fmt.Printf("Основной: %v\n", screen.IsPrimary)
+    fmt.Println("---")
+}
+```
+
+### Основной экран
+
+```go
+primary := app.Screens.GetPrimary()
+
+fmt.Printf("Основной экран: %s\n", primary.Name)
+fmt.Printf("Разрешение: %dx%d\n", primary.Width, primary.Height)
+fmt.Printf("Коэффициент масштабирования: %.2f\n", primary.ScaleFactor)
+```
+
+### Текущий экран
+
+Получите экран, на котором находится окно:
+
+```go
+screen := app.Screens.GetCurrent(window)
+
+fmt.Printf("Окно находится на: %s\n", screen.Name)
+```
+
+### Экран по ID
+
+```go
+screen := app.Screens.GetByID("screen-id")
+if screen != nil {
+    fmt.Printf("Найден экран: %s\n", screen.Name)
+}
+```
+
+## Свойства экрана
+
+### Структура экрана
+
+```go
+type Screen struct {
+    ID          string  // Уникальный идентификатор
+    Name        string  // Имя дисплея
+    X           int     // Позиция по X
+    Y           int     // Позиция по Y
+    Width       int     // Ширина в пикселях
+    Height      int     // Высота в пикселях
+    ScaleFactor float32 // Масштаб DPI (1.0, 1.5, 2.0 и т.д.)
+    IsPrimary   bool    // Является ли этот экран основным?
+}
+```
+
+### Физические и логические пиксели
+
+```go
+screen := app.Screens.GetPrimary()
+
+// Логические пиксели (то, что вы используете)
+logicalWidth := screen.Width
+logicalHeight := screen.Height
+
+// Физические пиксели (фактическое отображение)
+physicalWidth := int(float32(screen.Width) * screen.ScaleFactor)
+physicalHeight := int(float32(screen.Height) * screen.ScaleFactor)
+
+fmt.Printf("Логические: %dx%d\n", logicalWidth, logicalHeight)
+fmt.Printf("Физические: %dx%d\n", physicalWidth, physicalHeight)
+fmt.Printf("Масштаб: %.2f\n", screen.ScaleFactor)
+```
+
+**Общие коэффициенты масштабирования:**
+- `1.0` - Стандартный DPI (96 DPI)
+- `1.25` - Масштабирование 125% (120 DPI)
+- `1.5` - Масштабирование 150% (144 DPI)
+- `2.0` - Масштабирование 200% (192 DPI) - Retina
+- `3.0` - Масштабирование 300% (288 DPI) - 4K/5K
+
+## Позиционирование окон
+
+### Центрирование на экране
+
+```go
+func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
+    windowWidth, windowHeight := window.Size()
+    
+    x := screen.X + (screen.Width-windowWidth)/2
+    y := screen.Y + (screen.Height-windowHeight)/2
+    
+    window.SetPosition(x, y)
+}
+```
+
+### Позиционирование на конкретном экране
+
+```go
+func moveToScreen(window *application.WebviewWindow, screenIndex int) {
+    screens := app.Screen.GetAll()
+    
+    if screenIndex < 0 || screenIndex >= len(screens) {
+        return
+    }
+    
+    screen := screens[screenIndex]
+    
+    // Центрирование на целевом экране
+    centreOnScreen(window, screen)
+}
+```
+
+### Позиционирование относительно экрана
+
+```go
+// Верхний левый угол
+func positionTopLeft(window *application.WebviewWindow, screen *Screen) {
+    window.SetPosition(screen.X+10, screen.Y+10)
+}
+
+// Верхний правый угол
+func positionTopRight(window *application.WebviewWindow, screen *Screen) {
+    windowWidth, _ := window.Size()
+    window.SetPosition(screen.X+screen.Width-windowWidth-10, screen.Y+10)
+}
+
+// Нижний правый угол
+func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
+    windowWidth, windowHeight := window.Size()
+    window.SetPosition(
+        screen.X+screen.Width-windowWidth-10,
+        screen.Y+screen.Height-windowHeight-10,
+    )
+}
+```
+
+## Поддержка нескольких мониторов
+
+### Обнаружение нескольких мониторов
+
+```go
+func hasMultipleMonitors() bool {
+    return len(app.Screen.GetAll()) > 1
+}
+
+func getMonitorCount() int {
+    return len(app.Screen.GetAll())
+}
+```
+
+### Список всех мониторов
+
+```go
+func listMonitors() {
+    screens := app.Screen.GetAll()
+    
+    fmt.Printf("Найдено монитор(ов): %d\n", len(screens))
+    
+    for i, screen := range screens {
+        primary := ""
+        if screen.IsPrimary {
+            primary = " (Основной)"
+        }
+        
+        fmt.Printf("%d. %s%s\n", i+1, screen.Name, primary)
+        fmt.Printf("   Разрешение: %dx%d\n", screen.Width, screen.Height)
+        fmt.Printf("   Позиция: %d,%d\n", screen.X, screen.Y)
+        fmt.Printf("   Масштаб: %.2fx\n", screen.ScaleFactor)
+    }
+}
+```
+
+### Выбор монитора
+
+```go
+func chooseMonitor() (*Screen, error) {
+    screens := app.Screen.GetAll()
+    
+    if len(screens) == 1 {
+        return screens[0], nil
+    }
+    
+    // Показать диалог для выбора
+    var options []string
+    for i, screen := range screens {
+        primary := ""
+        if screen.IsPrimary {
+            primary = " (Основной)"
+        }
+        options = append(options, 
+            fmt.Sprintf("%d. %s%s - %dx%d", 
+                i+1, screen.Name, primary, screen.Width, screen.Height))
+    }
+    
+    // Используйте диалог для выбора
+    // (Реализация зависит от вашей системы диалогов)
+    
+    return screens[0], nil
+}
+```
+
+## Полные примеры
+
+### Менеджер окон для нескольких мониторов
+
+```go
+type MultiMonitorManager struct {
+    app     *application.Application
+    windows map[int]*application.WebviewWindow
+}
+
+func NewMultiMonitorManager(app *application.Application) *MultiMonitorManager {
+    return &MultiMonitorManager{
+        app:     app,
+        windows: make(map[int]*application.WebviewWindow),
+    }
+}
+
+func (m *MultiMonitorManager) CreateWindowOnScreen(screenIndex int) error {
+    screens := m.app.Screen.GetAll()
+    
+    if screenIndex < 0 || screenIndex >= len(screens) {
+        return errors.New("invalid screen index")
+    }
+    
+    screen := screens[screenIndex]
+    
+    // Создание окна
+    window := m.app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  fmt.Sprintf("Window on %s", screen.Name),
+        Width:  800,
+        Height: 600,
+    })
+    
+    // Центрирование на экране
+    x := screen.X + (screen.Width-800)/2
+    y := screen.Y + (screen.Height-600)/2
+    window.SetPosition(x, y)
+    
+    window.Show()
+    
+    m.windows[screenIndex] = window
+    return nil
+}
+
+func (m *MultiMonitorManager) CreateWindowOnEachScreen() {
+    screens := m.app.Screen.GetAll()
+    
+    for i := range screens {
+        m.CreateWindowOnScreen(i)
+    }
+}
+```
+
+### Обнаружение изменений экрана
+
+```go
+type ScreenMonitor struct {
+    app           *application.Application
+    lastScreens   []*Screen
+    changeHandler func([]*Screen)
+}
+
+func NewScreenMonitor(app *application.Application) *ScreenMonitor {
+    return &ScreenMonitor{
+        app:         app,
+        lastScreens: app.Screen.GetAll(),
+    }
+}
+
+func (sm *ScreenMonitor) OnScreenChange(handler func([]*Screen)) {
+    sm.changeHandler = handler
+}
+
+func (sm *ScreenMonitor) Start() {
+    ticker := time.NewTicker(2 * time.Second)
+    
+    go func() {
+        for range ticker.C {
+            sm.checkScreens()
+        }
+    }()
+}
+
+func (sm *ScreenMonitor) checkScreens() {
+    current := sm.app.Screen.GetAll()
+    
+    if len(current) != len(sm.lastScreens) {
+        sm.lastScreens = current
+        if sm.changeHandler != nil {
+            sm.changeHandler(current)
+        }
+    }
+}
+```
+
+### DPI-зависимое изменение размера окна
+
+```go
+func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
+    // Базовый размер при масштабе 1.0---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры работы с экранами](https://github.com/wailsapp/wails/tree/master/v3/examples).

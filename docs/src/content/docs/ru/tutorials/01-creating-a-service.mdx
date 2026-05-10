@@ -1,0 +1,711 @@
+---
+title: Сервис QR-кодов
+description: Создайте сервис QR-кодов, чтобы узнать о сервисах Wails
+sidebar:
+  order: 1
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Image } from 'astro:assets';
+
+import qr1 from "../../../../assets/qr1.png";
+
+**Сервис** в Wails — это Go-структура, содержащая бизнес-логику, которую вы хотите сделать доступной для вашего фронтенда. Сервисы помогают организовать код, группируя связанную функциональность вместе.
+
+Рассматривайте сервис как набор методов, которые ваш JavaScript-код может вызывать. Каждый публичный метод сервиса становится доступным для вызова из фронтенда после генерации биндингов.
+
+В этом руководстве мы создадим сервис генерации QR-кодов, чтобы продемонстрировать эти концепции. В конце вы поймете, как создавать сервисы, управлять зависимостями и подключать ваш Go-код к фронтенду.
+
+<br/>
+
+<Steps>
+
+1. ## Создайте файл QR-сервиса
+
+   Создайте новый файл с именем `qrservice.go` в директории вашего приложения:
+
+   ```go title="qrservice.go"
+   package main
+
+   import (
+       "github.com/skip2/go-qrcode"
+   )
+
+   // QRService handles QR code generation
+   type QRService struct {
+       // We can add state here if needed
+   }
+
+   // NewQRService creates a new QR service
+   func NewQRService() *QRService {
+       return &QRService{}
+   }
+
+   // Generate creates a QR code from the given text
+   func (s *QRService) Generate(text string, size int) ([]byte, error) {
+       // Generate the QR code
+       qr, err := qrcode.New(text, qrcode.Medium)
+       if err != nil {
+           return nil, err
+       }
+
+       // Convert to PNG
+       png, err := qr.PNG(size)
+       if err != nil {
+           return nil, err
+       }
+
+       return png, nil
+   }
+   ```
+
+   **Что здесь происходит:**
+
+   - `QRService` — пустая структура, которая будет содержать наши методы генерации QR-кодов
+   - `NewQRService()` — конструктор, создающий новый экземпляр нашего сервиса
+   - `Generate()` — метод, принимающий текст и размер, а затем возвращающий QR-код в виде массива байтов PNG
+   - Метод возвращает `([]byte, error)`, следуя соглашению Go возвращать ошибки последним значением
+   - Мы используем пакет `github.com/skip2/go-qrcode` для фактической генерации QR-кодов
+
+    <br/>
+
+2. ## Зарегистрируйте сервис
+
+   Создания сервиса недостаточно — нам нужно **зарегистрировать** его в приложении Wails, чтобы оно знало о существовании сервиса и могло сгенерировать для него биндинги.
+
+   Регистрация происходит в `main.go` при создании вашего приложения. Вы передаете экземпляры ваших сервисов в опцию `Services`:
+
+   ```go title="main.go" ins={7-9}
+    func main() {
+
+        app := application.New(application.Options{
+            Name:        "myproject",
+            Description: "A demo of using raw HTML & CSS",
+            LogLevel:    slog.LevelDebug,
+            Services: []application.Service{
+                application.NewService(NewQRService()),
+            },
+            Assets: application.AssetOptions{
+                Handler: application.AssetFileServerFS(assets),
+            },
+            Mac: application.MacOptions{
+                ApplicationShouldTerminateAfterLastWindowClosed: true,
+            },
+        })
+
+        app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Title:  "myproject",
+            Width:  600,
+            Height: 400,
+        })
+
+        // Run the application. This blocks until the application has been exited.
+        err := app.Run()
+
+        // If an error occurred while running the application, log it and exit.
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+   ```
+
+   **Что здесь происходит:**
+
+   - `application.NewService()` оборачивает ваш сервис, чтобы Wails мог им управлять
+   - Мы вызываем `NewQRService()` для создания экземпляра нашего сервиса
+   - Сервис добавляется в срез `Services` в опциях приложения
+   - Wails теперь будет сканировать этот сервис на наличие публичных методов, доступных для фронтенда
+
+    <br/>
+
+3. ## Установите зависимости
+
+   Мы сослались на пакет `github.com/skip2/go-qrcode` в нашем коде, но еще не загрузили его. Go должен знать об этой зависимости и загрузить ее в ваш проект.
+
+   Выполните эту команду в терминале из директории вашего проекта:
+
+   ```bash
+   go mod tidy
+   ```
+
+   **Что здесь происходит:**
+
+   - `go mod tidy` сканирует ваши Go-файлы на наличие операторов импорта
+   - Он загружает отсутствующие пакеты (например, `go-qrcode`) и добавляет их в `go.mod`
+   - Он также удаляет зависимости, которые больше не используются
+   - Это гарантирует, что ваш проект имеет весь необходимый код для успешной компиляции
+
+   Вы должны увидеть вывод, указывающий, что пакет QR-кодов был загружен и добавлен в ваш проект.
+
+    <br/>
+
+4. ## Сгенерируйте биндинги
+
+   Чтобы вызывать эти методы из вашего фронтенда, нам нужно сгенерировать биндинги.
+   Вы можете сделать это, запустив `wails generate bindings` в корневой директории вашего проекта.
+
+   :::note
+   При первом запуске этой команды в проекте генератор биндингов проводит тщательный анализ вашего кода и зависимостей. Это иногда может занять немного больше времени, чем ожидалось, однако последующие запуски будут намного быстрее.
+   :::
+
+   После запуска вы должны увидеть в терминале что-то подобное:
+
+   ```bash
+    % wails3 generate bindings
+    INFO  Processed: 337 Packages, 1 Service, 1 Method, 0 Enums, 0 Models in 740.196125ms.
+    INFO  Output directory: /Users/leaanthony/myproject/frontend/bindings
+   ```
+
+   Вы заметите, что в директории фронтенда появилась новая директория с именем `bindings`:
+
+   ```bash
+   frontend/
+   └── bindings
+       └── changeme
+           ├── index.js
+           └── qrservice.js
+   ```
+
+    :::tip[Pro Tip]
+        При сборке вашего приложения с помощью `wails3 build` биндинги будут автоматически сгенерированы и обновлены.
+    :::
+    <br/>
+
+5. ## Понимание биндингов
+
+   Давайте посмотрим на сгенерированные биндинги в `bindings/changeme/qrservice.js`:
+
+   ```js title="bindings/changeme/qrservice.js"
+    // @ts-check
+    // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
+    // This file is automatically generated. DO NOT EDIT
+
+    /**
+     * QRService handles QR code generation
+     * @module
+     */
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore: Unused imports
+    import {Call as $Call, Create as $Create} from "@wailsio/runtime";
+
+    /**
+     * Generate creates a QR code from the given text
+     * @param {string} text
+     * @param {number} size
+     * @returns {Promise<string> & { cancel(): void }}
+     */
+    export function Generate(text, size) {
+        let $resultPromise = /** @type {any} */($Call.ByID(3576998831, text, size));
+        let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+            return $Create.ByteSlice($result);
+        }));
+        $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+        return $typingPromise;
+    }
+   ```
+
+   Мы видим, что биндинги сгенерированы для метода `Generate`. Имена параметров сохранены,
+   а также комментарии. Для метода также сгенерированы JSDoc-комментарии, чтобы предоставить информацию о типах вашему IDE.
+
+   :::note
+   Не обязательно полностью понимать сгенерированные биндинги, но важно понимать, как они работают.
+   :::
+
+   Биндинги предоставляют:
+   - Функции, эквивалентные вашим Go-методам
+   - Автоматическое преобразование между типами Go и JavaScript
+   - Асинхронные операции на основе Promise
+   - Информацию о типах в виде JSDoc-комментариев
+
+   :::tip[Typescript]
+   Генератор биндингов также поддерживает генерацию биндингов для Typescript. Вы можете сделать это, запустив `wails3 generate bindings -ts`.
+   :::
+
+   Сгенерированный сервис переэкспортируется файлом `index.js`:
+
+   ```js title="bindings/changeme/index.js"
+    // @ts-check
+    // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
+    // This file is automatically generated. DO NOT EDITimport * as QRService from "./qrservice.js";
+    export {
+        QRService
+    };
+   ```
+
+    Затем вы можете получить к нему доступ через упрощённый путь импорта
+    `./bindings/changeme`, состоящий только из пути вашего Go-пакета,
+    без указания имени файла.
+
+    :::note
+    Упрощённые пути импорта доступны только при использовании фронтенд-бандлеров.
+    Если вы предпочитаете ванильный фронтенд без использования бандлера,
+    вам придётся вручную импортировать либо `index.js`, либо `qrservice.js`.
+    :::
+    <br/>
+
+6. ## Использование биндингов во фронтенде
+
+    Теперь мы можем вызывать наш Go-сервис из JavaScript! Сгенерированные биндинги делают это простым и типобезопасным.
+
+    Обновите `frontend/src/main.js`, чтобы использовать новые биндинги:
+
+   ```js title="frontend/src/main.js"
+    import { QRService } from './bindings/changeme';
+
+    async function generateQR() {
+        const text = document.getElementById('text').value;
+        if (!text) {
+            alert('Please enter some text');
+            return;
+        }
+
+        try {
+            // Generate QR code as base64
+            const qrCodeBase64 = await QRService.Generate(text, 256);
+
+            // Display the QR code
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.src = `data:image/png;base64,${qrCodeBase64}`;
+
+        } catch (err) {
+            console.error('Failed to generate QR code:', err);
+            alert('Failed to generate QR code: ' + err);
+        }
+    }
+
+    export function initializeQRGenerator() {
+        const button = document.getElementById('generateButton');
+        button.addEventListener('click', generateQR);
+    }
+   ```
+
+   **Что здесь происходит:**
+
+   - Мы импортируем `QRService` из сгенерированных биндингов
+   - `QRService.Generate()` вызывает наш Go-метод — он возвращает Promise, поэтому мы используем `await`
+   - Go-метод возвращает `[]byte`, который Wails автоматически преобразует в строку base64 для JavaScript
+   - Мы создаём data URL со строкой base64 для отображения изображения PNG
+   - Блок `try/catch` обрабатывает любые ошибки со стороны Go (например, некорректный ввод)
+   - Если наш Go-код возвращает ошибку, Promise отклоняется, и мы перехватываем её здесь
+
+   Теперь обновите `index.html`, чтобы использовать новые биндинги в функции `initializeQRGenerator`:
+
+    ```html title="frontend/src/index.html"
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>QR Code Generator</title>
+                <style>
+                    body {
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                }
+                    #qrcode {
+                    margin-bottom: 20px;
+                    width: 256px;
+                    height: 256px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                    #controls {
+                    display: flex;
+                    gap: 10px;
+                }
+                    #text {
+                    padding: 5px;
+                }
+                    #generateButton {
+                    padding: 5px 10px;
+                    cursor: pointer;
+                }
+                </style>
+    </head>
+    <body>
+    <img id="qrcode"/>
+    <div id="controls">
+        <input type="text" id="text" placeholder="Enter text">
+            <button id="generateButton">Generate QR Code</button>
+    </div>
+
+    <script type="module">
+        import { initializeQRGenerator } from './main.js';
+        document.addEventListener('DOMContentLoaded', initializeQRGenerator);
+    </script>
+    </body>
+    </html>
+    ```
+
+    Запустите `wails3 dev`, чтобы запустить сервер разработки. Через несколько секунд приложение должно открыться.
+
+    Введите какой-либо текст и нажмите кнопку "Generate QR Code". Вы должны увидеть QR-код в центре страницы:
+
+    <Image src={qr1} alt="QR Code"/>
+
+    <br/>
+    <br/>
+
+7. ## Альтернативный подход: HTTP-обработчик
+
+    До сих пор мы рассмотрели следующие аспекты:
+    - Создание нового сервиса
+    - Генерация биндингов
+    - Использование биндингов в коде фронтенда
+
+    **Зачем использовать HTTP-обработчик?**
+
+    Биндинги методов отлично подходят для операций с данными, но существует альтернативный подход для обслуживания файлов, изображений или других медиа. Вместо преобразования всего в base64 и отправки через биндинги, вы можете заставить ваш сервис работать как мини-веб-сервер.
+
+    Это полезно, когда:
+    - Вы обслуживаете изображения, видео или большие файлы
+    - Вы хотите использовать стандартные HTML-теги `<img>` или `<video>` с атрибутами `src`
+    - Вам нужен прямой URL-доступ к ресурсам
+
+    Если ваш сервис реализует стандартный метод Go `ServeHTTP(w http.ResponseWriter, r *http.Request)`, Wails может сделать его доступным как HTTP-эндпоинт. Давайте расширим наш сервис генерации QR-кодов, чтобы поддержать это:
+
+    ```go title="qrservice.go" ins={4-5,37-65}
+    package main
+
+    import (
+        "net/http"
+        "strconv"
+
+        "github.com/skip2/go-qrcode"
+    )
+
+    // QRService handles QR code generation
+    type QRService struct {
+        // We can add state here if needed
+    }
+
+    // NewQRService creates a new QR service
+    func NewQRService() *QRService {
+        return &QRService{}
+    }
+
+    // Generate creates a QR code from the given text
+    func (s *QRService) Generate(text string, size int) ([]byte, error) {
+        // Generate the QR code
+        qr, err := qrcode.New(text, qrcode.Medium)
+        if err != nil {
+            return nil, err
+        }
+
+        // Convert to PNG
+        png, err := qr.PNG(size)
+        if err != nil {
+            return nil, err
+        }
+
+        return png, nil
+    }
+
+    func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        // Extract the text parameter from the request
+        text := r.URL.Query().Get("text")
+        if text == "" {
+            http.Error(w, "Missing 'text' parameter", http.StatusBadRequest)
+            return
+        }
+        // Extract Size parameter from the request
+        sizeText := r.URL.Query().Get("size")
+        if sizeText == "" {
+            sizeText = "256"
+        }
+        size, err := strconv.Atoi(sizeText)
+        if err != nil {
+            http.Error(w, "Invalid 'size' parameter", http.StatusBadRequest)
+            return
+        }
+
+        // Generate the QR code
+        qrCodeData, err := s.Generate(text, size)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        // Write the QR code data to the response
+        w.Header().Set("Content-Type", "image/png")
+        w.Write(qrCodeData)
+    }
+    ```
+
+    **Что здесь происходит:**
+
+    - `ServeHTTP` — это стандартный интерфейс Go для обработки HTTP-запросов
+    - Мы извлекаем параметры запроса из URL (`?text=hello&size=256`)
+    - Мы вызываем наш существующий метод `Generate()` для создания QR-кода
+    - Мы устанавливаем тип контента на `image/png`, чтобы браузеры знали, что это изображение
+    - Мы записываем сырые байты PNG напрямую в ответ — base64 не нужен!
+
+    Теперь обновите `main.go`, чтобы указать маршрут, по которому сервис QR-кодов будет доступен:
+
+   ```go title="main.go" ins={8-10}
+    func main() {```go title="main.go"
+        app := application.New(application.Options{
+            Name:        "myproject",
+            Description: "A demo of using raw HTML & CSS",
+            LogLevel:    slog.LevelDebug,
+            Services: []application.Service{
+                application.NewService(NewQRService(), application.ServiceOptions{
+                    Route: "/qrservice",
+                }),
+            },
+            Assets: application.AssetOptions{
+                Handler: application.AssetFileServerFS(assets),
+            },
+            Mac: application.MacOptions{
+                ApplicationShouldTerminateAfterLastWindowClosed: true,
+            },
+        })
+
+        app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Title:  "myproject",
+            Width:  600,
+            Height: 400,
+        })
+
+        // Запуск приложения. Этот метод блокирует выполнение до тех пор, пока приложение не будет закрыто.
+        err := app.Run()
+
+        // Если при запуске приложения произошла ошибка, записываем её в лог и завершаем работу.
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+   ```
+
+    **Что здесь происходит:**
+
+    - Мы добавляем `application.ServiceOptions` для настройки способа экспозиции сервиса
+    - `Route: "/qrservice"` делает HTTP-обработчик доступным по адресу `/qrservice`
+    - Теперь любой запрос к `/qrservice?text=hello` вызовет наш метод `ServeHTTP`
+    - Без установки `Route` функциональность HTTP-обработчика отключена
+
+    :::note
+    Если вы не установите опцию `Route` явно,
+    HTTP-обработчик не будет доступен из фронтенда.
+    :::
+
+    Наконец, обновите `main.js`, чтобы использовать простой атрибут `src` изображения вместо кодирования в base64:
+
+    ```js title="frontend/src/main.js"
+    async function generateQR() {
+        const text = document.getElementById('text').value;
+        if (!text) {
+            alert('Please enter some text');
+            return;
+        }
+
+        const img = document.getElementById('qrcode');
+        // Делаем источник изображения путем к сервису QR-кодов, передавая текст
+        img.src = `/qrservice?text=${encodeURIComponent(text)}`
+    }
+
+    export function initializeQRGenerator() {
+        const button = document.getElementById('generateButton');
+        if (button) {
+            button.addEventListener('click', generateQR);
+        } else {
+            console.error('Generate button not found');
+        }
+    }
+    ```
+
+    **Что здесь происходит:**
+
+    - Мы убрали импорт и вызов `await QRService.Generate()`
+    - Вместо этого мы просто устанавливаем `img.src` указывающий на наш HTTP-эндпоинт
+    - `encodeURIComponent()` безопасно экранирует специальные символы в URL
+    - Браузер автоматически выполняет HTTP GET-запрос, когда мы устанавливаем `src`
+    - Это проще и эффективнее для изображений — не требуется конвертация в base64!
+
+    Повторный запуск приложения должен привести к тому же QR-коду:
+
+    <Image src={qr1} alt="QR Code"/>
+    <br/>
+
+8. ## Поддержка динамических конфигураций
+
+    **Проблема с жестко заданными маршрутами:**
+
+    В приведенном выше примере мы использовали жестко заданный маршрут `/qrservice` в коде JavaScript.
+    Это создает сильную связность между вашей конфигурацией Go и кодом фронтенда.
+
+    Если вы отредактируете `main.go` и измените опцию `Route` без обновления `main.js`,
+    приложение перестанет работать:
+
+    ```go title="main.go" ins={3}
+            // ...
+                application.NewService(NewQRService(), application.ServiceOptions{
+                    Route: "/services/qr",
+                }),
+            // ...
+    ```
+
+    Жестко заданные маршруты работают для простых приложений, но они делают ваш код хрупким и затрудняют поддержку.
+
+    **Решение: Динамическая конфигурация**
+
+    Привязки методов и HTTP-обработчики могут работать вместе! Мы можем использовать привязки, чтобы сообщить фронтенду, какой маршрут использовать, сделав конфигурацию динамической и устранив жестко заданный путь.
+
+    Вот как это работает:
+    1. Метод жизненного цикла `ServiceStartup` запускается при старте вашего приложения
+    2. Мы сохраняем настроенный маршрут из опций
+    3. Мы добавляем метод `URL()`, который фронтенд может вызвать для получения правильного маршрута
+    4. Теперь фронтенд запрашивает у сервиса Go его маршрут, вместо того чтобы угадывать
+
+    Сначала реализуйте интерфейс `ServiceStartup` и добавьте новый метод `URL`:
+
+    ```go title="qrservice.go" ins={4,6,10,15,23-27,46-55}
+    package main
+
+    import (
+        "context"
+        "net/http"
+        "net/url"
+        "strconv"
+
+        "github.com/skip2/go-qrcode"
+        "github.com/wailsapp/wails/v3/pkg/application"
+    )
+
+    // QRService обрабатывает генерацию QR-кодов
+    type QRService struct {
+        route string
+    }
+
+    // NewQRService создает новый сервис QR
+    func NewQRService() *QRService {
+        return &QRService{}
+    }
+
+    // ServiceStartup запускается при старте приложения.
+    func (s *QRService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+        s.route = options.Route
+        return nil
+    }
+
+    // Generate создает QR-код из заданного текста
+    func (s *QRService) Generate(text string, size int) ([]byte, error) {
+        // Генерируем QR-код
+        qr, err := qrcode.New(text, qrcode.Medium)
+        if err != nil {
+            return nil, err
+        }
+
+        // Конвертируем в PNG
+        png, err := qr.PNG(size)
+        if err != nil {
+            return nil, err
+        }
+
+        return png, nil
+    }
+
+    // URL возвращает URL, который может быть использован для получения
+    // QR-кода с заданным текстом и размером.
+    // Возвращает ошибку, если HTTP-обработчик недоступен.
+    func (s *QRService) URL(text string, size int) (string, error) {
+        if s.route == "" {
+            return "", errors.New("http handler unavailable")
+        }
+
+        return fmt.Sprintf("%s?text=%s&size=%d", s.route, url.QueryEscape(text), size), nil
+    }
+
+    func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        // Извлекаем параметр text из запроса
+        text := r.URL.Query().Get("text")
+        if text == "" {
+            http.Error(w, "Missing 'text' parameter", http.StatusBadRequest)
+            return
+        }
+        // Извлекаем параметр Size из запроса
+        sizeText := r.URL.Query().Get("size")
+        if sizeText == "" {
+            sizeText = "256"
+        }
+        size, err := strconv.Atoi(sizeText)
+        if err != nil {
+            http.Error(w, "Invalid 'size' parameter", http.StatusBadRequest)
+            return
+        }
+
+        // Генерируем QR-код
+        qrCodeData, err := s.Generate(text, size)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        // Записываем данные QR-кода в ответ
+        w.Header().Set("Content-Type", "image/png")
+        w.Write(qrCodeData)
+    }
+    ```
+
+    **Что здесь происходит:**
+
+    - Мы добавили поле `route` для хранения настроенного маршрута из `ServiceStartup`
+    - `ServiceStartup(ctx, options)` вызывается при запуске приложения — здесь мы сохраняем маршрут
+    - Метод `URL()` формирует полный URL с параметрами запроса
+    - Если маршрут не настроен (route пустой), мы возвращаем ошибку
+    - `url.QueryEscape()` безопасно кодирует текст для использования в URL
+    - Этот метод будет доступен фронтенду через привязки
+
+    Теперь обновите `main.js`, чтобы использовать метод `URL` вместо жестко заданного пути:
+
+    ```js title="frontend/src/main.js" ins={1,11-12}
+    import { QRService } from "./bindings/changeme";
+
+    async function generateQR() {
+        const text = document.getElementById('text').value;
+        if (!text) {
+            alert('Please enter some text');
+            return;
+        }
+
+        const img = document.getElementById('qrcode');
+        // Вызываем метод URL для получения URL для заданного текста.
+        img.src = await QRService.URL(text, 256);
+    }```javascript
+export function initializeQRGenerator() {
+    const button = document.getElementById('generateButton');
+    if (button) {
+        button.addEventListener('click', generateQR);
+    } else {
+        console.error('Generate button not found');
+    }
+}
+```
+
+**Что здесь происходит:**
+
+- Мы импортируем `QRService`, чтобы снова использовать привязки
+- Вместо жёсткого задания `/qrservice` мы вызываем `await QRService.URL(text, 256)`
+- Сервис Go формирует URL с правильным маршрутом и параметрами
+- Теперь, если вы измените маршрут в `main.go`, фронтенд автоматически будет использовать новый маршрут
+- Больше не нужно вручную синхронизировать конфигурацию Go и код фронтенда!
+
+Это должно работать так же, как и предыдущий пример,
+но изменение маршрута сервиса в `main.go`
+больше не сломает фронтенд.
+
+:::note
+Если метод Go возвращает ошибку, отличную от nil,
+обещание на стороне JS отклонится,
+а выражения await вызовут исключение.
+:::
+<br/>
+
+</Steps>

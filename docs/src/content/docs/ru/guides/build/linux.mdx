@@ -1,0 +1,223 @@
+---
+title: Упаковка для Linux
+description: Упакуйте ваше приложение Wails для распространения в Linux
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Форматы пакетов
+
+Упакуйте ваше приложение для распространения в Linux:
+
+```bash
+wails3 package GOOS=linux
+```
+
+Это создаст несколько форматов в директории `bin/`:
+- **AppImage**: Портативный формат, работает на любом дистрибутиве Linux
+- **DEB**: Для Debian, Ubuntu и их производных
+- **RPM**: Для Fedora, RHEL и их производных
+- **Arch**: Для Arch Linux и его производных
+
+### Индивидуальные форматы
+
+Соберите конкретные форматы:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## Настройка пакетов
+
+### Файл десктопного входа
+
+Файл `.desktop` управляет тем, как ваше приложение отображается в меню приложений. Он генерируется на основе значений из `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### Метаданные пакета
+
+Отредактируйте `build/linux/nfpm/nfpm.yaml` для настройки пакетов DEB и RPM:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+Конфигурация AppImage находится в `build/linux/appimage/`. Иконка приложения берется из `build/appicon.png`.
+
+## Подписание пакетов
+
+Подпишите пакеты DEB и RPM с помощью ключа PGP:
+
+```bash
+# Используя обертку (автоматически определяет платформу)
+wails3 sign GOOS=linux
+
+# Или используя задачи напрямую
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # Оба
+```
+
+Настройте подписание в `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive или builder
+```
+
+Сохраните пароль от вашего ключа:
+
+```bash
+wails3 setup signing
+```
+
+Подробнее см. в разделе [Подписание приложений](/ru/guides/build/signing).
+
+## Сборка для ARM
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+Сборки ARM64 с хостов x86_64 используют Docker для кросс-компиляции CGO.
+</Aside>
+
+## Поддержка GTK4 (экспериментальная)
+
+Wails v3 включает экспериментальную поддержку GTK4 с WebKitGTK 6.0. По умолчанию Wails использует GTK3 с WebKit2GTK 4.1. Поддержка GTK4 включается через тег сборки.
+
+<Aside type="caution" title="Экспериментально">
+Поддержка GTK4 является экспериментальной и может содержать проблемы. Пожалуйста, сообщайте о проблемах в [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957).
+</Aside>
+
+### Зависимости
+
+Установите библиотеки разработки GTK4 и WebKitGTK 6.0:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+
+# Fedora
+sudo dnf install gtk4-devel webkitgtk6.0-devel
+
+# Arch
+sudo pacman -S gtk4 webkitgtk-6.0
+```
+
+Необходимые пакеты pkg-config: `gtk4` и `webkitgtk-6.0`.
+
+### Сборка с GTK4
+
+Используйте флаг `-tags gtk4`:
+
+```bash
+wails3 build -tags gtk4
+```
+
+Или напрямую через Go:
+
+```bash
+go build -tags gtk4 -o myapp .
+```
+
+### Известные отличия от GTK3
+
+- **Диалоги файлов**: GTK4 использует `xdg-desktop-portal` для диалогов файлов, что означает, что некоторые параметры диалога (например, каталог по умолчанию, отображение пользовательских фильтров) ведут себя иначе. См. [Справочник диалогов - Ограничения Linux GTK4](/reference/dialogs#linux-gtk4-limitations) для подробностей.
+- **Стиль меню**: GTK4 поддерживает опцию `LinuxMenuStylePrimaryMenu`, которая отображает кнопку гамбургера (☰) в заголовке окна, следуя GNOME HIG. См. [API окна - Linux MenuStyle](/reference/window#linux).
+- **Масштабирование DPI**: GTK4 использует `gdk_monitor_get_scale` (GTK 4.14+) для поддержки дробного масштабирования.
+
+### Проверка вашей сборки
+
+Запустите `wails3 doctor` для проверки вашей настройки. Зависимости GTK4 будут показаны как опциональные/экспериментальные.
+
+## Устранение неполадок
+
+### AppImage не запускается
+
+Сделайте его исполняемым:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### Отсутствующие зависимости
+
+Если приложение не запускается, проверьте наличие отсутствующих зависимостей WebKit:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### Компилятор C не найден
+
+Системе сборки нужен GCC или Clang для CGO:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+Альтернативно, запустите `wails3 task setup:docker`, и система сборки автоматически будет использовать Docker.
+
+### Пустое или белое окно на GPU NVIDIA
+
+На Linux с проприетарными драйверами NVIDIA приложения Wails могут показывать пустое или белое окно при запуске. Это вызвано ошибкой WebKitGTK, где рендерер DMA-BUF не работает с `gbm_bo_map()` против проприетарного драйвера NVIDIA (затрагивает X11 и Wayland, версии драйверов 377–580+, видеокарты серии 10 и более старые GT 710).
+
+**Wails автоматически применяет `WEBKIT_DISABLE_DMABUF_RENDERER=1`**, когда обнаруживает модуль ядра NVIDIA (`/sys/module/nvidia`), поэтому большинству пользователей не нужно ничего делать.
+
+Если вы все еще видите пустое окно (например, в контейнере, где путь к модулю не виден), установите переменную окружения вручную перед запуском приложения:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+Связанные ошибки в upstream: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739).
+
+### Совместимость strip AppImage
+
+На современных дистрибутивах Linux (Arch Linux, Fedora 39+, Ubuntu 24.04+) системные библиотеки компилируются с секциями ELF `.relr.dyn` для более эффективных релокаций. Инструмент `linuxdeploy`, используемый для создания AppImage, включает старую версию бинарного файла `strip`, который не может обрабатывать эти современные секции.
+
+Wails автоматически обнаруживает эту ситуацию, проверяя системные библиотеки GTK перед сборкой AppImage. При обнаружении отключение strip (`NO_STRIP=1`) для обеспечения совместимости.
+
+**Что это означает:**
+- AppImage будут немного больше (~20-40%) на затронутых системах
+- Функциональность приложения не затрагивается
+- Это обрабатывается автоматически — никаких действий не требуется
+
+Если вам нужны меньшие AppImage на современных системах, вы можете установить более новую версию бинарного файла `strip` и настроить `linuxdeploy` на использование его вместо встроенной версии.

@@ -1,0 +1,179 @@
+---
+title: Ассоциации файлов
+description: Настройка ассоциаций файлов для вашего приложения Wails
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import {Badge} from '@astrojs/starlight/components';
+
+Актуальные платформы: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Ассоциации файлов позволяют вашему приложению обрабатывать определенные типы файлов,
+когда пользователи открывают их. Это особенно полезно для текстовых редакторов,
+просмотрщиков изображений или любых приложений, работающих с определенными форматами
+файлов. В этом руководстве объясняется, как реализовать ассоциации файлов в вашем
+приложении Wails v3.
+
+## Обзор
+
+Поддержка ассоциаций файлов в Wails v3 в настоящее время доступна для:
+
+- Windows (установочные пакеты NSIS)
+- macOS (сборки приложений)
+
+## Конфигурация
+
+Ассоциации файлов настраиваются в файле `config.yml`, расположенном в
+каталоге `build` вашего проекта.
+
+### Базовая конфигурация
+
+Чтобы настроить ассоциации файлов:
+
+1. Откройте `build/config.yml`
+2. Добавьте ваши ассоциации файлов в раздел `fileAssociations`
+3. Запустите `wails3 update build-assets` для обновления ресурсов сборки
+4. Установите поле `FileAssociations` в параметрах приложения
+5. Соберите ваше приложение с помощью `wails3 package`
+
+Пример конфигурации:
+
+```yaml
+fileAssociations:
+  - ext: myapp
+    name: MyApp Document
+    description: MyApp Document File
+    iconName: myappFileIcon
+    role: Editor
+  - ext: custom
+    name: Custom Format
+    description: Custom File Format
+    iconName: customFileIcon
+    role: Editor
+```
+
+### Свойства конфигурации
+
+| Свойство    | Описание                                                      | Платформа |
+|-------------|------------------------------------------------------------------|----------|
+| ext         | Расширение файла без начальной точки (например, `txt`)          | Все      |
+| name        | Отображаемое имя типа файла                                   | Все      |
+| description | Описание, отображаемое в свойствах файла                       | Windows  |
+| iconName    | Имя файла иконки (без расширения) в папке сборки               | Все      |
+| role        | Роль приложения для этого типа файла (например, `Editor`, `Viewer`) | macOS    |
+| mimeType    | MIME-тип файла (например, `image/jpeg`)                        | macOS    |
+
+## Прослушивание событий открытия файлов
+
+Чтобы обрабатывать события открытия файлов в вашем приложении, вы можете
+подписаться на событие `events.Common.ApplicationOpenedWithFile`:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        FileAssociations: []string{".txt", ".md"}, // Укажите поддерживаемые расширения
+    })
+
+    // Подписываемся на события открытия файлов
+    app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+        associatedFile := event.Context().Filename()
+        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+    })
+
+    // Создайте ваше окно и запустите приложение...
+}
+
+```
+
+## Пошаговое руководство
+
+Давайте пройдемся по настройке ассоциаций файлов для простого текстового редактора:
+
+<Steps>
+
+1. ### Создание иконок
+
+    - Создайте иконки для вашего типа файла (рекомендуемые размеры: 16x16, 32x32, 48x48,
+      256x256)
+    - Сохраните иконки в папке `build` вашего проекта
+    - Назовите их в соответствии с конфигурацией `iconName` (например,
+      `textFileIcon.png`)
+
+    :::tip
+    Вы можете использовать `wails3 generate icons` для автоматической генерации необходимых иконок.
+    Запустите `wails3 generate icons --help` для получения дополнительной информации.
+    :::
+
+    - Для macOS добавьте оператор копирования, например `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources`, в задачу `create:app:bundle:`.
+
+2. ### Настройка ассоциаций файлов
+
+    Отредактируйте файл `build/config.yml`, чтобы добавить ваши ассоциации файлов:
+
+    ```yaml
+    # build/config.yml
+    fileAssociations:
+      - ext: txt
+        name: Text Document
+        description: Plain Text Document
+        iconName: textFileIcon
+        role: Editor
+    ```
+
+3. ### Обновление ресурсов сборки
+
+    Запустите следующую команду для обновления ресурсов сборки:
+
+    ```bash
+    wails3 update build-assets
+    ```
+
+4. ### Установка ассоциаций файлов в параметрах приложения
+
+    В вашем файле `main.go` установите поле `FileAssociations` в параметрах приложения:
+
+    ```go
+    app := application.New(application.Options{
+      Name: "MyApp",
+      FileAssociations: []string{".txt", ".md"}, // Укажите поддерживаемые расширения
+    })
+    ```
+
+    :::tip[Почему расширения файлов требуются как в конфигурации приложения, так и в config.yml?]
+
+    В Windows, когда файл открывается с помощью ассоциации файлов, приложение
+    запускается с именем файла в качестве первого аргумента. Приложение не может
+    определить, является ли первый аргумент файлом или аргументом командной строки,
+    поэтому оно использует поле `FileAssociations` в параметрах приложения, чтобы
+    определить, является ли первый аргумент ассоциированным файлом или нет.
+
+    :::
+
+5. ### Сборка вашего приложения
+
+    Соберите ваше приложение с помощью следующей команды:
+
+    ```bash
+    wails3 package
+    ```
+
+    Собранный пакет приложения будет создан в каталоге `bin`. После этого вы можете
+    установить и протестировать приложение.
+
+    ## Дополнительные примечания
+
+    - Иконки должны быть предоставлены в формате PNG в папке сборки
+    - Тестирование ассоциаций файлов требует установки собранного пакета приложения
+
+</Steps>

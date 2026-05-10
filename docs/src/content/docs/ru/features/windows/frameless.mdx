@@ -1,0 +1,789 @@
+---
+title: Окна без рамки
+description: Создавайте пользовательское оформление окон с помощью окон без рамки
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Окна без рамки
+
+Wails предоставляет **поддержку окон без рамки** с областями перетаскивания на основе CSS и нативным поведением платформы. Удалите нативную заголовок платформы для полного контроля над оформлением окна, пользовательскими дизайнами и уникальным пользовательским опытом, сохраняя при этом необходимую функциональность, такую как перетаскивание, изменение размера и системные элементы управления.
+
+## Быстрый старт
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Frameless App",
+    Width:     800,
+    Height:    600,
+    Frameless: true,
+})
+```
+
+**CSS для перетаскиваемой панели заголовка:**
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    height: 40px;
+    background: #333;
+}
+
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**HTML:**
+
+```html
+<div class="titlebar">
+    <span>My Application</span>
+    <button onclick="window.close()">×</button>
+</div>
+```
+
+**Вот и всё!** У вас есть пользовательская панель заголовка.
+
+## Создание окон без рамки
+
+### Базовое окно без рамки
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Width:     800,
+    Height:    600,
+})
+```
+
+**Что вы получаете:**
+- Нет панели заголовка
+- Нет границ окна
+- Нет системных кнопок
+- Прозрачный фон (опционально)
+
+**Что вам нужно реализовать:**
+- Область перетаскивания
+- Кнопки закрытия/сворачивания/разворачивания
+- Маржеры изменения размера (если окно изменяет размер)
+
+### С прозрачным фоном
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+**Сценарии использования:**
+- Скругленные углы
+- Пользовательские формы
+- Оверлей-окна
+- Экраны приветствия (Splash screens)
+
+## Области перетаскивания
+
+### Перетаскивание на основе CSS
+
+Используйте CSS-свойство `--wails-draggable`:
+
+```css
+/* Область перетаскивания */
+.titlebar {
+    --wails-draggable: drag;
+}
+
+/* Элементы, не подлежащие перетаскиванию, внутри области перетаскивания */
+.titlebar button {
+    --wails-draggable: no-drag;
+}
+```
+
+**Значения:**
+- `drag` - Область можно перетаскивать
+- `no-drag` - Область нельзя перетаскивать (даже если родительский элемент можно)
+
+### Полный пример панели заголовка
+
+```html
+<div class="titlebar">
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #2c2c2c;
+    color: white;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 14px;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+}
+```
+
+**JavaScript для кнопок:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+## Системные кнопки
+
+### Реализация кнопок Закрыть/Свернуть/Развернуть
+
+**Сторона Go:**
+
+```go
+type WindowControls struct {
+    window *application.WebviewWindow
+}
+
+func (wc *WindowControls) Minimise() {
+    wc.window.Minimise()
+}
+
+func (wc *WindowControls) Maximise() {
+    if wc.window.IsMaximised() {
+        wc.window.UnMaximise()
+    } else {
+        wc.window.Maximise()
+    }
+}
+
+func (wc *WindowControls) Close() {
+    wc.window.Close()
+}
+```
+
+**Сторона JavaScript:**
+
+```javascript
+import { Minimise, Maximise, Close } from './bindings/WindowControls'
+
+document.querySelector('.minimize').addEventListener('click', Minimise)
+document.querySelector('.maximize').addEventListener('click', Maximise)
+document.querySelector('.close').addEventListener('click', Close)
+```
+
+**Или используйте методы runtime:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+### Переключение состояния разворачивания
+
+Отслеживайте состояние разворачивания для иконки кнопки:
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+async function toggleMaximise() {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+}
+
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    const button = document.querySelector('.maximize')
+    button.textContent = isMaximised ? '❐' : '□'
+}
+```
+
+## Маржеры изменения размера
+
+### Изменение размера на основе CSS
+
+Wails предоставляет автоматические маржеры изменения размера для окон без рамки:
+
+```css
+/* Включить изменение размера на всех краях */
+body {
+    --wails-resize: all;
+}
+
+/* Или на конкретных краях */
+.resize-top {
+    --wails-resize: top;
+}
+
+.resize-bottom {
+    --wails-resize: bottom;
+}
+
+.resize-left {
+    --wails-resize: left;
+}
+
+.resize-right {
+    --wails-resize: right;
+}
+
+/* Углы */
+.resize-top-left {
+    --wails-resize: top-left;
+}
+
+.resize-top-right {
+    --wails-resize: top-right;
+}
+
+.resize-bottom-left {
+    --wails-resize: bottom-left;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+}
+```
+
+**Значения:**
+- `all` - Изменение размера со всех краев
+- `top`, `bottom`, `left`, `right` - Конкретные края
+- `top-left`, `top-right`, `bottom-left`, `bottom-right` - Углы
+- `none` - Без изменения размера
+
+### Пример маржера изменения размера
+
+```html
+<div class="window">
+    <div class="titlebar">...</div>
+    <div class="content">...</div>
+    <div class="resize-handle resize-bottom-right"></div>
+</div>
+```
+
+```css
+.resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+}
+
+.resize-bottom-right {
+    --wails-resize: bottom-right;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+```
+
+## Платформо-специфичное поведение
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Окна без рамки в Windows:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+    ```
+    
+    **Возможности:**
+    - Автоматическая тень (drop shadow)
+    - Поддержка макетов привязки (Snap layouts) (Windows 11)
+    - Поддержка Aero Snap
+    - Масштабирование DPI
+    
+    **Отключение декораций:**
+    ```go
+    Windows: application.WindowsOptions{
+        DisableFramelessWindowDecorations: true,
+    },
+    ```
+    
+    **Snap Assist:**
+    ```go
+    // Запуск Snap Assist в Windows 11
+    window.SnapAssist()
+    ```
+    
+    **Пользовательская высота панели заголовка:**
+    Windows автоматически обнаруживает области перетаскивания из CSS.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Окна без рамки в macOS:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+    })
+    ```
+    
+    **Возможности:**
+    - Нативная поддержка полноэкранного режима
+    - Кнопки светофора (опционально)
+    - Эффекты вибрости (Vibrancy)
+    - Прозрачная панель заголовка
+    
+    **Скрытие кнопок светофора:**
+    ```go
+    Mac: application.MacOptions{
+        TitleBarStyle: application.MacTitleBarStyleHidden,
+    },
+    ```
+    
+    **Невидимая панель заголовка:**Позволяет перетаскивать окно, скрывая заголовок. Это работает только для окон без рамки или использующих `AppearsTransparent`:
+    ```go
+    Mac: application.MacOptions{
+        InvisibleTitleBarHeight: 40,
+    },
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Окна без рамки в Linux:**
+    
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+    })
+    ```
+    
+    **Возможности:**
+    - Базовая поддержка окон без рамки
+    - Области перетаскивания через CSS
+    - Зависит от среды рабочего стола
+    
+    **Примечания по средам рабочего стола:**
+    - **GNOME:** Хорошая поддержка
+    - **KDE Plasma:** Хорошая поддержка
+    - **XFCE:** Базовая поддержка
+    - **Tiling WMs:** Ограниченная поддержка
+    
+    **Требуется композитор:**
+    Для прозрачности необходим композитор (большинство современных сред рабочего стола его имеют).
+  </TabItem>
+</Tabs>
+
+## Общие шаблоны
+
+### Шаблон 1: Современная панель заголовка
+
+```html
+<div class="modern-titlebar">
+    <div class="app-icon">
+        <img src="/icon.png" alt="App Icon">
+    </div>
+    <div class="title">My Application</div>
+    <div class="controls">
+        <button class="minimize">−</button>
+        <button class="maximize">□</button>
+        <button class="close">×</button>
+    </div>
+</div>
+```
+
+```css
+.modern-titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: linear-gradient(to bottom, #3a3a3a, #2c2c2c);
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0 16px;
+}
+
+.app-icon {
+    --wails-draggable: no-drag;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.title {
+    flex: 1;
+    font-size: 13px;
+    color: #e0e0e0;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 1px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 46px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #e0e0e0;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+```
+
+### Шаблон 2: Экран приветствия (Splash Screen)
+
+```go
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "Loading...",
+    Width:          400,
+    Height:         300,
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.splash {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    text-align: center;
+}
+```
+
+### Шаблон 3: Окно со скругленными углами
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+    margin: 8px;
+}
+
+.window {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    height: calc(100vh - 16px);
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+```
+
+### Шаблон 4: Оверлейное окно
+
+```go
+overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless:      true,
+    AlwaysOnTop:    true,
+    BackgroundType: application.BackgroundTypeTransparent,
+})
+```
+
+```css
+body {
+    background: transparent;
+}
+
+.overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 20px;
+}
+```
+
+## Полный пример
+
+Вот готовый к использованию пример окна без рамки:
+
+**Go:**
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Frameless App",
+    })
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:     "Frameless Application",
+        Width:     1000,
+        Height:    700,
+        MinWidth:  800,
+        MinHeight: 600,
+        Frameless: true,
+        
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        
+        Mac: application.MacOptions{
+            TitleBarAppearsTransparent: true,
+            InvisibleTitleBarHeight:    40,
+        },
+        
+        Windows: application.WindowsOptions{
+            DisableFramelessWindowDecorations: false,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+**HTML:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="window">
+        <div class="titlebar">
+            <div class="title">Frameless Application</div>
+            <div class="controls">
+                <button class="minimize" title="Minimise">−</button>
+                <button class="maximize" title="Maximise">□</button>
+                <button class="close" title="Close">×</button>
+            </div>
+        </div>
+        <div class="content">
+            <h1>Hello from Frameless Window!</h1>
+        </div>
+    </div>
+    <script src="/main.js" type="module"></script>
+</body>
+</html>
+```
+
+**CSS:**
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+}
+
+.window {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.titlebar {
+    --wails-draggable: drag;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 16px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    user-select: none;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+.controls button {
+    --wails-draggable: no-drag;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.controls .close:hover {
+    background: #e81123;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 40px;
+    overflow: auto;
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// Кнопка сворачивания
+document.querySelector('.minimize').addEventListener('click', () => {
+    Window.Minimise()
+})
+
+// Кнопка разворачивания/восстановления
+const maximiseBtn = document.querySelector('.maximize')
+maximiseBtn.addEventListener('click', async () => {
+    const isMaximised = await Window.IsMaximised()
+
+    if (isMaximised) {
+        await Window.Restore()
+    } else {
+        await Window.Maximise()
+    }
+
+    updateMaximiseButton()
+})
+
+// Кнопка закрытия
+document.querySelector('.close').addEventListener('click', () => {
+    Window.Close()
+})
+
+// Обновление иконки кнопки разворачивания
+async function updateMaximiseButton() {
+    const isMaximised = await Window.IsMaximised()
+    maximiseBtn.textContent = isMaximised ? '❐' : '□'
+    maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
+}
+
+// Начальное состояние
+updateMaximiseButton()
+```
+
+## Лучшие практики
+
+### ✅ Что делать
+
+- **Обеспечьте область перетаскивания** — Пользователи должны иметь возможность перемещать окно
+- **Реализуйте системные кнопки** — Закрытие, сворачивание, разворачивание
+- **Установите минимальный размер** — Предотвращает появление нерабочих макетов
+- **Тестируйте на всех платформах** — Поведение может отличаться
+- **Используйте CSS для областей перетаскивания** — Гибко и удобно поддерживать
+- **Обеспечьте визуальную обратную связь** — Состояния наведения на кнопках
+
+### ❌ Чего не делать
+
+- **Не забывайте о маржерах изменения размера** — Если окно можно изменять по размеру
+- **Не делайте всё окно областью перетаскивания** — Это блокирует взаимодействие
+- **Не забывайте про no-drag на кнопках** — Они не будут работать---
+
+**Возникли вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примером frameless](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless).

@@ -1,0 +1,286 @@
+---
+title: Создание пользовательских шаблонов
+description: Узнайте, как создавать и настраивать собственные шаблоны Wails v3
+sidebar:
+    order: 50
+---
+
+Это руководство проведет вас через процесс создания пользовательского шаблона для Wails v3.
+
+## Зачем мне создавать пользовательский шаблон?
+
+Wails поставляется с рядом предварительно настроенных шаблонов, которые позволяют быстро запустить ваше приложение. Но если вам нужна более индивидуальная настройка, вы можете создать собственный шаблон, соответствующий вашим потребностям. Затем его можно поделиться с сообществом Wails, чтобы другие могли его использовать.
+
+### 1. Генерация шаблона
+
+Для создания пользовательского шаблона вы можете использовать команду `wails generate template`:
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+Это создаст новую директорию с именем "mytemplate" в вашей текущей директории.
+
+Команда `wails3 generate template` поддерживает следующие параметры:
+
+| Параметр         | Описание                                       | Значение по умолчанию   |
+|----------------|---------------------------------------------------|-------------------|
+| `-name`        | Имя вашего шаблона (обязательно)              | -                 |
+| `-frontend`    | Путь к существующей директории фронтенда для включения | -                 |
+| `-author`      | Автор шаблона                                 | -                 |
+| `-description` | Описание шаблона                              | -                 |
+| `-helpurl`     | URL для документации по шаблону               | -                 |
+| `-dir`         | Директория для генерации шаблона              | Текущая директория |
+| `-version`     | Версия шаблона                                | v0.0.1            |
+
+Например, чтобы создать шаблон со всеми параметрами:
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  Использование параметра `-frontend` скопирует существующий проект веб-фронтенда в шаблон.
+  :::
+
+### 2. Настройка метаданных шаблона
+
+Если вы не указали конфигурацию шаблона при его генерации, вы можете обновить файл `template.json` в директории шаблона:
+
+```json5
+{
+  "name": "Your Template Name",          // Отображаемое имя вашего шаблона
+  "shortname": "template-shortname",     // Используется при ссылке на ваш шаблон
+  "author": "Your Name",                 // Автор шаблона
+  "description": "Template description", // Описание шаблона
+  "helpurl": "https://your-docs.com",    // URL документации
+  "version": "v0.0.1",                   // Версия шаблона
+  "schema": 3                            // Должно оставаться равным 3 для Wails v3
+}
+```
+:::caution
+Поле `schema` должно оставаться равным `3` для совместимости с Wails v3.
+:::
+
+### 3. Настройка задач сборки
+
+В директории `build` находится файл `Taskfile.yml`, где вы можете определить процесс сборки вашего шаблона.
+Этот файл использует [Task](https://taskfile.dev) для автоматизации сборки. Ключевые шаги:
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. Настройка фронтенда
+
+Если вы не использовали `-frontend` при генерации шаблона, вам нужно добавить файлы фронтенда в ваш шаблон.
+
+Есть несколько способов настроить ваш фронтенд: начиная с нуля или используя существующий фреймворк.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+Теперь, когда файлы фронтенда размещены, обновите `common/Taskfile.yml` соответствующими командами:
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  Для этого примера стандартные задачи не требуют обновления, так как они используют стандартные команды `npm install` и `npm run build`.
+  :::
+
+### 5. Настройка приложения Go
+
+Стандартные файлы в директории шаблона достаточны, чтобы пользователи могли начать работу. Однако вы можете захотеть предоставить дополнительную функциональность, чтобы продемонстрировать возможности вашего шаблона. Лучший способ сделать это — переименовать `main.go.tmpl` в `main.go` и отредактировать его как обычный Go-файл. После завершения убедитесь, что вы снова переименовали его в `main.go.tmpl` перед фиксацией изменений. Если вас не волнует наличие шаблонного файла `main.go` (шаблон по умолчанию подставляет имя проекта в поле `Name` приложения), вы можете пропустить этот шаг.------------------------|---------------------------------------|----------------------------------|
+| `Name`                 | Имя проекта                           | `"MyApp"`                        |
+| `BinaryName`           | Имя сгенерированного бинарного файла  | `"myapp"`                        |
+| `ProductName`          | Имя продукта                          | `"My Application"`               |
+| `ProductDescription`   | Описание продукта                     | `"An awesome application"`       |
+| `ProductVersion`       | Версия продукта                       | `"1.0.0"`                        |
+| `ProductCompany`       | Название компании                     | `"My Company Ltd"`               |
+| `ProductCopyright`     | Информация об авторских правах        | `"Copyright 2024 My Company Ltd"`|
+| `ProductComments`      | Дополнительные комментарии к продукту | `"Built with Wails"`             |
+| `ProductIdentifier`    | Уникальный идентификатор продукта     | `"com.mycompany.myapp"`          |
+| `Typescript`           | Используется ли TypeScript            | `true` или `false`               |
+| `WailsVersion`         | Версия Wails                          | `"3.0.0"`                        |
+
+Вы можете использовать эти переменные в своих файлах шаблона с помощью синтаксиса шаблонов Go:
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    Шаблонизация может применяться к любому файлу в вашем шаблоне, включая файлы html, при условии, что в имени файла есть `.tmpl`.
+    :::
+
+### 6. Тестирование вашего шаблона
+
+Чтобы протестировать ваш шаблон:
+
+1. Сгенерируйте проект с использованием вашего шаблона: `wails3 init -n testproject -t path/to/your/template`
+2. Запустите `wails3 build`, чтобы создать релизную версию и убедитесь, что бинарный файл в `bin` работает корректно
+3. Запустите `wails3 dev`, чтобы запустить сервер разработки. 
+4. Проверьте, что изменения во фронтенд-коде отражаются в приложении.
+5. Проверьте, что изменения в Go-коде приводят к пересборке и перезапуску приложения
+
+### 7. Публикация вашего шаблона
+
+Когда ваш шаблон будет готов, вы можете поделиться им с сообществом, разместив его на GitHub. Вот как это сделать:
+
+1. Создайте новый репозиторий GitHub для вашего шаблона
+2. Загрузите код шаблона в репозиторий
+3. Помечайте релизы с использованием семантического версионирования (например, v1.0.0)
+
+Пользователи смогут использовать ваш шаблон напрямую из GitHub по HTTPS-URL:
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+Вы также можете указать конкретную версию, используя формат URL:
+
+```bash
+# Использовать конкретный тег версии
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# Использовать конкретную ветку
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+Чтобы протестировать ваш шаблон перед публикацией:
+
+1. Загрузите изменения в GitHub
+2. Создайте новый тестовый проект, используя HTTPS-URL:
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. Убедитесь, что все файлы сгенерированы корректно
+4. Протестируйте процесс сборки и разработки, как описано в разделе тестирования
+
+    :::note
+    Убедитесь, что ваш репозиторий является публичным, если вы хотите, чтобы другие могли использовать ваш шаблон.
+    :::
+
+Для получения дополнительной информации посетите [документацию Wails](https://wails.io)
+
+
+## Лучшие практики
+
+Давайте обсудим несколько ключевых практик, которые помогут сделать ваш шаблон более полезным и удобным для поддержки. Вот основные аспекты, на которых стоит сосредоточиться:
+
+1. **Сделайте ваш шаблон понятным**
+   - Напишите четкое и полезное руководство README.md, которое поможет пользователям быстро начать работу
+   - Добавьте комментарии в файлы конфигурации, объясняющие причины ваших решений
+   - Показывайте примеры распространенных настроек — пользователям нравится видеть реальные варианты использования!
+
+2. **Поддерживайте зависимости в актуальном состоянии**
+   - Следите за обновлениями пакетов фронтенда
+   - Фиксируйте конкретные версии в package.json, чтобы избежать неожиданных проблем
+   - Заранее сообщайте пользователям, что им потребуется установить
+
+3. **Заботьтесь о своем шаблоне**
+   - Регулярно обновляйте его
+   - Тщательно тестируйте перед публикацией
+   - Делитесь им с сообществом Wails — мы будем рады увидеть, что вы создали!

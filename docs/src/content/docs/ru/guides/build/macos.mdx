@@ -1,0 +1,145 @@
+---
+title: Упаковка для macOS
+description: Упакуйте ваше приложение Wails для распространения на macOS
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Пакет приложения
+
+Упакуйте ваше приложение в стандартный пакет `.app` для macOS:
+
+```bash
+wails3 package GOOS=darwin
+```
+
+Это создаст `bin/<AppName>.app`, содержащий:
+- Скомпилированный бинарный файл в `Contents/MacOS/`
+- Иконку приложения в `Contents/Resources/` (из `icons.icns` или, при наличии, из каталога ресурсов `Assets.car`)
+- `Info.plist` с метаданными приложения
+
+### Универсальный бинарный файл
+
+Соберите приложение для Apple Silicon и Intel Mac:
+
+```bash
+wails3 task darwin:package:universal
+```
+
+Это создаст единый `.app`, который нативно работает на обеих архитектурах. Универсальные бинарные файлы можно собирать на любой платформе — на Linux и Windows автоматически используется `wails3 tool lipo`.
+
+## Настройка пакета
+
+Отредактируйте `build/darwin/Info.plist` для настройки:
+
+- Идентификатор пакета (`CFBundleIdentifier`)
+- Имя и версия приложения
+- Минимальная версия macOS
+- Ассоциации файлов
+- URL-схемы
+
+Иконка приложения генерируется из ресурсов в директории `build/`. Используйте задачу `generate:icons`:
+
+```bash
+wails3 task generate:icons
+```
+
+Она использует `build/appicon.png` для создания `darwin/icons.icns` и `windows/icon.ico`. На macOS вы также можете предоставить `build/appicon.icon` (формат Icon Composer): задача передаст `-iconcomposerinput appicon.icon -macassetdir darwin`, что создаст `Assets.car` и `darwin/icons.icns` из файла `.icon` (пропускается на платформах, отличных от macOS). При наличии `Assets.car` запустите задачу `update:build-assets`, чтобы `Info.plist` и `CFBundleIconName` были соответствующим образом обновлены:
+
+```bash
+wails3 task update:build-assets
+```
+
+Чтобы выполнить команду для иконок вручную из директории `build/`:
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## Подпись кода
+
+Подпишите ваше приложение для распространения:
+
+```bash
+# С использованием обертки (автоматически определяет платформу)
+wails3 sign GOOS=darwin
+
+# Или напрямую через задачу
+wails3 task darwin:sign
+```
+
+Настройте подпись в `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### Нотариализация
+
+Для приложений, распространяемых вне Mac App Store, Apple требует нотариализацию:
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+Сначала сохраните ваши учетные данные:
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+Настройте в `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+См. [Подписание приложений](/ru/guides/build/signing) для подробностей.
+
+## Установщик DMG
+
+Создайте образ диска DMG для распространения:
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+Настройте фон и макет DMG, отредактировав ресурсы в `build/darwin/dmg/`.
+</Aside>
+
+## Устранение неполадок
+
+### "Приложение повреждено и не может быть открыто"
+
+Приложение не подписано. Либо подпишите его сертификатом Developer ID, либо пользователи могут обойти Gatekeeper:
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### Ошибка нотариализации
+
+Распространенные проблемы:
+- **Неверные учетные данные**: Повторно выполните `wails3 signing credentials`
+- **Требуется защищенный режим выполнения**: Убедитесь, что права включают `com.apple.security.cs.allow-unsigned-executable-memory`, если это необходимо
+- **Отсутствует метка времени**: Процесс подписи должен автоматически включать метку времени
+
+### Кросс-скомпилированное приложение не запускается
+
+Кросс-скомпилированные бинарные файлы macOS не подписаны. Перенесите их на Mac и подпишите перед тестированием:
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

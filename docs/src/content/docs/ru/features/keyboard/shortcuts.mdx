@@ -1,0 +1,438 @@
+---
+title: Горячие клавиши
+description: Регистрация глобальных горячих клавиш для быстрого доступа к функционалу
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails предоставляет мощную систему привязки клавиш, которая позволяет регистрировать глобальные горячие клавиши, работающие во всех окнах вашего приложения. Это позволяет пользователям быстро получать доступ к функционалу без необходимости навигации через меню.
+
+## Доступ к менеджеру привязок клавиш
+
+Менеджер привязок клавиш доступен через свойство `KeyBindings` в экземпляре вашего приложения:
+
+```go
+app := application.New(application.Options{
+    Name: "Keyboard Shortcuts Demo",
+})
+
+// Доступ к менеджеру привязок клавиш
+keyBindings := app.KeyBinding
+```
+
+## Добавление привязок клавиш
+
+### Базовая привязка клавиши
+
+Зарегистрируйте простую горячую клавишу:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // Обработка действия сохранения
+    app.Logger.Info("Save shortcut triggered")
+    // Выполнение операции сохранения...
+})
+```
+
+### Несколько привязок клавиш
+
+Зарегистрируйте несколько горячих клавиш для распространенных операций:
+
+```go
+// Операции с файлами
+app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+    // Новый файл
+    window.EmitEvent("file:new", nil)
+})
+
+app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+    // Открыть файл
+    dialog := app.Dialog.OpenFile()
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // Сохранить файл
+    window.EmitEvent("file:save", nil)
+})
+
+// Операции редактирования
+app.KeyBinding.Add("Ctrl+Z", func(window application.Window) {
+    // Отменить
+    window.EmitEvent("edit:undo", nil)
+})
+
+app.KeyBinding.Add("Ctrl+Y", func(window application.Window) {
+    // Повторить (Windows/Linux)
+    window.EmitEvent("edit:redo", nil)
+})
+
+app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
+    // Повторить (macOS)
+    window.EmitEvent("edit:redo", nil)
+})
+```
+
+## Акселераторы привязок клавиш
+
+### Формат акселератора
+
+Привязки клавиш используют стандартный формат акселератора с модификаторами и клавишами:
+
+```go
+// Клавиши-модификаторы
+"Ctrl+S"        // Control + S
+"Cmd+S"         // Command + S (macOS)
+"Alt+F4"        // Alt + F4
+"Shift+Ctrl+Z"  // Shift + Control + Z
+
+// Функциональные клавиши
+"F1"            // Клавиша F1
+"Ctrl+F5"       // Control + F5
+
+// Специальные клавиши
+"Escape"        // Клавиша Escape
+"Enter"         // Клавиша Enter
+"Space"         // Пробел
+"Tab"           // Клавиша Tab
+"Backspace"     // Клавиша Backspace
+"Delete"        // Клавиша Delete
+
+// Стрелки
+"Up"            // Стрелка вверх
+"Down"          // Стрелка вниз
+"Left"          // Стрелка влево
+"Right"         // Стрелка вправо
+```
+
+### Платформенно-специфичные акселераторы
+
+Обрабатывайте различия платформ для распространенных горячих клавиш:
+
+```go
+import "runtime"
+
+// Кроссплатформенная горячая клавиша сохранения
+if runtime.GOOS == "darwin" {
+    app.KeyBinding.Add("Cmd+S", saveHandler)
+} else {
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
+}
+
+// Или зарегистрируйте обе
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
+```
+
+## Управление привязками клавиш
+
+### Удаление привязок клавиш
+
+Удаляйте привязки клавиш, когда они больше не нужны:
+
+```go
+// Удаление конкретной привязки клавиши
+app.KeyBinding.Remove("Ctrl+S")
+
+// Пример: временная привязка клавиши для модального окна
+app.KeyBinding.Add("Escape", func(window application.Window) {
+    // Закрыть модальное окно
+    window.EmitEvent("modal:close", nil)
+    // Удалить эту временную привязку
+    app.KeyBinding.Remove("Escape")
+})
+```
+
+### Получение всех привязок клавиш
+
+Получите все зарегистрированные привязки клавиш:
+
+```go
+allBindings := app.KeyBinding.GetAll()
+for _, binding := range allBindings {
+    app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
+}
+```
+
+## Расширенное использование
+
+### Привязки клавиш, учитывающие контекст
+
+Сделайте привязки клавиш учитывающими контекст, проверяя состояние приложения:
+
+```go
+app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+    // Проверка текущего состояния приложения
+    if isEditMode() {
+        // Сохранить документ
+        saveDocument()
+    } else if isInSettings() {
+        // Сохранить настройки
+        saveSettings()
+    } else {
+        app.Logger.Info("Save not available in current context")
+    }
+})
+```
+
+### Действия, специфичные для окна
+
+Привязки клавиш получают активное окно, что позволяет выполнять поведение, специфичное для окна:
+
+```go
+app.KeyBinding.Add("F11", func(window application.Window) {
+    // Переключение полноэкранного режима для активного окна
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+
+app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
+    // Закрыть активное окно
+    window.Close()
+})
+```
+
+### Динамическое управление привязками клавиш
+
+Динамически добавляйте и удаляйте привязки клавиш в зависимости от состояния приложения:
+
+```go
+func enableEditMode() {
+    // Добавить привязки клавиш, специфичные для режима редактирования
+    app.KeyBinding.Add("Ctrl+B", func(window application.Window) {
+        window.EmitEvent("format:bold", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+I", func(window application.Window) {
+        window.EmitEvent("format:italic", nil)
+    })
+    
+    app.KeyBinding.Add("Ctrl+U", func(window application.Window) {
+        window.EmitEvent("format:underline", nil)
+    })
+}
+
+func disableEditMode() {
+    // Удалить привязки клавиш, специфичные для режима редактирования
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
+}
+```
+
+## Учет особенностей платформ
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    На macOS:
+    
+    - Используйте `Cmd` вместо `Ctrl` для стандартных горячих клавиш
+    - `Cmd+Q` обычно зарезервирован для выхода из приложения
+    - `Cmd+H` скрывает приложение
+    - `Cmd+M` сворачивает окна
+    - Учитывайте стандартные горячие клавиши macOS
+    
+    Распространенные шаблоны для macOS:
+    ```go
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // Новый
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // Открыть
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // Сохранить
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // Отменить
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // Повторить
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // Копировать
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // Вставить
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    На Windows:
+    
+    - Используйте `Ctrl` для стандартных горячих клавиш
+    - `Alt+F4` закрывает приложения
+    - `F1` обычно открывает справку
+    - Учитывайте соглашения по клавиатурным сокращениям Windows
+    
+    Распространенные шаблоны для Windows:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // Новый
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Открыть
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Сохранить
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Отменить
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // Повторить
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Копировать
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Вставить
+    app.KeyBinding.Add("F1", helpHandler)            // Справка
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    На Linux:
+    
+    - Как правило, следует соглашениям Windows с использованием `Ctrl`
+    - Может варьироваться в зависимости от рабочего стола
+    - Учитывайте стандартные горячие клавиши GNOME/KDE
+    - Некоторые рабочие среды резервируют определенные горячие клавиши
+    
+    Распространенные шаблоны для Linux:
+    ```go
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // Новый
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Открыть
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Сохранить
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Отменить
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // Повторить
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Копировать
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Вставить
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## Лучшие практики
+
+1. **Используйте стандартные горячие клавиши**: Следуйте платформенным соглашениям для распространенных операций:
+   ```go
+   // Кроссплатформенное сохранение
+   if runtime.GOOS == "darwin" {```go
+   app.KeyBinding.Add("Cmd+S", saveHandler)
+   } else {
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
+   }
+   ```
+
+2. **Предоставьте визуальную обратную связь**: сообщите пользователям, когда срабатывают сочетания клавиш:
+   ```go
+   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+       saveDocument()
+       // Показать краткое уведомление
+       window.EmitEvent("notification:show", "Document saved")
+   })
+   ```
+
+3. **Обрабатывайте конфликты**: будьте осторожны, чтобы не переопределять важные системные горячие клавиши:
+   ```go
+   // Избегайте переопределения системных горячих клавиш, таких как:
+   // Ctrl+Alt+Del (Windows)
+   // Cmd+Space (Spotlight в macOS)
+   // Alt+Tab (переключение окон)
+   ```
+
+4. **Документируйте горячие клавиши**: предоставьте справку или документацию по доступным сочетаниям клавиш:
+   ```go
+   app.KeyBinding.Add("F1", func(window application.Window) {
+       // Показать диалог справки с доступными горячими клавишами
+       showKeyboardShortcutsHelp()
+   })
+   ```
+
+5. **Очищайте ресурсы**: удаляйте временные привязки клавиш, когда они больше не нужны:
+   ```go
+   func enterEditMode() {
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
+   }
+   
+   func exitEditModeHandler(window application.Window) {
+       exitEditMode()
+       app.KeyBinding.Remove("Escape") // Очистка временной привязки
+   }
+   ```
+
+## Полный пример
+
+Вот полный пример текстового редактора с горячими клавишами:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Text Editor with Shortcuts",
+    })
+
+    // Операции с файлами
+    if runtime.GOOS == "darwin" {
+        app.KeyBinding.Add("Cmd+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Cmd+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Cmd+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    } else {
+        app.KeyBinding.Add("Ctrl+N", func(window application.Window) {
+            window.EmitEvent("file:new", nil)
+        })
+        app.KeyBinding.Add("Ctrl+O", func(window application.Window) {
+            openFile(app, window)
+        })
+        app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
+            window.EmitEvent("file:save", nil)
+        })
+    }
+
+    // Операции с видом
+    app.KeyBinding.Add("F11", func(window application.Window) {
+        window.SetFullscreen(!window.Fullscreen())
+    })
+
+    app.KeyBinding.Add("F1", func(window application.Window) {
+        showKeyboardShortcuts(window)
+    })
+
+    // Создание главного окна
+    window := app.Window.New()
+    window.SetTitle("Text Editor")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func openFile(app *application.App, window application.Window) {
+    dialog := app.Dialog.OpenFile()
+    dialog.AddFilter("Text Files", "*.txt;*.md")
+    
+    if file, err := dialog.PromptForSingleSelection(); err == nil {
+        window.EmitEvent("file:open", file)
+    }
+}
+
+func showKeyboardShortcuts(window application.Window) {
+    shortcuts := `
+Keyboard Shortcuts:
+- Ctrl/Cmd+N: New file
+- Ctrl/Cmd+O: Open file
+- Ctrl/Cmd+S: Save file
+- F11: Toggle fullscreen
+- F1: Show this help
+`
+    window.EmitEvent("help:show", shortcuts)
+}
+```
+
+:::tip[Совет профессионала]
+Проверяйте свои привязки клавиш на всех целевых платформах, чтобы убедиться, что они работают корректно и не конфликтуют с системными горячими клавишами.
+:::
+
+:::danger[Предупреждение]
+Будьте осторожны, чтобы не переопределять критически важные системные горячие клавиши. Некоторые комбинации клавиш зарезервированы операционной системой и не могут быть перехвачены приложениями.
+:::

@@ -1,0 +1,397 @@
+---
+title: Перечисления
+description: Автоматическая генерация перечислений из констант Go
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Привязки перечислений
+
+Генератор привязок Wails v3 **автоматически обнаруживает типы констант Go и генерирует TypeScript-перечисления или объекты `const` JavaScript**. Не нужно регистрировать или настраивать — просто определите свои типы и константы в Go, а генератор сделает всё остальное.
+
+:::note
+В отличие от Wails v2, **не нужно вызывать `EnumBind`** или регистрировать перечисления вручную. Генератор автоматически обнаруживает их в исходном коде.
+:::
+
+## Быстрый старт
+
+**Определите именованный тип с константами в Go:**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**Используйте тип в структуре или методе сервиса:**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**Сгенерируйте привязки:**
+
+```bash
+wails3 generate bindings
+```
+
+Вывод генератора отчитается о количестве перечислений наряду со структурами:
+
+```
+3 Enums, 5 Models
+```
+
+**Используйте во фронтенде:**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**Вот и всё!** Тип перечисления enforced как в Go, так и в JavaScript/TypeScript.
+
+## Определение перечислений
+
+Перечисление в Wails — это **именованный тип** с базовым underlying-типом, объединённый с **объявлениями констант** этого типа.
+
+### Строковые перечисления
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**Сгенерированный TypeScript:**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**Сгенерированный JavaScript:**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### Целочисленные перечисления
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**Сгенерированный TypeScript:**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### Перечисления через алиасы типов
+
+Алиасы типов Go (`=`) также работают, но генерируют немного другой вывод — определение типа плюс объект `const`, а не нативное TypeScript `enum`:
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**Сгенерированный TypeScript:**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**Сгенерированный JavaScript:**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**Именованные типы** (`type Title string`) генерируют нативные объявления TypeScript `enum` с членом `$zero`.
+**Алиасы типов** (`type Age = int`) генерируют пару `type` + `const` namespace без `$zero`.
+:::
+
+## Значение `$zero`
+
+Каждое перечисление на основе именованного типа включает специальный член `$zero`, представляющий **нулевое значение Go** для underlying-типа:
+
+| Underlying Type | Значение `$zero` |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+Когда поле структуры использует тип перечисления и значение не предоставлено, конструктор по умолчанию использует `$zero`:
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Это обеспечивает безопасную инициализацию типов при генерации классов — поля перечисления никогда не бывают `undefined`. При генерации интерфейсов TypeScript (с помощью флага `-i`) конструктора нет, и поля могут отсутствовать, как обычно.
+
+## Использование перечислений в структурах
+
+Когда поле структуры имеет тип перечисления, сгенерированный код **сохраняет этот тип**, а не падает обратно к примитиву:
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**Сгенерированный TypeScript:**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Поле `Title` имеет тип `Title`, а не `string`. Это даёт вашему IDE полную автодополнение и проверку типов для значений перечисления.
+
+## Перечисления из импортированных пакетов
+
+Перечисления, определённые в отдельных пакетах, полностью поддерживаются. Они генерируются в соответствующий каталог пакета:
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+Перечисление `Title` генерируется в файле моделей `services`, а пути импорта разрешаются автоматически:
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## Методы перечислений
+
+Вы можете добавлять методы к своим типам перечислений в Go. Это не влияет на генерацию привязок, но обеспечивает полезную функциональность на стороне сервера:
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+Сгенерированное перечисление идентично независимо от того, существуют ли методы Go для типа.
+
+## Комментарии и документация
+
+Генератор сохраняет комментарии Go как JSDoc в сгенерированном выводе:
+
+- **Комментарии типов** становятся документационным комментарием перечисления
+- **Комментарии групп констант** становятся разделителями секций
+- **Индивидуальные комментарии констант** становятся документационными комментариями членов
+- **Встроенные комментарии** сохраняются, где это возможно
+
+Это означает, что ваш IDE покажет документацию для значений перечисления при наведении курсора.
+
+## Поддерживаемые underlying-типы
+
+Генератор привязок поддерживает перечисления со следующими underlying-типами Go:
+
+| Тип Go | Работает как перечисление |
+|---------|:---:|
+| `string` | Да |
+| `int`, `int8`, `int16`, `int32`, `int64` | Да |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | Да |
+| `float32`, `float64` | Да |
+| `byte` (`uint8`) | Да |
+| `rune` (`int32`) | Да |
+| `bool` | Да |
+| `complex64`, `complex128` | Нет |---
+
+**Возникли вопросы?** Задайте их в [Discord](https://discord.gg/JDdSxwjhGf) или ознакомьтесь с [примерами привязок](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

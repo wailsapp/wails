@@ -1,0 +1,721 @@
+---
+title: Список задач
+description: Создайте полноценное приложение TODO со операциями CRUD
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+import { Image } from 'astro:assets';
+import todoApp from "../../../../assets/todo-app.png";
+
+В этом руководстве вы создадите полностью функциональное приложение для списка задач (TODO). Это следующий шаг после руководства по сервису QR-кодов: вы научитесь управлять состоянием, обрабатывать несколько операций и создавать отполированный пользовательский интерфейс.
+
+**Что вы создадите:**
+- Полноценное приложение TODO с функциями добавления, выполнения и удаления
+- Потокобезопасное управление состоянием (важно для десктопных приложений)
+- Современный дизайн интерфейса в стиле glassmorphism
+- Всё это на чистом JavaScript — без необходимости использовать фреймворки
+
+**Что вы узнаете:**
+- Операции CRUD (Create, Read, Update, Delete)
+- Безопасное управление изменяемым состоянием в Go
+- Обработка пользовательского ввода и валидация
+- Создание отзывчивых интерфейсов, которые ощущаются как нативные
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 600px; margin: 2rem auto; display: block; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" />
+
+**Время на выполнение:** 20 минут
+
+## Создайте свой проект
+
+<Steps>
+
+1. **Сгенерируйте проект**
+
+   Сначала создайте новый проект Wails. Мы будем использовать шаблон по умолчанию (vanilla), который даёт нам чистую стартовую точку:
+
+   ```bash
+   wails3 init -n todo-app
+   cd todo-app
+   ```
+
+   Это создаст новый проект с базовой структурой: бэкенд на Go в корне, код фронтенда в директории `frontend/`.
+
+2. **Создайте сервис TODO**
+
+   Сервис TODO будет управлять состоянием нашего приложения и предоставлять методы для операций CRUD. В отличие от веб-сервера, где каждый запрос изолирован, десктопные приложения могут иметь несколько одновременных операций, поэтому нам нужно потокобезопасное управление состоянием.
+
+   Удалите `greetservice.go` и создайте новый файл `todoservice.go`:
+
+   ```go title="todoservice.go"
+   package main
+
+   import (
+       "errors"
+       "sync"
+   )
+
+   type Todo struct {
+       ID        int    `json:"id"`
+       Title     string `json:"title"`
+       Completed bool   `json:"completed"`
+   }
+
+   type TodoService struct {
+       todos  []Todo
+       nextID int
+       mu     sync.RWMutex
+   }
+
+   func NewTodoService() *TodoService {
+       return &TodoService{
+           todos:  []Todo{},
+           nextID: 1,
+       }
+   }
+
+   func (t *TodoService) GetAll() []Todo {
+       t.mu.RLock()
+       defer t.mu.RUnlock()
+       return t.todos
+   }
+
+   func (t *TodoService) Add(title string) (*Todo, error) {
+       if title == "" {
+           return nil, errors.New("title cannot be empty")
+       }
+
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       todo := Todo{
+           ID:        t.nextID,
+           Title:     title,
+           Completed: false,
+       }
+       t.todos = append(t.todos, todo)
+       t.nextID++
+
+       return &todo, nil
+   }
+
+   func (t *TodoService) Toggle(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i := range t.todos {
+           if t.todos[i].ID == id {
+               t.todos[i].Completed = !t.todos[i].Completed
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+
+   func (t *TodoService) Delete(id int) error {
+       t.mu.Lock()
+       defer t.mu.Unlock()
+
+       for i, todo := range t.todos {
+           if todo.ID == id {
+               t.todos = append(t.todos[:i], t.todos[i+1:]...)
+               return nil
+           }
+       }
+       return errors.New("todo not found")
+   }
+   ```
+
+   **Что здесь происходит:**
+
+   **Структура `Todo`:**
+   - Определяет форму наших данных с полями ID, Title и Completed
+   - Теги `json:` говорят Go, как преобразовать эту структуру в JSON для фронтенда
+   - Каждое поле экспортировано (с заглавной буквы), чтобы генератор биндингов мог его видеть
+
+   **Структура `TodoService`:**
+   - `todos []Todo` — срез, хранящий все наши элементы TODO
+   - `nextID int` — отслеживает следующий ID для назначения (симулирует автоинкремент)
+   - `mu sync.RWMutex` — мьютекс чтения/записи для потокобезопасного доступа
+
+   **Потокобезопасность с помощью `sync.RWMutex`:**
+   - Десктопные приложения могут иметь несколько одновременных операций от интерфейса
+   - `RLock()` позволяет нескольким читателям одновременно (например, несколько вызовов `GetAll`)
+   - `Lock()` даёт эксклюзивный доступ для записи (например, `Add`, `Toggle`, `Delete`)
+   - `defer` гарантирует, что блоки будут сняты, даже если функция вернётся досрочно или вызовет панику
+
+   **Методы:**
+   - `GetAll()` — возвращает все задачи (использует блокировку чтения, так как мы не изменяем данные)
+   - `Add(title)` — создаёт новую задачу, проверяет ввод, увеличивает ID
+   - `Toggle(id)` — переключает статус выполнения задачи
+   - `Delete(id)` — удаляет задачу из среза
+
+   **Обработка ошибок:**
+   - Мы возвращаем `error` последним значением в соответствии с соглашениями Go
+   - Пустые заголовки отклоняются
+   - Операции с несуществующими задачами возвращают ошибки
+   - Эти ошибки становятся исключениями JavaScript на фронтенде
+
+3. **Обновите main.go**
+
+   Зарегистрируйте сервис TODO в вашем приложении Wails. Найдите раздел `Services` в `main.go` и замените GreetService на наш TodoService:
+
+   ```go title="main.go" {5}
+   Services: []application.Service{
+       application.NewService(NewTodoService()),
+   },
+   ```
+
+   **Что здесь происходит:**
+   - Мы удаляем стандартный GreetService и добавляем вместо него наш TodoService
+   - `application.NewService()` оборачивает наш сервис, чтобы Wails мог им управлять
+   - Wails автоматически сгенерирует JavaScript биндинги для всех публичных методов этого сервиса
+
+4. **Создайте пользовательский интерфейс фронтенда**
+
+   Теперь давайте построим фронтенд. Здесь мы будем вызывать наши методы Go и отображать интерфейс. Мы используем чистый JavaScript, чтобы сохранить простоту и показать, как работают биндинги напрямую.
+
+   Замените `frontend/src/main.js`:
+
+   ```javascript title="frontend/src/main.js"
+   import {TodoService} from "../bindings/changeme";
+
+   async function loadTodos() {
+       const todos = await TodoService.GetAll();
+       const list = document.getElementById('todo-list');
+
+       list.innerHTML = todos.map(todo => `
+           <div class="todo ${todo.completed ? 'completed' : ''}">
+               <input type="checkbox"
+                      ${todo.completed ? 'checked' : ''}
+                      onchange="toggleTodo(${todo.id})">
+               <span>${todo.title}</span>
+               <button onclick="deleteTodo(${todo.id})">Delete</button>
+           </div>
+       `).join('');
+   }
+
+   window.addTodo = async () => {
+       const input = document.getElementById('todo-input');
+       const title = input.value.trim();
+
+       if (title) {
+           await TodoService.Add(title);
+           input.value = '';
+           await loadTodos();
+       }
+   }
+
+   window.toggleTodo = async (id) => {
+       await TodoService.Toggle(id);
+       await loadTodos();
+   }
+
+   window.deleteTodo = async (id) => {
+       await TodoService.Delete(id);
+       await loadTodos();
+   }
+
+   // Load todos on startup
+   loadTodos();
+   ```
+
+   **Что здесь происходит:**
+
+   **Импорт биндингов:**
+   - `import {TodoService} from "../bindings/changeme"` — подгружает автоматически сгенерированные биндинги Go
+   - Примечание: `changeme` будет вашим реальным именем модуля из `go.mod`
+
+   **Функция `loadTodos()`:**
+   - Вызывает `TodoService.GetAll()` для получения всех задач из Go
+   - Строит HTML для каждой задачи с помощью шаблонных строк
+   - Динамически добавляет/удаляет класс `completed` для стилизации
+   - Использует атрибуты `onclick` для подключения кнопок к нашим функциям
+   - Объединяет весь HTML и внедряет его в DOM
+
+   **Функции CRUD:**
+   - `addTodo()` — проверяет ввод, вызывает метод Go `Add`, обновляет список
+   - `toggleTodo(id)` — вызывает метод Go `Toggle`, обновляет список
+   - `deleteTodo(id)` — вызывает метод Go `Delete`, обновляет список
+   - Все функции асинхронны, так как вызовы Go возвращают Promises**Зачем привязывать к окну:**
+- `window.addTodo = ...` делает функции доступными из HTML-атрибутов `onclick`
+- Это простой паттерн для vanilla JS (фреймворки обрабатывают это иначе)
+- В продакшене вы, возможно, будете использовать правильное делегирование событий
+
+**Паттерн обновления:**
+- После каждой мутации (добавление/переключение/удаление) мы снова вызываем `loadTodos()`
+- Это гарантирует, что UI остаётся синхронизированным с состоянием Go
+- Альтернатива: пусть методы Go возвращают новое состояние, чтобы избежать второго вызова
+
+5. **Обновите HTML**
+
+HTML обеспечивает структуру нашего приложения TODO. Он минимален и семантичен — магия происходит в JavaScript и CSS.
+
+Замените `frontend/index.html`:
+
+```html title="frontend/index.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TODO App</title>
+    <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+    <div class="container">
+        <h1>My TODOs</h1>
+        <div class="card">
+            <div class="input-box">
+                <input type="text"
+                       id="todo-input"
+                       class="input"
+                       placeholder="Add a new todo..."
+                       onkeypress="if(event.key==='Enter') addTodo()">
+                <button class="btn" onclick="addTodo()">Add</button>
+            </div>
+            <div id="todo-list"></div>
+        </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
+```
+
+**Что здесь происходит:**
+
+**Структура:**
+- `container` — центрирует наше приложение и ограничивает ширину
+- `card` — основная белая карточка, содержащая всё содержимое
+- `input-box` — flex-контейнер для поля ввода и кнопки Add
+- `todo-list` — место, куда JavaScript будет вставлять отдельные элементы TODO
+
+**Обработка событий:**
+- `onkeypress="if(event.key==='Enter') addTodo()"` — добавляет todo при нажатии Enter
+- `onclick="addTodo()"` — добавляет todo при клике на кнопку
+- Встроенные обработчики событий хорошо работают для простых приложений на vanilla JS
+
+**Модульный скрипт:**
+- `<script type="module">` позволяет использовать импорты ES6
+- Наш файл `main.js` может импортировать биндинги и использовать современный JavaScript
+
+6. **Стилизуем приложение**
+
+CSS создаёт современный дизайн с эффектом glassmorphism и плавными переходами. Мы стремимся к отполированному виду, который делает использование приложения приятным.
+
+Замените `frontend/public/style.css`:
+
+```css title="frontend/public/style.css"
+:root {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    font-size: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: rgba(255, 255, 255, 0.87);
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    font-size: 2.5em;
+    font-weight: 300;
+    margin: 0 0 30px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.input {
+    flex: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    height: 50px;
+    padding: 0 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    height: 50px;
+    padding: 0 30px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+#todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    gap: 15px;
+}
+
+.todo:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateX(4px);
+}
+
+.todo.completed {
+    opacity: 0.6;
+}
+
+.todo.completed span {
+    text-decoration: line-through;
+    color: #999;
+}
+
+.todo input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.todo input[type="checkbox"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.todo input[type="checkbox"]:checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.todo input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.todo span {
+    flex: 1;
+    font-size: 16px;
+    color: #333;
+}
+
+.todo button {
+    padding: 8px 16px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    flex-shrink: 0;
+}
+
+.todo:hover button {
+    opacity: 1;
+}
+
+.todo button:hover {
+    background: #ee5a6f;
+    transform: scale(1.05);
+}
+
+#todo-list:empty::before {
+    content: "No todos yet. Add one above!";
+    display: block;
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+```
+
+**Что здесь происходит:**
+
+**Дизайн glassmorphism:**
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` — фиолетовый градиентный фон
+- `backdrop-filter: blur(10px)` — создаёт эффект матового стекла на карточке
+- `rgba(255, 255, 255, 0.95)` — полупрозрачный белый цвет для эффекта стекла
+
+**Кастомная стилизация чекбокса:**
+- `appearance: none` удаляет стандартный чекбокс браузера
+- Мы создаём кастомный закруглённый квадрат с галочкой, используя `::after`
+- Галочка появляется при состоянии `checked` с использованием символа ✓ unicode
+
+**Взаимодействия при наведении:**
+- Элементы TODO сдвигаются вправо при наведении (`transform: translateX(4px)`)
+- Кнопка удаления скрыта до наведения (`opacity: 0` → `opacity: 1`)
+- Кнопки немного увеличиваются при наведении для тактильной обратной связи
+
+**Пустое состояние:**
+- `#todo-list:empty::before` показывает сообщение, когда нет элементов TODO
+- Решение только на CSS — JavaScript не требуется
+
+7. **Запустите приложение**
+
+Давайте посмотрим на него в действии! Запустите сервер разработки:
+
+```bash
+wails3 dev
+```
+
+Приложение скомпилируется и откроется. Попробуйте его:
+- Введите todo и нажмите Enter или кликните Add
+- Нажмите на чекбокс, чтобы отметить его как выполненный
+- Наведите курсор на todo, чтобы увидеть появляющуюся кнопку удаления
+- Обратите внимание, как UI обновляется мгновенно — это работает наш паттерн обновления**Что происходит:**
+- Wails автоматически сгенерировал привязки для методов вашего `TodoService`
+- В режиме разработки включена горячая перезагрузка — попробуйте изменить CSS и посмотрите, как он обновится
+- Ваш код на Go выполняется нативно — никакой трансляции или интерпретации не требуется
+
+</Steps>
+
+## Как это работает
+
+### Потокобезопасное управление состоянием
+
+`sync.RWMutex` обеспечивает безопасный одновременный доступ:
+
+```go
+func (t *TodoService) GetAll() []Todo {
+    t.mu.RLock()  // Блок чтения — допускается несколько читателей
+    defer t.mu.RUnlock()
+    return t.todos
+}
+
+func (t *TodoService) Add(title string) (*Todo, error) {
+    t.mu.Lock()  // Блок записи — эксклюзивный доступ
+    defer t.mu.Unlock()
+    // ... мутации
+}
+```
+
+**Почему это важно:**
+- Несколько вызовов с фронтенда могут происходить одновременно
+- Операции чтения не блокируют друг друга
+- Операции записи получают эксклюзивный доступ
+- `defer` гарантирует, что блоки всегда освобождаются
+
+### Обработка ошибок
+
+Сервис возвращает ошибки для недопустимых операций:
+
+```go
+func (t *TodoService) Add(title string) (*Todo, error) {
+    if title == "" {
+        return nil, errors.New("title cannot be empty")
+    }
+    // ...
+}
+```
+
+На фронтенде вы можете перехватить их:
+
+```javascript
+try {
+    await TodoService.Add(title);
+} catch (err) {
+    alert('Error: ' + err);
+}
+```
+
+### Синхронизация состояния
+
+После каждой мутации мы перезагружаем полный список:
+
+```javascript
+window.addTodo = async () => {
+    await TodoService.Add(title);  // Мутация
+    await loadTodos();             // Обновление
+}
+```
+
+**Альтернативный подход:** Возвращайте обновленный список из каждого метода, чтобы избежать второго вызова.
+
+## Улучшения
+
+### Добавление статистики
+
+Добавьте это в `todoservice.go`:
+
+```go
+type TodoStats struct {
+    Total     int `json:"total"`
+    Completed int `json:"completed"`
+    Active    int `json:"active"`
+}
+
+func (t *TodoService) GetStats() TodoStats {
+    t.mu.RLock()
+    defer t.mu.RUnlock()
+
+    stats := TodoStats{
+        Total: len(t.todos),
+    }
+
+    for _, todo := range t.todos {
+        if todo.Completed {
+            stats.Completed++
+        } else {
+            stats.Active++
+        }
+    }
+
+    return stats
+}
+```
+
+Отобразите на фронтенде:
+
+```javascript
+async function loadTodos() {
+    const [todos, stats] = await Promise.all([
+        TodoService.GetAll(),
+        TodoService.GetStats()
+    ]);
+
+    // Отображение статистики
+    document.getElementById('stats').textContent =
+        `${stats.active} active, ${stats.completed} completed`;
+
+    // ... рендеринг задач
+}
+```
+
+### Добавление "Очистить выполненные"
+
+```go
+func (t *TodoService) ClearCompleted() int {
+    t.mu.Lock()
+    defer t.mu.Unlock()
+
+    removed := 0
+    newTodos := []Todo{}
+
+    for _, todo := range t.todos {
+        if !todo.Completed {
+            newTodos = append(newTodos, todo)
+        } else {
+            removed++
+        }
+    }
+
+    t.todos = newTodos
+    return removed
+}
+```
+
+### Добавление сохранения данных
+
+Для производственных приложений обычно добавляют сохранение данных в базу. См. руководство [Интеграция с базами данных](/guides/patterns/database) для примеров с SQLite, PostgreSQL и т.д.
+
+## Сборка для производства
+
+Когда вы будете готовы распространять свое приложение TODO, соберите его для производства:
+
+```bash
+wails3 build
+```
+
+Это создает оптимизированный нативный исполняемый файл в `build/bin/`:
+- Компилирует ваш код на Go с оптимизациями
+- Собирает ваш фронтенд для производства
+- Упаковывает все в один исполняемый файл
+- Результирующее приложение обычно занимает 10-20 МБ (по сравнению с 150 МБ+ у Electron)
+
+Вы можете запустить исполняемый файл напрямую — не требуется среда выполнения, не нужно запускать серверы. Это настоящее нативное приложение.
+
+## Что вы построили
+
+Вы только что построили полноценное приложение TODO с:
+
+**Полной реализацией CRUD:**
+- Создан сервис с операциями Create, Read, Update и Delete
+- Добавлена валидация ввода и обработка ошибок
+- Изучено, как ошибки Go становятся исключениями JavaScript
+
+**Потокобезопасное управление состоянием:**
+- Использован `sync.RWMutex` для безопасной обработки одновременного доступа
+- Понимание разницы между блокировками чтения (RLock) и блокировками записи (Lock)
+- Увидели, как `defer` предотвращает взаимные блокировки, гарантируя очистку
+
+**Современный, отполированный интерфейс:**
+- Построен стеклянный интерфейс с градиентами и эффектами размытия
+- Созданы пользовательские чекбоксы без использования каких-либо фреймворков
+- Добавлены взаимодействия при наведении и переходы для нативного ощущения
+- Реализовано состояние пустого списка с помощью чистого CSS
+
+**Основы Wails:**
+- Регистрация сервисов и автоматическая генерация привязок
+- Вызов методов Go из JavaScript с помощью async/await
+- Синхронизация состояния между Go и фронтендом
+- Сборка и упаковка нативного десктопного приложения
+
+## Следующие шаги
+
+Теперь, когда вы понимаете операции CRUD и управление состоянием, попробуйте:
+
+- **Добавить сохранение данных:** Сделайте так, чтобы задачи сохранялись после перезапуска приложения с помощью [SQLite](/guides/patterns/database)
+- **Добавить больше функций:** Фильтрация (все/активные/выполненные), редактирование существующих задач, массовые операции
+- **Изучите руководство Notes:** Посмотрите, как работают операции с файлами в [Notes](/ru/tutorials/03-notes-vanilla)
+- **Постройте что-то реальное:** Возьмите эти концепции и постройте свое собственное приложение!

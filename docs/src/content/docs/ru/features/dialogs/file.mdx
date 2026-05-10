@@ -1,0 +1,330 @@
+---
+title: Диалоги выбора файлов
+description: Диалоги открытия, сохранения и выбора папок
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Диалоги выбора файлов
+
+Wails предоставляет **нативные диалоги файлов** с внешним видом, соответствующим платформе, для открытия файлов, сохранения файлов и выбора папок. Простой API с фильтрацией типов файлов, поддержкой множественного выбора и указанием начальных директорий.
+
+## Создание диалогов файлов
+
+Диалоги файлов доступны через менеджер `app.Dialog`:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## Диалог открытия файла
+
+Выберите файлы для открытия:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+openFile(path)
+```
+
+**Сценарии использования:**
+- Открытие документов
+- Импорт файлов
+- Загрузка изображений
+- Выбор файлов конфигурации
+
+### Выбор одного файла
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Open Document").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    // Пользователь отменил действие или произошла ошибка
+    return
+}
+
+// Использование выбранного файла
+data, _ := os.ReadFile(path)
+```
+
+### Выбор нескольких файлов
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+// Обработка всех выбранных файлов
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### С начальной директорией
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Open File").
+    SetDirectory("/Users/me/Documents").
+    PromptForSingleSelection()
+```
+
+## Диалог сохранения файла
+
+Выберите место для сохранения:
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+saveFile(path, data)
+```
+
+**Сценарии использования:**
+- Сохранение документов
+- Экспорт данных
+- Создание новых файлов
+- Сохранение как...
+
+### С начальным именем файла
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("export.csv").
+    AddFilter("CSV Files", "*.csv").
+    PromptForSingleSelection()
+```
+
+### С начальной директорией
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetDirectory("/Users/me/Documents").
+    SetFilename("untitled.txt").
+    PromptForSingleSelection()
+```
+
+### Подтверждение перезаписи
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+// Проверка существования файла
+if _, err := os.Stat(path); err == nil {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Overwrite").
+        SetMessage("File already exists. Overwrite?")
+
+    overwriteBtn := dialog.AddButton("Overwrite")
+    overwriteBtn.OnClick(func() {
+        saveFile(path, data)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+    return
+}
+
+saveFile(path, data)
+```
+
+## Диалог выбора папки
+
+Выберите директорию, используя диалог открытия файла с включенным выбором директорий:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil || path == "" {
+    return
+}
+
+exportToFolder(path)
+```
+
+**Сценарии использования:**
+- Выбор выходной директории
+- Выбор рабочей области
+- Выбор места для резервной копии
+- Выбор директории установки
+
+### С начальной директорией
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    SetDirectory("/Users/me/Documents").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## Фильтры файлов
+
+Используйте метод `AddFilter()` для добавления фильтров типов файлов в диалоги. Каждый вызов добавляет новый вариант фильтра.
+
+### Базовые фильтры
+
+```go
+path, _ := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+```
+
+### Несколько расширений
+
+Используйте точки с запятой для указания нескольких расширений в одном фильтре:
+
+```go
+dialog := app.Dialog.OpenFile().
+    AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+    AddFilter("Documents", "*.txt;*.doc;*.docx;*.pdf").
+    AddFilter("All Files", "*.*")
+```
+
+### Формат шаблона
+
+Используйте **точки с запятой** для разделения нескольких расширений в одном фильтре:
+
+```go
+// Несколько расширений, разделенных точками с запятой
+AddFilter("Images", "*.png;*.jpg;*.gif")
+```
+
+## Полные примеры
+
+### Открытие файла изображения
+
+```go
+func openImage(app *application.App) (image.Image, error) {
+    path, err := app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif;*.bmp").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return nil, err
+    }
+
+    if path == "" {
+        return nil, errors.New("no file selected")
+    }
+
+    // Открытие и декодирование изображения
+    file, err := os.Open(path)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Open Failed").
+            SetMessage(err.Error()).
+            Show()
+        return nil, err
+    }
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        app.Dialog.Error().
+            SetTitle("Invalid Image").
+            SetMessage("Could not decode image file.").
+            Show()
+        return nil, err
+    }
+
+    return img, nil
+}
+```
+
+### Сохранение документа с проверкой
+
+```go
+func saveDocument(app *application.App, content string) {
+    path, err := app.Dialog.SaveFile().
+        SetFilename("document.txt").
+        AddFilter("Text Files", "*.txt").
+        AddFilter("Markdown Files", "*.md").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil || path == "" {
+        return
+    }
+
+    // Проверка расширения
+    ext := filepath.Ext(path)
+    if ext != ".txt" && ext != ".md" {
+        dialog := app.Dialog.Question().
+            SetTitle("Confirm Extension").
+            SetMessage(fmt.Sprintf("Save as %s file?", ext))
+
+        saveBtn := dialog.AddButton("Save")
+        saveBtn.OnClick(func() {
+            doSave(app, path, content)
+        })
+
+        cancelBtn := dialog.AddButton("Cancel")
+        dialog.SetDefaultButton(cancelBtn)
+        dialog.SetCancelButton(cancelBtn)
+        dialog.Show()
+        return
+    }
+
+    doSave(app, path, content)
+}
+
+func doSave(app *application.App, path, content string) {
+    if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(err.Error()).
+            Show()
+        return
+    }
+
+    app.Dialog.Info().
+        SetTitle("Saved").
+        SetMessage("Document saved successfully!").
+        Show()
+}
+```---
+
+**Вопросы?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры диалогов файлов](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

@@ -1,0 +1,204 @@
+---
+title: Внутреннее устройство Runtime
+description: Глубокое погружение в то, как Wails v3 запускается, работает и взаимодействует с ОС
+sidebar:
+  order: 3
+---
+
+**Runtime** — это слой, который превращает обычные функции Go в кроссплатформенное десктопное приложение.  
+В этом документе описываются ключевые компоненты, с которыми вы столкнетесь при изучении исходного кода.
+
+---
+
+## 1. Жизненный цикл приложения
+
+| Фаза | Путь кода | Что происходит |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Регистрирует данные, собранные на этапе сборки, создает глобальный синглтон `application`. |
+| **New()** | `application.New(...)` | Валидирует `Options`, запускает **AssetServer**, инициализирует логирование. |
+| **Run()** | `application.(*App).Run()` | 1. Вызывает платформенный `mainthread.X()` для входа в поток UI ОС.<br />2. Запускает **runtime** (`internal/runtime`).<br />3. Блокируется до закрытия последнего окна или вызова `Quit()`. |
+| **Shutdown** | `application.(*App).Quit()` | Рассылает событие `application:shutdown`, очищает буфер логов, завершает работу окон и сервисов. |
+
+Жизненный цикл строго **одноточечный**: вы можете создавать множество окон, но объект приложения инициализируется только один раз.
+
+---
+
+## 2. Управление окнами
+
+### Публичный API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` делегирует вызов в `internal/runtime/webview_window_*.go`, где находятся платформо-зависимые конструкторы:
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+Каждый файл:
+
+1. Создает нативный webview (WKWebView, WebKitGTK, WebView2).
+2. Регистрирует колбэк **Message Processor**.
+3. Сопоставляет события Wails (`WindowResized`, `Focus`, `DropFile`, …) с идентификаторами событий runtime.
+
+Окна отслеживаются через `screenmanager.go`, который предоставляет **API для запросов** (все дисплеи, DPI, активное окно) и централизует учет изменений размера и перемещения.
+
+---
+
+## 3. Конвейер обработки сообщений
+
+Мост между JavaScript и Go реализуется семейством **Message Processor** в файлах `pkg/application/messageprocessor_*.go`.
+
+Поток данных:
+
+1. **JavaScript** вызывает `window.runtime.Invoke("Greet", "Alice")`.
+2. Runtime сериализует запрос:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = тип, `c` = вызов).
+3. **Go** получает этот JSON через колбэк webview.
+4. `messageprocessor_call.go` ищет привязанный метод в сгенерированной таблице (`application.bindings.go`) и выполняет его.
+5. Результат или ошибка сериализуются обратно в JS, где разрешается `Promise`.
+
+Специализированные процессоры:
+
+| Файл | Назначение |
+|------|---------|
+| `messageprocessor_window.go` | Действия с окнами (скрыть, развернуть, …) |
+| `messageprocessor_dialog.go` | Нативные диалоги (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Чтение/запись в буфер обмена |
+| `messageprocessor_events.go` | Подписка/отправка событий |
+| `messageprocessor_browser.go` | Навигация в браузере, devtools |
+
+Процессоры **не имеют состояния** — они берут всё необходимое из `ApplicationContext`, передаваемого с каждым сообщением.
+
+---
+
+## 4. Система событий
+
+События — это строки с пространством имен, распространяемые через три уровня:
+
+1. **События приложения**: глобальный жизненный цикл (`application:ready`,
+   `application:shutdown`).
+2. **События окон**: для каждого окна (`window:focus`, `window:resize`).
+3. **Пользовательские события**: определенные пользователем (`chat:new-message`).
+
+Детали реализации:
+
+* Константы генерируются из `internal/events/defaults.go`.
+* На стороне Go:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* На стороне JS:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+Под капотом оба уровня маппятся на один **EventBus** в
+`pkg/application/events.go`.  
+Подписчики учитываются по счетчику ссылок; когда окно закрывается, его колбэки автоматически отписываются, чтобы избежать утечек памяти.
+
+---
+
+## 5. Платформо-зависимые реализации
+
+Условная компиляция поддерживает идентичность публичного API, скрывая особенности ОС.
+
+| Аспект | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Главный поток | `mainthread_darwin.go` (Cgo к Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Диалоги | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Буфер обмена | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Иконки в трее | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Ключевые принципы:
+
+* **Нет Cgo на Windows/Linux**, если это не критично (производительность, переносимость).
+* Используйте **теги сборки** (`//go:build darwin && !production`), чтобы файлы оставались читаемыми.
+* Открывайте **возможности** через `internal/capabilities`, чтобы верхние уровни могли корректно деградировать.
+
+---
+
+## 6. Гид по файлам
+
+| Файл | Зачем его трогать |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Изменить глобальную логику запуска, добавить хуки отладки. |
+| `internal/runtime/webview_window_*.go` | Реализовать новый параметр окна или поведение. |
+| `pkg/application/messageprocessor_*.go` | Добавить новую команду моста, вызываемую из JS. |
+| `pkg/application/events_*.go` | Расширить встроенные определения событий. |
+| `internal/assetserver/*` | Настроить обработку ассетов в dev/production. |
+
+---
+
+## 7. Советы по отладке
+
+* Запускайте с `WAILS_LOG_LEVEL=debug`, чтобы печатать каждое сообщение, проходящее через мост.
+* Используйте `wails3 dev -verbose`, чтобы видеть live reload и запросы ассетов.
+* На macOS запускайте под `lldb --`, чтобы рано ловить исключения Objective-C.
+* Для проблем с Chromium на Windows включите логи отладки WebView2:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Расширение Runtime
+
+1. Определите **флаг возможности** в `internal/capabilities`.
+2. Реализуйте фичу в каждом платформенном файле, используя теги сборки.
+3. Добавьте публичный API в `pkg/application`.
+4. Зарегистрируйте новый тип сообщения или событие, если JS должен его вызывать.
+5. Обновите как минимум один пример в `v3/examples/`, использующий эту фичу.
+
+Следуя этому чек-листу, вы сохраните целостность кроссплатформенного контракта.
+
+---
+
+## 9. Drag-and-Drop
+
+Перетаскивание файлов использует **подход "JavaScript-first"** на всех платформах. Нативный слой перехватывает события ОС, но фактическая обработка сброса и взаимодействие с DOM происходят в JavaScript.
+
+### Поток данных
+
+1. Пользователь перетаскивает файлы из ОС поверх окна Wails
+2. Нативный слой обнаруживает перетаскивание и уведомляет JavaScript для эффектов наведения
+3. Пользователь сбрасывает файлы
+4. Нативный слой отправляет пути к файлам + координаты в JavaScript
+5. JavaScript находит элемент цели сброса (`data-file-drop-target`)
+6. JavaScript отправляет пути к файлам + детали элемента в Go бэкенд
+7. Go генерирует событие `WindowFilesDropped` с полным контекстом
+
+### Платформо-зависимые реализации
+
+| Платформа | Нативный слой | Ключевая проблема |
+|----------|--------------|---------------|
+| **Windows** | Встроенная поддержка drag в WebView2 | Координаты в CSS-пикселях, преобразование не требуется |
+| **macOS** | Делегаты drag NSWindow | Преобразование координат от окна к webview |
+| **Linux** | Сигналы drag GTK3 | Необходимо различать drag файлов и внутренние HTML5 drags |
+
+### Linux: Различение типов перетаскивания
+
+И GTK, и WebKit хотят обрабатывать события drag. Ключ в проверке типа цели drag:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // Внешний drag файлов
+        }
+        g_free(name);
+    }
+    return FALSE;  // Внутренний HTML5 drag
+}
+```
+
+Обработчики сигналов возвращают `FALSE` для внутренних drags (позволяя WebKit обрабатывать их) и `TRUE` для drags файлов (обрабатывая их самостоятельно).Теперь вы совершили экскурсию по внутренним механизмам Runtime. Сочетайте эти знания с картой **Codebase Layout** и документацией **Asset Server**, чтобы уверенно ориентироваться и вносить значимый вклад. Удачной разработки!

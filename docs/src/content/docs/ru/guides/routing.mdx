@@ -1,0 +1,110 @@
+---
+title: Маршрутизация на стороне фронтенда
+description: Использование маршрутизации на стороне фронтенда в вашем приложении Wails
+sidebar:
+  order: 35
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Маршрутизация на стороне фронтенда — это популярный способ переключения представлений в одностраничном приложении.
+В этом руководстве рассматриваются рекомендуемые подходы для различных фронтенд-фреймворков при использовании Wails.
+
+
+<Tabs syncKey="framework">
+    <TabItem label="Vue" icon="seti:vue">
+
+Рекомендуемый подход к маршрутизации во Vue — [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+
+```javascript
+import { createRouter, createWebHashHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+});
+```
+
+Режим Hash использует хеш URL для отображения различных представлений, избегая проблем с внутренним временем выполнения Wails,
+которое может вмешиваться в процесс маршрутизации, благодаря использованию формата URL на основе хеша.
+
+    </TabItem>
+    <TabItem label="Angular" icon="seti:angular">
+
+Рекомендуемый подход к маршрутизации в Angular — [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#%5Fhashlocationstrategy):
+
+```typescript
+RouterModule.forRoot(routes, { useHash: true });
+```
+
+Использование URL на основе хеша гарантирует корректную работу маршрутизации с обработкой окон Wails на всех платформах.
+
+    </TabItem>
+    <TabItem label="React" icon="seti:react">
+
+Рекомендуемый подход к маршрутизации в React — [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+
+```jsx
+import ReactDOM from "react-dom/client";
+import { HashRouter, Routes, Route } from "react-router-dom";
+
+ReactDOM.createRoot(root).render(
+  <HashRouter basename={"/"}>
+    {/* The rest of your app goes here */}
+    <Routes>
+      <Route path="/" element={<Page0 />} />
+      <Route path="/page1" element={<Page1 />} />
+      <Route path="/page2" element={<Page2 />} />
+      {/* more... */}
+    </Routes>
+  </HashRouter>
+);
+```
+
+HashRouter использует хеши URL вместо путей, что надежно работает с Wails на всех платформах.
+
+    </TabItem>
+    <TabItem label="Svelte" icon="seti:svelte">
+
+Рекомендуемый подход к маршрутизации в Svelte — [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
+```
+
+svelte-spa-router поддерживает маршрутизацию на основе хеша, что делает её совместимой с приложениями Wails.
+
+    </TabItem>
+</Tabs>
+
+## Почему маршрутизация на основе хеша?
+
+Wails встраивает ваш фронтенд в нативное окно веб-представления. Использование маршрутизации на основе хеша (#/page вместо /page)
+избегает конфликтов с:
+
+- Внутренней маршрутизацией времени выполнения Wails
+- Обработкой URL нативных окон на различных платформах
+- Производственными ресурсами, обслуживаемыми из путей, не являющихся корневой директорией
+
+## Устранение неполадок
+
+Если у вас возникают проблемы с маршрутизацией на стороне фронтенда в сборках для производства:
+
+- Убедитесь, что ваш инструмент сборки фронтенда настроен на вывод для маршрутизации в режиме **hash**
+- Для проектов на базе Vite добавьте `base: "./"` в ваш `vite.config.js`
+- Убедитесь, что ваш `index.html` корректно обрабатывает резервный вариант для маршрутизации SPA

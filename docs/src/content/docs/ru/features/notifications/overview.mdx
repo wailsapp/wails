@@ -1,0 +1,303 @@
+---
+title: Уведомления
+description: Отображение нативных системных уведомлений с кнопками действий и полями ввода текста
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Введение
+
+Wails предоставляет комплексную кроссплатформенную систему уведомлений для настольных приложений. Этот сервис позволяет отображать нативные системные уведомления с поддержкой интерактивных элементов, таких как кнопки действий и поля ввода текста.
+
+## Базовое использование
+
+### Создание сервиса
+
+Сначала инициализируйте сервис уведомлений:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// Создаем новый сервис уведомлений
+notifier := notifications.New()
+
+// Регистрируем сервис в приложении
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## Авторизация уведомлений
+
+На macOS для работы уведомлений требуется разрешение пользователя. Запросите и проверьте авторизацию:
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // Обработка ошибки авторизации
+}
+if authorized {
+    // Отправка уведомлений
+} else {
+    // Запрос авторизации
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+На Windows и Linux эта функция всегда возвращает `true`.
+
+## Типы уведомлений
+
+### Базовые уведомления
+
+Отправьте базовое уведомление с уникальным идентификатором, заголовком, необязательным подзаголовком (macOS и Linux) и текстом тела сообщения:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "Новое приглашение в календарь",
+    Subtitle: "От: Jane Doe", // Необязательно
+    Body: "Нажмите, чтобы просмотреть событие",
+})
+
+```
+
+### Интерактивные уведомления
+Отправьте уведомление с кнопками действий и полями ввода текста. Для таких уведомлений сначала необходимо зарегистрировать категорию уведомлений:
+
+```go
+// Определите уникальный идентификатор категории
+categoryID := "unique-category-id"
+
+// Определите категорию с действиями
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "Открыть",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "Архивировать", 
+            Destructive: true,  /* Специфично для macOS */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "сообщение...",
+    ReplyButtonTitle: "Ответить",
+}
+
+// Зарегистрируйте категорию
+notifier.RegisterNotificationCategory(category)
+
+// Отправьте интерактивное уведомление с действиями, зарегистрированными в указанной категории
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "Новое сообщение",
+    Subtitle:   "От: Jane Doe",
+    Body:       "Вы сможете прийти?",
+    CategoryID: categoryID,
+})
+```
+
+## Ответы на уведомления
+
+Обрабатывайте взаимодействия пользователя с уведомлениями:
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("Уведомление %s было обработано с действием: %s\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("Пользователь ответил: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("Исходный отправитель: %s\n", data)
+    }
+
+    // Отправляем событие во фронтенд
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## Кастомизация уведомлений
+
+### Пользовательские метаданные
+
+Базовые и интерактивные уведомления могут включать пользовательские данные:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "Новое приглашение в календарь",
+    Subtitle: "От: Jane Doe", // Необязательно
+    Body: "Нажмите, чтобы просмотреть событие",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## Особенности платформ
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    На macOS уведомления:
+    
+    - Требуют разрешения пользователя
+    - Требуют подписи приложения (notarization) для распространения
+    - Используют стандартный внешний вид уведомлений системы
+    - Поддерживают `subtitle` (подзаголовок)
+    - Поддерживают ввод текста пользователем
+    - Поддерживают опцию действия `Destructive` (Удалить/Разрушить)
+    - Автоматически обрабатывают темный/светлый режим
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    На Windows уведомления:
+    
+    - Используют стили системных тостов Windows
+    - Адаптируются к настройкам темы Windows
+    - Поддерживают ввод текста пользователем
+    - Поддерживают дисплеи с высоким DPI
+    - Не поддерживают `subtitle` (подзаголовок)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    На Linux поведение диалогов зависит от окружения рабочего стола:
+    
+    - Используют нативные уведомления, если они доступны
+    - Следуют теме окружения рабочего стола
+    - Позиционируются в соответствии с правилами окружения рабочего стола
+    - Поддерживают `subtitle` (подзаголовок)
+    - Не поддерживают ввод текста пользователем
+    
+  </TabItem>
+</Tabs>
+
+## Лучшие практики
+
+1. Проверяйте и запрашивайте авторизацию:
+   - macOS требует разрешения пользователя
+
+2. Предоставляйте четкие и лаконичные уведомления:
+   - Используйте описательные заголовки, подзаголовки, текст и названия действий
+
+3. Правильно обрабатывайте ответы на диалоги:
+   - Проверяйте наличие ошибок в ответах на уведомления
+   - Предоставляйте обратную связь для действий пользователя
+
+4. Учитывайте платформенные соглашения:
+   - Следуйте шаблонам уведомлений, специфичным для платформы
+   - Уважайте системные настройки
+
+## Примеры
+
+Изучите этот пример:
+
+- [Уведомления](/examples/notifications)
+
+## Справочник API
+
+### Управление сервисом
+| Метод                                     | Описание                                           |
+|------|----------------------------------------------------|
+| `New()`                                    | Создает новый сервис уведомлений                   |
+
+### Авторизация уведомлений
+| Метод                                       | Описание                                                |
+|------|---------------------------------------------------------|
+| `RequestNotificationAuthorization()`         | Запрашивает разрешение на отображение уведомлений (macOS)       |
+| `CheckNotificationAuthorization()`           | Проверяет текущий статус авторизации уведомлений (macOS)   |
+
+### Отправка уведомлений
+| Метод                                                     | Описание                                       |
+|------|-------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | Отправляет базовое уведомление                        |
+| `SendNotificationWithActions(options NotificationOptions)` | Отправляет интерактивное уведомление с действиями    |
+
+### Категории уведомлений
+| Метод                                                        | Описание                                       |
+|------|-------------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | Регистрирует повторно используемую категорию уведомлений        |
+| `RemoveNotificationCategory(categoryID string)`               | Удаляет ранее зарегистрированную категорию          |------|------------------------------------------------------------------|
+| `RemoveAllPendingNotifications()`               | Удаляет все ожидающие уведомления (только macOS и Linux)         |
+| `RemovePendingNotification(identifier string)`  | Удаляет конкретное ожидающее уведомление (только macOS и Linux)  |
+| `RemoveAllDeliveredNotifications()`             | Удаляет все доставленные уведомления (только macOS и Linux)      |
+| `RemoveDeliveredNotification(identifier string)`| Удаляет конкретное доставленное уведомление (только macOS и Linux)|
+| `RemoveNotification(identifier string)`         | Удаляет уведомление (специфично для Linux)                       |
+
+### Обработка событий
+| Метод                                                             | Описание                                     |
+|-------------------------------------------------------------------|----------------------------------------------|
+| `OnNotificationResponse(callback func(result NotificationResult))` | Регистрирует колбэк для ответов на уведомления |
+
+### Структуры и типы
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // Уникальный идентификатор уведомления
+    Title      string                 // Заголовок уведомления
+    Subtitle   string                 // Подзаголовок (только macOS и Linux)
+    Body       string                 // Основной текст уведомления
+    CategoryID string                 // Идентификатор категории для интерактивных уведомлений
+    Data       map[string]interface{} // Пользовательские данные, связанные с уведомлением
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // Уникальный идентификатор категории
+    Actions          []NotificationAction  // Действия-кнопки для уведомления
+    HasReplyField    bool                  | Наличие поля ввода текста
+    ReplyPlaceholder string                // Текст-заполнитель для поля ввода
+    ReplyButtonTitle string                // Текст кнопки ответа
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // Уникальный идентификатор действия
+    Title       string  // Текст кнопки
+    Destructive bool    // Является ли действие разрушающим (специфично для macOS)
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // Идентификатор уведомления
+    ActionIdentifier string                  // Идентификатор выполненного действия
+    CategoryID       string                  // Категория уведомления
+    Title            string                  // Заголовок уведомления
+    Subtitle         string                  // Подзаголовок уведомления
+    Body             string                  // Основной текст уведомления
+    UserText         string                  // Текст, введенный пользователем
+    UserInfo         map[string]interface{}  // Пользовательские данные из уведомления
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // Данные ответа
+    Error    error                 // Возникшая ошибка
+}
+```

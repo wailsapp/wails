@@ -1,0 +1,501 @@
+---
+title: API обновлений
+description: Справочная документация по API обновлений Wails v3
+sidebar:
+  order: 8
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# Справочник по API обновлений
+
+API обновлений предоставляет автоматическую функциональность для приложений Wails, включая проверку, загрузку и установку обновлений.
+
+## Go API
+
+### CreateUpdaterService
+
+Создает новый сервис обновлений.
+
+```go
+func CreateUpdaterService(currentVersion string, opts ...UpdaterOption) (*UpdaterService, error)
+```
+
+**Параметры:**
+- `currentVersion` - Текущая версия вашего приложения (например, "1.0.0")
+- `opts` - Параметры конфигурации
+
+**Возвращает:**
+- `*UpdaterService` - Экземпляр сервиса обновлений
+- `error` - Ошибка, если создание не удалось
+
+**Пример:**
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+)
+```
+
+### Функции UpdaterOption
+
+#### WithUpdateURL
+
+Устанавливает базовый URL для манифестов обновлений.
+
+```go
+func WithUpdateURL(url string) UpdaterOption
+```
+
+**Обязательно.** URL должен указывать на директорию, содержащую ваш манифест `update.json`.
+
+#### WithCheckInterval
+
+Устанавливает интервал для автоматической фоновой проверки обновлений.
+
+```go
+func WithCheckInterval(interval time.Duration) UpdaterOption
+```
+
+Установите `0`, чтобы отключить автоматическую проверку. По умолчанию `0` (отключено).
+
+#### WithAllowPrerelease
+
+Разрешает рассматривать версии pre-release как обновления.
+
+```go
+func WithAllowPrerelease(allow bool) UpdaterOption
+```
+
+По умолчанию `false`.
+
+#### WithChannel
+
+Устанавливает канал обновлений (например, "stable", "beta", "canary").
+
+```go
+func WithChannel(channel string) UpdaterOption
+```
+
+Канал добавляется к пути URL обновлений.
+
+#### WithPublicKey
+
+Устанавливает открытый ключ для проверки подписи.
+
+```go
+func WithPublicKey(key string) UpdaterOption
+```
+
+Ключ должен быть закодированным в base64 открытым ключом Ed25519.
+
+#### WithRequireSignature
+
+Требует, чтобы все обновления были подписаны.
+
+```go
+func WithRequireSignature(require bool) UpdaterOption
+```
+
+По умолчанию `false`.
+
+### Методы UpdaterService
+
+#### GetCurrentVersion
+
+Возвращает текущую версию приложения.
+
+```go
+func (u *UpdaterService) GetCurrentVersion() string
+```
+
+#### CheckForUpdate
+
+Проверяет наличие новой версии.
+
+```go
+func (u *UpdaterService) CheckForUpdate() (*UpdateInfo, error)
+```
+
+**Возвращает:**
+- `*UpdateInfo` - Информация об обновлении, или `nil`, если обновление недоступно
+- `error` - Ошибка, если проверка не удалась
+
+#### DownloadUpdate
+
+Загружает доступное обновление.
+
+```go
+func (u *UpdaterService) DownloadUpdate() error
+```
+
+Во время загрузки генерирует события `updater:progress`.
+
+#### ApplyUpdate
+
+Применяет загруженное обновление.
+
+```go
+func (u *UpdaterService) ApplyUpdate() error
+```
+
+Это приведет к перезапуску приложения.
+
+#### DownloadAndApply
+
+Загружает и применяет обновление одним вызовом.
+
+```go
+func (u *UpdaterService) DownloadAndApply() error
+```
+
+#### GetState
+
+Возвращает текущее состояние сервиса обновлений.
+
+```go
+func (u *UpdaterService) GetState() string
+```
+
+**Возможные значения:**
+- `"idle"` - Обновление не выполняется
+- `"checking"` - Проверка обновлений
+- `"available"` - Обновление доступно
+- `"downloading"` - Загрузка обновления
+- `"ready"` - Обновление загружено, готово к установке
+- `"installing"` - Установка обновления
+- `"error"` - Произошла ошибка
+
+#### GetUpdateInfo
+
+Возвращает информацию о доступном обновлении.
+
+```go
+func (u *UpdaterService) GetUpdateInfo() *UpdateInfo
+```
+
+#### GetLastError
+
+Возвращает сообщение об последней ошибке.
+
+```go
+func (u *UpdaterService) GetLastError() string
+```
+
+#### Reset
+
+Сбрасывает состояние сервиса обновлений.
+
+```go
+func (u *UpdaterService) Reset()
+```
+
+### UpdateInfo
+
+Информация о доступном обновлении.
+
+```go
+type UpdateInfo struct {
+    Version      string    `json:"version"`
+    ReleaseDate  time.Time `json:"releaseDate"`
+    ReleaseNotes string    `json:"releaseNotes"`
+    Size         int64     `json:"size"`
+    PatchSize    int64     `json:"patchSize,omitempty"`
+    Mandatory    bool      `json:"mandatory"`
+    HasPatch     bool      `json:"hasPatch"`
+}
+```
+
+| Поле | Тип | Описание |
+|-------|------|-------------|
+| `Version` | `string` | Номер новой версии |
+| `ReleaseDate` | `time.Time` | Дата выхода этой версии |
+| `ReleaseNotes` | `string` | Примечания к выпуску (markdown) |
+| `Size` | `int64` | Полный размер загрузки в байтах |
+| `PatchSize` | `int64` | Размер патча в байтах (если доступен) |
+| `Mandatory` | `bool` - Обязательно ли это обновление |
+| `HasPatch` | `bool` | Доступен ли патч |
+
+### UpdaterConfig
+
+Конфигурация для сервиса обновлений.
+
+```go
+type UpdaterConfig struct {
+    UpdateURL        string
+    CheckInterval    time.Duration
+    AllowPrerelease  bool
+    PublicKey        string
+    RequireSignature bool
+    Channel          string
+}
+```
+
+## JavaScript/TypeScript API
+
+Сервис обновлений автоматически привязывается к фронтенду при добавлении в качестве сервиса.
+
+### Типы
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: string;  // Строка даты в формате ISO 8601
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface DownloadProgress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+```
+
+### Методы
+
+#### GetCurrentVersion
+
+```typescript
+function GetCurrentVersion(): string
+```
+
+Возвращает текущую версию приложения.
+
+#### CheckForUpdate
+
+```typescript
+function CheckForUpdate(): Promise<UpdateInfo | null>
+```
+
+Проверяет наличие доступных обновлений.
+
+**Возвращает:** `UpdateInfo`, если обновление доступно, `null` в противном случае.
+
+#### DownloadUpdate
+
+```typescript
+function DownloadUpdate(): Promise<void>
+```
+
+Загружает доступное обновление. Генерирует события `updater:progress`.
+
+#### ApplyUpdate
+
+```typescript
+function ApplyUpdate(): Promise<void>
+```
+
+Применяет загруженное обновление. Приложение перезапустится.
+
+#### DownloadAndApply
+
+```typescript
+function DownloadAndApply(): Promise<void>
+```
+
+Загружает и применяет обновление одним вызовом.
+
+#### GetState
+
+```typescript
+function GetState(): string
+```
+
+Возвращает текущее состояние сервиса обновлений.
+
+#### GetUpdateInfo
+
+```typescript
+function GetUpdateInfo(): UpdateInfo | null
+```
+
+Возвращает текущую информацию об обновлении.
+
+#### GetLastError
+
+```typescript
+function GetLastError(): string
+```
+
+Возвращает сообщение об последней ошибке.
+
+#### Reset
+
+```typescript
+function Reset(): void
+```
+
+Сбрасывает состояние сервиса обновлений.
+
+### События
+
+#### updater:progress
+
+Генерируется во время загрузки с информацией о прогрессе.
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data: DownloadProgress) => {
+  console.log(`${data.percentage}% загружено`);
+});
+```
+
+## Формат манифеста обновлений
+
+Манифест обновлений (`update.json`) должен размещаться по вашему URL обновлений.
+
+### Схема
+
+```typescript
+interface Manifest {
+  version: string;
+  release_date: string;      // ISO 8601
+  release_notes?: string;
+  platforms: {
+    [platform: string]: PlatformUpdate;
+  };
+  minimum_version?: string;
+  mandatory?: boolean;
+}
+
+interface PlatformUpdate {
+  url: string;
+  size: number;
+  checksum: string;          // "sha256:..."
+  signature?: string;
+  patches?: PatchInfo[];
+}
+
+interface PatchInfo {
+  from: string;              // Версия, от которой применяется патч
+  url: string;
+  size: number;
+  checksum: string;
+  signature?: string;
+}
+```
+
+### Ключи платформ
+
+| Платформа | Ключ |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64-bit) | `windows-amd64` |
+| Linux (64-bit) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+### Пример манифеста
+
+```json
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## Изменения\n\n- Новая функция\n- Исправления ошибок",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://example.com/app-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123def456...",
+      "patches": [
+        {
+          "from": "1.1.0",```json
+        "url": "https://example.com/patches/1.1.0-to-1.2.0.patch",
+        "size": 14336,
+        "checksum": "sha256:789xyz..."
+      }
+    ]
+  },
+  "windows-amd64": {
+    "url": "https://example.com/app-1.2.0-windows.zip",
+    "size": 14680064,
+    "checksum": "sha256:ghi789jkl012..."
+  }
+},
+"minimum_version": "1.0.0",
+"mandatory": false
+}
+```
+
+## Интеграция сервиса
+
+### Регистрация сервиса
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    Services: []application.Service{
+        application.NewService(updater),
+    },
+})
+```
+
+### Жизненный цикл сервиса
+
+Сервис обновлений реализует интерфейс `Service`:
+
+```go
+type Service interface {
+    ServiceName() string
+    ServiceStartup(ctx context.Context, options ServiceOptions) error
+    ServiceShutdown() error
+}
+```
+
+- **ServiceStartup**: Запускает фоновую проверку обновлений, если это настроено
+- **ServiceShutdown**: Останавливает фоновую проверку
+
+### Обработчики событий
+
+Зарегистрируйте обработчики в Go:
+
+```go
+updater.OnUpdateAvailable(func(info *UpdateInfo) {
+    log.Printf("Update available: %s", info.Version)
+})
+
+updater.OnDownloadProgress(func(downloaded, total int64, percentage float64) {
+    log.Printf("Download: %.1f%%", percentage)
+})
+
+updater.OnError(func(err string) {
+    log.Printf("Update error: %s", err)
+})
+```
+
+## Вопросы безопасности
+
+### HTTPS
+
+Всегда используйте HTTPS для URL-адресов обновлений, чтобы предотвратить атаки типа «человек посередине».
+
+### Проверка контрольной суммы
+
+Все загрузки проверяются на соответствие контрольным суммам SHA256 перед установкой.
+
+### Проверка подписи
+
+Включите проверку подписи для приложений, предназначенных для продакшена:
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithRequireSignature(true),
+    application.WithPublicKey("MCowBQYDK2VwAyEA..."),
+)
+```
+
+### Подпись кода
+
+Убедитесь, что ваши двоичные файлы приложения правильно подписаны:
+- macOS: сертификат Developer ID Application
+- Windows: сертификат подписи кода с отметкой времени
+
+См. [Руководство по подписи кода](/ru/guides/build/signing) для получения подробной информации.
