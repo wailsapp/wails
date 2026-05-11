@@ -609,40 +609,33 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position (in screen coordinates with Y=0 at top, scaled for DPI)
+// Get absolute window position in the canonical Wails coordinate space:
+// logical points, Y-down, with (0,0) at the top-left of the primary screen.
+// This matches Screen.Bounds (see screen_darwin.go), Windows, GTK and the
+// public APIs of Electron and the web. Screens above the primary have
+// negative Y.
 void windowGetPosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Use the primary screen as the sole reference for both height and scale.
-	// The primary screen is always at NSWindow origin (0,0); its height is the
-	// global Y baseline and its backingScaleFactor defines the coordinate unit.
-	// Using per-window screen values here would produce different values for
-	// the same physical position depending on which screen the window lives on,
-	// and would mix units on mixed-DPI setups.
 	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
 	if (primaryScreen == NULL) {
 		primaryScreen = [NSScreen mainScreen];
 	}
-	CGFloat scale = [primaryScreen backingScaleFactor];
 	CGFloat primaryHeight = [primaryScreen frame].size.height;
 	NSRect frame = [window frame];
-	*x = frame.origin.x * scale;
-	*y = (primaryHeight - frame.origin.y - frame.size.height) * scale;
+	*x = frame.origin.x;
+	*y = primaryHeight - frame.origin.y - frame.size.height;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Mirror windowGetPosition: use the primary screen as the reference for
-	// both height and scale so that get/set are consistent inverses across all
-	// monitor layouts, including mixed-DPI and vertically offset screens.
 	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
 	if (primaryScreen == NULL) {
 		primaryScreen = [NSScreen mainScreen];
 	}
-	CGFloat scale = [primaryScreen backingScaleFactor];
 	CGFloat primaryHeight = [primaryScreen frame].size.height;
 	NSRect frame = [window frame];
-	frame.origin.x = x / scale;
-	frame.origin.y = primaryHeight - frame.size.height - (y / scale);
+	frame.origin.x = x;
+	frame.origin.y = primaryHeight - frame.size.height - y;
 	[window setFrame:frame display:YES];
 }
 

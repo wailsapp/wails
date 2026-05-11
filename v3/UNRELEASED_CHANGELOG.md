@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- **BREAKING (macOS):** Normalise the macOS coordinate system so `GetScreens`, `Position`, and `SetPosition` all use the same space — logical points, Y-down, with `(0,0)` at the top-left of the primary screen. This matches Windows, GTK and the public APIs of Electron and the web. Screens physically above the primary now report negative `Bounds.Y` (previously positive), and `Position()`/`SetPosition()` values are now in logical points instead of `points × primaryScale`. Round-tripping `Position()` → `SetPosition()` is preserved; absolute values logged from earlier alpha builds or hand-computed workarounds (e.g. multiplying by `primaryScale` or flipping Y against a screen height) will need to be updated. Resolves [#5117](https://github.com/wailsapp/wails/issues/5117).
 
 ## Fixed
 <!-- Bug fixes -->
