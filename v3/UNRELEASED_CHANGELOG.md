@@ -17,15 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add no-op SetScreen method to BrowserWindow to satisfy Window interface in [PR](https://github.com/wailsapp/wails/pull/5294) by @leaanthony
+- Adds indirect dependency github.com/coder/websocket to gin-service example in [PR](https://github.com/wailsapp/wails/pull/5400) by @taliesin-ai
+- Add deep equality comparison support to build assets tests in [PR](https://github.com/wailsapp/wails/pull/5402) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Consolidate build output into assets directory in [PR](https://github.com/wailsapp/wails/pull/5401) by @taliesin-ai
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) by @github-actions[bot]
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) by @wayneforrest
-- Fix a family of Windows systray `SetMenu` crashes caused by a broken `DestroyMenu` syscall that was passing four arguments instead of one, so every call returned FALSE and freed nothing. Also release HMENU and HBITMAP handles (including those allocated at runtime via `MenuItem.SetBitmap`) on menu rebuilds, reset stale checkbox/radio maps in `Win32Menu.Update`, and drop a redundant `Update()` call in `systemtray.updateMenu` that doubled allocations. Long-running systray apps no longer leak GDI/USER objects on each menu rebuild.
+- Use notification object for macOS single-instance message in [PR](https://github.com/wailsapp/wails/pull/5289) by @overlordtm
+- Batch Windows callbacks to prevent promise loss under heavy load in [PR](https://github.com/wailsapp/wails/pull/5383) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
