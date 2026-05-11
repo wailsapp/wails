@@ -17,9 +17,14 @@ type ICoreWebView2 struct {
 	Vtbl *ICoreWebView2Vtbl
 }
 
-func (i *ICoreWebView2) AddRef() uintptr {
+func (i *ICoreWebView2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 

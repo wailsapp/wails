@@ -1,5 +1,4 @@
-
-	// Convert []string to COM string array (LPCWSTR*)
+	// Convert []string '{{.Param.Name}}' to **uint16 (LPCWSTR* / LPWSTR*)
 	{{.Param.LocalName}}ptrs := make([]*uint16, len({{.Param.Name}}))
 	for _i, _s := range {{.Param.Name}} {
 		_p, err := UTF16PtrFromString(_s)

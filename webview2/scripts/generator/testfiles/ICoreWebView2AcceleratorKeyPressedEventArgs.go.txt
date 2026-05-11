@@ -16,9 +16,14 @@ type ICoreWebView2AcceleratorKeyPressedEventArgs struct {
 	Vtbl *ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 }
 
-func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 

@@ -16,15 +16,20 @@ type ICoreWebView2CustomSchemeRegistration struct {
 	Vtbl *ICoreWebView2CustomSchemeRegistrationVtbl
 }
 
-func (i *ICoreWebView2CustomSchemeRegistration) AddRef() uintptr {
+func (i *ICoreWebView2CustomSchemeRegistration) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2CustomSchemeRegistration) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 
 func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOriginsCount uint32, allowedOrigins []string) error {
 
-	// Convert []string to COM string array (LPCWSTR*)
+	// Convert []string 'allowedOrigins' to **uint16 (LPCWSTR* / LPWSTR*)
 	_allowedOriginsptrs := make([]*uint16, len(allowedOrigins))
 	for _i, _s := range allowedOrigins {
 		_p, err := UTF16PtrFromString(_s)
@@ -37,6 +42,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOrigins
 	if len(_allowedOriginsptrs) > 0 {
 		_allowedOrigins = &_allowedOriginsptrs[0]
 	}
+
 
 	hr, _, err := i.Vtbl.SetAllowedOrigins.Call(
 		uintptr(unsafe.Pointer(i)),

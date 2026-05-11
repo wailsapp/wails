@@ -47,7 +47,7 @@ func (p *Param) Process(decl *InterfaceMethod) {
 	}
 	// LPCWSTR* (or LPWSTR*) in an [in] direction is a C array of strings, not a
 	// single string with an extra level of indirection.
-	if p.isSinglePointer() && !p.IsOutputParam() &&
+	if p.IsInputParam() && p.isSinglePointer() &&
 		(p.Type == "LPCWSTR" || p.Type == "LPWSTR") {
 		p.GoType = "[]string"
 	}
@@ -119,6 +119,10 @@ func (p *Param) processVtableCallInput() {
 	// For input LPWSTR/LPCWSTR (plain or array) pass the *uint16 / **uint16 directly.
 	switch p.Type {
 	case "LPCWSTR", "LPWSTR":
+		// Output [out] LPWSTR* needs &var so COM writes the *uint16 pointer back.
+		// Input [in] LPWSTR* (array of strings, marshaled to **uint16 via
+		// inputStringArraySetup.tmpl) and plain [in] LPWSTR (single *uint16)
+		// both pass the local variable directly — the template chose the right Go type.
 		if p.IsOutputParam() {
 			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
 		} else {
