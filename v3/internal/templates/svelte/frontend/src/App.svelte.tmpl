@@ -2,9 +2,9 @@
 import {Events} from "@wailsio/runtime";
 import {GreetService} from "../bindings/{{js .ModulePath}}";
 
-let name = '';
-let result = 'Please enter your name below 👇';
-let time = 'Listening for Time event...';
+let name = $state('');
+let result = $state('Please enter your name below 👇');
+let time = $state('Listening for Time event...');
 
 const doGreet = () => {
   let localName = name;
@@ -37,7 +37,7 @@ Events.On('time', (timeValue) => {
   <div class="card">
     <div class="input-box">
       <input aria-label="input" class="input" bind:value={name} type="text" autocomplete="off"/>
-      <button aria-label="greet-btn" class="btn" on:click={doGreet}>Greet</button>
+      <button aria-label="greet-btn" class="btn" onclick={doGreet}>Greet</button>
     </div>
   </div>
   <div class="footer">

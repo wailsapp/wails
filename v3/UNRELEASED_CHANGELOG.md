@@ -17,15 +17,16 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Adds indirect dependency github.com/coder/websocket to gin-service example in [PR](https://github.com/wailsapp/wails/pull/5400) by @taliesin-ai
+- Add deep equality comparison support to build assets tests in [PR](https://github.com/wailsapp/wails/pull/5402) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Configure Vite dev server to bind to 127.0.0.1 in all templates in [PR](https://github.com/wailsapp/wails/pull/5361) by @leaanthony
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
+- Consolidate build output into assets directory in [PR](https://github.com/wailsapp/wails/pull/5401) by @taliesin-ai
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) by @github-actions[bot]
 
 ## Fixed
 <!-- Bug fixes -->
-- Use lastSizeWParam to gate menubar redraws on Windows in [PR](https://github.com/wailsapp/wails/pull/5382) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -1,0 +1,42 @@
+//go:build windows
+
+package webview2
+import (
+	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
+)
+
+type ICoreWebView2CustomSchemeRegistrationVtbl struct {
+	IUnknownVtbl
+	SetAllowedOrigins ComProc
+}
+
+type ICoreWebView2CustomSchemeRegistration struct {
+	Vtbl *ICoreWebView2CustomSchemeRegistrationVtbl
+}
+
+func (i *ICoreWebView2CustomSchemeRegistration) AddRef() uintptr {
+	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return refCounter
+}
+
+
+func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOriginsCount uint32, allowedOrigins string) error {
+
+	// Convert string 'allowedOrigins' to *uint16
+	_allowedOrigins, err := UTF16PtrFromString(allowedOrigins)
+	if err != nil {
+		return err
+	}
+
+	hr, _, err := i.Vtbl.SetAllowedOrigins.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&allowedOriginsCount)),
+		uintptr(unsafe.Pointer(_allowedOrigins)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return syscall.Errno(hr)
+	}
+	return err
+}
