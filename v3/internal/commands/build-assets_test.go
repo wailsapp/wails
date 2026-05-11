@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -778,7 +779,7 @@ func mapsEqual(a, b map[string]any) bool {
 			}
 		} else if aIsMap != bIsMap {
 			return false
-		} else if av != bv {
+		} else if !reflect.DeepEqual(av, bv) {
 			return false
 		}
 	}
