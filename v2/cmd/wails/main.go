@@ -3,57 +3,29 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
-
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-
-	"github.com/wailsapp/wails/v2/internal/colour"
 
 	"github.com/leaanthony/clir"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
 func banner(_ *clir.Cli) string {
 	return fmt.Sprintf("%s %s",
-		colour.Green("Wails CLI"),
-		colour.DarkRed(internal.Version))
+		tui.Green("Wails CLI"),
+		tui.DarkRed(internal.Version))
 }
 
 func fatal(message string) {
-	printer := pterm.PrefixPrinter{
-		MessageStyle: &pterm.ThemeDefault.FatalMessageStyle,
-		Prefix: pterm.Prefix{
-			Style: &pterm.ThemeDefault.FatalPrefixStyle,
-			Text:  " FATAL ",
-		},
-	}
-	printer.Println(message)
-	os.Exit(1)
+	tui.Fatal(message)
 }
 
 func printBulletPoint(text string, args ...any) {
-	item := pterm.BulletListItem{
-		Level: 2,
-		Text:  text,
-	}
-	t, err := pterm.DefaultBulletList.WithItems([]pterm.BulletListItem{item}).Srender()
-	if err != nil {
-		fatal(err.Error())
-	}
-	t = strings.Trim(t, "\n\r")
-	pterm.Printfln(t, args...)
+	tui.BulletPoint(text, args...)
 }
 
 func printFooter() {
-	printer := pterm.PrefixPrinter{
-		MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
-		Prefix: pterm.Prefix{
-			Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
-			Text:  "♥ ",
-		},
-	}
-	printer.Println("If Wails is useful to you or your company, please consider sponsoring the project:")
-	pterm.Println("https://github.com/sponsors/leaanthony")
+	fmt.Println(tui.Green("♥") + " If Wails is useful to you or your company, please consider sponsoring the project:")
+	fmt.Println("  https://github.com/sponsors/leaanthony")
 }
 
 func bool2Str(b bool) string {
@@ -88,14 +60,14 @@ func main() {
 
 	command := app.NewSubCommand("version", "The Wails CLI version")
 	command.Action(func() error {
-		pterm.Println(internal.Version)
+		fmt.Println(internal.Version)
 		return nil
 	})
 
 	err = app.Run()
 	if err != nil {
-		pterm.Println()
-		pterm.Error.Println(err.Error())
+		fmt.Println()
+		tui.Error(err.Error())
 		printFooter()
 		os.Exit(1)
 	}

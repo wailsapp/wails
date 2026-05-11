@@ -7,22 +7,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
-
 	"github.com/leaanthony/slicer"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
-	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/internal/tui"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
 
 func buildApplication(f *flags.Build) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	quiet := f.Verbosity == flags.Quiet
@@ -31,9 +28,7 @@ func buildApplication(f *flags.Build) error {
 	logger := clilogger.New(os.Stdout)
 	logger.Mute(quiet)
 
-	if quiet {
-		pterm.DisableOutput()
-	} else {
+	if !quiet {
 		app.PrintBanner()
 	}
 
@@ -98,7 +93,7 @@ func buildApplication(f *flags.Build) error {
 		InstallScope:      f.InstallScope,
 	}
 
-	tableData := pterm.TableData{
+	tableData := [][]string{
 		{"Platform(s)", f.Platform},
 		{"Compiler", f.GetCompilerPath()},
 		{"Skip Bindings", bool2Str(f.SkipBindings)},
@@ -111,7 +106,7 @@ func buildApplication(f *flags.Build) error {
 	if f.Obfuscated {
 		tableData = append(tableData, []string{"Garble Args", f.GarbleArgs})
 	}
-	tableData = append(tableData, pterm.TableData{
+	tableData = append(tableData, [][]string{
 		{"Skip Frontend", bool2Str(f.SkipFrontend)},
 		{"Compress", bool2Str(f.Upx)},
 		{"Package", bool2Str(!f.NoPackage)},
@@ -123,12 +118,8 @@ func buildApplication(f *flags.Build) error {
 	if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {
 		tableData = append(tableData, []string{"Output File", f.OutputFilename})
 	}
-	pterm.DefaultSection.Println("Build Options")
-
-	err = pterm.DefaultTable.WithData(tableData).Render()
-	if err != nil {
-		return err
-	}
+	tui.Section("Build Options")
+	tui.Table(tableData)
 
 	if !f.NoSyncGoMod {
 		err = gomod.SyncGoMod(logger, f.UpdateWailsVersionGoMod)
@@ -155,8 +146,7 @@ func buildApplication(f *flags.Build) error {
 
 	outputBinaries := map[string]string{}
 
-	// Allows cancelling the build after the first error. It would be nice if targets.Each would support funcs
-	// returning an error.
+	// Allows cancelling the build after the first error.
 	var targetErr error
 	targets := f.GetTargets()
 	targets.Each(func(platform string) {
@@ -182,23 +172,22 @@ func buildApplication(f *flags.Build) error {
 		if len(platformSplit) > 1 {
 			buildOptions.Arch = platformSplit[1]
 		}
-		banner := "Building target: " + buildOptions.Platform + "/" + buildOptions.Arch
-		pterm.DefaultSection.Println(banner)
+		tui.Section("Building target: " + buildOptions.Platform + "/" + buildOptions.Arch)
 
 		if f.Upx && platform == "darwin/universal" {
-			pterm.Warning.Println("Warning: compress flag unsupported for universal binaries. Ignoring.")
+			tui.Warning("Compress flag unsupported for universal binaries. Ignoring.")
 			f.Upx = false
 		}
 
 		switch buildOptions.Platform {
 		case "linux":
 			if runtime.GOOS != "linux" {
-				pterm.Warning.Println("Crosscompiling to Linux not currently supported.")
+				tui.Warning("Crosscompiling to Linux not currently supported.")
 				return
 			}
 		case "darwin":
 			if runtime.GOOS != "darwin" {
-				pterm.Warning.Println("Crosscompiling to Mac not currently supported.")
+				tui.Warning("Crosscompiling to Mac not currently supported.")
 				return
 			}
 			macTargets := targets.Filter(func(platform string) bool {
@@ -210,7 +199,6 @@ func buildApplication(f *flags.Build) error {
 		}
 
 		if targets.Length() > 1 {
-			// target filename
 			switch buildOptions.Platform {
 			case "windows":
 				desiredFilename = fmt.Sprintf("%s-%s", desiredFilename, buildOptions.Arch)
@@ -228,17 +216,24 @@ func buildApplication(f *flags.Build) error {
 		}
 
 		if f.Obfuscated && f.SkipBindings {
-			pterm.Warning.Println("obfuscated flag overrides skipbindings flag.")
+			tui.Warning("Obfuscated flag overrides skipbindings flag.")
 			buildOptions.SkipBindings = false
 		}
 
 		if !f.DryRun {
-			// Start Time
 			start := time.Now()
 
-			compiledBinary, err := build.Build(buildOptions)
+			var compiledBinary string
+			err := tui.WithSpinner(
+				fmt.Sprintf("Compiling %s/%s", buildOptions.Platform, buildOptions.Arch),
+				func() error {
+					var buildErr error
+					compiledBinary, buildErr = build.Build(buildOptions)
+					return buildErr
+				},
+			)
 			if err != nil {
-				pterm.Error.Println(err.Error())
+				tui.Error(err.Error())
 				targetErr = err
 				return
 			}
@@ -246,12 +241,10 @@ func buildApplication(f *flags.Build) error {
 			buildOptions.IgnoreFrontend = true
 			buildOptions.CleanBinDirectory = false
 
-			// Output stats
 			buildOptions.Logger.Println("%s", fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
-
 			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
 		} else {
-			pterm.Info.Println("Dry run: skipped build.")
+			tui.Info("Dry run: skipped build.")
 		}
 	})
 

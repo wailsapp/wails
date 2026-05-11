@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
 // CLILogger is used by the cli
@@ -34,7 +34,7 @@ func (c *CLILogger) Print(message string, args ...interface{}) {
 
 	_, err := fmt.Fprintf(c.Writer, message, args...)
 	if err != nil {
-		c.Fatal("%s", "FATAL: " + err.Error())
+		c.Fatal("%s", "FATAL: "+err.Error())
 	}
 }
 
@@ -46,16 +46,16 @@ func (c *CLILogger) Println(message string, args ...interface{}) {
 	temp := fmt.Sprintf(message, args...)
 	_, err := fmt.Fprintln(c.Writer, temp)
 	if err != nil {
-		c.Fatal("%s", "FATAL: " + err.Error())
+		c.Fatal("%s", "FATAL: "+err.Error())
 	}
 }
 
 // Fatal prints the given message then aborts
 func (c *CLILogger) Fatal(message string, args ...interface{}) {
 	temp := fmt.Sprintf(message, args...)
-	_, err := fmt.Fprintln(c.Writer, colour.Red("FATAL: "+temp))
+	_, err := fmt.Fprintln(c.Writer, tui.Red("FATAL: "+temp))
 	if err != nil {
-		println(colour.Red("FATAL: " + err.Error()))
+		println(tui.Red("FATAL: " + err.Error()))
 	}
 	os.Exit(1)
 }

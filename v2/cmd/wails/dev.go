@@ -3,17 +3,15 @@ package main
 import (
 	"os"
 
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/dev"
-	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/tui"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 func devApplication(f *flags.Dev) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	quiet := f.Verbosity == flags.Quiet
@@ -22,9 +20,7 @@ func devApplication(f *flags.Dev) error {
 	logger := clilogger.New(os.Stdout)
 	logger.Mute(quiet)
 
-	if quiet {
-		pterm.DisableOutput()
-	} else {
+	if !quiet {
 		app.PrintBanner()
 	}
 
