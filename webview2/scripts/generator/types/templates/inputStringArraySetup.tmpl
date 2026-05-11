@@ -1,0 +1,16 @@
+
+	// Convert []string '{{.Param.Name}}' to []*uint16
+	{{.Param.LocalName}}, err := (func() ([]*uint16, error) {
+		result := make([]*uint16, len({{.Param.Name}}))
+		for _i, _s := range {{.Param.Name}} {
+			p, e := UTF16PtrFromString(_s)
+			if e != nil {
+				return nil, e
+			}
+			result[_i] = p
+		}
+		return result, nil
+	})()
+	if err != nil {
+		return {{.ErrorValues}}
+	}

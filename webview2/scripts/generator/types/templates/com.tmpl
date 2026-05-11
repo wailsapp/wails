@@ -44,8 +44,8 @@ func (i *IUnknownVtbl) CallRelease(this unsafe.Pointer) error {
 
 type IUnknownImpl interface {
 	QueryInterface(refiid, object uintptr) uintptr
-	AddRef() uintptr
-	Release() uintptr
+	AddRef() uint32
+	Release() uint32
 }
 
 // Call calls a COM procedure.
@@ -72,8 +72,15 @@ type HMENU uintptr
 type HMODULE uintptr
 type HWND uintptr
 
-// NOTE: For sure, this is wrong!
-type VARIANT uintptr
+// VARIANT is a 16-byte Windows VARIANT type matching the Windows ABI.
+// The Val field is a union; callers must interpret it based on VT.
+type VARIANT struct {
+	VT        uint16
+	Reserved1 uint16
+	Reserved2 uint16
+	Reserved3 uint16
+	Val       [8]byte
+}
 
 type IDataObject struct {
 	IUnknown

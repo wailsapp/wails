@@ -45,6 +45,10 @@ func (p *Param) Process(decl *InterfaceMethod) {
 	if p.isDoublePointer() {
 		p.GoType = "*" + p.GoType
 	}
+	// Bug 2: [in] LPWSTR* / [in] LPCWSTR* is an array of strings, not a single string
+	if p.IsInputParam() && p.isSinglePointer() && (p.Type == "LPWSTR" || p.Type == "LPCWSTR") {
+		p.GoType = "[]string"
+	}
 	p.OutputGoType = p.GoType
 	if p.IsOutputParam() && strings.HasPrefix(p.OutputGoType, "**") {
 		p.OutputGoType = p.GoType[1:]
@@ -65,7 +69,8 @@ func (p *Param) isDoublePointer() bool {
 }
 
 func (p *Param) AsInputType() string {
-	if p.isPointer() && p.GoType != "string" {
+	// For string slices ([]string from [in] LPWSTR*) and plain strings, pass as-is
+	if p.isPointer() && p.GoType != "string" && !strings.HasPrefix(p.GoType, "[]") {
 		return "*" + p.GoType
 	}
 	return p.GoType
@@ -109,7 +114,15 @@ func (p *Param) processVtableCallInput() {
 	}
 	switch p.Type {
 	case "LPCWSTR", "LPWSTR":
-		p.VtableCallInput = "uintptr(unsafe.Pointer(" + variableName + "))"
+		if p.IsOutputParam() {
+			// Bug 1: output LPWSTR* needs &var (address of *uint16 pointer)
+			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
+		} else if p.isSinglePointer() {
+			// Bug 2: [in] LPWSTR* is []string marshaled to []*uint16; pass &arr[0]
+			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "[0]))"
+		} else {
+			p.VtableCallInput = "uintptr(unsafe.Pointer(" + variableName + "))"
+		}
 		return
 	}
 	if p.Pointer == "**" {
@@ -164,6 +177,10 @@ func (p *Param) processSetupInputs() {
 	case "string":
 		// We need to convert to *uint16
 		p.setupTemplate = "inputStringSetup.tmpl"
+		p.LocalName = "_" + p.Name
+	case "[]string":
+		// Bug 2: [in] LPWSTR* array — convert each element to *uint16
+		p.setupTemplate = "inputStringArraySetup.tmpl"
 		p.LocalName = "_" + p.Name
 	}
 }

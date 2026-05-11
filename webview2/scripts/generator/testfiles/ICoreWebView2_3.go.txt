@@ -16,22 +16,29 @@ type ICoreWebView2_3 struct {
 	Vtbl *ICoreWebView2_3Vtbl
 }
 
-func (i *ICoreWebView2_3) AddRef() uintptr {
+func (i *ICoreWebView2_3) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2_3) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2_3() *ICoreWebView2_3 {
+func (i *ICoreWebView2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
 	var result *ICoreWebView2_3
 
 	iidICoreWebView2_3 := NewGUID("{A0D6DF20-3B92-416D-AA0C-437A9C727857}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_3)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
 
 
