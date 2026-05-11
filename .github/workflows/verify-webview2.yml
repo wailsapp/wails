@@ -1,0 +1,59 @@
+name: Verify Webview2 Bindings
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'webview2/**'
+      - '.github/workflows/verify-webview2.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: "webview2/scripts/go.sum"
+
+      - name: Build webview2gen
+        working-directory: webview2/scripts
+        run: |
+          go build -o ../../bin/webview2gen ./generator/cmd/webview2gen
+
+      - name: Verify generated bindings
+        working-directory: webview2
+        run: |
+          ../bin/webview2gen verify
+
+      - name: Run tests
+        working-directory: webview2
+        run: |
+          go test ./scripts/generator/... -v
+
+      - name: Check formatting
+        working-directory: webview2
+        run: |
+          gofmt -l pkg/webview2 scripts/generator
+          if [ -n "$(gofmt -l pkg/webview2 scripts/generator)" ]; then
+            echo "ERROR: Found improperly formatted Go files"
+            exit 1
+          fi
+
+      - name: Lint with golangci-lint
+        working-directory: webview2/scripts
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: webview2/scripts
+          args: --timeout=5m ./generator/...

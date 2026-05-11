@@ -386,27 +386,64 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 ## Platform-Specific Features
 
 <Tabs syncKey="platform">
-  <TabItem label="Windows" icon="seti:windows">
-    **Windows-specific features:**
-    
-    ```go
-    // Flash taskbar button
-    window.Flash(true)  // Start flashing
-    window.Flash(false) // Stop flashing
-    
-    // Trigger Windows 11 Snap Assist (Win+Z)
-    window.SnapAssist()
-    
-    // Set window icon
-    window.SetIcon(iconBytes)
-    ```
-    
-    **Snap Assist:**
-    Shows Windows 11 snap layout options for the window.
-    
-    **Taskbar flashing:**
-    Useful for notifications when window is minimised.
-  </TabItem>
+   <TabItem label="Windows" icon="seti:windows">
+     **Windows-specific features:**
+     
+     ```go
+     // Flash taskbar button
+     window.Flash(true)  // Start flashing
+     window.Flash(false) // Stop flashing
+     
+     // Trigger Windows 11 Snap Assist (Win+Z)
+     window.SnapAssist()
+     
+     // Set window icon
+     window.SetIcon(iconBytes)
+     ```
+     
+     **Snap Assist:**
+     Shows Windows 11 snap layout options for the window.
+     
+     **Taskbar flashing:**
+     Useful for notifications when window is minimised.
+
+     ### WebView2 Runtime Requirements
+
+     Wails v3 on Windows requires the **Microsoft WebView2 Runtime** to be installed.
+
+     **Minimum version:** 1.0.1418.22 (or later)
+
+     **Check installed version:**
+
+     ```go
+     import (
+         "github.com/wailsapp/wails/v3/pkg/runtime"
+     )
+
+     version := runtime.GetWebView2Version()
+     if version == "" {
+         // WebView2 not installed
+     } else if version < "1.0.1418.22" {
+         // Version too old
+     }
+     ```
+
+     **Installation:**
+
+     - **Download:** https://go.microsoft.com/fwlink/p/?LinkId=2124703
+     - **Microsoft Edge (Stable):** Includes WebView2 automatically
+     - **Windows 10+ (Build 19041):** May have pre-installed version
+
+     **Troubleshooting:**
+
+     If you see "unsupported capability" errors:
+
+     1. Install the latest WebView2 Runtime
+     2. Restart your application
+     3. Check installed version with `runtime.GetWebView2Version()`
+
+     See the [webview2 package documentation](https://github.com/wailsapp/wails/tree/master/webview2) for detailed information about the generator and version compatibility.
+   </TabItem>
 
   <TabItem label="macOS" icon="apple">
     **macOS-specific features:**
