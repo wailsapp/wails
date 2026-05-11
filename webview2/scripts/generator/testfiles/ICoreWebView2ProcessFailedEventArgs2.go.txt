@@ -41,7 +41,7 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetExitCode() (int, error) {
 
 	hr, _, err := i.Vtbl.GetExitCode.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(exitCode),
+		uintptr(unsafe.Pointer(&exitCode)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
