@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 func TestAnalyser(t *testing.T) {
@@ -106,7 +106,7 @@ func TestAnalyser(t *testing.T) {
 
 			for _, pkg := range pkgs {
 				for _, err := range pkg.Errors {
-					pterm.Warning.Println(err)
+					term.Warning(err)
 				}
 			}
 

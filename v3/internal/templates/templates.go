@@ -18,8 +18,8 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
+	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -309,19 +309,14 @@ func Install(options *flags.Init) error {
 		}
 	}
 
-	pterm.Printf("Creating project\n")
-	pterm.Printf("----------------\n\n")
-	table := pterm.TableData{
+	term.Section("Creating project")
+	term.Table([][]string{
 		{"Project Name", options.ProjectName},
 		{"Project Directory", filepath.FromSlash(options.ProjectDir)},
 		{"Template", template.Name},
 		{"Template Source", template.HelpURL},
 		{"Template Version", template.Version},
-	}
-	err = pterm.DefaultTable.WithData(table).Render()
-	if err != nil {
-		return err
-	}
+	})
 
 	switch template.source {
 	case sourceInternal:
@@ -398,7 +393,7 @@ func Install(options *flags.Init) error {
 		return err
 	}
 
-	pterm.Printf("\nProject '%s' created successfully.\n", options.ProjectName)
+	term.Successf("Project '%s' created successfully.", options.ProjectName)
 
 	return nil
 
@@ -459,15 +454,11 @@ func GenerateTemplate(options *BaseTemplate) error {
 	return nil
 }
 
-func confirmRemote(template *Template) bool {
-	pterm.Println(pterm.LightRed("\n--- REMOTE TEMPLATES ---"))
-
-	// Create boxes with the title positioned differently and containing different content
-	pterm.Println(pterm.LightYellow("You are creating a project using a remote template.\nThe Wails project takes no responsibility for 3rd party templates.\nOnly use remote templates that you trust."))
-
-	result, _ := pterm.DefaultInteractiveConfirm.WithConfirmText("Are you sure you want to continue?").WithConfirmText("y").WithRejectText("n").Show()
-
-	return result
+func confirmRemote(_ *Template) bool {
+	term.Warning("Remote template — the Wails project takes no responsibility for 3rd party templates.")
+	term.Warning("Only use remote templates that you trust.")
+	fmt.Println()
+	return term.Confirm("Are you sure you want to continue?")
 }
 
 // goModTidy runs go mod tidy in the given project directory
