@@ -1,12 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime/debug"
 
 	"github.com/pkg/browser"
-
-	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 
 	"github.com/leaanthony/clir"
@@ -141,27 +140,19 @@ func main() {
 
 	err := app.Run()
 	if err != nil {
-		pterm.Error.Println(err)
+		term.Error(err)
 		os.Exit(1)
 	}
 }
 
 func printFooter() {
 	if !commands.DisableFooter {
-		docsLink := term.Hyperlink("https://v3.wails.io/getting-started/your-first-app/", "wails3 docs")
-
-		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
-		// Check if we're in a teminal
-		printer := pterm.PrefixPrinter{
-			MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
-			Prefix: pterm.Prefix{
-				Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
-				Text:  "♥ ",
-			},
-		}
-
-		linkText := term.Hyperlink("https://github.com/sponsors/leaanthony", "wails3 sponsor")
-		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightBlue(linkText))
+		docsLink := term.Hyperlink("https://v3.wails.io/getting-started/your-first-app/", "docs")
+		sponsorLink := term.Hyperlink("https://github.com/sponsors/leaanthony", "github.com/sponsors/leaanthony")
+		fmt.Println()
+		fmt.Println("  " + term.Dim("docs")+"    "+docsLink)
+		fmt.Println("  " + term.Red("♥") + "       " + sponsorLink)
+		fmt.Println()
 	}
 }
 

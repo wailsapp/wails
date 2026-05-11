@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
-
-	"github.com/pterm/pterm"
 )
 
 type LinuxCapabilities struct {
@@ -35,7 +33,7 @@ func ToolCapabilities(_ *ToolCapabilitiesOptions) error {
 		caps.Linux = detectLinuxCapabilities()
 	}
 
-	pterm.Println(capsToJSON(caps))
+	fmt.Println(capsToJSON(caps))
 	return nil
 }
 

@@ -14,7 +14,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
 )
@@ -216,15 +215,14 @@ func Init(options *flags.Init) error {
 
 func printTemplates() error {
 	defaultTemplates := templates.GetDefaultTemplates()
-
-	pterm.Println()
-	table := pterm.TableData{{"Name", "Description"}}
-	for _, template := range defaultTemplates {
-		table = append(table, []string{template.Name, template.Description})
+	rows := [][]string{{"Name", "Description"}}
+	for _, t := range defaultTemplates {
+		rows = append(rows, []string{t.Name, t.Description})
 	}
-	err := pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithData(table).Render()
-	pterm.Println()
-	return err
+	fmt.Println()
+	term.HeaderTable(rows)
+	fmt.Println()
+	return nil
 }
 
 func sanitizeFileName(fileName string) string {

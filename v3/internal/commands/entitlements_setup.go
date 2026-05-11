@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 // Entitlement represents a macOS entitlement
@@ -56,7 +56,7 @@ var availableEntitlements = []Entitlement{
 
 // EntitlementsSetup runs the interactive entitlements configuration wizard
 func EntitlementsSetup(options *flags.EntitlementsSetup) error {
-	pterm.DefaultHeader.Println("macOS Entitlements Setup")
+	term.Section("macOS Entitlements Setup")
 	fmt.Println()
 
 	// Build all options for custom selection
@@ -174,10 +174,10 @@ func writeEntitlementsFile(path string, entitlements []string) error {
 		return fmt.Errorf("failed to write entitlements file: %w", err)
 	}
 
-	pterm.Success.Printfln("Wrote %s", path)
+	term.Successf("Wrote %s", path)
 
 	// Show summary
-	pterm.Info.Println("Entitlements:")
+	term.Info("Entitlements:")
 	for _, key := range entitlements {
 		for _, e := range availableEntitlements {
 			if e.Key == key {

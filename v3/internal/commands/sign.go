@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 // Sign signs a binary or package
@@ -60,7 +60,7 @@ func signMacOSApp(options *flags.Sign) error {
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS app bundle: %s", options.Input)
+		term.Infof("Signing macOS app bundle: %s", options.Input)
 	}
 
 	// Build codesign command
@@ -88,7 +88,7 @@ func signMacOSApp(options *flags.Sign) error {
 		return fmt.Errorf("codesign failed: %w", err)
 	}
 
-	pterm.Success.Printfln("Signed: %s", options.Input)
+	term.Successf("Signed: %s", options.Input)
 
 	// Notarize if requested
 	if options.Notarize {
@@ -104,7 +104,7 @@ func signMacOSBinary(options *flags.Sign) error {
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing macOS binary: %s", options.Input)
+		term.Infof("Signing macOS binary: %s", options.Input)
 	}
 
 	args := []string{
@@ -130,7 +130,7 @@ func signMacOSBinary(options *flags.Sign) error {
 		return fmt.Errorf("codesign failed: %w", err)
 	}
 
-	pterm.Success.Printfln("Signed: %s", options.Input)
+	term.Successf("Signed: %s", options.Input)
 	return nil
 }
 
@@ -140,7 +140,7 @@ func notarizeMacOSApp(options *flags.Sign) error {
 	}
 
 	if options.Verbose {
-		pterm.Info.Println("Submitting for notarization...")
+		term.Info("Submitting for notarization…")
 	}
 
 	// Create a zip for notarization
@@ -176,7 +176,7 @@ func notarizeMacOSApp(options *flags.Sign) error {
 		return fmt.Errorf("stapling failed: %w", err)
 	}
 
-	pterm.Success.Println("Notarization complete and ticket stapled")
+	term.Success("Notarization complete and ticket stapled")
 	return nil
 }
 
@@ -187,13 +187,13 @@ func signWindows(options *flags.Sign) error {
 		var err error
 		password, err = keychain.Get(keychain.KeyWindowsCertPassword)
 		if err != nil {
-			pterm.Warning.Printfln("Could not get password from keychain: %v", err)
+			term.Warningf("Could not get password from keychain: %v", err)
 			// Continue without password - might work for some certificates
 		}
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing Windows executable: %s", options.Input)
+		term.Infof("Signing Windows executable: %s", options.Input)
 	}
 
 	// Try native signtool first on Windows
@@ -203,7 +203,7 @@ func signWindows(options *flags.Sign) error {
 			return nil
 		}
 		if options.Verbose {
-			pterm.Warning.Printfln("Native signing failed, trying built-in: %v", err)
+			term.Warningf("Native signing failed, trying built-in: %v", err)
 		}
 	}
 
@@ -248,7 +248,7 @@ func signWindowsNative(options *flags.Sign, password string) error {
 		return fmt.Errorf("signtool failed: %w", err)
 	}
 
-	pterm.Success.Printfln("Signed: %s", options.Input)
+	term.Successf("Signed: %s", options.Input)
 	return nil
 }
 
@@ -302,13 +302,13 @@ func signDEB(options *flags.Sign) error {
 		if err != nil {
 			// Password might not be required if key is unencrypted
 			if options.Verbose {
-				pterm.Warning.Printfln("Could not get PGP password from keychain: %v", err)
+				term.Warningf("Could not get PGP password from keychain: %v", err)
 			}
 		}
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing DEB package: %s", options.Input)
+		term.Infof("Signing DEB package: %s", options.Input)
 	}
 
 	role := options.Role
@@ -339,7 +339,7 @@ func signDEB(options *flags.Sign) error {
 		return signDEBWithGPG(options, password, role)
 	}
 
-	pterm.Success.Printfln("Signed: %s", options.Input)
+	term.Successf("Signed: %s", options.Input)
 	return nil
 }
 
@@ -361,13 +361,13 @@ func signRPM(options *flags.Sign) error {
 		password, err = keychain.Get(keychain.KeyPGPPassword)
 		if err != nil {
 			if options.Verbose {
-				pterm.Warning.Printfln("Could not get PGP password from keychain: %v", err)
+				term.Warningf("Could not get PGP password from keychain: %v", err)
 			}
 		}
 	}
 
 	if options.Verbose {
-		pterm.Info.Printfln("Signing RPM package: %s", options.Input)
+		term.Infof("Signing RPM package: %s", options.Input)
 	}
 
 	// RPM signing requires the key to be imported to GPG keyring
@@ -391,6 +391,6 @@ func signRPM(options *flags.Sign) error {
 		return fmt.Errorf("rpmsign failed: %w", err)
 	}
 
-	pterm.Success.Printfln("Signed: %s", options.Input)
+	term.Successf("Signed: %s", options.Input)
 	return nil
 }

@@ -11,18 +11,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/s"
 )
 
 //go:embed linuxdeploy-plugin-gtk.sh
 var gtkPlugin []byte
-
-func log(p *pterm.ProgressbarPrinter, message string) {
-	p.UpdateTitle(message)
-	term.Infof(message)
-	p.Increment()
-}
 
 type GenerateAppImageOptions struct {
 	Binary      string `description:"The binary to package including path"`
@@ -35,9 +28,8 @@ type GenerateAppImageOptions struct {
 func GenerateAppImage(options *GenerateAppImageOptions) error {
 	DisableFooter = true
 
-	defer func() {
-		_ = pterm.DefaultSpinner.Stop()
-	}()
+	spinner := term.StartSpinner("Generating AppImage…")
+	defer term.StopSpinner(spinner)
 
 	if options.Binary == "" {
 		return fmt.Errorf("binary not provided")
@@ -68,9 +60,6 @@ func GenerateAppImage(options *GenerateAppImageOptions) error {
 }
 
 func generateAppImage(options *GenerateAppImageOptions) error {
-	numberOfSteps := 5
-	p, _ := pterm.DefaultProgressbar.WithTotal(numberOfSteps).WithTitle("Generating AppImage").Start()
-
 	// Get the last path of the binary and normalise the name
 	name := normaliseName(filepath.Base(options.Binary))
 
@@ -89,7 +78,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	appDir := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppDir", name, arch))
 	s.RMDIR(appDir)
 
-	log(p, "Preparing AppImage Directory: "+appDir)
+	term.Info("Preparing AppImage Directory: " + appDir)
 
 	usrBin := filepath.Join(appDir, "usr", "bin")
 	s.MKDIR(options.BuildDir)
@@ -113,7 +102,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 
 	// Download necessary files concurrently
-	log(p, "Downloading AppImage tooling")
+	term.Info("Downloading AppImage tooling")
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -138,7 +127,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	wg.Wait()
 
 	// Processing GTK files
-	log(p, "Processing GTK files.")
+	term.Info("Processing GTK files.")
 	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", "libwebkit2gtkinjectedbundle.so"}
 	files, err := findGTKFiles(filesNeeded)
 	if err != nil {
@@ -208,7 +197,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	targetFile := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppImage", name, arch))
 	s.MOVE(targetFile, options.OutputDir)
 
-	log(p, "AppImage created: "+targetFile)
+	term.Info("AppImage created: " + targetFile)
 	return nil
 }
 

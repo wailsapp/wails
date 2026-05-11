@@ -12,9 +12,9 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp/armor"
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/charmbracelet/huh"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 // SigningSetup configures signing variables in platform Taskfiles
@@ -39,7 +39,7 @@ func SigningSetup(options *flags.SigningSetup) error {
 		case "linux":
 			err = setupLinuxSigning()
 		default:
-			pterm.Warning.Printfln("Unknown platform: %s", platform)
+			term.Warningf("Unknown platform: %s", platform)
 			continue
 		}
 		if err != nil {
@@ -62,13 +62,12 @@ func detectPlatforms() []string {
 }
 
 func setupDarwinSigning() error {
-	pterm.DefaultHeader.Println("macOS Code Signing Setup")
-	fmt.Println()
+	term.Section("macOS Code Signing Setup")
 
 	// Get available signing identities
 	identities, err := getMacOSSigningIdentities()
 	if err != nil {
-		pterm.Warning.Printfln("Could not list signing identities: %v", err)
+		term.Warningf("Could not list signing identities: %v", err)
 		identities = []string{}
 	}
 
@@ -152,13 +151,13 @@ func setupDarwinSigning() error {
 		return err
 	}
 
-	pterm.Success.Printfln("Updated %s", taskfilePath)
+	term.Successf("Updated %s", taskfilePath)
 
 	if configureNotarization && keychainProfile != "" {
 		fmt.Println()
-		pterm.Info.Println("Next step: Store your notarization credentials:")
+		term.Info("Next step: Store your notarization credentials:")
 		fmt.Println()
-		pterm.Println(pterm.LightBlue(fmt.Sprintf(`  wails3 signing credentials \
+		term.Println(term.Blue(fmt.Sprintf(`  wails3 signing credentials \
     --apple-id "your@email.com" \
     --team-id "TEAMID" \
     --password "app-specific-password" \
@@ -170,8 +169,7 @@ func setupDarwinSigning() error {
 }
 
 func setupWindowsSigning() error {
-	pterm.DefaultHeader.Println("Windows Code Signing Setup")
-	fmt.Println()
+	term.Section("Windows Code Signing Setup")
 
 	var certSource string
 	var certPath string
@@ -236,7 +234,7 @@ func setupWindowsSigning() error {
 		if err != nil {
 			return fmt.Errorf("failed to store password in keychain: %w", err)
 		}
-		pterm.Success.Println("Certificate password stored in system keychain")
+		term.Success("Certificate password stored in system keychain")
 	}
 
 	// Update Taskfile (no passwords stored here)
@@ -256,12 +254,12 @@ func setupWindowsSigning() error {
 		return err
 	}
 
-	pterm.Success.Printfln("Updated %s", taskfilePath)
+	term.Successf("Updated %s", taskfilePath)
 	return nil
 }
 
 func setupLinuxSigning() error {
-	pterm.DefaultHeader.Println("Linux Package Signing Setup")
+	term.Section("Linux Package Signing Setup")
 	fmt.Println()
 
 	var keySource string
@@ -361,7 +359,7 @@ func setupLinuxSigning() error {
 		keyPath = "signing-key.asc"
 		pubKeyPath := "signing-key.pub.asc"
 
-		pterm.Info.Println("Generating PGP key pair...")
+		term.Info("Generating PGP key pair…")
 
 		// Call the key generation
 		err = generatePGPKeyForSetup(genName, genEmail, genPassword, keyPath, pubKeyPath)
@@ -371,11 +369,11 @@ func setupLinuxSigning() error {
 
 		keyPassword = genPassword
 
-		pterm.Success.Printfln("Generated %s and %s", keyPath, pubKeyPath)
+		term.Successf("Generated %s and %s", keyPath, pubKeyPath)
 		fmt.Println()
-		pterm.Info.Println("Distribute the public key to users so they can verify your packages:")
-		pterm.Println(pterm.LightBlue(fmt.Sprintf("  # For apt: sudo cp %s /etc/apt/trusted.gpg.d/", pubKeyPath)))
-		pterm.Println(pterm.LightBlue(fmt.Sprintf("  # For rpm: sudo rpm --import %s", pubKeyPath)))
+		term.Info("Distribute the public key to users so they can verify your packages:")
+		term.Println(term.Blue(fmt.Sprintf("  # For apt: sudo cp %s /etc/apt/trusted.gpg.d/", pubKeyPath)))
+		term.Println(term.Blue(fmt.Sprintf("  # For rpm: sudo rpm --import %s", pubKeyPath)))
 		fmt.Println()
 	}
 
@@ -385,7 +383,7 @@ func setupLinuxSigning() error {
 		if err != nil {
 			return fmt.Errorf("failed to store password in keychain: %w", err)
 		}
-		pterm.Success.Println("PGP key password stored in system keychain")
+		term.Success("PGP key password stored in system keychain")
 	}
 
 	// Update Taskfile (no passwords stored here)
@@ -402,7 +400,7 @@ func setupLinuxSigning() error {
 		return err
 	}
 
-	pterm.Success.Printfln("Updated %s", taskfilePath)
+	term.Successf("Updated %s", taskfilePath)
 	return nil
 }
 
@@ -510,7 +508,7 @@ func updateTaskfileVars(path string, vars map[string]string) error {
 		if i == len(lines)-1 && !varsInserted && len(remainingVars) > 0 {
 			// Find where to insert (after includes, before tasks)
 			// For simplicity, just append warning
-			pterm.Warning.Println("Could not find vars section in Taskfile, please add manually")
+			term.Warning("Could not find vars section in Taskfile, please add manually")
 		}
 	}
 
