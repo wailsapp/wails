@@ -1,0 +1,327 @@
+---
+title: 설치
+description: Wails를 설치하고 애플리케이션 빌드를 준비하세요
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## 빠른 설치 (5분)
+
+:::tip[TL;DR - 숙련된 개발자]
+```bash
+# Go 1.25+ 설치 후:
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+wails3 doctor  # 설치 확인
+```
+
+`wails3 doctor`가 통과하면 설치가 완료된 것입니다. [첫 번째 앱으로 건너뛰기 →](/ko/quick-start/first-app)
+:::
+
+## 단계별 설치
+
+<Steps>
+
+1. **Go 설치 (필수)**
+
+   Wails는 Go 1.25 이상이 필요합니다.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **[go.dev/dl](https://go.dev/dl/)** 에서 Windows 설치 프로그램을 다운로드하여 실행하세요.
+
+       **설치 확인:**
+       ```powershell
+       go version  # 1.25 이상이어야 함
+       ```
+
+       **PATH 확인:**
+       ```powershell
+       $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+       ```
+
+       결과가 비어 있다면, `C:\Users\YourName\go\bin`을 PATH에 추가하세요.
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **옵션 1: 공식 설치 프로그램**
+
+       **[go.dev/dl](https://go.dev/dl/)** 에서 macOS 설치 프로그램(.pkg 파일)을 다운로드하여 실행하세요.
+
+       **옵션 2: Homebrew**
+       ```bash
+       brew install go
+       ```
+
+       **설치 확인:**
+       ```bash
+       go version  # 1.25 이상이어야 함
+       echo $PATH | grep go/bin  # ~/go/bin이 표시되어야 함
+       ```
+
+       `~/go/bin`이 PATH에 없다면, `~/.zshrc` 또는 `~/.bash_profile`에 추가하세요:
+       ```bash
+       export PATH=$PATH:~/go/bin
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **옵션 1: 공식 Tarball**
+
+       **[go.dev/dl](https://go.dev/dl/)** 에서 Linux tarball을 다운로드한 후:
+       ```bash
+       sudo rm -rf /usr/local/go
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+       ```
+
+       **옵션 2: 패키지 관리자**
+       ```bash
+       # Ubuntu/Debian
+       sudo apt install golang-go
+
+       # Fedora
+       sudo dnf install golang
+
+       # Arch
+       sudo pacman -S go
+       ```
+
+       **PATH에 추가** (`~/.bashrc` 또는 `~/.zshrc`에 추가):
+       ```bash
+       export PATH=$PATH:/usr/local/go/bin:~/go/bin
+       source ~/.bashrc  # 다시 로드
+       ```
+
+       **확인:**
+       ```bash
+       go version
+       echo $PATH | grep go/bin
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **플랫폼 종속성 설치**
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **WebView2 런타임** (일반적으로 사전 설치됨)
+
+       Windows 10/11에는 WebView2가 기본적으로 포함되어 있습니다. 누락된 경우:
+       - [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)에서 다운로드
+       - 또는 나중에 `wails3 doctor`를 실행하면 안내에 따라 설치할 수 있습니다.
+
+       **이것으로 끝!** 다른 종속성은 필요하지 않습니다.
+
+       :::tip[Windows 11 성능 팁]
+       프로젝트를 저장하기 위해 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 사용을 고려하세요. Dev Drive는 개발자 워크로드에 최적화되어 있으며 빌드 시간과 디스크 접근 속도를 최대 30%까지 향상시킬 수 있습니다.
+       :::
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Xcode 명령줄 도구** (필수)
+
+       ```bash
+       xcode-select --install
+       ```
+
+       나타나는 대화 상자에서 "Install"을 클릭하세요.
+
+       **확인:**
+       ```bash
+       xcode-select -p  # /Library/Developer/CommandLineTools가 표시되어야 함
+       ```
+
+       **이것으로 끝!** macOS에는 WebKit가 기본적으로 포함되어 있습니다.
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **빌드 도구 및 WebKit**
+
+       :::caution[최소 배포판 버전]
+       Wails v3은 **WebKitGTK 4.1** (libsoup3 사용)이 필요합니다. 4.0만 제공하는 이전 배포판 — Ubuntu 20.04, Debian 11, RHEL 8/9 및 그 파생 버전 — 은 지원되지 않습니다.
+       :::
+
+       <Tabs syncKey="distro">
+         <TabItem label="Ubuntu/Debian">
+           Ubuntu 22.04+ 또는 Debian 12+가 필요합니다.
+           ```bash
+           sudo apt update
+           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+           ```
+         </TabItem>
+
+         <TabItem label="Fedora">
+           ```bash
+           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Arch">
+           ```bash
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           `shell.nix` 또는 `devShell`에 추가하세요:
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
+           ```
+         </TabItem>
+
+         <TabItem label="기타">
+           Wails 설치 후 `wails3 doctor`를 실행하세요. 배포판에 필요한 정확한 패키지가 표시됩니다.
+         </TabItem>
+       </Tabs>
+
+       :::note[선택 사항: GTK4 지원]
+       Wails는 실험적인 GTK4 / WebKitGTK 6.0 지원도 제공합니다. GTK4로 빌드하려면 배포판에 대한 추가 종속성을 설치하고 `wails3 build -tags gtk4`로 빌드하세요. 자세한 내용은 [Linux Packaging - GTK4](/guides/build/linux#gtk4-support-experimental)를 참조하세요.
+       :::
+     </TabItem>
+   </Tabs>
+
+3. **Wails CLI 설치**
+
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+   ```
+
+   이 명령은 `wails3` 명령을 `~/go/bin`(Windows의 경우 `%USERPROFILE%\go\bin`)에 설치합니다.
+
+4. **설치 확인**
+
+   ```bash
+   wails3 doctor
+   ```
+
+   **예상 출력 (또는 유사한 내용):**
+   ```
+   Wails (v3.0.0-dev)  Wails Doctor
+
+   # System
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
+
+   # Dependencies
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
+   ```
+
+   :::note[`wails3` 명령을 찾을 수 없는 경우]
+   `~/go/bin`이 PATH에 없습니다. 위의 1단계를 참조하여 수정한 후 터미널을 다시 시작하세요.
+   :::
+
+5. **npm 설치 (선택 사항이지만 권장)**
+
+   대부분의 Wails 템플릿은 프론트엔드 도구로 npm을 사용합니다.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       [nodejs.org](https://nodejs.org/)에서 다운로드하여 설치 프로그램을 실행하세요.
+
+       **확인:**
+       ```powershell
+       npm --version
+       ```
+     </TabItem>#### Go 버전이 너무 오래됨
+
+Wails v3에는 Go 1.25+가 필요합니다. 이전 버전이 있는 경우:
+
+<Tabs syncKey="os">
+  <TabItem label="Windows/macOS" icon="seti:windows">
+    [go.dev/dl](https://go.dev/dl/)에서 최신 버전을 다운로드하고 재설치합니다.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    [go.dev/dl](https://go.dev/dl/)에서 최신 tarball을 다운로드한 후:
+    ```bash
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+    ```
+  </TabItem>
+</Tabs>
+
+## 개발 버전 (Bleeding Edge)
+
+최신 개발 브랜치에서 가장 최신 코드를 사용하고 싶으신가요? 이를 통해 릴리스되기 전에 새로운 기능과 수정 사항을 사용할 수 있지만, 버그와 중단 변경(breaking changes)의 위험이 따릅니다. 기여자나 다가오는 기능을 테스트해야 하는 사람에게만 권장됩니다.
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3
+cd v3/cmd/wails3
+go install
+```
+
+:::caution[개발 버전]
+- 버그나 중단 변경(breaking changes)이 있을 수 있음
+- 생성된 프로젝트는 로컬 Wails를 가리키기 위해 `replace` 지시문을 사용함
+- 기여자나 새로운 기능 테스트를 위해만 권장됨
+:::
+
+## 다음 단계
+
+**설치 완료!** 시스템이 Wails 개발을 위해 준비되었습니다.
+
+<Card title="첫 번째 앱 빌드하기" icon="rocket">
+  10분 안에 작동하는 애플리케이션을 만드세요.
+
+  [첫 번째 앱 튜토리얼 →](/ko/quick-start/first-app)
+</Card>
+
+<Card title="템플릿 탐색하기" icon="open-book">
+  기본으로 제공되는 항목을 확인하세요.
+
+  ```bash
+  wails3 init -l  # 템플릿 목록
+  ```
+</Card>
+
+---
+
+**문제가 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [이슈를 열기](https://github.com/wailsapp/wails/issues)하세요.

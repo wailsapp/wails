@@ -42,8 +42,8 @@ require (
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
-	github.com/wailsapp/go-webview2 v1.0.23
 	github.com/wailsapp/task/v3 v3.40.1-patched3
+	github.com/wailsapp/wails/webview2 v1.0.24
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/sys v0.40.0
 	golang.org/x/term v0.39.0

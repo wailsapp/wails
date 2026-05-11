@@ -70,6 +70,12 @@ type Frontend struct {
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// Pending JS callbacks are batched to avoid saturating WebView2's
+	// ExecuteScript queue under heavy concurrent Go->JS call load.
+	callbackMu      sync.Mutex
+	pendingCallbacks []string
+	drainScheduled  bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -871,9 +877,52 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
-	})
+	script := `window.wails.Callback(` + string(escaped) + `);`
+
+	f.callbackMu.Lock()
+	f.pendingCallbacks = append(f.pendingCallbacks, script)
+	shouldSchedule := !f.drainScheduled
+	if shouldSchedule {
+		f.drainScheduled = true
+	}
+	f.callbackMu.Unlock()
+
+	if shouldSchedule {
+		if !f.mainWindow.Invoke(f.drainCallbacks) {
+			// PostMessage failed (queue full or HWND invalid). Reset the flag so the
+			// next incoming callback can try to schedule a fresh drain.
+			f.callbackMu.Lock()
+			f.drainScheduled = false
+			f.callbackMu.Unlock()
+			f.logger.Warning("Invoke: PostMessage failed -- pending WebView2 callbacks may be delayed")
+		}
+	}
+}
+
+// drainCallbacks is called on the UI thread by the Invoke mechanism.
+// It flushes all accumulated callbacks in a single ExecuteScript call,
+// preventing WebView2 queue saturation under high concurrent load.
+func (f *Frontend) drainCallbacks() {
+	f.callbackMu.Lock()
+	scripts := f.pendingCallbacks
+	f.pendingCallbacks = nil
+	f.drainScheduled = false // allow re-scheduling before we release the lock
+	f.callbackMu.Unlock()
+
+	if len(scripts) == 0 {
+		return
+	}
+
+	totalLen := 0
+	for _, s := range scripts {
+		totalLen += len(s)
+	}
+	var sb strings.Builder
+	sb.Grow(totalLen)
+	for _, s := range scripts {
+		sb.WriteString(s)
+	}
+	f.chromium.Eval(sb.String())
 }
 
 func (f *Frontend) startDrag() error {
