@@ -45,6 +45,12 @@ func (p *Param) Process(decl *InterfaceMethod) {
 	if p.isDoublePointer() {
 		p.GoType = "*" + p.GoType
 	}
+	// LPCWSTR* (or LPWSTR*) in an [in] direction is a C array of strings, not a
+	// single string with an extra level of indirection.
+	if p.isSinglePointer() && !p.IsOutputParam() &&
+		(p.Type == "LPCWSTR" || p.Type == "LPWSTR") {
+		p.GoType = "[]string"
+	}
 	p.OutputGoType = p.GoType
 	if p.IsOutputParam() && strings.HasPrefix(p.OutputGoType, "**") {
 		p.OutputGoType = p.GoType[1:]
@@ -65,6 +71,10 @@ func (p *Param) isDoublePointer() bool {
 }
 
 func (p *Param) AsInputType() string {
+	// []string already encodes the pointer semantics; don't add another *.
+	if p.GoType == "[]string" {
+		return "[]string"
+	}
 	if p.isPointer() && p.GoType != "string" {
 		return "*" + p.GoType
 	}
@@ -103,15 +113,22 @@ func (p *Param) IsInputParam() bool {
 
 func (p *Param) processVtableCallInput() {
 	variableName := p.GetVariableName()
-	if strings.HasPrefix(p.Type, "int") || strings.HasPrefix(p.Type, "uint") || p.Type == "bool" || p.Type == "float32" || p.Type == "float64" {
-		p.VtableCallInput = "uintptr(" + variableName + ")"
-		return
-	}
+
+	// String types: direction determines whether to pass pointer-to-pointer or pointer.
+	// For output LPWSTR* the local var is *uint16; pass &local so COM writes the pointer back.
+	// For input LPWSTR/LPCWSTR (plain or array) pass the *uint16 / **uint16 directly.
 	switch p.Type {
 	case "LPCWSTR", "LPWSTR":
-		p.VtableCallInput = "uintptr(unsafe.Pointer(" + variableName + "))"
+		if p.IsOutputParam() {
+			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
+		} else {
+			p.VtableCallInput = "uintptr(unsafe.Pointer(" + variableName + "))"
+		}
 		return
 	}
+
+	// Pointer checks come before the numeric GoType check so that output numeric
+	// pointers (e.g. [out] int* / UINT32*) are correctly passed by address, not value.
 	if p.Pointer == "**" {
 		p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
 		return
@@ -124,10 +141,22 @@ func (p *Param) processVtableCallInput() {
 		}
 		return
 	}
+
 	if p.IsEnum() {
 		p.VtableCallInput = "uintptr(" + variableName + ")"
 		return
 	}
+
+	// Scalar numeric / bool inputs: use GoType (handles uppercase IDL names like UINT32,
+	// INT32, BOOL that map to Go uint32, int32, bool). For bool, setup code converts to
+	// int32 first so the local variable is already an int32 and uintptr() is correct.
+	goType := p.GoType
+	if strings.HasPrefix(goType, "int") || strings.HasPrefix(goType, "uint") ||
+		goType == "float32" || goType == "float64" || goType == "bool" {
+		p.VtableCallInput = "uintptr(" + variableName + ")"
+		return
+	}
+
 	p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
 }
 
@@ -162,8 +191,15 @@ func (p *Param) processSetupInputs() {
 	}
 	switch p.GoType {
 	case "string":
-		// We need to convert to *uint16
 		p.setupTemplate = "inputStringSetup.tmpl"
+		p.LocalName = "_" + p.Name
+	case "[]string":
+		// LPCWSTR* — convert Go slice to a C array of *uint16 pointers
+		p.setupTemplate = "inputStringArraySetup.tmpl"
+		p.LocalName = "_" + p.Name
+	case "bool":
+		// COM BOOL is int32; convert before the vtable call
+		p.setupTemplate = "inputBoolSetup.tmpl"
 		p.LocalName = "_" + p.Name
 	}
 }
@@ -190,7 +226,6 @@ func (p *Param) processSetupOutputs() {
 }
 
 func (p *Param) defaultErrorValue() string {
-
 	switch true {
 	case p.IsEnum(), strings.HasPrefix(p.GoType, "uint"), strings.HasPrefix(p.GoType, "int"),
 		p.GoType == "HANDLE", p.GoType == "HWND", p.GoType == "HCURSOR":
@@ -201,6 +236,8 @@ func (p *Param) defaultErrorValue() string {
 		return "false"
 	case p.GoType == "string":
 		return `""`
+	case p.GoType == "[]string":
+		return "nil"
 	case p.OutputGoType[0] == '*':
 		return "nil"
 	default:
