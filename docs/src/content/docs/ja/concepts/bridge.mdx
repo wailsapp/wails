@@ -1,0 +1,391 @@
+---
+title: Go-フロントエンドブリッジ
+description: WailsがGoとJavaScript間の直接通信をどのように可能にするかの詳細
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 直接のGo-JavaScript通信
+
+Wailsは、GoとJavaScriptの間に**直接のメモリ内ブリッジ**を提供し、HTTPのオーバーヘッド、プロセスの境界、シリアライズのボトルネックなしでシームレスな通信を可能にします。
+
+## 全体像
+
+```d2
+direction: right
+
+Frontend: "Frontend (JavaScript)" {
+  UI: "React/Vue/Vanilla" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Bindings: "Auto-Generated Bindings" {
+    shape: rectangle
+    style.fill: "#A78BFA"
+  }
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  TypeGen: "Type Generator" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Your Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Registry: "Service Registry" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend.UI -> Frontend.Bindings: "import { Method }"
+Frontend.Bindings -> Bridge.Encoder: "Call Method('arg')"
+Bridge.Encoder -> Bridge.Router: "Encode to JSON"
+Bridge.Router -> Backend.Registry: "Find service"
+Backend.Registry -> Backend.Services: "Invoke method"
+Backend.Services -> Bridge.Decoder: "Return result"
+Bridge.Decoder -> Frontend.Bindings: "Decode to JS"
+Frontend.Bindings -> Frontend.UI: "Promise resolves"
+Bridge.TypeGen -> Frontend.Bindings: "Generate types"
+```
+
+**重要なポイント:** HTTPもIPCもプロセスの境界もありません。**直接の関数呼び出し**と**型安全性**のみです。
+
+## 仕組み：ステップバイステップ
+
+### 1. サービス登録（起動時）
+
+アプリケーションが起動すると、Wailsはサービスを検出します：
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) Add(a, b int) int {
+    return a + b
+}
+
+// Register service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Wailsが行うこと：**
+1. **構造体をスキャン**してエクスポートされたメソッドを検出
+2. **型情報を抽出**（パラメータ、戻り値の型）
+3. **レジストリを構築**してメソッド名を関数にマッピング
+4. **完全な型定義を含むTypeScriptバインディングを生成**
+
+### 2. バインディング生成（ビルド時）
+
+WailsはTypeScriptバインディングを自動的に生成します：
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function Add(a: number, b: number): Promise<number>
+```
+
+**型マッピング：**
+
+| Goの型 | TypeScriptの型 |
+|---------|-----------------|
+| `string` | `string` |
+| `int`, `int32`, `int64` | `number` |
+| `float32`, `float64` | `number` |
+| `bool` | `boolean` |
+| `[]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `struct` | `interface` |
+| `time.Time` | `Date` |
+| `error` | 例外（スロー） |
+
+### 3. フロントエンド呼び出し（実行時）
+
+開発者がJavaScriptからGoのメソッドを呼び出します：
+
+```javascript
+import { Greet, Add } from './bindings/GreetService'
+
+// Call Go from JavaScript
+const greeting = await Greet("World")
+console.log(greeting)  // "Hello, World!"
+
+const sum = await Add(5, 3)
+console.log(sum)  // 8
+```
+
+**何が起こるか：**
+1. **バインディング関数が呼び出される** - `Greet("World")`
+2. **メッセージが作成される** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **ブリッジに送信される** - WebViewのJavaScriptブリッジ経由
+4. **Promiseが返される** - 応答を待機
+
+### 4. ブリッジ処理（実行時）
+
+ブリッジはメッセージを受信して処理します：
+
+```d2
+direction: down
+
+Receive: "Receive Message" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Parse: "Parse JSON" {
+  shape: rectangle
+}
+
+Validate: "Validate" {
+  Check: "Service exists?" {
+    shape: diamond
+  }
+  
+  CheckMethod: "Method exists?" {
+    shape: diamond
+  }
+  
+  CheckTypes: "Types correct?" {
+    shape: diamond
+  }
+}
+
+Invoke: "Invoke Go Method" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+Encode: "Encode Result" {
+  shape: rectangle
+}
+
+Send: "Send Response" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Error: "Send Error" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Receive -> Parse
+Parse -> Validate.Check
+Validate.Check -> Validate.CheckMethod: "Yes"
+Validate.Check -> Error: "No"
+Validate.CheckMethod -> Validate.CheckTypes: "Yes"
+Validate.CheckMethod -> Error: "No"
+Validate.CheckTypes -> Invoke: "Yes"
+Validate.CheckTypes -> Error: "No"
+Invoke -> Encode: "Success"
+Invoke -> Error: "Error"
+Encode -> Send
+```
+
+**セキュリティ：** 登録されたサービスとエクスポートされたメソッドのみが呼び出し可能です。
+
+### 5. Goの実行（実行時）
+
+Goのメソッドが実行されます：
+
+```go
+func (g *GreetService) Greet(name string) string {
+    // This runs in Go
+    return g.prefix + name + "!"
+}
+```
+
+**実行コンテキスト：**
+- **ゴルーチン**で実行（ノンブロッキング）
+- **すべてのGoの機能**にアクセス可能（ファイルシステム、ネットワーク、データベース）
+- **他のGoコード**を自由に呼び出せる
+- 結果またはエラーを返す
+
+### 6. 応答（実行時）
+
+結果がJavaScriptに戻されます：
+
+```javascript
+// Promise resolves with result
+const greeting = await Greet("World")
+// greeting = "Hello, World!"
+```
+
+**エラー処理：**
+
+```go
+func (g *GreetService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+```javascript
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Go error:", error)  // "division by zero"
+}
+```
+
+## パフォーマンス特性
+
+### 速度
+
+**典型的な呼び出しオーバーヘッド：** &lt;1ms
+
+```
+Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
+     ↓            ↓           ↓            ↓            ↓
+   &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
+```
+
+**他の選択肢との比較：**
+- **HTTP/REST：** 5-50ms（ネットワークスタック、シリアライズ）
+- **IPC：** 1-10ms（プロセスの境界、マーシャリング）
+- **Wailsブリッジ：** &lt;1ms（メモリ内、直接呼び出し）
+
+### メモリ
+
+**呼び出しあたりのオーバーヘッド：** 約1KB（メッセージバッファ）
+
+**ゼロコピー最適化：** 大きなデータ（>1MB）は可能な限り共有メモリを使用します。
+
+### 並行性
+
+**呼び出しは並行です：**
+- 各呼び出しは独自のゴルーチンで実行
+- 複数の呼び出しを同時に実行可能
+- 呼び出し間のブロッキングなし
+
+```javascript
+// These run concurrently
+const [result1, result2, result3] = await Promise.all([
+    SlowOperation1(),
+    SlowOperation2(),
+    SlowOperation3(),
+])
+```
+
+## 型システム
+
+### サポートされている型
+
+#### プリミティブ型
+
+```go
+// Go
+func Example(
+    s string,
+    i int,
+    f float64,
+    b bool,
+) (string, int, float64, bool) {
+    return s, i, f, b
+}
+```
+
+```typescript
+// TypeScript (auto-generated)
+function Example(
+    s: string,
+    i: number,
+    f: number,
+    b: boolean,
+): Promise<[string, number, number, boolean]>
+```
+
+#### スライスと配列
+
+```go
+// Go
+func Sum(numbers []int) int {
+    total := 0
+    for _, n := range numbers {
+        total += n
+    }
+    return total
+}
+```
+
+```typescript
+// TypeScript
+function Sum(numbers: number[]): Promise<number>
+
+// Usage
+const total = await Sum([1, 2, 3, 4, 5])  // 15
+```
+
+#### マップ
+
+```go
+// Go
+func GetConfig() map[string]interface{} {
+    return map[string]interface{}{
+        "theme": "dark",
+        "fontSize": 14,
+        "enabled": true,
+    }
+}
+```
+
+```typescript
+// TypeScript
+function GetConfig(): Promise<Record<string, any>>
+
+// Usage
+const config = await GetConfig()
+console.log(config.theme)  // "dark"
+```
+
+#### 構造体
+
+```go
+// Go
+type User struct {
+    ID    int    `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}
+
+func GetUser(id int) (*User, error) {
+    return &User{
+        ID:    id,
+        Name:  "Alice",---
+
+**ブリッジについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) を確認してください。
