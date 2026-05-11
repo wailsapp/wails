@@ -125,7 +125,15 @@ export default defineConfig({
       ],
       defaultLocale: "root",
       locales: {
-        root: { label: "English", lang: "en", dir: "ltr" },
+        root:    { label: "English",             lang: "en",    dir: "ltr" },
+        "zh-cn": { label: "简体中文",             lang: "zh-CN", dir: "ltr" },
+        "zh-tw": { label: "繁體中文",             lang: "zh-TW", dir: "ltr" },
+        ja:      { label: "日本語",               lang: "ja",    dir: "ltr" },
+        ko:      { label: "한국어",               lang: "ko",    dir: "ltr" },
+        ru:      { label: "Русский",             lang: "ru",    dir: "ltr" },
+        fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
+        pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
+        de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),

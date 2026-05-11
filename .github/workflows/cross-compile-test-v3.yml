@@ -38,6 +38,8 @@ jobs:
     needs: check_approval
     runs-on: ${{ matrix.runner }}
     if: needs.check_approval.outputs.approved == 'true'
+    env:
+      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:

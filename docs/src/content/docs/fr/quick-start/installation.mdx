@@ -1,0 +1,327 @@
+---
+title: Installation
+description: Installez Wails et préparez-vous à créer des applications
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## Installation rapide (5 minutes)
+
+:::tip[TL;DR - Développeurs expérimentés]
+```bash
+# Installez Go 1.25+, puis :
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+wails3 doctor  # Vérifiez l'installation
+```
+
+Si `wails3 doctor` réussit, vous avez terminé. [Passer à la première application →](/fr/quick-start/first-app)
+:::
+
+## Installation étape par étape
+
+<Steps>
+
+1. **Installer Go (Requis)**
+
+   Wails nécessite Go 1.25 ou une version ultérieure.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       Téléchargez l'installateur Windows depuis **[go.dev/dl](https://go.dev/dl/)** et exécutez-le.
+
+       **Vérifier l'installation :**
+       ```powershell
+       go version  # Doit afficher 1.25 ou une version ultérieure
+       ```
+
+       **Vérifier le PATH :**
+       ```powershell
+       $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+       ```
+
+       Si le résultat est vide, ajoutez `C:\Users\VotreNom\go\bin` à votre PATH.
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Option 1 : Installateur officiel**
+
+       Téléchargez l'installateur macOS (fichier .pkg) depuis **[go.dev/dl](https://go.dev/dl/)** et exécutez-le.
+
+       **Option 2 : Homebrew**
+       ```bash
+       brew install go
+       ```
+
+       **Vérifier l'installation :**
+       ```bash
+       go version  # Doit afficher 1.25 ou une version ultérieure
+       echo $PATH | grep go/bin  # Doit afficher ~/go/bin
+       ```
+
+       Si `~/go/bin` n'est pas dans le PATH, ajoutez-le à `~/.zshrc` ou `~/.bash_profile` :
+       ```bash
+       export PATH=$PATH:~/go/bin
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Option 1 : Archive officielle**
+
+       Téléchargez l'archive Linux depuis **[go.dev/dl](https://go.dev/dl/)**, puis :
+       ```bash
+       sudo rm -rf /usr/local/go
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+       ```
+
+       **Option 2 : Gestionnaire de paquets**
+       ```bash
+       # Ubuntu/Debian
+       sudo apt install golang-go
+
+       # Fedora
+       sudo dnf install golang
+
+       # Arch
+       sudo pacman -S go
+       ```
+
+       **Ajouter au PATH** (ajoutez à `~/.bashrc` ou `~/.zshrc`) :
+       ```bash
+       export PATH=$PATH:/usr/local/go/bin:~/go/bin
+       source ~/.bashrc  # Recharger
+       ```
+
+       **Vérifier :**
+       ```bash
+       go version
+       echo $PATH | grep go/bin
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **Installer les dépendances de la plateforme**
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **WebView2 Runtime** (généralement préinstallé)
+
+       Windows 10/11 inclut WebView2 par défaut. Si manquant :
+       - Téléchargez-le depuis [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+       - Ou exécutez `wails3 doctor` plus tard — il vous guidera
+
+       **C'est tout !** Aucune autre dépendance n'est nécessaire.
+
+       :::tip[Astuce de performance pour Windows 11]
+       Envisagez d'utiliser [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) pour stocker vos projets. Les Dev Drives sont optimisés pour les charges de travail des développeurs et peuvent améliorer considérablement les temps de build et les vitesses d'accès au disque jusqu'à 30 %.
+       :::
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Outils en ligne de commande Xcode** (requis)
+
+       ```bash
+       xcode-select --install
+       ```
+
+       Cliquez sur "Installer" dans la boîte de dialogue qui apparaît.
+
+       **Vérifier :**
+       ```bash
+       xcode-select -p  # Doit afficher /Library/Developer/CommandLineTools
+       ```
+
+       **C'est tout !** macOS inclut WebKit par défaut.
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Outils de compilation et WebKit**
+
+       :::caution[Versions minimales des distributions]
+       Wails v3 nécessite **WebKitGTK 4.1** (utilise libsoup3). Les versions antérieures qui ne livrent que la 4.0 — Ubuntu 20.04, Debian 11, RHEL 8/9 et leurs dérivés — ne sont pas prises en charge.
+       :::
+
+       <Tabs syncKey="distro">
+         <TabItem label="Ubuntu/Debian">
+           Nécessite Ubuntu 22.04+ ou Debian 12+.
+           ```bash
+           sudo apt update
+           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+           ```
+         </TabItem>
+
+         <TabItem label="Fedora">
+           ```bash
+           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Arch">
+           ```bash
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           Ajoutez à votre `shell.nix` ou `devShell` :
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
+           ```
+         </TabItem>
+
+         <TabItem label="Autre">
+           Exécutez `wails3 doctor` après avoir installé Wails — il affichera les paquets exacts nécessaires pour votre distribution.
+         </TabItem>
+       </Tabs>
+
+       :::note[Optionnel : Prise en charge de GTK4]
+       Wails prend également en charge expérimentalement GTK4 / WebKitGTK 6.0. Si vous souhaitez construire avec GTK4, installez les dépendances supplémentaires pour votre distribution et construisez avec `wails3 build -tags gtk4`. Voir [Packaging Linux - GTK4](/guides/build/linux#gtk4-support-experimental) pour plus de détails.
+       :::
+     </TabItem>
+   </Tabs>
+
+3. **Installer l'interface de ligne de commande Wails**
+
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+   ```
+
+   Cela installe la commande `wails3` dans `~/go/bin` (ou `%USERPROFILE%\go\bin` sur Windows).
+
+4. **Vérifier l'installation**
+
+   ```bash
+   wails3 doctor
+   ```
+
+   **Sortie attendue (ou similaire) :**
+   ```
+   Wails (v3.0.0-dev)  Wails Doctor
+
+   # System
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
+
+   # Dependencies
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
+   ```
+
+   :::note[Si la commande `wails3` est introuvable]
+   Votre `~/go/bin` n'est pas dans le PATH. Voir l'étape 1 ci-dessus pour corriger cela, puis redémarrez votre terminal.
+   :::
+
+5. **Installer npm (Optionnel mais recommandé)**
+
+   La plupart des modèles Wails utilisent npm pour les outils frontend.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       Téléchargez depuis [nodejs.org](https://nodejs.org/) et exécutez l'installateur.
+
+       **Vérifier :**
+       ```powershell
+       npm --version
+       ```
+     </TabItem>#### Version de Go trop ancienne
+
+Wails v3 nécessite Go 1.25+. Si vous avez une version plus ancienne :
+
+<Tabs syncKey="os">
+  <TabItem label="Windows/macOS" icon="seti:windows">
+    Téléchargez la dernière version depuis [go.dev/dl](https://go.dev/dl/) et réinstallez-la.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Téléchargez la dernière archive tarball depuis [go.dev/dl](https://go.dev/dl/), puis :
+    ```bash
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+    ```
+  </TabItem>
+</Tabs>
+
+## Version de développement (Bleeding Edge)
+
+Vous souhaitez utiliser le code le plus récent issu de la branche de développement principale ? Cela vous donne accès aux nouvelles fonctionnalités et aux correctifs avant leur publication, mais comporte le risque de bogues et de modifications incompatibles. Seulement recommandé pour les contributeurs ou ceux qui doivent tester les fonctionnalités à venir.
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3
+cd v3/cmd/wails3
+go install
+```
+
+:::caution[Version de développement]
+- Peut contenir des bogues ou des modifications incompatibles
+- Les projets créés utiliseront la directive `replace` pour pointer vers Wails local
+- Seulement recommandé pour les contributeurs ou pour tester de nouvelles fonctionnalités
+:::
+
+## Prochaines étapes
+
+**Installation terminée !** Votre système est prêt pour le développement avec Wails.
+
+<Card title="Créez votre première application" icon="rocket">
+  Créez une application fonctionnelle en 10 minutes.
+
+  [Tutoriel première application →](/fr/quick-start/first-app)
+</Card>
+
+<Card title="Explorez les modèles" icon="open-book">
+  Découvrez ce qui est disponible nativement.
+
+  ```bash
+  wails3 init -l  # Lister les modèles
+  ```
+</Card>
+
+---
+
+**Vous rencontrez des problèmes ?** Posez votre question sur [Discord](https://discord.gg/JDdSxwjhGf) ou [ouvrez un ticket](https://github.com/wailsapp/wails/issues).

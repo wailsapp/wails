@@ -1,0 +1,328 @@
+---
+title: Wails 運作原理
+description: 了解 Wails 架構及其如何實現原生效能
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails 是一個用於構建桌面應用程式的框架，採用 **Go 作為後端** 和 **Web 技術作為前端**。但與 Electron 不同，Wails 並未捆綁瀏覽器，而是使用 **作業系統的原生 WebView**。
+
+```d2
+direction: right
+
+User: "User" {
+  shape: person
+  style.fill: "#3B82F6"
+}
+
+Application: "Your Wails Application" {
+  Frontend: "Frontend\n(HTML/CSS/JS)" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Runtime: "Wails Runtime" {
+    Bridge: "Message Bridge" {
+      shape: diamond
+      style.fill: "#10B981"
+    }
+    
+    Bindings: "Type-Safe Bindings" {
+      shape: rectangle
+      style.fill: "#10B981"
+    }
+  }
+  
+  Backend: "Go Backend" {
+    Services: "Your Services" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+    
+    NativeAPIs: "OS APIs" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+  }
+}
+
+OS: "Operating System" {
+  WebView: "Native WebView\n(WebKit/WebView2/WebKitGTK)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+  
+  SystemAPIs: "System APIs\n(Windows/macOS/Linux)" {
+    shape: rectangle
+    style.fill: "#6B7280"
+  }
+}
+
+User -> Application.Frontend: "Interacts with UI"
+Application.Frontend <-> Application.Runtime.Bridge: "JSON messages"
+Application.Runtime.Bridge <-> Application.Backend.Services: "Direct function calls"
+Application.Runtime.Bindings -> Application.Frontend: "TypeScript definitions"
+Application.Frontend -> OS.WebView: "Renders in"
+Application.Backend.NativeAPIs -> OS.SystemAPIs: "Native calls"
+```
+
+**與 Electron 的主要差異：**
+
+| 面向 | Wails | Electron |
+|--------|-------|----------|
+| **瀏覽器** | 作業系統提供的 WebView | 捆綁 Chromium（約 100MB） |
+| **後端** | Go（編譯後） | Node.js（解釋執行） |
+| **通訊** | 記憶體橋接 | IPC（進程間通訊） |
+| **套件大小** | 約 15MB | 約 150MB |
+| **記憶體佔用** | 約 10MB | 約 100MB+ |
+| **啟動速度** | &lt;0.5 秒 | 2-3 秒 |
+
+## 核心元件
+
+### 1. 原生 WebView
+
+Wails 使用作業系統內建的網頁渲染引擎：
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **WebView2**（Microsoft Edge WebView2）
+    - 基於 Chromium（與 Edge 瀏覽器相同）
+    - 預裝於 Windows 10/11
+    - 透過 Windows Update 自動更新
+    - 完整支援現代網頁標準
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **WebKit**（Safari 的渲染引擎）
+    - 內建於 macOS
+    - 與 Safari 瀏覽器使用相同引擎
+    - 優異的效能與電池續航力
+    - 完整支援現代網頁標準
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **WebKitGTK**（WebKit 的 GTK 端口）
+    - 透過套件管理器安裝
+    - 與 GNOME Web (Epiphany) 使用相同引擎
+    - 良好的標準支援
+    - 輕量且高效能
+  </TabItem>
+</Tabs>
+
+**這為什麼重要：**
+- **無捆綁瀏覽器** → 應用程式體積更小
+- **作業系統原生** → 更好的整合與效能
+- **自動更新** → 從作業系統更新獲得安全修補
+- **熟悉的渲染** → 與系統瀏覽器相同
+
+### 2. Wails 橋接器
+
+橋接器是 Wails 的核心——它實現了 Go 與 JavaScript 之間的**直接通訊**。
+
+```d2
+direction: down
+
+Frontend: "Frontend (JavaScript)" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Registered Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+```
+
+**運作方式：**
+
+1. **前端呼叫 Go 方法**（透過自動產生的繫結）
+2. **橋接器將呼叫編碼為 JSON**（方法名稱 + 參數）
+3. **路由器在已註冊的服務中找到 Go 方法**
+4. **Go 方法執行並返回值**
+5. **橋接器解碼結果並傳回前端**
+6. **JavaScript 中的 Promise 解析**並獲得結果
+
+**效能特性：**
+- **記憶體內**：無網路開銷，無 HTTP
+- **零複製**（在可能的情况下，針對大量資料）
+- **預設非同步**：兩側均非阻塞
+- **型別安全**：自動產生 TypeScript 定義
+
+### 3. 服務系統
+
+服務是向後端暴露 Go 功能的推薦方式。
+
+```go
+// Define a service (just a regular Go struct)
+type GreetService struct {
+    prefix string
+}
+
+// Methods with exported names are automatically available
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) GetTime() time.Time {
+    return time.Now()
+}
+
+// Register the service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**服務發現：**
+- Wails 在啟動時**掃描您的結構體**
+- **公開方法**可從前端呼叫
+- **型別資訊**被提取用於 TypeScript 繫結
+- **錯誤處理**是自動的（Go 錯誤 → JS 異常）
+
+**產生的 TypeScript 繫結：**
+```typescript
+// Auto-generated in frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function GetTime(): Promise<Date>
+```
+
+**為什麼使用服務？**
+- **型別安全**：完整的 TypeScript 支援
+- **自動發現**：無需手動註冊方法
+- **組織良好**：分組相關功能
+- **可測試**：服務只是 Go 結構體
+
+[了解更多關於服務 →](/features/bindings/services)
+
+### 4. 事件系統
+
+事件實現元件之間的**發布/訂閱通訊**。
+
+```d2
+direction: right
+
+GoService: "Go Service" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+EventBus: "Event Bus" {
+  shape: cylinder
+  style.fill: "#10B981"
+}
+
+Frontend1: "Window 1" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Frontend2: "Window 2" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+GoService -> EventBus: "Emit('data-updated', data)"
+EventBus -> Frontend1: "Notify subscribers"
+EventBus -> Frontend2: "Notify subscribers"
+Frontend1 -> EventBus: "On('data-updated', handler)"
+Frontend2 -> EventBus: "On('data-updated', handler)"
+```
+
+**使用情境：**
+- **視窗通訊**：一個視窗通知其他視窗
+- **背景任務**：Go 服務通知 UI 進度
+- **狀態同步**：保持多個視窗同步
+- **鬆耦合**：元件不需要直接參考
+
+**範例：**
+```go
+// Go: Emit an event
+app.Event.Emit("user-logged-in", user)
+```
+
+```javascript
+// JavaScript: Listen for event
+import { Events } from '@wailsio/runtime'
+
+Events.On('user-logged-in', (user) => {
+    console.log('User logged in:', user)
+})
+```
+
+[了解更多關於事件 →](/features/events/system)
+
+## 應用程式生命週期
+
+了解生命週期可幫助您知道何時初始化資源和清理。
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Create: "Create Application" {
+    shape: rectangle
+  }
+  
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  
+  Setup: "Setup Windows/Menus" {
+    shape: rectangle
+  }
+}
+
+Run: "Event Loop" {
+  Events: "Process Events" {
+    shape: rectangle
+  }
+  
+  Messages: "Handle Messages" {
+    shape: rectangle
+  }
+  
+  Render: "Update UI" {
+    shape: rectangle
+  }
+}
+
+Shutdown: "Shutdown" {
+  Cleanup: "Cleanup Resources" {
+    shape: rectangle
+  }
+  
+  Save: "Save State" {---
+
+**對架構有疑問？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問或查看 [API 參考文件](/reference/overview)。

@@ -659,7 +659,7 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 	switch eventID {
 	case "clicked":
 		if item, ok := s.itemMap[id]; ok {
-			InvokeAsync(item.menuItem.handleClick)
+			gtkDispatch(item.menuItem.handleClick)
 		}
 	case "opened":
 		if s.parent.clickHandler != nil {
@@ -688,7 +688,7 @@ func (s *linuxSystemTray) EventGroup(events []struct {
 		if event.V1 == "clicked" {
 			item, ok := s.itemMap[event.V0]
 			if ok {
-				InvokeAsync(item.menuItem.handleClick)
+				gtkDispatch(item.menuItem.handleClick)
 			}
 		}
 	}
