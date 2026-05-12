@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Defensively validate DBus signal name and body length to prevent panics in [PR](https://github.com/wailsapp/wails/pull/5416) by @leaanthony
 - Fix memory safety issue in GTK menu handling on Linux in [PR](https://github.com/wailsapp/wails/pull/5363) by @leaanthony
 - Detect NVIDIA GPUs and disable DMA-BUF renderer on Linux in [PR](https://github.com/wailsapp/wails/pull/5295) by @leaanthony
 - Fix `SetPosition` cross-screen Y conversion on macOS: use primary screen height as global reference so windows land at the correct position on monitors that are vertically offset from the primary display in [#5117](https://github.com/wailsapp/wails/issues/5117)
