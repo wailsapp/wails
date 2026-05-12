@@ -1,16 +1,15 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2FrameInfoVtbl struct {
 	IUnknownVtbl
-	GetName   ComProc
+	GetName ComProc
 	GetSource ComProc
 }
 
@@ -18,18 +17,25 @@ type ICoreWebView2FrameInfo struct {
 	Vtbl *ICoreWebView2FrameInfoVtbl
 }
 
-func (i *ICoreWebView2FrameInfo) AddRef() uintptr {
+func (i *ICoreWebView2FrameInfo) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2FrameInfo) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2FrameInfo) GetName() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetName.Call(
+
+	hr, _, err := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -37,16 +43,17 @@ func (i *ICoreWebView2FrameInfo) GetName() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2FrameInfo) GetSource() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetSource.Call(
+
+	hr, _, err := i.Vtbl.GetSource.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -54,5 +61,5 @@ func (i *ICoreWebView2FrameInfo) GetSource() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }

@@ -1,33 +1,38 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2CookieManagerVtbl struct {
 	IUnknownVtbl
-	CreateCookie                   ComProc
-	CopyCookie                     ComProc
-	GetCookies                     ComProc
-	AddOrUpdateCookie              ComProc
-	DeleteCookie                   ComProc
-	DeleteCookies                  ComProc
+	CreateCookie ComProc
+	CopyCookie ComProc
+	GetCookies ComProc
+	AddOrUpdateCookie ComProc
+	DeleteCookie ComProc
+	DeleteCookies ComProc
 	DeleteCookiesWithDomainAndPath ComProc
-	DeleteAllCookies               ComProc
+	DeleteAllCookies ComProc
 }
 
 type ICoreWebView2CookieManager struct {
 	Vtbl *ICoreWebView2CookieManagerVtbl
 }
 
-func (i *ICoreWebView2CookieManager) AddRef() uintptr {
+func (i *ICoreWebView2CookieManager) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2CookieManager) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2CookieManager) CreateCookie(name string, value string, domain string, path string) (*ICoreWebView2Cookie, error) {
 
@@ -53,7 +58,7 @@ func (i *ICoreWebView2CookieManager) CreateCookie(name string, value string, dom
 	}
 	var cookie *ICoreWebView2Cookie
 
-	hr, _, _ := i.Vtbl.CreateCookie.Call(
+	hr, _, err := i.Vtbl.CreateCookie.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_name)),
 		uintptr(unsafe.Pointer(_value)),
@@ -64,14 +69,14 @@ func (i *ICoreWebView2CookieManager) CreateCookie(name string, value string, dom
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return cookie, nil
+	return cookie, err
 }
 
 func (i *ICoreWebView2CookieManager) CopyCookie(cookieParam *ICoreWebView2Cookie) (*ICoreWebView2Cookie, error) {
 
 	var cookie *ICoreWebView2Cookie
 
-	hr, _, _ := i.Vtbl.CopyCookie.Call(
+	hr, _, err := i.Vtbl.CopyCookie.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(cookieParam)),
 		uintptr(unsafe.Pointer(&cookie)),
@@ -79,7 +84,7 @@ func (i *ICoreWebView2CookieManager) CopyCookie(cookieParam *ICoreWebView2Cookie
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return cookie, nil
+	return cookie, err
 }
 
 func (i *ICoreWebView2CookieManager) GetCookies(uri string, handler *ICoreWebView2GetCookiesCompletedHandler) error {
@@ -90,7 +95,7 @@ func (i *ICoreWebView2CookieManager) GetCookies(uri string, handler *ICoreWebVie
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.GetCookies.Call(
+	hr, _, err := i.Vtbl.GetCookies.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 		uintptr(unsafe.Pointer(handler)),
@@ -98,31 +103,33 @@ func (i *ICoreWebView2CookieManager) GetCookies(uri string, handler *ICoreWebVie
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2CookieManager) AddOrUpdateCookie(cookie *ICoreWebView2Cookie) error {
 
-	hr, _, _ := i.Vtbl.AddOrUpdateCookie.Call(
+
+	hr, _, err := i.Vtbl.AddOrUpdateCookie.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(cookie)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2CookieManager) DeleteCookie(cookie *ICoreWebView2Cookie) error {
 
-	hr, _, _ := i.Vtbl.DeleteCookie.Call(
+
+	hr, _, err := i.Vtbl.DeleteCookie.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(cookie)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2CookieManager) DeleteCookies(name string, uri string) error {
@@ -138,7 +145,7 @@ func (i *ICoreWebView2CookieManager) DeleteCookies(name string, uri string) erro
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.DeleteCookies.Call(
+	hr, _, err := i.Vtbl.DeleteCookies.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_name)),
 		uintptr(unsafe.Pointer(_uri)),
@@ -146,7 +153,7 @@ func (i *ICoreWebView2CookieManager) DeleteCookies(name string, uri string) erro
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2CookieManager) DeleteCookiesWithDomainAndPath(name string, domain string, path string) error {
@@ -167,7 +174,7 @@ func (i *ICoreWebView2CookieManager) DeleteCookiesWithDomainAndPath(name string,
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.DeleteCookiesWithDomainAndPath.Call(
+	hr, _, err := i.Vtbl.DeleteCookiesWithDomainAndPath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_name)),
 		uintptr(unsafe.Pointer(_domain)),
@@ -176,16 +183,17 @@ func (i *ICoreWebView2CookieManager) DeleteCookiesWithDomainAndPath(name string,
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2CookieManager) DeleteAllCookies() error {
 
-	hr, _, _ := i.Vtbl.DeleteAllCookies.Call(
+
+	hr, _, err := i.Vtbl.DeleteAllCookies.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Settings2Vtbl struct {
@@ -18,30 +17,40 @@ type ICoreWebView2Settings2 struct {
 	Vtbl *ICoreWebView2Settings2Vtbl
 }
 
-func (i *ICoreWebView2Settings2) AddRef() uintptr {
+func (i *ICoreWebView2Settings2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Settings2() *ICoreWebView2Settings2 {
+func (i *ICoreWebView2Settings2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2Settings2() (*ICoreWebView2Settings2, error) {
 	var result *ICoreWebView2Settings2
 
 	iidICoreWebView2Settings2 := NewGUID("{ee9a0f68-f46c-4e32-ac23-ef8cac224d2a}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Settings2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Settings2) GetUserAgent() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetUserAgent.Call(
+
+	hr, _, err := i.Vtbl.GetUserAgent.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -49,7 +58,7 @@ func (i *ICoreWebView2Settings2) GetUserAgent() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2Settings2) PutUserAgent(value string) error {
@@ -60,12 +69,12 @@ func (i *ICoreWebView2Settings2) PutUserAgent(value string) error {
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutUserAgent.Call(
+	hr, _, err := i.Vtbl.PutUserAgent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

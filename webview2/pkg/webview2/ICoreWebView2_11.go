@@ -1,40 +1,48 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_11Vtbl struct {
 	IUnknownVtbl
 	CallDevToolsProtocolMethodForSession ComProc
-	AddContextMenuRequested              ComProc
-	RemoveContextMenuRequested           ComProc
+	AddContextMenuRequested ComProc
+	RemoveContextMenuRequested ComProc
 }
 
 type ICoreWebView2_11 struct {
 	Vtbl *ICoreWebView2_11Vtbl
 }
 
-func (i *ICoreWebView2_11) AddRef() uintptr {
+func (i *ICoreWebView2_11) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_11() *ICoreWebView2_11 {
+func (i *ICoreWebView2_11) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_11() (*ICoreWebView2_11, error) {
 	var result *ICoreWebView2_11
 
 	iidICoreWebView2_11 := NewGUID("{0be78e56-c193-4051-b943-23b460c08bdb}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_11)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_11) CallDevToolsProtocolMethodForSession(sessionId string, methodName string, parametersAsJson string, handler *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) error {
 
@@ -54,7 +62,7 @@ func (i *ICoreWebView2_11) CallDevToolsProtocolMethodForSession(sessionId string
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.CallDevToolsProtocolMethodForSession.Call(
+	hr, _, err := i.Vtbl.CallDevToolsProtocolMethodForSession.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_sessionId)),
 		uintptr(unsafe.Pointer(_methodName)),
@@ -64,14 +72,14 @@ func (i *ICoreWebView2_11) CallDevToolsProtocolMethodForSession(sessionId string
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2_11) AddContextMenuRequested(eventHandler *ICoreWebView2ContextMenuRequestedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddContextMenuRequested.Call(
+	hr, _, err := i.Vtbl.AddContextMenuRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -79,17 +87,18 @@ func (i *ICoreWebView2_11) AddContextMenuRequested(eventHandler *ICoreWebView2Co
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2_11) RemoveContextMenuRequested(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveContextMenuRequested.Call(
+
+	hr, _, err := i.Vtbl.RemoveContextMenuRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

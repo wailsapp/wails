@@ -1,17 +1,16 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ContextMenuItemCollectionVtbl struct {
 	IUnknownVtbl
-	GetCount           ComProc
-	GetValueAtIndex    ComProc
+	GetCount ComProc
+	GetValueAtIndex ComProc
 	RemoveValueAtIndex ComProc
 	InsertValueAtIndex ComProc
 }
@@ -20,61 +19,69 @@ type ICoreWebView2ContextMenuItemCollection struct {
 	Vtbl *ICoreWebView2ContextMenuItemCollectionVtbl
 }
 
-func (i *ICoreWebView2ContextMenuItemCollection) AddRef() uintptr {
+func (i *ICoreWebView2ContextMenuItemCollection) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ContextMenuItemCollection) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ContextMenuItemCollection) GetCount() (uint32, error) {
 
 	var value uint32
 
-	hr, _, _ := i.Vtbl.GetCount.Call(
+	hr, _, err := i.Vtbl.GetCount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) GetValueAtIndex(index uint32) (*ICoreWebView2ContextMenuItem, error) {
 
 	var value *ICoreWebView2ContextMenuItem
 
-	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
+	hr, _, err := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) RemoveValueAtIndex(index uint32) error {
 
-	hr, _, _ := i.Vtbl.RemoveValueAtIndex.Call(
+
+	hr, _, err := i.Vtbl.RemoveValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) InsertValueAtIndex(index uint32, value *ICoreWebView2ContextMenuItem) error {
 
-	hr, _, _ := i.Vtbl.InsertValueAtIndex.Call(
+
+	hr, _, err := i.Vtbl.InsertValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 		uintptr(unsafe.Pointer(value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

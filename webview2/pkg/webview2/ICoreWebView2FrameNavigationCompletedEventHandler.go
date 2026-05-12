@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FrameNavigationCompletedEventHandler struct {
 	impl ICoreWebView2FrameNavigationCompletedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FrameNavigationCompletedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FrameNavigationCompletedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FrameNavigationCompletedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FrameNavigationCompletedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownQueryInterface(thi
 }
 
 func ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownAddRef(this *ICoreWebView2FrameNavigationCompletedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownRelease(this *ICoreWebView2FrameNavigationCompletedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FrameNavigationCompletedEventHandlerInvoke(this *ICoreWebView2FrameNavigationCompletedEventHandler, sender *ICoreWebView2Frame, args *ICoreWebView2NavigationCompletedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FrameNavigationCompletedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FrameNavigationCompletedEventHandlerFn = ICoreWebView2FrameNavigationCompletedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FrameNavigationCompletedEventHandlerIUnknownRelease),

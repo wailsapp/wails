@@ -1,16 +1,15 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Environment5Vtbl struct {
 	IUnknownVtbl
-	AddBrowserProcessExited    ComProc
+	AddBrowserProcessExited ComProc
 	RemoveBrowserProcessExited ComProc
 }
 
@@ -18,28 +17,37 @@ type ICoreWebView2Environment5 struct {
 	Vtbl *ICoreWebView2Environment5Vtbl
 }
 
-func (i *ICoreWebView2Environment5) AddRef() uintptr {
+func (i *ICoreWebView2Environment5) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Environment5() *ICoreWebView2Environment5 {
+func (i *ICoreWebView2Environment5) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2Environment5() (*ICoreWebView2Environment5, error) {
 	var result *ICoreWebView2Environment5
 
 	iidICoreWebView2Environment5 := NewGUID("{319e423d-e0d7-4b8d-9254-ae9475de9b17}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Environment5)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Environment5) AddBrowserProcessExited(eventHandler *ICoreWebView2BrowserProcessExitedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddBrowserProcessExited.Call(
+	hr, _, err := i.Vtbl.AddBrowserProcessExited.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -47,17 +55,18 @@ func (i *ICoreWebView2Environment5) AddBrowserProcessExited(eventHandler *ICoreW
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Environment5) RemoveBrowserProcessExited(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveBrowserProcessExited.Call(
+
+	hr, _, err := i.Vtbl.RemoveBrowserProcessExited.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

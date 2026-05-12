@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ShowSaveAsUICompletedHandler struct {
 	impl ICoreWebView2ShowSaveAsUICompletedHandlerImpl
 }
 
-func (i *ICoreWebView2ShowSaveAsUICompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2ShowSaveAsUICompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ShowSaveAsUICompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownQueryInterface(this *ICoreWebView2ShowSaveAsUICompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownQueryInterface(this *ICore
 }
 
 func ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownAddRef(this *ICoreWebView2ShowSaveAsUICompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownRelease(this *ICoreWebView2ShowSaveAsUICompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ShowSaveAsUICompletedHandlerInvoke(this *ICoreWebView2ShowSaveAsUICompletedHandler, errorCode uintptr, result COREWEBVIEW2_SAVE_AS_UI_RESULT) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ShowSaveAsUICompletedHandlerImpl interface {
 }
 
 var ICoreWebView2ShowSaveAsUICompletedHandlerFn = ICoreWebView2ShowSaveAsUICompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ShowSaveAsUICompletedHandlerIUnknownRelease),

@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WebResourceRequestVtbl struct {
 	IUnknownVtbl
-	GetUri     ComProc
-	PutUri     ComProc
-	GetMethod  ComProc
-	PutMethod  ComProc
+	GetUri ComProc
+	PutUri ComProc
+	GetMethod ComProc
+	PutMethod ComProc
 	GetContent ComProc
 	PutContent ComProc
 	GetHeaders ComProc
@@ -23,18 +22,25 @@ type ICoreWebView2WebResourceRequest struct {
 	Vtbl *ICoreWebView2WebResourceRequestVtbl
 }
 
-func (i *ICoreWebView2WebResourceRequest) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceRequest) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WebResourceRequest) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _uri *uint16
 
-	hr, _, _ := i.Vtbl.GetUri.Call(
+
+	hr, _, err := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_uri)),
+		uintptr(unsafe.Pointer(&_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -42,7 +48,7 @@ func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
 	// Get result and cleanup
 	uri := UTF16PtrToString(_uri)
 	CoTaskMemFree(unsafe.Pointer(_uri))
-	return uri, nil
+	return uri, err
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutUri(uri string) error {
@@ -53,23 +59,24 @@ func (i *ICoreWebView2WebResourceRequest) PutUri(uri string) error {
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutUri.Call(
+	hr, _, err := i.Vtbl.PutUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 	// Create *uint16 to hold result
 	var _method *uint16
 
-	hr, _, _ := i.Vtbl.GetMethod.Call(
+
+	hr, _, err := i.Vtbl.GetMethod.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_method)),
+		uintptr(unsafe.Pointer(&_method)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -77,7 +84,7 @@ func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 	// Get result and cleanup
 	method := UTF16PtrToString(_method)
 	CoTaskMemFree(unsafe.Pointer(_method))
-	return method, nil
+	return method, err
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutMethod(method string) error {
@@ -88,52 +95,53 @@ func (i *ICoreWebView2WebResourceRequest) PutMethod(method string) error {
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutMethod.Call(
+	hr, _, err := i.Vtbl.PutMethod.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_method)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetContent() (*IStream, error) {
 
 	var content *IStream
 
-	hr, _, _ := i.Vtbl.GetContent.Call(
+	hr, _, err := i.Vtbl.GetContent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&content)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return content, nil
+	return content, err
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutContent(content *IStream) error {
 
-	hr, _, _ := i.Vtbl.PutContent.Call(
+
+	hr, _, err := i.Vtbl.PutContent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(content)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetHeaders() (*ICoreWebView2HttpRequestHeaders, error) {
 
 	var headers *ICoreWebView2HttpRequestHeaders
 
-	hr, _, _ := i.Vtbl.GetHeaders.Call(
+	hr, _, err := i.Vtbl.GetHeaders.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&headers)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return headers, nil
+	return headers, err
 }

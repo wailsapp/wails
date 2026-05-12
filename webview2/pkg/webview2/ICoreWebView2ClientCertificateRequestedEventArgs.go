@@ -1,45 +1,51 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ClientCertificateRequestedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetHost                          ComProc
-	GetPort                          ComProc
-	GetIsProxy                       ComProc
+	GetHost ComProc
+	GetPort ComProc
+	GetIsProxy ComProc
 	GetAllowedCertificateAuthorities ComProc
-	GetMutuallyTrustedCertificates   ComProc
-	GetSelectedCertificate           ComProc
-	PutSelectedCertificate           ComProc
-	GetCancel                        ComProc
-	PutCancel                        ComProc
-	GetHandled                       ComProc
-	PutHandled                       ComProc
-	GetDeferral                      ComProc
+	GetMutuallyTrustedCertificates ComProc
+	GetSelectedCertificate ComProc
+	PutSelectedCertificate ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetHandled ComProc
+	PutHandled ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2ClientCertificateRequestedEventArgs struct {
 	Vtbl *ICoreWebView2ClientCertificateRequestedEventArgsVtbl
 }
 
-func (i *ICoreWebView2ClientCertificateRequestedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2ClientCertificateRequestedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ClientCertificateRequestedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetHost() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetHost.Call(
+
+	hr, _, err := i.Vtbl.GetHost.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -47,28 +53,28 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetHost() (string, er
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetPort() (int, error) {
 
 	var value int
 
-	hr, _, _ := i.Vtbl.GetPort.Call(
+	hr, _, err := i.Vtbl.GetPort.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(value),
+		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetIsProxy() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetIsProxy.Call(
+	hr, _, err := i.Vtbl.GetIsProxy.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -76,69 +82,70 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetIsProxy() (bool, e
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetAllowedCertificateAuthorities() (*ICoreWebView2StringCollection, error) {
 
 	var value *ICoreWebView2StringCollection
 
-	hr, _, _ := i.Vtbl.GetAllowedCertificateAuthorities.Call(
+	hr, _, err := i.Vtbl.GetAllowedCertificateAuthorities.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetMutuallyTrustedCertificates() (*ICoreWebView2ClientCertificateCollection, error) {
 
 	var value *ICoreWebView2ClientCertificateCollection
 
-	hr, _, _ := i.Vtbl.GetMutuallyTrustedCertificates.Call(
+	hr, _, err := i.Vtbl.GetMutuallyTrustedCertificates.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetSelectedCertificate() (*ICoreWebView2ClientCertificate, error) {
 
 	var value *ICoreWebView2ClientCertificate
 
-	hr, _, _ := i.Vtbl.GetSelectedCertificate.Call(
+	hr, _, err := i.Vtbl.GetSelectedCertificate.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) PutSelectedCertificate(value *ICoreWebView2ClientCertificate) error {
 
-	hr, _, _ := i.Vtbl.PutSelectedCertificate.Call(
+
+	hr, _, err := i.Vtbl.PutSelectedCertificate.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetCancel() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetCancel.Call(
+	hr, _, err := i.Vtbl.GetCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -146,27 +153,33 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetCancel() (bool, er
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) PutCancel(value bool) error {
 
-	hr, _, _ := i.Vtbl.PutCancel.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
+	hr, _, err := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetHandled() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetHandled.Call(
+	hr, _, err := i.Vtbl.GetHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -174,32 +187,38 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetHandled() (bool, e
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) PutHandled(value bool) error {
 
-	hr, _, _ := i.Vtbl.PutHandled.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
+	hr, _, err := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var deferral *ICoreWebView2Deferral
 
-	hr, _, _ := i.Vtbl.GetDeferral.Call(
+	hr, _, err := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&deferral)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return deferral, nil
+	return deferral, err
 }

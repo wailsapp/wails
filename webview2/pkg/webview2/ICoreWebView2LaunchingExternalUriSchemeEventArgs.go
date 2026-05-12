@@ -1,39 +1,45 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2LaunchingExternalUriSchemeEventArgsVtbl struct {
 	IUnknownVtbl
-	GetUri              ComProc
+	GetUri ComProc
 	GetInitiatingOrigin ComProc
-	GetIsUserInitiated  ComProc
-	GetCancel           ComProc
-	PutCancel           ComProc
-	GetDeferral         ComProc
+	GetIsUserInitiated ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2LaunchingExternalUriSchemeEventArgs struct {
 	Vtbl *ICoreWebView2LaunchingExternalUriSchemeEventArgsVtbl
 }
 
-func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetUri.Call(
+
+	hr, _, err := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -41,16 +47,17 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetUri() (string, err
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetInitiatingOrigin() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetInitiatingOrigin.Call(
+
+	hr, _, err := i.Vtbl.GetInitiatingOrigin.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -58,14 +65,14 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetInitiatingOrigin()
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetIsUserInitiated() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetIsUserInitiated.Call(
+	hr, _, err := i.Vtbl.GetIsUserInitiated.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -73,15 +80,15 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetIsUserInitiated() 
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetCancel() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetCancel.Call(
+	hr, _, err := i.Vtbl.GetCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -89,32 +96,38 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetCancel() (bool, er
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) PutCancel(value bool) error {
 
-	hr, _, _ := i.Vtbl.PutCancel.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
+	hr, _, err := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var value *ICoreWebView2Deferral
 
-	hr, _, _ := i.Vtbl.GetDeferral.Call(
+	hr, _, err := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2BasicAuthenticationRequestedEventHandler struct {
 	impl ICoreWebView2BasicAuthenticationRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2BasicAuthenticationRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2BasicAuthenticationRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2BasicAuthenticationRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2BasicAuthenticationRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownQueryInterface
 }
 
 func ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2BasicAuthenticationRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownRelease(this *ICoreWebView2BasicAuthenticationRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2BasicAuthenticationRequestedEventHandlerInvoke(this *ICoreWebView2BasicAuthenticationRequestedEventHandler, sender *ICoreWebView2, args *ICoreWebView2BasicAuthenticationRequestedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2BasicAuthenticationRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2BasicAuthenticationRequestedEventHandlerFn = ICoreWebView2BasicAuthenticationRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2BasicAuthenticationRequestedEventHandlerIUnknownRelease),

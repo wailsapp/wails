@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentVtbl struct {
 	IUnknownVtbl
-	CreateCoreWebView2Controller     ComProc
-	CreateWebResourceResponse        ComProc
-	GetBrowserVersionString          ComProc
-	AddNewBrowserVersionAvailable    ComProc
+	CreateCoreWebView2Controller ComProc
+	CreateWebResourceResponse ComProc
+	GetBrowserVersionString ComProc
+	AddNewBrowserVersionAvailable ComProc
 	RemoveNewBrowserVersionAvailable ComProc
 }
 
@@ -21,14 +20,21 @@ type ICoreWebView2Environment struct {
 	Vtbl *ICoreWebView2EnvironmentVtbl
 }
 
-func (i *ICoreWebView2Environment) AddRef() uintptr {
+func (i *ICoreWebView2Environment) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Environment) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Environment) CreateCoreWebView2Controller(parentWindow HWND, handler *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) error {
 
-	hr, _, _ := i.Vtbl.CreateCoreWebView2Controller.Call(
+
+	hr, _, err := i.Vtbl.CreateCoreWebView2Controller.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&parentWindow)),
 		uintptr(unsafe.Pointer(handler)),
@@ -36,7 +42,7 @@ func (i *ICoreWebView2Environment) CreateCoreWebView2Controller(parentWindow HWN
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Environment) CreateWebResourceResponse(content *IStream, statusCode int, reasonPhrase string, headers string) (*ICoreWebView2WebResourceResponse, error) {
@@ -53,7 +59,7 @@ func (i *ICoreWebView2Environment) CreateWebResourceResponse(content *IStream, s
 	}
 	var response *ICoreWebView2WebResourceResponse
 
-	hr, _, _ := i.Vtbl.CreateWebResourceResponse.Call(
+	hr, _, err := i.Vtbl.CreateWebResourceResponse.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(content)),
 		uintptr(statusCode),
@@ -64,16 +70,17 @@ func (i *ICoreWebView2Environment) CreateWebResourceResponse(content *IStream, s
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return response, nil
+	return response, err
 }
 
 func (i *ICoreWebView2Environment) GetBrowserVersionString() (string, error) {
 	// Create *uint16 to hold result
 	var _versionInfo *uint16
 
-	hr, _, _ := i.Vtbl.GetBrowserVersionString.Call(
+
+	hr, _, err := i.Vtbl.GetBrowserVersionString.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_versionInfo)),
+		uintptr(unsafe.Pointer(&_versionInfo)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -81,14 +88,14 @@ func (i *ICoreWebView2Environment) GetBrowserVersionString() (string, error) {
 	// Get result and cleanup
 	versionInfo := UTF16PtrToString(_versionInfo)
 	CoTaskMemFree(unsafe.Pointer(_versionInfo))
-	return versionInfo, nil
+	return versionInfo, err
 }
 
 func (i *ICoreWebView2Environment) AddNewBrowserVersionAvailable(eventHandler *ICoreWebView2NewBrowserVersionAvailableEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddNewBrowserVersionAvailable.Call(
+	hr, _, err := i.Vtbl.AddNewBrowserVersionAvailable.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -96,17 +103,18 @@ func (i *ICoreWebView2Environment) AddNewBrowserVersionAvailable(eventHandler *I
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Environment) RemoveNewBrowserVersionAvailable(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNewBrowserVersionAvailable.Call(
+
+	hr, _, err := i.Vtbl.RemoveNewBrowserVersionAvailable.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

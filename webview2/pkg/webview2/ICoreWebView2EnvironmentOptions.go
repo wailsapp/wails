@@ -1,21 +1,20 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentOptionsVtbl struct {
 	IUnknownVtbl
-	GetAdditionalBrowserArguments             ComProc
-	PutAdditionalBrowserArguments             ComProc
-	GetLanguage                               ComProc
-	PutLanguage                               ComProc
-	GetTargetCompatibleBrowserVersion         ComProc
-	PutTargetCompatibleBrowserVersion         ComProc
+	GetAdditionalBrowserArguments ComProc
+	PutAdditionalBrowserArguments ComProc
+	GetLanguage ComProc
+	PutLanguage ComProc
+	GetTargetCompatibleBrowserVersion ComProc
+	PutTargetCompatibleBrowserVersion ComProc
 	GetAllowSingleSignOnUsingOSPrimaryAccount ComProc
 	PutAllowSingleSignOnUsingOSPrimaryAccount ComProc
 }
@@ -24,18 +23,25 @@ type ICoreWebView2EnvironmentOptions struct {
 	Vtbl *ICoreWebView2EnvironmentOptionsVtbl
 }
 
-func (i *ICoreWebView2EnvironmentOptions) AddRef() uintptr {
+func (i *ICoreWebView2EnvironmentOptions) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2EnvironmentOptions) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2EnvironmentOptions) GetAdditionalBrowserArguments() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetAdditionalBrowserArguments.Call(
+
+	hr, _, err := i.Vtbl.GetAdditionalBrowserArguments.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -43,7 +49,7 @@ func (i *ICoreWebView2EnvironmentOptions) GetAdditionalBrowserArguments() (strin
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) PutAdditionalBrowserArguments(value string) error {
@@ -54,23 +60,24 @@ func (i *ICoreWebView2EnvironmentOptions) PutAdditionalBrowserArguments(value st
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutAdditionalBrowserArguments.Call(
+	hr, _, err := i.Vtbl.PutAdditionalBrowserArguments.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) GetLanguage() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetLanguage.Call(
+
+	hr, _, err := i.Vtbl.GetLanguage.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -78,7 +85,7 @@ func (i *ICoreWebView2EnvironmentOptions) GetLanguage() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) PutLanguage(value string) error {
@@ -89,23 +96,24 @@ func (i *ICoreWebView2EnvironmentOptions) PutLanguage(value string) error {
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutLanguage.Call(
+	hr, _, err := i.Vtbl.PutLanguage.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) GetTargetCompatibleBrowserVersion() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetTargetCompatibleBrowserVersion.Call(
+
+	hr, _, err := i.Vtbl.GetTargetCompatibleBrowserVersion.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -113,7 +121,7 @@ func (i *ICoreWebView2EnvironmentOptions) GetTargetCompatibleBrowserVersion() (s
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) PutTargetCompatibleBrowserVersion(value string) error {
@@ -124,21 +132,21 @@ func (i *ICoreWebView2EnvironmentOptions) PutTargetCompatibleBrowserVersion(valu
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PutTargetCompatibleBrowserVersion.Call(
+	hr, _, err := i.Vtbl.PutTargetCompatibleBrowserVersion.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) GetAllowSingleSignOnUsingOSPrimaryAccount() (bool, error) {
 	// Create int32 to hold bool result
 	var _allow int32
 
-	hr, _, _ := i.Vtbl.GetAllowSingleSignOnUsingOSPrimaryAccount.Call(
+	hr, _, err := i.Vtbl.GetAllowSingleSignOnUsingOSPrimaryAccount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_allow)),
 	)
@@ -146,18 +154,24 @@ func (i *ICoreWebView2EnvironmentOptions) GetAllowSingleSignOnUsingOSPrimaryAcco
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	allow := _allow != 0
-	return allow, nil
+    allow := _allow != 0
+	return allow, err
 }
 
 func (i *ICoreWebView2EnvironmentOptions) PutAllowSingleSignOnUsingOSPrimaryAccount(allow bool) error {
 
-	hr, _, _ := i.Vtbl.PutAllowSingleSignOnUsingOSPrimaryAccount.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _allow int32
+	if allow {
+		_allow = 1
+	}
+
+	hr, _, err := i.Vtbl.PutAllowSingleSignOnUsingOSPrimaryAccount.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&allow)),
+		uintptr(_allow),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

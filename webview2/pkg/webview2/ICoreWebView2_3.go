@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_3Vtbl struct {
 	IUnknownVtbl
-	TrySuspend                          ComProc
-	Resume                              ComProc
-	GetIsSuspended                      ComProc
-	SetVirtualHostNameToFolderMapping   ComProc
+	TrySuspend ComProc
+	Resume ComProc
+	GetIsSuspended ComProc
+	SetVirtualHostNameToFolderMapping ComProc
 	ClearVirtualHostNameToFolderMapping ComProc
 }
 
@@ -21,51 +20,62 @@ type ICoreWebView2_3 struct {
 	Vtbl *ICoreWebView2_3Vtbl
 }
 
-func (i *ICoreWebView2_3) AddRef() uintptr {
+func (i *ICoreWebView2_3) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_3() *ICoreWebView2_3 {
+func (i *ICoreWebView2_3) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
 	var result *ICoreWebView2_3
 
 	iidICoreWebView2_3 := NewGUID("{A0D6DF20-3B92-416D-AA0C-437A9C727857}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_3)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_3) TrySuspend(handler *ICoreWebView2TrySuspendCompletedHandler) error {
 
-	hr, _, _ := i.Vtbl.TrySuspend.Call(
+
+	hr, _, err := i.Vtbl.TrySuspend.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2_3) Resume() error {
 
-	hr, _, _ := i.Vtbl.Resume.Call(
+
+	hr, _, err := i.Vtbl.Resume.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	// Create int32 to hold bool result
 	var _isSuspended int32
 
-	hr, _, _ := i.Vtbl.GetIsSuspended.Call(
+	hr, _, err := i.Vtbl.GetIsSuspended.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isSuspended)),
 	)
@@ -73,8 +83,8 @@ func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isSuspended := _isSuspended != 0
-	return isSuspended, nil
+    isSuspended := _isSuspended != 0
+	return isSuspended, err
 }
 
 func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, folderPath string, accessKind COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND) error {
@@ -90,7 +100,7 @@ func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, fol
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.SetVirtualHostNameToFolderMapping.Call(
+	hr, _, err := i.Vtbl.SetVirtualHostNameToFolderMapping.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_hostName)),
 		uintptr(unsafe.Pointer(_folderPath)),
@@ -99,7 +109,7 @@ func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, fol
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2_3) ClearVirtualHostNameToFolderMapping(hostName string) error {
@@ -110,12 +120,12 @@ func (i *ICoreWebView2_3) ClearVirtualHostNameToFolderMapping(hostName string) e
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.ClearVirtualHostNameToFolderMapping.Call(
+	hr, _, err := i.Vtbl.ClearVirtualHostNameToFolderMapping.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_hostName)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_13Vtbl struct {
@@ -17,33 +16,42 @@ type ICoreWebView2_13 struct {
 	Vtbl *ICoreWebView2_13Vtbl
 }
 
-func (i *ICoreWebView2_13) AddRef() uintptr {
+func (i *ICoreWebView2_13) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_13() *ICoreWebView2_13 {
+func (i *ICoreWebView2_13) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_13() (*ICoreWebView2_13, error) {
 	var result *ICoreWebView2_13
 
 	iidICoreWebView2_13 := NewGUID("{f75f09a8-667e-4983-88d6-c8773f315e84}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_13)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_13) GetProfile() (*ICoreWebView2Profile, error) {
 
 	var value *ICoreWebView2Profile
 
-	hr, _, _ := i.Vtbl.GetProfile.Call(
+	hr, _, err := i.Vtbl.GetProfile.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }

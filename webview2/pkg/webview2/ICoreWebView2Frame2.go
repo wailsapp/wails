@@ -1,56 +1,64 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Frame2Vtbl struct {
 	IUnknownVtbl
-	AddNavigationStarting     ComProc
-	RemoveNavigationStarting  ComProc
-	AddContentLoading         ComProc
-	RemoveContentLoading      ComProc
-	AddNavigationCompleted    ComProc
+	AddNavigationStarting ComProc
+	RemoveNavigationStarting ComProc
+	AddContentLoading ComProc
+	RemoveContentLoading ComProc
+	AddNavigationCompleted ComProc
 	RemoveNavigationCompleted ComProc
-	AddDOMContentLoaded       ComProc
-	RemoveDOMContentLoaded    ComProc
-	ExecuteScript             ComProc
-	PostWebMessageAsJson      ComProc
-	PostWebMessageAsString    ComProc
-	AddWebMessageReceived     ComProc
-	RemoveWebMessageReceived  ComProc
+	AddDOMContentLoaded ComProc
+	RemoveDOMContentLoaded ComProc
+	ExecuteScript ComProc
+	PostWebMessageAsJson ComProc
+	PostWebMessageAsString ComProc
+	AddWebMessageReceived ComProc
+	RemoveWebMessageReceived ComProc
 }
 
 type ICoreWebView2Frame2 struct {
 	Vtbl *ICoreWebView2Frame2Vtbl
 }
 
-func (i *ICoreWebView2Frame2) AddRef() uintptr {
+func (i *ICoreWebView2Frame2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Frame2() *ICoreWebView2Frame2 {
+func (i *ICoreWebView2Frame2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2Frame2() (*ICoreWebView2Frame2, error) {
 	var result *ICoreWebView2Frame2
 
 	iidICoreWebView2Frame2 := NewGUID("{7a6a5834-d185-4dbf-b63f-4a9bc43107d4}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Frame2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Frame2) AddNavigationStarting(eventHandler *ICoreWebView2FrameNavigationStartingEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddNavigationStarting.Call(
+	hr, _, err := i.Vtbl.AddNavigationStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -58,26 +66,27 @@ func (i *ICoreWebView2Frame2) AddNavigationStarting(eventHandler *ICoreWebView2F
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Frame2) RemoveNavigationStarting(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNavigationStarting.Call(
+
+	hr, _, err := i.Vtbl.RemoveNavigationStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) AddContentLoading(eventHandler *ICoreWebView2FrameContentLoadingEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddContentLoading.Call(
+	hr, _, err := i.Vtbl.AddContentLoading.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -85,26 +94,27 @@ func (i *ICoreWebView2Frame2) AddContentLoading(eventHandler *ICoreWebView2Frame
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Frame2) RemoveContentLoading(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveContentLoading.Call(
+
+	hr, _, err := i.Vtbl.RemoveContentLoading.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) AddNavigationCompleted(eventHandler *ICoreWebView2FrameNavigationCompletedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddNavigationCompleted.Call(
+	hr, _, err := i.Vtbl.AddNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -112,26 +122,27 @@ func (i *ICoreWebView2Frame2) AddNavigationCompleted(eventHandler *ICoreWebView2
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Frame2) RemoveNavigationCompleted(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNavigationCompleted.Call(
+
+	hr, _, err := i.Vtbl.RemoveNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) AddDOMContentLoaded(eventHandler *ICoreWebView2FrameDOMContentLoadedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddDOMContentLoaded.Call(
+	hr, _, err := i.Vtbl.AddDOMContentLoaded.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -139,19 +150,20 @@ func (i *ICoreWebView2Frame2) AddDOMContentLoaded(eventHandler *ICoreWebView2Fra
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Frame2) RemoveDOMContentLoaded(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveDOMContentLoaded.Call(
+
+	hr, _, err := i.Vtbl.RemoveDOMContentLoaded.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) ExecuteScript(javaScript string, handler *ICoreWebView2ExecuteScriptCompletedHandler) error {
@@ -162,7 +174,7 @@ func (i *ICoreWebView2Frame2) ExecuteScript(javaScript string, handler *ICoreWeb
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.ExecuteScript.Call(
+	hr, _, err := i.Vtbl.ExecuteScript.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_javaScript)),
 		uintptr(unsafe.Pointer(handler)),
@@ -170,7 +182,7 @@ func (i *ICoreWebView2Frame2) ExecuteScript(javaScript string, handler *ICoreWeb
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) PostWebMessageAsJson(webMessageAsJson string) error {
@@ -181,14 +193,14 @@ func (i *ICoreWebView2Frame2) PostWebMessageAsJson(webMessageAsJson string) erro
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PostWebMessageAsJson.Call(
+	hr, _, err := i.Vtbl.PostWebMessageAsJson.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_webMessageAsJson)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) PostWebMessageAsString(webMessageAsString string) error {
@@ -199,21 +211,21 @@ func (i *ICoreWebView2Frame2) PostWebMessageAsString(webMessageAsString string) 
 		return err
 	}
 
-	hr, _, _ := i.Vtbl.PostWebMessageAsString.Call(
+	hr, _, err := i.Vtbl.PostWebMessageAsString.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_webMessageAsString)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2Frame2) AddWebMessageReceived(handler *ICoreWebView2FrameWebMessageReceivedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, _ := i.Vtbl.AddWebMessageReceived.Call(
+	hr, _, err := i.Vtbl.AddWebMessageReceived.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -221,17 +233,18 @@ func (i *ICoreWebView2Frame2) AddWebMessageReceived(handler *ICoreWebView2FrameW
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, nil
+	return token, err
 }
 
 func (i *ICoreWebView2Frame2) RemoveWebMessageReceived(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveWebMessageReceived.Call(
+
+	hr, _, err := i.Vtbl.RemoveWebMessageReceived.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler struct {
 	impl ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownQue
 }
 
 func ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownAddRef(this *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownRelease(this *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerInvoke(this *ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler, errorCode uintptr, result string) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerImpl interf
 }
 
 var ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerFn = ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownRelease),

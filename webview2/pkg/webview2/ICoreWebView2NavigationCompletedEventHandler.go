@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NavigationCompletedEventHandler struct {
 	impl ICoreWebView2NavigationCompletedEventHandlerImpl
 }
 
-func (i *ICoreWebView2NavigationCompletedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NavigationCompletedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NavigationCompletedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NavigationCompletedEventHandlerIUnknownQueryInterface(this *ICoreWebView2NavigationCompletedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NavigationCompletedEventHandlerIUnknownQueryInterface(this *IC
 }
 
 func ICoreWebView2NavigationCompletedEventHandlerIUnknownAddRef(this *ICoreWebView2NavigationCompletedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NavigationCompletedEventHandlerIUnknownRelease(this *ICoreWebView2NavigationCompletedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NavigationCompletedEventHandlerInvoke(this *ICoreWebView2NavigationCompletedEventHandler, sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NavigationCompletedEventHandlerImpl interface {
 }
 
 var ICoreWebView2NavigationCompletedEventHandlerFn = ICoreWebView2NavigationCompletedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NavigationCompletedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NavigationCompletedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NavigationCompletedEventHandlerIUnknownRelease),

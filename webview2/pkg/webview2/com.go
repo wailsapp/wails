@@ -4,9 +4,9 @@ package webview2
 
 import (
 	"golang.org/x/sys/windows"
-	"io"
 	"syscall"
 	"unsafe"
+	"io"
 )
 
 // ComProc stores a COM procedure.
@@ -32,22 +32,23 @@ type IUnknownVtbl struct {
 	Release        ComProc
 }
 
-func (i *IUnknownVtbl) CallRelease(this unsafe.Pointer) uint32 {
-	ret, _, _ := i.Release.Call(
+func (i *IUnknownVtbl) CallRelease(this unsafe.Pointer) error {
+	_, _, err := i.Release.Call(
 		uintptr(this),
 	)
-
-	return uint32(ret)
+	if err != windows.ERROR_SUCCESS {
+		return err
+	}
+	return nil
 }
 
 type IUnknownImpl interface {
 	QueryInterface(refiid, object uintptr) uintptr
-	AddRef() uintptr
-	Release() uintptr
+	AddRef() uint32
+	Release() uint32
 }
 
 // Call calls a COM procedure.
-//
 //go:uintptrescapes
 func (p ComProc) Call(a ...uintptr) (r1, r2 uintptr, lastErr error) {
 	return syscall.SyscallN(uintptr(p), a...)
@@ -71,8 +72,15 @@ type HMENU uintptr
 type HMODULE uintptr
 type HWND uintptr
 
-// NOTE: For sure, this is wrong!
-type VARIANT uintptr
+// VARIANT is a 16-byte Windows VARIANT type matching the Windows ABI.
+// The Val field is a union; callers must interpret it based on VT.
+type VARIANT struct {
+	VT        uint16
+	Reserved1 uint16
+	Reserved2 uint16
+	Reserved3 uint16
+	Val       [8]byte
+}
 
 type IDataObject struct {
 	IUnknown
@@ -85,7 +93,7 @@ func ptr[T any](p T) *T {
 const ERROR_SUCCESS = windows.ERROR_SUCCESS
 
 func UTF16PtrFromString(s string) (*uint16, error) {
-	return windows.UTF16PtrFromString(s)
+    return windows.UTF16PtrFromString(s)
 }
 
 func UTF16PtrToString(s *uint16) string {
@@ -93,7 +101,7 @@ func UTF16PtrToString(s *uint16) string {
 }
 
 func CoTaskMemFree(pv unsafe.Pointer) {
-	windows.CoTaskMemFree(pv)
+    windows.CoTaskMemFree(pv)
 }
 
 // This code has been adapted from: https://github.com/go-ole/go-ole
@@ -318,6 +326,7 @@ func IsEqualGUID(guid1 *GUID, guid2 *GUID) bool {
 		guid1.Data4[7] == guid2.Data4[7]
 }
 
+
 type IStreamVtbl struct {
 	IUnknownVtbl
 	Read  ComProc
@@ -328,7 +337,7 @@ type IStream struct {
 	Vtbl *IStreamVtbl
 }
 
-func (i *IStream) Release() uint32 {
+func (i *IStream) Release() error {
 	return i.Vtbl.CallRelease(unsafe.Pointer(i))
 }
 

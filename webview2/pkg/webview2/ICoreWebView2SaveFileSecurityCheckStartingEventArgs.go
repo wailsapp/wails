@@ -1,39 +1,44 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2SaveFileSecurityCheckStartingEventArgsVtbl struct {
 	IUnknownVtbl
-	GetCancelSave            ComProc
-	PutCancelSave            ComProc
-	GetDocumentOriginUri     ComProc
-	GetFileExtension         ComProc
-	GetFilePath              ComProc
+	GetCancelSave ComProc
+	PutCancelSave ComProc
+	GetDocumentOriginUri ComProc
+	GetFileExtension ComProc
+	GetFilePath ComProc
 	GetSuppressDefaultPolicy ComProc
 	PutSuppressDefaultPolicy ComProc
-	GetDeferral              ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2SaveFileSecurityCheckStartingEventArgs struct {
 	Vtbl *ICoreWebView2SaveFileSecurityCheckStartingEventArgsVtbl
 }
 
-func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetCancelSave() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetCancelSave.Call(
+	hr, _, err := i.Vtbl.GetCancelSave.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -41,29 +46,36 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetCancelSave() (b
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutCancelSave(value bool) error {
 
-	hr, _, _ := i.Vtbl.PutCancelSave.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
+	hr, _, err := i.Vtbl.PutCancelSave.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetDocumentOriginUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetDocumentOriginUri.Call(
+
+	hr, _, err := i.Vtbl.GetDocumentOriginUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -71,16 +83,17 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetDocumentOriginU
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFileExtension() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetFileExtension.Call(
+
+	hr, _, err := i.Vtbl.GetFileExtension.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -88,16 +101,17 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFileExtension()
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFilePath() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
-	hr, _, _ := i.Vtbl.GetFilePath.Call(
+
+	hr, _, err := i.Vtbl.GetFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -105,14 +119,14 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFilePath() (str
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, nil
+	return value, err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetSuppressDefaultPolicy() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetSuppressDefaultPolicy.Call(
+	hr, _, err := i.Vtbl.GetSuppressDefaultPolicy.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -120,32 +134,38 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetSuppressDefault
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutSuppressDefaultPolicy(value bool) error {
 
-	hr, _, _ := i.Vtbl.PutSuppressDefaultPolicy.Call(
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
+	hr, _, err := i.Vtbl.PutSuppressDefaultPolicy.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return nil
+	return err
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var value *ICoreWebView2Deferral
 
-	hr, _, _ := i.Vtbl.GetDeferral.Call(
+	hr, _, err := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, nil
+	return value, err
 }

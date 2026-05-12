@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FrameContentLoadingEventHandler struct {
 	impl ICoreWebView2FrameContentLoadingEventHandlerImpl
 }
 
-func (i *ICoreWebView2FrameContentLoadingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FrameContentLoadingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FrameContentLoadingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FrameContentLoadingEventHandlerIUnknownQueryInterface(this *ICoreWebView2FrameContentLoadingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FrameContentLoadingEventHandlerIUnknownQueryInterface(this *IC
 }
 
 func ICoreWebView2FrameContentLoadingEventHandlerIUnknownAddRef(this *ICoreWebView2FrameContentLoadingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FrameContentLoadingEventHandlerIUnknownRelease(this *ICoreWebView2FrameContentLoadingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FrameContentLoadingEventHandlerInvoke(this *ICoreWebView2FrameContentLoadingEventHandler, sender *ICoreWebView2Frame, args *ICoreWebView2ContentLoadingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FrameContentLoadingEventHandlerImpl interface {
 }
 
 var ICoreWebView2FrameContentLoadingEventHandlerFn = ICoreWebView2FrameContentLoadingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FrameContentLoadingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FrameContentLoadingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FrameContentLoadingEventHandlerIUnknownRelease),

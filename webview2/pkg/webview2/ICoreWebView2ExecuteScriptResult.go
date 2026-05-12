@@ -1,35 +1,40 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ExecuteScriptResultVtbl struct {
 	IUnknownVtbl
-	GetSucceeded         ComProc
-	GetResultAsJson      ComProc
+	GetSucceeded ComProc
+	GetResultAsJson ComProc
 	TryGetResultAsString ComProc
-	GetException         ComProc
+	GetException ComProc
 }
 
 type ICoreWebView2ExecuteScriptResult struct {
 	Vtbl *ICoreWebView2ExecuteScriptResultVtbl
 }
 
-func (i *ICoreWebView2ExecuteScriptResult) AddRef() uintptr {
+func (i *ICoreWebView2ExecuteScriptResult) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ExecuteScriptResult) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ExecuteScriptResult) GetSucceeded() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.GetSucceeded.Call(
+	hr, _, err := i.Vtbl.GetSucceeded.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -37,17 +42,18 @@ func (i *ICoreWebView2ExecuteScriptResult) GetSucceeded() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
-	return value, nil
+    value := _value != 0
+	return value, err
 }
 
 func (i *ICoreWebView2ExecuteScriptResult) GetResultAsJson() (string, error) {
 	// Create *uint16 to hold result
 	var _jsonResult *uint16
 
-	hr, _, _ := i.Vtbl.GetResultAsJson.Call(
+
+	hr, _, err := i.Vtbl.GetResultAsJson.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_jsonResult)),
+		uintptr(unsafe.Pointer(&_jsonResult)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -55,7 +61,7 @@ func (i *ICoreWebView2ExecuteScriptResult) GetResultAsJson() (string, error) {
 	// Get result and cleanup
 	jsonResult := UTF16PtrToString(_jsonResult)
 	CoTaskMemFree(unsafe.Pointer(_jsonResult))
-	return jsonResult, nil
+	return jsonResult, err
 }
 
 func (i *ICoreWebView2ExecuteScriptResult) TryGetResultAsString() (string, bool, error) {
@@ -64,9 +70,9 @@ func (i *ICoreWebView2ExecuteScriptResult) TryGetResultAsString() (string, bool,
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, _ := i.Vtbl.TryGetResultAsString.Call(
+	hr, _, err := i.Vtbl.TryGetResultAsString.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_stringResult)),
+		uintptr(unsafe.Pointer(&_stringResult)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
@@ -76,20 +82,20 @@ func (i *ICoreWebView2ExecuteScriptResult) TryGetResultAsString() (string, bool,
 	stringResult := UTF16PtrToString(_stringResult)
 	CoTaskMemFree(unsafe.Pointer(_stringResult))
 	// Get result and cleanup
-	value := _value != 0
-	return stringResult, value, nil
+    value := _value != 0
+	return stringResult, value, err
 }
 
 func (i *ICoreWebView2ExecuteScriptResult) GetException() (*ICoreWebView2ScriptException, error) {
 
 	var exception *ICoreWebView2ScriptException
 
-	hr, _, _ := i.Vtbl.GetException.Call(
+	hr, _, err := i.Vtbl.GetException.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&exception)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return exception, nil
+	return exception, err
 }
