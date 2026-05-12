@@ -14,3 +14,9 @@
 	if err != nil {
 		return {{.ErrorValues}}
 	}
+	var {{.Param.LocalName}} **uint16
+	if len({{.Param.LocalName}}) > 0 {
+		{{.Param.LocalName}} = &{{.Param.LocalName}}[0]
+	} else {
+		{{.Param.LocalName}} = nil
+	}
