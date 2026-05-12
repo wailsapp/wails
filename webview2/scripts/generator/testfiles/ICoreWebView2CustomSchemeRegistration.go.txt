@@ -28,7 +28,6 @@ func (i *ICoreWebView2CustomSchemeRegistration) Release() uint32 {
 
 
 func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOriginsCount uint32, allowedOrigins []string) error {
-
 	// Convert []string 'allowedOrigins' to **uint16 (LPCWSTR* / LPWSTR*)
 	_allowedOriginsptrs := make([]*uint16, len(allowedOrigins))
 	for _i, _s := range allowedOrigins {
