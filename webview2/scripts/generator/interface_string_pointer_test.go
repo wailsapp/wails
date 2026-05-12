@@ -6,7 +6,7 @@ import (
 	"github.com/matryer/is"
 	"github.com/stretchr/testify/require"
 	"testing"
-	"updater/generator/types"
+	"generator/types"
 )
 
 func TestInterfaceStringPointer(t *testing.T) {
