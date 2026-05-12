@@ -1,6 +1,9 @@
 package notes
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 const sampleNotes = `# WebView2 SDK Release Notes
 
@@ -72,6 +75,46 @@ func TestInterfaceMinimumVersions(t *testing.T) {
 	}
 	if _, ok := got["ICoreWebView2Controller"]; ok {
 		t.Error("ICoreWebView2Controller should not be in mapping (mentioned only as rename target, no backticks)")
+	}
+}
+
+// Microsoft restructured the release notes around the "Phase 1/2/3" promotion
+// vocabulary and dropped the " interface" suffix from top-level interface
+// links. The parser must keep accepting both forms.
+const sampleNotesNewFormat = ` ## Release SDK 1.0.3405.78, for Runtime 134 (Aug. 13, 2025)
+
+[NuGet package for WebView2 SDK 1.0.3405.78](https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3405.78)
+
+For full API compatibility, this Release version of the WebView2 SDK requires WebView2 Runtime version 134.0.3405.78 or higher.
+
+#### Promotions to Phase 3 (Stable in Release)
+
+##### [Win32/C++](#tab/win32cpp)
+
+* [ICoreWebView2_28](/microsoft-edge/webview2/reference/win32/icorewebview2_28?view=webview2-1.0.3405.78&preserve-view=true)
+   * [ICoreWebView2_28::get_Find](/microsoft-edge/webview2/reference/win32/icorewebview2_28?view=webview2-1.0.3405.78&preserve-view=true#get_find)
+
+* [ICoreWebView2Find](/microsoft-edge/webview2/reference/win32/icorewebview2find?view=webview2-1.0.3405.78&preserve-view=true)
+   * [ICoreWebView2Find::Start](/microsoft-edge/webview2/reference/win32/icorewebview2find?view=webview2-1.0.3405.78&preserve-view=true#start)
+`
+
+func TestInterfaceMinimumVersionsNewFormat(t *testing.T) {
+	releases, err := Parse([]byte(sampleNotesNewFormat))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := InterfaceMinimumVersions(releases)
+	if got["ICoreWebView2_28"] != "1.0.3405.78" {
+		t.Errorf("ICoreWebView2_28 = %q, want 1.0.3405.78 (new bullet format without ' interface')", got["ICoreWebView2_28"])
+	}
+	if got["ICoreWebView2Find"] != "1.0.3405.78" {
+		t.Errorf("ICoreWebView2Find = %q, want 1.0.3405.78", got["ICoreWebView2Find"])
+	}
+	// Method links must not be counted as interfaces.
+	for k := range got {
+		if strings.Contains(k, "::") {
+			t.Errorf("method link leaked into interface map: %q", k)
+		}
 	}
 }
 
