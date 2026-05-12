@@ -124,24 +124,44 @@ func Parse(md []byte) ([]Release, error) {
 }
 
 var (
-	// interfaceRE matches an ICoreWebView2 interface name anywhere in a bullet
-	// (e.g. "added the `ICoreWebView2_17` interface", "promoted ICoreWebView2Profile").
-	interfaceRE = regexp.MustCompile(`(ICoreWebView2[A-Za-z0-9_]*)`)
+	// interfaceLinkRE matches the canonical "new interface" link in the
+	// release-notes API listing, e.g.
+	//   * [ICoreWebView2_19 interface](/microsoft-edge/webview2/reference/...
+	// This is much stricter than scanning every textual mention: only
+	// top-level interface announcements (not method links, not renames
+	// in prose) carry this exact `_N interface]` suffix.
+	interfaceLinkRE = regexp.MustCompile(`\[(ICoreWebView2[A-Za-z0-9_]*) interface\]`)
+
+	// prereleaseRE detects prerelease SDK versions. Prerelease versions
+	// are not shipped to end users, so they should not drive capability
+	// gating — we want the stable version that first contained the API.
+	prereleaseRE = regexp.MustCompile(`(?i)(prerelease|preview)`)
 )
 
+// IsPrerelease reports whether an SDK version string represents a
+// prerelease (e.g. "1.0.1305-prerelease").
+func IsPrerelease(sdkVersion string) bool { return prereleaseRE.MatchString(sdkVersion) }
+
 // InterfaceMinimumVersions walks the parsed releases and returns the
-// earliest SDK version in which each ICoreWebView2 interface name is
-// mentioned. Older releases naturally win because we iterate the list
-// backwards (oldest first) and only record the first occurrence.
+// earliest stable SDK version that explicitly added each
+// ICoreWebView2 interface. Prerelease versions are skipped — they
+// frequently announce an interface and then re-announce it in the
+// stable release that follows, and "stable" is what consumers gate on.
+//
+// Releases are walked oldest-first so the first stable mention wins.
 func InterfaceMinimumVersions(releases []Release) map[string]string {
 	out := make(map[string]string)
 	// releases are newest-first; walk in reverse so the oldest wins.
 	for i := len(releases) - 1; i >= 0; i-- {
 		r := releases[i]
+		if IsPrerelease(r.SDKVersion) {
+			continue
+		}
 		for _, note := range r.Notes {
-			for _, m := range interfaceRE.FindAllString(note, -1) {
-				if _, seen := out[m]; !seen {
-					out[m] = r.SDKVersion
+			for _, m := range interfaceLinkRE.FindAllStringSubmatch(note, -1) {
+				name := m[1]
+				if _, seen := out[name]; !seen {
+					out[name] = r.SDKVersion
 				}
 			}
 		}

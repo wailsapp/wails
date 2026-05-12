@@ -139,8 +139,8 @@ func TestCapabilities(t *testing.T) {
 
 This release requires WebView2 Runtime version 100.0.0.1 or higher.
 
-* Added ` + "`ICoreWebView2Foo`" + ` interface.
-* Added ` + "`ICoreWebView2_5`" + ` interface.
+* [ICoreWebView2Foo interface](/reference/x?view=webview2-1.0.500.1)
+* [ICoreWebView2_5 interface](/reference/y?view=webview2-1.0.500.1)
 `
 	src := filepath.Join(wd, "notes.md")
 	if err := os.WriteFile(src, []byte(notes), 0o644); err != nil {
