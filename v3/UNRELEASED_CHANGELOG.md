@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix memory safety issue in GTK menu handling on Linux in [PR](https://github.com/wailsapp/wails/pull/5363) by @leaanthony
 - Detect NVIDIA GPUs and disable DMA-BUF renderer on Linux in [PR](https://github.com/wailsapp/wails/pull/5295) by @leaanthony
 - Fix `SetPosition` cross-screen Y conversion on macOS: use primary screen height as global reference so windows land at the correct position on monitors that are vertically offset from the primary display in [#5117](https://github.com/wailsapp/wails/issues/5117)
 - Fix git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) by @wayneforrest
