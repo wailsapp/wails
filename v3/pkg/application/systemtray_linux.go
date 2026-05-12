@@ -381,7 +381,15 @@ func (s *linuxSystemTray) run() {
 					continue
 				}
 				// sig.Body has the args, which are [name old_owner new_owner]
-				if sig.Body[2] != "" {
+				name, ok := sig.Body[0].(string)
+				if !ok || name != "org.kde.StatusNotifierWatcher" {
+					continue
+				}
+				newOwner, ok := sig.Body[2].(string)
+				if !ok {
+					continue
+				}
+				if newOwner != "" {
 					s.register()
 				}
 
