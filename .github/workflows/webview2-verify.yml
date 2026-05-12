@@ -1,0 +1,45 @@
+name: Verify webview2 generator
+
+on:
+  pull_request:
+    paths:
+      - 'webview2/**'
+      - '.github/workflows/webview2-verify.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'webview2/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Generator tests
+        working-directory: webview2/scripts
+        run: go test -race ./...
+
+      - name: Verify generated bindings are up to date
+        working-directory: webview2/scripts
+        run: |
+          go run ./cmd/webview2gen verify
+          # capabilities.go is also generator-output; regenerate it from the
+          # cached release-notes snapshot and fail if it changes.
+          go run ./cmd/webview2gen capabilities --source test.md
+          if ! git diff --exit-code -- ../pkg/webview2/capabilities.go; then
+            echo "::error::pkg/webview2/capabilities.go is out of date — run 'webview2gen capabilities'"
+            exit 1
+          fi
+
+      - name: Cross-compile generated bindings for Windows
+        working-directory: webview2
+        run: GOOS=windows go vet ./pkg/webview2/

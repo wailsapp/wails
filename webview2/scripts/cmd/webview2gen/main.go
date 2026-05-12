@@ -314,7 +314,10 @@ func runVerify(args []string) error {
 		if !strings.HasSuffix(name, ".go") {
 			continue
 		}
-		if name == "capabilities.go" || strings.HasSuffix(name, "_test.go") {
+		// capabilities.go is emitted by the `capabilities` subcommand;
+		// doc.go is the only hand-written file in the package. Neither
+		// is produced by `generate` so they must be excluded here.
+		if name == "capabilities.go" || name == "doc.go" || strings.HasSuffix(name, "_test.go") {
 			continue
 		}
 		if !expected[name] {
