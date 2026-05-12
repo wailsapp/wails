@@ -1,0 +1,291 @@
+---
+title: 使用 Go 建構桌面應用程式
+description: "使用 Go 和網頁技術打造原生桌面應用程式"
+banner:
+    content: |
+        Wails v3 目前處於 ALPHA 階段。<a href="https://wails.io">v2 文件</a>
+template: splash
+hero:
+  tagline: 使用 Go 和現代網頁技術，建構美觀且高效的桌面應用程式。單一程式碼庫，支援三個平台，無需瀏覽器。
+  image:
+    dark: ../../../assets/wails-logo-dark.svg
+    light: ../../../assets/wails-logo-light.svg
+    alt: Wails Logo
+  actions:
+    - text: 開始使用
+      link: /zh-tw/getting-started/installation
+      icon: right-arrow
+      variant: primary
+    - text: 查看教學
+      link: /tutorials/03-notes-vanilla
+      icon: open-book
+      variant: secondary
+---
+{/* Updated 2025-11-23 */}
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+<style>{`
+  /* Row 1 - Fastest */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 33.33vh;
+    opacity: 0.08;
+    z-index: -1;
+    background:
+      url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/scriptbar.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/minesweeper-xp.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/wailsterm.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/modalfilemanager.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/ytd.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/filehound.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/edex-ui.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/tiny-rdm1.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/scriptbar.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/minesweeper-xp.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/wailsterm.webp') 7150px center / auto 80% no-repeat,
+      url('/showcase-images/modalfilemanager.webp') 7700px center / auto 80% no-repeat,
+      url('/showcase-images/ytd.webp') 8250px center / auto 80% no-repeat,
+      url('/showcase-images/filehound.webp') 8800px center / auto 80% no-repeat,
+      url('/showcase-images/edex-ui.webp') 9350px center / auto 80% no-repeat;
+    animation: scroll-row1 40s linear infinite;
+    filter: blur(0.5px);
+    pointer-events: none;
+  }
+  
+  /* Gradient overlay - highest z-index */
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(to bottom, var(--sl-color-bg) 0%, transparent 15%, transparent 85%, var(--sl-color-bg) 100%),
+      linear-gradient(to right, var(--sl-color-bg) 0%, transparent 10%, transparent 90%, var(--sl-color-bg) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  /* Row 2 - Medium Speed */
+  html::after {
+    content: '';
+    position: fixed;
+    top: 33.33vh;
+    left: 0;
+    width: 200%;
+    height: 33.33vh;
+    opacity: 0.08;
+    z-index: -2;
+    background:
+      url('/showcase-images/tiny-rdm2.webp') 0px center / auto 80% no-repeat,
+      url('/showcase-images/mollywallet.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/optimus.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/cfntracker.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/riftshare-main.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/minecraft-mod-updater.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/resizem.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/mchat.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/tiny-rdm2.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/mollywallet.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/optimus.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/cfntracker.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/riftshare-main.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/minecraft-mod-updater.webp') 7150px center / auto 80% no-repeat,
+      url('/showcase-images/resizem.webp') 7700px center / auto 80% no-repeat,
+      url('/showcase-images/mchat.webp') 8250px center / auto 80% no-repeat;
+    animation: scroll-row2 25s linear infinite;
+    filter: blur(0.5px);
+    pointer-events: none;
+  }
+  
+  /* Row 3 - Slowest */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 66.66vh;
+    left: 0;
+    width: 200%;
+    height: 33.34vh;
+    opacity: 0.08;
+    z-index: -2;
+    background:
+      url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
+      url('/showcase-images/encrypteasy.webp') 550px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 1100px center / auto 80% no-repeat,
+      url('/showcase-images/varly2.webp') 1650px center / auto 80% no-repeat,
+      url('/showcase-images/hiposter.webp') 2200px center / auto 80% no-repeat,
+      url('/showcase-images/october.webp') 2750px center / auto 80% no-repeat,
+      url('/showcase-images/wombat.webp') 3300px center / auto 80% no-repeat,
+      url('/showcase-images/portfall.webp') 3850px center / auto 80% no-repeat,
+      url('/showcase-images/encrypteasy.webp') 4400px center / auto 80% no-repeat,
+      url('/showcase-images/gamestacker.webp') 4950px center / auto 80% no-repeat,
+      url('/showcase-images/varly2.webp') 5500px center / auto 80% no-repeat,
+      url('/showcase-images/hiposter.webp') 6050px center / auto 80% no-repeat,
+      url('/showcase-images/october.webp') 6600px center / auto 80% no-repeat,
+      url('/showcase-images/wombat.webp') 7150px center / auto 80% no-repeat;
+    animation: scroll-row3 50s linear infinite;
+    filter: blur(0.5px);
+    pointer-events: none;
+  }
+  
+  /* Hero padding */
+  .hero {
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  @keyframes scroll-row1 {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  
+  @keyframes scroll-row2 {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  
+  @keyframes scroll-row3 {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  
+  .small-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .small-buttons a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    text-decoration: none;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-gray-5);
+    transition: all 0.2s;
+  }
+  
+  .small-buttons a:hover {
+    background: var(--sl-color-gray-5);
+    border-color: var(--sl-color-accent);
+  }
+  
+  /* Round card corners and add translucent blur effect */
+  .card {
+    border-radius: 12px;
+    background: rgba(var(--sl-color-gray-6-rgb), 0.6) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+`}</style>
+
+## 快速開始
+
+<Tabs syncKey="os">
+  <TabItem label="macOS" icon="apple">
+```bash
+# 安裝 Wails
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 建立您的應用程式
+wails3 init -n myapp -t vanilla
+
+# 使用熱重載執行
+cd myapp && wails3 dev
+```
+  </TabItem>
+  
+  <TabItem label="Windows" icon="seti:windows">
+```powershell
+# 安裝 Wails
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 建立您的應用程式
+wails3 init -n myapp -t vanilla
+
+# 使用熱重載執行
+cd myapp; wails3 dev
+```
+  </TabItem>
+  
+  <TabItem label="Linux" icon="linux">
+```bash
+# 安裝 Wails
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 建立您的應用程式
+wails3 init -n myapp -t vanilla
+
+# 使用熱重載執行
+cd myapp && wails3 dev
+```
+  </TabItem>
+</Tabs>
+
+**您的應用程式現在正在執行**，具備熱重載功能以及類型安全的 Go 至 JS 綁定。
+
+
+## 為什麼選擇 Wails？
+
+<CardGrid>
+  <Card title="用戶可感知的效能" icon="rocket">
+    - 二進制檔案約 15MB，對比 Electron 的 150MB
+    - 基礎記憶體約 10MB，對比 100MB+
+    - 啟動時間 <0.5 秒，對比 2-3 秒
+    - 使用作業系統原生的 WebView 進行渲染
+    - 無需捆綁瀏覽器帶來的額外負荷
+  </Card>
+  
+  <Card title="開發者體驗" icon="setting">
+    - 單一 Go 程式碼庫適用於所有平台
+    - 支援任何網頁框架 - React, Vue, Svelte
+    - 開發期間支援熱重載
+    - 自動生成綁定，輕鬆從 JavaScript 呼叫 Go
+    - 記憶體內 IPC，無需網路連接埠
+  </Card>
+  
+  <Card title="生產環境就緒" icon="approve-check">
+    - 支援多個視窗及其生命週期
+    - 原生選單和系統匣
+    - 平台原生的檔案對話框
+    - 系統整合與快捷鍵
+    - 程式碼簽署與封裝工具
+  </Card>
+  
+  <Card title="跨平台原生體驗" icon="laptop">
+    - 單一程式碼庫適用於 Windows, macOS, Linux
+    - 在需要時使用平台特定功能
+    - 不犧牲使用者體驗
+    - 從單一建置部署至所有平台
+    - 行動裝置支援即將推出...
+  </Card>
+</CardGrid>
+
+
+## 下一步
+
+下一步：[](/zh-tw/quick-start/next-steps)，瀏覽[範例](https://github.com/wailsapp/wails/tree/master/v3/examples)，或查看 [API 參考](/reference/application)。從 v2 遷移？請參閱[升級指南](/migration/v2-to-v3)。
+
+
+:::note[生產環境就緒]
+Wails v3 目前處於 **ALPHA** 階段。API 相當穩定，且已有應用程式投入生產環境使用。我們在正式發布前，正在完善文件與工具。
+:::
+
+<Card title="支持 Wails 開發" icon="heart">
+  Wails 是免費且開源的，由開發者為開發者打造。如果 Wails 幫助您建構了出色的應用程式，請考慮支持其持續開發。
+
+  您的贊助有助於維護專案、改善文件，並開發惠及整個社群的新功能。
+
+  [成為贊助者 →](https://github.com/sponsors/leaanthony)
+</Card>

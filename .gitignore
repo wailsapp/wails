@@ -95,3 +95,5 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 
 # Ignore local iOS test app
 /v3/testiosapp/
+go.work
+go.work.sum

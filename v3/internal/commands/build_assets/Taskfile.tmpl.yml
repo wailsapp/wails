@@ -115,7 +115,7 @@ tasks:
     deps:
       - task: install:frontend:deps
     cmds:
-      - npm run dev -- --port {{ "{{.VITE_PORT}}" }} --strictPort
+      - npm run dev
 
   update:build-assets:
     summary: Updates the build assets
