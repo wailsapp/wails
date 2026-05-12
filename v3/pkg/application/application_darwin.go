@@ -160,7 +160,13 @@ static unsigned int getCurrentWindowID(void) {
 		if (window == nil) {
 			return;
 		}
-		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
+		// System panels (e.g. PMPrintPanelController) can become the key window;
+		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		id delegateObj = [window delegate];
+		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
 		if (delegate != nil) {
 			result = delegate.windowId;
 		}
