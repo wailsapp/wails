@@ -3,7 +3,7 @@ package logutils
 import (
 	"fmt"
 
-	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
 func LogGreen(message string, args ...interface{}) {
@@ -11,7 +11,7 @@ func LogGreen(message string, args ...interface{}) {
 		return
 	}
 	text := fmt.Sprintf(message, args...)
-	println(colour.Green(text))
+	println(tui.Green(text))
 }
 
 func LogRed(message string, args ...interface{}) {
@@ -19,7 +19,7 @@ func LogRed(message string, args ...interface{}) {
 		return
 	}
 	text := fmt.Sprintf(message, args...)
-	println(colour.Red(text))
+	println(tui.Red(text))
 }
 
 func LogDarkYellow(message string, args ...interface{}) {
@@ -27,5 +27,5 @@ func LogDarkYellow(message string, args ...interface{}) {
 		return
 	}
 	text := fmt.Sprintf(message, args...)
-	println(colour.DarkYellow(text))
+	println(tui.DarkYellow(text))
 }

@@ -12,9 +12,8 @@ import (
 	"github.com/flytam/filenamify"
 	"github.com/leaanthony/slicer"
 	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/tui"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/git"
@@ -23,8 +22,7 @@ import (
 
 func initProject(f *flags.Init) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	quiet := f.Quiet
@@ -41,15 +39,15 @@ func initProject(f *flags.Init) error {
 			return err
 		}
 
-		pterm.DefaultSection.Println("Available templates")
+		tui.Section("Available templates")
 
-		table := pterm.TableData{{"Template", "Short Name", "Description"}}
+		table := [][]string{{"Template", "Short Name", "Description"}}
 		for _, template := range templateList {
 			table = append(table, []string{template.Name, template.ShortName, template.Description})
 		}
-		err = pterm.DefaultTable.WithHasHeader(true).WithBoxed(true).WithData(table).Render()
-		pterm.Println()
-		return err
+		tui.HeaderTable(table)
+		fmt.Println()
+		return nil
 	}
 
 	// Validate name
@@ -70,7 +68,7 @@ func initProject(f *flags.Init) error {
 		app.PrintBanner()
 	}
 
-	pterm.DefaultSection.Printf("Initialising Project '%s'", f.ProjectName)
+	tui.Section(fmt.Sprintf("Initialising Project '%s'", f.ProjectName))
 
 	projectFilename, err := filenamify.Filenamify(f.ProjectName, filenamify.Options{
 		Replacement: "_",
@@ -84,12 +82,9 @@ func initProject(f *flags.Init) error {
 		return fmt.Errorf("unable to find Go compiler. Please download and install Go: https://golang.org/dl/")
 	}
 
-	// Get base path and convert to forward slashes
 	goPath := filepath.ToSlash(filepath.Dir(goBinary))
-	// Trim bin directory
 	goSDKPath := strings.TrimSuffix(goPath, "/bin")
 
-	// Create Template Options
 	options := &templates.Options{
 		ProjectName:         f.ProjectName,
 		TargetDir:           f.ProjectDir,
@@ -102,19 +97,21 @@ func initProject(f *flags.Init) error {
 		GoSDKPath:           goSDKPath,
 	}
 
-	// Try to discover author details from git config
 	findAuthorDetails(options)
 
-	// Start Time
 	start := time.Now()
 
-	// Install the template
-	remote, template, err := templates.Install(options)
+	var remote bool
+	var template *templates.Template
+	err = tui.WithSpinner("Installing template", func() error {
+		var installErr error
+		remote, template, installErr = templates.Install(options)
+		return installErr
+	})
 	if err != nil {
 		return err
 	}
 
-	// Install the default assets
 	err = buildassets.Install(options.TargetDir)
 	if err != nil {
 		return err
@@ -125,35 +122,33 @@ func initProject(f *flags.Init) error {
 		return err
 	}
 
-	// Change the module name to project name
 	err = updateModuleNameToProjectName(options, quiet)
 	if err != nil {
 		return err
 	}
 
 	if !f.CIMode {
-		// Run `go mod tidy` to ensure `go.sum` is up to date
-		cmd := exec.Command("go", "mod", "tidy")
-		cmd.Dir = options.TargetDir
-		cmd.Stderr = os.Stderr
-		if !quiet {
-			cmd.Stdout = os.Stdout
-		}
-		err = cmd.Run()
+		err = tui.WithSpinner("Running go mod tidy", func() error {
+			cmd := exec.Command("go", "mod", "tidy")
+			cmd.Dir = options.TargetDir
+			cmd.Stderr = os.Stderr
+			if !quiet {
+				cmd.Stdout = os.Stdout
+			}
+			return cmd.Run()
+		})
 		if err != nil {
 			return err
 		}
 	} else {
-		// Update go mod
 		workspace := os.Getenv("GITHUB_WORKSPACE")
-		pterm.Println("GitHub workspace:", workspace)
+		fmt.Println("GitHub workspace:", workspace)
 		if workspace == "" {
 			os.Exit(1)
 		}
 		updateReplaceLine(workspace)
 	}
 
-	// Remove the `.git`` directory in the template project
 	err = os.RemoveAll(".git")
 	if err != nil {
 		return err
@@ -170,42 +165,36 @@ func initProject(f *flags.Init) error {
 		return nil
 	}
 
-	// Output stats
 	elapsed := time.Since(start)
 
-	// Create pterm table
-	table := pterm.TableData{
+	table := [][]string{
 		{"Project Name", options.ProjectName},
 		{"Project Directory", options.TargetDir},
 		{"Template", template.Name},
 		{"Template Source", template.HelpURL},
 	}
-	err = pterm.DefaultTable.WithData(table).Render()
-	if err != nil {
-		return err
-	}
+	tui.Table(table)
 
-	// IDE message
 	switch options.IDE {
 	case "vscode":
-		pterm.Println()
-		pterm.Info.Println("VSCode config files generated.")
+		fmt.Println()
+		tui.Info("VSCode config files generated.")
 	case "goland":
-		pterm.Println()
-		pterm.Info.Println("Goland config files generated.")
+		fmt.Println()
+		tui.Info("Goland config files generated.")
 	}
 
 	if options.InitGit {
-		pterm.Info.Println("Git repository initialised.")
+		tui.Info("Git repository initialised.")
 	}
 
 	if remote {
-		pterm.Warning.Println("NOTE: You have created a project using a remote template. The Wails project takes no responsibility for 3rd party templates. Only use remote templates that you trust.")
+		tui.Warning("NOTE: You have created a project using a remote template. The Wails project takes no responsibility for 3rd party templates. Only use remote templates that you trust.")
 	}
 
-	pterm.Println("")
-	pterm.Printf("Initialised project '%s' in %s.\n", options.ProjectName, elapsed.Round(time.Millisecond).String())
-	pterm.Println("")
+	fmt.Println()
+	fmt.Printf("Initialised project '%s' in %s.\n", options.ProjectName, elapsed.Round(time.Millisecond).String())
+	fmt.Println()
 
 	return nil
 }
@@ -229,8 +218,6 @@ func initGit(options *templates.Options) error {
 	return nil
 }
 
-// findAuthorDetails tries to find the user's name and email
-// from gitconfig. If it finds them, it stores them in the project options
 func findAuthorDetails(options *templates.Options) {
 	if git.IsInstalled() {
 		name, err := git.Name()
@@ -269,7 +256,7 @@ func updateReplaceLine(targetPath string) {
 	for i, line := range lines {
 		println(line)
 		if strings.HasPrefix(line, "// replace") {
-			pterm.Println("Found replace line")
+			fmt.Println("Found replace line")
 			splitLine := strings.Split(line, " ")
 			splitLine[5] = targetPath + "/v2"
 			lines[i] = strings.Join(splitLine[1:], " ")

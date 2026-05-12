@@ -7,13 +7,12 @@ import (
 
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
-	"github.com/pterm/pterm"
 	"github.com/tidwall/sjson"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/template"
-	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/internal/tui"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
@@ -21,8 +20,7 @@ import (
 
 func generateModule(f *flags.GenerateModule) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	quiet := f.Verbosity == flags.Quiet
@@ -47,35 +45,33 @@ func generateModule(f *flags.GenerateModule) error {
 		projectConfig.Bindings.TsGeneration.OutputType = "classes"
 	}
 
-	_, err = bindings.GenerateBindings(bindings.Options{
-		Compiler:     f.Compiler,
-		Tags:         buildTags,
-		TsPrefix:     projectConfig.Bindings.TsGeneration.Prefix,
-		TsSuffix:     projectConfig.Bindings.TsGeneration.Suffix,
-		TsOutputType: projectConfig.Bindings.TsGeneration.OutputType,
-	})
-	if err != nil {
+	err = tui.WithSpinner("Generating bindings", func() error {
+		_, err := bindings.GenerateBindings(bindings.Options{
+			Compiler:     f.Compiler,
+			Tags:         buildTags,
+			TsPrefix:     projectConfig.Bindings.TsGeneration.Prefix,
+			TsSuffix:     projectConfig.Bindings.TsGeneration.Suffix,
+			TsOutputType: projectConfig.Bindings.TsGeneration.OutputType,
+		})
 		return err
-	}
-	return nil
+	})
+	return err
 }
 
 func generateTemplate(f *flags.GenerateTemplate) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	quiet := f.Quiet
 	logger := clilogger.New(os.Stdout)
 	logger.Mute(quiet)
+	_ = logger
 
-	// name is mandatory
 	if f.Name == "" {
 		return fmt.Errorf("please provide a template name using the -name flag")
 	}
 
-	// If the current directory is not empty, we create a new directory
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -92,18 +88,17 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 		return err
 	}
 
-	pterm.DefaultSection.Println("Generating template")
+	tui.Section("Generating template")
 
 	if !empty {
 		templateDir = filepath.Join(cwd, f.Name)
-		printBulletPoint("Creating new template directory:", f.Name)
+		tui.BulletPoint("Creating new template directory: %s", f.Name)
 		err = fs.Mkdir(templateDir)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Create base template
 	baseTemplate, err := debme.FS(template.Base, "base")
 	if err != nil {
 		return err
@@ -123,7 +118,7 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 		WailsVersion string
 	}
 
-	printBulletPoint("Extracting base template files...")
+	tui.BulletPoint("Extracting base template files...")
 
 	err = g.Extract(templateDir, &templateData{
 		Name:         f.Name,
@@ -139,24 +134,21 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 		return err
 	}
 
-	// If we aren't migrating the files, just exit
 	if f.Frontend == "" {
-		pterm.Println()
-		pterm.Println()
-		pterm.Info.Println("No frontend specified to migrate. Template created.")
-		pterm.Println()
+		fmt.Println()
+		fmt.Println()
+		tui.Info("No frontend specified to migrate. Template created.")
+		fmt.Println()
 		return nil
 	}
 
-	// Remove frontend directory
 	frontendDir := filepath.Join(templateDir, "frontend")
 	err = os.RemoveAll(frontendDir)
 	if err != nil {
 		return err
 	}
 
-	// Copy the files into a new frontend directory
-	printBulletPoint("Migrating existing project files to frontend directory...")
+	tui.BulletPoint("Migrating existing project files to frontend directory...")
 
 	sourceDir, err := filepath.Abs(f.Frontend)
 	if err != nil {
@@ -169,19 +161,16 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 		return err
 	}
 
-	// Process package.json
 	err = processPackageJSON(frontendDir)
 	if err != nil {
 		return err
 	}
 
-	// Process package-lock.json
 	err = processPackageLockJSON(frontendDir)
 	if err != nil {
 		return err
 	}
 
-	// Remove node_modules - ignore error, eg it doesn't exist
 	_ = os.RemoveAll(filepath.Join(frontendDir, "node_modules"))
 
 	return nil
@@ -200,8 +189,7 @@ func processPackageJSON(frontendDir string) error {
 		return err
 	}
 
-	// We will ignore these errors - it's not critical
-	printBulletPoint("Updating package.json data...")
+	tui.BulletPoint("Updating package.json data...")
 	json, _ = sjson.SetBytes(json, "name", "{{.ProjectName}}")
 	json, _ = sjson.SetBytes(json, "author", "{{.AuthorName}}")
 
@@ -210,7 +198,7 @@ func processPackageJSON(frontendDir string) error {
 		return err
 	}
 	baseDir := filepath.Dir(packageJSON)
-	printBulletPoint("Renaming package.json -> package.tmpl.json...")
+	tui.BulletPoint("Renaming package.json -> package.tmpl.json...")
 	err = os.Rename(packageJSON, filepath.Join(baseDir, "package.tmpl.json"))
 	if err != nil {
 		return err
@@ -232,8 +220,7 @@ func processPackageLockJSON(frontendDir string) error {
 	}
 	json := string(data)
 
-	// We will ignore these errors - it's not critical
-	printBulletPoint("Updating package-lock.json data...")
+	tui.BulletPoint("Updating package-lock.json data...")
 	json, _ = sjson.Set(json, "name", "{{.ProjectName}}")
 
 	err = os.WriteFile(filename, []byte(json), 0o644)
@@ -241,7 +228,7 @@ func processPackageLockJSON(frontendDir string) error {
 		return err
 	}
 	baseDir := filepath.Dir(filename)
-	printBulletPoint("Renaming package-lock.json -> package-lock.tmpl.json...")
+	tui.BulletPoint("Renaming package-lock.json -> package-lock.tmpl.json...")
 	err = os.Rename(filename, filepath.Join(baseDir, "package-lock.tmpl.json"))
 	if err != nil {
 		return err

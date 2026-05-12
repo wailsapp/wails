@@ -7,45 +7,37 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
-
-	"github.com/pterm/pterm"
-
 	"github.com/jaypipes/ghw"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
 func diagnoseEnvironment(f *flags.Doctor) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
-	pterm.DefaultSection = *pterm.DefaultSection.
-		WithBottomPadding(0).
-		WithStyle(pterm.NewStyle(pterm.FgBlue, pterm.Bold))
+	fmt.Println()
+	fmt.Println(tui.Bold("Wails Doctor"))
+	fmt.Println()
 
-	pterm.Println() // Spacer
-	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
-	pterm.Println() // Spacer
-
-	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
-
-	// Get system info
-	info, err := system.GetInfo()
+	var info *system.Info
+	err := tui.WithSpinner("Scanning system", func() error {
+		var scanErr error
+		info, scanErr = system.GetInfo()
+		return scanErr
+	})
 	if err != nil {
-		spinner.Fail()
-		pterm.Error.Println("Failed to get system information")
+		tui.Error("Failed to get system information")
 		return err
 	}
-	spinner.Success()
 
-	pterm.DefaultSection.Println("Wails")
+	tui.Section("Wails")
 
-	wailsTableData := pterm.TableData{
+	wailsTableData := [][]string{
 		{"Version", app.Version()},
 	}
 
@@ -63,26 +55,22 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		}
 	}
 
-	// Exit early if PM not found
 	if info.PM != nil {
 		wailsTableData = append(wailsTableData, []string{"Package Manager", info.PM.Name()})
 	}
 
-	err = pterm.DefaultTable.WithBoxed().WithData(wailsTableData).Render()
-	if err != nil {
-		return err
-	}
+	tui.Table(wailsTableData)
 
-	pterm.DefaultSection.Println("System")
+	tui.Section("System")
 
-	systemTabledata := pterm.TableData{
-		{pterm.Bold.Sprint("OS"), info.OS.Name},
-		{pterm.Bold.Sprint("Version"), info.OS.Version},
-		{pterm.Bold.Sprint("ID"), info.OS.ID},
-		{pterm.Bold.Sprint("Branding"), info.OS.Branding},
-		{pterm.Bold.Sprint("Go Version"), runtime.Version()},
-		{pterm.Bold.Sprint("Platform"), runtime.GOOS},
-		{pterm.Bold.Sprint("Architecture"), runtime.GOARCH},
+	systemTabledata := [][]string{
+		{"OS", info.OS.Name},
+		{"Version", info.OS.Version},
+		{"ID", info.OS.ID},
+		{"Branding", info.OS.Branding},
+		{"Go Version", runtime.Version()},
+		{"Platform", runtime.GOOS},
+		{"Architecture", runtime.GOARCH},
 	}
 
 	// Probe CPU
@@ -98,7 +86,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	} else {
 		cpuInfo := "Unknown"
 		if runtime.GOOS == "darwin" {
-			// Try to get CPU info from sysctl
 			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "machdep.cpu.brand_string"); err == nil {
 				cpuInfo = strings.TrimSpace(stdout)
 			}
@@ -124,7 +111,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	} else {
 		gpuInfo := "Unknown"
 		if runtime.GOOS == "darwin" {
-			// Try to get GPU info from system_profiler
 			if stdout, _, err := shell.RunCommand("", "system_profiler", "SPDisplaysDataType"); err == nil {
 				var (
 					startCapturing bool
@@ -155,7 +141,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	} else {
 		memInfo := "Unknown"
 		if runtime.GOOS == "darwin" {
-			// Try to get Memory info from sysctl
 			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "hw.memsize"); err == nil {
 				if memSize, err := strconv.Atoi(strings.TrimSpace(stdout)); err == nil {
 					memInfo = strconv.Itoa(memSize/1024/1024/1024) + "GB"
@@ -165,46 +150,38 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		systemTabledata = append(systemTabledata, []string{"Memory", memInfo})
 	}
 
-	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
-	if err != nil {
-		return err
-	}
+	tui.Table(systemTabledata)
 
-	pterm.DefaultSection.Println("Dependencies")
+	tui.Section("Dependencies")
 
-	// Output Dependencies Status
 	var dependenciesMissing []string
 	var externalPackages []*packagemanager.Dependency
 	dependenciesAvailableRequired := 0
 	dependenciesAvailableOptional := 0
 
-	dependenciesTableData := pterm.TableData{
+	dependenciesTableData := [][]string{
 		{"Dependency", "Package Name", "Status", "Version"},
 	}
 
 	hasOptionalDependencies := false
-	// Loop over dependencies
 	for _, dependency := range info.Dependencies {
 		name := dependency.Name
 
 		if dependency.Optional {
-			name = pterm.Gray("*") + name
+			name = tui.Gray("*") + name
 			hasOptionalDependencies = true
 		}
 
 		packageName := "Unknown"
-		status := pterm.LightRed("Not Found")
+		status := tui.Red("Not Found")
 
-		// If we found the package
 		if dependency.PackageName != "" {
 			packageName = dependency.PackageName
 
-			// If it's installed, update the status
 			if dependency.Installed {
-				status = pterm.LightGreen("Installed")
+				status = tui.Green("Installed")
 			} else {
-				// Generate meaningful status text
-				status = pterm.LightMagenta("Available")
+				status = tui.Magenta("Available")
 
 				if dependency.Optional {
 					dependenciesAvailableOptional++
@@ -225,38 +202,34 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		dependenciesTableData = append(dependenciesTableData, []string{name, packageName, status, dependency.Version})
 	}
 
-	dependenciesTableString, _ := pterm.DefaultTable.WithHasHeader(true).WithData(dependenciesTableData).Srender()
-	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter()
+	tui.HeaderTable(dependenciesTableData)
 
 	if hasOptionalDependencies {
-		dependenciesBox = dependenciesBox.WithTitle(pterm.Gray("*") + " - Optional Dependency")
+		fmt.Println("\n  " + tui.Gray("*") + " = Optional Dependency")
 	}
+	_ = externalPackages
 
-	dependenciesBox.Println(dependenciesTableString)
-
-	pterm.DefaultSection.Println("Diagnosis")
-
-	// Generate an appropriate diagnosis
+	tui.Section("Diagnosis")
 
 	if dependenciesAvailableRequired != 0 {
-		pterm.Println("Required package(s) installation details: \n" + info.Dependencies.InstallAllRequiredCommand())
+		fmt.Println("Required package(s) installation details:\n" + info.Dependencies.InstallAllRequiredCommand())
 	}
 
 	if dependenciesAvailableOptional != 0 {
-		pterm.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
+		fmt.Println("Optional package(s) installation details:\n" + info.Dependencies.InstallAllOptionalCommand())
 	}
 
 	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
-		pterm.Success.Println("Your system is ready for Wails development!")
+		tui.Success("Your system is ready for Wails development!")
 	} else {
-		pterm.Warning.Println("Your system has missing dependencies!")
+		tui.Warning("Your system has missing dependencies!")
 	}
 
 	if len(dependenciesMissing) != 0 {
-		pterm.Println("Fatal:")
-		pterm.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
+		fmt.Println("Fatal:")
+		fmt.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
 	}
 
-	pterm.Println() // Spacer for sponsor message
+	fmt.Println()
 	return nil
 }

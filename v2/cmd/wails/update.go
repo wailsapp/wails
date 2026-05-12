@@ -4,32 +4,25 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/labstack/gommon/color"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/internal/colour"
-	"github.com/wailsapp/wails/v2/internal/shell"
-
 	"github.com/wailsapp/wails/v2/internal/github"
+	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
-// AddSubcommand adds the `init` command for the Wails application
 func update(f *flags.Update) error {
 	if f.NoColour {
-		colour.ColourEnabled = false
-		pterm.DisableColor()
-
+		tui.SetNoColour()
 	}
-	// Print banner
+
 	app.PrintBanner()
-	pterm.Println("Checking for updates...")
+	fmt.Println("Checking for updates...")
 
 	var desiredVersion *github.SemanticVersion
 	var err error
 	var valid bool
 
 	if len(f.Version) > 0 {
-		// Check if this is a valid version
 		valid, err = github.IsValidTag(f.Version)
 		if err == nil {
 			if !valid {
@@ -44,9 +37,9 @@ func update(f *flags.Update) error {
 		} else {
 			desiredVersion, err = github.GetLatestStableRelease()
 			if err != nil {
-				pterm.Println("")
-				pterm.Println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
-				pterm.Println("   wails update -pre")
+				fmt.Println()
+				fmt.Println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
+				fmt.Println("   wails update -pre")
 				return nil
 			}
 		}
@@ -54,9 +47,9 @@ func update(f *flags.Update) error {
 	if err != nil {
 		return err
 	}
-	pterm.Println()
+	fmt.Println()
 
-	pterm.Println("    Current Version : " + app.Version())
+	fmt.Println("    Current Version : " + app.Version())
 
 	if len(f.Version) > 0 {
 		fmt.Printf("    Desired Version : v%s\n", desiredVersion)
@@ -75,14 +68,13 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 	targetVersionString := "v" + targetVersion.String()
 
 	if targetVersionString == currentVersion {
-		pterm.Println("\nLooks like you're up to date!")
+		fmt.Println("\nLooks like you're up to date!")
 		return nil
 	}
 
 	var desiredVersion string
 
 	if !force {
-
 		compareVersion := currentVersion
 
 		currentVersion, err := github.NewSemanticVersion(compareVersion)
@@ -92,7 +84,6 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 
 		var success bool
 
-		// Release -> Pre-Release = Massage current version to prerelease format
 		if targetVersion.IsPreRelease() && currentVersion.IsRelease() {
 			testVersion, err := github.NewSemanticVersion(compareVersion + "-0")
 			if err != nil {
@@ -100,9 +91,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 			}
 			success, _ = targetVersion.IsGreaterThan(testVersion)
 		}
-		// Pre-Release -> Release = Massage target version to prerelease format
 		if targetVersion.IsRelease() && currentVersion.IsPreRelease() {
-			// We are ok with greater than or equal
 			mainversion := currentVersion.MainVersion()
 			targetVersion, err = github.NewSemanticVersion(targetVersion.String())
 			if err != nil {
@@ -111,46 +100,42 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 			success, _ = targetVersion.IsGreaterThanOrEqual(mainversion)
 		}
 
-		// Release -> Release = Standard check
 		if (targetVersion.IsRelease() && currentVersion.IsRelease()) ||
 			(targetVersion.IsPreRelease() && currentVersion.IsPreRelease()) {
-
 			success, _ = targetVersion.IsGreaterThan(currentVersion)
 		}
 
-		// Compare
 		if !success {
-			pterm.Println("Error: The requested version is lower than the current version.")
-			pterm.Println(fmt.Sprintf("If this is what you really want to do, use `wails update -version "+"%s`", targetVersionString))
-
+			fmt.Println("Error: The requested version is lower than the current version.")
+			fmt.Println(fmt.Sprintf("If this is what you really want to do, use `wails update -version "+"%s`", targetVersionString))
 			return nil
 		}
 
 		desiredVersion = "v" + targetVersion.String()
-
 	} else {
 		desiredVersion = "v" + targetVersion.String()
 	}
 
-	pterm.Println()
-	pterm.Print("Installing Wails CLI " + desiredVersion + "...")
+	fmt.Println()
 
-	// Run command in non module directory
-	homeDir, err := os.UserHomeDir()
+	var sout, serr string
+	err := tui.WithSpinner("Installing Wails CLI "+desiredVersion, func() error {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("cannot find home directory: %w", err)
+		}
+		sout, serr, err = shell.RunCommand(homeDir, "go", "install", "github.com/wailsapp/wails/v2/cmd/wails@"+desiredVersion)
+		return err
+	})
 	if err != nil {
-		fatal("Cannot find home directory! Please file a bug report!")
-	}
-
-	sout, serr, err := shell.RunCommand(homeDir, "go", "install", "github.com/wailsapp/wails/v2/cmd/wails@"+desiredVersion)
-	if err != nil {
-		pterm.Println("Failed.")
-		pterm.Error.Println(sout + `\n` + serr)
+		tui.Error(sout + "\n" + serr)
 		return err
 	}
-	pterm.Println("Done.")
-	pterm.Println(color.Green("\nMake sure you update your project go.mod file to use " + desiredVersion + ":"))
-	pterm.Println(color.Green("  require github.com/wailsapp/wails/v2 " + desiredVersion))
-	pterm.Println(color.Red("\nTo view the release notes, please run `wails show releasenotes`"))
+
+	fmt.Println()
+	fmt.Println(tui.Green("Make sure you update your project go.mod file to use " + desiredVersion + ":"))
+	fmt.Println(tui.Green("  require github.com/wailsapp/wails/v2 " + desiredVersion))
+	fmt.Println(tui.Red("\nTo view the release notes, please run `wails show releasenotes`"))
 
 	return nil
 }

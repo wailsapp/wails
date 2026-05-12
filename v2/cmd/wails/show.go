@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/pterm/pterm"
+	"fmt"
+
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/github"
+	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
 func showReleaseNotes(f *flags.ShowReleaseNotes) error {
 	if f.NoColour {
-		pterm.DisableColor()
-		colour.ColourEnabled = false
+		tui.SetNoColour()
 	}
 
 	version := internal.Version
@@ -21,7 +21,7 @@ func showReleaseNotes(f *flags.ShowReleaseNotes) error {
 
 	app.PrintBanner()
 	releaseNotes := github.GetReleaseNotes(version, f.NoColour)
-	pterm.Println(releaseNotes)
+	fmt.Println(releaseNotes)
 
 	return nil
 }
