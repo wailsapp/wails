@@ -1,0 +1,10 @@
+//go:build windows
+
+package webview2
+
+type COREWEBVIEW2_PRINT_MEDIA_SIZE uint32
+
+const (
+	COREWEBVIEW2_PRINT_MEDIA_SIZE_DEFAULT = 0
+	COREWEBVIEW2_PRINT_MEDIA_SIZE_CUSTOM  = 1
+)
