@@ -16,8 +16,10 @@ func (a *linuxApp) setupCommonEvents() {
 		sourceEvent := sourceEvent
 		targetEvent := targetEvent
 		a.parent.Event.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
-			event.Id = uint(targetEvent)
-			applicationEvents <- event
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(targetEvent),
+				ctx: event.ctx,
+			}
 		})
 	}
 }

@@ -445,7 +445,8 @@ Key events for Windows applications:
 |-------|-------------|----------|
 | `windows:SystemThemeChanged` | Windows theme changed | Update app colors |
 | `windows:APMSuspend` | System suspending | Save state, pause operations |
-| `windows:APMResumeSuspend` | System resumed | Restore state, refresh data |
+| `windows:APMResumeAutomatic` | System resumed (always fires on resume) | Restore state, refresh data |
+| `windows:APMResumeSuspend` | System resumed via user input (after `APMResumeAutomatic`) | Distinguish user-initiated wake |
 | `windows:APMPowerStatusChange` | Power status changed | Adjust performance settings |
 
 #### macOS Events

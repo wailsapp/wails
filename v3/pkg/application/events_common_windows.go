@@ -16,8 +16,10 @@ func (m *windowsApp) setupCommonEvents() {
 		sourceEvent := sourceEvent
 		targetEvent := targetEvent
 		m.parent.Event.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
-			event.Id = uint(targetEvent)
-			applicationEvents <- event
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(targetEvent),
+				ctx: event.ctx,
+			}
 		})
 	}
 }

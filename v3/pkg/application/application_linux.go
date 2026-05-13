@@ -298,27 +298,31 @@ func (a *linuxApp) monitorPowerEvents() {
 		}
 		defer conn.Close()
 
+		// Probe for logind/elogind ownership of org.freedesktop.login1 on the
+		// system bus. Without this check, AddMatchSignal would succeed on any
+		// systemd-less distro and the goroutine would block forever on a
+		// channel that never receives — silently masking the missing service.
 		var hasOwner bool
-		err = conn.BusObject().Call(
-			"org.freedesktop.DBus.NameHasOwner",
-			0,
-			"org.freedesktop.login1",
-		).Store(&hasOwner)
-		if err != nil {
+		if err := conn.BusObject().Call(
+			"org.freedesktop.DBus.NameHasOwner", 0, "org.freedesktop.login1",
+		).Store(&hasOwner); err != nil {
 			a.parent.warning(
-				"[WARNING] Failed to detect logind/elogind on the system bus; sleep/wake events will not fire: %v",
+				"[WARNING] Failed to probe org.freedesktop.login1; sleep/wake events will not fire: %v",
 				err,
 			)
 			return
 		}
 		if !hasOwner {
 			a.parent.warning(
-				"[WARNING] logind/elogind is not available on the system bus; sleep/wake events will not fire",
+				"[WARNING] systemd-logind/elogind not reachable on the system bus; sleep/wake events will not fire",
 			)
 			return
 		}
 
+		// Constrain the sender to logind's well-known name so a hostile
+		// connection on the system bus can't spoof PrepareForSleep signals.
 		if err = conn.AddMatchSignal(
+			dbus.WithMatchSender("org.freedesktop.login1"),
 			dbus.WithMatchInterface("org.freedesktop.login1.Manager"),
 			dbus.WithMatchMember("PrepareForSleep"),
 			dbus.WithMatchObjectPath("/org/freedesktop/login1"),
