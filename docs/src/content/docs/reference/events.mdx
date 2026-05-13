@@ -667,6 +667,8 @@ This mapping happens automatically in the background, so when you listen for `ev
 | `ApplicationStarted` | Application has finished launching | After app initialization is complete and app is ready | No |
 | `ApplicationLaunchedWithUrl` | Application launched with a URL | When app is launched via URL scheme | No |
 | `ThemeChanged` | System theme changed | When OS theme switches between light/dark mode | No |
+| `SystemWillSleep` | System is about to suspend | Just before the OS suspends (macOS / Windows / Linux-with-logind) | No |
+| `SystemDidWake` | System resumed from suspend | Immediately on resume from sleep (macOS / Windows / Linux-with-logind) | No |
 
 **Usage:**
 

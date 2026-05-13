@@ -423,6 +423,8 @@ These events work on all platforms:
 | `common:ApplicationStarted` | Application has fully started | Initialize your app, load saved state |
 | `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
 | `common:ThemeChanged` | System theme changed | Update app appearance |
+| `common:SystemWillSleep` | System is about to suspend | Flush state, close sockets |
+| `common:SystemDidWake` | System resumed from suspend | Reconnect, refresh stale data |
 | `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
 | `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
 | `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
@@ -455,6 +457,10 @@ Important macOS application events:
 | `mac:ApplicationDidBecomeActive` | App became active | Resume operations |
 | `mac:ApplicationDidResignActive` | App became inactive | Pause operations |
 | `mac:ApplicationWillTerminate` | App will quit | Final cleanup |
+| `mac:ApplicationWillSleep` | System about to suspend | Save state, close sockets |
+| `mac:ApplicationDidWake` | System resumed | Reconnect, refresh |
+| `mac:ApplicationScreensDidSleep` | Displays went to sleep | Pause rendering (distinct from system sleep) |
+| `mac:ApplicationScreensDidWake` | Displays woke | Resume rendering |
 | `mac:WindowDidEnterFullScreen` | Entered fullscreen | Adjust UI for fullscreen |
 | `mac:WindowDidExitFullScreen` | Exited fullscreen | Restore normal UI |
 
@@ -465,6 +471,8 @@ Core Linux window events:
 | Event | Description | Use Case |
 |-------|-------------|----------|
 | `linux:SystemThemeChanged` | Desktop theme changed | Update app theme |
+| `linux:SystemWillSleep` | System about to suspend (logind) | Save state |
+| `linux:SystemDidWake` | System resumed (logind) | Reconnect, refresh |
 | `linux:WindowFocusIn` | Window gained focus | Resume activities |
 | `linux:WindowFocusOut` | Window lost focus | Pause activities |
 | `linux:WindowLoadStarted` | WebView started loading | Show loading indicator |
