@@ -180,6 +180,7 @@ func (a *linuxApp) run() error {
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()
+	a.monitorPowerEvents()
 	return appRun(a.application)
 }
 
@@ -271,6 +272,63 @@ func (a *linuxApp) monitorThemeChanges() {
 				applicationEvents <- event
 			}
 
+		}
+	}()
+}
+
+// monitorPowerEvents subscribes to systemd-logind's PrepareForSleep signal on
+// the system bus and translates it into Linux.SystemWillSleep (arg=true, just
+// before suspend) and Linux.SystemDidWake (arg=false, immediately on resume).
+// Mirrors NSWorkspace willSleep/didWake on macOS and WM_POWERBROADCAST on
+// Windows.
+//
+// On systems without systemd or logind/elogind reachable on the system bus
+// (Alpine, Void, some Devuan setups), we log a warning and exit cleanly so
+// the rest of the app keeps working.
+func (a *linuxApp) monitorPowerEvents() {
+	go func() {
+		defer handlePanic()
+		conn, err := dbus.ConnectSystemBus()
+		if err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to connect to system bus; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+		defer conn.Close()
+
+		if err = conn.AddMatchSignal(
+			dbus.WithMatchInterface("org.freedesktop.login1.Manager"),
+			dbus.WithMatchMember("PrepareForSleep"),
+			dbus.WithMatchObjectPath("/org/freedesktop/login1"),
+		); err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to subscribe to logind PrepareForSleep; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+
+		c := make(chan *dbus.Signal, 4)
+		conn.Signal(c)
+
+		for v := range c {
+			if v.Name != "org.freedesktop.login1.Manager.PrepareForSleep" {
+				continue
+			}
+			if len(v.Body) < 1 {
+				continue
+			}
+			willSleep, ok := v.Body[0].(bool)
+			if !ok {
+				continue
+			}
+			if willSleep {
+				applicationEvents <- newApplicationEvent(events.Linux.SystemWillSleep)
+			} else {
+				applicationEvents <- newApplicationEvent(events.Linux.SystemDidWake)
+			}
 		}
 	}()
 }

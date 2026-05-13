@@ -198,7 +198,9 @@ export const Types = Object.freeze({
 	}),
 	Linux: Object.freeze({
 		ApplicationStartup: "linux:ApplicationStartup",
+		SystemDidWake: "linux:SystemDidWake",
 		SystemThemeChanged: "linux:SystemThemeChanged",
+		SystemWillSleep: "linux:SystemWillSleep",
 		WindowDeleteEvent: "linux:WindowDeleteEvent",
 		WindowDidMove: "linux:WindowDidMove",
 		WindowDidResize: "linux:WindowDidResize",

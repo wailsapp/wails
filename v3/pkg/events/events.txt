@@ -25,7 +25,9 @@ common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
 linux:ApplicationStartup
+linux:SystemDidWake!
 linux:SystemThemeChanged
+linux:SystemWillSleep!
 linux:WindowDeleteEvent
 linux:WindowDidMove
 linux:WindowDidResize
