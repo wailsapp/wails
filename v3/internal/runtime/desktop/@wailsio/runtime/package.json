@@ -48,22 +48,24 @@
     "prepack": "npm run build"
   },
   "devDependencies": {
-    "happy-dom": "^17.1.1",
+    "happy-dom": "^20.0.0",
     "promises-aplus-tests": "2.1.2",
-    "rimraf": "^5.0.5",
-    "typedoc": "^0.27.7",
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.28.0",
     "typedoc-plugin-markdown": "^4.4.2",
     "typedoc-plugin-mdn-links": "^4.0.13",
     "typedoc-plugin-missing-exports": "^3.1.0",
     "typescript": "^5.7.3",
-    "vite": "^5.2.0",
-    "vitest": "^3.0.6"
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
   },
   "overrides": {
     "promises-aplus-tests": {
       "mocha": "^11.1.0",
       "sinon": "^19.0.2",
       "underscore": "^1.13.7"
-    }
+    },
+    "serialize-javascript": "^7.0.5",
+    "diff": "^8.0.2"
   }
 }
