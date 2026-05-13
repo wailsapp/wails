@@ -310,8 +310,9 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     })
 
     // System sleep/wake — sourced from systemd-logind's PrepareForSleep
-    // signal on the system bus. Logs a warning and silently no-ops on
-    // distros without logind/elogind (Alpine, Void, some Devuan setups).
+    // signal on the system bus. Requires logind/elogind exposing
+    // org.freedesktop.login1, so it may be unavailable on distros/setups
+    // without it (Alpine, Void, some Devuan setups).
     app.Event.OnApplicationEvent(events.Linux.SystemWillSleep, func(e *application.ApplicationEvent) {
         flushPendingWrites()
     })

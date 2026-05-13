@@ -298,6 +298,26 @@ func (a *linuxApp) monitorPowerEvents() {
 		}
 		defer conn.Close()
 
+		var hasOwner bool
+		err = conn.BusObject().Call(
+			"org.freedesktop.DBus.NameHasOwner",
+			0,
+			"org.freedesktop.login1",
+		).Store(&hasOwner)
+		if err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to detect logind/elogind on the system bus; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+		if !hasOwner {
+			a.parent.warning(
+				"[WARNING] logind/elogind is not available on the system bus; sleep/wake events will not fire",
+			)
+			return
+		}
+
 		if err = conn.AddMatchSignal(
 			dbus.WithMatchInterface("org.freedesktop.login1.Manager"),
 			dbus.WithMatchMember("PrepareForSleep"),
