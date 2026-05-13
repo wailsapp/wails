@@ -150,21 +150,23 @@ If `Options.Identifier` is empty, a default is derived from your app's name:
 | Platform | Default identifier |
 |---|---|
 | macOS (bundled) | The app's bundle identifier, e.g. `com.example.MyApp` |
-| macOS (unbundled) | `wails.autostart.<slug-of-options.Name>` |
-| Windows | Slugified `Options.Name` (lowercase, non-`A-Za-z0-9._-` stripped, spaces become dashes) |
+| macOS (unbundled) | `wails.autostart.<slug>`, where `<slug>` is derived from `application.Options.Name` |
+| Windows | Slug of `application.Options.Name` (lowercase, non-`A-Za-z0-9._-` stripped, spaces become dashes) |
 | Linux | Same slug as Windows |
 
 Identifiers must match `^[A-Za-z0-9._-]+$` and be no longer than 200 characters. Reverse-DNS form is recommended for macOS (it matches how launchd Labels are conventionally written).
 
-When `Options.Identifier` is overridden, the same identifier is reused as the registry value name on Windows and the `.desktop` filename on Linux, so a single string identifies the registration cross-platform.
+When `AutostartOptions.Identifier` is overridden, the same identifier is reused as the registry value name on Windows and the `.desktop` filename on Linux, so a single string identifies the registration cross-platform.
 
 ## Stale Detection
 
-`Disable()` and `Status()` locate the registration by **matching the registered executable path against the current binary**, not by looking up the identifier. This means:
+`Disable()` and `Status()` locate the registration by **matching the registered executable path against `os.Executable()` (resolved through any symlinks)**, not by looking up the identifier. This means:
 
-- If the user renames the binary, autostart still finds the registration and cleans it up correctly.
-- If the identifier was changed between releases, the old registration is still discoverable by `Status()` and can still be cleaned up by `Disable()`.
-- A second copy of the app at a different path won't accidentally clobber the first one's registration.
+- **Changing the identifier between releases is safe.** The old registration is still discoverable by `Status()` and cleaned up by `Disable()` — as long as the executable path is the same.
+- **A second copy of the app at a different path won't clobber the first's registration.** Each binary location is tracked independently.
+- **Symlinked installs (Homebrew, Scoop) are stable.** `filepath.EvalSymlinks` is applied to `os.Executable()` before matching, so a Homebrew upgrade that swaps the target doesn't strand the entry.
+
+What this does *not* cover: if the user moves or renames the binary to an unrelated path, the old registration becomes orphaned (it points at the now-missing file). Apps that ship from a stable install path don't need to worry about this; apps shipped as portable single-file binaries should call `Disable()` before moving themselves, or always launch through a stable symlink.
 
 ## Example
 

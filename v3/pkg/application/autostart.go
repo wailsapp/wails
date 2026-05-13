@@ -3,6 +3,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +34,14 @@ func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
 	}
 	tmpName := tmp.Name()
 	cleanup := func() { _ = os.Remove(tmpName) }
-	if _, err := tmp.Write(data); err != nil {
+	// os.File.Write is documented to return an error on short writes, but we
+	// double-check n == len(data) so a future change of writer type can't
+	// silently rename a truncated artefact into place.
+	n, err := tmp.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
+	if err != nil {
 		_ = tmp.Close()
 		cleanup()
 		return err
@@ -115,15 +123,20 @@ type AutostartOptions struct {
 	//
 	// If empty, a sensible default is derived: on macOS the application's
 	// bundle identifier (when running from a bundle) or "wails.autostart.<slug>";
-	// on Windows and Linux a slugified form of Options.Name.
+	// on Windows and Linux a slugified form of the application's Options.Name
+	// (i.e. application.Options.Name from application.New).
 	Identifier string
 
 	// Arguments are appended to the executable path when launched at login.
 	Arguments []string
 }
 
-// AutostartStrategy names the underlying mechanism a darwin registration used.
-// It is empty on other platforms.
+// AutostartStrategy names the underlying mechanism a registration used.
+//
+// On macOS this distinguishes between SMAppService (bundled .app on macOS 13+)
+// and a LaunchAgent plist (the fallback path). On Windows it is always
+// AutostartStrategyRegistryRun and on Linux always AutostartStrategyXDGAutostart.
+// Empty when AutostartStatus.Enabled is false.
 type AutostartStrategy string
 
 const (

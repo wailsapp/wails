@@ -21,10 +21,21 @@ func (a *linuxAutostart) enable(opts AutostartOptions) error {
 	if err := validateAutostartIdentifier(opts.Identifier); err != nil {
 		return err
 	}
+	// A newline inside the executable path or any argument would break the
+	// .desktop file format (line-based key=value) and could be used to inject
+	// arbitrary Desktop Entry keys when Arguments are user-influenced.
+	for i, arg := range opts.Arguments {
+		if err := validateDesktopExecToken(arg); err != nil {
+			return fmt.Errorf("autostart argument %d: %w", i, err)
+		}
+	}
 
 	exe, err := resolvedExecutable()
 	if err != nil {
 		return err
+	}
+	if err := validateDesktopExecToken(exe); err != nil {
+		return fmt.Errorf("autostart executable path: %w", err)
 	}
 
 	dir, err := a.autostartDir()
@@ -147,6 +158,23 @@ Terminal=false
 `, escapeDesktopValue(appName), execLine)
 }
 
+// validateDesktopExecToken rejects control characters that would break the
+// .desktop file format or allow Desktop Entry key injection when interpolated
+// into an Exec= line. Allowed: spaces and tabs (which quoteExec handles by
+// double-quoting); rejected: all other ASCII control characters including
+// CR/LF.
+func validateDesktopExecToken(s string) error {
+	for _, r := range s {
+		if r == '\t' || r == ' ' {
+			continue
+		}
+		if r < 0x20 || r == 0x7f {
+			return fmt.Errorf("control character %U not allowed in Exec field", r)
+		}
+	}
+	return nil
+}
+
 // quoteExec escapes a single Exec field token per the freedesktop.org spec:
 // reserved chars are " ` $ \ → escape with backslash; if the token contains
 // any reserved or whitespace, double-quote it.
@@ -159,7 +187,9 @@ func quoteExec(s string) string {
 			b.WriteByte('\\')
 			b.WriteRune(r)
 			needQuote = true
-		case ' ', '\t', '\n':
+		case ' ', '\t':
+			// Newlines are rejected by validateDesktopExecToken before we
+			// get here, so any whitespace remaining is safely quotable.
 			b.WriteRune(r)
 			needQuote = true
 		default:

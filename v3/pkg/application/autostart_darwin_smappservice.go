@@ -6,6 +6,8 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.15 -x objective-c -Wno-unguarded-availability-new
 #cgo LDFLAGS: -framework Foundation -framework ServiceManagement
 
+#include <stdlib.h> // free
+#include <string.h> // strdup
 #import <Foundation/Foundation.h>
 #import <ServiceManagement/ServiceManagement.h>
 
