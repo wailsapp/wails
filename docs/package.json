@@ -15,7 +15,7 @@
     "@astrojs/starlight": "0.38.4",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "astro": "^6.0.0",
+    "astro": "^6.1.10",
     "astro-d2": "^0.10.0",
     "framer-motion": "^11.14.4",
     "motion": "^11.14.4",
@@ -27,5 +27,10 @@
     "starlight-links-validator": "^0.24.0",
     "starlight-showcases": "^0.3.2",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "fast-uri": "^3.1.2",
+    "fast-xml-builder": "^1.1.7",
+    "yaml": "^2.8.3"
   }
 }
