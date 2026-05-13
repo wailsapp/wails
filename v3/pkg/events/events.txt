@@ -49,11 +49,15 @@ mac:ApplicationDidHide
 mac:ApplicationDidResignActive
 mac:ApplicationDidUnhide
 mac:ApplicationDidUpdate
+mac:ApplicationDidWake!
+mac:ApplicationScreensDidSleep!
+mac:ApplicationScreensDidWake!
 mac:ApplicationShouldHandleReopen!
 mac:ApplicationWillBecomeActive
 mac:ApplicationWillFinishLaunching
 mac:ApplicationWillHide
 mac:ApplicationWillResignActive
+mac:ApplicationWillSleep!
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
