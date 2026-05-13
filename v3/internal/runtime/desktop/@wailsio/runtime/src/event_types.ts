@@ -240,6 +240,8 @@ export const Types = Object.freeze({
 		ApplicationStarted: "common:ApplicationStarted",
 		ApplicationLaunchedWithUrl: "common:ApplicationLaunchedWithUrl",
 		ThemeChanged: "common:ThemeChanged",
+		SystemDidWake: "common:SystemDidWake",
+		SystemWillSleep: "common:SystemWillSleep",
 		WindowClosing: "common:WindowClosing",
 		WindowDidMove: "common:WindowDidMove",
 		WindowDidResize: "common:WindowDidResize",

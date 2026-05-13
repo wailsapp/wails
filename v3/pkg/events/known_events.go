@@ -10,6 +10,8 @@ var knownEvents = map[string]struct{}{
 	"common:ApplicationStarted":                                   {},
 	"common:ApplicationLaunchedWithUrl":                           {},
 	"common:ThemeChanged":                                         {},
+	"common:SystemDidWake":                                        {},
+	"common:SystemWillSleep":                                      {},
 	"common:WindowClosing":                                        {},
 	"common:WindowDidMove":                                        {},
 	"common:WindowDidResize":                                      {},
