@@ -75,7 +75,14 @@ func (a *darwinAutostart) disable() error {
 func (a *darwinAutostart) status() (AutostartStatus, error) {
 	if a.strategy() == AutostartStrategySMAppService {
 		enabled, err := smAppServiceIsEnabled()
-		if err != nil && !errors.Is(err, errSMAppServiceUnavailable) {
+		// errSMAppServiceRequiresApproval means the user disabled the
+		// login item in System Settings — semantically that's "not
+		// enabled", not a hard error. Treat it like Unavailable so the
+		// LaunchAgent fallback still gets a chance to find a legacy
+		// entry from before the app was bundled.
+		if err != nil &&
+			!errors.Is(err, errSMAppServiceUnavailable) &&
+			!errors.Is(err, errSMAppServiceRequiresApproval) {
 			return AutostartStatus{}, fmt.Errorf("SMAppService status: %w", err)
 		}
 		if enabled {
@@ -240,23 +247,6 @@ var launchctlBootout = func(plistPath string) error {
 }
 
 // --- plist marshalling ------------------------------------------------------
-
-type plistDoc struct {
-	XMLName xml.Name  `xml:"plist"`
-	Version string    `xml:"version,attr"`
-	Dict    plistDict `xml:"dict"`
-}
-
-type plistDict struct {
-	Keys   []string  `xml:"-"`
-	Values []plistEl `xml:"-"`
-}
-
-type plistEl struct {
-	Kind   string   // "string", "true", "false", "array"
-	String string
-	Array  []string // for "array" of strings
-}
 
 func launchAgentPlist(label, exe string, args []string) ([]byte, error) {
 	progArgs := append([]string{exe}, args...)

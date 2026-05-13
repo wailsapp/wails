@@ -51,6 +51,14 @@ func (a *windowsAutostart) enable(opts AutostartOptions) error {
 	}
 	defer key.Close()
 
+	// Remove any stale entry pointing at this binary under a different value
+	// name, so a previous Enable() with a different Identifier (or a slug
+	// derived from a renamed Options.Name) doesn't leave behind a second
+	// autostart entry.
+	if existing, _, ferr := a.find(); ferr == nil && existing != "" && existing != id {
+		_ = key.DeleteValue(existing)
+	}
+
 	if err := key.SetStringValue(id, cmd); err != nil {
 		return fmt.Errorf("autostart: write registry value: %w", err)
 	}
@@ -164,7 +172,11 @@ func quoteWindowsArg(s string) string {
 		case '\\':
 			backslashes++
 		case '"':
-			for j := 0; j < backslashes; j++ {
+			// Per CommandLineToArgvW: a literal quote preceded by N
+			// backslashes must be encoded as (2N+1) backslashes + quote.
+			// Earlier versions emitted only (N+1), which made the parser
+			// lose the quote (the 2 backslashes toggled quoted state).
+			for j := 0; j < 2*backslashes; j++ {
 				b.WriteByte('\\')
 			}
 			b.WriteByte('\\')

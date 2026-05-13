@@ -52,6 +52,14 @@ func (a *linuxAutostart) enable(opts AutostartOptions) error {
 	}
 	path := filepath.Join(dir, id+".desktop")
 
+	// Remove any stale .desktop file pointing at this binary under a
+	// different identifier so a previous Enable() with a different
+	// Identifier (or a slug derived from a renamed Options.Name) doesn't
+	// leave a second entry behind.
+	if existing, ferr := a.findDesktopFile(dir); ferr == nil && existing != "" && existing != path {
+		_ = os.Remove(existing)
+	}
+
 	body := buildDesktopEntry(a.app.options.Name, exe, opts.Arguments)
 	if err := writeFileAtomic(path, []byte(body), 0644); err != nil {
 		return fmt.Errorf("write desktop file %s: %w", path, err)
