@@ -350,18 +350,16 @@ Shutdown.Save -> End
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
-    OnShutdown: func() {
-        // Save state, close connections, etc.
-    },
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
 })
 ```
+
+There is no `OnStartup` field on `application.Options`. Startup work belongs in a service's `ServiceStartup(ctx, options)`, in a callback registered via `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`, or simply before `app.Run()`.
 
 [Learn more about lifecycle →](/concepts/lifecycle)
 

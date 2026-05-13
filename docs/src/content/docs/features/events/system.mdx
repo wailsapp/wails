@@ -237,7 +237,9 @@ app.Event.OnApplicationEvent(events.Common.SystemDidWake, func(e *application.Ap
 
 // File opened
 app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
-    filePath := e.Context().OpenedFile()
+    // Single-file: e.Context().Filename() returns ""; for multi-file launches
+    // (Finder "Open With..." → multiple selection) use OpenedFiles().
+    filePath := e.Context().Filename()
     openFile(filePath)
 })
 ```
@@ -281,7 +283,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     app.Event.OnApplicationEvent(events.Windows.APMPowerStatusChange, func(e *application.ApplicationEvent) {
         app.Logger.Info("Power status changed")
     })
-
+    
     // System suspending
     app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
         saveState()
@@ -303,7 +305,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     app.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(e *application.ApplicationEvent) {
         app.Logger.Info("App starting")
     })
-
+    
     // Theme changed
     app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
         updateTheme()
@@ -334,7 +336,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 })
 
 // Window blur
-window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window blurred")
 })
 
@@ -346,7 +348,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 
 // Window closed
-window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
     cleanup()
 })
 ```
@@ -388,7 +390,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 ```go
 // Publisher (service)
 type OrderService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
@@ -497,7 +499,7 @@ import (
 )
 
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (n *NotificationService) Notify(message string) {
@@ -574,13 +576,13 @@ Events.On("window-focused", (event) => {
 // Handle close confirmation
 Events.On("confirm-close", (event) => {
     if (confirm("Close window?")) {
-        Emit("close-confirmed", true)
+        Events.Emit("close-confirmed", true)
     }
 })
 
 // Emit user actions
 document.getElementById('button').addEventListener('click', () => {
-    Emit("user-action", { action: "button-clicked" })
+    Events.Emit("user-action", { action: "button-clicked" })
 })
 ```
 

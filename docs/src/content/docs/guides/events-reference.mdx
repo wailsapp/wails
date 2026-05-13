@@ -114,14 +114,16 @@ const focusHandler = () => {
     console.log('Window focused');
 };
 
-// Add the listener
-Events.On('common:WindowFocus', focusHandler);
+// Add the listener — capture the unsubscribe function it returns
+const unsubscribe = Events.On('common:WindowFocus', focusHandler);
 
-// Later, remove it when no longer needed
-Events.Off('common:WindowFocus', focusHandler);
+// Later, remove this specific listener via the returned unsubscribe
+unsubscribe();
 
-// Or remove all listeners for an event
+// Or remove ALL listeners for one (or more) event names — Events.Off takes only event-name strings
 Events.Off('common:WindowFocus');
+// Events.Off('common:WindowFocus', 'common:WindowLostFocus'); // variadic
+// Events.OffAll(); // remove every listener for every event (no args)
 ```
 
 ## Common Use Cases
@@ -154,7 +156,7 @@ Keep your app in sync with the system theme:
 import { Events } from '@wailsio/runtime';
 
 Events.On('common:ThemeChanged', (event) => {
-    const isDarkMode = event.data.isDark;
+    const isDarkMode = event.data.isDarkMode;
 
     if (isDarkMode) {
         document.body.classList.add('dark-theme');
@@ -447,6 +449,7 @@ Key events for Windows applications:
 | `windows:APMSuspend` | System suspending | Save state, pause operations |
 | `windows:APMResumeAutomatic` | System resumed (always fires on resume) | Restore state, refresh data |
 | `windows:APMResumeSuspend` | System resumed via user input (after `APMResumeAutomatic`) | Distinguish user-initiated wake |
+| `windows:APMResumeSuspend` | System resumed | Restore state, refresh data |
 | `windows:APMPowerStatusChange` | Power status changed | Adjust performance settings |
 
 #### macOS Events
@@ -513,11 +516,11 @@ useEffect(() => {
         // Handle event
     };
 
-    Events.On('common:WindowResize', handler);
+    const off = Events.On('common:WindowDidResize', handler);
 
-    // Cleanup
+    // Cleanup — call the unsubscribe returned by Events.On
     return () => {
-        Events.Off('common:WindowResize', handler);
+        off();
     };
 }, []);
 ```

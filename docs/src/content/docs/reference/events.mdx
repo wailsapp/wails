@@ -26,10 +26,10 @@ The Events API provides methods to emit and listen to events, enabling communica
 
 ### app.Event.Emit()
 
-Emits a custom event to all windows.
+Emits a custom event to all windows. Returns `true` if a hook cancelled the emit.
 
 ```go
-func (em *EventManager) Emit(name string, data ...interface{})
+func (em *EventManager) Emit(name string, data ...any) bool
 ```
 
 **Parameters:**
@@ -146,43 +146,61 @@ Events.Once('initialization-complete', (data) => {
 
 ### Off()
 
-Removes an event listener.
+Removes all listeners for one or more events. `Off` takes variadic event-name strings — it does **not** take a callback. To remove a single listener, keep the unsubscribe function returned by `Events.On(...)` and call it.
 
-```javascript
+```typescript
 import { Events } from '@wailsio/runtime'
 
-Events.Off(eventName, callback)
+Events.Off(...eventNames: string[]): void
 ```
 
 **Example:**
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-const handler = (data) => {
+// Preferred: keep the unsubscribe fn from On()
+const unsubscribe = Events.On('my-event', (data) => {
     console.log('Event received:', data)
-}
+})
 
-// Start listening
-Events.On('my-event', handler)
+// Later — remove just this listener
+unsubscribe()
 
-// Stop listening
-Events.Off('my-event', handler)
+// Or: remove every listener for one or more events
+Events.Off('my-event', 'another-event')
 ```
 
 ### OffAll()
 
-Removes all listeners for an event.
+Removes **every** event listener. Takes no arguments.
 
-```javascript
+```typescript
 import { Events } from '@wailsio/runtime'
 
-Events.OffAll(eventName)
+Events.OffAll(): void
 ```
 
 **Example:**
 ```javascript
-// Remove all listeners for this event
-OffAll('data-updated')
+import { Events } from '@wailsio/runtime'
+
+// Remove all listeners — typically used during teardown.
+Events.OffAll()
+```
+
+### OnMultiple()
+
+Listens for an event up to `max` times, then automatically unsubscribes.
+
+```typescript
+Events.OnMultiple(eventName: string, callback, max: number): () => void
+```
+
+**Example:**
+```javascript
+Events.OnMultiple('progress', (data) => {
+    console.log('progress', data)
+}, 5)
 ```
 
 ## Application Events
@@ -192,26 +210,40 @@ OffAll('data-updated')
 Listens for application lifecycle events.
 
 ```go
-func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
 ```
 
-**Event Types:**
-- `EventApplicationStarted` - Application has started
-- `EventApplicationShutdown` - Application is shutting down
-- `EventApplicationDebug` - Debug event (dev mode only)
+Event constants live in the `events` package — `events.Common.*` for cross-platform events, `events.Mac.*` / `events.Windows.*` / `events.Linux.*` for platform-specific ones.
+
+**Common application events:**
+- `events.Common.ApplicationStarted` - Application has finished launching.
+- `events.Common.ThemeChanged` - System theme switched between light and dark.
+- `events.Common.ApplicationOpenedWithFile` - Launched via a file association.
+- `events.Common.ApplicationLaunchedWithUrl` - Launched via a URL scheme.
+
+There is **no** generic "application shutdown" event constant — register shutdown cleanup via `application.Options.OnShutdown` or `app.OnShutdown(func())`.
 
 **Example:**
 ```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
 // Handle application startup
-app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
     app.Logger.Info("Application started")
-    // Initialize resources
 })
 
-// Handle application shutdown
-app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
-    app.Logger.Info("Application shutting down")
-    // Cleanup resources, save state
+// React to theme changes
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// Shutdown cleanup is configured on the application, not as an event:
+app.OnShutdown(func() {
     database.Close()
     saveSettings()
 })
@@ -224,25 +256,34 @@ app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *appli
 Listens for window-specific events.
 
 ```go
-func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
+func (w *WebviewWindow) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(*WindowEvent),
+) func()
 ```
 
-**Event Types:**
-- `EventWindowFocus` - Window gained focus
-- `EventWindowBlur` - Window lost focus
-- `EventWindowClose` - Window is closing
-- `EventWindowResize` - Window was resized
-- `EventWindowMove` - Window was moved
+Window event constants live in the `events` package: `events.Common.*` for cross-platform events (and `events.Mac.*` / `events.Windows.*` / `events.Linux.*` for platform-specific ones).
+
+**Common window events:**
+- `events.Common.WindowFocus` - Window gained focus.
+- `events.Common.WindowLostFocus` - Window lost focus.
+- `events.Common.WindowClosing` - Window is about to close (cancellable via `RegisterHook`).
+- `events.Common.WindowDidResize` - Window was resized.
+- `events.Common.WindowDidMove` - Window was moved.
+- `events.Common.WindowMinimise` / `WindowUnMinimise` / `WindowMaximise` / `WindowUnMaximise` / `WindowFullscreen` / `WindowUnFullscreen`.
+- `events.Common.WindowRuntimeReady` - Safe to emit events to the in-window runtime.
 
 **Example:**
 ```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
 // Handle window focus
-window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window focused")
 })
 
 // Handle window resize
-window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
     width, height := window.Size()
     app.Logger.Info("Window resized", "width", width, "height", height)
 })
@@ -261,7 +302,7 @@ Use this when you want to notify the frontend about the completion of backend op
 ```go
 // Service method
 type DataService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (s *DataService) FetchData(query string) ([]Item, error) {
@@ -354,9 +395,13 @@ app.Event.Emit("theme-changed", "dark")
 // Send to specific window
 preferencesWindow.EmitEvent("settings-updated", settings)
 
-// Window-specific listener
-window1.OnEvent("request-data", func(e *application.CustomEvent) {
-    // Only this window will receive this event
+// Per-window listener — receive on the global event bus, but
+// gate by the event's source-window name (set automatically when
+// a window emits via window.EmitEvent).
+app.Event.On("request-data", func(e *application.CustomEvent) {
+    if e.Sender != window1.Name() {
+        return
+    }
     window1.EmitEvent("data-response", data)
 })
 ```
@@ -380,7 +425,7 @@ Use when you need to keep frontend and backend state in sync, such as user sessi
 
 ```go
 type StateService struct {
-    app   *application.Application
+    app   *application.App
     state map[string]interface{}
     mu    sync.RWMutex
 }
@@ -431,7 +476,7 @@ Best for displaying user feedback like success confirmations, error alerts, or i
 
 ```go
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (s *NotificationService) Success(message string) {
@@ -486,15 +531,17 @@ package main
 import (
     "sync"
     "time"
+
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type EventDemoService struct {
-    app *application.Application
+    app *application.App
     mu  sync.Mutex
 }
 
-func NewEventDemoService(app *application.Application) *EventDemoService {
+func NewEventDemoService(app *application.App) *EventDemoService {
     service := &EventDemoService{app: app}
 
     // Listen for custom events
@@ -536,15 +583,15 @@ func main() {
     })
 
     // Handle application lifecycle
-    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
         app.Logger.Info("Application started!")
     })
 
-    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.OnShutdown(func() {
         app.Logger.Info("Application shutting down...")
     })
 
-    // Register service
+    // Register service (RegisterService returns nothing).
     service := NewEventDemoService(app)
     app.RegisterService(application.NewService(service))
 
@@ -722,14 +769,14 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 // Cancel window close
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    result, _ := app.Dialog.Question().
-        SetMessage("Close window?").
-        SetButtons("Yes", "No").
-        Show()
+    dlg := app.Dialog.Question().SetMessage("Close window?")
+    yes := dlg.AddButton("Yes")
+    no := dlg.AddButton("No")
+    dlg.SetDefaultButton(yes)
+    dlg.SetCancelButton(no)
+    no.OnClick(func() { e.Cancel() })
 
-    if result == "No" {
-        e.Cancel() // Prevent close
-    }
+    dlg.Show()
 })
 
 // Wait for runtime ready
@@ -767,7 +814,7 @@ app.Event.Emit("e", value)
 
 ```go
 type Service struct {
-    app            *application.Application
+    app            *application.App
     lastEmit       time.Time
     debounceWindow time.Duration
 }

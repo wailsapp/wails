@@ -7,11 +7,11 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-The Wails v3 Manager API provides an organized and discoverable way to access application functionality through focused manager structs. This new API structure groups related methods together while maintaining full backward compatibility with the traditional App API.
+The Wails v3 Manager API provides an organised and discoverable way to access application functionality through focused manager structs grouped under public fields on `*application.App`. Wails 3 is a clean break from v2 — there is no per-call wrapper layer to maintain compatibility with the old `app.NewWebviewWindow(...)`-style API, so the managers below are the way to drive the app.
 
 ## Overview
 
-The Manager API organizes application functionality into eleven focused areas:
+The Manager API organises application functionality into twelve focused areas (one logger plus eleven managers):
 
 - **`app.Window`** - Window creation, management, and callbacks
 - **`app.ContextMenu`** - Context menu registration and management  
@@ -136,7 +136,7 @@ result, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
 // Message dialogs
@@ -175,11 +175,11 @@ Dynamic management of global key bindings.
 
 ```go
 // Add key bindings
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
     // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
