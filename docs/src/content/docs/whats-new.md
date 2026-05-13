@@ -108,7 +108,6 @@ Key features of the Wails v3 system tray integration include:
 package main
 
 import (
-    "embed"
     "log"
     "runtime"
 

@@ -203,7 +203,7 @@ To enable Web-to-App linking, follow the [Microsoft guide on web-to-app linking]
 
 2. **Configure `windows-app-web-link` on your website:** Host a `windows-app-web-link` file at `https://myawesomeapp.com/.well-known/windows-app-web-link`. This file should contain your app's package information and the paths it handles.
 
-When a Web-to-App link launches your application, you'll receive the same `ApplicationOpenedWithURL` event as with custom protocol schemes.
+When a Web-to-App link launches your application, you'll receive the same `ApplicationLaunchedWithUrl` event as with custom protocol schemes.
 
   </TabItem>
 
@@ -273,7 +273,7 @@ To enable Universal Links, follow the [Apple guide on supporting Universal Links
 
 3. **Configure `apple-app-site-association` on your website:** Host an `apple-app-site-association` file at `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-When a Universal Link triggers your app, you'll receive the same `ApplicationOpenedWithURL` event, making the handling code identical to custom protocol schemes.
+When a Universal Link triggers your app, you'll receive the same `ApplicationLaunchedWithUrl` event, making the handling code identical to custom protocol schemes.
 
   </TabItem>
 
