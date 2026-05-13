@@ -14,7 +14,7 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@crowdin/crowdin-api-client": "^1.33.1",
+    "@crowdin/crowdin-api-client": "^1.55.1",
     "@docusaurus/core": "^3.9.0",
     "@docusaurus/preset-classic": "^3.9.0",
     "@docusaurus/theme-search-algolia": "^3.9.0",
@@ -41,7 +41,19 @@
     ]
   },
   "devDependencies": {
-    "@crowdin/cli": "^3.19.4",
-    "prettier": "^2.8.7"
+    "@crowdin/cli": "^4.14.2",
+    "prettier": "^3.4.0"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.5",
+    "tar": "^7.5.11",
+    "axios": "^1.15.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "serialize-javascript": "^7.0.5",
+      "tar": "^7.5.11",
+      "axios": "^1.15.2"
+    }
   }
 }
