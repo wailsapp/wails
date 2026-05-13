@@ -24,6 +24,7 @@ The Manager API organizes application functionality into eleven focused areas:
 - **`app.Screen`** - Screen management and coordinate transformations
 - **`app.Clipboard`** - Clipboard text operations
 - **`app.SystemTray`** - System tray icon creation and management
+- **`app.Autostart`** - Register the application to launch at user login
 
 ## Benefits
 
@@ -264,3 +265,25 @@ systray.SetMenu(menu)
 // Destroy system tray when done
 systray.Destroy()
 ```
+
+### Autostart Manager
+
+Registers the application to launch at user login. Picks the appropriate native mechanism per platform: SMAppService or a LaunchAgent plist on macOS, the `HKCU\…\Run` registry key on Windows, an XDG `.desktop` entry on Linux.
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+See the [Autostart feature page](/features/autostart/basics/) for platform behaviour, identifier rules, and the stale-detection guarantee.
