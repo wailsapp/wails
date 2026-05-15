@@ -13,23 +13,35 @@ import (
 
 // download streams the artifact for rel from p into a temp file, computing
 // the verification digest while the bytes flow past. Returns the temp file
-// path; the caller is responsible for verifying then renaming or deleting it.
+// path and the temp directory enclosing it; the caller is responsible for
+// verifying then renaming or removing the directory (RemoveAll on dir tears
+// the file down with it).
+//
+// On any error every artifact created by this function (file + enclosing
+// directory) is removed before returning.
 //
 // Progress is emitted via the application event bus at ~10/sec.
-func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (string, error) {
+func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path, dir string, err error) {
 	u.transition(StateDownloading)
 	u.host.Emit(EventDownloadStarted, rel)
 
-	dir, err := os.MkdirTemp("", "wails-update-*")
+	dir, err = os.MkdirTemp("", "wails-update-*")
 	if err != nil {
-		return "", fmt.Errorf("updater: temp dir: %w", err)
+		return "", "", fmt.Errorf("updater: temp dir: %w", err)
 	}
 	tmpPath := filepath.Join(dir, ".artifact")
 
+	// Track success — on every error path we tear the directory down.
+	success := false
+	defer func() {
+		if !success {
+			_ = os.RemoveAll(dir)
+		}
+	}()
+
 	f, err := os.Create(tmpPath)
 	if err != nil {
-		_ = os.RemoveAll(dir)
-		return "", fmt.Errorf("updater: create temp: %w", err)
+		return "", "", fmt.Errorf("updater: create temp: %w", err)
 	}
 	closed := false
 	defer func() {
@@ -48,7 +60,7 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (strin
 		}
 		hasher, err = digestHasher(algo)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 
@@ -70,20 +82,17 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (strin
 	if err := p.Download(ctx, rel, wrappedDst, progressFn); err != nil {
 		_ = f.Close()
 		closed = true
-		_ = os.RemoveAll(dir)
-		return "", err
+		return "", "", err
 	}
 
 	if err := f.Sync(); err != nil {
 		_ = f.Close()
 		closed = true
-		_ = os.RemoveAll(dir)
-		return "", fmt.Errorf("updater: fsync: %w", err)
+		return "", "", fmt.Errorf("updater: fsync: %w", err)
 	}
 	if err := f.Close(); err != nil {
 		closed = true
-		_ = os.RemoveAll(dir)
-		return "", fmt.Errorf("updater: close: %w", err)
+		return "", "", fmt.Errorf("updater: close: %w", err)
 	}
 	closed = true
 
@@ -98,7 +107,8 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (strin
 		u.lastDigest = hasher.Sum(nil)
 		u.mu.Unlock()
 	}
-	return tmpPath, nil
+	success = true
+	return tmpPath, dir, nil
 }
 
 // verify runs the configured verification rules against the digest computed

@@ -337,6 +337,58 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 	assertEventSubsequence(t, host.names(), wantOrder)
 }
 
+// On any failure between download and ready (verify mismatch, unknown
+// digest algo, etc.) the temp staging directory created under
+// os.TempDir/wails-update-* must be removed; otherwise repeated update
+// attempts accumulate orphan directories.
+func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("real-bytes")
+	wrong := sha256.Sum256([]byte("different-bytes"))
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo: "sha256",
+			Digest:     wrong[:],
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	before := countStagingDirs(t)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err == nil {
+		t.Fatal("expected error from digest mismatch")
+	}
+
+	after := countStagingDirs(t)
+	if after > before {
+		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, os.TempDir())
+	}
+}
+
+// countStagingDirs returns the number of `wails-update-*` directories under
+// os.TempDir. Used to detect leaks across the download/install flow without
+// being sensitive to absolute paths.
+func countStagingDirs(t *testing.T) int {
+	t.Helper()
+	entries, err := os.ReadDir(os.TempDir())
+	if err != nil {
+		t.Fatalf("read tempdir: %v", err)
+	}
+	n := 0
+	for _, e := range entries {
+		if e.IsDir() && strings.HasPrefix(e.Name(), "wails-update-") {
+			n++
+		}
+	}
+	return n
+}
+
 func TestDownloadAndInstall_DigestMismatch_FailsClosed(t *testing.T) {
 	host := &fakeHost{}
 	body := []byte("real-bytes")

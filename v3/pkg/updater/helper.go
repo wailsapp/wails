@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -157,6 +158,20 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	if err := os.RemoveAll(backup); err != nil {
 		lg.logf("backup cleanup: %v (non-fatal)", err)
 	}
+
+	// Tear down the staging directory we received newPath from. The
+	// download created it as `wails-update-*` under os.TempDir; after the
+	// rename above the directory is empty, but absent this step it would
+	// accumulate across update attempts. Guarded by the prefix so we never
+	// recursively delete a caller-supplied path that happened to live in a
+	// non-temp location.
+	stagingDir := filepath.Dir(newPath)
+	if strings.HasPrefix(filepath.Base(stagingDir), "wails-update-") {
+		if err := os.RemoveAll(stagingDir); err != nil {
+			lg.logf("staging cleanup: %v (non-fatal)", err)
+		}
+	}
+
 	lg.logf("helper done")
 	return 0
 }

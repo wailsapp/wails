@@ -26,6 +26,7 @@ type Updater struct {
 	current    string // CurrentVersion, snapshot for State()
 	pending    *Release
 	resolved   string // resolved download path (after install)
+	stagingDir string // os.MkdirTemp parent of resolved, removed on Restart / re-Check
 	lastDigest []byte // digest computed streaming during the last successful download
 	skipped    string // version recorded by SkipVersion / the default window Skip button
 
@@ -197,7 +198,11 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 		return err
 	}
 
-	tmpPath, err := u.download(ctx, provider, pending)
+	// Drop any stale staging dir from a previous DownloadAndInstall the
+	// caller didn't follow up with Restart.
+	u.discardStaging()
+
+	tmpPath, tmpDir, err := u.download(ctx, provider, pending)
 	if err != nil {
 		u.transition(StateError)
 		u.host.Emit(EventError, ErrorInfo{Stage: StageDownload, Message: err.Error(), Provider: provider.Name()})
@@ -208,7 +213,7 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 	u.host.Emit(EventVerifying, pending)
 
 	if err := u.verify(tmpPath, pending); err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.RemoveAll(tmpDir)
 		u.transition(StateError)
 		u.host.Emit(EventError, ErrorInfo{Stage: StageVerify, Message: err.Error(), Provider: provider.Name()})
 		return err
@@ -219,7 +224,7 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 
 	finalPath, err := finaliseDownload(tmpPath, pending.Artifact.Filename)
 	if err != nil {
-		_ = os.Remove(tmpPath)
+		_ = os.RemoveAll(tmpDir)
 		u.transition(StateError)
 		u.host.Emit(EventError, ErrorInfo{Stage: StageInstall, Message: err.Error(), Provider: provider.Name()})
 		return err
@@ -227,6 +232,7 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 
 	u.mu.Lock()
 	u.resolved = finalPath
+	u.stagingDir = tmpDir
 	u.state = StateReady
 	u.mu.Unlock()
 
@@ -324,6 +330,22 @@ func (u *Updater) transition(s State) {
 	u.mu.Lock()
 	u.state = s
 	u.mu.Unlock()
+}
+
+// discardStaging removes any temp directory the previous DownloadAndInstall
+// left behind. Called before a new download begins and on Check when an old
+// pending release becomes stale. The helper process is responsible for
+// cleaning up its own staging dir post-swap; this is for the cases the
+// helper never starts.
+func (u *Updater) discardStaging() {
+	u.mu.Lock()
+	dir := u.stagingDir
+	u.stagingDir = ""
+	u.resolved = ""
+	u.mu.Unlock()
+	if dir != "" {
+		_ = os.RemoveAll(dir)
+	}
 }
 
 func findProvider(providers []Provider, name string) (Provider, error) {
