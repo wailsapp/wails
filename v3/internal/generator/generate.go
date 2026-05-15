@@ -83,6 +83,12 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return
 	}
 
+	// Validate options.
+	err = generator.validateOptions()
+	if err != nil {
+		return
+	}
+
 	// Parse build flags.
 	buildFlags, err := generator.options.BuildFlags()
 	if err != nil {
@@ -259,6 +265,22 @@ func (generator *Generator) validateFileNames() error {
 
 	case !generator.options.NoIndex && generator.options.ModelsFilename == generator.options.IndexFilename:
 		return fmt.Errorf("models and package indexes cannot share the same filename")
+	}
+
+	return nil
+}
+
+// validateOptions validates user-provided configuration options.
+func (generator *Generator) validateOptions() error {
+	switch generator.options.TimeType {
+	case "string":
+		// No special handling needed.
+	case "Date":
+		if generator.options.UseInterfaces {
+			return fmt.Errorf("time type '%s' is not supported in interface mode", generator.options.TimeType)
+		}
+	default:
+		return fmt.Errorf("invalid time type: %s (must be either 'string' or 'Date')", generator.options.TimeType)
 	}
 
 	return nil
