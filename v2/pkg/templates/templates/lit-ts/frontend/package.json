@@ -20,7 +20,7 @@
     "lit": "^2.2.8"
   },
   "devDependencies": {
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7"
+    "typescript": "^5.7.3",
+    "vite": "^8.0.13"
   }
 }

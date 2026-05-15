@@ -64,6 +64,7 @@
       "mocha": "^11.1.0",
       "sinon": "^19.0.2",
       "underscore": "^1.13.7"
-    }
+    },
+    "serialize-javascript": "^7.0.5"
   }
 }

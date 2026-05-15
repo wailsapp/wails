@@ -12,6 +12,9 @@
   "dependencies": {
     "sponsorkit": "^16.5.0"
   },
+  "overrides": {
+    "defu": "^6.1.5"
+  },
   "engines": {
     "node": ">=22.0.0"
   }
