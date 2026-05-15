@@ -584,6 +584,54 @@ func TestDownloadAndInstall_ECDSAP256Signature_Verifies(t *testing.T) {
 	}
 }
 
+// ASN.1 DER signatures with trailing bytes after the valid SEQUENCE must be
+// rejected — accepting them risks signature malleability, and conforming
+// signers never emit them.
+func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
+	host := &fakeHost{}
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("ecdsa-payload")
+	digest := sha256.Sum256(body)
+	r, s, err := ecdsa.Sign(rand.Reader, priv, digest[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, err := asn1.Marshal(struct{ R, S *big.Int }{r, s})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Append junk after the valid SEQUENCE.
+	sig = append(sig, 0xDE, 0xAD, 0xBE, 0xEF)
+
+	pkix, err := x509.MarshalPKIXPublicKey(&priv.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha256",
+			SignatureAlgo: "ecdsa-p256",
+			Signature:     sig,
+			PublicKey:     pkix,
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	err = u.DownloadAndInstall(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "trailing") {
+		t.Fatalf("expected trailing-data error, got %v", err)
+	}
+}
+
 func TestDownloadAndInstall_SignatureWithoutPublicKey_Fails(t *testing.T) {
 	host := &fakeHost{}
 	body := []byte("payload")

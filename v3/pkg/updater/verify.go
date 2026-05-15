@@ -205,10 +205,16 @@ func splitECDSASig(sig []byte) (r, s *big.Int, err error) {
 		s = new(big.Int).SetBytes(sig[32:])
 		return r, s, nil
 	}
-	// ASN.1 DER fallback.
+	// ASN.1 DER fallback. Reject signatures with trailing data — accepting
+	// them is a path to signature-malleability bugs and they are never
+	// produced by conforming signers.
 	var seq struct{ R, S *big.Int }
-	if _, err := asn1.Unmarshal(sig, &seq); err != nil {
+	rest, err := asn1.Unmarshal(sig, &seq)
+	if err != nil {
 		return nil, nil, fmt.Errorf("updater: ecdsa signature format unrecognised: %w", err)
+	}
+	if len(rest) != 0 {
+		return nil, nil, errors.New("updater: ecdsa signature has trailing data")
 	}
 	if seq.R == nil || seq.S == nil {
 		return nil, nil, errors.New("updater: ecdsa signature missing r/s")
