@@ -268,7 +268,110 @@ wails3 doctor  # 설치 확인
        ```powershell
        npm --version
        ```
-     </TabItem>#### Go 버전이 너무 오래됨
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Option 1: Official Installer**
+       Download from [nodejs.org](https://nodejs.org/)
+
+       **Option 2: Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **Verify:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Option 1: NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **Option 2: Package Manager**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **Verify:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[Alternative Package Managers]
+   Prefer `pnpm`, `yarn`, or `bun`? No problem! Just update the `Taskfile.yml` in your project to use your preferred tool.
+   :::
+
+</Steps>
+
+## Troubleshooting
+
+#### `wails3` command not found
+
+**Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
+
+**Solution:**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. Open "Environment Variables" (search in Start menu)
+    2. Under "User variables", find `Path`
+    3. Click "Edit" → "New"
+    4. Add: `C:\Users\YourName\go\bin` (replace `YourName`)
+    5. Click "OK" on all dialogs
+    6. **Restart your terminal**
+
+    **Verify:**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    Reload:
+    ```bash
+    source ~/.zshrc  # or ~/.bashrc
+    ```
+
+    **Verify:**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+---
+
+#### `wails3 doctor` reports missing dependencies
+
+**Linux:** The output tells you exactly which packages to install. Example:
+```
+❌ webkit2gtk not found
+   Install with: sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows:** If WebView2 is missing:
+- Download from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+- Or it will be installed automatically when you run your first app
+
+**macOS:** If Xcode tools are missing:
+```bash
+xcode-select --install
+```
+---
+#### Go 버전이 너무 오래됨
 
 Wails v3에는 Go 1.25+가 필요합니다. 이전 버전이 있는 경우:
 
