@@ -133,6 +133,21 @@ func TestCheckAndInstall_BuiltinWindow_AppendsCSS(t *testing.T) {
 	if !strings.Contains(html, "background: red") {
 		t.Errorf("CSS override not appended")
 	}
+	// Override styles must sit inside <head> so the resulting document is
+	// still well-formed (a final <style> after </html> trips HTML linters
+	// and some CSP-strict configurations).
+	endHead := strings.Index(html, "</head>")
+	endHTML := strings.LastIndex(html, "</html>")
+	override := strings.Index(html, "background: red")
+	if endHead < 0 || endHTML < 0 || override < 0 {
+		t.Fatalf("missing markers: head=%d html=%d override=%d", endHead, endHTML, override)
+	}
+	if override > endHead {
+		t.Errorf("CSS override emitted after </head>: head=%d override=%d", endHead, override)
+	}
+	if override > endHTML {
+		t.Errorf("CSS override emitted after </html>: html=%d override=%d", endHTML, override)
+	}
 }
 
 func TestCheckAndInstall_BuiltinWindow_OverrideOptions(t *testing.T) {

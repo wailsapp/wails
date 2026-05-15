@@ -2,6 +2,7 @@ package updater
 
 import (
 	_ "embed"
+	"strings"
 )
 
 //go:embed assets/window.html
@@ -59,7 +60,13 @@ func composeHTML(bw *BuiltinWindow) string {
 	}
 	html := defaultWindowHTML
 	if bw != nil && bw.CSS != "" {
-		html += "\n<style>" + bw.CSS + "</style>"
+		injected := "<style>" + bw.CSS + "</style>\n</head>"
+		if updated := strings.Replace(html, "</head>", injected, 1); updated != html {
+			html = updated
+		} else {
+			// No </head> (custom HTML?) — fall back to the document end.
+			html += "\n<style>" + bw.CSS + "</style>"
+		}
 	}
 	return html
 }
