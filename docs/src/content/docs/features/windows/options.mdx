@@ -858,6 +858,15 @@ Mac: application.MacWindow{
 },
 ```
 
+**NonActivatingPanel** (`bool`) — Non-activating `NSPanel` (`NSWindowStyleMaskNonactivatingPanel`): does not activate the app or become main; can become key for input. Often with `Frameless` and other `MacWindow` fields.
+
+```go
+Mac: application.MacWindow{
+    NonActivatingPanel: true,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
 ### Windows Options
 
 ```go

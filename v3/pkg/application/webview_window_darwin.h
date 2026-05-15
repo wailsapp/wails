@@ -6,7 +6,13 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface WebviewWindow : NSWindow
+// WebviewWindow inherits from NSPanel (not NSWindow) so windows opted in to
+// NSWindowStyleMaskNonactivatingPanel actually honor that style. NSPanel's
+// default hidesOnDeactivate=YES is cleared in webview_window_darwin.m so
+// windows stay visible when another app is active. releasedWhenClosed is NO
+// on purpose: the Go bridge owns the object and windowClose/windowDestroy
+// must -release it (see webview_window_darwin.go).
+@interface WebviewWindow : NSPanel
 - (BOOL) canBecomeKeyWindow;
 - (BOOL) canBecomeMainWindow;
 - (BOOL) acceptsFirstResponder;

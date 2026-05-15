@@ -22,6 +22,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
     self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    // Use releasedWhenClosed=NO so closing never implicitly -releases the object;
+    // Go keeps an unsafe.Pointer to the NSWindow until native teardown runs
+    // windowClose/windowDestroy, which must -release to balance windowNew's -alloc.
+    [self setReleasedWhenClosed:NO];
+    // NSPanel defaults hidesOnDeactivate=YES so panels hide when the app resigns active;
+    // normalize to NSWindow-like NO so ordinary windows stay visible on app switch.
+    [self setHidesOnDeactivate:NO];
     [self setAlphaValue:1.0];
     [self setBackgroundColor:[NSColor clearColor]];
     [self setOpaque:NO];
@@ -177,9 +184,16 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 - (BOOL)canBecomeKeyWindow {
+    // Even non-activating panels need to become key so text inputs work.
     return YES;
 }
 - (BOOL) canBecomeMainWindow {
+    // Non-activating panels (NSWindowStyleMaskNonactivatingPanel) must never
+    // become the application's main window — that's the canonical accessory
+    // panel pattern. All other windows behave as before.
+    if (([self styleMask] & NSWindowStyleMaskNonactivatingPanel) != 0) {
+        return NO;
+    }
     return YES;
 }
 - (BOOL) acceptsFirstResponder {

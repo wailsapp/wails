@@ -24,10 +24,16 @@ struct WebviewPreferences {
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, bool nonActivatingPanel, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
+	}
+	if (nonActivatingPanel) {
+		// NSWindowStyleMaskNonactivatingPanel only takes effect because
+		// WebviewWindow inherits from NSPanel. Setting this on a plain NSWindow
+		// is silently ignored by AppKit.
+		styleMask |= NSWindowStyleMaskNonactivatingPanel;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
@@ -697,7 +703,11 @@ void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenI
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
-	[(WebviewWindow*)nsWindow close];
+	WebviewWindow* w = (WebviewWindow*)nsWindow;
+	[w close];
+	// releasedWhenClosed is NO (see WebviewWindow init), so -close does not
+	// release the object. Balance the -alloc from windowNew.
+	[w release];
 }
 
 // Remove drop shadow from window
@@ -714,7 +724,9 @@ void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
 
 // windowClose closes the current window
 static void windowClose(void *window) {
-	[(WebviewWindow*)window close];
+	WebviewWindow* w = (WebviewWindow*)window;
+	[w close];
+	[w release];
 }
 
 // windowZoom
@@ -905,8 +917,12 @@ void windowSetEnabled(void *window, bool enabled) {
 
 void windowFocus(void *window) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	// If the current application is not active, activate it
-	if (![[NSApplication sharedApplication] isActive]) {
+	// Skip the app activation step for non-activating panels - that's the entire
+	// point of NSWindowStyleMaskNonactivatingPanel. The panel itself can still
+	// become key (so text fields work) without stealing focus from whichever app
+	// the user was using.
+	BOOL isNonActivatingPanel = ([nsWindow styleMask] & NSWindowStyleMaskNonactivatingPanel) != 0;
+	if (!isNonActivatingPanel && ![[NSApplication sharedApplication] isActive]) {
 		[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 	}
 	[nsWindow makeKeyAndOrderFront:nil];
@@ -1095,7 +1111,11 @@ func (w *macosWebviewWindow) close() {
 	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// Set the unconditionallyClose flag to allow the window to close
 	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
-	C.windowClose(w.nsWindow)
+	if w.nsWindow != nil {
+		C.windowClose(w.nsWindow)
+		// windowClose releases the ObjC object; clear the pointer so we never pass a dangling reference to C.
+		w.nsWindow = nil
+	}
 	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// TODO: Check if we need to unregister the window here or not
 }
@@ -1355,6 +1375,7 @@ func (w *macosWebviewWindow) run() {
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
 			C.bool(options.EnableFileDrop),
+			C.bool(macOptions.NonActivatingPanel),
 			w.getWebviewPreferences(),
 		)
 		if macOptions.DisableEscapeExitsFullscreen {
@@ -1609,7 +1630,10 @@ func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
 	// Clear caches for this window
 	clearWindowDragCache(w.parent.id)
-	C.windowDestroy(w.nsWindow)
+	if w.nsWindow != nil {
+		C.windowDestroy(w.nsWindow)
+		w.nsWindow = nil
+	}
 }
 
 func (w *macosWebviewWindow) setHTML(html string) {

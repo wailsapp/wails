@@ -498,6 +498,22 @@ type MacWindow struct {
 	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
 	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
 	DisableEscapeExitsFullscreen bool
+
+	// NonActivatingPanel makes the window an NSPanel with the
+	// NSWindowStyleMaskNonactivatingPanel style: interacting with it does not
+	// activate the owning app or steal focus from the active app. The window
+	// can still become key (so text input works) but never main.
+	//
+	// Typical use: floating tool palettes, Spotlight-style overlays, menu-bar
+	// detail panels — usually combined with other window-scoped MacWindow
+	// fields (WindowLevel, CollectionBehavior, Backdrop) plus Frameless on
+	// WebviewWindowOptions.
+	//
+	// To also hide the dock icon, set ActivationPolicyAccessory at the
+	// *application* level via Options.Mac.ActivationPolicy. Options.Mac is
+	// MacOptions and is distinct from WebviewWindowOptions.Mac (this struct,
+	// MacWindow) — same field name, different scopes.
+	NonActivatingPanel bool
 }
 
 type MacWindowLevel string

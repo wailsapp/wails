@@ -437,6 +437,18 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visible on all Spaces
     - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
 
+    **Non-activating panel (`Mac.NonActivatingPanel`):** Non-activating `NSPanel`—clicks don't activate your app or make this window main; it can still be key for typing. Often used with `Frameless`, a floating `WindowLevel`, and Space `CollectionBehavior`.
+
+    ```go
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Frameless: true,
+        Mac: application.MacWindow{
+            NonActivatingPanel: true,
+            WindowLevel:        application.MacWindowLevelFloating,
+        },
+    })
+    ```
+
     **Native fullscreen:**
     macOS fullscreen creates a new Space (virtual desktop).
   </TabItem>
