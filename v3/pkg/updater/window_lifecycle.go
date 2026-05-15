@@ -85,8 +85,45 @@ func (u *Updater) openSession(ctx context.Context) *windowSession {
 		u.host.OnEvent(EventUserRestart, func(any) {
 			go func() { _ = u.Restart(ctx) }()
 		}),
+		// The default window template fires updater:window:ready on load to
+		// rehydrate from current state — e.g. when a periodic-check timer
+		// already advanced the flow before the window opened. Re-emit the
+		// state-appropriate lifecycle event so the same handlers that drive
+		// live updates also drive initial paint.
+		u.host.OnEvent(EventWindowReady, func(any) {
+			u.replayStateSnapshot()
+		}),
 	)
 	return sess
+}
+
+// replayStateSnapshot re-emits the lifecycle event corresponding to the
+// current state. The default window subscribes to these events for normal
+// updates; replaying the latest one whenever the window asks for a snapshot
+// is enough for it to render correctly on (re)open.
+func (u *Updater) replayStateSnapshot() {
+	u.mu.RLock()
+	state := u.state
+	pending := u.pending
+	u.mu.RUnlock()
+
+	switch state {
+	case StateChecking:
+		u.host.Emit(EventCheckStarted)
+	case StateAvailable:
+		u.host.Emit(EventUpdateAvailable, pending)
+	case StateDownloading:
+		u.host.Emit(EventDownloadStarted, pending)
+	case StateVerifying:
+		u.host.Emit(EventVerifying, pending)
+	case StateInstalling:
+		u.host.Emit(EventInstalling, pending)
+	case StateReady:
+		u.host.Emit(EventUpdateReady, pending)
+	case StateUpToDate:
+		u.host.Emit(EventNoUpdate)
+	}
+	// StateIdle / StateUnconfigured / StateError: nothing useful to replay.
 }
 
 func (u *Updater) closeWindow() {

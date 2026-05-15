@@ -250,6 +250,47 @@ func TestCheckAndInstall_RepeatedCalls_DoNotLeakListeners(t *testing.T) {
 	}
 }
 
+// The default window template emits updater:window:ready on load so it can
+// rehydrate from the current updater state when it opens. The Updater must
+// reply with a snapshot event matching the current State.
+func TestWindowReady_ReplaysCurrentStateSnapshot(t *testing.T) {
+	host := &fakeHost{}
+	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.bin", Size: 1}}
+	p := &fakeProvider{name: "p", rel: rel, body: []byte("x")}
+	u := newConfigured(t, host, p)
+
+	// Advance to StateAvailable.
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if u.State() != updater.StateAvailable {
+		t.Fatalf("state: %s", u.State())
+	}
+
+	// Open a session (this is what CheckAndInstall does internally; we use
+	// the same paths via Check above).
+	_ = u.CheckAndInstall(context.Background())
+
+	// Drop the noisy event history accumulated so far so the snapshot
+	// re-emit we trigger next stands out.
+	host.mu.Lock()
+	host.events = nil
+	host.mu.Unlock()
+
+	// The window has just finished loading and asks for state.
+	host.Emit(updater.EventWindowReady)
+
+	host.mu.Lock()
+	defer host.mu.Unlock()
+	saw := map[string]bool{}
+	for _, e := range host.events {
+		saw[e.Name] = true
+	}
+	if !saw[updater.EventUpdateReady] && !saw[updater.EventUpdateAvailable] {
+		t.Errorf("expected snapshot replay (update-available or update-ready); got events %v", host.events)
+	}
+}
+
 func TestUserSkip_RecordsVersionAndShortCircuitsCheck(t *testing.T) {
 	host := &fakeHost{}
 	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.bin", Size: 1}}
