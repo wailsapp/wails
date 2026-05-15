@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
 //go:embed assets/*
@@ -351,6 +352,7 @@ type App struct {
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
 	Autostart   *AutostartManager
+	Updater     *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -501,6 +503,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
+	a.Updater = updater.New(a.Event)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {

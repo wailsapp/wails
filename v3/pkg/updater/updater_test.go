@@ -1,0 +1,603 @@
+package updater_test
+
+import (
+	"bytes"
+	"context"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/x509"
+	"encoding/asn1"
+	"errors"
+	"io"
+	"math/big"
+	"os"
+	"strings"
+	"sync"
+	"testing"
+
+	"github.com/wailsapp/wails/v3/pkg/updater"
+)
+
+func removeAllOS(p string) error { return os.RemoveAll(p) }
+
+// fakeHost captures every emit so tests can assert event sequence and payloads.
+type fakeHost struct {
+	mu     sync.Mutex
+	events []fakeEvent
+}
+
+type fakeEvent struct {
+	Name string
+	Data any
+}
+
+func (f *fakeHost) Emit(name string, data ...any) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var d any
+	if len(data) == 1 {
+		d = data[0]
+	} else if len(data) > 1 {
+		d = data
+	}
+	f.events = append(f.events, fakeEvent{Name: name, Data: d})
+	return false
+}
+
+func (f *fakeHost) names() []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	out := make([]string, len(f.events))
+	for i, e := range f.events {
+		out[i] = e.Name
+	}
+	return out
+}
+
+func (f *fakeHost) payloadFor(name string) any {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, e := range f.events {
+		if e.Name == name {
+			return e.Data
+		}
+	}
+	return nil
+}
+
+// fakeProvider is a controllable in-memory Provider.
+type fakeProvider struct {
+	name      string
+	rel       *updater.Release
+	checkErr  error
+	body      []byte
+	dlErr     error
+	calls     int
+	downloads int
+}
+
+func (f *fakeProvider) Name() string { return f.name }
+func (f *fakeProvider) Check(ctx context.Context, _ updater.CheckRequest) (*updater.Release, error) {
+	f.calls++
+	return f.rel, f.checkErr
+}
+func (f *fakeProvider) Download(ctx context.Context, _ *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
+	f.downloads++
+	if f.dlErr != nil {
+		return f.dlErr
+	}
+	if _, err := io.Copy(dst, bytes.NewReader(f.body)); err != nil {
+		return err
+	}
+	if onProgress != nil {
+		onProgress(int64(len(f.body)), int64(len(f.body)))
+	}
+	return nil
+}
+
+// --- Init / validation ---
+
+func TestInit_RequiresCurrentVersion(t *testing.T) {
+	u := updater.New(&fakeHost{})
+	if err := u.Init(updater.Config{Providers: []updater.Provider{&fakeProvider{name: "f"}}}); err == nil {
+		t.Fatal("expected error for missing CurrentVersion")
+	}
+}
+
+func TestInit_RequiresProviders(t *testing.T) {
+	u := updater.New(&fakeHost{})
+	if err := u.Init(updater.Config{CurrentVersion: "1.0.0"}); err == nil {
+		t.Fatal("expected error for empty Providers")
+	}
+}
+
+func TestInit_RejectsNilProvider(t *testing.T) {
+	u := updater.New(&fakeHost{})
+	err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{&fakeProvider{name: "f"}, nil},
+	})
+	if err == nil || !strings.Contains(err.Error(), "nil entry") {
+		t.Fatalf("expected nil-entry error, got %v", err)
+	}
+}
+
+func TestInit_RejectsDoubleConfigure(t *testing.T) {
+	u := updater.New(&fakeHost{})
+	cfg := updater.Config{CurrentVersion: "1.0.0", Providers: []updater.Provider{&fakeProvider{name: "f"}}}
+	if err := u.Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.Init(cfg); !errors.Is(err, updater.ErrAlreadyConfigured) {
+		t.Fatalf("expected ErrAlreadyConfigured, got %v", err)
+	}
+}
+
+func TestCheck_NotConfigured(t *testing.T) {
+	u := updater.New(&fakeHost{})
+	if _, err := u.Check(context.Background()); !errors.Is(err, updater.ErrNotConfigured) {
+		t.Fatalf("expected ErrNotConfigured, got %v", err)
+	}
+}
+
+// --- Check + fallback ---
+
+func TestCheck_SingleProvider_UpdateAvailable(t *testing.T) {
+	host := &fakeHost{}
+	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.dmg", Size: 5}}
+	p := &fakeProvider{name: "primary", rel: rel}
+
+	u := newConfigured(t, host, p)
+	got, err := u.Check(context.Background())
+	if err != nil {
+		t.Fatalf("Check: %v", err)
+	}
+	if got == nil || got.Version != "2.0.0" {
+		t.Fatalf("got %+v", got)
+	}
+	if got.Provider != "primary" {
+		t.Errorf("provider tag: want primary, got %q", got.Provider)
+	}
+	if u.State() != updater.StateAvailable {
+		t.Errorf("state: %s", u.State())
+	}
+	want := []string{updater.EventCheckStarted, updater.EventUpdateAvailable}
+	assertEventNames(t, host.names(), want)
+}
+
+func TestCheck_UpToDate_StopsFallbackChain(t *testing.T) {
+	host := &fakeHost{}
+	primary := &fakeProvider{name: "primary"} // returns (nil,nil) → up-to-date
+	secondary := &fakeProvider{name: "secondary", rel: &updater.Release{Version: "9.9.9"}}
+
+	u := newConfigured(t, host, primary, secondary)
+	got, err := u.Check(context.Background())
+	if err != nil || got != nil {
+		t.Fatalf("want (nil,nil), got %+v %v", got, err)
+	}
+	if secondary.calls != 0 {
+		t.Errorf("secondary should NOT have been called after primary said up-to-date")
+	}
+	if u.State() != updater.StateUpToDate {
+		t.Errorf("state: %s", u.State())
+	}
+	assertEventNames(t, host.names(), []string{updater.EventCheckStarted, updater.EventNoUpdate})
+}
+
+func TestCheck_FallbackOnError(t *testing.T) {
+	host := &fakeHost{}
+	primary := &fakeProvider{name: "primary", checkErr: errors.New("network down")}
+	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.dmg"}}
+	secondary := &fakeProvider{name: "secondary", rel: rel}
+
+	u := newConfigured(t, host, primary, secondary)
+	got, err := u.Check(context.Background())
+	if err != nil {
+		t.Fatalf("Check: %v", err)
+	}
+	if got.Provider != "secondary" {
+		t.Fatalf("expected fallback to secondary, got %q", got.Provider)
+	}
+}
+
+func TestCheck_AllProvidersError_ReturnsWrappedError(t *testing.T) {
+	host := &fakeHost{}
+	p1 := &fakeProvider{name: "primary", checkErr: errors.New("dns")}
+	p2 := &fakeProvider{name: "secondary", checkErr: errors.New("401")}
+	u := newConfigured(t, host, p1, p2)
+
+	_, err := u.Check(context.Background())
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "primary") || !strings.Contains(err.Error(), "secondary") {
+		t.Errorf("error should mention both providers: %v", err)
+	}
+	if u.State() != updater.StateError {
+		t.Errorf("state: %s", u.State())
+	}
+	assertEventNames(t, host.names(), []string{updater.EventCheckStarted, updater.EventError})
+}
+
+// --- Download + verify ---
+
+func TestDownloadAndInstall_NoPendingRelease(t *testing.T) {
+	u := newConfigured(t, &fakeHost{}, &fakeProvider{name: "p"})
+	if err := u.DownloadAndInstall(context.Background()); !errors.Is(err, updater.ErrNoPendingRelease) {
+		t.Fatalf("expected ErrNoPendingRelease, got %v", err)
+	}
+}
+
+func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("hello-end-to-end")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	if u.State() != updater.StateReady {
+		t.Errorf("state: %s", u.State())
+	}
+	wantOrder := []string{
+		updater.EventCheckStarted,
+		updater.EventUpdateAvailable,
+		updater.EventDownloadStarted,
+		updater.EventDownloadProgress, // at least one
+		updater.EventDownloadComplete,
+		updater.EventVerifying,
+		updater.EventInstalling,
+		updater.EventUpdateReady,
+	}
+	assertEventSubsequence(t, host.names(), wantOrder)
+}
+
+func TestDownloadAndInstall_DigestMismatch_FailsClosed(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("real-bytes")
+	wrongDigest := sha256.Sum256([]byte("different-bytes"))
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo: "sha256",
+			Digest:     wrongDigest[:],
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	err := u.DownloadAndInstall(context.Background())
+	if err == nil {
+		t.Fatal("expected verification error")
+	}
+	if !strings.Contains(err.Error(), "digest mismatch") {
+		t.Errorf("wrong error: %v", err)
+	}
+	if u.State() != updater.StateError {
+		t.Errorf("state: %s", u.State())
+	}
+	if u.DownloadedPath() != "" {
+		t.Errorf("downloaded path should be empty after failed verify: %q", u.DownloadedPath())
+	}
+	// Error event must mention the verify stage and provider.
+	payload := host.payloadFor(updater.EventError)
+	ei, ok := payload.(updater.ErrorInfo)
+	if !ok {
+		t.Fatalf("payload type: %T", payload)
+	}
+	if ei.Stage != updater.StageVerify {
+		t.Errorf("error stage: %s", ei.Stage)
+	}
+	if ei.Provider != "p" {
+		t.Errorf("error provider: %s", ei.Provider)
+	}
+}
+
+func TestDownloadAndInstall_DigestMatch_Succeeds(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("real-bytes")
+	digest := sha256.Sum256(body)
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo: "sha256",
+			Digest:     digest[:],
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	if u.State() != updater.StateReady {
+		t.Errorf("state: %s", u.State())
+	}
+}
+
+func TestDownloadAndInstall_Ed25519Signature_Verifies(t *testing.T) {
+	host := &fakeHost{}
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("signed-payload")
+	// Ed25519 verifier signs the digest (here, SHA-256 of the body since
+	// DigestAlgo is sha256). The signer signs the same digest.
+	digest := sha256.Sum256(body)
+	sig := ed25519.Sign(priv, digest[:])
+
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha256",
+			SignatureAlgo: "ed25519",
+			Signature:     sig,
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	cfg := updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		PublicKey:      []byte(pub),
+	}
+	u := updater.New(host)
+	if err := u.Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	if u.State() != updater.StateReady {
+		t.Errorf("state: %s", u.State())
+	}
+}
+
+func TestDownloadAndInstall_Ed25519phSignature_Verifies(t *testing.T) {
+	host := &fakeHost{}
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("signed-payload-ph")
+	digest := sha512.Sum512(body)
+	sig, err := priv.Sign(rand.Reader, digest[:], &ed25519.Options{Hash: crypto.SHA512})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pkix, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha512",
+			SignatureAlgo: "ed25519ph",
+			Signature:     sig,
+			PublicKey:     pkix,
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+}
+
+func TestDownloadAndInstall_ECDSAP256Signature_Verifies(t *testing.T) {
+	host := &fakeHost{}
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("ecdsa-payload")
+	digest := sha256.Sum256(body)
+	r, s, err := ecdsa.Sign(rand.Reader, priv, digest[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, err := asn1.Marshal(struct{ R, S *big.Int }{r, s})
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkix, err := x509.MarshalPKIXPublicKey(&priv.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha256",
+			SignatureAlgo: "ecdsa-p256",
+			Signature:     sig,
+			PublicKey:     pkix,
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+}
+
+func TestDownloadAndInstall_SignatureWithoutPublicKey_Fails(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha256",
+			SignatureAlgo: "ed25519",
+			Signature:     []byte("doesn't matter — verify aborts before this"),
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	err := u.DownloadAndInstall(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "requires a public key") {
+		t.Fatalf("expected public-key-missing error, got %v", err)
+	}
+}
+
+// --- CheckAndInstall convenience ---
+
+func TestCheckAndInstall_UpToDate_NoOp(t *testing.T) {
+	host := &fakeHost{}
+	p := &fakeProvider{name: "p"} // returns (nil,nil)
+	u := newConfigured(t, host, p)
+
+	if err := u.CheckAndInstall(context.Background()); err != nil {
+		t.Fatalf("CheckAndInstall: %v", err)
+	}
+	if p.downloads != 0 {
+		t.Errorf("download should not have been attempted")
+	}
+}
+
+func TestCheckAndInstall_HappyPath(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	digest := sha256.Sum256(body)
+	rel := &updater.Release{
+		Version:      "2.0.0",
+		Artifact:     updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{DigestAlgo: "sha256", Digest: digest[:]},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if err := u.CheckAndInstall(context.Background()); err != nil {
+		t.Fatalf("CheckAndInstall: %v", err)
+	}
+	if u.State() != updater.StateReady {
+		t.Errorf("state: %s", u.State())
+	}
+}
+
+// --- helpers ---
+
+func newConfigured(t *testing.T, host updater.Host, providers ...updater.Provider) *updater.Updater {
+	t.Helper()
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      providers,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if p := u.DownloadedPath(); p != "" {
+			// Walk up to the wails-update-* temp dir and remove it whole.
+			dir := p
+			for dir != "" && dir != "/" && dir != "." {
+				if strings.Contains(dir, "wails-update-") {
+					_ = osRemoveAll(dir)
+					return
+				}
+				dir = parentOf(dir)
+			}
+		}
+	})
+	return u
+}
+
+func assertEventNames(t *testing.T, got, want []string) {
+	t.Helper()
+	// Allow EventDownloadProgress to appear N times in a row.
+	if !slicesEqualIgnoringProgressRepeats(got, want) {
+		t.Errorf("event sequence mismatch:\n  got  %v\n  want %v", got, want)
+	}
+}
+
+func assertEventSubsequence(t *testing.T, got, mustAppearInOrder []string) {
+	t.Helper()
+	idx := 0
+	for _, g := range got {
+		if idx < len(mustAppearInOrder) && g == mustAppearInOrder[idx] {
+			idx++
+		}
+	}
+	if idx != len(mustAppearInOrder) {
+		t.Errorf("expected subsequence not present:\n  got      %v\n  required %v\n  matched up to %d/%d",
+			got, mustAppearInOrder, idx, len(mustAppearInOrder))
+	}
+}
+
+func slicesEqualIgnoringProgressRepeats(a, b []string) bool {
+	// Compact runs of EventDownloadProgress in a to a single occurrence.
+	compact := func(s []string) []string {
+		out := make([]string, 0, len(s))
+		for _, x := range s {
+			if len(out) > 0 && out[len(out)-1] == x && x == updater.EventDownloadProgress {
+				continue
+			}
+			out = append(out, x)
+		}
+		return out
+	}
+	ac := compact(a)
+	bc := compact(b)
+	if len(ac) != len(bc) {
+		return false
+	}
+	for i := range ac {
+		if ac[i] != bc[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func osRemoveAll(p string) error { return removeAllOS(p) }
+func parentOf(p string) string {
+	i := strings.LastIndex(p, "/")
+	if i < 0 {
+		return ""
+	}
+	return p[:i]
+}
