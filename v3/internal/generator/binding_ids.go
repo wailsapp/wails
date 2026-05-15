@@ -90,7 +90,14 @@ func (generator *Generator) resolveObfuscatedOutput() (dir, packageName string, 
 		)
 	}
 
-	packageName, err := resolveTargetPackageName(dir)
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		generator.logger.Errorf("obfuscated bindings: resolve output dir %s: %v", dir, err)
+		return "", "", false
+	}
+	dir = absDir
+
+	packageName, err = resolveTargetPackageName(dir)
 	if err != nil {
 		fallback := filepath.Base(dir)
 		generator.logger.Warningf(
@@ -235,7 +242,9 @@ func writeMetadataInit(buf *bytes.Buffer, registrations []bindingIDRegistration,
 // to without an import.
 func buildPackageAliases(registrations []bindingIDRegistration, selfPkgPath string) map[string]string {
 	aliases := make(map[string]string)
-	used := make(map[string]bool)
+	used := map[string]bool{
+		"application": true,
+	}
 
 	seen := make(map[string]string)
 	var paths []string

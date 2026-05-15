@@ -103,6 +103,16 @@ func RegisterBindingMethodID(method any, id uint32) {
 	registeredBindingMethodIDs.Store(value.Pointer(), id)
 }
 
+// UnregisterBindingMethodID removes the stable binding ID for a service method.
+// Intended for use in tests to restore global state after calling RegisterBindingMethodID.
+func UnregisterBindingMethodID(method any) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		return
+	}
+	registeredBindingMethodIDs.Delete(value.Pointer())
+}
+
 func getRegisteredBindingMethodID(method reflect.Method) (uint32, bool) {
 	id, ok := registeredBindingMethodIDs.Load(method.Func.Pointer())
 	if !ok {

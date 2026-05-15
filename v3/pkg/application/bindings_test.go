@@ -197,6 +197,7 @@ func TestRegisteredBindingMethodID(t *testing.T) {
 	_ = application.New(application.Options{})
 
 	application.RegisterBindingMethodID((*TestService).String, stableID)
+	t.Cleanup(func() { application.UnregisterBindingMethodID((*TestService).String) })
 
 	bindings := application.NewBindings(nil, nil)
 	if err := bindings.Add(application.NewService(&TestService{})); err != nil {
