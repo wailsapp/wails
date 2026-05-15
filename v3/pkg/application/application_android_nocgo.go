@@ -54,6 +54,10 @@ func (a *App) isDarkMode() bool {
 	return false
 }
 
+func (a *App) setTheme(theme AppTheme) {
+	// TODO: Implement theme setting for Android
+}
+
 func (a *App) isWindows() bool {
 	return false
 }

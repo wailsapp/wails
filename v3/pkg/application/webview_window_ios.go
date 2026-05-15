@@ -223,7 +223,8 @@ func (w *iosWebviewWindow) setIgnoreMouseEvents(_ bool) {}
 
 func (w *iosWebviewWindow) setOpacity(_ float32) {}
 
-func (w *iosWebviewWindow) setTheme(_ Theme) {}
+func (w *iosWebviewWindow) getTheme() WinTheme  { return WinAppDefault }
+func (w *iosWebviewWindow) setTheme(_ WinTheme) {}
 
 func (w *iosWebviewWindow) setPinned(_ bool) {}
 

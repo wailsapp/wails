@@ -124,6 +124,20 @@ func (m *windowsApp) on(_ uint) {
 func (m *windowsApp) setIcon(_ []byte) {
 }
 
+// setTheme sets the application-wide theme by synchronizing the theme
+// across all open windows.
+func (m *windowsApp) setTheme(theme AppTheme) {
+	m.windowMapLock.RLock()
+	windows := make([]*windowsWebviewWindow, 0, len(m.windowMap))
+	for _, window := range m.windowMap {
+		windows = append(windows, window)
+	}
+	m.windowMapLock.RUnlock()
+	for _, window := range windows {
+		window.syncTheme()
+	}
+}
+
 func (m *windowsApp) name() string {
 	// appName := C.getAppName()
 	// defer C.free(unsafe.Pointer(appName))
