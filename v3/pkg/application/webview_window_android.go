@@ -191,7 +191,8 @@ func (w *androidWebviewWindow) setIgnoreMouseEvents(_ bool) {}
 
 func (w *androidWebviewWindow) setOpacity(_ float32) {}
 
-func (w *androidWebviewWindow) setTheme(_ Theme) {}
+func (w *androidWebviewWindow) getTheme() WinTheme       { return WinAppDefault }
+func (w *androidWebviewWindow) setTheme(_ WinTheme)      {}
 
 func (w *androidWebviewWindow) setPinned(_ bool) {}
 

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Theme Example</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- <script src="/wails/runtime.js" type="module"></script> -->
+    <!-- <script>
+        async function callBinding(name, ...params) {
+            return wails.Call.ByName(name, ...params)
+        }
+    </script> -->
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <div class="container">
+            <h3>Application Theme:</h3>
+            <h2 id="app-theme">Current Theme</h2>
+
+            <div class="control-container">
+                <button id="app-theme-system" class="btn">System</button>
+                <button id="app-theme-dark" class="btn">Dark</button>
+                <button id="app-theme-light" class="btn">Light</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <h3>Window Theme:</h3>
+            <h2 id="win-theme">Current Theme</h2>
+            
+            <div class="control-container">
+                <button id="win-theme-app" class="btn">App</button>
+                <button id="win-theme-system" class="btn">System</button>
+                <button id="win-theme-dark" class="btn">Dark</button>
+                <button id="win-theme-light" class="btn">Light</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

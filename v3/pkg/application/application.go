@@ -187,6 +187,12 @@ func New(appOptions Options) *App {
 		}
 	}
 
+	// Set the application Theme
+	result.theme = AppSystemDefault
+	if appOptions.Theme.Valid() {
+		result.theme = appOptions.Theme
+	}
+
 	return result
 }
 
@@ -221,6 +227,7 @@ type (
 		isOnMainThread() bool
 		isDarkMode() bool
 		getAccentColor() string
+		setTheme(theme AppTheme)
 	}
 
 	runnable interface {
@@ -421,6 +428,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// ApplicationTheme is the application theme to use for the application and any windows that follow the application theme.
+	theme AppTheme
 }
 
 func (a *App) Config() Options {

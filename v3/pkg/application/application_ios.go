@@ -86,6 +86,10 @@ func (a *App) isDarkMode() bool {
 	return bool(C.ios_is_dark_mode())
 }
 
+// setTheme sets the application-wide theme.
+// Note: This is currently a stub implementation for iOS.
+func (a *iosApp) setTheme(_ AppTheme) {}
+
 func (a *App) isWindows() bool {
 	return false
 }

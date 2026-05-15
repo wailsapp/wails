@@ -87,6 +87,12 @@ type windowsWebviewWindow struct {
 
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
+
+	// themeMu protects theme against concurrent access from the SystemThemeChanged event goroutine.
+	themeMu sync.RWMutex
+
+	// Theme - Record the resolved theme for Windows
+	theme theme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -515,28 +521,36 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Process the theme
-	switch options.Windows.Theme {
-	case SystemDefault:
-		isDark := w32.IsCurrentlyDarkMode()
-		if isDark {
-			w32.AllowDarkModeForWindow(w.hwnd, true)
-		}
-		w.updateTheme(isDark)
-		// Don't initialize default dark theme here if custom theme might be set
-		// The updateTheme call above will handle both default and custom themes
-		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
-			InvokeAsync(func() {
-				w.updateTheme(w32.IsCurrentlyDarkMode())
-			})
-		})
-	case Light:
-		w.updateTheme(false)
-	case Dark:
+	// System, Dark, Light - Resolved Theme to Apply
+	theme, followAppTheme := resolveWindowsEffectiveTheme(options.Windows.Theme, globalApplication.theme)
+	w.theme = theme
+	w.parent.followApplicationTheme = followAppTheme
+
+	switch w.theme {
+	case systemDefault:
+		w.updateTheme(w32.IsCurrentlyDarkMode())
+	case dark:
 		w32.AllowDarkModeForWindow(w.hwnd, true)
 		w.updateTheme(true)
-		// Don't initialize default dark theme here if custom theme might be set
-		// The updateTheme call above will handle custom themes
+	case light:
+		w32.AllowDarkModeForWindow(w.hwnd, false)
+		w.updateTheme(false)
 	}
+
+	// Listen to OS theme changes; update when the window is in system-following mode (WinSystemDefault).
+	w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
+		w.themeMu.RLock()
+		isSystemDefault := w.theme == systemDefault
+		w.themeMu.RUnlock()
+
+		if !isSystemDefault {
+			return
+		}
+
+		InvokeAsync(func() {
+			w.updateTheme(w32.IsCurrentlyDarkMode())
+		})
+	})
 
 	w.setBackgroundColour(options.BackgroundColour)
 	if options.BackgroundType == BackgroundTypeTranslucent {

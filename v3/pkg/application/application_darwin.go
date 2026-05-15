@@ -278,6 +278,24 @@ func (m *macosApp) setIcon(icon []byte) {
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
+// setTheme sets the application-wide theme by synchronizing the theme
+// across all open windows.
+func (m *macosApp) setTheme(theme AppTheme) {
+	m.parent.windowsLock.RLock()
+	var impls []*macosWebviewWindow
+	for _, window := range m.parent.windows {
+		if webviewWindow, ok := window.(*WebviewWindow); ok {
+			if impl, ok := webviewWindow.impl.(*macosWebviewWindow); ok {
+				impls = append(impls, impl)
+			}
+		}
+	}
+	m.parent.windowsLock.RUnlock()
+	for _, impl := range impls {
+		impl.syncTheme()
+	}
+}
+
 func (m *macosApp) name() string {
 	appName := C.getAppName()
 	defer C.free(unsafe.Pointer(appName))
