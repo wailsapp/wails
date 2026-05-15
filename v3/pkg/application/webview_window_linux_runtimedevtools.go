@@ -1,4 +1,4 @@
-//go:build linux && runtimedevtools && !android && !server
+//go:build linux && production && runtimedevtools && !android && !server
 
 package application
 

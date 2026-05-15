@@ -22,22 +22,23 @@ package application
 void openDevTools(void *window) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
 	if (@available(macOS 12.0, *)) {
- 	    dispatch_async(dispatch_get_main_queue(), ^{
+	    dispatch_async(dispatch_get_main_queue(), ^{
 			WebviewWindow* nsWindow = (WebviewWindow*)window;
 
 			@try {
 				[nsWindow.webView._inspector show];
 			} @catch (NSException *exception) {
-				NSLog(@"Opening inspector failed: %@", exception.reason);
+				NSLog(@"Opening the inspector failed: %@", exception.reason);
 				return;
 			}
 		});
 	}
 #else
-	NSLog(@"Opening inspector needs at least MacOS 12");
+	NSLog(@"Opening the inspector needs at least MacOS 12");
 #endif
 }
 
+// Enable NSWindow devtools
 void windowEnableDevTools(void* nsWindow) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];

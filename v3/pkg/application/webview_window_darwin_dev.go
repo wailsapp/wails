@@ -1,6 +1,4 @@
 //go:build darwin && !ios && !server && (!production || devtools) && !runtimedevtools
-
-
 package application
 
 /*

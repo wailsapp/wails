@@ -1,6 +1,8 @@
-//go:build windows && runtimedevtools
+//go:build windows && production && runtimedevtools
 
 package application
+
+import "github.com/wailsapp/wails/webview2/pkg/edge"
 
 func (w *windowsWebviewWindow) openDevTools() {
 	w.chromium.OpenDevToolsWindow()
