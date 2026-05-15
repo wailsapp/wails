@@ -773,13 +773,45 @@ func mapsEqual(a, b map[string]any) bool {
 		}
 		aMap, aIsMap := av.(map[string]any)
 		bMap, bIsMap := bv.(map[string]any)
+		aSlice, aIsSlice := av.([]any)
+		bSlice, bIsSlice := bv.([]any)
 		if aIsMap && bIsMap {
 			if !mapsEqual(aMap, bMap) {
 				return false
 			}
-		} else if aIsMap != bIsMap {
+		} else if aSlice && bIsSlice {
+			if !slicesEqual(aSlice, bSlice) {
+				return false
+			}
+		} else if aIsMap != bIsMap || aIsSlice != bIsSlice {
 			return false
 		} else if !reflect.DeepEqual(av, bv) {
+			return false
+		}
+	}
+	return true
+}
+
+func slicesEqual(a, b []any) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		aMap, aIsMap := a[i].(map[string]any)
+		bMap, bIsMap := b[i].(map[string]any)
+		aSlice, aIsSlice := a[i].([]any)
+		bSlice, bIsSlice := b[i].([]any)
+		if aIsMap && bIsMap {
+			if !mapsEqual(aMap, bMap) {
+				return false
+			}
+		} else if aSlice && bIsSlice {
+			if !slicesEqual(aSlice, bSlice) {
+				return false
+			}
+		} else if aIsMap != bIsMap || aIsSlice != bIsSlice {
+			return false
+		} else if !reflect.DeepEqual(a[i], b[i]) {
 			return false
 		}
 	}
