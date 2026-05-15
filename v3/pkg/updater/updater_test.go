@@ -25,10 +25,16 @@ import (
 
 func removeAllOS(p string) error { return os.RemoveAll(p) }
 
-// fakeHost captures every emit so tests can assert event sequence and payloads.
+// fakeHost captures every emit so tests can assert event sequence and
+// payloads, dispatches OnEvent callbacks to fired emits, and records
+// OpenWindow calls.
 type fakeHost struct {
-	mu     sync.Mutex
-	events []fakeEvent
+	mu        sync.Mutex
+	events    []fakeEvent
+	listeners map[string][]func(any)
+
+	openCalls []updater.WindowOptions
+	window    *fakeWindow
 }
 
 type fakeEvent struct {
@@ -38,7 +44,6 @@ type fakeEvent struct {
 
 func (f *fakeHost) Emit(name string, data ...any) bool {
 	f.mu.Lock()
-	defer f.mu.Unlock()
 	var d any
 	if len(data) == 1 {
 		d = data[0]
@@ -46,7 +51,73 @@ func (f *fakeHost) Emit(name string, data ...any) bool {
 		d = data
 	}
 	f.events = append(f.events, fakeEvent{Name: name, Data: d})
+	cbs := append([]func(any){}, f.listeners[name]...)
+	f.mu.Unlock()
+	for _, cb := range cbs {
+		cb(d)
+	}
 	return false
+}
+
+func (f *fakeHost) OnEvent(name string, cb func(any)) func() {
+	f.mu.Lock()
+	if f.listeners == nil {
+		f.listeners = map[string][]func(any){}
+	}
+	f.listeners[name] = append(f.listeners[name], cb)
+	idx := len(f.listeners[name]) - 1
+	f.mu.Unlock()
+	return func() {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		if cbs := f.listeners[name]; idx < len(cbs) {
+			f.listeners[name] = append(cbs[:idx], cbs[idx+1:]...)
+		}
+	}
+}
+
+func (f *fakeHost) OpenWindow(opts updater.WindowOptions) updater.WindowHandle {
+	f.mu.Lock()
+	f.openCalls = append(f.openCalls, opts)
+	w := &fakeWindow{}
+	f.window = w
+	f.mu.Unlock()
+	return w
+}
+
+// fakeWindow records every interaction the Updater performs on a window.
+type fakeWindow struct {
+	mu     sync.Mutex
+	html   []string
+	closed bool
+	shown  int
+	events []fakeEvent
+}
+
+func (w *fakeWindow) SetHTML(s string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.html = append(w.html, s)
+}
+func (w *fakeWindow) EmitEvent(name string, data ...any) bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	var d any
+	if len(data) == 1 {
+		d = data[0]
+	}
+	w.events = append(w.events, fakeEvent{Name: name, Data: d})
+	return false
+}
+func (w *fakeWindow) Show() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.shown++
+}
+func (w *fakeWindow) Close() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.closed = true
 }
 
 func (f *fakeHost) names() []string {

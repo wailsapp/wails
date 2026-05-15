@@ -27,14 +27,47 @@ type Updater struct {
 	pending    *Release
 	resolved   string // resolved download path (after install)
 	lastDigest []byte // digest computed streaming during the last successful download
+	skipped    string // version recorded by SkipVersion / the default window Skip button
+
+	sessMu  sync.Mutex     // protects session pointer separately from u.mu
+	session *windowSession // current window session, if any
 }
 
 // Host is the minimal surface the Updater needs from the application that
-// owns it. The application package implements this on *App; tests stub it.
+// owns it. The application package implements this via an adapter; tests
+// stub it.
 type Host interface {
-	// Emit a custom event with the supplied data. Mirrors the signature of
-	// (*EventManager).Emit so the application's adapter is trivially thin.
+	// Emit a custom event with the supplied data.
 	Emit(name string, data ...any) bool
+
+	// OnEvent registers a callback for a custom event. The returned function
+	// removes the listener.
+	OnEvent(name string, callback func(payload any)) func()
+
+	// OpenWindow creates and shows an update window. Implementations build
+	// a real Wails webview window from opts; tests return a recorder.
+	OpenWindow(opts WindowOptions) WindowHandle
+}
+
+// WindowHandle is the minimal API the Updater drives once a window is open.
+// The application adapter satisfies this around a *WebviewWindow.
+type WindowHandle interface {
+	SetHTML(html string)
+	EmitEvent(name string, data ...any) bool
+	Show()
+	Close()
+}
+
+// WindowOptions describes the chrome and starting content for a window the
+// Updater asks the host to open. Maps to (a subset of)
+// application.WebviewWindowOptions on the host side.
+type WindowOptions struct {
+	Title         string
+	Width, Height int
+	Frameless     bool
+	AlwaysOnTop   bool
+	DisableResize bool
+	InitialHTML   string
 }
 
 // New is for internal use by the application package and tests. End users
@@ -119,6 +152,12 @@ func (u *Updater) Check(ctx context.Context) (*Release, error) {
 			u.host.Emit(EventNoUpdate)
 			return nil, nil
 		}
+		if u.shouldSkip(rel.Version) {
+			// User has explicitly skipped this version — surface as up-to-date.
+			u.transition(StateUpToDate)
+			u.host.Emit(EventNoUpdate)
+			return nil, nil
+		}
 		rel.Provider = p.Name()
 
 		u.mu.Lock()
@@ -195,15 +234,28 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 	return nil
 }
 
-// CheckAndInstall is the convenience method: Check + DownloadAndInstall in
-// one call. Returns nil with no side effects if the application is already
-// up to date.
+// CheckAndInstall is the convenience method: it opens the update window
+// (unless Config.Window == WindowNone) and runs Check + DownloadAndInstall.
+// Returns nil with no side effects if the application is already up to date.
+//
+// The window stays open for the duration of the flow and across user
+// dismissal until the caller (or the user) explicitly closes it.
 func (u *Updater) CheckAndInstall(ctx context.Context) error {
+	sess := u.openSession(ctx)
+	u.sessMu.Lock()
+	u.session = sess
+	u.sessMu.Unlock()
+
 	rel, err := u.Check(ctx)
 	if err != nil {
+		// Window stays open showing the error; the user can dismiss it via
+		// the Cancel button which fires updater:user:cancel.
 		return err
 	}
 	if rel == nil {
+		// "Up to date" — close immediately. If WindowNone we never opened
+		// anything, so close is a no-op.
+		u.closeWindow()
 		return nil
 	}
 	return u.DownloadAndInstall(ctx)

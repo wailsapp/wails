@@ -509,7 +509,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
-	a.Updater = updater.New(a.Event)
+	a.Updater = updater.New(newUpdaterHost(a))
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
