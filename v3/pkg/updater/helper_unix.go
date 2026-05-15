@@ -7,7 +7,13 @@ import (
 	"syscall"
 )
 
-// syscallSignalZero returns the "is alive" probe signal used by isAlive on
-// Unix-like systems. Sending signal 0 to a pid either succeeds (process is
-// running and we have permission) or fails (process is gone / no permission).
-func syscallSignalZero() os.Signal { return syscall.Signal(0) }
+// platformIsAlive reports whether pid names a running process. Sending the
+// no-op signal 0 to a pid either succeeds (process is running and we have
+// permission) or fails (process is gone / no permission).
+func platformIsAlive(pid int) bool {
+	proc, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	return proc.Signal(syscall.Signal(0)) == nil
+}

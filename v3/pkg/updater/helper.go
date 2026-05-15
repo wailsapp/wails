@@ -278,17 +278,7 @@ func isAlive(pid int) bool {
 	if pid <= 0 {
 		return false
 	}
-	proc, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-	// Sending signal 0 is the portable "is the process alive" test on
-	// Unix-like systems; on Windows os.FindProcess returns a valid handle
-	// only for running processes, so the additional Signal call is harmless.
-	if err := proc.Signal(syscallSignalZero()); err != nil {
-		return false
-	}
-	return true
+	return platformIsAlive(pid)
 }
 
 // helperLog is a tiny log writer that tolerates missing destinations and
