@@ -1049,7 +1049,9 @@ func (w *macosWebviewWindow) hide() {
 }
 
 func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
-	C.setFullscreenButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither silently overrides the other.
+	C.setFullscreenButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.MaximiseButtonState)))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1399,11 +1401,9 @@ func (w *macosWebviewWindow) run() {
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
-		if options.FullscreenButtonState != ButtonEnabled {
-			w.setFullscreenButtonState(options.FullscreenButtonState)
-		}
+		// setMaximiseButtonState reconciles with FullscreenButtonState internally.
+		w.setMaximiseButtonState(options.MaximiseButtonState)
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1630,7 +1630,9 @@ func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
 }
 
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	C.setMaximiseButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither silently overrides the other.
+	C.setMaximiseButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.FullscreenButtonState)))
 }
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
