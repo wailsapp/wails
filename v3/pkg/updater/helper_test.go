@@ -1,0 +1,176 @@
+package updater
+
+import (
+	"errors"
+	"os"
+	"path/filepath"
+	"sync"
+	"testing"
+	"time"
+)
+
+// fakeLauncher records each launch attempt without actually exec'ing
+// anything. errsByCall lets a test fail only specific invocations (e.g.
+// first launch fails, second-launch-during-restore succeeds).
+type fakeLauncher struct {
+	mu         sync.Mutex
+	calls      []string
+	errsByCall []error
+}
+
+func (f *fakeLauncher) launch(path string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	idx := len(f.calls)
+	f.calls = append(f.calls, path)
+	if idx < len(f.errsByCall) {
+		return f.errsByCall[idx]
+	}
+	return nil
+}
+
+// instantWaiter is a processWaiter that returns immediately. Used when the
+// test doesn't want to spend wall-clock time waiting for a (nonexistent) PID.
+func instantWaiter(_ int, _ time.Duration) error { return nil }
+
+func TestRunHelperSwap_HappyPath_File(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 0 {
+		t.Fatalf("code: %d", code)
+	}
+	if got := readFile(t, target); string(got) != "NEW" {
+		t.Errorf("target contents: %q", got)
+	}
+	if _, err := os.Stat(newPath); !os.IsNotExist(err) {
+		t.Errorf("new path should have been renamed away: %v", err)
+	}
+	if _, err := os.Stat(target + ".bak"); !os.IsNotExist(err) {
+		t.Errorf("backup should be cleaned up: %v", err)
+	}
+	if len(l.calls) != 1 || l.calls[0] != target {
+		t.Errorf("launcher calls: %+v", l.calls)
+	}
+}
+
+func TestRunHelperSwap_TargetMissing_FailsEarly(t *testing.T) {
+	dir := t.TempDir()
+	missing := filepath.Join(dir, "missing")
+	newPath := filepath.Join(dir, "new")
+	writeFile(t, newPath, []byte("NEW"))
+
+	code := runHelperSwap(missing, newPath, 0, filepath.Join(dir, "log"), instantWaiter, &fakeLauncher{})
+	if code != 10 {
+		t.Fatalf("code: %d (want 10)", code)
+	}
+}
+
+func TestRunHelperSwap_NewMissing_FailsEarly(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	writeFile(t, target, []byte("OLD"))
+
+	code := runHelperSwap(target, filepath.Join(dir, "nope"), 0, filepath.Join(dir, "log"), instantWaiter, &fakeLauncher{})
+	if code != 11 {
+		t.Fatalf("code: %d (want 11)", code)
+	}
+}
+
+func TestRunHelperSwap_LaunchFails_RestoresBackup(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+
+	l := &fakeLauncher{errsByCall: []error{errors.New("nope")}}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 15 {
+		t.Fatalf("code: %d (want 15)", code)
+	}
+	// After restore the target should have its original contents back.
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("after restore target contents: %q (want OLD)", got)
+	}
+	// Launcher gets called twice: once for the new (fails), once for the restore.
+	if len(l.calls) != 2 {
+		t.Errorf("expected 2 launch attempts, got %d: %+v", len(l.calls), l.calls)
+	}
+}
+
+func TestRunHelperSwap_AppBundleDirectory(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "App.app")
+	newPath := filepath.Join(dir, "App.app.new")
+	makeAppBundle(t, target, "old-bin")
+	makeAppBundle(t, newPath, "new-bin")
+
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 0 {
+		t.Fatalf("code: %d", code)
+	}
+	if got := readFile(t, filepath.Join(target, "Contents", "MacOS", "exe")); string(got) != "new-bin" {
+		t.Errorf("bundle contents after swap: %q", got)
+	}
+}
+
+func TestRunHelperSwap_AppBundle_RestoreOnLaunchFailure(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "App.app")
+	newPath := filepath.Join(dir, "App.app.new")
+	makeAppBundle(t, target, "old-bin")
+	makeAppBundle(t, newPath, "new-bin")
+
+	l := &fakeLauncher{errsByCall: []error{errors.New("kaboom")}}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 15 {
+		t.Fatalf("code: %d (want 15)", code)
+	}
+	if got := readFile(t, filepath.Join(target, "Contents", "MacOS", "exe")); string(got) != "old-bin" {
+		t.Errorf("after restore bundle contents: %q (want old-bin)", got)
+	}
+}
+
+func TestHandleHelperMode_NoEnv_Returns(t *testing.T) {
+	// When the sentinel env var is absent the function must return
+	// immediately and NOT touch os.Exit.
+	t.Setenv(envHelperMode, "")
+	HandleHelperMode()
+}
+
+// --- helpers ---
+
+func writeFile(t *testing.T, path string, body []byte) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, body, 0o755); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func readFile(t *testing.T, path string) []byte {
+	t.Helper()
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+// makeAppBundle creates a minimal Contents/MacOS/exe layout under root,
+// with `payload` as the executable's contents. This is the structure macOS
+// treats as a .app bundle.
+func makeAppBundle(t *testing.T, root, payload string) {
+	t.Helper()
+	exe := filepath.Join(root, "Contents", "MacOS", "exe")
+	writeFile(t, exe, []byte(payload))
+}

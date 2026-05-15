@@ -209,6 +209,50 @@ func (u *Updater) CheckAndInstall(ctx context.Context) error {
 	return u.DownloadAndInstall(ctx)
 }
 
+// Restart kicks off the binary swap and relaunches the application. The
+// running process spawns a helper-mode child (the same binary with sentinel
+// env vars set), then asks the application to shut down cleanly. When the
+// parent exits the helper-mode process performs the swap and relaunches.
+//
+// Returns ErrNotReady if DownloadAndInstall has not produced an installed
+// artifact yet. If the spawn fails (which is the only failure mode that
+// keeps the caller's process alive) the error is surfaced.
+//
+// On success this method does not necessarily return immediately — the
+// helper handoff is asynchronous and the caller's process will exit once
+// the application's shutdown sequence completes. Callers should typically
+// follow Restart with a clean shutdown trigger (e.g. app.Quit()).
+func (u *Updater) Restart(_ context.Context) error {
+	u.mu.RLock()
+	staged := u.resolved
+	u.mu.RUnlock()
+	if staged == "" {
+		return ErrNotReady
+	}
+
+	self, err := selfExecutable()
+	if err != nil {
+		return fmt.Errorf("updater: resolve self: %w", err)
+	}
+
+	logPath := filepath.Join(os.TempDir(), "wails-update.log")
+	env := append(os.Environ(),
+		envHelperMode+"=1",
+		envHelperTarget+"="+self,
+		envHelperNew+"="+staged,
+		envHelperPID+"="+itoa(os.Getpid()),
+		envHelperLog+"="+logPath,
+	)
+
+	cmd := newDetachedCommand(self)
+	cmd.Env = env
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("updater: spawn helper: %w", err)
+	}
+	// Don't wait — the helper outlives us.
+	return nil
+}
+
 // DownloadedPath returns the on-disk path of the last successfully-installed
 // (staged) update, or "" if none.
 func (u *Updater) DownloadedPath() string {
