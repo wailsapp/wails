@@ -1,0 +1,199 @@
+---
+title: Паттерны архитектуры
+description: Паттерны проектирования для приложений Wails
+sidebar:
+  order: 7
+---
+
+## Обзор
+
+Проверенные паттерны для организации вашего приложения Wails.
+
+## Паттерн уровня сервиса
+
+### Структура
+
+```
+app/
+├── main.go
+├── services/
+│   ├── user_service.go
+│   ├── data_service.go
+│   └── file_service.go
+└── models/
+    └── user.go
+```
+
+### Реализация
+
+```go
+// Service interface
+type UserService interface {
+    Create(email, password string) (*User, error)
+    GetByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Implementation
+type userService struct {
+    app *application.Application
+    db  *sql.DB
+}
+
+func NewUserService(app *application.Application, db *sql.DB) UserService {
+    return &userService{app: app, db: db}
+}
+```
+
+## Паттерн репозитория
+
+### Структура
+
+```go
+// Repository interface
+type UserRepository interface {
+    Create(user *User) error
+    FindByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Service uses repository
+type UserService struct {
+    repo UserRepository
+}
+
+func (s *UserService) Create(email, password string) (*User, error) {
+    user := &User{Email: email}
+    return user, s.repo.Create(user)
+}
+```
+
+## Архитектура, управляемая событиями
+
+### Шина событий
+
+```go
+type EventBus struct {
+    app       *application.Application
+    listeners map[string][]func(interface{})
+    mu        sync.RWMutex
+}
+
+func (eb *EventBus) Subscribe(event string, handler func(interface{})) {
+    eb.mu.Lock()
+    defer eb.mu.Unlock()
+    eb.listeners[event] = append(eb.listeners[event], handler)
+}
+
+func (eb *EventBus) Publish(event string, data interface{}) {
+    eb.mu.RLock()
+    handlers := eb.listeners[event]
+    eb.mu.RUnlock()
+    
+    for _, handler := range handlers {
+        go handler(data)
+    }
+}
+```
+
+### Использование
+
+```go
+// Subscribe
+eventBus.Subscribe("user.created", func(data interface{}) {
+    user := data.(*User)
+    sendWelcomeEmail(user)
+})
+
+// Publish
+eventBus.Publish("user.created", user)
+```
+
+## Внедрение зависимостей
+
+### Ручное внедрение зависимостей
+
+```go
+type App struct {
+    userService *UserService
+    fileService *FileService
+    db          *sql.DB
+}
+
+func NewApp() *App {
+    db := openDatabase()
+    
+    return &App{
+        db:          db,
+        userService: NewUserService(db),
+        fileService: NewFileService(db),
+    }
+}
+```
+
+### Использование Wire
+
+```go
+// wire.go
+//go:build wireinject
+
+func InitializeApp() (*App, error) {
+    wire.Build(
+        openDatabase,
+        NewUserService,
+        NewFileService,
+        NewApp,
+    )
+    return nil, nil
+}
+```
+
+## Управление состоянием
+
+### Централизованное состояние
+
+```go
+type AppState struct {
+    currentUser *User
+    settings    *Settings
+    mu          sync.RWMutex
+}
+
+func (s *AppState) SetUser(user *User) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.currentUser = user
+}
+
+func (s *AppState) GetUser() *User {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.currentUser
+}
+```
+
+## Лучшие практики
+
+### ✅ Делайте
+
+- Разделяйте ответственность
+- Используйте интерфейсы
+- Внедряйте зависимости
+- Правильно обрабатывайте ошибки
+- Держите сервисы сфокусированными
+- Документируйте архитектуру
+
+### ❌ Не делайте
+
+- Не создавайте объекты-боги
+- Не связывайте компоненты тесно
+- Не пропускайте обработку ошибок
+- Не игнорируйте одновременность
+- Не переусложняйте
+
+## Следующие шаги
+
+- [Security](/guides/security) - Лучшие практики безопасности
+- [Best Practices](/features/bindings/best-practices) - Лучшие практики привязок

@@ -1,0 +1,199 @@
+---
+title: アーキテクチャパターン
+description: Wails アプリケーションの設計パターン
+sidebar:
+  order: 7
+---
+
+## 概要
+
+Wails アプリケーションを整理するための実証済みパターン。
+
+## サービスレイヤーパターン
+
+### 構造
+
+```
+app/
+├── main.go
+├── services/
+│   ├── user_service.go
+│   ├── data_service.go
+│   └── file_service.go
+└── models/
+    └── user.go
+```
+
+### 実装
+
+```go
+// Service interface
+type UserService interface {
+    Create(email, password string) (*User, error)
+    GetByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Implementation
+type userService struct {
+    app *application.Application
+    db  *sql.DB
+}
+
+func NewUserService(app *application.Application, db *sql.DB) UserService {
+    return &userService{app: app, db: db}
+}
+```
+
+## リポジトリパターン
+
+### 構造
+
+```go
+// Repository interface
+type UserRepository interface {
+    Create(user *User) error
+    FindByID(id int) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+// Service uses repository
+type UserService struct {
+    repo UserRepository
+}
+
+func (s *UserService) Create(email, password string) (*User, error) {
+    user := &User{Email: email}
+    return user, s.repo.Create(user)
+}
+```
+
+## イベント駆動アーキテクチャ
+
+### イベントバス
+
+```go
+type EventBus struct {
+    app       *application.Application
+    listeners map[string][]func(interface{})
+    mu        sync.RWMutex
+}
+
+func (eb *EventBus) Subscribe(event string, handler func(interface{})) {
+    eb.mu.Lock()
+    defer eb.mu.Unlock()
+    eb.listeners[event] = append(eb.listeners[event], handler)
+}
+
+func (eb *EventBus) Publish(event string, data interface{}) {
+    eb.mu.RLock()
+    handlers := eb.listeners[event]
+    eb.mu.RUnlock()
+    
+    for _, handler := range handlers {
+        go handler(data)
+    }
+}
+```
+
+### 使用法
+
+```go
+// Subscribe
+eventBus.Subscribe("user.created", func(data interface{}) {
+    user := data.(*User)
+    sendWelcomeEmail(user)
+})
+
+// Publish
+eventBus.Publish("user.created", user)
+```
+
+## 依存性注入
+
+### 手動 DI
+
+```go
+type App struct {
+    userService *UserService
+    fileService *FileService
+    db          *sql.DB
+}
+
+func NewApp() *App {
+    db := openDatabase()
+    
+    return &App{
+        db:          db,
+        userService: NewUserService(db),
+        fileService: NewFileService(db),
+    }
+}
+```
+
+### Wire を使用
+
+```go
+// wire.go
+//go:build wireinject
+
+func InitializeApp() (*App, error) {
+    wire.Build(
+        openDatabase,
+        NewUserService,
+        NewFileService,
+        NewApp,
+    )
+    return nil, nil
+}
+```
+
+## 状態管理
+
+### 集中管理状態
+
+```go
+type AppState struct {
+    currentUser *User
+    settings    *Settings
+    mu          sync.RWMutex
+}
+
+func (s *AppState) SetUser(user *User) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.currentUser = user
+}
+
+func (s *AppState) GetUser() *User {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.currentUser
+}
+```
+
+## ベストプラクティス
+
+### ✅ すべき事
+
+- 関心事の分離
+- インターフェースを使用
+- 依存性を注入
+- エラーを適切に処理
+- サービスに集中
+- アーキテクチャを文書化
+
+### ❌ すべきでない事
+
+- god オブジェクトを作成しない
+- コンポーネントを密に結合しない
+- エラー処理をスキップしない
+- 並行処理を無視しない
+- 過度に設計しない
+
+## 次のステップ
+
+- [Security](/guides/security) - セキュリティのベストプラクティス
+- [Best Practices](/features/bindings/best-practices) - バインディングのベストプラクティス
