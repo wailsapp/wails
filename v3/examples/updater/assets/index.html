@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Updater Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      color: #1d1d1f;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1e; color: #f5f5f7; }
+    }
+    h1 { margin-top: 0; }
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 6px;
+      min-height: 1.5em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .status { background: rgba(255,255,255,0.06); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Updater Example</h1>
+  <p>Use <strong>App → Check for Updates…</strong> to trigger the update flow.
+    The framework's default window will appear; this page mirrors the
+    updater events as they arrive.</p>
+  <div class="status" id="status">waiting…</div>
+
+  <script type="module">
+    const status = document.getElementById("status");
+    function log(line) {
+      const t = new Date().toISOString().slice(11, 19);
+      status.textContent = `[${t}] ${line}\n` + status.textContent;
+    }
+    const wails = window.wails;
+    if (wails && wails.Events) {
+      wails.Events.On("updater:check-started",     () => log("check started"));
+      wails.Events.On("updater:update-available",  (e) => log(`available: v${(e.data ?? e).version}`));
+      wails.Events.On("updater:no-update",         () => log("up to date"));
+      wails.Events.On("updater:download-progress", (e) => {
+        const p = e.data ?? e;
+        if (p.total > 0) log(`downloading: ${p.written}/${p.total}`);
+        else             log(`downloading: ${p.written} bytes`);
+      });
+      wails.Events.On("updater:update-ready",      () => log("ready — restart to apply"));
+      wails.Events.On("updater:error",             (e) => log(`error: ${(e.data ?? e).message}`));
+    }
+  </script>
+</body>
+</html>

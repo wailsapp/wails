@@ -1,0 +1,292 @@
+---
+title: Updater
+description: Self-updating Wails v3 applications — pluggable providers, automatic verification, and a default UI you can theme or replace.
+---
+
+The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on `app.Updater`, accepts one or more pluggable `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.
+
+## Quick start (30 seconds)
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/updater"
+    "github.com/wailsapp/wails/v3/pkg/updater/providers/github"
+)
+
+func main() {
+    app := application.New(application.Options{Name: "Demo"})
+
+    gh, _ := github.New(github.Config{Repository: "myorg/myapp"})
+    if err := app.Updater.Init(updater.Config{
+        CurrentVersion: "1.0.0",
+        Providers:      []updater.Provider{gh},
+    }); err != nil {
+        log.Fatal(err)
+    }
+
+    if err := app.Updater.CheckAndInstall(context.Background()); err != nil {
+        log.Printf("update: %v", err)
+    }
+
+    _ = app.Run()
+}
+```
+
+That's it. The framework opens an update window, checks GitHub, downloads the release asset for the running platform, swaps the binary, and is ready for restart.
+
+## Providers
+
+A `Provider` is anything that satisfies this interface:
+
+```go
+type Provider interface {
+    Name() string
+    Check(ctx context.Context, req CheckRequest) (*Release, error)
+    Download(ctx context.Context, r *Release, dst io.Writer, onProgress func(written, total int64)) error
+}
+```
+
+Three are built in:
+
+### GitHub Releases (`updater/providers/github`)
+
+```go
+gh, _ := github.New(github.Config{
+    Repository:    "wailsapp/wails",
+    Token:         "ghp_…",        // optional; raises rate limit + private repos
+    Prerelease:    false,            // include pre-releases
+    ChecksumAsset: "SHA256SUMS",     // optional sibling asset for verification
+})
+```
+
+The default asset matcher picks by `GOOS` + `GOARCH` substring on the filename, recognising common aliases (`amd64`/`x86_64`/`x64`, `arm64`/`aarch64`, `386`/`i386`/`x86`). Override with `Config.AssetMatcher` for custom naming schemes.
+
+### keygen.sh (`updater/providers/keygen`)
+
+```go
+kg, _ := keygen.New(keygen.Config{
+    Account: "your-account-slug",
+    Product: "your-product-id",
+    Token:   "admi-…",   // or LicenseKey for license-authenticated checks
+    Channel: "stable",
+})
+```
+
+The provider automatically maps keygen.sh's per-artifact SHA-512 checksum and Ed25519ph signature into the framework's `Release.Verification` block — no extra wiring required.
+
+### Sparkle AppCast (`updater/providers/appcast`)
+
+```go
+ac, _ := appcast.New(appcast.Config{
+    URL:     "https://your.app/appcast.xml",
+    Channel: "stable",  // optional sparkle:channel filter
+})
+```
+
+Drops in to existing Sparkle/WinSparkle infrastructure unchanged. Reads `sparkle:shortVersionString`, `<enclosure>`, and `sparkle:edSignature` from the feed.
+
+### Fallback chain
+
+`Config.Providers` is ordered. The updater walks it in sequence: the first provider that returns a release wins; the first provider that reports "up to date" short-circuits the chain. An error advances to the next provider. Useful for "primary unreachable" scenarios:
+
+```go
+app.Updater.Init(updater.Config{
+    CurrentVersion: "1.0.0",
+    Providers: []updater.Provider{
+        keygen.New(...),  // primary: licensed customers
+        github.New(...),  // fallback: public mirror
+    },
+})
+```
+
+## Cryptographic verification
+
+Releases are authenticated by the framework's verifier using `Config.PublicKey` as the trust root:
+
+```go
+//go:embed publickey.pem
+var publicKey []byte
+
+app.Updater.Init(updater.Config{
+    CurrentVersion: "1.0.0",
+    Providers:      []updater.Provider{...},
+    PublicKey:      publicKey,
+})
+```
+
+Supported algorithms: `ed25519`, `ed25519ph` (pre-hash, SHA-512), `ecdsa-p256` (over SHA-256), plus digest-only mode (SHA-256/SHA-512).
+
+Each provider populates `Release.Verification` with whatever its source publishes — keygen.sh ships Ed25519ph, Sparkle ships Ed25519, GitHub providers ship digests via `ChecksumAsset`. If a release carries a signature and no public key is configured, the install **fails closed** — never the other way around.
+
+The verifier reads the SHA digest computed *while streaming* the download, so even on multi-GB updates verification adds no extra disk pass.
+
+## The default window
+
+Out of the box `CheckAndInstall` opens a small framework-owned window with release notes, a progress bar, and Install / Skip / Remind / Cancel buttons. It listens to `updater:*` events on the Wails event bus and emits `updater:user:*` actions back to Go; you can theme, override, or replace it.
+
+### Theme via CSS
+
+```go
+app.Updater.Init(updater.Config{
+    // …
+    Window: &updater.BuiltinWindow{
+        CSS: `:root { --accent: #ff6f00; --bg: #1a1a1a; --fg: #fafafa; }`,
+    },
+})
+```
+
+The default stylesheet uses CSS variables (`--bg`, `--fg`, `--fg-dim`, `--accent`, `--accent-fg`, `--surface`, `--border`, `--error`, `--radius`, `--pad`, `--font`) — override any of them.
+
+### Replace the template
+
+Provide your own HTML; it just needs to listen to `updater:*` events and emit `updater:user:*` actions using the standard Wails runtime:
+
+```go
+app.Updater.Init(updater.Config{
+    // …
+    Window: &updater.BuiltinWindow{
+        HTML: myCustomTemplate,
+    },
+})
+```
+
+### Window chrome
+
+Override the window options (frameless, size, always-on-top, …) without touching the HTML:
+
+```go
+Window: &updater.BuiltinWindow{
+    Options: updater.WindowOptions{
+        Frameless:   true,
+        Width:       640,
+        Height:      480,
+        AlwaysOnTop: true,
+    },
+},
+```
+
+### Bring your own window
+
+Pass any value implementing `updater.WindowHandle` (e.g. an `*application.WebviewWindow` you create yourself):
+
+```go
+myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{...})
+app.Updater.Init(updater.Config{
+    // …
+    Window: myWin,
+})
+```
+
+You're responsible for what the window renders. The framework just fires events at it.
+
+### Headless
+
+```go
+app.Updater.Init(updater.Config{
+    // …
+    Window: updater.WindowNone,
+})
+```
+
+No window is opened. Subscribe to `updater:*` events from your own UI and call `app.Updater.CheckAndInstall(ctx)` from a button handler.
+
+## Events
+
+Both Go and JavaScript subscribe through the standard Wails event bus.
+
+### From Go
+
+```go
+app.Event.On(updater.EventDownloadProgress, func(e *application.CustomEvent) {
+    var p updater.Progress
+    _ = json.Unmarshal(e.JSON(), &p)
+    log.Printf("downloaded %d/%d", p.Written, p.Total)
+})
+```
+
+### From JavaScript
+
+```js
+wails.Events.On("updater:download-progress", (e) => {
+    const { written, total, rate } = e.data
+    progressBar.value = written
+    progressBar.max = total
+})
+```
+
+### Event reference
+
+| Event | Payload | When |
+|---|---|---|
+| `updater:check-started` | nil | Check round trip starts |
+| `updater:update-available` | `*Release` | Provider returned a newer release |
+| `updater:no-update` | nil | Already up to date |
+| `updater:download-started` | `*Release` | Streaming begins |
+| `updater:download-progress` | `Progress` | ~10/sec during streaming |
+| `updater:download-complete` | `*Release` | Bytes on disk, pre-verify |
+| `updater:verifying` | `*Release` | Signature/digest check |
+| `updater:installing` | `*Release` | Binary swap |
+| `updater:update-ready` | `*Release` | Installed; restart pending |
+| `updater:error` | `ErrorInfo` | Any stage failed |
+
+User-action events emitted by the default window (and any custom UI you build):
+
+| Event | Effect |
+|---|---|
+| `updater:user:install` | Triggers `DownloadAndInstall` |
+| `updater:user:cancel` | Closes the window |
+| `updater:user:skip` | Calls `SkipVersion` then closes |
+| `updater:user:remind` | Closes the window |
+| `updater:user:restart` | Triggers `Restart` |
+
+## Writing your own provider
+
+Implement the three-method interface. Populate `Release.Verification` with whatever your source publishes — the framework handles the crypto.
+
+```go
+type myProvider struct{ feedURL string }
+
+func (p *myProvider) Name() string { return "myCDN" }
+
+func (p *myProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
+    // Fetch your manifest, compare versions, pick a platform-matching artifact.
+    // Return (nil, nil) when up to date.
+    return &updater.Release{
+        Version: "2.0.0",
+        Artifact: updater.Artifact{
+            Filename: "app-darwin-arm64.dmg",
+            Size:     12345,
+        },
+        Verification: &updater.Verification{
+            DigestAlgo: "sha256",
+            Digest:     digestBytes,
+        },
+        Metadata: map[string]any{"download.url": "https://cdn.example.com/asset.dmg"},
+    }, nil
+}
+
+func (p *myProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
+    // Stream r's bytes to dst; call onProgress periodically.
+}
+```
+
+That's the whole contract. Register your provider just like any built-in:
+
+```go
+app.Updater.Init(updater.Config{
+    CurrentVersion: "1.0.0",
+    Providers:      []updater.Provider{&myProvider{}},
+})
+```
+
+## How the binary swap works
+
+After a successful download + verify, the framework writes the artifact to a temp file and atomic-renames it into place. For replacing a *running* executable (which Windows in particular forbids), the updater re-executes the current binary with sentinel environment variables set: that helper-mode process waits for the parent to exit, swaps the on-disk binary, and relaunches the new version. macOS `.app` bundles are copied recursively (symlinks preserved); Linux and Windows do a single-file swap.
+
+The handoff is automatic — call `app.Updater.Restart(ctx)` from a menu item or the default window's Restart button, and the framework does the rest. No separate helper binary to ship.
