@@ -262,14 +262,16 @@ func parseFeed(body []byte) (*rssFeed, error) {
 }
 
 // pickBestItem returns the newest matching item by parsed semver order.
-// "Matching" = (1) channel filter matches if set, (2) sparkle:os matches
-// req.Platform when sparkle:os is set on the item or enclosure.
+// "Matching" = (1) channel filter matches if set (an unlabelled item never
+// matches a specific channel — Sparkle's contract is that items opt *in* to
+// a channel, not the reverse), (2) sparkle:os matches req.Platform when
+// sparkle:os is set on the item or enclosure.
 func pickBestItem(items []item, req updater.CheckRequest, channel string) *item {
 	plat := strings.ToLower(req.Platform)
 	var best *item
 	for idx := range items {
 		it := &items[idx]
-		if channel != "" && it.SparkleChannel != "" && it.SparkleChannel != channel {
+		if channel != "" && it.SparkleChannel != channel {
 			continue
 		}
 		// sparkle:os may sit either on the <item> or the <enclosure>. Both

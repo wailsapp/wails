@@ -104,8 +104,13 @@ func TestCheckAndInstall_BuiltinWindow_OverrideHTML(t *testing.T) {
 	if len(host.openCalls) != 1 {
 		t.Fatalf("expected 1 OpenWindow, got %d", len(host.openCalls))
 	}
-	if host.openCalls[0].InitialHTML != custom {
-		t.Errorf("custom HTML not used; got first 60 chars: %q", host.openCalls[0].InitialHTML[:60])
+	got := host.openCalls[0].InitialHTML
+	if got != custom {
+		preview := got
+		if len(preview) > 60 {
+			preview = preview[:60]
+		}
+		t.Errorf("custom HTML not used; got preview: %q", preview)
 	}
 }
 

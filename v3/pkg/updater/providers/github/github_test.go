@@ -318,6 +318,23 @@ func TestDefaultAssetMatcher(t *testing.T) {
 	}
 }
 
+// 386 falls back to matching "x86", but "x86" is a substring of "x86_64".
+// The matcher must not return an amd64 asset for a 386 request.
+func TestDefaultAssetMatcher_386_DoesNotMatchX86_64(t *testing.T) {
+	assets := []github.ReleaseAsset{
+		{Name: "app-linux-x86_64.tar.gz"},
+		{Name: "app-linux-amd64.deb"},
+		{Name: "app-linux-i386.tar.gz"},
+	}
+	if got := github.DefaultAssetMatcher(updater.CheckRequest{Platform: "linux", Arch: "386"}, assets); got != 2 {
+		t.Errorf("386 request should pick i386 asset (index 2), got %d", got)
+	}
+	// And the strict amd64 path is unaffected.
+	if got := github.DefaultAssetMatcher(updater.CheckRequest{Platform: "linux", Arch: "amd64"}, assets); got != 0 {
+		t.Errorf("amd64 request should still pick x86_64 asset (index 0), got %d", got)
+	}
+}
+
 // Some projects encode the hash algorithm in the primary artifact's filename
 // (e.g. \"myapp-1.0-windows-sha256.zip\"). The previous substring-based
 // isChecksumName treated those as sidecars and DefaultAssetMatcher silently

@@ -201,6 +201,40 @@ func TestCheck_ChannelFilter(t *testing.T) {
 	}
 }
 
+// An explicit Config.Channel must not match items that ship without a
+// sparkle:channel — Sparkle's contract is that items opt *in* to a channel,
+// so an unlabelled item should never satisfy a requested channel filter.
+func TestCheck_ChannelFilter_RejectsUnchannelledItems(t *testing.T) {
+	feed := `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <item><title>3.0.0</title>
+      <sparkle:version>3.0.0</sparkle:version>
+      <sparkle:shortVersionString>3.0.0</sparkle:shortVersionString>
+      <enclosure url="EXAMPLE/3.dmg" length="1" type="x"/>
+    </item>
+    <item><title>2.5.0</title>
+      <sparkle:version>2.5.0</sparkle:version>
+      <sparkle:shortVersionString>2.5.0</sparkle:shortVersionString>
+      <sparkle:channel>stable</sparkle:channel>
+      <enclosure url="EXAMPLE/2.dmg" length="1" type="x"/>
+    </item>
+  </channel>
+</rss>`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, strings.ReplaceAll(feed, "EXAMPLE", ""))
+	}))
+	defer srv.Close()
+	p, _ := appcast.New(appcast.Config{URL: srv.URL + "/appcast.xml", Channel: "stable"})
+	rel, err := p.Check(context.Background(), updater.CheckRequest{CurrentVersion: "1.0.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel == nil || rel.Version != "2.5.0" {
+		t.Fatalf("channel filter should have skipped the unchannelled 3.0.0 item: %+v", rel)
+	}
+}
+
 func TestDownload_StreamsAndReportsProgress(t *testing.T) {
 	body := []byte("dmg-contents")
 	var hits int32

@@ -428,9 +428,16 @@ func containsArch(name, arch string) bool {
 	if arch == "arm64" && strings.Contains(name, "aarch64") {
 		return true
 	}
-	// 386 is also published as "i386" / "x86" / "ia32".
-	if arch == "386" && (strings.Contains(name, "i386") || strings.Contains(name, "x86") || strings.Contains(name, "ia32")) {
-		return true
+	// 386 is also published as "i386" / "x86" / "ia32" — but bare "x86" is
+	// a substring of "x86_64", so any 64-bit alias on the name vetoes a 386
+	// match outright.
+	if arch == "386" {
+		if strings.Contains(name, "x86_64") || strings.Contains(name, "x64") || strings.Contains(name, "amd64") {
+			return false
+		}
+		if strings.Contains(name, "i386") || strings.Contains(name, "ia32") || strings.Contains(name, "x86") {
+			return true
+		}
 	}
 	return false
 }
