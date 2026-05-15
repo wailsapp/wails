@@ -305,6 +305,7 @@ func TestDefaultAssetMatcher(t *testing.T) {
 	}{
 		{"darwin", "arm64", 0},
 		{"linux", "amd64", 1},
+		{"linux", "386", -1},     // x86 alias must not match the linux-x86_64 asset
 		{"freebsd", "amd64", -1}, // no freebsd asset
 		{"", "amd64", 1},         // empty plat picks first matching arch (skipping sidecars)
 	}
