@@ -27,7 +27,7 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2ProcessFailedEventArgs2() (*ICoreWebView2ProcessFailedEventArgs2, error) {
+func (i *ICoreWebView2ProcessFailedEventArgs) GetICoreWebView2ProcessFailedEventArgs2() (*ICoreWebView2ProcessFailedEventArgs2, error) {
 	var result *ICoreWebView2ProcessFailedEventArgs2
 
 	iidICoreWebView2ProcessFailedEventArgs2 := NewGUID("{4dab9422-46fa-4c3e-a5d2-41d2071d3680}")

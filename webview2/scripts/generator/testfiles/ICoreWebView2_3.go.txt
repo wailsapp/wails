@@ -27,7 +27,7 @@ func (i *ICoreWebView2_3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
+func (i *ICoreWebView2_2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
 	var result *ICoreWebView2_3
 
 	iidICoreWebView2_3 := NewGUID("{A0D6DF20-3B92-416D-AA0C-437A9C727857}")

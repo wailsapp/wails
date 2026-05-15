@@ -119,7 +119,8 @@ func (p *Param) processVtableCallInput() {
 			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "))"
 		} else if p.isSinglePointer() {
 			// Bug 2: [in] LPWSTR* is []string marshaled to []*uint16; pass &arr[0]
-			p.VtableCallInput = "uintptr(unsafe.Pointer(&" + variableName + "[0]))"
+			// Guard against empty slices to avoid index-out-of-range panic.
+			p.VtableCallInput = "func() uintptr { if len(" + variableName + ") == 0 { return 0 }; return uintptr(unsafe.Pointer(&" + variableName + "[0])) }()"
 		} else {
 			p.VtableCallInput = "uintptr(unsafe.Pointer(" + variableName + "))"
 		}

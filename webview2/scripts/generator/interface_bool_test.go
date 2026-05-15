@@ -18,6 +18,10 @@ library WebView2 {
 interface ICoreWebView2_3 : ICoreWebView2_2 {
 [propget] HRESULT IsSuspended([out, retval] BOOL* isSuspended);
 }
+
+[uuid(A0D6DF20-3B92-416D-AA0C-437A9C727856), object, pointer_default(unique)]
+interface ICoreWebView2_2 : ICoreWebView2 {
+}
 }`)
 
 func TestInterfaceBool(t *testing.T) {
@@ -44,6 +48,11 @@ func TestInterfaceBool(t *testing.T) {
 	//}
 
 	expected := []*types.GeneratedFile{
+		{
+			FileName: "ICoreWebView2_2.go",
+			Package:  "webview2",
+			Content:  testfile("ICoreWebView2_2.go.txt"),
+		},
 		{
 			FileName: "ICoreWebView2_3.go",
 			Package:  "webview2",

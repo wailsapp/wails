@@ -1,0 +1,26 @@
+//go:build windows
+
+package webview2
+import (
+	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
+)
+
+type ICoreWebView2_2Vtbl struct {
+	IUnknownVtbl
+}
+
+type ICoreWebView2_2 struct {
+	Vtbl *ICoreWebView2_2Vtbl
+}
+
+func (i *ICoreWebView2_2) AddRef() uint32 {
+	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2_2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}

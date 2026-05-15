@@ -35,13 +35,13 @@ func (i *{{.Name}}) Release() uint32 {
 }
 
 {{if .BaseClass }}
-func (i *{{.Name}}) Get{{.BaseClass}}() (*{{.BaseClass}}, error) {
-	var result *{{.BaseClass}}
+func (i *{{.BaseClass}}) Get{{.Name}}() (*{{.Name}}, error) {
+	var result *{{.Name}}
 
-	iid{{.BaseClass}} := NewGUID({{.Header.AsString()})
+	iid{{.Name}} := NewGUID({{.Header.AsString()})
 	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(iid{{.BaseClass}})),
+		uintptr(unsafe.Pointer(iid{{.Name}})),
 		uintptr(unsafe.Pointer(&result)))
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
