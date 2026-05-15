@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
+- Use `log` instead of `fmt` for WebView2 error and stack trace output so messages aren't lost when the app runs without an attached console on Windows.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
