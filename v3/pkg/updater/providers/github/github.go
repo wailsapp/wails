@@ -114,7 +114,11 @@ func (p *Provider) Name() string { return "github" }
 func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
 	endpoint := p.base + "/repos/" + p.cfg.Repository + "/releases/latest"
 	if p.cfg.Prerelease {
-		endpoint = p.base + "/repos/" + p.cfg.Repository + "/releases?per_page=1"
+		// Fetch a small page so we can skip any drafts at the top of the
+		// list. The /releases endpoint includes drafts when the request is
+		// authenticated, and the API does not guarantee the first item is
+		// the newest *published* release once drafts are present.
+		endpoint = p.base + "/repos/" + p.cfg.Repository + "/releases?per_page=10"
 	}
 	rel, err := p.fetchRelease(ctx, endpoint)
 	if err != nil {
@@ -285,10 +289,13 @@ func (p *Provider) fetchRelease(ctx context.Context, endpoint string) (*apiRelea
 		if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
 			return nil, fmt.Errorf("github: decode releases list: %w", err)
 		}
-		if len(list) == 0 {
-			return nil, nil
+		for i := range list {
+			if list[i].Draft {
+				continue
+			}
+			return &list[i], nil
 		}
-		return &list[0], nil
+		return nil, nil
 	}
 	var rel apiRelease
 	if err := json.NewDecoder(resp.Body).Decode(&rel); err != nil {

@@ -150,6 +150,42 @@ func TestCheck_Prerelease_UsesReleasesList(t *testing.T) {
 	}
 }
 
+func TestCheck_Prerelease_SkipsDrafts(t *testing.T) {
+	// The list endpoint includes drafts (visible to authenticated users with
+	// push access). Drafts must never be surfaced as available updates.
+	var paths []string
+	var host string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path+"?"+r.URL.RawQuery)
+		fmt.Fprintf(w, `[
+		  {"tag_name": "v3.0.0-draft", "draft": true, "prerelease": true, "published_at": "2026-04-01T10:00:00Z", "assets": []},
+		  `+sampleReleaseJSON+`
+		]`, host, host, host)
+	}))
+	defer srv.Close()
+	host = srv.URL
+
+	p, _ := github.New(github.Config{Repository: "o/r", BaseURL: srv.URL, Prerelease: true, Token: "ghp_xxx"})
+	rel, err := p.Check(context.Background(), updater.CheckRequest{
+		CurrentVersion: "1.0.0",
+		Platform:       "darwin",
+		Arch:           "arm64",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel == nil {
+		t.Fatal("expected the v2.0.0 release (drafts must be skipped)")
+	}
+	if rel.Version != "2.0.0" {
+		t.Errorf("draft surfaced as available update: got version %q", rel.Version)
+	}
+	// Should have requested per_page>1 so we can skip over leading drafts.
+	if len(paths) != 1 || !strings.Contains(paths[0], "per_page=") || strings.Contains(paths[0], "per_page=1&") || strings.HasSuffix(paths[0], "per_page=1") {
+		t.Errorf("expected per_page>1, got %v", paths)
+	}
+}
+
 func TestCheck_ChecksumSidecar_PopulatesVerification(t *testing.T) {
 	body := []byte("hello-world")
 	digest := sha256.Sum256(body)
