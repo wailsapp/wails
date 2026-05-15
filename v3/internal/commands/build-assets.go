@@ -53,9 +53,15 @@ type BuildAssetsOptions struct {
 	Typescript            bool   `description:"Use typescript" default:"false"`
 }
 
+type TemplateEnrichment struct {
+	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
+	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+}
+
 // BuildConfig defines the configuration for generating build assets.
 type BuildConfig struct {
 	BuildAssetsOptions
+	TemplateEnrichment
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
 }
@@ -96,6 +102,8 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	var config BuildConfig
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	if options.ProductComments == "" {
 		options.ProductComments = fmt.Sprintf("(c) %d %s", time.Now().Year(), options.ProductCompany)
@@ -185,6 +193,7 @@ type FileAssociation struct {
 
 // UpdateConfig defines the configuration for updating build assets.
 type UpdateConfig struct {
+	TemplateEnrichment
 	UpdateBuildAssetsOptions
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
@@ -257,6 +266,9 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	}
 
 	config.UpdateBuildAssetsOptions = *options
+
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	// If directory doesn't exist, create it
 	if _, err := os.Stat(options.Dir); os.IsNotExist(err) {
