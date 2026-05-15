@@ -1,0 +1,103 @@
+# Linux Distro Unterstützung
+
+## Übersicht
+
+Wails bietet Linux-Unterstützung an, aber die Installationsanleitung für alle verfügbaren Distributionen ist eine unmögliche Aufgabe. Stattdessen versucht Wails herauszufinden, ob die Pakete, die zur Entwicklung von Anwendungen benötigt werden, über den System Paketmanager verfügbar sind. Zur Zeit unterstützen wir die folgenden Paketmanager:
+
+- apt
+- dnf
+- emerge
+- eopkg
+- nixpkgs
+- pacman
+- zypper
+
+## Paketnamen hinzufügen
+
+Es kann Situationen geben, in denen die Distribution einen der unterstützten Paketmanager verwendet, jedoch der Paketname ein anderer ist. Zum Beispiel kannst du eine Ubuntu-Ableitung verwenden, aber der Paketname für gtk kann anders sein. Wails versucht das richtige Paket zu finden, indem es durch eine Liste von Paketnamen iteriert. Die Liste der Pakete wird im Verzeichnis `v2/internal/system/packagemanager` gespeichert. In unserem Beispiel wäre dies `v2/internal/system/packagemanager/apt.go`.
+
+In dieser Datei wird die Liste der Pakete durch die `Packages()` Methode definiert:
+
+```go
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+Nehmen wir an, dass `libgtk-3` in unserer Linux-Distribution unter dem Namen `lib-gtk3-dev` paketiert ist. Wir könnten die Unterstützung dafür hinzufügen, indem wir die folgende Zeile hinzufügen:
+
+```go {5}
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+            {Name: "lib-gtk3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+## Neue Paketmanager hinzufügen
+
+Um einen neuen Paketmanager hinzuzufügen, führe folgende Schritte durch:
+
+- Erstelle eine neue Datei in `v2/internal/system/packagemanager` mit dem Namen `<pm>.go`, wobei `<pm>` der Name des Paketmanagers ist.
+- Definiere ein Struct, das mit der Paketmanager-Schnittstelle übereinstimmt, die in `pm.go` definiert ist:
+
+```go
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
+}
+```
+
+- `Name()` sollte den Namen des Paket-Managers zurückgeben
+- `Packages()` sollte eine `packagemap`zurückgeben, die Kandidaten-Dateinamen für Abhängigkeiten zur Verfügung stellt
+- `PackageInstalled()` sollte `true` zurückgeben, wenn das angegebene Paket installiert ist
+- `PackageAvailable()` sollte `true` zurückgeben, wenn das angegebene Paket nicht installiert ist, aber für die Installation verfügbar ist
+- `InstallCommand()` sollte den exakten Befehl zurückgeben, um den angegebenen Paketnamen zu installieren
+
+Werfe einen Blick auf den Code der anderen Paketmanager, um eine Vorstellung davon zu bekommen, wie es funktioniert.
+
+:::info Merke dir
+
+Wenn du die Unterstützung für einen neuen Paketmanager hinzufügst, vergiss nicht, auch diese Seite zu aktualisieren!
+
+:::

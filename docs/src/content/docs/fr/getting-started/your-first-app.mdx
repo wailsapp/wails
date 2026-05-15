@@ -1,0 +1,257 @@
+---
+title: Votre première application
+description: Créez votre première application de bureau Wails étape par étape
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+Ce guide vous montre comment créer votre première application Wails v3, couvrant la configuration du projet, la compilation et le flux de travail de développement.
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## Création d'un nouveau projet
+
+    Ouvrez votre terminal et exécutez la commande suivante pour créer un nouveau projet Wails :
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    Cette commande crée un nouveau répertoire appelé `myfirstapp` avec tous les fichiers nécessaires.
+
+      <video src={wails_init} controls></video> 
+
+2.  ## Exploration de la structure du projet
+
+    Accédez au répertoire `myfirstapp`. Vous y trouverez plusieurs fichiers et dossiers :
+
+    <FileTree>
+    - build/           Contient les fichiers utilisés par le processus de compilation
+        - appicon.png  L'icône de l'application
+        - config.yml   Configuration de la compilation
+        - Taskfile.yml Tâches de compilation
+        - darwin/      Fichiers de compilation spécifiques à macOS
+            - Info.dev.plist Configuration de développement
+            - Info.plist    Configuration de production
+            - Taskfile.yml  Tâches de compilation macOS
+            - icons.icns    Icône de l'application macOS
+        - linux/       Fichiers de compilation spécifiques à Linux
+            - Taskfile.yml  Tâches de compilation Linux
+            - appimage/     Packaging AppImage
+                - build.sh  Script de compilation AppImage
+            - nfpm/        Packaging NFPM
+                - nfpm.yaml Configuration du package
+                - scripts/  Scripts de compilation
+        - windows/     Fichiers de compilation spécifiques à Windows
+            - Taskfile.yml        Tâches de compilation Windows
+            - icon.ico           Icône de l'application Windows
+            - info.json          Métadonnées de l'application
+            - wails.exe.manifest Fichier manifest Windows
+            - nsis/              Fichiers d'installateur NSIS
+                - project.nsi                    Fichier de projet NSIS
+                - wails_tools.nsh               Scripts utilitaires NSIS
+    - frontend/        Fichiers de l'application frontend
+        - index.html   Fichier HTML principal
+        - main.js      Fichier JavaScript principal
+        - package.json Configuration du package NPM
+        - public/      Ressources statiques
+        - Inter Font License.txt Licence de la police
+    - .gitignore      Fichier d'ignorance Git
+    - README.md       Documentation du projet
+    - Taskfile.yml    Tâches du projet
+    - go.mod          Fichier de module Go
+    - go.sum          Sommes de contrôle des modules Go
+    - greetservice.go Service de salutation
+    - main.go         Code principal de l'application
+    </FileTree>
+
+    Prenez un moment pour explorer ces fichiers et vous familiariser avec la structure.
+
+    :::note
+    Bien que Wails v3 utilise [Task](https://taskfile.dev/) comme système de compilation par défaut, rien ne vous empêche d'utiliser `make` ou tout autre système de compilation alternatif.
+    :::
+
+3.  ## Compilation de votre application
+
+    Pour compiler votre application, exécutez :
+
+    ```bash
+    wails3 build
+    ```
+
+    Cette commande compile une version de débogage de votre application et la sauvegarde dans un nouveau répertoire `bin`.
+
+    :::note
+    `wails3 build` est une abréviation de `wails3 task build` et exécutera la tâche `build` dans `Taskfile.yml`.
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    Une fois compilée, vous pouvez la lancer comme n'importe quelle application normale :
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    Vous verrez une interface utilisateur simple, point de départ de votre application. Comme il s'agit de la version de débogage, vous verrez également des journaux dans la fenêtre de la console. Cela est utile pour le débogage.
+
+4.  ## Mode développement
+
+    Nous pouvons également exécuter l'application en mode développement. Ce mode vous permet de modifier votre code frontend et de voir les changements reflétés dans l'application en cours d'exécution sans avoir à recompiler l'ensemble de l'application.
+
+    1. Ouvrez une nouvelle fenêtre de terminal.
+    2. Exécutez `wails3 dev`. L'application sera compilée et exécutée en mode débogage.
+    3. Ouvrez `frontend/index.html` dans votre éditeur de texte préféré.
+    4. Modifiez le code et changez `Please enter your name below` en
+       `Please enter your name below!!!`.
+    5. Enregistrez le fichier.
+
+    Ce changement sera reflété immédiatement dans votre application.
+
+    Toute modification du code backend déclenchera une recompilation :
+
+    1. Ouvrez `greetservice.go`.
+    2. Changez la ligne contenant `return "Hello " + name + "!"` par
+       `return "Hello there " + name + "!"`.
+    3. Enregistrez le fichier.
+
+    L'application se mettra à jour en quelques secondes.
+
+        <video src={wails_dev} controls></video>
+
+5.  ## Packaging de votre application
+
+        Une fois votre application prête pour la distribution, vous pouvez créer des packages spécifiques à chaque plateforme :
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              Pour créer un bundle `.app` :
+
+              ```bash
+              wails3 package
+              ```
+
+              Cela créera une compilation de production et la packagera dans un bundle `.app` dans le répertoire `bin`.
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              Pour créer un installateur NSIS :
+
+              ```bash
+              wails3 package
+              ```
+
+              Cela créera une compilation de production et la packagera dans un installateur NSIS dans le répertoire `bin`.
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails prend en charge plusieurs formats de packages pour la distribution Linux :
+
+              ```bash
+              # Créer tous les types de packages (AppImage, deb, rpm et Arch Linux)
+              wails3 package
+
+              # Ou créer des types de packages spécifiques
+              wails3 task linux:create:appimage  # Format AppImage
+              wails3 task linux:create:deb       # Package Debian
+              wails3 task linux:create:rpm       # Package Red Hat
+              wails3 task linux:create:aur       # Package Arch Linux
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        Pour plus d'informations détaillées sur les options de packaging et la configuration, consultez notre [Guide de Packaging](/guides/packaging).
+
+6.  ## Configuration du contrôle de version et du nom du module
+
+    Votre projet est créé avec le nom de module par défaut `changeme`. Il est recommandé de le mettre à jour pour qu'il corresponde à l'URL de votre dépôt :
+
+    1. Créez un nouveau dépôt sur GitHub (ou votre hébergeur Git préféré)
+    2. Initialisez git dans le répertoire de votre projet :
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. Définissez votre dépôt distant (remplacez par l'URL de votre dépôt) :
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. Mettez à jour le nom de votre module dans `go.mod` pour qu'il corresponde à l'URL de votre dépôt :
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. Poussez votre code :
+       ```bash
+       git push -u origin main
+       ```
+
+    Cela assure que le nom de votre module Go est aligné avec les conventions de nommage des modules Go et facilite le partage de votre code.:::tip[Conseil]
+Vous pouvez automatiser toutes les étapes d'initialisation en utilisant le drapeau `-git` lors de la création de votre projet :
+```bash
+wails3 init -n myfirstapp -git github.com/username/myfirstapp
+```
+Cela prend en charge différents formats d'URL Git :
+- HTTPS : `https://github.com/username/project`
+- SSH : `git@github.com:username/project` ou `ssh://git@github.com/username/project`
+- Protocole Git : `git://github.com/username/project`
+- Système de fichiers : `file:///path/to/project.git`
+:::
+
+</Steps>
+
+## Félicitations !
+
+Vous venez de créer, développer et empaqueter votre première application Wails.
+Ce n'est que le début de ce que vous pouvez accomplir avec Wails v3.
+
+## Prochaines étapes
+
+Si vous débutez avec Wails, nous vous recommandons de consulter nos Tutoriels qui constitueront un guide pratique à travers les différentes fonctionnalités de Wails. Le premier tutoriel est [Créer un Service](/tutorials/01-creating-a-service).
+
+Si vous êtes un utilisateur plus avancé, consultez nos [Guides](/guides) pour obtenir des informations plus détaillées sur l'utilisation de Wails.

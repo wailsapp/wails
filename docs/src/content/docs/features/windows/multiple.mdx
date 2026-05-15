@@ -212,7 +212,7 @@ func ShowSettings(app *application.Application) {
         })
         
         // Cleanup on close
-        settingsWindow.OnDestroy(func() {
+        settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
             settingsWindow = nil
         })
     }
@@ -260,7 +260,7 @@ func OpenDocument(app *application.Application, filePath string) {
     documents[filePath] = doc
     
     // Cleanup on close
-    window.OnDestroy(func() {
+    window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
         delete(documents, filePath)
     })
     
@@ -332,7 +332,7 @@ func (e *EditorApp) TogglePreview() {
             Height: 800,
         })
         
-        e.preview.OnDestroy(func() {
+        e.preview.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
             e.preview = nil
         })
     }
@@ -404,8 +404,8 @@ app.OnWindowCreation(func(window *application.WebviewWindow) {
 Cleanup when windows are destroyed:
 
 ```go
-window.OnDestroy(func() {
-    fmt.Printf("Window %s destroyed\n", window.Name())
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    fmt.Printf("Window %s is closing\n", window.Name())
     
     // Cleanup resources
     cleanup(window.ID())
@@ -446,8 +446,8 @@ func CreateWindow(name string) {
     window := app.Window.New()
     windows[name] = window
     
-    // IMPORTANT: Clean up on destroy
-    window.OnDestroy(func() {
+    // IMPORTANT: Clean up on close
+    window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
         delete(windows, name)
     })
 }
@@ -456,14 +456,14 @@ func CreateWindow(name string) {
 ### Closing vs Destroying
 
 ```go
-// Close - triggers OnClose, can be cancelled
+// Close - triggers WindowClosing event, can be cancelled via RegisterHook
 window.Close()
 
 // Destroy - immediate, cannot be cancelled
 window.Destroy()
 ```
 
-**Best practice:** Use `Close()` for user-initiated closes, `Destroy()` for cleanup.
+**Best practice:** Use `Close()` for user-initiated closes, `Destroy()` for cleanup. To prevent closing, use `RegisterHook(events.Common.WindowClosing, ...)` and call `event.Cancel()`.
 
 ### Resource Cleanup
 
@@ -698,7 +698,7 @@ func (mwa *MultiWindowApp) RegisterWindow(name string, window *application.Webvi
     mwa.windows[name] = window
     mwa.mu.Unlock()
     
-    window.OnDestroy(func() {
+    window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
         mwa.UnregisterWindow(name)
     })
 }
@@ -791,4 +791,4 @@ type WindowState struct {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [multi-window example](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/multi-window).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [multi-window example](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).

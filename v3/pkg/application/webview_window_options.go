@@ -95,6 +95,12 @@ type WebviewWindowOptions struct {
 	// Y is the starting Y position of the window.
 	Y int
 
+	// Screen specifies the target screen for initial window placement.
+	// When set with WindowCentered, the window is centered on that screen's WorkArea.
+	// When set with WindowXY, X/Y are treated as relative to that screen's WorkArea origin.
+	// When nil, OS default behavior is used.
+	Screen *Screen
+
 	// Hidden will hide the window when it is first created.
 	Hidden bool
 
@@ -122,9 +128,10 @@ type WebviewWindowOptions struct {
 	Linux LinuxWindow
 
 	// Toolbar button states
-	MinimiseButtonState ButtonState
-	MaximiseButtonState ButtonState
-	CloseButtonState    ButtonState
+	MinimiseButtonState   ButtonState
+	MaximiseButtonState   ButtonState
+	CloseButtonState      ButtonState
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
@@ -485,6 +492,12 @@ type MacWindow struct {
 
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
+
+	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
+	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
+	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
+	DisableEscapeExitsFullscreen bool
 }
 
 type MacWindowLevel string

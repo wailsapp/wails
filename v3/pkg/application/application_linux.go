@@ -59,12 +59,12 @@ func init() {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 
-	// Disable DMA-BUF renderer on Wayland with NVIDIA to prevent "Error 71 (Protocol error)" crashes.
-	// This is a known WebKitGTK issue with NVIDIA proprietary drivers on Wayland.
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
 	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
-	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
-		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
-		isNVIDIAGPU() {
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
 }
@@ -174,10 +174,13 @@ func (a *linuxApp) run() error {
 	}
 
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
-		// TODO: What should happen here?
+		if err := a.processAndCacheScreens(); err != nil {
+			a.parent.handleError(err)
+		}
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()
+	a.monitorPowerEvents()
 	return appRun(a.application)
 }
 
@@ -269,6 +272,87 @@ func (a *linuxApp) monitorThemeChanges() {
 				applicationEvents <- event
 			}
 
+		}
+	}()
+}
+
+// monitorPowerEvents subscribes to systemd-logind's PrepareForSleep signal on
+// the system bus and translates it into Linux.SystemWillSleep (arg=true, just
+// before suspend) and Linux.SystemDidWake (arg=false, immediately on resume).
+// Mirrors NSWorkspace willSleep/didWake on macOS and WM_POWERBROADCAST on
+// Windows.
+//
+// On systems without systemd or logind/elogind reachable on the system bus
+// (Alpine, Void, some Devuan setups), we log a warning and exit cleanly so
+// the rest of the app keeps working.
+func (a *linuxApp) monitorPowerEvents() {
+	go func() {
+		defer handlePanic()
+		conn, err := dbus.ConnectSystemBus()
+		if err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to connect to system bus; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+		defer conn.Close()
+
+		// Probe for logind/elogind ownership of org.freedesktop.login1 on the
+		// system bus. Without this check, AddMatchSignal would succeed on any
+		// systemd-less distro and the goroutine would block forever on a
+		// channel that never receives — silently masking the missing service.
+		var hasOwner bool
+		if err := conn.BusObject().Call(
+			"org.freedesktop.DBus.NameHasOwner", 0, "org.freedesktop.login1",
+		).Store(&hasOwner); err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to probe org.freedesktop.login1; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+		if !hasOwner {
+			a.parent.warning(
+				"[WARNING] systemd-logind/elogind not reachable on the system bus; sleep/wake events will not fire",
+			)
+			return
+		}
+
+		// Constrain the sender to logind's well-known name so a hostile
+		// connection on the system bus can't spoof PrepareForSleep signals.
+		if err = conn.AddMatchSignal(
+			dbus.WithMatchSender("org.freedesktop.login1"),
+			dbus.WithMatchInterface("org.freedesktop.login1.Manager"),
+			dbus.WithMatchMember("PrepareForSleep"),
+			dbus.WithMatchObjectPath("/org/freedesktop/login1"),
+		); err != nil {
+			a.parent.warning(
+				"[WARNING] Failed to subscribe to logind PrepareForSleep; sleep/wake events will not fire: %v",
+				err,
+			)
+			return
+		}
+
+		c := make(chan *dbus.Signal, 4)
+		conn.Signal(c)
+
+		for v := range c {
+			if v.Name != "org.freedesktop.login1.Manager.PrepareForSleep" {
+				continue
+			}
+			if len(v.Body) < 1 {
+				continue
+			}
+			willSleep, ok := v.Body[0].(bool)
+			if !ok {
+				continue
+			}
+			if willSleep {
+				applicationEvents <- newApplicationEvent(events.Linux.SystemWillSleep)
+			} else {
+				applicationEvents <- newApplicationEvent(events.Linux.SystemDidWake)
+			}
 		}
 	}()
 }

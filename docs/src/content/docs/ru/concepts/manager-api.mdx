@@ -1,0 +1,266 @@
+---
+title: API менеджера
+description: Организованная структура API с сфокусированными интерфейсами менеджеров
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+API менеджера Wails v3 предоставляет организованную и удобную для поиска возможность доступа к функциональности приложения через специализированные структуры менеджеров. Эта новая структура API группирует связанные методы вместе, сохраняя при этом полную обратную совместимость с традиционным API приложения.
+
+## Обзор
+
+API менеджера организует функциональность приложения по одиннадцати основным направлениям:
+
+- **`app.Window`** - Создание окон, управление ими и обратные вызовы
+- **`app.ContextMenu`** - Регистрация и управление контекстным меню
+- **`app.KeyBinding`** - Управление глобальными сочетаниями клавиш
+- **`app.Browser`** - Интеграция с браузером (открытие URL-адресов и файлов)
+- **`app.Env`** - Информация об окружении и состояние системы
+- **`app.Dialog`** - Операции с диалогами выбора файлов и сообщений
+- **`app.Event`** - Обработка пользовательских событий и событий приложения
+- **`app.Menu`** - Управление меню приложения
+- **`app.Screen`** - Управление экранами и преобразование координат
+- **`app.Clipboard`** - Операции с текстом в буфере обмена
+- **`app.SystemTray`** - Создание и управление значком в системном трее
+
+## Преимущества
+
+- **Лучшая обнаруживаемость** - Автодополнение IDE показывает организованную поверхность API
+- **Улучшенная организация кода** - Связанные методы сгруппированы вместе
+- **Повышенная поддерживаемость** - Разделение ответственности между менеджерами
+- **Расширяемость в будущем** - Легче добавлять новые функции в конкретные области
+
+## Использование
+
+API менеджера обеспечивает организованный доступ ко всей функциональности приложения:
+
+```go
+// События и обработка пользовательских событий
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// Управление окнами
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// Интеграция с браузером
+app.Browser.OpenURL("https://wails.io")
+
+// Управление меню
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// Системный трей
+systray := app.SystemTray.New()
+```
+
+## Справочник по менеджерам
+
+### Менеджер окон
+
+Управляет созданием окон, их поиском и обратными вызовами жизненного цикла.
+
+```go
+// Создание окон
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// Поиск окон
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// Обратные вызовы окон
+app.Window.OnCreate(func(window Window) {
+    // Обработка создания окна
+})
+```
+
+### Менеджер событий
+
+Обрабатывает пользовательские события и прослушивание событий приложения.
+
+```go
+// Пользовательские события
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // Обработка события
+})
+app.Event.Off("userAction")
+app.Event.Reset() // Удалить все слушатели
+
+// События приложения
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // Обработка изменения системной темы
+})
+```
+
+### Менеджер браузера
+
+Обеспечивает интеграцию с браузером для открытия URL-адресов и файлов.
+
+```go
+// Открытие URL-адресов и файлов в браузере по умолчанию
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Менеджер окружения
+
+Доступ к информации об окружении системы.
+
+```go
+// Получение информации об окружении
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// Проверка системной темы
+if app.Env.IsDarkMode() {
+    // Активен темный режим
+}
+
+// Открытие файлового менеджера
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Менеджер диалогов
+
+Организованный доступ к диалогам выбора файлов и сообщений.
+
+```go
+// Диалоги выбора файлов
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// Диалоги сообщений
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Менеджер меню
+
+Создание и управление меню приложения.
+
+```go
+// Создание и установка меню приложения
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Обработка клика по меню
+})
+
+app.Menu.Set(menu)
+
+// Показать диалог "О программе"
+app.Menu.ShowAbout()
+```
+
+### Менеджер сочетаний клавиш
+
+Динамическое управление глобальными сочетаниями клавиш.
+
+```go
+// Добавление сочетаний клавиш
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Обработка Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// Удаление сочетаний клавиш
+app.KeyBinding.Remove("ctrl+n")
+
+// Получение всех сочетаний
+bindings := app.KeyBinding.GetAll()
+```
+
+### Менеджер контекстного меню
+
+Расширенное управление контекстным меню (для авторов библиотек).
+
+```go
+// Создание и регистрация контекстного меню
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// Получение контекстного меню
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// Удаление контекстного меню
+app.ContextMenu.Remove("myMenu")
+```
+
+### Менеджер экранов
+
+Управление экранами и преобразование координат для конфигураций с несколькими мониторами.
+
+```go
+// Получение информации об экранах
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// Преобразование координат
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// Определение экрана
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Менеджер буфера обмена
+
+Операции с буфером обмена для чтения и записи текста.
+
+```go
+// Установка текста в буфер обмена
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Обработка ошибки
+}
+
+// Получение текста из буфера обмена
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Обработка ошибки
+} else {
+    // Использование текста
+}
+```
+
+### Менеджер системного трея
+
+Создание и управление значком в системном трее.
+
+```go
+// Создание значка в системном трее
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Добавление меню в системный трей
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Обработка клика
+})
+systray.SetMenu(menu)
+
+// Уничтожение значка в системном трее, когда он больше не нужен
+systray.Destroy()
+```

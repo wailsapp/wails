@@ -433,6 +433,16 @@ static void disableDND(GtkWidget *widget, gpointer data)
     g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop_blocked), data);
     g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion_blocked), data);
 }
+
+// Store/retrieve an unsigned integer as a GObject data pointer without allocating memory.
+// Uses the GTK GUINT_TO_POINTER/GPOINTER_TO_UINT idiom so that no Go memory is kept alive
+// across the g_object_set_data call (avoids GC-after-return dangling-pointer bugs).
+static void set_object_uint(GObject *obj, const gchar *key, guint val) {
+    g_object_set_data(obj, key, GUINT_TO_POINTER(val));
+}
+static guint get_object_uint(GObject *obj, const gchar *key) {
+    return GPOINTER_TO_UINT(g_object_get_data(obj, key));
+}
 */
 import "C"
 
@@ -760,8 +770,7 @@ func menuClear(menu *Menu) {
 func handleClick(idPtr unsafe.Pointer) {
 	ident := C.CString("id")
 	defer C.free(unsafe.Pointer(ident))
-	value := C.g_object_get_data((*C.GObject)(idPtr), ident)
-	id := uint(*(*C.uint)(value))
+	id := uint(C.get_object_uint((*C.GObject)(idPtr), ident))
 	item, ok := gtkSignalToMenuItem[id]
 	if !ok {
 		return
@@ -790,14 +799,9 @@ func attachMenuHandler(item *MenuItem) uint {
 		C.gpointer(widget),
 		flags)
 
-	id := C.uint(item.id)
 	ident := C.CString("id")
 	defer C.free(unsafe.Pointer(ident))
-	C.g_object_set_data(
-		(*C.GObject)(widget),
-		ident,
-		C.gpointer(&id),
-	)
+	C.set_object_uint((*C.GObject)(widget), ident, C.guint(item.id))
 
 	gtkSignalToMenuItem[item.id] = item
 	return uint(handlerId)
@@ -970,50 +974,71 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 
 func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	monitor := C.gdk_display_get_monitor(display, C.int(index))
-	// TODO: Do we need to update Screen to contain current info?
-	//	currentMonitor := C.gdk_display_get_monitor_at_window(display, window)
 
 	var geometry C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &geometry)
-	primary := false
-	if C.gdk_monitor_is_primary(monitor) == 1 {
-		primary = true
-	}
+
+	var workarea C.GdkRectangle
+	C.gdk_monitor_get_workarea(monitor, &workarea)
+
+	scaleFactor := float32(C.gdk_monitor_get_scale_factor(monitor))
+	primary := C.gdk_monitor_is_primary(monitor) == 1
 	name := C.gdk_monitor_get_model(monitor)
+
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
+	pX := int(float32(x) * scaleFactor)
+	pY := int(float32(y) * scaleFactor)
+	pWidth := int(float32(width) * scaleFactor)
+	pHeight := int(float32(height) * scaleFactor)
+
+	waX := int(workarea.x)
+	waY := int(workarea.y)
+	waWidth := int(workarea.width)
+	waHeight := int(workarea.height)
+
+	pwaX := int(float32(waX) * scaleFactor)
+	pwaY := int(float32(waY) * scaleFactor)
+	pwaWidth := int(float32(waWidth) * scaleFactor)
+	pwaHeight := int(float32(waHeight) * scaleFactor)
+
 	return &Screen{
 		ID:          fmt.Sprintf("%d", index),
 		Name:        C.GoString(name),
 		IsPrimary:   primary,
-		ScaleFactor: float32(C.gdk_monitor_get_scale_factor(monitor)),
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		ScaleFactor: scaleFactor,
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
 		PhysicalBounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      pX,
+			Y:      pY,
+			Height: pHeight,
+			Width:  pWidth,
 		},
 		WorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      waX,
+			Y:      waY,
+			Height: waHeight,
+			Width:  waWidth,
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      pwaX,
+			Y:      pwaY,
+			Height: pwaHeight,
+			Width:  pwaWidth,
 		},
 		Rotation: 0.0,
 	}
@@ -1489,29 +1514,67 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 
 func getPrimaryScreen() (*Screen, error) {
 	display := C.gdk_display_get_default()
-	monitor := C.gdk_display_get_primary_monitor(display)
-	geometry := C.GdkRectangle{}
-	C.gdk_monitor_get_geometry(monitor, &geometry)
-	scaleFactor := int(C.gdk_monitor_get_scale_factor(monitor))
-	// get the name for the screen
-	name := C.gdk_monitor_get_model(monitor)
+	primaryMonitor := C.gdk_display_get_primary_monitor(display)
+
+	// Find the index of the primary monitor so the ID matches getScreenByIndex's contract.
+	primaryIndex := 0
+	count := int(C.gdk_display_get_n_monitors(display))
+	for i := 0; i < count; i++ {
+		if C.gdk_display_get_monitor(display, C.int(i)) == primaryMonitor {
+			primaryIndex = i
+			break
+		}
+	}
+
+	var geometry C.GdkRectangle
+	C.gdk_monitor_get_geometry(primaryMonitor, &geometry)
+
+	var workarea C.GdkRectangle
+	C.gdk_monitor_get_workarea(primaryMonitor, &workarea)
+
+	scaleFactor := float32(C.gdk_monitor_get_scale_factor(primaryMonitor))
+	name := C.gdk_monitor_get_model(primaryMonitor)
+
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
 	return &Screen{
-		ID:        "0",
-		Name:      C.GoString(name),
-		IsPrimary: true,
-		X:         int(geometry.x),
-		Y:         int(geometry.y),
+		ID:          fmt.Sprintf("%d", primaryIndex),
+		Name:        C.GoString(name),
+		IsPrimary:   true,
+		ScaleFactor: scaleFactor,
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
 		Bounds: Rect{
-			X:      int(geometry.x),
-			Y:      int(geometry.y),
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
 		},
-		ScaleFactor: float32(scaleFactor),
+		PhysicalBounds: Rect{
+			X:      int(float32(x) * scaleFactor),
+			Y:      int(float32(y) * scaleFactor),
+			Height: int(float32(height) * scaleFactor),
+			Width:  int(float32(width) * scaleFactor),
+		},
+		WorkArea: Rect{
+			X:      int(workarea.x),
+			Y:      int(workarea.y),
+			Height: int(workarea.height),
+			Width:  int(workarea.width),
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(float32(workarea.x) * scaleFactor),
+			Y:      int(float32(workarea.y) * scaleFactor),
+			Height: int(float32(workarea.height) * scaleFactor),
+			Width:  int(float32(workarea.width) * scaleFactor),
+		},
 	}, nil
 }
 
@@ -1701,6 +1764,39 @@ func openDevTools(webview pointer) {
 func (w *linuxWebviewWindow) startDrag() error {
 	C.gtk_window_begin_move_drag(
 		(*C.GtkWindow)(w.window),
+		C.int(w.drag.MouseButton),
+		C.int(w.drag.XRoot),
+		C.int(w.drag.YRoot),
+		C.uint32_t(w.drag.DragTime))
+	return nil
+}
+
+// gdkEdgeForBorder maps the border strings sent by the Wails runtime
+// (as injected by drag.ts — "n-resize", "ne-resize", etc.) to the
+// corresponding GdkWindowEdge value expected by gtk_window_begin_resize_drag.
+var gdkEdgeForBorder = map[string]C.GdkWindowEdge{
+	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
+	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
+	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
+	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
+	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
+}
+
+func (w *linuxWebviewWindow) startResize(border string) error {
+	edge, ok := gdkEdgeForBorder[border]
+	if !ok {
+		return fmt.Errorf("unknown resize border: %q", border)
+	}
+	// The mouse button / root coords / timestamp were captured by the
+	// button-press-event handler (see onButtonEvent) and stored on
+	// w.drag — this is the same state startDrag uses, so a resize
+	// initiated from a user mousedown picks up the right values.
+	C.gtk_window_begin_resize_drag(
+		(*C.GtkWindow)(w.window),
+		edge,
 		C.int(w.drag.MouseButton),
 		C.int(w.drag.XRoot),
 		C.int(w.drag.YRoot),

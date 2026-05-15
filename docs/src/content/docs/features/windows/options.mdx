@@ -56,10 +56,6 @@ type WebviewWindowOptions struct {
     // Menu
     UseApplicationMenu bool
 
-    // Lifecycle
-    OnClose   func() bool
-    OnDestroy func()
-
     // Platform-Specific
     Mac     MacOptions
     Windows WindowsOptions
@@ -689,67 +685,47 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetContentProtection(true)
 ```
 
-## Lifecycle Options
+## Window Lifecycle Events
 
-### OnClose
+Window lifecycle events are handled using `OnWindowEvent` and `RegisterHook`. These methods provide fine-grained control over window closing and destruction behavior.
 
-**Type:** `func() bool`  
-**Default:** `nil` (always allow close)  
-**Platform:** All
+### Cancelling Window Close
 
-```go
-OnClose: func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    return true
-},
-```
-
-**Purpose:** Handle window close events, optionally prevent closing.
-
-**Use cases:**
-- Confirm before closing with unsaved changes
-- Save state before closing
-- Prevent accidental closure
-
-**Example:**
+To prevent a window from closing (e.g., unsaved changes), use `RegisterHook` with the `WindowClosing` event and call `event.Cancel()`:
 
 ```go
-OnClose: func() bool {
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "My Application",
+})
+
+// Register a hook to intercept the closing event
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
-},
+})
 ```
 
-**Important:** Only triggered by user actions (clicking X), not `window.Destroy()`.
+**Key points:**
+- `RegisterHook` intercepts events before they occur
+- Call `event.Cancel()` to prevent the window from closing
+- The window will remain open after cancelling
 
-### OnDestroy
+### Handling Window Close
 
-**Type:** `func()`  
-**Default:** `nil`  
-**Platform:** All
-
-```go
-OnDestroy: func() {
-    // Cleanup code
-    fmt.Println("Window destroyed")
-},
-```
-
-**Purpose:** Cleanup when window is destroyed.
-
-**Use cases:**
-- Release resources
-- Close connections
-- Update application state
-
-**Example:**
+To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClosing` event:
 
 ```go
-OnDestroy: func() {
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    // Cleanup code runs here
+    fmt.Printf("Window %s is closing\n", window.Name())
+    
     // Close database connection
     if db != nil {
         db.Close()
@@ -757,7 +733,41 @@ OnDestroy: func() {
     
     // Remove from window list
     removeWindow(window.ID())
-},
+})
+```
+
+**Key points:**
+- `OnWindowEvent` handles events that are about to happen
+- Cleanup runs before the window is destroyed
+- Cannot cancel the close from here (use `RegisterHook` for that)
+
+### Singleton Window Cleanup Pattern
+
+For singleton windows (ensure only one instance), use `WindowClosing` to clean up the reference:
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.Application) {
+    // Create if doesn't exist
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:  "settings",
+            Title: "Settings",
+            Width: 600,
+            Height: 400,
+        })
+        
+        // Cleanup on close
+        settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+            settingsWindow = nil
+        })
+    }
+    
+    // Show and focus
+    settingsWindow.Show()
+    settingsWindow.SetFocus()
+}
 ```
 
 ## Platform-Specific Options
@@ -1047,19 +1057,6 @@ func main() {
             Handler: application.AssetFileServerFS(assets),
         },
         
-        // Lifecycle
-        OnClose: func() bool {
-            if hasUnsavedChanges() {
-                result := showConfirmdialog("Unsaved changes. Close anyway?")
-                return result == "yes"
-            }
-            return true
-        },
-        
-        OnDestroy: func() {
-            cleanup()
-        },
-        
         // Platform-Specific
         Mac: application.MacOptions{
             TitleBarAppearsTransparent: true,
@@ -1092,4 +1089,4 @@ func main() {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

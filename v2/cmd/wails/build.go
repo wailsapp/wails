@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
+
 	"github.com/leaanthony/slicer"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
@@ -59,6 +61,13 @@ func buildApplication(f *flags.Build) error {
 		f.GarbleArgs = projectOptions.GarbleArgs
 	}
 
+	projectTags, err := buildtags.Parse(projectOptions.BuildTags)
+	if err != nil {
+		return err
+	}
+	userTags := f.GetTags()
+	compiledTags := append(projectTags, userTags...)
+
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:            logger,
@@ -76,7 +85,7 @@ func buildApplication(f *flags.Build) error {
 		IgnoreFrontend:    f.SkipFrontend,
 		Compress:          f.Upx,
 		CompressFlags:     f.UpxFlags,
-		UserTags:          f.GetTags(),
+		UserTags:          compiledTags,
 		WebView2Strategy:  f.GetWebView2Strategy(),
 		TrimPath:          f.TrimPath,
 		RaceDetector:      f.RaceDetector,
@@ -85,6 +94,8 @@ func buildApplication(f *flags.Build) error {
 		GarbleArgs:        f.GarbleArgs,
 		SkipBindings:      f.SkipBindings,
 		ProjectData:       projectOptions,
+		SkipEmbedCreate:   f.SkipEmbedCreate,
+		InstallScope:      f.InstallScope,
 	}
 
 	tableData := pterm.TableData{
@@ -95,6 +106,7 @@ func buildApplication(f *flags.Build) error {
 		{"Devtools", bool2Str(buildOptions.Devtools)},
 		{"Frontend Directory", projectOptions.GetFrontendDir()},
 		{"Obfuscated", bool2Str(f.Obfuscated)},
+		{"Install Scope", f.InstallScope},
 	}
 	if f.Obfuscated {
 		tableData = append(tableData, []string{"Garble Args", f.GarbleArgs})
@@ -105,7 +117,7 @@ func buildApplication(f *flags.Build) error {
 		{"Package", bool2Str(!f.NoPackage)},
 		{"Clean Bin Dir", bool2Str(f.Clean)},
 		{"LDFlags", f.LdFlags},
-		{"Tags", "[" + strings.Join(f.GetTags(), ",") + "]"},
+		{"Tags", "[" + strings.Join(compiledTags, ",") + "]"},
 		{"Race Detector", bool2Str(f.RaceDetector)},
 	}...)
 	if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {
@@ -235,7 +247,7 @@ func buildApplication(f *flags.Build) error {
 			buildOptions.CleanBinDirectory = false
 
 			// Output stats
-			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+			buildOptions.Logger.Println("%s", fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
 
 			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
 		} else {
