@@ -31,6 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.92 - 2026-05-15
+
+## Added
+- Modify the Taskfiles to allow control of frontend package manager used via `PACKAGE_MANAGER` option 
+- Enrich template data with `{{.Opn}}` and `{{.Cls}}` to make writing Taskfile templates more predictable
+
+## Changed
+- Modified a couple of the existing Taskfiles to make use of `{{.Opn}} and {{.Cls}}`
+
+## Fixed
+- Fix `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
+- Use `log` instead of `fmt` for WebView2 error and stack trace output so messages aren't lost when the app runs without an attached console on Windows.
+
 ## v3.0.0-alpha.91 - 2026-05-12
 
 ## Changed
