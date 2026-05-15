@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
+	"github.com/wailsapp/wails/v3/pkg/updater/internal/semver"
 )
 
 // Config configures the AppCast provider.
@@ -103,7 +104,7 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 	if best == nil {
 		return nil, nil
 	}
-	if !isNewer(best.shortVersion(), req.CurrentVersion) {
+	if !semver.IsNewer(best.shortVersion(), req.CurrentVersion) {
 		return nil, nil
 	}
 	if best.Enclosure.URL == "" {
@@ -274,9 +275,11 @@ func pickBestItem(items []item, req updater.CheckRequest, channel string) *item 
 		if os != "" && plat != "" && !platformMatches(os, plat) {
 			continue
 		}
-		if best == nil || isNewer(it.shortVersion(), best.shortVersion()) {
-			b := it
-			best = b
+		// Tied versions preserve document order: equal shortVersion()s keep
+		// the first-seen item, matching Sparkle. A corrected later entry
+		// with the same version won't override an earlier one.
+		if best == nil || semver.IsNewer(it.shortVersion(), best.shortVersion()) {
+			best = it
 		}
 	}
 	return best
@@ -320,63 +323,6 @@ func decodeB64(s string) []byte {
 		return b
 	}
 	return nil
-}
-
-// isNewer / compareSemver: simple monotonicity check on "x.y.z[-prerelease]".
-// Production usage with elaborate prerelease semantics should pass a custom
-// AssetMatcher (TODO: provider-level version comparator hook in a future
-// release). For now the simple comparator matches GitHub provider's behaviour.
-func isNewer(a, b string) bool {
-	a = strings.TrimPrefix(strings.TrimPrefix(a, "v"), "V")
-	b = strings.TrimPrefix(strings.TrimPrefix(b, "v"), "V")
-	if a == "" {
-		return false
-	}
-	if b == "" {
-		return true
-	}
-	return compareSemver(a, b) > 0
-}
-
-func compareSemver(a, b string) int {
-	ap := splitNumeric(a)
-	bp := splitNumeric(b)
-	for i := 0; i < len(ap) || i < len(bp); i++ {
-		var av, bv int
-		if i < len(ap) {
-			av = ap[i]
-		}
-		if i < len(bp) {
-			bv = bp[i]
-		}
-		if av != bv {
-			if av > bv {
-				return 1
-			}
-			return -1
-		}
-	}
-	return 0
-}
-
-func splitNumeric(s string) []int {
-	out := []int{}
-	start := 0
-	for i := 0; i <= len(s); i++ {
-		atEnd := i == len(s)
-		if atEnd || s[i] == '.' || s[i] == '-' {
-			seg := s[start:i]
-			n := 0
-			for _, c := range seg {
-				if c >= '0' && c <= '9' {
-					n = n*10 + int(c-'0')
-				}
-			}
-			out = append(out, n)
-			start = i + 1
-		}
-	}
-	return out
 }
 
 func wrapStripAuthOnRedirect(c *http.Client) *http.Client {

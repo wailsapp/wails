@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
+	"github.com/wailsapp/wails/v3/pkg/updater/internal/semver"
 )
 
 const (
@@ -127,7 +128,7 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 	if rel == nil {
 		return nil, nil
 	}
-	if !isNewer(rel.TagName, req.CurrentVersion) {
+	if !semver.IsNewer(rel.TagName, req.CurrentVersion) {
 		return nil, nil
 	}
 
@@ -139,7 +140,7 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 	picked := rel.Assets[idx]
 
 	out := &updater.Release{
-		Version:     trimVersionPrefix(rel.TagName),
+		Version:     semver.TrimPrefix(rel.TagName),
 		Channel:     channelFor(rel),
 		Name:        rel.Name,
 		Notes:       rel.Body,
@@ -378,75 +379,6 @@ func ftypeOf(name string) string {
 		return strings.ToLower(name[i+1:])
 	}
 	return ""
-}
-
-// trimVersionPrefix strips a leading "v" from a tag, e.g. "v1.2.3" → "1.2.3".
-func trimVersionPrefix(tag string) string {
-	if strings.HasPrefix(tag, "v") || strings.HasPrefix(tag, "V") {
-		return tag[1:]
-	}
-	return tag
-}
-
-// isNewer is a deliberately simple "is `a` lexically newer than `b`" check
-// after stripping the v prefix. Real semver comparison (with prerelease and
-// build metadata semantics) is in a follow-up. For most projects this is
-// enough because the tag and the running version share a format.
-func isNewer(tag, current string) bool {
-	a := trimVersionPrefix(tag)
-	b := trimVersionPrefix(current)
-	if a == "" {
-		return false
-	}
-	if b == "" {
-		return true
-	}
-	return compareSemver(a, b) > 0
-}
-
-func compareSemver(a, b string) int {
-	ap := splitNumeric(a)
-	bp := splitNumeric(b)
-	for i := 0; i < len(ap) || i < len(bp); i++ {
-		var av, bv int
-		if i < len(ap) {
-			av = ap[i]
-		}
-		if i < len(bp) {
-			bv = bp[i]
-		}
-		if av != bv {
-			if av > bv {
-				return 1
-			}
-			return -1
-		}
-	}
-	return 0
-}
-
-// splitNumeric reads runs of digits separated by "." or "-" boundaries and
-// returns them as ints; non-numeric segments are treated as zeros so a tag
-// like "1.2.3-rc.1" reads as [1,2,3,0,1] — close enough for monotonicity
-// checks on the common "x.y.z[-prerelease.n]" layout.
-func splitNumeric(s string) []int {
-	out := []int{}
-	start := 0
-	for i := 0; i <= len(s); i++ {
-		atEnd := i == len(s)
-		if atEnd || s[i] == '.' || s[i] == '-' {
-			seg := s[start:i]
-			n := 0
-			for _, c := range seg {
-				if c >= '0' && c <= '9' {
-					n = n*10 + int(c-'0')
-				}
-			}
-			out = append(out, n)
-			start = i + 1
-		}
-	}
-	return out
 }
 
 // DefaultAssetMatcher picks the first asset whose lowercase filename
