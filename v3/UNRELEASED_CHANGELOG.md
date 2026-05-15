@@ -16,16 +16,13 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Modify the Taskfiles to allow control of frontend package manager used via `PACKAGE_MANAGER` option 
-- Enrich template data with `{{.Opn}}` and `{{.Cls}}` to make writing Taskfile templates more predictable
+<!-- New features, capabilities, or enhancements -->
 
 ## Changed
-- Modified a couple of the existing Taskfiles to make use of `{{.Opn}} and {{.Cls}}`
+<!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
-- Use `log` instead of `fmt` for WebView2 error and stack trace output so messages aren't lost when the app runs without an attached console on Windows.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
