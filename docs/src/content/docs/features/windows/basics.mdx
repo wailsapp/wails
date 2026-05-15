@@ -293,26 +293,30 @@ app.OnWindowCreation(func(window *application.WebviewWindow) {
 
 ### Closing
 
+To prevent a window from closing, use `RegisterHook` with the `WindowClosing` event:
+
 ```go
-window.OnClose(func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
 })
 ```
 
-**Important:** `OnClose` only works for user-initiated closes (clicking X button). It doesn't prevent `window.Destroy()`.
+**Important:** `RegisterHook` intercepts the close event before it happens. Call `event.Cancel()` to prevent the window from closing. This works for user-initiated closes (clicking X button).
 
 ### Destruction
 
+To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClosing` event:
+
 ```go
-window.OnDestroy(func() {
-    fmt.Println("Window destroyed")
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    fmt.Println("Window is closing")
     // Cleanup resources
 })
 ```
@@ -511,13 +515,15 @@ func showSettings() {
 ### Confirm Before Close
 
 ```go
-window.OnClose(func() bool {
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
         // Show dialog
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
 })
 ```
 

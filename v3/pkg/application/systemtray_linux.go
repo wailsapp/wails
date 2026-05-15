@@ -414,8 +414,23 @@ func (s *linuxSystemTray) run() {
 				if sig == nil {
 					return // We get a nil signal when closing the window.
 				}
+				// conn.Signal delivers all signals on this connection, not only the
+				// NameOwnerChanged match we added. Other signals (e.g. from
+				// org.freedesktop.Notifications) can have fewer body elements, so
+				// indexing without the guard below causes an out-of-range panic.
+				if sig.Name != "org.freedesktop.DBus.NameOwnerChanged" || len(sig.Body) < 3 {
+					continue
+				}
 				// sig.Body has the args, which are [name old_owner new_owner]
-				if sig.Body[2] != "" {
+				name, ok := sig.Body[0].(string)
+				if !ok || name != "org.kde.StatusNotifierWatcher" {
+					continue
+				}
+				newOwner, ok := sig.Body[2].(string)
+				if !ok {
+					continue
+				}
+				if newOwner != "" {
 					s.register()
 				}
 
