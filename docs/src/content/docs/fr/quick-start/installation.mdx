@@ -268,7 +268,110 @@ Si `wails3 doctor` réussit, vous avez terminé. [Passer à la première applica
        ```powershell
        npm --version
        ```
-     </TabItem>#### Version de Go trop ancienne
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Option 1 : Installateur officiel**
+       Téléchargez depuis [nodejs.org](https://nodejs.org/)
+
+       **Option 2 : Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **Vérifier :**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Option 1 : NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **Option 2 : Gestionnaire de paquets**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **Vérifier :**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[Gestionnaires de paquets alternatifs]
+   Vous préférez `pnpm`, `yarn` ou `bun` ? Pas de problème ! Mettez simplement à jour le `Taskfile.yml` de votre projet pour utiliser votre outil préféré.
+   :::
+
+</Steps>
+
+## Dépannage
+
+#### Commande `wails3` introuvable
+
+**Cause :** `~/go/bin` (ou `%USERPROFILE%\go\bin`) n'est pas dans votre PATH.
+
+**Solution :**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. Ouvrez "Variables d'environnement" (recherchez dans le menu Démarrer)
+    2. Sous "Variables utilisateur", trouvez `Path`
+    3. Cliquez sur "Modifier" → "Nouveau"
+    4. Ajoutez : `C:\Users\VotreNom\go\bin` (remplacez VotreNom)
+    5. Cliquez sur "OK" sur toutes les boîtes de dialogue
+    6. **Redémarrez votre terminal**
+
+    **Vérifier :**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    Ajoutez à `~/.zshrc` (macOS) ou `~/.bashrc` (Linux) :
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    Rechargez :
+    ```bash
+    source ~/.zshrc  # ou ~/.bashrc
+    ```
+
+    **Vérifier :**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+---
+
+#### `wails3 doctor` signale des dépendances manquantes
+
+**Linux :** La sortie vous indique exactement quels paquets installer. Exemple :
+```
+❌ webkit2gtk introuvable
+   Installez avec : sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows :** Si WebView2 est manquant :
+- Téléchargez depuis [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+- Ou il sera installé automatiquement lors de l'exécution de votre première application
+
+**macOS :** Si les outils Xcode sont manquants :
+```bash
+xcode-select --install
+```
+---
+#### Version de Go trop ancienne
 
 Wails v3 nécessite Go 1.25+. Si vous avez une version plus ancienne :
 
