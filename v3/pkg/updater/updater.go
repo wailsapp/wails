@@ -241,6 +241,11 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 // The window stays open for the duration of the flow and across user
 // dismissal until the caller (or the user) explicitly closes it.
 func (u *Updater) CheckAndInstall(ctx context.Context) error {
+	// Tear down any session from a previous CheckAndInstall before opening a
+	// fresh one — otherwise its listeners and window leak and stale callbacks
+	// still fire on user-action events.
+	u.closeWindow()
+
 	sess := u.openSession(ctx)
 	u.sessMu.Lock()
 	u.session = sess

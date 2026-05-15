@@ -202,6 +202,39 @@ func TestUserCancel_ClosesWindow(t *testing.T) {
 	}
 }
 
+// Repeated CheckAndInstall calls (e.g. periodic timer + manual click) must
+// tear down the previous session before opening a new one — otherwise the
+// stale listeners and window leak. Regression guard for the bug where each
+// call appended 5 fresh listeners under sessMu without closing the prior set.
+func TestCheckAndInstall_RepeatedCalls_DoNotLeakListeners(t *testing.T) {
+	host := &fakeHost{}
+	p := &fakeProvider{name: "p"} // returns (nil, nil) — fast up-to-date path
+	u := newConfigured(t, host, p)
+
+	for i := 0; i < 3; i++ {
+		if err := u.CheckAndInstall(context.Background()); err != nil {
+			t.Fatalf("CheckAndInstall #%d: %v", i, err)
+		}
+	}
+
+	host.mu.Lock()
+	defer host.mu.Unlock()
+	// Each call opens then closes a window — but closeWindow tears down all
+	// listeners registered in that session, so after the last close the host
+	// should be back to zero listeners for each user-action event.
+	for _, name := range []string{
+		updater.EventUserInstall,
+		updater.EventUserCancel,
+		updater.EventUserSkip,
+		updater.EventUserRemind,
+		updater.EventUserRestart,
+	} {
+		if got := len(host.listeners[name]); got != 0 {
+			t.Errorf("listeners for %q: got %d, want 0 (session not torn down)", name, got)
+		}
+	}
+}
+
 func TestUserSkip_RecordsVersionAndShortCircuitsCheck(t *testing.T) {
 	host := &fakeHost{}
 	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.bin", Size: 1}}
