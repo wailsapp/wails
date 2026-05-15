@@ -137,7 +137,11 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 		return nil, parseAPIError(resp)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	// 8 MiB is generous for an upgrade envelope (typically a handful of KiB)
+	// and matches the cap the appcast provider applies to feed responses.
+	// Guards against an unexpectedly large or malicious response OOMing the
+	// host.
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 8*1024*1024))
 	if err != nil {
 		return nil, err
 	}
@@ -182,6 +186,17 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 		Arch:     picked.Attributes.Arch,
 	}
 
+	// Stash the artifact's keygen.sh ID so Download can fetch by ID rather
+	// than filename — filenames are not unique across platforms (a release
+	// can ship two installer.exe artifacts, one each for amd64/arm64), but
+	// IDs are.
+	if picked.ID != "" {
+		if rel.Metadata == nil {
+			rel.Metadata = map[string]any{}
+		}
+		rel.Metadata["keygen.artifact.id"] = picked.ID
+	}
+
 	// Map keygen.sh's checksum + signature into framework Verification.
 	// keygen.sh ships them base64-encoded without padding.
 	if v := buildVerification(picked.Attributes.Checksum, picked.Attributes.Signature); v != nil {
@@ -194,12 +209,29 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 // keygen.sh distribution backend (Cloudflare R2 or S3); the redirect-strip
 // wrapper installed at construction time prevents the Authorization header
 // from leaking on the cross-origin hop.
+//
+// When Check stashed the artifact ID under "keygen.artifact.id" the download
+// targets it directly; otherwise the filename is used as a fallback. Filename
+// lookups are ambiguous when a release ships two artifacts that share a name
+// across platforms (e.g. installer.exe for both amd64 and arm64).
 func (p *Provider) Download(ctx context.Context, rel *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
-	if rel == nil || rel.Artifact.Filename == "" {
-		return errors.New("keygen: release missing artifact filename")
+	if rel == nil {
+		return errors.New("keygen: nil release")
+	}
+	identifier := ""
+	if rel.Metadata != nil {
+		if id, ok := rel.Metadata["keygen.artifact.id"].(string); ok && id != "" {
+			identifier = id
+		}
+	}
+	if identifier == "" {
+		identifier = rel.Artifact.Filename
+	}
+	if identifier == "" {
+		return errors.New("keygen: release missing artifact id and filename")
 	}
 	endpoint := fmt.Sprintf("%s/v1/accounts/%s/artifacts/%s",
-		p.base, url.PathEscape(p.cfg.Account), url.PathEscape(rel.Artifact.Filename))
+		p.base, url.PathEscape(p.cfg.Account), url.PathEscape(identifier))
 
 	resp, err := p.do(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -279,6 +311,9 @@ func (p *Provider) listReleaseArtifacts(ctx context.Context, releaseID string) (
 }
 
 func pickArtifact(arts []artifactResource, platform, arch, filetype string) (*artifactResource, bool) {
+	wantPlat := strings.ToLower(platform)
+	wantArch := strings.ToLower(arch)
+	wantType := strings.ToLower(filetype)
 	for i := range arts {
 		a := &arts[i]
 		if a.Type != "artifacts" {
@@ -287,18 +322,54 @@ func pickArtifact(arts []artifactResource, platform, arch, filetype string) (*ar
 		if a.Attributes.Status != "" && a.Attributes.Status != "UPLOADED" {
 			continue
 		}
-		if a.Attributes.Platform != "" && a.Attributes.Platform != platform {
+		if a.Attributes.Platform != "" && !platformMatches(a.Attributes.Platform, wantPlat) {
 			continue
 		}
-		if a.Attributes.Arch != "" && a.Attributes.Arch != arch {
+		if a.Attributes.Arch != "" && !archMatches(a.Attributes.Arch, wantArch) {
 			continue
 		}
-		if filetype != "" && a.Attributes.Filetype != "" && a.Attributes.Filetype != filetype {
+		if wantType != "" && a.Attributes.Filetype != "" && strings.ToLower(a.Attributes.Filetype) != wantType {
 			continue
 		}
 		return a, true
 	}
 	return nil, false
+}
+
+// platformMatches reports whether a keygen.sh artifact's published platform
+// (operator-defined, often "macos"/"win"/"linux") corresponds to a Go
+// runtime.GOOS value. Case-insensitive.
+func platformMatches(published, want string) bool {
+	p := strings.ToLower(published)
+	if p == want {
+		return true
+	}
+	switch want {
+	case "darwin":
+		return p == "macos" || p == "mac" || p == "osx"
+	case "windows":
+		return p == "win" || p == "win32" || p == "win64"
+	}
+	return false
+}
+
+// archMatches reports whether a keygen.sh artifact's published arch
+// (operator-defined, often "x86_64"/"aarch64") corresponds to a Go
+// runtime.GOARCH value. Case-insensitive.
+func archMatches(published, want string) bool {
+	p := strings.ToLower(published)
+	if p == want {
+		return true
+	}
+	switch want {
+	case "amd64":
+		return p == "x86_64" || p == "x64"
+	case "arm64":
+		return p == "aarch64"
+	case "386":
+		return p == "i386" || p == "x86" || p == "ia32"
+	}
+	return false
 }
 
 // buildVerification maps keygen.sh's per-artifact checksum + signature

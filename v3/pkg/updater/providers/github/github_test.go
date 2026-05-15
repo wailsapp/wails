@@ -318,6 +318,22 @@ func TestDefaultAssetMatcher(t *testing.T) {
 	}
 }
 
+// Some projects encode the hash algorithm in the primary artifact's filename
+// (e.g. \"myapp-1.0-windows-sha256.zip\"). The previous substring-based
+// isChecksumName treated those as sidecars and DefaultAssetMatcher silently
+// skipped them, leaving the matcher with no candidate.
+func TestDefaultAssetMatcher_NameContainsAlgoButIsNotSidecar(t *testing.T) {
+	assets := []github.ReleaseAsset{
+		{Name: "myapp-1.0-windows-sha256-amd64.zip"},
+		{Name: "SHA256SUMS"},
+		{Name: "myapp-1.0-windows-amd64.zip.sha256"},
+	}
+	got := github.DefaultAssetMatcher(updater.CheckRequest{Platform: "windows", Arch: "amd64"}, assets)
+	if got != 0 {
+		t.Errorf("want primary artifact (index 0), got %d", got)
+	}
+}
+
 func TestCheck_APIError_Surfaced(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)

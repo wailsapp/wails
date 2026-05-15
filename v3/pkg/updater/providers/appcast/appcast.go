@@ -162,6 +162,12 @@ func (p *Provider) Download(ctx context.Context, rel *updater.Release, dst io.Wr
 		return err
 	}
 	req.Header.Set("Accept", "application/octet-stream")
+	// Enclosure URLs point at a publisher CDN, often on a different host
+	// from the feed. Even though Check never sets Authorization on its
+	// requests, defensively scrub it here so a caller-supplied default on
+	// http.Request can't leak credentials cross-origin on the initial hop.
+	// The redirect wrapper handles subsequent hops.
+	req.Header.Del("Authorization")
 
 	resp, err := p.client.Do(req)
 	if err != nil {

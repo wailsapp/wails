@@ -301,6 +301,103 @@ func TestDownload_StripsAuthOnRedirect(t *testing.T) {
 	}
 }
 
+// Check must stash the chosen artifact's keygen.sh ID under
+// rel.Metadata["keygen.artifact.id"] so a follow-up Download targets the
+// artifact by its unique ID rather than its filename. Filenames are not
+// unique across platforms (installer.exe for both amd64 and arm64).
+func TestCheck_StashesArtifactID(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, sampleUpgradeOK)
+	}))
+	defer srv.Close()
+	p, _ := keygen.New(keygen.Config{Account: "acct", BaseURL: srv.URL})
+	rel, err := p.Check(context.Background(), updater.CheckRequest{
+		CurrentVersion: "1.0.0",
+		Platform:       "darwin",
+		Arch:           "arm64",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel == nil || rel.Metadata == nil {
+		t.Fatalf("missing rel/metadata: %+v", rel)
+	}
+	const wantID = "0dad8516-f071-4573-bcea-d774e81c4a37"
+	if got, _ := rel.Metadata["keygen.artifact.id"].(string); got != wantID {
+		t.Errorf("keygen.artifact.id: got %q, want %q", got, wantID)
+	}
+}
+
+// Download prefers the artifact ID over the filename when Metadata carries
+// one, so two artifacts sharing a filename across platforms can still be
+// fetched deterministically.
+func TestDownload_PrefersArtifactID(t *testing.T) {
+	const artifactID = "0dad8516-f071-4573-bcea-d774e81c4a37"
+	var path string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path = r.URL.Path
+		w.Header().Set("Content-Length", "2")
+		w.Write([]byte("ok"))
+	}))
+	defer srv.Close()
+
+	p, _ := keygen.New(keygen.Config{Account: "acct", BaseURL: srv.URL})
+	rel := &updater.Release{
+		Artifact: updater.Artifact{Filename: "installer.exe", Size: 2},
+		Metadata: map[string]any{"keygen.artifact.id": artifactID},
+	}
+	var buf bytes.Buffer
+	if err := p.Download(context.Background(), rel, &buf, func(_, _ int64) {}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasSuffix(path, "/artifacts/"+artifactID) {
+		t.Errorf("expected download by ID, got path %q", path)
+	}
+}
+
+// pickArtifact must tolerate the operator-defined platform/arch aliases
+// keygen.sh release operators commonly use ("macos", "x86_64", "aarch64").
+// Previously a strict equality check dropped these releases silently.
+func TestCheck_NormalisesPlatformArchAliases(t *testing.T) {
+	const aliasFeed = `{
+      "data": {
+        "id": "30c64dcd-a74d-4f0d-8479-8745172a4817",
+        "type": "releases",
+        "attributes": {
+          "name": "v2", "description": "", "channel": "stable",
+          "status": "PUBLISHED", "tag": "latest", "version": "2.0.0",
+          "metadata": {}, "created": "2022-05-31T14:26:09.319Z"
+        }
+      },
+      "included": [{
+        "id": "ABC",
+        "type": "artifacts",
+        "attributes": {
+          "filename": "App-macos-aarch64.dmg", "filetype": "dmg",
+          "filesize": 12345,
+          "platform": "macos", "arch": "aarch64",
+          "status": "UPLOADED"
+        }
+      }]
+    }`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, aliasFeed)
+	}))
+	defer srv.Close()
+	p, _ := keygen.New(keygen.Config{Account: "acct", BaseURL: srv.URL})
+	rel, err := p.Check(context.Background(), updater.CheckRequest{
+		CurrentVersion: "1.0.0",
+		Platform:       "darwin", // alias for macos
+		Arch:           "arm64",  // alias for aarch64
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel == nil || rel.Artifact.Filename != "App-macos-aarch64.dmg" {
+		t.Fatalf("expected alias match, got %+v", rel)
+	}
+}
+
 func TestNew_RequiresAccount(t *testing.T) {
 	if _, err := keygen.New(keygen.Config{}); err == nil {
 		t.Fatal("expected error")

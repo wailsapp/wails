@@ -237,14 +237,21 @@ func (p *Provider) Download(ctx context.Context, rel *updater.Release, dst io.Wr
 	}
 }
 
-// followAndStrip executes a request, following redirects manually so we can
-// drop the Authorization header on a cross-host hop (otherwise the GitHub
-// PAT would be sent to AWS, which fails the download).
+// followAndStrip executes a request, following redirects with a CheckRedirect
+// wrapper that drops the Authorization header on a cross-host hop (otherwise
+// the GitHub PAT would be sent to AWS, which fails the download).
+//
+// A caller-supplied CheckRedirect on p.client is preserved: this wrapper
+// performs its strip, then delegates to the prior policy.
 func (p *Provider) followAndStrip(req *http.Request) (*http.Response, error) {
 	client := *p.client
+	prev := client.CheckRedirect
 	client.CheckRedirect = func(r *http.Request, via []*http.Request) error {
-		if len(via) > 0 && via[len(via)-1].URL.Host != r.URL.Host {
+		if len(via) > 0 && !strings.EqualFold(via[len(via)-1].URL.Host, r.URL.Host) {
 			r.Header.Del("Authorization")
+		}
+		if prev != nil {
+			return prev(r, via)
 		}
 		if len(via) >= 10 {
 			return errors.New("stopped after 10 redirects")
@@ -428,9 +435,18 @@ func containsArch(name, arch string) bool {
 	return false
 }
 
+// isChecksumName reports whether lowerName looks like a checksum sidecar
+// rather than a primary release artifact. Anchored to extensions / whole
+// tokens so legitimate artifacts whose names contain a hash algorithm
+// (e.g. "myapp-sha256.zip", "win-x64.tar.gz") aren't mistaken for sidecars.
 func isChecksumName(lowerName string) bool {
-	for _, sub := range []string{"checksum", "sha256", "sha512", "sums"} {
-		if strings.Contains(lowerName, sub) {
+	for _, ext := range []string{".sha256", ".sha512", ".sums", ".checksum", ".checksums"} {
+		if strings.HasSuffix(lowerName, ext) {
+			return true
+		}
+	}
+	for _, token := range []string{"checksums", "sha256sums", "sha512sums"} {
+		if lowerName == token || strings.HasPrefix(lowerName, token+".") {
 			return true
 		}
 	}
