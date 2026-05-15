@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
@@ -179,7 +178,10 @@ func TestCheckAndInstall_BuiltinWindow_OverrideOptions(t *testing.T) {
 
 func TestUserCancel_ClosesWindow(t *testing.T) {
 	host := &fakeHost{}
-	rel := &updater.Release{Version: "2.0.0", Artifact: updater.Artifact{Filename: "app.bin"}}
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: 1},
+	}
 	p := &fakeProvider{name: "p", rel: rel, body: []byte("x")}
 
 	u := updater.New(host)
@@ -190,26 +192,25 @@ func TestUserCancel_ClosesWindow(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Open a window without running the full flow.
-	go func() {
-		// Slight delay so the listeners get installed before we trigger.
-		time.Sleep(10 * time.Millisecond)
-		host.Emit(updater.EventUserCancel)
-	}()
-	// We can't run the full CheckAndInstall and then trigger cancel
-	// reliably; instead we open the session directly via the public API.
-	_ = u.CheckAndInstall(context.Background())
-	// Cancel fires after success — should now have closed the window.
-	deadline := time.Now().Add(500 * time.Millisecond)
-	for time.Now().Before(deadline) {
-		host.mu.Lock()
-		closed := host.window != nil && host.window.closed
-		host.mu.Unlock()
-		if closed {
-			return
-		}
-		time.Sleep(10 * time.Millisecond)
+	// Drive the full Check + DownloadAndInstall flow synchronously. Listeners
+	// are guaranteed registered by the time CheckAndInstall returns, and the
+	// builtin window stays open in StateReady so we can observe the cancel
+	// tearing it down.
+	if err := u.CheckAndInstall(context.Background()); err != nil {
+		t.Fatalf("CheckAndInstall: %v", err)
 	}
+	host.mu.Lock()
+	if host.window == nil || host.window.closed {
+		host.mu.Unlock()
+		t.Fatal("window should be open and not yet closed after a ready install")
+	}
+	host.mu.Unlock()
+
+	// Now fire cancel. fakeHost.Emit dispatches listener callbacks
+	// synchronously on the calling goroutine, so the close has already
+	// happened by the time Emit returns — no polling required.
+	host.Emit(updater.EventUserCancel)
+
 	host.mu.Lock()
 	defer host.mu.Unlock()
 	if host.window == nil || !host.window.closed {
