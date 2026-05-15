@@ -16,6 +16,7 @@ import (
 	"io"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -665,10 +666,4 @@ func slicesEqualIgnoringProgressRepeats(a, b []string) bool {
 }
 
 func osRemoveAll(p string) error { return removeAllOS(p) }
-func parentOf(p string) string {
-	i := strings.LastIndex(p, "/")
-	if i < 0 {
-		return ""
-	}
-	return p[:i]
-}
+func parentOf(p string) string  { return filepath.Dir(p) }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -156,6 +155,9 @@ func TestCheck_ChecksumSidecar_PopulatesVerification(t *testing.T) {
 	digest := sha256.Sum256(body)
 	digestHex := hex.EncodeToString(digest[:])
 
+	// host is assigned after httptest.NewServer; the handler closures only
+	// read it at request time, so the late binding is safe.
+	var host string
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/o/r/releases/latest", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{
@@ -168,14 +170,14 @@ func TestCheck_ChecksumSidecar_PopulatesVerification(t *testing.T) {
 		    {"id": 1, "name": "app-linux-amd64.tar.gz", "content_type": "application/gzip", "size": %d, "browser_download_url": "%s/dl/asset"},
 		    {"id": 2, "name": "SHA256SUMS", "content_type": "text/plain", "size": 64, "browser_download_url": "%s/dl/sums"}
 		  ]
-		}`, len(body), mockHost, mockHost)
+		}`, len(body), host, host)
 	})
 	mux.HandleFunc("/dl/sums", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s  app-linux-amd64.tar.gz\n", digestHex)
 	})
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
-	mockHost = srv.URL // captured by closure above; set before any handler fires
+	host = srv.URL
 
 	p, _ := github.New(github.Config{
 		Repository:    "o/r",
@@ -300,9 +302,3 @@ func TestProviderInterface(t *testing.T) {
 	var _ updater.Provider = (*github.Provider)(nil)
 }
 
-// mockHost lets tests rewrite the host portion of URLs that the GitHub API
-// returns at parse time, since the asset browser_download_url has to point
-// at the test server itself for the redirect-follow tests to work.
-var mockHost string
-
-var _ = errors.New // keep imports stable across edits

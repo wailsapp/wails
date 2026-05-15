@@ -7,6 +7,7 @@ import (
 	"hash"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -23,7 +24,7 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (strin
 	if err != nil {
 		return "", fmt.Errorf("updater: temp dir: %w", err)
 	}
-	tmpPath := dir + string(os.PathSeparator) + ".artifact"
+	tmpPath := filepath.Join(dir, ".artifact")
 
 	f, err := os.Create(tmpPath)
 	if err != nil {

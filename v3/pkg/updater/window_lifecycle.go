@@ -1,9 +1,6 @@
 package updater
 
-import (
-	"context"
-	"sync"
-)
+import "context"
 
 // User-action event names emitted by the default window and any custom
 // template that follows the same contract. The Updater listens to these to
@@ -134,12 +131,4 @@ func (u *Updater) shouldSkip(version string) bool {
 	u.mu.RLock()
 	defer u.mu.RUnlock()
 	return u.skipped != "" && u.skipped == version
-}
-
-// sessionMu guards the active session pointer separately from the main
-// state mutex to avoid lock-ordering hazards when a user-action callback
-// (fired by Host.OnEvent on a separate goroutine) needs to close the
-// session while the main flow holds u.mu.
-type sessionMu struct {
-	sync.Mutex
 }

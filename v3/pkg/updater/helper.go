@@ -85,7 +85,7 @@ func (osLauncher) launch(path string) error {
 // dependency-injected so unit tests can drive every branch without process
 // spawning. Returns the exit code the helper should use.
 func runHelperSwap(target, newPath string, parentPID int, logPath string, wait processWaiter, l launcher) int {
-	lg := openHelperLog(logPath, target)
+	lg := openHelperLog(logPath)
 	defer lg.Close()
 
 	lg.logf("helper start: target=%s new=%s pid=%d", target, newPath, parentPID)
@@ -283,12 +283,10 @@ type helperLog struct {
 	file *os.File
 }
 
-func openHelperLog(path, target string) *helperLog {
+func openHelperLog(path string) *helperLog {
 	if path == "" {
 		path = filepath.Join(os.TempDir(), fmt.Sprintf("wails-update-%d.log", os.Getpid()))
 	}
-	_ = path // keep referenced when file open fails
-	_ = target
 	f, err := os.Create(path)
 	if err != nil {
 		return &helperLog{w: os.Stderr}

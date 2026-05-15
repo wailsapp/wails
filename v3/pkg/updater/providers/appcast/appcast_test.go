@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -242,5 +241,3 @@ func TestNew_RequiresURL(t *testing.T) {
 func TestProviderInterface(t *testing.T) {
 	var _ updater.Provider = (*appcast.Provider)(nil)
 }
-
-var _ = io.EOF

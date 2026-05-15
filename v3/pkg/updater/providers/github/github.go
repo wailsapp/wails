@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -253,7 +252,6 @@ func (p *Provider) followAndStrip(req *http.Request) (*http.Response, error) {
 // --- helpers ---
 
 func (p *Provider) setAuth(req *http.Request) {
-	req.Header.Set("Accept", req.Header.Get("Accept"))
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	if p.cfg.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+p.cfg.Token)
@@ -533,7 +531,3 @@ type apiAsset struct {
 	Size               int64  `json:"size"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
-
-// errors / sentinels (none specific to v1 — bare errors and HTTP status
-// codes carry all the information callers need).
-var _ = url.Parse
