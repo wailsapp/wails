@@ -276,6 +276,21 @@ type WindowsWindow struct {
 	// Default: 0
 	ResizeDebounceMS uint16
 
+	// NonClientRegionSupport enables WebView2's native non-client region support
+	// for this window when the installed WebView2 Runtime supports it. This is
+	// primarily intended to make app-region: drag style custom titlebars work
+	// with native non-client hit testing.
+	// Default: false
+	NonClientRegionSupport bool
+
+	// WebView2CompositionHosting creates WebView2 with visual hosting using
+	// ICoreWebView2CompositionController and DirectComposition instead of the
+	// HWND-hosted controller. This is intended for custom host-owned non-client
+	// hit-testing, for example manual caption-button regions rendered in web
+	// content and resolved through GetNonClientRegionAtPoint / SendMouseInput.
+	// Default: false
+	WebView2CompositionHosting bool
+
 	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
 	// when moving the window
 	// Default: 0

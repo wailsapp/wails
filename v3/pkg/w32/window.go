@@ -63,7 +63,10 @@ func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	//     are shown if transparent ant translucent.
 	var margins MARGINS
 	if extend {
-		margins = MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
+		// Extending into the top edge prevents the Windows 11 Snap Layout flyout from
+		// appearing over custom HTMAXBUTTON regions. Side and bottom margins preserve
+		// the default frame styling without interfering with the maximize button hover.
+		margins = MARGINS{1, 1, 0, 1}
 	}
 	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
 		return fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err)
@@ -192,7 +195,7 @@ func MustStringToUTF16uintptr(input string) uintptr {
 }
 
 // MustStringToUTF16 converts s to UTF-16 encoding, stripping any embedded NULs and panicking on error.
-// 
+//
 // The returned slice is suitable for Windows API calls that expect a UTF-16 encoded string.
 func MustStringToUTF16(input string) []uint16 {
 	input = stripNulls(input)

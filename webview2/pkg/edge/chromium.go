@@ -56,10 +56,13 @@ type Chromium struct {
 	}
 
 	controller                       *ICoreWebView2Controller
+	compositionController            *ICoreWebView2CompositionController
+	compositionController4           *ICoreWebView2CompositionController4
 	webview                          *ICoreWebView2
 	inited                           uintptr
 	envCompleted                     *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler
 	controllerCompleted              *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler
+	compositionControllerCompleted   *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler
 	webMessageReceived               *iCoreWebView2WebMessageReceivedEventHandler
 	containsFullScreenElementChanged *ICoreWebView2ContainsFullScreenElementChangedEventHandler
 	permissionRequested              *iCoreWebView2PermissionRequestedEventHandler
@@ -70,12 +73,15 @@ type Chromium struct {
 
 	environment            *ICoreWebView2Environment
 	webview2RuntimeVersion string
+	compositionHost        *compositionHost
 
 	// Settings
-	Debug                 bool
-	DataPath              string
-	BrowserPath           string
-	AdditionalBrowserArgs []string
+	Debug                         bool
+	DataPath                      string
+	BrowserPath                   string
+	AdditionalBrowserArgs         []string
+	NonClientRegionSupportEnabled bool
+	CompositionControllerEnabled  bool
 
 	// permissions
 	permissions      map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -115,6 +121,7 @@ func NewChromium() *Chromium {
 	*/
 	e.envCompleted = newICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler(e)
 	e.controllerCompleted = newICoreWebView2CreateCoreWebView2ControllerCompletedHandler(e)
+	e.compositionControllerCompleted = newICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler(e)
 	e.webMessageReceived = newICoreWebView2WebMessageReceivedEventHandler(e)
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
@@ -317,10 +324,15 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 
 	log.Printf("[WebView2] Environment created successfully\n")
 
-	env.vtbl.AddRef.Call(uintptr(unsafe.Pointer(env)))
+	env.AddRef()
 	e.environment = env
 
-	err := env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+	var err error
+	if !e.CompositionControllerEnabled {
+		err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+	} else {
+		err = e.createCoreWebView2CompositionController(env)
+	}
 	if err != nil {
 		e.errorCallback(err)
 	}
@@ -332,9 +344,50 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		e.errorCallback(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
 	}
 
+	return e.initializeController(controller)
+}
+
+func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Environment) error {
+	env3 := env.GetICoreWebView2Environment3()
+	if env3 == nil {
+		return UnsupportedCapabilityError
+	}
+	defer env3.Release()
+
+	host, err := newCompositionHost(e.hwnd)
+	if err != nil {
+		return err
+	}
+	e.compositionHost = host
+
+	return env3.CreateCoreWebView2CompositionController(e.hwnd, e.compositionControllerCompleted)
+}
+
+func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
+	if int32(res) < 0 {
+		e.errorCallback(fmt.Errorf("error creating composition controller with %08x: %s", res, syscall.Errno(res)))
+	}
+
+	compositionController.AddRef()
+	e.compositionController = compositionController
+	e.compositionController4 = compositionController.GetICoreWebView2CompositionController4()
+
+	if err := e.compositionHost.attachController(e.compositionController); err != nil {
+		e.errorCallback(err)
+	}
+
+	controller := compositionController.GetICoreWebView2Controller()
+	if controller == nil {
+		e.errorCallback(fmt.Errorf("error getting controller from composition controller"))
+	}
+
+	return e.initializeController(controller)
+}
+
+func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uintptr {
 	var err error
 
-	controller.vtbl.AddRef.Call(uintptr(unsafe.Pointer(controller)))
+	controller.AddRef()
 	e.controller = controller
 
 	// Try to get ICoreWebView2Controller3 interface for better performance
@@ -355,7 +408,14 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		e.errorCallback(err)
 	}
 
-	e.webview.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e.webview)))
+	e.webview.AddRef()
+	if e.NonClientRegionSupportEnabled {
+		if err := e.PutIsNonClientRegionSupportEnabled(true); err != nil {
+			if !errors.Is(err, UnsupportedCapabilityError) {
+				e.errorCallback(err)
+			}
+		}
+	}
 	err = e.webview.AddWebMessageReceived(e.webMessageReceived, &token)
 	if err != nil {
 		e.errorCallback(err)
@@ -560,6 +620,19 @@ func (e *Chromium) ProcessFailed(sender *ICoreWebView2, args *ICoreWebView2Proce
 	return 0
 }
 
+func (e *Chromium) Bounds() *Rect {
+	if e == nil || e.controller == nil {
+		return nil
+	}
+
+	rect, err := e.controller.GetBounds()
+	if err != nil {
+		e.errorCallback(err)
+		return nil
+	}
+	return rect
+}
+
 func (e *Chromium) NotifyParentWindowPositionChanged() error {
 	//It looks like the wndproc function is called before the controller initialization is complete.
 	//Because of this the controller is nil
@@ -592,6 +665,16 @@ func (e *Chromium) OpenDevToolsWindow() {
 
 func (e *Chromium) HasCapability(c Capability) bool {
 	return HasCapability(e.webview2RuntimeVersion, c)
+}
+
+func (e *Chromium) CompositionControllerReady() bool {
+	return e != nil && e.compositionController != nil
+}
+
+func (e *Chromium) NonClientRegionHitTestReady() bool {
+	return e != nil &&
+		e.compositionController4 != nil &&
+		HasCapability(e.webview2RuntimeVersion, NonClientRegion)
 }
 
 func (e *Chromium) GetIsSwipeNavigationEnabled() (bool, error) {
@@ -660,6 +743,40 @@ func (e *Chromium) PutIsSwipeNavigationEnabled(enabled bool) error {
 		return err
 	}
 	return nil
+}
+
+func (e *Chromium) PutIsNonClientRegionSupportEnabled(enabled bool) error {
+	if !HasCapability(e.webview2RuntimeVersion, NonClientRegion) {
+		return UnsupportedCapabilityError
+	}
+	webview2Settings, err := e.webview.GetSettings()
+	if err != nil {
+		return err
+	}
+	webview2Settings9 := webview2Settings.GetICoreWebView2Settings9()
+	if webview2Settings9 == nil {
+		return UnsupportedCapabilityError
+	}
+	return webview2Settings9.PutIsNonClientRegionSupportEnabled(enabled)
+}
+
+func (e *Chromium) GetNonClientRegionAtPoint(x, y int32) (COREWEBVIEW2_NON_CLIENT_REGION_KIND, bool, error) {
+	if !e.NonClientRegionHitTestReady() {
+		return COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE, false, nil
+	}
+
+	region, err := e.compositionController4.GetNonClientRegionAtPoint(POINT{X: x, Y: y})
+	if err != nil {
+		return COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE, false, err
+	}
+	return region, true, nil
+}
+
+func (e *Chromium) SendMouseInput(eventKind COREWEBVIEW2_MOUSE_EVENT_KIND, virtualKeys COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS, mouseData uint32, x, y int32) error {
+	if !e.CompositionControllerReady() {
+		return errors.New("webview2 composition controller is not initialized")
+	}
+	return e.compositionController.SendMouseInput(eventKind, virtualKeys, mouseData, POINT{X: x, Y: y})
 }
 
 func (e *Chromium) AllowExternalDrag(allow bool) error {

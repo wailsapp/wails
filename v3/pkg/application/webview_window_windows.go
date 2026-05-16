@@ -14,16 +14,16 @@ import (
 	"unsafe"
 
 	"github.com/bep/debounce"
-	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 
-	"github.com/wailsapp/wails/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -81,6 +81,10 @@ type windowsWebviewWindow struct {
 	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
+
+	compositionInput compositionMouseInputState
+	snapHover        snapLayoutHoverState
+	nonClientHitTest nonClientHitTestState
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
@@ -350,6 +354,8 @@ func (w *windowsWebviewWindow) run() {
 	w.showRequested = !options.Hidden
 
 	w.chromium = edge.NewChromium()
+	w.chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
+	w.chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
 	}
@@ -1469,6 +1475,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
 	if processed {
 		return code
+	}
+
+	if handled, result := w.routeNonClientInput(msg, wparam, lparam); handled {
+		return result
+	}
+
+	if w.routeCompositionMouseInput(msg, wparam, lparam) {
+		return 0
 	}
 
 	switch msg {

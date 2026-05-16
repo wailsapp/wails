@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime"
 	"slices"
@@ -8,8 +9,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
-
-	"encoding/json"
 
 	"github.com/leaanthony/u"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -116,7 +115,33 @@ type (
 		snapAssist()
 		setContentProtection(enabled bool)
 		attachModal(modalWindow *WebviewWindow)
+		setNonClientHitTestRegions([]nonClientHitTestRegion)
 	}
+
+	nonClientHitTestKind string
+
+	// nonClientHitTestRegion is a frontend-owned client-area rectangle in physical
+	// pixels. Empty Kind is intentionally treated as "maximize" to preserve the
+	// legacy single-rect Snap Layouts path.
+	nonClientHitTestRegion struct {
+		Kind   nonClientHitTestKind `json:"kind,omitempty"`
+		Left   int                  `json:"left"`
+		Top    int                  `json:"top"`
+		Right  int                  `json:"right"`
+		Bottom int                  `json:"bottom"`
+	}
+
+	nonClientHitTestRegionsMessage struct {
+		Version int                      `json:"version,omitempty"`
+		Regions []nonClientHitTestRegion `json:"regions"`
+	}
+)
+
+const (
+	nonClientHitTestKindCaption  nonClientHitTestKind = "caption"
+	nonClientHitTestKindMinimize nonClientHitTestKind = "minimize"
+	nonClientHitTestKindMaximize nonClientHitTestKind = "maximize"
+	nonClientHitTestKindClose    nonClientHitTestKind = "close"
 )
 
 type WindowEvent struct {
@@ -763,6 +788,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				w.Error("%w", err)
 			}
 		}
+	case strings.HasPrefix(message, "wails:non-client-region:"):
+		message = strings.Replace(message, "wails:non-client-region:", "", 1)
+		w.handleNonClientRegionMessage(message)
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
 		w.pendingJSMutex.Lock()
@@ -778,6 +806,45 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		}
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
+	}
+}
+
+func (w *WebviewWindow) handleNonClientRegionMessage(payload string) {
+	var message nonClientHitTestRegionsMessage
+	if err := json.Unmarshal([]byte(payload), &message); err != nil {
+		w.Error("failed to parse non-client regions: %w", err)
+		return
+	}
+
+	for i, r := range message.Regions {
+		if err := validateNonClientHitTestRegion(r); err != nil {
+			w.Error("region %d: %w", i, err)
+			return
+		}
+	}
+
+	if impl, ok := w.impl.(interface {
+		setNonClientHitTestRegions([]nonClientHitTestRegion)
+	}); ok {
+		InvokeSync(func() {
+			impl.setNonClientHitTestRegions(message.Regions)
+		})
+	}
+}
+
+func validateNonClientHitTestRegion(region nonClientHitTestRegion) error {
+	if region.Right <= region.Left || region.Bottom <= region.Top {
+		return fmt.Errorf("invalid rectangle")
+	}
+
+	switch nonClientHitTestKind(strings.ToLower(string(region.Kind))) {
+	case nonClientHitTestKindCaption,
+		nonClientHitTestKindMinimize,
+		nonClientHitTestKindMaximize,
+		nonClientHitTestKindClose:
+		return nil
+	default:
+		return fmt.Errorf("unknown region kind %q", region.Kind)
 	}
 }
 
