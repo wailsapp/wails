@@ -142,6 +142,9 @@ func (w *windowsWebviewWindow) routeNonClientInput(msg uint32, wparam, lparam ui
 
 func (w *windowsWebviewWindow) nonClientHitTestFromScreen(screenX, screenY int) (uintptr, bool) {
 	regions := w.nonClientHitTest.snapshot()
+	// Later frontend regions should win when rectangles overlap, matching the
+	// DOM/CSS order used to collect them (for example caption buttons over a
+	// caption drag area).
 	for i := len(regions) - 1; i >= 0; i-- {
 		r := regions[i]
 
