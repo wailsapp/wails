@@ -11,10 +11,10 @@ The electron alternative for Go
 import { invoke } from "./system.js";
 import { whenReady } from "./utils.js";
 
-type AppRegionKind = "caption" | "minimize" | "maximize" | "close";
+type NonClientRegionKind = "caption" | "minimize" | "maximize" | "close";
 
-interface AppRegion {
-    kind: AppRegionKind;
+interface NonClientRegion {
+    kind: NonClientRegionKind;
     left: number;
     top: number;
     right: number;
@@ -28,7 +28,7 @@ interface AppRegion {
 --wails-non-client-region: close;    marks a custom close button
 */
 const regionProperty = "--wails-non-client-region";
-const validRegions = new Set<AppRegionKind>(["caption", "minimize", "maximize", "close"]);
+const validRegions = new Set<NonClientRegionKind>(["caption", "minimize", "maximize", "close"]);
 
 // Setup
 window._wails = window._wails || {};
@@ -39,15 +39,15 @@ let observedElements = new Set<Element>();
 let resizeObserver: ResizeObserver | undefined;
 let trackingStarted = false;
 
-function normaliseRegionKind(value: string): AppRegionKind | undefined {
+function normaliseRegionKind(value: string): NonClientRegionKind | undefined {
     const region = value.trim().toLowerCase();
-    if (validRegions.has(region as AppRegionKind)) {
-        return region as AppRegionKind;
+    if (validRegions.has(region as NonClientRegionKind)) {
+        return region as NonClientRegionKind;
     }
     return undefined;
 }
 
-function appRegionForElement(element: Element): AppRegionKind | undefined {
+function nonClientRegionForElement(element: Element): NonClientRegionKind | undefined {
     if (!(element instanceof HTMLElement)) {
         return undefined;
     }
@@ -78,12 +78,12 @@ function isVisible(element: HTMLElement): boolean {
         style.contentVisibility !== "hidden";
 }
 
-function elementRegion(element: Element): AppRegion | undefined {
+function elementRegion(element: Element): NonClientRegion | undefined {
     if (!(element instanceof HTMLElement)) {
         return undefined;
     }
 
-    const kind = appRegionForElement(element);
+    const kind = nonClientRegionForElement(element);
     if (!kind || !isVisible(element)) {
         return undefined;
     }
@@ -127,7 +127,7 @@ function observeRegionElements(elements: Element[]): void {
     }
 
     // Track size changes only for active region elements. DOM structure and style
-    // changes are covered by MutationObserver in startAppRegionTracking().
+    // changes are covered by MutationObserver in startNonClientRegionTracking().
     resizeObserver ??= new ResizeObserver(scheduleUpdate);
     const nextElements = new Set(elements);
 
@@ -146,11 +146,11 @@ function observeRegionElements(elements: Element[]): void {
     observedElements = nextElements;
 }
 
-function updateAppRegions(): void {
+function updateNonClientRegions(): void {
     updatePending = false;
 
     const elements = regionElements();
-    const regions: AppRegion[] = [];
+    const regions: NonClientRegion[] = [];
     const activeElements: Element[] = [];
 
     for (const element of elements) {
@@ -180,10 +180,10 @@ function scheduleUpdate(): void {
 
     // Batch region updates to animation frames so layout is measured once per frame.
     updatePending = true;
-    window.requestAnimationFrame(updateAppRegions);
+    window.requestAnimationFrame(updateNonClientRegions);
 }
 
-function startAppRegionTracking(): void {
+function startNonClientRegionTracking(): void {
     if (trackingStarted) {
         return;
     }
@@ -206,25 +206,25 @@ function startAppRegionTracking(): void {
 }
 
 let environmentPolls = 0;
-function tryStartAppRegionTracking(): void {
+function tryStartNonClientRegionTracking(): void {
     const os = window._wails.environment?.OS;
     const enabled = window._wails.flags?.nonClientRegionTracking;
     if (os === "windows") {
         if (enabled === true) {
-            whenReady(startAppRegionTracking);
+            whenReady(startNonClientRegionTracking);
             return;
         }
         if (enabled === undefined && environmentPolls++ < 100) {
             // Window-specific flags can arrive just after the runtime environment.
-            window.setTimeout(tryStartAppRegionTracking, 50);
+            window.setTimeout(tryStartNonClientRegionTracking, 50);
         }
         return;
     }
 
     if (os === undefined && environmentPolls++ < 100) {
         // The runtime environment can arrive after this side-effect module loads.
-        window.setTimeout(tryStartAppRegionTracking, 50);
+        window.setTimeout(tryStartNonClientRegionTracking, 50);
     }
 }
 
-tryStartAppRegionTracking();
+tryStartNonClientRegionTracking();
