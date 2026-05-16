@@ -855,13 +855,9 @@ func (w *WebviewWindow) handleNonClientRegionMessage(payload string) {
 		}
 	}
 
-	if impl, ok := w.impl.(interface {
-		setNonClientHitTestRegions([]nonClientHitTestRegion)
-	}); ok {
-		InvokeSync(func() {
-			impl.setNonClientHitTestRegions(message.Regions)
-		})
-	}
+	InvokeSync(func() {
+		w.impl.setNonClientHitTestRegions(message.Regions)
+	})
 }
 
 func validateNonClientHitTestRegion(region nonClientHitTestRegion) error {
