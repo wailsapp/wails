@@ -279,8 +279,7 @@ func (w *windowsWebviewWindow) compositionMouseClientPoint(msg uint32, lparam ui
 	switch msg {
 	case w32.WM_MOUSELEAVE:
 		return 0, 0, true
-	case w32.WM_MOUSEWHEEL, w32.WM_MOUSEHWHEEL,
-		w32.WM_NCRBUTTONDOWN, w32.WM_NCRBUTTONUP:
+	case w32.WM_MOUSEWHEEL, w32.WM_MOUSEHWHEEL:
 		return w32.ScreenToClient(w.hwnd, int(w32.GET_X_LPARAM(lparam)), int(w32.GET_Y_LPARAM(lparam)))
 	default:
 		return int(w32.GET_X_LPARAM(lparam)), int(w32.GET_Y_LPARAM(lparam)), true
@@ -340,10 +339,6 @@ func webviewCompositionMouseEventKind(msg uint32) (edge.COREWEBVIEW2_MOUSE_EVENT
 		return edge.COREWEBVIEW2_MOUSE_EVENT_KIND_WHEEL, true
 	case w32.WM_MOUSEHWHEEL:
 		return edge.COREWEBVIEW2_MOUSE_EVENT_KIND_HORIZONTAL_WHEEL, true
-	case w32.WM_NCRBUTTONDOWN:
-		return edge.COREWEBVIEW2_MOUSE_EVENT_KIND_NON_CLIENT_RIGHT_BUTTON_DOWN, true
-	case w32.WM_NCRBUTTONUP:
-		return edge.COREWEBVIEW2_MOUSE_EVENT_KIND_NON_CLIENT_RIGHT_BUTTON_UP, true
 	default:
 		return 0, false
 	}
