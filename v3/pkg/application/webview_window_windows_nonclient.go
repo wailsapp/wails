@@ -91,6 +91,13 @@ func (w *windowsWebviewWindow) routeNonClientInput(msg uint32, wparam, lparam ui
 
 		return w32.DwmDefWindowProc(w.hwnd, msg, wparam, lparam)
 	case w32.WM_NCMOUSELEAVE:
+		// Windows can emit a spurious NCMOUSELEAVE right after a forwarded
+		// non-client button press. Suppress it until the captured mouse move
+		// path below can decide whether the pointer really left the active button.
+		if w32.GetCapture() == w.hwnd && w.activeNonClientButton != 0 {
+			return 0, true
+		}
+
 		_ = w.chromium.SendMouseInput(
 			edge.COREWEBVIEW2_MOUSE_EVENT_KIND_LEAVE,
 			edge.COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS_NONE,
@@ -268,6 +275,14 @@ func (w *windowsWebviewWindow) forwardFrontendNonClientButtonInput(msg uint32, w
 		return false
 	}
 
+	// Remember which caption button started the press. During capture, Windows
+	// sends movement as WM_MOUSEMOVE, so later moves must be compared against
+	// this original hit-test rather than any caption button under the cursor.
+	if msg == w32.WM_NCLBUTTONDOWN || msg == w32.WM_NCLBUTTONDBLCLK {
+		w.activeNonClientButton = wparam
+		w.activeNonClientButtonHovered = true
+	}
+
 	w.updateCompositionMouseCapture(msg)
 
 	return true
@@ -316,6 +331,15 @@ func (w *windowsWebviewWindow) routeCompositionMouseInput(msg uint32, wparam, lp
 		mouseData = uint32(wparam >> 16)
 	}
 
+	// While a forwarded caption button owns capture, WebView still receives
+	// normal mouse moves. Only forward those moves while the cursor remains over
+	// the same button; otherwise synthesize leave so pressed styling is cleared.
+	if msg == w32.WM_MOUSEMOVE && w.activeNonClientButton != 0 && w32.GetCapture() == w.hwnd {
+		if !w.updateActiveNonClientButtonHover() {
+			return true
+		}
+	}
+
 	if err := w.chromium.SendMouseInput(
 		eventKind,
 		edge.COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS(uint32(wparam)&0xffff),
@@ -352,7 +376,41 @@ func (w *windowsWebviewWindow) updateCompositionMouseCapture(msg uint32) {
 
 	if isCompositionMouseButtonUp(msg) && w32.GetCapture() == w.hwnd {
 		w32.ReleaseCapture()
+
+		// Button release ends the synthetic caption-button interaction.
+		w.activeNonClientButton = 0
+		w.activeNonClientButtonHovered = false
 	}
+}
+
+// updateActiveNonClientButtonHover returns whether the current move should be
+// forwarded to WebView. It sends a single LEAVE when capture moves off the
+// originally pressed caption button, matching native caption-button behavior.
+func (w *windowsWebviewWindow) updateActiveNonClientButtonHover() bool {
+	screenX, screenY, ok := w32.GetCursorPos()
+	if !ok {
+		return true
+	}
+
+	hitTest, ok := w.nonClientHitTestFromScreen(screenX, screenY)
+	hovered := ok && hitTest == w.activeNonClientButton
+	if hovered {
+		w.activeNonClientButtonHovered = true
+		return true
+	}
+
+	if w.activeNonClientButtonHovered {
+		_ = w.chromium.SendMouseInput(
+			edge.COREWEBVIEW2_MOUSE_EVENT_KIND_LEAVE,
+			edge.COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS_NONE,
+			0,
+			0,
+			0,
+		)
+		w.activeNonClientButtonHovered = false
+	}
+
+	return false
 }
 
 func nonClientLeftButtonMouseEvent(msg uint32) (edge.COREWEBVIEW2_MOUSE_EVENT_KIND, edge.COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS, bool) {
