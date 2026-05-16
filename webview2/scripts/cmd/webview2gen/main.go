@@ -177,12 +177,21 @@ func runGenerate(args []string) error {
 	}
 	for _, f := range files {
 		path := filepath.Join(*out, f.FileName)
-		if err := os.WriteFile(path, f.Content.Bytes(), 0o644); err != nil {
+		if err := os.WriteFile(path, normalizeNewlines(f.Content.Bytes()), 0o644); err != nil {
 			return fmt.Errorf("write %s: %w", path, err)
 		}
 	}
 	fmt.Fprintf(os.Stderr, "generated %d files in %s from SDK %s\n", len(files), *out, v)
 	return nil
+}
+
+// normalizeNewlines collapses CRLF to LF. text/template preserves whatever
+// line endings the template source carried, so on Windows checkouts with
+// core.autocrlf=true the templates become CRLF and the emitted Go files
+// diverge from the LF golden files committed to the repo. Stripping CR
+// in the generator keeps the output deterministic across platforms.
+func normalizeNewlines(b []byte) []byte {
+	return bytes.ReplaceAll(b, []byte("\r\n"), []byte("\n"))
 }
 
 // -----------------------------------------------------------------------
@@ -298,7 +307,7 @@ func runVerify(args []string) error {
 			diffs = append(diffs, fmt.Sprintf("missing committed file: %s (%v)", path, err))
 			continue
 		}
-		if !bytes.Equal(got, f.Content.Bytes()) {
+		if !bytes.Equal(normalizeNewlines(got), normalizeNewlines(f.Content.Bytes())) {
 			diffs = append(diffs, fmt.Sprintf("changed file: %s", path))
 		}
 	}
