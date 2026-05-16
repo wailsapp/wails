@@ -38,6 +38,15 @@ and Install / Skip / Remind / Cancel buttons. Override:
 
 ## Verification
 
-Set `publicKey` in `main.go` to your project's Ed25519 / Ed25519ph /
-ECDSA-P256 public key. The framework refuses to install a signed release
-when no key is configured — by design.
+Out of the box the example uses **digest verification**: the GitHub
+provider is configured with `ChecksumAsset: "SHA256SUMS"`, the
+demo's release ships that sidecar, and the framework refuses to
+install an artifact whose SHA-256 doesn't match what the sidecar
+declares.
+
+For stronger trust, layer on **signature verification** by setting
+`publicKey` in `main.go` to your project's Ed25519 / Ed25519ph /
+ECDSA-P256 public key. The framework refuses to install a signed
+release when no key is configured — by design. The demo doesn't
+sign its releases, so leave `publicKey` empty when running against
+`wailsapp/updater-demo`.
