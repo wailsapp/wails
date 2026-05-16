@@ -134,7 +134,7 @@ func (w *androidWebviewWindow) setEnabled(_ bool) {}
 
 func (w *androidWebviewWindow) setFrameless(_ bool) {}
 
-func (w *androidWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
+func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
 
 func (w *androidWebviewWindow) setMaxSize(_ int, _ int) {}
 
@@ -331,10 +331,6 @@ func (w *androidWebviewWindow) setMaximiseButtonState(_ ButtonState) {
 
 func (w *androidWebviewWindow) setCloseButtonState(_ ButtonState) {
 	// Android doesn't have close buttons like desktop platforms
-}
-
-func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {
-	// Android doesn't have a fullscreen button
 }
 
 func (w *androidWebviewWindow) setContentProtection(_ bool) {

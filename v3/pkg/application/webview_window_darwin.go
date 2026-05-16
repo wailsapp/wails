@@ -461,10 +461,13 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
+// setFullscreenButtonState sets the fullscreen button state
+static void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
+	setButtonState(fullscreenButton, state);
 }
 
 // Set the titlebar style
@@ -609,34 +612,33 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position (in screen coordinates with Y=0 at top, scaled for DPI)
+// Get absolute window position in the canonical Wails coordinate space:
+// logical points, Y-down, with (0,0) at the top-left of the primary screen.
+// This matches Screen.Bounds (see screen_darwin.go), Windows, GTK and the
+// public APIs of Electron and the web. Screens above the primary have
+// negative Y.
 void windowGetPosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	NSScreen* screen = [window screen];
-	if (screen == NULL) {
-		screen = [NSScreen mainScreen];
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
 	}
-	CGFloat scale = [screen backingScaleFactor];
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
 	NSRect frame = [window frame];
-	NSRect screenFrame = [screen frame];
-	// Convert to top-origin coordinates and apply scale (matching windowSetPosition)
-	*x = frame.origin.x * scale;
-	*y = (screenFrame.size.height - frame.origin.y - frame.size.height) * scale;
+	*x = frame.origin.x;
+	*y = primaryHeight - frame.origin.y - frame.size.height;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
-    NSScreen* screen = [window screen];
-    if (screen == NULL) {
-        screen = [NSScreen mainScreen];
-    }
-	// Get the scale of the screen
-	CGFloat scale = [screen backingScaleFactor];
-    NSRect frame = [window frame];
-	// Scale the position
-	frame.origin.x = x / scale;
-	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
-	// Set the frame
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	NSRect frame = [window frame];
+	frame.origin.x = x;
+	frame.origin.y = primaryHeight - frame.size.height - y;
 	[window setFrame:frame display:YES];
 }
 
@@ -701,6 +703,11 @@ void windowDestroy(void* nsWindow) {
 // Remove drop shadow from window
 void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
+}
+
+// Set whether the Escape key should be prevented from exiting fullscreen
+void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
+	[(WebviewWindow*)nsWindow setDisableEscapeExitsFullscreen:disable];
 }
 
 
@@ -1040,8 +1047,8 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	C.setFullscreenButtonState(w.nsWindow, C.int(state))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1350,6 +1357,9 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
+		if macOptions.DisableEscapeExitsFullscreen {
+			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
+		}
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
@@ -1627,13 +1637,6 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
-}
-
-func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
-	// On macOS the fullscreen/zoom button is NSWindowZoomButton, the same physical control
-	// as the maximise button. Delegate to setMaximiseButtonState so callers can use either
-	// API name without hitting a separate code path.
-	C.setMaximiseButtonState(w.nsWindow, C.int(state))
 }
 
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {

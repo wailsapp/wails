@@ -655,6 +655,16 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 	return w
 }
 
+func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
+	w.options.FullscreenButtonState = state
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setFullscreenButtonState(state)
+		})
+	}
+	return w
+}
+
 // Flash flashes the window's taskbar button/icon.
 // Useful to indicate that attention is required. Windows only.
 func (w *WebviewWindow) Flash(enabled bool) {
@@ -1311,12 +1321,12 @@ func (w *WebviewWindow) AttachModal(modalWindow Window) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	
+
 	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
 	if !ok || modalWebviewWindow == nil {
 		return
 	}
-	
+
 	InvokeSync(func() {
 		w.impl.attachModal(modalWebviewWindow)
 	})
