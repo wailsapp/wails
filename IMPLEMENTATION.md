@@ -116,7 +116,7 @@ All 7 package managers updated to check GTK4/WebKitGTK 6.0 as primary, GTK3 as o
 - `v3/internal/doctor/packagemanager/eopkg.go` ✅
 - `v3/internal/doctor/packagemanager/nixpkgs.go` ✅
 
-Package key naming convention: `gtk3`, `webkit2gtk-4.1` (primary/default), `gtk4`, `webkitgtk-6.0` (experimental, optional)
+Package key naming convention (post-#5463 default flip): `gtk4`, `webkitgtk-6.0` (primary/default), `gtk3 (legacy)`, `webkit2gtk (legacy)` (optional, removed in v3.1)
 
 #### 2.2 Capabilities Detection
 Files created/updated:
@@ -372,41 +372,53 @@ TODO:
 
 ## Files Reference
 
-### GTK3 (Default) Files
+Post-#5463 default flip — GTK4 is the default; GTK3 is opt-in via `-tags gtk3` and scheduled for removal in v3.1.
+
+### GTK4 (Default) Files — built when no tag is set
 ```
 v3/pkg/application/
-  linux_cgo.go              # Main CGO (!gtk4 tag - default)
-  application_linux.go       # App lifecycle (!gtk4 tag - default)
+  linux_cgo.go               # Main CGO (!gtk3 tag - default)
+  linux_cgo.c                # cgo C source (!gtk3 tag - default)
+  linux_cgo.h                # cgo C header (!gtk3 tag - default)
+  application_linux.go       # App lifecycle (!gtk3 tag - default)
+  gtkdispatch_linux.go       # GTK main-thread dispatch (!gtk3 tag - default)
+  menu_linux.go              # Menu processing (!gtk3 tag - default)
+  menuitem_linux.go          # Menu item handling (!gtk3 tag - default)
 
 v3/internal/assetserver/webview/
-  webkit2.go                 # WebKit2GTK helpers (!gtk4 tag - default)
-  request_linux.go           # Request handling (!gtk4 tag - default)
-  responsewriter_linux.go    # Response writing (!gtk4 tag - default)
+  webkit_linux.go            # WebKitGTK 6.0 helpers (!gtk3 tag - default)
+  request_linux.go           # Request handling (!gtk3 tag - default)
+  responsewriter_linux.go    # Response writing (!gtk3 tag - default)
 
 v3/internal/capabilities/
-  capabilities_linux_gtk3.go # GTK3 capabilities (!gtk4 tag - default)
+  capabilities_linux.go      # GTK4 capabilities (!gtk3 tag - default)
 
 v3/internal/operatingsystem/
-  webkit_linux.go           # WebKit version info (!gtk4 tag - default)
+  webkit_linux.go            # WebKit version info (!gtk3 tag - default)
 ```
 
-### GTK4 (Experimental) Files
+### GTK3 (Legacy) Files — built only with `-tags gtk3`
 ```
 v3/pkg/application/
-  linux_cgo_gtk4.go          # Main CGO (gtk4 tag - experimental)
-  application_linux_gtk4.go   # App lifecycle (gtk4 tag - experimental)
+  linux_cgo_gtk3.go          # Main CGO (gtk3 tag - legacy)
+  application_linux_gtk3.go  # App lifecycle (gtk3 tag - legacy)
+  gtkdispatch_linux_gtk3.go  # GTK main-thread dispatch (gtk3 tag - legacy)
+  menu_linux_gtk3.go         # Menu processing (gtk3 tag - legacy)
+  menuitem_linux_gtk3.go     # Menu item handling (gtk3 tag - legacy)
 
 v3/internal/assetserver/webview/
-  webkit6.go                 # WebKitGTK 6.0 helpers (gtk4 tag - experimental)
-  request_linux_gtk4.go      # Request handling (gtk4 tag - experimental)
-  responsewriter_linux_gtk4.go # Response writing (gtk4 tag - experimental)
+  webkit_linux_gtk3.go       # WebKit2GTK 4.1 helpers (gtk3 tag - legacy)
+  request_linux_gtk3.go      # Request handling (gtk3 tag - legacy)
+  responsewriter_linux_gtk3.go # Response writing (gtk3 tag - legacy)
 
 v3/internal/capabilities/
-  capabilities_linux.go      # GTK4 capabilities (gtk4 tag - experimental)
+  capabilities_linux_gtk3.go # GTK3 capabilities (gtk3 tag - legacy)
 
 v3/internal/operatingsystem/
-  webkit_linux_gtk4.go       # WebKit version info (gtk4 tag - experimental)
+  webkit_linux_gtk3.go       # WebKit version info (gtk3 tag - legacy)
 ```
+
+> **Historical note:** The Phase tracker blocks earlier in this document (Phases 1–4) reference the pre-flip filenames (`*_linux_gtk4.go`, `webkit6.go`, etc.) as a record of work done at the time. Those references are historical and have not been retconned; new work should reference the post-flip layout above.
 
 ### Shared Files (no GTK-specific code)
 ```
