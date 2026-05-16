@@ -2546,16 +2546,15 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
 
-	// Install the runtime core
-	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
-
-	// Set the EnableFileDrop flag for this window (Windows-specific)
-	// The JS runtime checks this before processing file drops
-	w.execJS(fmt.Sprintf(
+	// Inject runtime core and window-specific flags together so side-effect
+	// runtime modules see a consistent _wails configuration at startup.
+	js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+	js += fmt.Sprintf(
 		"window._wails.flags.enableFileDrop = %v; window._wails.flags.nonClientRegionTracking = %v;",
 		w.parent.options.EnableFileDrop,
 		w.parent.options.Windows.WebView2CompositionHosting,
-	))
+	)
+	w.execJS(js)
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
