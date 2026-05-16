@@ -83,6 +83,11 @@ type windowsWebviewWindow struct {
 	lastSizeWParam uintptr
 
 	nonClientHitTest nonClientHitTestState
+	// Tracks the caption button currently pressed through forwarded non-client input.
+	// Once capture is active, Windows reports movement as normal client mouse input,
+	// so we need this state to keep WebView hover/pressed transitions native-like.
+	activeNonClientButton        uintptr
+	activeNonClientButtonHovered bool
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
