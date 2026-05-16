@@ -337,6 +337,9 @@ func (w *androidWebviewWindow) setContentProtection(_ bool) {
 	// Android content protection - could be implemented with FLAG_SECURE
 }
 
+func (w *androidWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}
+
 func (w *androidWebviewWindow) setHTML(html string) {
 	// TODO: Implement via JNI
 	androidLogf("debug", "setHTML called")

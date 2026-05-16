@@ -68,6 +68,7 @@ type Chromium struct {
 	permissionRequested              *iCoreWebView2PermissionRequestedEventHandler
 	webResourceRequested             *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
+	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
 
@@ -95,6 +96,7 @@ type Chromium struct {
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
 	AcceleratorKeyCallback                   func(uint) bool
+	CursorChangedCallback                    func(cursor HCURSOR, systemCursorID uint32)
 
 	// Error handling
 	globalErrorCallback func(error)
@@ -126,6 +128,7 @@ func NewChromium() *Chromium {
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
+	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
 	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.containsFullScreenElementChanged = newICoreWebView2ContainsFullScreenElementChangedEventHandler(e)
@@ -162,6 +165,12 @@ func (e *Chromium) errorCallback(err error) {
 func (e *Chromium) SetErrorCallback(callback func(error)) {
 	if callback != nil {
 		e.globalErrorCallback = callback
+	}
+}
+
+func (e *Chromium) SetCursorChangedCallback(callback func(cursor HCURSOR, systemCursorID uint32)) {
+	if callback != nil {
+		e.CursorChangedCallback = callback
 	}
 }
 
@@ -444,10 +453,15 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	if err != nil {
 		e.errorCallback(err)
 	}
-
 	err = e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 	if err != nil {
 		e.errorCallback(err)
+	}
+	if e.compositionController != nil {
+		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
+		if err != nil {
+			e.errorCallback(err)
+		}
 	}
 
 	atomic.StoreUintptr(&e.inited, 1)
@@ -459,6 +473,27 @@ func (e *Chromium) ContainsFullScreenElementChanged(sender *ICoreWebView2, args 
 	if e.ContainsFullScreenElementChangedCallback != nil {
 		e.ContainsFullScreenElementChangedCallback(sender, args)
 	}
+	return 0
+}
+
+func (e *Chromium) CursorChanged(sender *ICoreWebView2CompositionController, _ *IUnknown) uintptr {
+	if e.CursorChangedCallback == nil {
+		return 0
+	}
+
+	cursor, err := sender.GetCursor()
+	if err != nil {
+		e.errorCallback(err)
+		return 0
+	}
+
+	systemCursorID, err := sender.GetSystemCursorId()
+	if err != nil {
+		e.errorCallback(err)
+		return 0
+	}
+
+	e.CursorChangedCallback(cursor, systemCursorID)
 	return 0
 }
 

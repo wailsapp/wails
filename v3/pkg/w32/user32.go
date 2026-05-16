@@ -67,6 +67,7 @@ var (
 	procGetClientRect                 = moduser32.NewProc("GetClientRect")
 	procGetDC                         = moduser32.NewProc("GetDC")
 	procReleaseDC                     = moduser32.NewProc("ReleaseDC")
+	procGetCapture                    = moduser32.NewProc("GetCapture")
 	procSetCapture                    = moduser32.NewProc("SetCapture")
 	procReleaseCapture                = moduser32.NewProc("ReleaseCapture")
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
@@ -757,6 +758,11 @@ func SetCapture(hwnd HWND) HWND {
 	ret, _, _ := procSetCapture.Call(
 		uintptr(hwnd))
 
+	return HWND(ret)
+}
+
+func GetCapture() HWND {
+	ret, _, _ := procGetCapture.Call()
 	return HWND(ret)
 }
 

@@ -1651,6 +1651,9 @@ func (w *macosWebviewWindow) setContentProtection(enabled bool) {
 	C.setContentProtection(w.nsWindow, C.bool(enabled))
 }
 
+func (w *macosWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}
+
 func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
 	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
 		return

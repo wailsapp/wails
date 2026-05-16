@@ -73,3 +73,39 @@ func (i *ICoreWebView2CompositionController) SendMouseInput(eventKind COREWEBVIE
 	}
 	return nil
 }
+
+func (i *ICoreWebView2CompositionController) GetCursor() (HCURSOR, error) {
+	var cursor HCURSOR
+	hr, _, _ := i.Vtbl.GetCursor.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&cursor)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return 0, syscall.Errno(hr)
+	}
+	return cursor, nil
+}
+
+func (i *ICoreWebView2CompositionController) GetSystemCursorId() (uint32, error) {
+	var cursorID uint32
+	hr, _, _ := i.Vtbl.GetSystemCursorId.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&cursorID)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return 0, syscall.Errno(hr)
+	}
+	return cursorID, nil
+}
+
+func (i *ICoreWebView2CompositionController) AddCursorChanged(eventHandler *iCoreWebView2CursorChangedEventHandler, token *_EventRegistrationToken) error {
+	hr, _, _ := i.Vtbl.AddCursorChanged.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(token)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return syscall.Errno(hr)
+	}
+	return nil
+}

@@ -354,6 +354,7 @@ func (w *windowsWebviewWindow) run() {
 	w.chromium = edge.NewChromium()
 	w.chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
 	w.chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
+	w.chromium.SetCursorChangedCallback(w.applyCompositionCursor)
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
 	}
