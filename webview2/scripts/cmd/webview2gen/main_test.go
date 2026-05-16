@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -19,6 +20,11 @@ import (
 func buildBinary(t *testing.T) string {
 	t.Helper()
 	bin := filepath.Join(t.TempDir(), "webview2gen")
+	// `go build -o <name>` on Windows writes <name>.exe regardless of the
+	// requested name. Mirror that so exec.Command finds the right file.
+	if runtime.GOOS == "windows" {
+		bin += ".exe"
+	}
 	cmd := exec.Command("go", "build", "-o", bin, ".")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
