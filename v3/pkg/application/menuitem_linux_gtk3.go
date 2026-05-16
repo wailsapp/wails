@@ -80,12 +80,11 @@ func (l linuxMenuItem) setHidden(hidden bool) {
 	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
-		widgetSetVisible(l.native, hidden)
+		widgetSetVisible(l.native, !hidden)
 	})
 }
 
 func (l linuxMenuItem) setAccelerator(accelerator *accelerator) {
-	fmt.Println("setAccelerator", accelerator)
 	// Set the keyboard shortcut of the menu item
 	//	var modifier C.int
 	//	var key *C.char
