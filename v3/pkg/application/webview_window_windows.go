@@ -100,6 +100,10 @@ type windowsWebviewWindow struct {
 	// window is repositioned off the monitor it will restore to).
 	lastKnownDPI w32.UINT
 
+	compositionInput compositionMouseInputState
+	snapHover        snapLayoutHoverState
+	nonClientHitTest nonClientHitTestState
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
 
@@ -371,6 +375,8 @@ func (w *windowsWebviewWindow) run() {
 	w.showRequested = !options.Hidden
 
 	w.chromium = edge.NewChromium()
+	w.chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
+	w.chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
 	}
@@ -1556,6 +1562,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 
 	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
 		return w32.HTCLIENT
+	}
+
+	if w.parent.options.Windows.WebView2CompositionHosting && w.chromium != nil && w.chromium.CompositionControllerReady() {
+		if handled, result := w.routeNonClientInput(msg, wparam, lparam); handled {
+			return result
+		}
+
+		if w.routeCompositionMouseInput(msg, wparam, lparam) {
+			return 0
+		}
 	}
 
 	switch msg {
