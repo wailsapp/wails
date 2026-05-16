@@ -1,10 +1,11 @@
-//go:build linux && !android && !gtk4 && !server
+//go:build linux && !android && !gtk3
 
 package application
 
 type linuxMenu struct {
-	menu   *Menu
-	native pointer
+	menu      *Menu
+	native    pointer
+	processed bool
 }
 
 func newMenuImpl(menu *Menu) *linuxMenu {
@@ -20,11 +21,10 @@ func (m *linuxMenu) run() {
 }
 
 func (m *linuxMenu) update() {
-	if m.native == nil || m.menu == nil {
-		return
-	}
 	m.processMenu(m.menu)
 }
+
+var radioGroupCounter uint = 0
 
 func (m *linuxMenu) processMenu(menu *Menu) {
 	if menu.impl == nil {
@@ -32,16 +32,39 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			menu:   menu,
 			native: menuNew(),
 		}
-	} else {
-		// Clear existing menu items before rebuilding (prevents appending on Update())
-		menuClear(menu)
 	}
-	var currentRadioGroup GSListPointer
+
+	impl := menu.impl.(*linuxMenu)
+	if impl.processed {
+		// Menu already processed, skip re-processing to avoid duplicates
+		return
+	}
+	impl.processed = true
+
+	var currentRadioGroup uint = 0
+	var checkedRadioId uint = 0
+
+	hasSeparators := false
+	for _, item := range menu.items {
+		if item.itemType == separator {
+			hasSeparators = true
+			break
+		}
+	}
+
+	// GMenu uses sections for visual separators
+	// Only use sections if the menu has separators
+	var currentSection pointer
+	var hasSectionItems bool
+	if hasSeparators {
+		currentSection = menuNewSection()
+		hasSectionItems = false
+	}
 
 	for _, item := range menu.items {
-		// drop the group if we have run out of radio items
 		if item.itemType != radio {
-			currentRadioGroup = nilRadioGroup
+			currentRadioGroup = 0
+			checkedRadioId = 0
 		}
 
 		switch item.itemType {
@@ -50,20 +73,57 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			item.impl = menuItem
 			m.processMenu(item.submenu)
 			m.addSubMenuToItem(item.submenu, item)
-			m.addMenuItem(menu, item)
-		case text, checkbox:
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
+		case text:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
-			m.addMenuItem(menu, item)
-		case radio:
-			menuItem := newRadioItemImpl(item, currentRadioGroup)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
+		case checkbox:
+			menuItem := newCheckMenuItemImpl(item)
 			item.impl = menuItem
-			m.addMenuItem(menu, item)
-			currentRadioGroup = menuGetRadioGroup(menuItem)
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
+		case radio:
+			if currentRadioGroup == 0 {
+				radioGroupCounter++
+				currentRadioGroup = radioGroupCounter
+			}
+			if item.checked {
+				checkedRadioId = item.id
+			}
+			menuItem := newRadioMenuItemImpl(item, currentRadioGroup, checkedRadioId)
+			item.impl = menuItem
+			if hasSeparators {
+				m.addMenuItemToSection(currentSection, item)
+				hasSectionItems = true
+			} else {
+				m.addMenuItem(menu, item)
+			}
 		case separator:
-			m.addMenuSeparator(menu)
+			if hasSectionItems {
+				menuAppendSection(menu, currentSection)
+				currentSection = menuNewSection()
+				hasSectionItems = false
+			}
 		}
+	}
 
+	if hasSeparators && hasSectionItems {
+		menuAppendSection(menu, currentSection)
 	}
 
 	for _, item := range menu.items {
@@ -71,7 +131,6 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			m.attachHandler(item)
 		}
 	}
-
 }
 
 func (m *linuxMenu) attachHandler(item *MenuItem) {
@@ -88,17 +147,15 @@ func (m *linuxMenu) addSubMenuToItem(menu *Menu, item *MenuItem) {
 	menuSetSubmenu(item, menu)
 }
 
-func (m *linuxMenu) addMenuItem(parent *Menu, menu *MenuItem) {
-	menuAppend(parent, menu)
+func (m *linuxMenu) addMenuItem(parent *Menu, item *MenuItem) {
+	menuAppend(parent, item, item.hidden)
 }
 
-func (m *linuxMenu) addMenuSeparator(menu *Menu) {
-	menuAddSeparator(menu)
-
+func (m *linuxMenu) addMenuItemToSection(section pointer, item *MenuItem) {
+	menuAppendItemToSection(section, item)
 }
 
 func (m *linuxMenu) addServicesMenu(menu *Menu) {
-	// FIXME: Should this be required?
 }
 
 func (l *linuxMenu) createMenu(name string, items []*MenuItem) *Menu {

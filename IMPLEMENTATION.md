@@ -4,11 +4,27 @@
 
 This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wails v3 on Linux.
 
-**Goal**: Provide GTK4/WebKitGTK 6.0 support as an EXPERIMENTAL opt-in via `-tags gtk4`, while maintaining GTK3/WebKit2GTK 4.1 as the stable default.
+**Current goal (post-flip, 2026-05-16)**: GTK4 + WebKitGTK 6.0 is the **default** Linux stack for v3.0.0 GA. GTK3 + WebKit2GTK 4.1 is a legacy opt-in via `-tags gtk3` for one v3 cycle and is scheduled for removal in v3.1.
+
+**Original goal (2026-02-04, superseded by Decision 1.1)**: Provide GTK4/WebKitGTK 6.0 support as an EXPERIMENTAL opt-in via `-tags gtk4`, while maintaining GTK3/WebKit2GTK 4.1 as the stable default.
 
 ## Architecture Decisions
 
-### Decision 1: GTK3 as Default, GTK4 Opt-In (2026-02-04)
+### Decision 1.1: GTK4 as Default, GTK3 Opt-In (2026-05-16) — supersedes Decision 1
+
+**Context**: GTK4 + WebKitGTK 6.0 has matured through the v3 alpha cycle (alpha.74 → alpha.92). For v3.0.0 GA, shipping with the modern stack as default-of-least-resistance — rather than as an experimental opt-in — is required so distros and packagers do not need to learn a Wails-specific build tag to get a working build.
+
+**Decision**: GTK4 + WebKitGTK 6.0 is the default. GTK3 + WebKit2GTK 4.1 is opt-in via `-tags gtk3`. The legacy path stays through the v3.0.x line and is removed in v3.1.
+
+**Rationale**:
+- Removes a discovery hurdle for new users on modern distros (Ubuntu 24.04+, Fedora 40+, Arch, NixOS unstable) — `go build` Just Works
+- Aligns with where the broader GTK ecosystem is moving — GTK3 EOL is on the horizon
+- Distros still on WebKit2GTK 4.1 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x) get a clearly-named opt-in until those LTSes age out
+- The `-tags gtk3` escape hatch lets us defer the breaking change of dropping GTK3 entirely to v3.1
+
+**Implementation (issue #5459)**: Build-tag flip + file renames. Files previously named `*_linux_gtk4.go` become the bare `*_linux.go` defaults with constraint `!gtk3`; files previously named `*_linux.go` become `*_linux_gtk3.go` with constraint `gtk3`. The `gtk4` build tag is retired in favor of `gtk3` as the toggle. Legacy `wails3 doctor` package-manager polarity inverted (gtk4/webkitgtk-6.0 required, gtk3/webkit2gtk-4.1 optional legacy). `doctor-ng` already had the correct polarity.
+
+### Decision 1: GTK3 as Default, GTK4 Opt-In (2026-02-04) — SUPERSEDED by Decision 1.1
 **Context**: Need to support modern Linux distributions with GTK4 while maintaining stability for existing apps.
 
 **Decision**: GTK3 remains the stable default (no build tag required). GTK4 is available as experimental via `-tags gtk4`.
@@ -19,9 +35,9 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 - Allows gradual migration and feedback collection
 - Protects existing apps from unexpected breakage
 
-**Build Tags**:
-- Default (no tag): `//go:build linux && cgo && !gtk4 && !android`
-- Experimental GTK4: `//go:build linux && cgo && gtk4 && !android`
+**Build Tags** (post-Decision 1.1):
+- Default (no tag): `//go:build linux && cgo && !gtk3 && !android`
+- Legacy GTK3 opt-in: `//go:build linux && cgo && gtk3 && !android`
 
 ### Decision 2: pkg-config Libraries (2026-01-04)
 **GTK4/WebKitGTK 6.0**:

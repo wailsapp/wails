@@ -92,14 +92,14 @@ wails3 build PLATFORM=linux CONFIG=production
 
 Use the `-tags` flag to pass custom Go build tags:
 ```bash
-# Build with GTK4 support on Linux
-wails3 build -tags gtk4
+# Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
+wails3 build -tags gtk3
 
 # Build in server mode (no GUI)
 wails3 build -tags server
 
 # Multiple tags
-wails3 build -tags gtk4,customtag
+wails3 build -tags gtk3,customtag
 ```
 
 Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
