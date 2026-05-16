@@ -7,6 +7,11 @@
 //  3. The frontend subscribes to updater:* events to show its own progress
 //     UI alongside the framework window.
 //
+// Out of the box, the example reports as v1.0.0 and points at
+// wailsapp/updater-demo — a public repo that publishes a v2.0.0 release
+// for each supported platform, so "Check for Updates…" finds, downloads,
+// verifies, swaps, and restarts into a real upgraded binary.
+//
 // Pass APP_VERSION / GH_REPOSITORY env vars to point this at your own repo.
 package main
 
@@ -32,7 +37,7 @@ var publicKey []byte
 
 func main() {
 	version := envOr("APP_VERSION", "1.0.0")
-	repo := envOr("GH_REPOSITORY", "wailsapp/wails")
+	repo := envOr("GH_REPOSITORY", "wailsapp/updater-demo")
 
 	app := application.New(application.Options{
 		Name:        "Updater Example",
@@ -46,9 +51,13 @@ func main() {
 	})
 
 	// Build a GitHub provider. Add a Token if your repo is private or you
-	// need to bump rate limits; add a ChecksumAsset name if your release
-	// ships a SHA256SUMS sidecar.
-	gh, err := github.New(github.Config{Repository: repo})
+	// need to bump rate limits. The demo repo ships a SHA256SUMS sidecar
+	// for digest-based verification — the framework refuses to install an
+	// artifact whose hash doesn't match.
+	gh, err := github.New(github.Config{
+		Repository:    repo,
+		ChecksumAsset: "SHA256SUMS",
+	})
 	if err != nil {
 		log.Fatalf("github.New: %v", err)
 	}

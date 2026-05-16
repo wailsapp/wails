@@ -10,12 +10,21 @@ release. Demonstrates:
 ## Run
 
 ```sh
-APP_VERSION=1.0.0 GH_REPOSITORY=wailsapp/wails go run .
+go run .
 ```
 
-`APP_VERSION` is the version the application claims to currently run.
-`GH_REPOSITORY` is the `owner/repo` pair the updater checks. Click
-**App → Check for Updates…** to trigger the flow.
+Out of the box the example reports itself as `v1.0.0` and points at
+[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo),
+which publishes a `v2.0.0` release for darwin/arm64, linux/amd64, and
+windows/amd64. Click **App → Check for Updates…** and the flow runs
+end-to-end: download, SHA256 verify, atomic swap, restart into the
+new binary.
+
+Override the defaults via env to point at your own repo:
+
+```sh
+APP_VERSION=1.0.0 GH_REPOSITORY=your-org/your-repo go run .
+```
 
 ## Customising the update window
 
