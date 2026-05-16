@@ -208,8 +208,16 @@ function startAppRegionTracking(): void {
 let environmentPolls = 0;
 function tryStartAppRegionTracking(): void {
     const os = window._wails.environment?.OS;
+    const enabled = window._wails.flags?.nonClientRegionTracking;
     if (os === "windows") {
-        whenReady(startAppRegionTracking);
+        if (enabled === true) {
+            whenReady(startAppRegionTracking);
+            return;
+        }
+        if (enabled === undefined && environmentPolls++ < 100) {
+            // Window-specific flags can arrive just after the runtime environment.
+            window.setTimeout(tryStartAppRegionTracking, 50);
+        }
         return;
     }
 
