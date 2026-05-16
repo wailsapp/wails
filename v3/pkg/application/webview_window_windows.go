@@ -76,6 +76,12 @@ type windowsWebviewWindow struct {
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
 
+	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
+	// Gate the dark-menubar force-repaint on a state transition so it does not fire
+	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
+	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
+	lastSizeWParam uintptr
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
 
@@ -464,9 +470,6 @@ func (w *windowsWebviewWindow) run() {
 	w.setMinimiseButtonState(options.MinimiseButtonState)
 	w.setMaximiseButtonState(options.MaximiseButtonState)
 	w.setCloseButtonState(options.CloseButtonState)
-	if options.FullscreenButtonState != ButtonEnabled {
-		w.setFullscreenButtonState(options.FullscreenButtonState)
-	}
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1603,10 +1606,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
-			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
-				// Invalidate the entire window to force complete redraw
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
@@ -1614,10 +1615,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
+			// Repaint the dark menubar only when leaving a maximized/snapped state.
+			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
+			// previous state avoids per-frame invalidations and the associated flicker.
+			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
+			// (Win+Left) bypasses those messages entirely.
+			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
+			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+		w.lastSizeWParam = wparam
 
 		doResize := func() {
 			// Get the new size from lparam
@@ -2478,14 +2488,8 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	}
 }
 
-func (w *windowsWebviewWindow) setFullscreenButtonState(state ButtonState) {
-	switch state {
-	case ButtonDisabled, ButtonHidden:
-		w.setStyle(false, w32.WS_MAXIMIZEBOX)
-	case ButtonEnabled:
-		w.setStyle(true, w32.WS_SYSMENU)
-		w.setStyle(true, w32.WS_MAXIMIZEBOX)
-	}
+func (w *windowsWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Windows has no dedicated fullscreen button in the standard title bar; no-op.
 }
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {

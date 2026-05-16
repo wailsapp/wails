@@ -271,81 +271,81 @@ wails3 doctor  # Проверка установки
      </TabItem>
 
      <TabItem label="macOS" icon="apple">
-       **Option 1: Official Installer**
-       Download from [nodejs.org](https://nodejs.org/)
+       **Вариант 1: Официальный установщик**
+       Скачайте с [nodejs.org](https://nodejs.org/)
 
-       **Option 2: Homebrew**
+       **Вариант 2: Homebrew**
        ```bash
        brew install node
        ```
 
-       **Verify:**
+       **Проверка:**
        ```bash
        npm --version
        ```
      </TabItem>
 
      <TabItem label="Linux" icon="linux">
-       **Option 1: NodeSource**
+       **Вариант 1: NodeSource**
        ```bash
        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
        sudo apt-get install -y nodejs  # Ubuntu/Debian
        ```
 
-       **Option 2: Package Manager**
+       **Вариант 2: Менеджер пакетов**
        ```bash
        sudo dnf install nodejs  # Fedora
        sudo pacman -S nodejs npm  # Arch
        ```
 
-       **Verify:**
+       **Проверка:**
        ```bash
        npm --version
        ```
      </TabItem>
    </Tabs>
 
-   :::tip[Alternative Package Managers]
-   Prefer `pnpm`, `yarn`, or `bun`? No problem! Just update the `Taskfile.yml` in your project to use your preferred tool.
+   :::tip[Альтернативные менеджеры пакетов]
+   Предпочитаете `pnpm`, `yarn` или `bun`? Без проблем! Просто обновите `Taskfile.yml` в вашем проекте для использования предпочтительного инструмента.
    :::
 
 </Steps>
 
-## Troubleshooting
+## Устранение неполадок
 
-#### `wails3` command not found
+#### Команда `wails3` не найдена
 
-**Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
+**Причина:** `~/go/bin` (или `%USERPROFILE%\go\bin` на Windows) не добавлен в PATH.
 
-**Solution:**
+**Решение:**
 
 <Tabs syncKey="os">
   <TabItem label="Windows" icon="seti:windows">
-    1. Open "Environment Variables" (search in Start menu)
-    2. Under "User variables", find `Path`
-    3. Click "Edit" → "New"
-    4. Add: `C:\Users\YourName\go\bin` (replace `YourName`)
-    5. Click "OK" on all dialogs
-    6. **Restart your terminal**
+    1. Откройте «Переменные среды» (поиск в меню Пуск)
+    2. В разделе «Переменные пользователя» найдите `Path`
+    3. Нажмите «Изменить» → «Создать»
+    4. Добавьте: `C:\Users\ВашеИмя\go\bin` (замените ВашеИмя)
+    5. Нажмите «ОК» во всех диалогах
+    6. **Перезапустите терминал**
 
-    **Verify:**
+    **Проверка:**
     ```powershell
     $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
     ```
   </TabItem>
 
   <TabItem label="macOS/Linux" icon="apple">
-    Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+    Добавьте в `~/.zshrc` (macOS) или `~/.bashrc` (Linux):
     ```bash
     export PATH=$PATH:~/go/bin
     ```
 
-    Reload:
+    Перезагрузите:
     ```bash
-    source ~/.zshrc  # or ~/.bashrc
+    source ~/.zshrc  # или ~/.bashrc
     ```
 
-    **Verify:**
+    **Проверка:**
     ```bash
     echo $PATH | grep go/bin
     wails3 version
@@ -354,19 +354,19 @@ wails3 doctor  # Проверка установки
 </Tabs>
 ---
 
-#### `wails3 doctor` reports missing dependencies
+#### `wails3 doctor` сообщает об отсутствующих зависимостях
 
-**Linux:** The output tells you exactly which packages to install. Example:
+**Linux:** Вывод показывает точно, какие пакеты нужно установить. Пример:
 ```
-❌ webkit2gtk not found
-   Install with: sudo apt install libwebkit2gtk-4.1-dev
+❌ webkit2gtk не найден
+   Установите: sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-**Windows:** If WebView2 is missing:
-- Download from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
-- Or it will be installed automatically when you run your first app
+**Windows:** Если WebView2 отсутствует:
+- Скачайте с [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+- Или будет установлен автоматически при первом запуске приложения
 
-**macOS:** If Xcode tools are missing:
+**macOS:** Если инструменты Xcode отсутствуют:
 ```bash
 xcode-select --install
 ```

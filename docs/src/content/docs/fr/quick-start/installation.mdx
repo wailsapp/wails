@@ -271,81 +271,81 @@ Si `wails3 doctor` réussit, vous avez terminé. [Passer à la première applica
      </TabItem>
 
      <TabItem label="macOS" icon="apple">
-       **Option 1: Official Installer**
-       Download from [nodejs.org](https://nodejs.org/)
+       **Option 1 : Installateur officiel**
+       Téléchargez depuis [nodejs.org](https://nodejs.org/)
 
-       **Option 2: Homebrew**
+       **Option 2 : Homebrew**
        ```bash
        brew install node
        ```
 
-       **Verify:**
+       **Vérifier :**
        ```bash
        npm --version
        ```
      </TabItem>
 
      <TabItem label="Linux" icon="linux">
-       **Option 1: NodeSource**
+       **Option 1 : NodeSource**
        ```bash
        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
        sudo apt-get install -y nodejs  # Ubuntu/Debian
        ```
 
-       **Option 2: Package Manager**
+       **Option 2 : Gestionnaire de paquets**
        ```bash
        sudo dnf install nodejs  # Fedora
        sudo pacman -S nodejs npm  # Arch
        ```
 
-       **Verify:**
+       **Vérifier :**
        ```bash
        npm --version
        ```
      </TabItem>
    </Tabs>
 
-   :::tip[Alternative Package Managers]
-   Prefer `pnpm`, `yarn`, or `bun`? No problem! Just update the `Taskfile.yml` in your project to use your preferred tool.
+   :::tip[Gestionnaires de paquets alternatifs]
+   Vous préférez `pnpm`, `yarn` ou `bun` ? Pas de problème ! Mettez simplement à jour le `Taskfile.yml` de votre projet pour utiliser votre outil préféré.
    :::
 
 </Steps>
 
-## Troubleshooting
+## Dépannage
 
-#### `wails3` command not found
+#### Commande `wails3` introuvable
 
-**Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
+**Cause :** `~/go/bin` (ou `%USERPROFILE%\go\bin`) n'est pas dans votre PATH.
 
-**Solution:**
+**Solution :**
 
 <Tabs syncKey="os">
   <TabItem label="Windows" icon="seti:windows">
-    1. Open "Environment Variables" (search in Start menu)
-    2. Under "User variables", find `Path`
-    3. Click "Edit" → "New"
-    4. Add: `C:\Users\YourName\go\bin` (replace `YourName`)
-    5. Click "OK" on all dialogs
-    6. **Restart your terminal**
+    1. Ouvrez "Variables d'environnement" (recherchez dans le menu Démarrer)
+    2. Sous "Variables utilisateur", trouvez `Path`
+    3. Cliquez sur "Modifier" → "Nouveau"
+    4. Ajoutez : `C:\Users\VotreNom\go\bin` (remplacez VotreNom)
+    5. Cliquez sur "OK" sur toutes les boîtes de dialogue
+    6. **Redémarrez votre terminal**
 
-    **Verify:**
+    **Vérifier :**
     ```powershell
     $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
     ```
   </TabItem>
 
   <TabItem label="macOS/Linux" icon="apple">
-    Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+    Ajoutez à `~/.zshrc` (macOS) ou `~/.bashrc` (Linux) :
     ```bash
     export PATH=$PATH:~/go/bin
     ```
 
-    Reload:
+    Rechargez :
     ```bash
-    source ~/.zshrc  # or ~/.bashrc
+    source ~/.zshrc  # ou ~/.bashrc
     ```
 
-    **Verify:**
+    **Vérifier :**
     ```bash
     echo $PATH | grep go/bin
     wails3 version
@@ -354,19 +354,19 @@ Si `wails3 doctor` réussit, vous avez terminé. [Passer à la première applica
 </Tabs>
 ---
 
-#### `wails3 doctor` reports missing dependencies
+#### `wails3 doctor` signale des dépendances manquantes
 
-**Linux:** The output tells you exactly which packages to install. Example:
+**Linux :** La sortie vous indique exactement quels paquets installer. Exemple :
 ```
-❌ webkit2gtk not found
-   Install with: sudo apt install libwebkit2gtk-4.1-dev
+❌ webkit2gtk introuvable
+   Installez avec : sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-**Windows:** If WebView2 is missing:
-- Download from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
-- Or it will be installed automatically when you run your first app
+**Windows :** Si WebView2 est manquant :
+- Téléchargez depuis [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+- Ou il sera installé automatiquement lors de l'exécution de votre première application
 
-**macOS:** If Xcode tools are missing:
+**macOS :** Si les outils Xcode sont manquants :
 ```bash
 xcode-select --install
 ```

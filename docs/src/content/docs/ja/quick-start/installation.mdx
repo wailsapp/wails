@@ -271,81 +271,81 @@ wails3 doctor  # インストールの確認
      </TabItem>
 
      <TabItem label="macOS" icon="apple">
-       **Option 1: Official Installer**
-       Download from [nodejs.org](https://nodejs.org/)
+       **オプション1: 公式インストーラー**
+       [nodejs.org](https://nodejs.org/) からダウンロード
 
-       **Option 2: Homebrew**
+       **オプション2: Homebrew**
        ```bash
        brew install node
        ```
 
-       **Verify:**
+       **確認:**
        ```bash
        npm --version
        ```
      </TabItem>
 
      <TabItem label="Linux" icon="linux">
-       **Option 1: NodeSource**
+       **オプション1: NodeSource**
        ```bash
        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
        sudo apt-get install -y nodejs  # Ubuntu/Debian
        ```
 
-       **Option 2: Package Manager**
+       **オプション2: パッケージマネージャー**
        ```bash
        sudo dnf install nodejs  # Fedora
        sudo pacman -S nodejs npm  # Arch
        ```
 
-       **Verify:**
+       **確認:**
        ```bash
        npm --version
        ```
      </TabItem>
    </Tabs>
 
-   :::tip[Alternative Package Managers]
-   Prefer `pnpm`, `yarn`, or `bun`? No problem! Just update the `Taskfile.yml` in your project to use your preferred tool.
+   :::tip[代替パッケージマネージャー]
+   `pnpm`、`yarn`、または`bun`をお好みですか？問題ありません！プロジェクトの`Taskfile.yml`を更新して、お好みのツールを使用するようにしてください。
    :::
 
 </Steps>
 
-## Troubleshooting
+## トラブルシューティング
 
-#### `wails3` command not found
+#### `wails3`コマンドが見つからない
 
-**Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
+**原因：** `~/go/bin`（Windowsの場合は`%USERPROFILE%\go\bin`）がPATHに含まれていません。
 
-**Solution:**
+**解決策：**
 
 <Tabs syncKey="os">
   <TabItem label="Windows" icon="seti:windows">
-    1. Open "Environment Variables" (search in Start menu)
-    2. Under "User variables", find `Path`
-    3. Click "Edit" → "New"
-    4. Add: `C:\Users\YourName\go\bin` (replace `YourName`)
-    5. Click "OK" on all dialogs
-    6. **Restart your terminal**
+    1. 「環境変数」を開く（スタートメニューで検索）
+    2. 「ユーザー変数」の`Path`を見つける
+    3. 「編集」→「新規」をクリック
+    4. 追加：`C:\Users\YourName\go\bin`（YourNameを置き換える）
+    5. すべてのダイアログで「OK」をクリック
+    6. **ターミナルを再起動**
 
-    **Verify:**
+    **確認:**
     ```powershell
     $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
     ```
   </TabItem>
 
   <TabItem label="macOS/Linux" icon="apple">
-    Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+    `~/.zshrc`（macOS）または`~/.bashrc`（Linux）に追加：
     ```bash
     export PATH=$PATH:~/go/bin
     ```
 
-    Reload:
+    再読み込み：
     ```bash
-    source ~/.zshrc  # or ~/.bashrc
+    source ~/.zshrc  # または ~/.bashrc
     ```
 
-    **Verify:**
+    **確認:**
     ```bash
     echo $PATH | grep go/bin
     wails3 version
@@ -354,19 +354,19 @@ wails3 doctor  # インストールの確認
 </Tabs>
 ---
 
-#### `wails3 doctor` reports missing dependencies
+#### `wails3 doctor`で依存関係の不足が報告される
 
-**Linux:** The output tells you exactly which packages to install. Example:
+**Linux：** 出力にインストールが必要なパッケージが正確に表示されます。例：
 ```
-❌ webkit2gtk not found
-   Install with: sudo apt install libwebkit2gtk-4.1-dev
+❌ webkit2gtk が見つかりません
+   インストール方法：sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-**Windows:** If WebView2 is missing:
-- Download from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
-- Or it will be installed automatically when you run your first app
+**Windows：** WebView2が見つからない場合：
+- [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) からダウンロード
+- または最初のアプリ実行時に自動的にインストールされます
 
-**macOS:** If Xcode tools are missing:
+**macOS：** Xcodeツールが見つからない場合：
 ```bash
 xcode-select --install
 ```

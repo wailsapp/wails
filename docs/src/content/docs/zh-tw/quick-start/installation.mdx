@@ -271,81 +271,81 @@ wails3 doctor  # 驗證安裝
      </TabItem>
 
      <TabItem label="macOS" icon="apple">
-       **Option 1: Official Installer**
-       Download from [nodejs.org](https://nodejs.org/)
+       **選項 1：官方安裝程式**
+       從 [nodejs.org](https://nodejs.org/) 下載
 
-       **Option 2: Homebrew**
+       **選項 2：Homebrew**
        ```bash
        brew install node
        ```
 
-       **Verify:**
+       **驗證：**
        ```bash
        npm --version
        ```
      </TabItem>
 
      <TabItem label="Linux" icon="linux">
-       **Option 1: NodeSource**
+       **選項 1：NodeSource**
        ```bash
        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
        sudo apt-get install -y nodejs  # Ubuntu/Debian
        ```
 
-       **Option 2: Package Manager**
+       **選項 2：套件管理員**
        ```bash
        sudo dnf install nodejs  # Fedora
        sudo pacman -S nodejs npm  # Arch
        ```
 
-       **Verify:**
+       **驗證：**
        ```bash
        npm --version
        ```
      </TabItem>
    </Tabs>
 
-   :::tip[Alternative Package Managers]
-   Prefer `pnpm`, `yarn`, or `bun`? No problem! Just update the `Taskfile.yml` in your project to use your preferred tool.
+   :::tip[替代套件管理員]
+   偏好 `pnpm`、`yarn` 或 `bun`？沒問題！只需更新專案中的 `Taskfile.yml` 即可使用您偏好的工具。
    :::
 
 </Steps>
 
-## Troubleshooting
+## 疑難排解
 
-#### `wails3` command not found
+#### 找不到 `wails3` 命令
 
-**Cause:** `~/go/bin` (or `%USERPROFILE%\go\bin`) isn't in your PATH.
+**原因：** `~/go/bin`（Windows 上為 `%USERPROFILE%\go\bin`）不在 PATH 中。
 
-**Solution:**
+**解決方案：**
 
 <Tabs syncKey="os">
   <TabItem label="Windows" icon="seti:windows">
-    1. Open "Environment Variables" (search in Start menu)
-    2. Under "User variables", find `Path`
-    3. Click "Edit" → "New"
-    4. Add: `C:\Users\YourName\go\bin` (replace `YourName`)
-    5. Click "OK" on all dialogs
-    6. **Restart your terminal**
+    1. 開啟「環境變數」（在開始功能表搜尋）
+    2. 在「使用者變數」下找到 `Path`
+    3. 點選「編輯」→「新增」
+    4. 新增：`C:\Users\YourName\go\bin`（替換 YourName）
+    5. 在所有對話框點選「確定」
+    6. **重新啟動終端機**
 
-    **Verify:**
+    **驗證：**
     ```powershell
     $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
     ```
   </TabItem>
 
   <TabItem label="macOS/Linux" icon="apple">
-    Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+    新增至 `~/.zshrc`（macOS）或 `~/.bashrc`（Linux）：
     ```bash
     export PATH=$PATH:~/go/bin
     ```
 
-    Reload:
+    重新載入：
     ```bash
-    source ~/.zshrc  # or ~/.bashrc
+    source ~/.zshrc  # 或 ~/.bashrc
     ```
 
-    **Verify:**
+    **驗證：**
     ```bash
     echo $PATH | grep go/bin
     wails3 version
@@ -354,19 +354,19 @@ wails3 doctor  # 驗證安裝
 </Tabs>
 ---
 
-#### `wails3 doctor` reports missing dependencies
+#### `wails3 doctor` 回報缺少依賴項
 
-**Linux:** The output tells you exactly which packages to install. Example:
+**Linux：** 輸出會準確告訴您需要安裝哪些套件。範例：
 ```
-❌ webkit2gtk not found
-   Install with: sudo apt install libwebkit2gtk-4.1-dev
+❌ 找不到 webkit2gtk
+   安裝方式：sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-**Windows:** If WebView2 is missing:
-- Download from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
-- Or it will be installed automatically when you run your first app
+**Windows：** 如果缺少 WebView2：
+- 從 [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) 下載
+- 或在執行第一個應用程式時會自動安裝
 
-**macOS:** If Xcode tools are missing:
+**macOS：** 如果缺少 Xcode 工具：
 ```bash
 xcode-select --install
 ```

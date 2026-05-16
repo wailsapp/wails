@@ -42,7 +42,7 @@ wails3 generate bindings
 **4. Use in JavaScript:**
 
 ```javascript
-import { Greet } from './bindings/myapp/greetservice'
+import { Greet } from './bindings/changeme/greetservice'
 
 const message = await Greet("World")
 console.log(message)  // "Hello, World!"
@@ -218,22 +218,26 @@ wails3 dev
 **Generated binding:**
 
 ```javascript
-// frontend/bindings/myapp/calculatorservice.js
+// frontend/bindings/<full-go-import-path>/calculatorservice.js
+// (Real generated output — imports $Call from /wails/runtime.js and calls $Call.ByID
+// with a numeric method ID. Generate with `wails3 generate bindings -names` to get
+// $Call.ByName("<package>.<Struct>.<Method>", ...) instead.)
+import { Call as $Call, Create as $Create } from "/wails/runtime.js";
 
 /**
- * @param {number} a
- * @param {number} b
+ * @param {number} $0
+ * @param {number} $1
  * @returns {Promise<number>}
  */
-export function Add(a, b) {
-    return window.wails.Call('CalculatorService.Add', a, b)
+export function Add($0, $1) {
+    return $Call.ByID(1234567890, $0, $1); // numeric ID assigned by the generator
 }
 ```
 
 **Usage:**
 
 ```javascript
-import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+import { Add, Subtract, Multiply, Divide } from './bindings/changeme/calculatorservice'
 
 // Simple calls
 const sum = await Add(5, 3)        // 8
@@ -253,7 +257,7 @@ try {
 **Generated binding:**
 
 ```typescript
-// frontend/bindings/myapp/calculatorservice.ts
+// frontend/bindings/changeme/calculatorservice.ts
 
 export function Add(a: number, b: number): Promise<number>
 export function Subtract(a: number, b: number): Promise<number>
@@ -264,7 +268,7 @@ export function Divide(a: number, b: number): Promise<number>
 **Usage:**
 
 ```typescript
-import { Add, Divide } from './bindings/myapp/calculatorservice'
+import { Add, Divide } from './bindings/changeme/calculatorservice'
 
 const sum: number = await Add(5, 3)
 
@@ -288,7 +292,7 @@ try {
 **Generated index:**
 
 ```javascript
-// frontend/bindings/myapp/index.js
+// frontend/bindings/changeme/index.js
 
 export * as CalculatorService from './calculatorservice.js'
 export * as CounterService from './counterservice.js'
@@ -323,12 +327,13 @@ const sum = await CalculatorService.Add(5, 3)
 |---------|----------------------|
 | `[]T` | `T[]` |
 | `[N]T` | `T[]` |
-| `map[string]T` | `Record<string, T>` |
-| `map[K]V` | `Map<K, V>` |
+| `map[string]T` | `{ [_: string]: T }` (string-keyed map) |
+| `map[K]V` | `{ [_ in K]?: V }` (non-string `K` is rendered as a mapped type, **not** a JS `Map`) |
+| `[]byte` | `Uint8Array` |
 | `struct` | `class` (with fields) |
 | `time.Time` | `Date` |
-| `*T` | `T` (pointers transparent) |
-| `interface{}` | `any` |
+| `*T` | `T \| null` (pointer-nullable) |
+| `any` / `interface{}` | `any` |
 | `error` | Exception (thrown) |
 
 ### Unsupported Types
@@ -396,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 ### JavaScript Side
 
 ```javascript
-import { GetUser } from './bindings/myapp/databaseservice'
+import { GetUser } from './bindings/changeme/databaseservice'
 
 try {
     const user = await GetUser(123)
@@ -538,7 +543,7 @@ func main() {
 **JavaScript:**
 
 ```javascript
-import { GetAll, Add, Toggle, Delete } from './bindings/myapp/todoservice'
+import { GetAll, Add, Toggle, Delete } from './bindings/changeme/todoservice'
 
 class TodoApp {
     async loadTodos() {

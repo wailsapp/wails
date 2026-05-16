@@ -31,6 +31,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.92 - 2026-05-15
+
+## Added
+- Modify the Taskfiles to allow control of frontend package manager used via `PACKAGE_MANAGER` option 
+- Enrich template data with `{{.Opn}}` and `{{.Cls}}` to make writing Taskfile templates more predictable
+
+## Changed
+- Modified a couple of the existing Taskfiles to make use of `{{.Opn}} and {{.Cls}}`
+
+## Fixed
+- Fix `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
+- Use `log` instead of `fmt` for WebView2 error and stack trace output so messages aren't lost when the app runs without an attached console on Windows.
+
+## v3.0.0-alpha.91 - 2026-05-12
+
+## Changed
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5414) by @github-actions[bot]
+- **BREAKING (macOS):** Normalise the macOS coordinate system so `GetScreens`, `Position`, and `SetPosition` all use the same space — logical points, Y-down, with `(0,0)` at the top-left of the primary screen. This matches Windows, GTK and the public APIs of Electron and the web. Screens physically above the primary now report negative `Bounds.Y` (previously positive), and `Position()`/`SetPosition()` values are now in logical points instead of `points × primaryScale`. Round-tripping `Position()` → `SetPosition()` is preserved; absolute values logged from earlier alpha builds or hand-computed workarounds (e.g. multiplying by `primaryScale` or flipping Y against a screen height) will need to be updated. Resolves [#5117](https://github.com/wailsapp/wails/issues/5117).
+
+## Fixed
+- Defensively validate DBus signal name and body length to prevent panics in [PR](https://github.com/wailsapp/wails/pull/5416) by @leaanthony
+- Fix memory safety issue in GTK menu handling on Linux in [PR](https://github.com/wailsapp/wails/pull/5363) by @leaanthony
+- Detect NVIDIA GPUs and disable DMA-BUF renderer on Linux in [PR](https://github.com/wailsapp/wails/pull/5295) by @leaanthony
+- Fix `SetPosition` cross-screen Y conversion on macOS: use primary screen height as global reference so windows land at the correct position on monitors that are vertically offset from the primary display in [#5117](https://github.com/wailsapp/wails/issues/5117)
+- Fix git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) by @wayneforrest
+- Fix a family of Windows systray `SetMenu` crashes caused by a broken `DestroyMenu` syscall that was passing four arguments instead of one, so every call returned FALSE and freed nothing. Also release HMENU and HBITMAP handles (including those allocated at runtime via `MenuItem.SetBitmap`) on menu rebuilds, reset stale checkbox/radio maps in `Win32Menu.Update`, and drop a redundant `Update()` call in `systemtray.updateMenu` that doubled allocations. Long-running systray apps no longer leak GDI/USER objects on each menu rebuild.
+
+## v3.0.0-alpha.90 - 2026-05-11
+
+## Added
+- Add configurable application name for WKWebView User-Agent on macOS in [PR](https://github.com/wailsapp/wails/pull/5261) by @vinhvoit225
+- Adds indirect dependency github.com/coder/websocket to gin-service example in [PR](https://github.com/wailsapp/wails/pull/5400) by @taliesin-ai
+- Add deep equality comparison support to build assets tests in [PR](https://github.com/wailsapp/wails/pull/5402) by @leaanthony
+
+## Changed
+- Consolidate build output into assets directory in [PR](https://github.com/wailsapp/wails/pull/5401) by @taliesin-ai
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) by @github-actions[bot]
+
+## Fixed
+- Use notification object for macOS single-instance message in [PR](https://github.com/wailsapp/wails/pull/5289) by @overlordtm
+- Batch Windows callbacks to prevent promise loss under heavy load in [PR](https://github.com/wailsapp/wails/pull/5383) by @taliesin-ai
+
+## v3.0.0-alpha.89 - 2026-05-10
+
+## Added
+- Add go_test_results job to aggregate Go test results in [PR](https://github.com/wailsapp/wails/pull/5316) by @leaanthony
+
+## Changed
+- Conditionally split large RPC payloads into chunked POST requests in [PR](https://github.com/wailsapp/wails/pull/5369) by @leaanthony
+- Upgrade Vite from 5.x.x to 8.0.0 across all frontend templates in [PR](https://github.com/wailsapp/wails/pull/5386) by @leaanthony
+- Migrate Vite dev server port configuration to environment variables in [PR](https://github.com/wailsapp/wails/pull/5365) by @leaanthony
+- Configure Vite dev server to bind to 127.0.0.1 in all templates in [PR](https://github.com/wailsapp/wails/pull/5361) by @leaanthony
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
+
+## Fixed
+- Sanitize Info.plist template stubs during build-assets update in [PR](https://github.com/wailsapp/wails/pull/5312) by @leaanthony
+- Fix stale state in macOS menus by applying the menu item mutators (`setMenuItemChecked()`, `setMenuItemLabel()`, `setMenuItemDisabled()`, `setMenuItemHidden()`, `setMenuItemTooltip()`) synchronously on the main thread, eliminating the `dispatch_async` race that left menus rendering the previous state when reopened quickly (#5002)
+- Ignore *_test.go files in dev mode to prevent unnecessary rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) by @leaanthony
+- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) by @wucm667
+- Use lastSizeWParam to gate menubar redraws on Windows in [PR](https://github.com/wailsapp/wails/pull/5382) by @taliesin-ai
+
+## v3.0.0-alpha.88 - 2026-05-09
+
+## Changed
+- Switch HiddenOnTaskbar to use WS_EX_TOOLWINDOW in [PR](https://github.com/wailsapp/wails/pull/5371) by @leaanthony
+- Reorder dependencies and remove webview2 replace directive in go.mod in [PR](https://github.com/wailsapp/wails/pull/5370) by @atterpac
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5358) by @github-actions[bot]
+
+## Fixed
+- Remove generic indirection aliases and consolidate map key types in [PR](https://github.com/wailsapp/wails/pull/5331) by @fbbdev
+
+## Removed
+- Delete PR-master workflow, removing documentation, Go tests, and skip tests in [PR](https://github.com/wailsapp/wails/pull/5377) by @leaanthony
+
 ## v3.0.0-alpha.87 - 2026-05-07
 
 ## Added

@@ -235,6 +235,11 @@ export default defineConfig({
               ],
             },
             {
+              label: "Autostart",
+              collapsed: true,
+              autogenerate: { directory: "features/autostart" },
+            },
+            {
               label: "Clipboard",
               collapsed: true,
               autogenerate: { directory: "features/clipboard" },
