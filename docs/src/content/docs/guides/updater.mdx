@@ -58,12 +58,18 @@ Three are built in:
 
 ```go
 gh, _ := github.New(github.Config{
-    Repository:    "wailsapp/wails",
-    Token:         "ghp_…",        // optional; raises rate limit + private repos
-    Prerelease:    false,            // include pre-releases
-    ChecksumAsset: "SHA256SUMS",     // optional sibling asset for verification
+    Repository:    "myorg/myapp",   // your owner/repo
+    Token:         "ghp_…",         // optional; raises rate limit + private repos
+    Prerelease:    false,           // include pre-releases
+    ChecksumAsset: "SHA256SUMS",    // optional sibling asset for verification
 })
 ```
+
+For a runnable demo against a live GitHub release, see
+[`v3/examples/updater`](https://github.com/wailsapp/wails/pull/5449) —
+it points at [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
+out of the box and walks the full check → download → verify → swap →
+restart flow.
 
 The default asset matcher picks by `GOOS` + `GOARCH` substring on the filename, recognising common aliases (`amd64`/`x86_64`/`x64`, `arm64`/`aarch64`, `386`/`i386`/`x86`). Override with `Config.AssetMatcher` for custom naming schemes.
 
