@@ -108,6 +108,21 @@ func (w *windowsWebviewWindow) routeNonClientInput(msg uint32, wparam, lparam ui
 		if w.forwardFrontendNonClientButtonInput(msg, wparam, lparam) {
 			return 0, true
 		}
+	case w32.WM_NCRBUTTONUP:
+		if wparam != w32.HTCAPTION && wparam != w32.HTSYSMENU {
+			return 0, false
+		}
+
+		screenX := int(w32.GET_X_LPARAM(lparam))
+		screenY := int(w32.GET_Y_LPARAM(lparam))
+
+		if hitTest, ok := w.nonClientHitTestFromScreen(screenX, screenY); !ok || hitTest != w32.HTCAPTION {
+			return 0, false
+		}
+
+		if w.showCaptionSystemMenu(screenX, screenY) {
+			return 0, true
+		}
 	}
 
 	return 0, false
@@ -255,6 +270,30 @@ func (w *windowsWebviewWindow) forwardFrontendNonClientButtonInput(msg uint32, w
 
 	w.updateCompositionMouseCapture(msg)
 
+	return true
+}
+
+func (w *windowsWebviewWindow) showCaptionSystemMenu(screenX, screenY int) bool {
+	menu := w32.GetSystemMenu(w.hwnd, false)
+	if menu == 0 {
+		return false
+	}
+
+	w32.SetForegroundWindow(w.hwnd)
+	command := w32.TrackPopupMenuCommand(
+		menu,
+		w32.TPM_LEFTALIGN|w32.TPM_TOPALIGN|w32.TPM_RIGHTBUTTON,
+		int32(screenX),
+		int32(screenY),
+		w.hwnd,
+		nil,
+	)
+	w32.PostMessage(w.hwnd, w32.WM_NULL, 0, 0)
+	if command == 0 {
+		return true
+	}
+
+	w32.SendMessage(w.hwnd, w32.WM_SYSCOMMAND, command, 0)
 	return true
 }
 

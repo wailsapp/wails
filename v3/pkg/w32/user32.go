@@ -1531,6 +1531,18 @@ func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd 
 	return ret != 0
 }
 
+func TrackPopupMenuCommand(hmenu HMENU, flags uint32, x, y int32, hwnd HWND, prcRect *RECT) uintptr {
+	ret, _, _ := procTrackPopupMenu.Call(
+		uintptr(hmenu),
+		uintptr(flags|TPM_RETURNCMD),
+		uintptr(x),
+		uintptr(y),
+		0,
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(prcRect)))
+	return ret
+}
+
 // KeybdEvent synthesizes a keystroke. The system can use such a synthesized keystroke to generate a WM_KEYUP or WM_KEYDOWN message.
 // bVk: Virtual-key code
 // bScan: Hardware scan code
