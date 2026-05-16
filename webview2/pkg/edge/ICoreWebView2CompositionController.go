@@ -5,8 +5,6 @@ package edge
 import (
 	"syscall"
 	"unsafe"
-
-	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2CompositionControllerVtbl struct {
@@ -54,7 +52,7 @@ func (i *ICoreWebView2CompositionController) PutRootVisualTarget(target *IUnknow
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(target)),
 	)
-	if windows.Handle(hr) != windows.S_OK {
+	if int32(hr) < 0 {
 		return syscall.Errno(hr)
 	}
 	return nil
@@ -68,7 +66,7 @@ func (i *ICoreWebView2CompositionController) SendMouseInput(eventKind COREWEBVIE
 		uintptr(mouseData),
 		point.uintptr(),
 	)
-	if windows.Handle(hr) != windows.S_OK {
+	if int32(hr) < 0 {
 		return syscall.Errno(hr)
 	}
 	return nil
@@ -80,7 +78,7 @@ func (i *ICoreWebView2CompositionController) GetCursor() (HCURSOR, error) {
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&cursor)),
 	)
-	if windows.Handle(hr) != windows.S_OK {
+	if int32(hr) < 0 {
 		return 0, syscall.Errno(hr)
 	}
 	return cursor, nil
@@ -92,7 +90,7 @@ func (i *ICoreWebView2CompositionController) GetSystemCursorId() (uint32, error)
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&cursorID)),
 	)
-	if windows.Handle(hr) != windows.S_OK {
+	if int32(hr) < 0 {
 		return 0, syscall.Errno(hr)
 	}
 	return cursorID, nil
@@ -104,7 +102,7 @@ func (i *ICoreWebView2CompositionController) AddCursorChanged(eventHandler *iCor
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(token)),
 	)
-	if windows.Handle(hr) != windows.S_OK {
+	if int32(hr) < 0 {
 		return syscall.Errno(hr)
 	}
 	return nil
