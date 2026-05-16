@@ -451,13 +451,13 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator
-func NewCalloc() Calloc {
-	return Calloc{}
+// NewCalloc creates a new allocator. Returns a pointer so the allocation
+// pool is shared across calls without copying.
+func NewCalloc() *Calloc {
+	return &Calloc{}
 }
 
 // String creates a new C string and retains a reference to it.
-// Receiver must be a pointer so the append grows the original pool.
 func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
 	c.pool = append(c.pool, unsafe.Pointer(result))

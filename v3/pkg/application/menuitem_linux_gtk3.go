@@ -80,7 +80,7 @@ func (l linuxMenuItem) setHidden(hidden bool) {
 	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
-		widgetSetVisible(l.native, !hidden)
+		widgetSetVisible(l.native, hidden)
 	})
 }
 
