@@ -120,9 +120,7 @@ type (
 
 	nonClientHitTestKind string
 
-	// nonClientHitTestRegion is a frontend-owned client-area rectangle in physical
-	// pixels. Empty Kind is intentionally treated as "maximize" to preserve the
-	// legacy single-rect Snap Layouts path.
+	// nonClientHitTestRegion is a frontend-owned client-area rectangle in physical pixels.
 	nonClientHitTestRegion struct {
 		Kind   nonClientHitTestKind `json:"kind,omitempty"`
 		Left   int                  `json:"left"`
