@@ -22,6 +22,17 @@ const (
 	ButtonHidden   ButtonState = 2
 )
 
+// effectiveZoomButtonState returns the more restrictive of two ButtonState values.
+// Hidden > Disabled > Enabled, matching the integer ordering of the constants.
+// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton on
+// macOS; this helper ensures neither runtime setter can silently override the other.
+func effectiveZoomButtonState(a, b ButtonState) ButtonState {
+	if b > a {
+		return b
+	}
+	return a
+}
+
 type WindowStartPosition int
 
 const (
@@ -131,6 +142,10 @@ type WebviewWindowOptions struct {
 	MinimiseButtonState ButtonState
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
+	// FullscreenButtonState controls the fullscreen button state.
+	// On macOS this targets NSWindowZoomButton (the same green button as MaximiseButtonState);
+	// the more restrictive of the two states is applied. On other platforms this is a no-op.
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
@@ -491,6 +506,12 @@ type MacWindow struct {
 
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
+
+	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
+	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
+	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
+	DisableEscapeExitsFullscreen bool
 }
 
 type MacWindowLevel string

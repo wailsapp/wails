@@ -19,6 +19,8 @@ on:
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
     
     permissions:
       contents: write
