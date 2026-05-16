@@ -62,13 +62,15 @@ xcode-select -p  # Should output a path
 
 ```bash
 sudo apt update
-sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+# For the optional GTK4/WebKitGTK 6 build path:
+# sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
 ```
 
 **Linux (Fedora/RHEL):**
 
 ```bash
-sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
 ```
 
 **Linux (Arch):**
@@ -275,7 +277,7 @@ Add the Wails directory to your PATH or use `./wails3` from the project root.
 Install WebKit2GTK development packages:
 
 ```bash
-sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-dev  # Debian/Ubuntu
 ```
 
 ### Build fails with Go module errors

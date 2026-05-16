@@ -107,8 +107,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 
 // Later, find it by name
-mainWindow := app.GetWindowByName("main-window")
-if mainWindow != nil {
+if mainWindow, ok := app.Window.GetByName("main-window"); ok {
     mainWindow.Show()
 }
 ```
@@ -207,8 +206,8 @@ Normal ←→ Fullscreen
 // Set title
 window.SetTitle("My Application - Document.txt")
 
-// Set background colour
-window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+// Set background colour — RGBA value (helper for RGB)
+window.SetBackgroundColour(application.NewRGBA(0, 0, 0, 255))
 
 // Set always on top
 window.SetAlwaysOnTop(true)
@@ -220,24 +219,18 @@ window.SetResizable(false)
 ### Closing Windows
 
 ```go
-// Close window
+// Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().
 window.Close()
-
-// Destroy window (force close)
-window.Destroy()
 ```
 
-**Difference:**
-- `Close()` - Triggers close event, can be cancelled
-- `Destroy()` - Immediate destruction, cannot be cancelled
+There is no `window.Destroy()` method in v3 — use `Close()` and either listen with `OnWindowEvent` (cannot cancel) or hook with `RegisterHook` (can call `e.Cancel()` to keep the window open).
 
 ## Finding Windows
 
 ### By Name
 
 ```go
-window := app.GetWindowByName("settings")
-if window != nil {
+if window, ok := app.Window.GetByName("settings"); ok {
     window.Show()
 }
 ```
@@ -251,7 +244,9 @@ id := window.ID()
 fmt.Printf("Window ID: %d\n", id)
 
 // Find by ID
-foundWindow := app.GetWindowByID(id)
+if found, ok := app.Window.GetByID(id); ok {
+    found.Focus()
+}
 ```
 
 ### Current Window
@@ -283,9 +278,9 @@ for _, w := range windows {
 ### Creation
 
 ```go
-app.OnWindowCreation(func(window *application.WebviewWindow) {
+app.Window.OnCreate(func(window application.Window) {
     fmt.Printf("Window created: %s\n", window.Name())
-    
+
     // Configure new windows
     window.SetMinSize(400, 300)
 })
@@ -358,7 +353,7 @@ app.Event.Emit("data-updated", map[string]interface{}{
 })
 
 // In settings window
-app.Event.On("data-updated", func(event *application.WailsEvent) {
+app.Event.On("data-updated", func(event *application.CustomEvent) {
     data := event.Data.(map[string]interface{})
     value := data["value"].(int)
     fmt.Printf("Received: %d\n", value)
@@ -369,23 +364,26 @@ app.Event.On("data-updated", func(event *application.WailsEvent) {
 
 ### Parent-Child Windows
 
+`WebviewWindowOptions` has no `Parent` field. Create the child as a normal window and attach it to a parent as a sheet modal:
+
 ```go
 // Create child window
 childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Child Window",
-    Parent: mainWindow,  // Set parent
+    Title: "Child Window",
 })
+
+// Attach to the parent — presents as a sheet on macOS.
+mainWindow.AttachModal(childWindow)
 ```
 
 **Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
+- Child stays above parent.
+- Child is modal — blocks interaction with the parent.
 
 **Platform support:**
-- **macOS:** Full support
-- **Windows:** Partial support
-- **Linux:** Varies by desktop environment
+- **macOS:** Full support (presents as a sheet).
+- **Windows:** Not supported.
+- **Linux:** Not supported.
 
 ## Platform-Specific Features
 
@@ -397,13 +395,12 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     // Flash taskbar button
     window.Flash(true)  // Start flashing
     window.Flash(false) // Stop flashing
-    
+
     // Trigger Windows 11 Snap Assist (Win+Z)
     window.SnapAssist()
-    
-    // Set window icon
-    window.SetIcon(iconBytes)
     ```
+
+    There is no per-window `SetIcon` — the application icon is set on the app via `app.SetIcon([]byte)` (or for a Linux-specific window icon, the `application.LinuxWindow.Icon` field at window creation).
     
     **Snap Assist:**
     Shows Windows 11 snap layout options for the window.
@@ -445,9 +442,9 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     **Linux-specific features:**
 
     ```go
-    // Set window icon
+    // Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-        Linux: application.LinuxOptions{
+        Linux: application.LinuxWindow{
             Icon: iconBytes,
         },
     })
@@ -508,7 +505,7 @@ func showSettings() {
     }
     
     settingsWindow.Show()
-    settingsWindow.SetFocus()
+    settingsWindow.Focus()
 }
 ```
 
@@ -560,7 +557,7 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 ```go
 window.Show()
 window.Center()
-window.SetFocus()
+window.Focus()
 ```
 
 ### Window Wrong Size

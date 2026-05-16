@@ -152,8 +152,8 @@ func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
 ```
 
 **Returns:**
-- `string` - Selected file path (empty if cancelled)
-- `error` - Error if dialog failed
+- `string` - Selected file path. Treat an empty string as "no selection" (the platform impls may return either an empty string or a non-nil error on cancellation depending on OS).
+- `error` - Non-nil if the dialog itself failed to present.
 
 **Example:**
 ```go
@@ -163,7 +163,11 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 
 if err != nil {
-    // User cancelled or error occurred
+    // The dialog failed to present (rare).
+    return
+}
+if path == "" {
+    // User cancelled.
     return
 }
 
