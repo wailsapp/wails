@@ -390,6 +390,9 @@ func (w *iosWebviewWindow) setContentProtection(_ bool) {
 	// iOS content protection - could be implemented with UIScreen captured notifications
 }
 
+func (w *iosWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}
+
 func (w *iosWebviewWindow) setHTML(html string) {
 	if w.nativeHandle == nil || html == "" {
 		return

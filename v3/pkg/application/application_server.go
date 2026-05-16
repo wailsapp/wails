@@ -533,37 +533,38 @@ func (w *serverWebviewWindow) startDrag() error {
 func (w *serverWebviewWindow) startResize(border string) error {
 	return errors.New("resize not available in server mode")
 }
-func (w *serverWebviewWindow) print() error                               { return errors.New("print not available in server mode") }
-func (w *serverWebviewWindow) setEnabled(enabled bool)                    {}
-func (w *serverWebviewWindow) physicalBounds() Rect                       { return Rect{} }
-func (w *serverWebviewWindow) setPhysicalBounds(bounds Rect)              {}
-func (w *serverWebviewWindow) bounds() Rect                               { return Rect{} }
-func (w *serverWebviewWindow) setBounds(bounds Rect)                      {}
-func (w *serverWebviewWindow) position() (int, int)                       { return 0, 0 }
-func (w *serverWebviewWindow) setPosition(x int, y int)                   {}
-func (w *serverWebviewWindow) centerOnScreen(_ *Screen)                   {}
-func (w *serverWebviewWindow) relativePosition() (int, int)               { return 0, 0 }
-func (w *serverWebviewWindow) setRelativePosition(x int, y int)           {}
-func (w *serverWebviewWindow) flash(enabled bool)                         {}
-func (w *serverWebviewWindow) handleKeyEvent(acceleratorString string)    {}
-func (w *serverWebviewWindow) getBorderSizes() *LRTB                      { return &LRTB{} }
-func (w *serverWebviewWindow) setMinimiseButtonState(state ButtonState)   {}
-func (w *serverWebviewWindow) setMaximiseButtonState(state ButtonState)   {}
-func (w *serverWebviewWindow) setCloseButtonState(state ButtonState)      {}
-func (w *serverWebviewWindow) setFullscreenButtonState(state ButtonState) {}
-func (w *serverWebviewWindow) isIgnoreMouseEvents() bool                  { return false }
-func (w *serverWebviewWindow) setIgnoreMouseEvents(ignore bool)           {}
-func (w *serverWebviewWindow) cut()                                       {}
-func (w *serverWebviewWindow) copy()                                      {}
-func (w *serverWebviewWindow) paste()                                     {}
-func (w *serverWebviewWindow) undo()                                      {}
-func (w *serverWebviewWindow) delete()                                    {}
-func (w *serverWebviewWindow) selectAll()                                 {}
-func (w *serverWebviewWindow) redo()                                      {}
-func (w *serverWebviewWindow) showMenuBar()                               {}
-func (w *serverWebviewWindow) hideMenuBar()                               {}
-func (w *serverWebviewWindow) toggleMenuBar()                             {}
-func (w *serverWebviewWindow) setMenu(menu *Menu)                         {}
-func (w *serverWebviewWindow) snapAssist()                                {}
-func (w *serverWebviewWindow) attachModal(modalWindow *WebviewWindow)     {}
-func (w *serverWebviewWindow) setContentProtection(enabled bool)          {}
+func (w *serverWebviewWindow) print() error                                        { return errors.New("print not available in server mode") }
+func (w *serverWebviewWindow) setEnabled(enabled bool)                             {}
+func (w *serverWebviewWindow) physicalBounds() Rect                                { return Rect{} }
+func (w *serverWebviewWindow) setPhysicalBounds(bounds Rect)                       {}
+func (w *serverWebviewWindow) bounds() Rect                                        { return Rect{} }
+func (w *serverWebviewWindow) setBounds(bounds Rect)                               {}
+func (w *serverWebviewWindow) position() (int, int)                                { return 0, 0 }
+func (w *serverWebviewWindow) setPosition(x int, y int)                            {}
+func (w *serverWebviewWindow) centerOnScreen(_ *Screen)                            {}
+func (w *serverWebviewWindow) relativePosition() (int, int)                        { return 0, 0 }
+func (w *serverWebviewWindow) setRelativePosition(x int, y int)                    {}
+func (w *serverWebviewWindow) flash(enabled bool)                                  {}
+func (w *serverWebviewWindow) handleKeyEvent(acceleratorString string)             {}
+func (w *serverWebviewWindow) getBorderSizes() *LRTB                               { return &LRTB{} }
+func (w *serverWebviewWindow) setMinimiseButtonState(state ButtonState)            {}
+func (w *serverWebviewWindow) setMaximiseButtonState(state ButtonState)            {}
+func (w *serverWebviewWindow) setCloseButtonState(state ButtonState)               {}
+func (w *serverWebviewWindow) setFullscreenButtonState(state ButtonState)          {}
+func (w *serverWebviewWindow) isIgnoreMouseEvents() bool                           { return false }
+func (w *serverWebviewWindow) setIgnoreMouseEvents(ignore bool)                    {}
+func (w *serverWebviewWindow) cut()                                                {}
+func (w *serverWebviewWindow) copy()                                               {}
+func (w *serverWebviewWindow) paste()                                              {}
+func (w *serverWebviewWindow) undo()                                               {}
+func (w *serverWebviewWindow) delete()                                             {}
+func (w *serverWebviewWindow) selectAll()                                          {}
+func (w *serverWebviewWindow) redo()                                               {}
+func (w *serverWebviewWindow) showMenuBar()                                        {}
+func (w *serverWebviewWindow) hideMenuBar()                                        {}
+func (w *serverWebviewWindow) toggleMenuBar()                                      {}
+func (w *serverWebviewWindow) setMenu(menu *Menu)                                  {}
+func (w *serverWebviewWindow) snapAssist()                                         {}
+func (w *serverWebviewWindow) attachModal(modalWindow *WebviewWindow)              {}
+func (w *serverWebviewWindow) setContentProtection(enabled bool)                   {}
+func (w *serverWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {}

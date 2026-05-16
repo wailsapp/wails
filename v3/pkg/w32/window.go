@@ -43,6 +43,7 @@ var Fatal func(error)
 
 const (
 	GCLP_HBRBACKGROUND int32 = -10
+	GCLP_HCURSOR       int32 = -12
 	GCLP_HICON         int32 = -14
 )
 
@@ -115,6 +116,10 @@ func ShowWindowMinimised(hwnd uintptr) {
 
 func SetApplicationIcon(hwnd uintptr, icon HICON) {
 	setClassLongPtr(hwnd, GCLP_HICON, icon)
+}
+
+func SetClassCursor(hwnd uintptr, cursor HCURSOR) {
+	setClassLongPtr(hwnd, GCLP_HCURSOR, cursor)
 }
 
 func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {

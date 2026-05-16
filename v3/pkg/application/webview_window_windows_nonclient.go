@@ -33,6 +33,19 @@ func (w *windowsWebviewWindow) setNonClientHitTestRegions(regions []nonClientHit
 	w.nonClientHitTest.set(regions)
 }
 
+func (w *windowsWebviewWindow) applyCompositionCursor(cursor edge.HCURSOR, systemCursorID uint32) {
+	hcursor := w32.HCURSOR(cursor)
+	if hcursor == 0 && systemCursorID != 0 {
+		hcursor = w32.LoadCursorWithResourceID(0, uint16(systemCursorID))
+	}
+	if hcursor == 0 {
+		return
+	}
+
+	w32.SetClassCursor(w.hwnd, hcursor)
+	w32.SetCursor(hcursor)
+}
+
 func (w *windowsWebviewWindow) routeNonClientInput(msg uint32, wparam, lparam uintptr) (uintptr, bool) {
 	switch msg {
 	case w32.WM_NCHITTEST:
@@ -240,6 +253,8 @@ func (w *windowsWebviewWindow) forwardFrontendNonClientButtonInput(msg uint32, w
 		return false
 	}
 
+	w.updateCompositionMouseCapture(msg)
+
 	return true
 }
 
@@ -272,6 +287,8 @@ func (w *windowsWebviewWindow) routeCompositionMouseInput(msg uint32, wparam, lp
 		return false
 	}
 
+	w.updateCompositionMouseCapture(msg)
+
 	return true
 }
 
@@ -283,6 +300,19 @@ func (w *windowsWebviewWindow) compositionMouseClientPoint(msg uint32, lparam ui
 		return w32.ScreenToClient(w.hwnd, int(w32.GET_X_LPARAM(lparam)), int(w32.GET_Y_LPARAM(lparam)))
 	default:
 		return int(w32.GET_X_LPARAM(lparam)), int(w32.GET_Y_LPARAM(lparam)), true
+	}
+}
+
+func (w *windowsWebviewWindow) updateCompositionMouseCapture(msg uint32) {
+	if isCompositionMouseButtonDown(msg) {
+		if w32.GetCapture() != w.hwnd {
+			w32.SetCapture(w.hwnd)
+		}
+		return
+	}
+
+	if isCompositionMouseButtonUp(msg) && w32.GetCapture() == w.hwnd {
+		w32.ReleaseCapture()
 	}
 }
 
@@ -302,6 +332,30 @@ func nonClientLeftButtonMouseEvent(msg uint32) (edge.COREWEBVIEW2_MOUSE_EVENT_KI
 			true
 	default:
 		return 0, 0, false
+	}
+}
+
+func isCompositionMouseButtonDown(msg uint32) bool {
+	switch msg {
+	case w32.WM_LBUTTONDOWN,
+		w32.WM_RBUTTONDOWN,
+		w32.WM_MBUTTONDOWN,
+		w32.WM_XBUTTONDOWN:
+		return true
+	default:
+		return false
+	}
+}
+
+func isCompositionMouseButtonUp(msg uint32) bool {
+	switch msg {
+	case w32.WM_LBUTTONUP,
+		w32.WM_RBUTTONUP,
+		w32.WM_MBUTTONUP,
+		w32.WM_XBUTTONUP:
+		return true
+	default:
+		return false
 	}
 }
 
