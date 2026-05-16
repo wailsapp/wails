@@ -2546,7 +2546,11 @@ func (w *windowsWebviewWindow) navigationCompleted(
 
 	// Set the EnableFileDrop flag for this window (Windows-specific)
 	// The JS runtime checks this before processing file drops
-	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
+	w.execJS(fmt.Sprintf(
+		"window._wails.flags.enableFileDrop = %v; window._wails.flags.nonClientRegionTracking = %v;",
+		w.parent.options.EnableFileDrop,
+		w.parent.options.Windows.WebView2CompositionHosting,
+	))
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}

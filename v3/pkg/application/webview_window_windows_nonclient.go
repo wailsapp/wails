@@ -377,6 +377,8 @@ func nonClientLeftButtonMouseEvent(msg uint32) (edge.COREWEBVIEW2_MOUSE_EVENT_KI
 func isCompositionMouseButtonDown(msg uint32) bool {
 	switch msg {
 	case w32.WM_LBUTTONDOWN,
+		w32.WM_NCLBUTTONDOWN,
+		w32.WM_NCLBUTTONDBLCLK,
 		w32.WM_RBUTTONDOWN,
 		w32.WM_MBUTTONDOWN,
 		w32.WM_XBUTTONDOWN:
@@ -389,6 +391,7 @@ func isCompositionMouseButtonDown(msg uint32) bool {
 func isCompositionMouseButtonUp(msg uint32) bool {
 	switch msg {
 	case w32.WM_LBUTTONUP,
+		w32.WM_NCLBUTTONUP,
 		w32.WM_RBUTTONUP,
 		w32.WM_MBUTTONUP,
 		w32.WM_XBUTTONUP:
