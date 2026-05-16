@@ -1626,6 +1626,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 0
 		}
 		w.parent.emit(events.Windows.WindowKillFocus)
+	case w32.WM_CAPTURECHANGED:
+		w.compositionInput.capturing = false
 	case w32.WM_ENTERSIZEMOVE:
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)

@@ -343,6 +343,10 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 		err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
 	} else {
 		err = e.createCoreWebView2CompositionController(env)
+		if errors.Is(err, UnsupportedCapabilityError) {
+			e.CompositionControllerEnabled = false
+			err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+		}
 	}
 	if err != nil {
 		e.errorCallback(err)
