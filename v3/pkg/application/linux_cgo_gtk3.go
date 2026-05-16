@@ -2012,6 +2012,13 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
 	if isDebouncing {
 		debounceTimer.Reset(50 * time.Millisecond)
+		// Still consume undo/redo during debounce so auto-repeat does not
+		// let stray events through to webkit2gtk's native handler.
+		if accelerator, ok := getKeyboardState(event); ok {
+			if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
+				return C.gboolean(1)
+			}
+		}
 		return C.gboolean(0)
 	}
 
@@ -2026,6 +2033,12 @@ func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t)
 		windowKeyEvents <- &windowKeyEvent{
 			windowId:          windowID,
 			acceleratorString: accelerator,
+		}
+		// Consume undo/redo so that webkit2gtk's native handler does not also fire.
+		// webkit2gtk's built-in Ctrl+Z is unreliable for <input> elements; we call
+		// document.execCommand('undo') instead via handleKeyEvent → undo()/redo().
+		if accelerator == "Ctrl+Z" || accelerator == "Ctrl+Shift+Z" {
+			return C.gboolean(1)
 		}
 	}
 	return C.gboolean(0)
@@ -2382,10 +2395,11 @@ func (w *linuxWebviewWindow) selectAll() {
 }
 
 func (w *linuxWebviewWindow) undo() {
-	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_UNDO)
+	w.execJS("document.execCommand('undo')")
 }
 
 func (w *linuxWebviewWindow) redo() {
+	w.execJS("document.execCommand('redo')")
 }
 
 func (w *linuxWebviewWindow) delete() {

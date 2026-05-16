@@ -13,9 +13,9 @@ import (
 // calls document.execCommand('undo') rather than being a no-op.
 // Prior to the fix the body was an empty commented-out stub.
 func TestLinuxCGOUndoIsImplemented(t *testing.T) {
-	data, err := os.ReadFile("linux_cgo.go")
+	data, err := os.ReadFile("linux_cgo_gtk3.go")
 	if err != nil {
-		t.Skip("linux_cgo.go not available")
+		t.Skip("linux_cgo_gtk3.go not available")
 	}
 	content := string(data)
 	lines := strings.Split(content, "\n")
@@ -46,9 +46,9 @@ func TestLinuxCGOUndoIsImplemented(t *testing.T) {
 // TestLinuxCGORedoIsImplemented verifies that redo() in the GTK3 CGO path
 // calls document.execCommand('redo').
 func TestLinuxCGORedoIsImplemented(t *testing.T) {
-	data, err := os.ReadFile("linux_cgo.go")
+	data, err := os.ReadFile("linux_cgo_gtk3.go")
 	if err != nil {
-		t.Skip("linux_cgo.go not available")
+		t.Skip("linux_cgo_gtk3.go not available")
 	}
 	content := string(data)
 	lines := strings.Split(content, "\n")
@@ -84,9 +84,9 @@ func TestLinuxCGORedoIsImplemented(t *testing.T) {
 // within 3 lines of the guard condition (i.e. inside the same if-block, not
 // coincidentally later in the function).
 func TestLinuxOnKeyPressEventConsumesCtrlZ(t *testing.T) {
-	data, err := os.ReadFile("linux_cgo.go")
+	data, err := os.ReadFile("linux_cgo_gtk3.go")
 	if err != nil {
-		t.Skip("linux_cgo.go not available")
+		t.Skip("linux_cgo_gtk3.go not available")
 	}
 	lines := strings.Split(string(data), "\n")
 
