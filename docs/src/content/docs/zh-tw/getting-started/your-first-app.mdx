@@ -231,17 +231,19 @@ import wails_dev from '../../../../assets/wails_dev.mp4';
        git push -u origin main
        ```
 
-    這可確保你的 Go 模組名稱符合 Go 的模組命名慣例，並使分享程式碼變得更容易。:::tip[專業提示]
-您可以透過在建立專案時使用 `-git` 旗標，自動化所有初始化步驟：
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-此功能支援各種 Git URL 格式：
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` 或 `ssh://git@github.com/username/project`
-- Git 協定: `git://github.com/username/project`
-- 檔案系統: `file:///path/to/project.git`
-:::
+    這可確保你的 Go 模組名稱符合 Go 的模組命名慣例，並使分享程式碼變得更容易。
+
+    :::tip[專業提示]
+    您可以透過在建立專案時使用 `-git` 旗標，自動化所有初始化步驟：
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    此功能支援各種 Git URL 格式：
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` 或 `ssh://git@github.com/username/project`
+    - Git 協定: `git://github.com/username/project`
+    - 檔案系統: `file:///path/to/project.git`
+    :::
 
 </Steps>
 
