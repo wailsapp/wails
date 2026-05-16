@@ -19,7 +19,7 @@ export default defineConfig({
   devToolbar: { enabled: true },
   integrations: [
     react(),
-    d2({ experimental: { useD2js: true } }),
+    d2(),
     sitemap(),
     starlight({
       title: "",
