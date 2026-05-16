@@ -3,6 +3,7 @@
 package application
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -16,7 +17,11 @@ type nonClientHitTestState struct {
 
 func (s *nonClientHitTestState) set(regions []nonClientHitTestRegion) {
 	s.mu.Lock()
-	s.regions = regions
+	if len(regions) == 0 {
+		s.regions = nil
+	} else {
+		s.regions = slices.Clone(regions)
+	}
 	s.mu.Unlock()
 }
 
