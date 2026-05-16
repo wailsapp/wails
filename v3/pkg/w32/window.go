@@ -347,6 +347,11 @@ func EnableCloseButton(hwnd HWND) error {
 	return nil
 }
 
+func GetSystemMenu(hwnd HWND, revert bool) HMENU {
+	ret, _, _ := getSystemMenu.Call(hwnd, uintptr(BoolToBOOL(revert)))
+	return HMENU(ret)
+}
+
 func FindWindowW(className, windowName *uint16) HWND {
 	ret, _, _ := findWindow.Call(
 		uintptr(unsafe.Pointer(className)),
