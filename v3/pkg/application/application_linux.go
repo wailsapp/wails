@@ -319,10 +319,6 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-var _ = dbus.SessionBus
-var _ = filepath.Ext
-var _ = operatingsystem.Info
-
 // logPlatformInfo logs the platform information to the console
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()

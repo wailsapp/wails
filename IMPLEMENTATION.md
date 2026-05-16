@@ -35,9 +35,10 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 - Allows gradual migration and feedback collection
 - Protects existing apps from unexpected breakage
 
-**Build Tags** (post-Decision 1.1):
-- Default (no tag): `//go:build linux && cgo && !gtk3 && !android`
-- Legacy GTK3 opt-in: `//go:build linux && cgo && gtk3 && !android`
+**Build Tags** (post-Decision 1.1, post-#5463 review fixes):
+- Default (no tag): `//go:build linux && cgo && !gtk3 && !android && !server`
+- Legacy GTK3 opt-in: `//go:build linux && cgo && gtk3 && !android && !server`
+- Server mode (`-tags server`) excludes both paths so no GTK/cgo code is linked.
 
 ### Decision 2: pkg-config Libraries (2026-01-04)
 **GTK4/WebKitGTK 6.0**:
