@@ -1049,7 +1049,9 @@ func (w *macosWebviewWindow) hide() {
 }
 
 func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
-	C.setFullscreenButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setFullscreenButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.MaximiseButtonState)))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1630,7 +1632,9 @@ func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
 }
 
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	C.setMaximiseButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setMaximiseButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.FullscreenButtonState)))
 }
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
