@@ -28,8 +28,8 @@ Before you begin, ensure you have:
 - WebView2 runtime (usually pre-installed on Windows 11)
 
 **Linux:**
-- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
-- Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
+- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.1-dev` (GTK4 build also supported via `libwebkitgtk-6.0-dev`)
+- Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev` (Debian/Ubuntu)
 
 ## Contribution Process Overview
 
@@ -214,7 +214,7 @@ Choose your contribution type:
 7. **Document Your Feature**
 
    - Add docstrings to all public APIs
-   - Update relevant documentation in `/docs`
+   - Update relevant documentation in `/docs/src/content/docs/`
    - Add examples if applicable
 
 8. **Commit with Convention**
@@ -274,7 +274,7 @@ Choose your contribution type:
 
 3. **Setup Documentation Environment**
 
-   The docs are in `/docs` and built with Astro:
+   The docs are in `/docs/src/content/docs/` and built with Astro:
    ```bash
    cd docs
    npm install
