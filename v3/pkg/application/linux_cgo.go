@@ -433,6 +433,16 @@ static void disableDND(GtkWidget *widget, gpointer data)
     g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop_blocked), data);
     g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion_blocked), data);
 }
+
+// Store/retrieve an unsigned integer as a GObject data pointer without allocating memory.
+// Uses the GTK GUINT_TO_POINTER/GPOINTER_TO_UINT idiom so that no Go memory is kept alive
+// across the g_object_set_data call (avoids GC-after-return dangling-pointer bugs).
+static void set_object_uint(GObject *obj, const gchar *key, guint val) {
+    g_object_set_data(obj, key, GUINT_TO_POINTER(val));
+}
+static guint get_object_uint(GObject *obj, const gchar *key) {
+    return GPOINTER_TO_UINT(g_object_get_data(obj, key));
+}
 */
 import "C"
 
@@ -760,8 +770,7 @@ func menuClear(menu *Menu) {
 func handleClick(idPtr unsafe.Pointer) {
 	ident := C.CString("id")
 	defer C.free(unsafe.Pointer(ident))
-	value := C.g_object_get_data((*C.GObject)(idPtr), ident)
-	id := uint(*(*C.uint)(value))
+	id := uint(C.get_object_uint((*C.GObject)(idPtr), ident))
 	item, ok := gtkSignalToMenuItem[id]
 	if !ok {
 		return
@@ -790,14 +799,9 @@ func attachMenuHandler(item *MenuItem) uint {
 		C.gpointer(widget),
 		flags)
 
-	id := C.uint(item.id)
 	ident := C.CString("id")
 	defer C.free(unsafe.Pointer(ident))
-	C.g_object_set_data(
-		(*C.GObject)(widget),
-		ident,
-		C.gpointer(&id),
-	)
+	C.set_object_uint((*C.GObject)(widget), ident, C.guint(item.id))
 
 	gtkSignalToMenuItem[item.id] = item
 	return uint(handlerId)

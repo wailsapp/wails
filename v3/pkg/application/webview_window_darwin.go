@@ -612,34 +612,33 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position (in screen coordinates with Y=0 at top, scaled for DPI)
+// Get absolute window position in the canonical Wails coordinate space:
+// logical points, Y-down, with (0,0) at the top-left of the primary screen.
+// This matches Screen.Bounds (see screen_darwin.go), Windows, GTK and the
+// public APIs of Electron and the web. Screens above the primary have
+// negative Y.
 void windowGetPosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	NSScreen* screen = [window screen];
-	if (screen == NULL) {
-		screen = [NSScreen mainScreen];
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
 	}
-	CGFloat scale = [screen backingScaleFactor];
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
 	NSRect frame = [window frame];
-	NSRect screenFrame = [screen frame];
-	// Convert to top-origin coordinates and apply scale (matching windowSetPosition)
-	*x = frame.origin.x * scale;
-	*y = (screenFrame.size.height - frame.origin.y - frame.size.height) * scale;
+	*x = frame.origin.x;
+	*y = primaryHeight - frame.origin.y - frame.size.height;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
-    NSScreen* screen = [window screen];
-    if (screen == NULL) {
-        screen = [NSScreen mainScreen];
-    }
-	// Get the scale of the screen
-	CGFloat scale = [screen backingScaleFactor];
-    NSRect frame = [window frame];
-	// Scale the position
-	frame.origin.x = x / scale;
-	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
-	// Set the frame
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	NSRect frame = [window frame];
+	frame.origin.x = x;
+	frame.origin.y = primaryHeight - frame.size.height - y;
 	[window setFrame:frame display:YES];
 }
 
@@ -1399,11 +1398,14 @@ func (w *macosWebviewWindow) run() {
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
-		if options.FullscreenButtonState != ButtonEnabled {
-			w.setFullscreenButtonState(options.FullscreenButtonState)
+		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
+		// Apply the more restrictive state to prevent one from silently overriding the other.
+		zoomState := options.MaximiseButtonState
+		if options.FullscreenButtonState > zoomState {
+			zoomState = options.FullscreenButtonState
 		}
+		w.setMaximiseButtonState(zoomState)
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
