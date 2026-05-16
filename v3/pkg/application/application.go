@@ -350,6 +350,7 @@ type App struct {
 	Screen      *ScreenManager
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
+	Autostart   *AutostartManager
 
 	// Windows
 	windows     map[uint]Window
@@ -499,6 +500,7 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Autostart = newAutostartManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {

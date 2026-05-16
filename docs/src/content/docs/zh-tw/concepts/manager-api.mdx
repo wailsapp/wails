@@ -1,0 +1,266 @@
+---
+title: Manager API
+description: 結構化的 API 組織與專注的管理器介面
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 的 Manager API 提供了一種有組織且易於發現的方式，透過專注的管理器結構體來存取應用程式的功能。這個新的 API 結構將相關方法分組，同時完全維持與傳統 App API 的向後相容性。
+
+## 概述
+
+Manager API 將應用程式功能組織成十一個專注的領域：
+
+- **`app.Window`** - 視窗建立、管理與回調
+- **`app.ContextMenu`** - 右鍵選單註冊與管理
+- **`app.KeyBinding`** - 全域快捷鍵管理
+- **`app.Browser`** - 瀏覽器整合（開啟 URL 和檔案）
+- **`app.Env`** - 環境資訊與系統狀態
+- **`app.Dialog`** - 檔案與訊息對話框操作
+- **`app.Event`** - 自訂事件處理與應用程式事件
+- **`app.Menu`** - 應用程式選單管理
+- **`app.Screen`** - 螢幕管理與座標轉換
+- **`app.Clipboard`** - 剪貼簿文字操作
+- **`app.SystemTray`** - 系統匣圖示建立與管理
+
+## 優點
+
+- **更好的可發現性** - IDE 自動完成功能顯示有組織的 API 介面
+- **改善的程式碼組織** - 相關方法分組在一起
+- **增強的可維護性** - 各管理器之間的關注點分離
+- **未來可擴展性** - 更容易向特定領域新增新功能
+
+## 使用方式
+
+Manager API 提供對所有應用程式功能的有組織存取：
+
+```go
+// 事件與自訂事件處理
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// 視窗管理
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// 瀏覽器整合
+app.Browser.OpenURL("https://wails.io")
+
+// 選單管理
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// 系統匣
+systray := app.SystemTray.New()
+```
+
+## 管理器參考
+
+### 視窗管理器
+
+管理視窗建立、擷取與生命週期回調。
+
+```go
+// 建立視窗
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// 尋找視窗
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// 視窗回調
+app.Window.OnCreate(func(window Window) {
+    // 處理視窗建立
+})
+```
+
+### 事件管理器
+
+處理自訂事件與應用程式事件監聽。
+
+```go
+// 自訂事件
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // 處理事件
+})
+app.Event.Off("userAction")
+app.Event.Reset() // 移除所有監聽器
+
+// 應用程式事件
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // 處理系統主題變更
+})
+```
+
+### 瀏覽器管理器
+
+提供開啟 URL 和檔案的瀏覽器整合。
+
+```go
+// 在預設瀏覽器中開啟 URL 和檔案
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### 環境管理器
+
+存取系統環境資訊。
+
+```go
+// 取得環境資訊
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// 檢查系統主題
+if app.Env.IsDarkMode() {
+    // 深色模式已啟用
+}
+
+// 開啟檔案管理器
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### 對話框管理器
+
+有組織地存取檔案與訊息對話框。
+
+```go
+// 檔案對話框
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// 訊息對話框
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### 選單管理器
+
+應用程式選單的建立與管理。
+
+```go
+// 建立並設定應用程式選單
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // 處理選單點擊
+})
+
+app.Menu.Set(menu)
+
+// 顯示關於對話框
+app.Menu.ShowAbout()
+```
+
+### 快捷鍵管理器
+
+全域快捷鍵的動態管理。
+
+```go
+// 新增快捷鍵
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // 處理 Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// 移除快捷鍵
+app.KeyBinding.Remove("ctrl+n")
+
+// 取得所有快捷鍵
+bindings := app.KeyBinding.GetAll()
+```
+
+### 右鍵選單管理器
+
+進階右鍵選單管理（適用於函式庫作者）。
+
+```go
+// 建立並註冊右鍵選單
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// 擷取右鍵選單
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// 移除右鍵選單
+app.ContextMenu.Remove("myMenu")
+```
+
+### 螢幕管理器
+
+多監視器設定的螢幕管理與座標轉換。
+
+```go
+// 取得螢幕資訊
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// 座標轉換
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// 螢幕偵測
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### 剪貼簿管理器
+
+用於讀取和寫入文字的剪貼簿操作。
+
+```go
+// 設定文字到剪貼簿
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // 處理錯誤
+}
+
+// 從剪貼簿取得文字
+text, ok := app.Clipboard.Text()
+if !ok {
+    // 處理錯誤
+} else {
+    // 使用文字
+}
+```
+
+### 系統匣管理器
+
+系統匣圖示的建立與管理。
+
+```go
+// 建立系統匣
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// 新增選單到系統匣
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // 處理點擊
+})
+systray.SetMenu(menu)
+
+// 完成時銷毀系統匣
+systray.Destroy()
+```

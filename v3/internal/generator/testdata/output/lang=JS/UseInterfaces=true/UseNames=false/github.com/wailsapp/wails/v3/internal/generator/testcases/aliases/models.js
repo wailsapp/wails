@@ -14,14 +14,11 @@ import * as subpkg$0 from "./subpkg/models.js";
 /**
  * A class whose fields have various aliased types.
  * @typedef {Object} AliasGroup
- * @property {GenericAlias<number>} GAi
- * @property {GenericAlias<GenericPerson<boolean>>} GAP
  * @property {GenericPtrAlias<string[] | null>} GPAs
  * @property {GenericPtrAlias<GenericPerson<number[] | null>>} GPAP
  * @property {GenericMapAlias<string, number>} GMA
  * @property {GenericPersonAlias<boolean>} GPA
  * @property {IndirectPersonAlias} IPA
- * @property {TPIndirectPersonAlias} TPIPA
  * @property {SubPackageAlias} SPA
  */
 
@@ -53,12 +50,6 @@ import * as subpkg$0 from "./subpkg/models.js";
  */
 
 /**
- * A generic alias that forwards to a type parameter.
- * @template T
- * @typedef {T} GenericAlias
- */
-
-/**
  * A generic alias that wraps a map.
  * @template T,U
  * @typedef {{ [_ in string]?: U } | null} GenericMapAlias
@@ -81,7 +72,7 @@ import * as subpkg$0 from "./subpkg/models.js";
 /**
  * A generic alias that wraps a pointer type.
  * @template T
- * @typedef {GenericAlias<T> | null} GenericPtrAlias
+ * @typedef {T | null} GenericPtrAlias
  */
 
 /**
@@ -110,11 +101,6 @@ import * as subpkg$0 from "./subpkg/models.js";
 /**
  * An alias referencing another package that is not used elsewhere.
  * @typedef {subpkg$0.SubStruct} SubPackageAlias
- */
-
-/**
- * An alias that wraps a class through a typeparam alias.
- * @typedef {GenericAlias<GenericPerson<boolean>>} TPIndirectPersonAlias
  */
 
 // In interface mode, this file is likely to contain just comments.

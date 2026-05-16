@@ -18,54 +18,65 @@ type WebviewWindowOptions struct {
     // Identity
     Name  string
     Title string
-    
+
     // Size and Position
-    Width     int
-    Height    int
-    X         int
-    Y         int
-    MinWidth  int
-    MinHeight int
-    MaxWidth  int
-    MaxHeight int
-    
+    Width           int
+    Height          int
+    X               int
+    Y               int
+    MinWidth        int
+    MinHeight       int
+    MaxWidth        int
+    MaxHeight       int
+    InitialPosition WindowStartPosition // WindowCentered (default) or WindowXY
+    Screen          *Screen             // target screen for initial placement
+
     // Initial State
-    Hidden          bool
-    Frameless       bool
-    Resizable       bool
-    AlwaysOnTop     bool
-    Fullscreen      bool
-    Minimised       bool
-    Maximised       bool
-    WindowState     WindowState
-    
+    Hidden        bool
+    Frameless     bool
+    DisableResize bool        // inverted vs v2's `Resizable`
+    AlwaysOnTop   bool
+    StartState    WindowState // WindowStateNormal | Minimised | Maximised | Fullscreen
+
     // Appearance
     BackgroundColour RGBA
     BackgroundType   BackgroundType
-    
+    Zoom             float64
+    ZoomControlEnabled bool
+
     // Content
     URL  string
     HTML string
-    
-    // Assets
-    Assets application.AssetOptions
-    
-    // Security
-    ContentProtectionEnabled bool
+    JS   string
+    CSS  string
+
+    // Behaviour
+    EnableFileDrop              bool
+    IgnoreMouseEvents           bool
+    HideOnFocusLost             bool
+    DevToolsEnabled             bool
+    DefaultContextMenuDisabled  bool
+    ContentProtectionEnabled    bool
+    KeyBindings                 map[string]func(window *WebviewWindow)
+
+    // Window-control button states
+    MinimiseButtonState ButtonState
+    MaximiseButtonState ButtonState
+    CloseButtonState    ButtonState
 
     // Menu
     UseApplicationMenu bool
 
-    // Lifecycle
-    OnClose   func() bool
-    OnDestroy func()
-
-    // Platform-Specific
-    Mac     MacOptions
-    Windows WindowsOptions
-    Linux   LinuxOptions
+    // Platform-specific (per-window)
+    Mac     MacWindow
+    Windows WindowsWindow
+    Linux   LinuxWindow
 }
 ```
+
+`WebviewWindowOptions` has **no** `Parent` field — for parent/modal relationships use `parentWindow.AttachModal(childWindow)`. It also has **no** `Assets` field — asset configuration lives on `application.Options` (`Assets AssetOptions`).
+
+Full source: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
 
 ## Core Options
 
@@ -94,7 +105,9 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 
 // Later...
-settings := app.GetWindowByName("settings-window")
+if settings, ok := app.Window.GetByName("settings-window"); ok {
+    settings.Focus()
+}
 ```
 
 ### Title
@@ -163,15 +176,18 @@ Y: 100,  // 100px from top edge
 
 **Example:**
 
+`X` and `Y` only take effect when `InitialPosition: application.WindowXY` is set. Without that, `InitialPosition` defaults to `WindowCentered` and `X`/`Y` are ignored.
+
 ```go
 settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Name: "coordinate-window",
-    InitialPosition: application.WindowXY, // use coordinate system
-    X:    100,
-    Y:    100,
+    Name:            "coordinate-window",
+    InitialPosition: application.WindowXY, // opt into X/Y coordinates
+    X:               100,
+    Y:               100,
 })
+```
 
-**Best practice:** Use `Center()` to center the window:
+**Best practice:** Use `Center()` to centre a window after creation if you don't care about specific coordinates:
 
 ```go
 window := app.Window.New()
@@ -252,9 +268,9 @@ Hidden: true,
 ```go
 // Create hidden window
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Name:   "main-window",
-    Hidden: true,
-    BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255}, // Match your theme
+    Name:             "main-window",
+    Hidden:           true,
+    BackgroundColour: application.NewRGB(30, 30, 30), // Match your theme
 })
 
 // Load content while hidden
@@ -301,24 +317,24 @@ Frameless: true,
 
 **See [Frameless Windows](/features/windows/frameless) for details.**
 
-### Resizable
+### DisableResize
 
-**Type:** `bool`  
-**Default:** `true`  
+**Type:** `bool`
+**Default:** `false` (window is resizable by default)
 **Platform:** All
 
 ```go
-Resizable: false,
+DisableResize: true,
 ```
 
-**Purpose:** Allow/prevent window resizing.
+**Purpose:** Prevent window resizing. Note that the field is the **inverse** of v2's `Resizable` — set `DisableResize: true` to make a window non-resizable.
 
 **Use cases:**
 - Fixed-size applications
 - Splash screens
-- dialogs
+- Dialogs
 
-**Note:** Users can still maximise/fullscreen unless you prevent those too.
+**Note:** Users can still maximise/fullscreen unless you also disable those via `MaximiseButtonState` / collection behaviour.
 
 ### AlwaysOnTop
 
@@ -343,83 +359,47 @@ AlwaysOnTop: true,
 - **Windows:** Full support
 - **Linux:** Depends on window manager
 
-### Fullscreen
+### StartState
 
-**Type:** `bool`  
-**Default:** `false`  
+**Type:** `WindowState` enum
+**Default:** `WindowStateNormal`
 **Platform:** All
 
 ```go
-Fullscreen: true,
+StartState: application.WindowStateMaximised,
 ```
 
-**Purpose:** Start in fullscreen mode.
-
-**Platform behaviour:**
-- **macOS:** Creates new Space (virtual desktop)
-- **Windows:** Covers taskbar
-- **Linux:** Varies by desktop environment
-
-**Toggle at runtime:**
-
-```go
-window.Fullscreen()
-window.UnFullscreen()
-```
-
-### Minimised / Maximised
-
-**Type:** `bool`  
-**Default:** `false`  
-**Platform:** All
-
-```go
-Minimised: true,  // Start minimised
-Maximised: true,  // Start maximised
-```
-
-**Purpose:** Set initial window state.
-
-**Note:** Don't set both to `true` - behaviour is undefined.
-
-### WindowState
-
-**Type:** `WindowState` enum  
-**Default:** `WindowStateNormal`  
-**Platform:** All
-
-```go
-WindowState: application.WindowStateMaximised,
-```
+**Purpose:** Initial state of the window when shown.
 
 **Values:**
 - `WindowStateNormal` - Normal window
 - `WindowStateMinimised` - Minimised
 - `WindowStateMaximised` - Maximised
 - `WindowStateFullscreen` - Fullscreen
-- `WindowStateHidden` - Hidden
 
-**Preferred over individual flags:**
+There is no `WindowStateHidden` constant — use the `Hidden` boolean field to start the window invisible.
+
+**Toggle fullscreen at runtime:**
 
 ```go
-// ✅ Preferred
-WindowState: application.WindowStateMaximised,
-
-// ❌ Avoid
-Maximised: true,
+window.Fullscreen()
+window.UnFullscreen()
+window.ToggleFullscreen() // there is no SetFullscreen(bool)
 ```
 
 ## Appearance Options
 
 ### BackgroundColour
 
-**Type:** `RGBA` struct  
-**Default:** White (255, 255, 255, 255)  
+**Type:** `RGBA` struct
+**Default:** White
 **Platform:** All
 
 ```go
-BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
 ```
+
+`RGBA` fields are `Red, Green, Blue, Alpha` (uint8). Prefer the helpers `application.NewRGB(r, g, b)` (alpha 255) or `application.NewRGBA(r, g, b, a)`.
 
 **Purpose:** Window background colour before content loads.
 
@@ -432,16 +412,16 @@ BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
 
 ```go
 // Dark theme
-BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
+BackgroundColour: application.NewRGB(30, 30, 30),
 
 // Light theme
-BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
+BackgroundColour: application.NewRGB(255, 255, 255),
 ```
 
 **Helper method:**
 
 ```go
-window.SetBackgroundColour(30, 30, 30, 255)
+window.SetBackgroundColour(application.NewRGB(30, 30, 30))
 ```
 
 ### BackgroundType
@@ -468,7 +448,7 @@ BackgroundType: application.BackgroundTypeTranslucent,
 
 ```go
 BackgroundType: application.BackgroundTypeTranslucent,
-Mac: application.MacOptions{
+Mac: application.MacWindow{
     Backdrop: application.MacBackdropTranslucent,
 },
 ```
@@ -495,13 +475,22 @@ URL: "https://example.com",
 **Example:**
 
 ```go
-// Development
-URL: "http://localhost:5173",
+// Development — point the window at the Vite dev server
+URL: "http://localhost:9245",
 
-// Production
-Assets: application.AssetOptions{
-    Handler: application.AssetFileServerFS(assets),
-},
+// Production — embedded assets are configured at the application level
+// (Assets is application.Options.Assets, not a WebviewWindowOptions field).
+```
+
+Application-level snippet for the production case:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+    },
+})
 ```
 
 ### HTML
@@ -533,19 +522,17 @@ HTML: `
 `,
 ```
 
-### Assets
+### Assets (application-level only)
 
-**Type:** `AssetOptions`  
-**Default:** Inherited from application  
-**Platform:** All
+Asset configuration is **not** a `WebviewWindowOptions` field. Frontend assets are served by the application itself via `application.Options.Assets` (`AssetOptions`); every window inherits that asset server.
 
 ```go
-Assets: application.AssetOptions{
-    Handler: application.AssetFileServerFS(assets),
-},
+app := application.New(application.Options{
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+    },
+})
 ```
-
-**Purpose:** Serve embedded frontend assets.
 
 **See [Build System](/concepts/build-system) for details.**
 
@@ -689,67 +676,47 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetContentProtection(true)
 ```
 
-## Lifecycle Options
+## Window Lifecycle Events
 
-### OnClose
+Window lifecycle events are handled using `OnWindowEvent` and `RegisterHook`. These methods provide fine-grained control over window closing and destruction behavior.
 
-**Type:** `func() bool`  
-**Default:** `nil` (always allow close)  
-**Platform:** All
+### Cancelling Window Close
 
-```go
-OnClose: func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    return true
-},
-```
-
-**Purpose:** Handle window close events, optionally prevent closing.
-
-**Use cases:**
-- Confirm before closing with unsaved changes
-- Save state before closing
-- Prevent accidental closure
-
-**Example:**
+To prevent a window from closing (e.g., unsaved changes), use `RegisterHook` with the `WindowClosing` event and call `event.Cancel()`:
 
 ```go
-OnClose: func() bool {
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "My Application",
+})
+
+// Register a hook to intercept the closing event
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
-},
+})
 ```
 
-**Important:** Only triggered by user actions (clicking X), not `window.Destroy()`.
+**Key points:**
+- `RegisterHook` intercepts events before they occur
+- Call `event.Cancel()` to prevent the window from closing
+- The window will remain open after cancelling
 
-### OnDestroy
+### Handling Window Close
 
-**Type:** `func()`  
-**Default:** `nil`  
-**Platform:** All
-
-```go
-OnDestroy: func() {
-    // Cleanup code
-    fmt.Println("Window destroyed")
-},
-```
-
-**Purpose:** Cleanup when window is destroyed.
-
-**Use cases:**
-- Release resources
-- Close connections
-- Update application state
-
-**Example:**
+To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClosing` event:
 
 ```go
-OnDestroy: func() {
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    // Cleanup code runs here
+    fmt.Printf("Window %s is closing\n", window.Name())
+    
     // Close database connection
     if db != nil {
         db.Close()
@@ -757,7 +724,41 @@ OnDestroy: func() {
     
     // Remove from window list
     removeWindow(window.ID())
-},
+})
+```
+
+**Key points:**
+- `OnWindowEvent` handles events that are about to happen
+- Cleanup runs before the window is destroyed
+- Cannot cancel the close from here (use `RegisterHook` for that)
+
+### Singleton Window Cleanup Pattern
+
+For singleton windows (ensure only one instance), use `WindowClosing` to clean up the reference:
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.App) {
+    // Create if doesn't exist
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:  "settings",
+            Title: "Settings",
+            Width: 600,
+            Height: 400,
+        })
+        
+        // Cleanup on close
+        settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+            settingsWindow = nil
+        })
+    }
+    
+    // Show and focus
+    settingsWindow.Show()
+    settingsWindow.Focus()
+}
 ```
 
 ## Platform-Specific Options
@@ -848,61 +849,62 @@ Mac: application.MacWindow{
 },
 ```
 
-### Windows Options
+### Windows Options (per-window)
+
+The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions` (that's the *application*-level struct).
 
 ```go
-Windows: application.WindowsOptions{
-    DisableWindowIcon:      false,
-    WindowBackdropType:     application.WindowsBackdropTypeAuto,
-    CustomTheme:            nil,
+Windows: application.WindowsWindow{
+    DisableIcon:                       false,
+    BackdropType:                      application.Auto,
+    CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
 },
 ```
 
-**DisableWindowIcon** (`bool`)
-- Remove icon from title bar
-- Cleaner appearance
+**DisableIcon** (`bool`)
+- Remove icon from title bar.
 
-**WindowBackdropType** (`WindowsBackdropType`)
-- `WindowsBackdropTypeAuto` - System default
-- `WindowsBackdropTypeNone` - No backdrop
-- `WindowsBackdropTypeMica` - Mica material (Windows 11)
-- `WindowsBackdropTypeAcrylic` - Acrylic material (Windows 11)
-- `WindowsBackdropTypeTabbed` - Tabbed material (Windows 11)
+**BackdropType** (`BackdropType`)
+- `application.Auto` - System default
+- `application.None` - No backdrop
+- `application.Mica` - Mica material (Windows 11)
+- `application.Acrylic` - Acrylic material (Windows 11)
+- `application.Tabbed` - Tabbed material (Windows 11)
 
-**CustomTheme** (`*WindowsTheme`)
-- Custom colour theme
-- Override system colours
+There are no `WindowsBackdropTypeMica`-style constants — use `application.Mica` etc.
+
+**CustomTheme** (`ThemeSettings`)
+- Value (not pointer). Custom dark/light-mode colours for window border, title bar text/background, and menu bar.
 
 **DisableFramelessWindowDecorations** (`bool`)
-- Disable default frameless decorations
-- For custom window chrome
+- Disable default frameless decorations (Aero shadow, rounded corners).
 
 **Example:**
 
 ```go
-Windows: application.WindowsOptions{
-    WindowBackdropType: application.WindowsBackdropTypeMica,
-    DisableWindowIcon:  true,
+Windows: application.WindowsWindow{
+    BackdropType: application.Mica,
+    DisableIcon:  true,
 },
 ```
 
-### Linux Options
+### Linux Options (per-window)
+
+The per-window struct is `application.LinuxWindow` — **not** `LinuxOptions`.
 
 ```go
-Linux: application.LinuxOptions{
+Linux: application.LinuxWindow{
     Icon:                []byte{/* PNG data */},
     WindowIsTranslucent: false,
 },
 ```
 
 **Icon** (`[]byte`)
-- Window icon (PNG format)
-- Shown in title bar and taskbar
+- Window icon (PNG format).
 
 **WindowIsTranslucent** (`bool`)
-- Enable window translucency
-- Requires compositor support
+- Requires compositor support.
 
 **Example:**
 
@@ -910,7 +912,7 @@ Linux: application.LinuxOptions{
 //go:embed icon.png
 var icon []byte
 
-Linux: application.LinuxOptions{
+Linux: application.LinuxWindow{
     Icon: icon,
 },
 ```
@@ -1028,50 +1030,33 @@ func main() {
         // Identity
         Name:  "main-window",
         Title: "My Application",
-        
+
         // Size and Position
         Width:     1200,
         Height:    800,
         MinWidth:  800,
         MinHeight: 600,
-        
+
         // Initial State
-        WindowState: application.WindowStateNormal,
-        Resizable:   true,
-        
+        StartState: application.WindowStateNormal,
+
         // Appearance
-        BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
-        
-        // Content
-        Assets: application.AssetOptions{
-            Handler: application.AssetFileServerFS(assets),
+        BackgroundColour: application.NewRGB(255, 255, 255),
+
+        // Platform-Specific (per-window structs)
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
         },
-        
-        // Lifecycle
-        OnClose: func() bool {
-            if hasUnsavedChanges() {
-                result := showConfirmdialog("Unsaved changes. Close anyway?")
-                return result == "yes"
-            }
-            return true
+
+        Windows: application.WindowsWindow{
+            BackdropType: application.Mica,
+            DisableIcon:  false,
         },
-        
-        OnDestroy: func() {
-            cleanup()
-        },
-        
-        // Platform-Specific
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            Backdrop:                   application.MacBackdropTranslucent,
-        },
-        
-        Windows: application.WindowsOptions{
-            WindowBackdropType: application.WindowsBackdropTypeMica,
-            DisableWindowIcon:  false,
-        },
-        
-        Linux: application.LinuxOptions{
+
+        Linux: application.LinuxWindow{
             Icon: icon,
         },
     })
@@ -1082,6 +1067,8 @@ func main() {
     app.Run()
 }
 ```
+
+Frontend assets are served at the application level (`application.Options.Assets`), not per window.
 
 ## Next Steps
 
