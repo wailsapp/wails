@@ -28,6 +28,7 @@ interface NonClientRegion {
 --wails-non-client-region: close;    marks a custom close button
 */
 const regionProperty = "--wails-non-client-region";
+const runtimeConfigReadyEvent = "wails:runtime-config-ready";
 const validRegions = new Set<NonClientRegionKind>(["caption", "minimize", "maximize", "close"]);
 
 // Setup
@@ -205,26 +206,23 @@ function startNonClientRegionTracking(): void {
     window.visualViewport?.addEventListener("scroll", scheduleUpdate);
 }
 
-let environmentPolls = 0;
-function tryStartNonClientRegionTracking(): void {
+function tryStartNonClientRegionTracking(): boolean {
     const os = window._wails.environment?.OS;
+    if (os === undefined) {
+        return false;
+    }
+
     const enabled = window._wails.flags?.nonClientRegionTracking;
     if (os === "windows") {
         if (enabled === true) {
             whenReady(startNonClientRegionTracking);
-            return;
         }
-        if (enabled === undefined && environmentPolls++ < 100) {
-            // Window-specific flags can arrive just after the runtime environment.
-            window.setTimeout(tryStartNonClientRegionTracking, 50);
-        }
-        return;
+        return true;
     }
 
-    if (os === undefined && environmentPolls++ < 100) {
-        // The runtime environment can arrive after this side-effect module loads.
-        window.setTimeout(tryStartNonClientRegionTracking, 50);
-    }
+    return true;
 }
 
-tryStartNonClientRegionTracking();
+if (!tryStartNonClientRegionTracking()) {
+    window.addEventListener(runtimeConfigReadyEvent, tryStartNonClientRegionTracking, { once: true });
+}
