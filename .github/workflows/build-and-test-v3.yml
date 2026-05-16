@@ -111,14 +111,14 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
           version: 1.0
 
       - name: Install linux dependencies (GTK3 legacy)
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
           version: 1.0
 
       - name: Setup Go
@@ -228,14 +228,14 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
           version: 1.0
 
       - name: Install linux dependencies (GTK3 legacy)
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
           version: 1.0
 
       - name: Setup Go
