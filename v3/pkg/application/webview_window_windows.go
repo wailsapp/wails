@@ -82,8 +82,6 @@ type windowsWebviewWindow struct {
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
 
-	compositionInput compositionMouseInputState
-	snapHover        snapLayoutHoverState
 	nonClientHitTest nonClientHitTestState
 
 	// menubarTheme is the theme for the menubar
@@ -1477,12 +1475,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		return code
 	}
 
-	if handled, result := w.routeNonClientInput(msg, wparam, lparam); handled {
-		return result
-	}
+	if w.parent.options.Windows.WebView2CompositionHosting && w.chromium != nil && w.chromium.CompositionControllerReady() {
+		if result, handled := w.routeNonClientInput(msg, wparam, lparam); handled {
+			return result
+		}
 
-	if w.routeCompositionMouseInput(msg, wparam, lparam) {
-		return 0
+		if w.routeCompositionMouseInput(msg, wparam, lparam) {
+			return 0
+		}
 	}
 
 	switch msg {
@@ -1537,8 +1537,6 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 0
 		}
 		w.parent.emit(events.Windows.WindowKillFocus)
-	case w32.WM_CAPTURECHANGED:
-		w.compositionInput.capturing = false
 	case w32.WM_ENTERSIZEMOVE:
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)

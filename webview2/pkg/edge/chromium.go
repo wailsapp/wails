@@ -776,11 +776,17 @@ func (e *Chromium) GetNonClientRegionAtPoint(x, y int32) (COREWEBVIEW2_NON_CLIEN
 	return region, true, nil
 }
 
-func (e *Chromium) SendMouseInput(eventKind COREWEBVIEW2_MOUSE_EVENT_KIND, virtualKeys COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS, mouseData uint32, x, y int32) error {
+func (e *Chromium) SendMouseInput(
+	eventKind COREWEBVIEW2_MOUSE_EVENT_KIND,
+	virtualKeys COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS,
+	mouseData uint32,
+	x, y int,
+) error {
 	if !e.CompositionControllerReady() {
 		return errors.New("webview2 composition controller is not initialized")
 	}
-	return e.compositionController.SendMouseInput(eventKind, virtualKeys, mouseData, POINT{X: x, Y: y})
+
+	return e.compositionController.SendMouseInput(eventKind, virtualKeys, mouseData, POINT{X: int32(x), Y: int32(y)})
 }
 
 func (e *Chromium) AllowExternalDrag(allow bool) error {

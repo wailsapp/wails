@@ -152,6 +152,10 @@ function primaryDown(event: MouseEvent): void {
     }
 
     if (resizeEdge) {
+        if (event.type !== 'mousedown') {
+            return;
+        }
+
         // Ready to resize if the primary button was pressed for the first time.
         canResize = true;
         // Do not start drag operations when on resize edges.
