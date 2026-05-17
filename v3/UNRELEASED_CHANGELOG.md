@@ -17,12 +17,17 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) by @leaanthony
+- Fix GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) by @leaanthony
+- Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
+- Fix race condition in mainthread callback store using incorrect RLock for map deletion (Linux, macOS, iOS) (#4424) by @leaanthony
 - Fixed variable handling when passing command-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
 - Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
 - Fix a cluster of pre-existing bugs in the legacy GTK3 build path (`-tags gtk3`) surfaced by CodeRabbit on #5463: file-association launches no longer skip startup handlers; `getTheme` is bounds- and type-safe; `appName` no longer frees GLib-owned memory; `clipboardGet` no longer leaks the `gchar*` returned by GTK; `Calloc` now uses pointer receivers (and `NewCalloc` returns `*Calloc`) so the pool actually tracks allocations; `zoomOut` uses the reciprocal of `zoomInFactor` instead of a negative multiplier that clamped to 1.0; `execJS` reuses the preallocated empty world-name instead of leaking a `C.CString("")` per call; a development `fmt.Println` was removed from `menuItem.setAccelerator`. Resolves #5465.
