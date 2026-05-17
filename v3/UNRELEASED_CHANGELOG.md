@@ -25,6 +25,8 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fixed variable handling when passing command-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
 - Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
+- Fix a cluster of pre-existing bugs in the legacy GTK3 build path (`-tags gtk3`) surfaced by CodeRabbit on #5463: file-association launches no longer skip startup handlers; `getTheme` is bounds- and type-safe; `appName` no longer frees GLib-owned memory; `clipboardGet` no longer leaks the `gchar*` returned by GTK; `Calloc` now uses pointer receivers (and `NewCalloc` returns `*Calloc`) so the pool actually tracks allocations; `zoomOut` uses the reciprocal of `zoomInFactor` instead of a negative multiplier that clamped to 1.0; `execJS` reuses the preallocated empty world-name instead of leaking a `C.CString("")` per call; a development `fmt.Println` was removed from `menuItem.setAccelerator`. Resolves #5465.
+- Fix the same `Calloc` value-receiver leak in the default GTK4 build path (`linux_cgo.go`): pointer receivers + `NewCalloc() *Calloc` so per-window `c.String(...)` allocations are actually tracked and freed.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

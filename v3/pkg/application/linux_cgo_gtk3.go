@@ -451,24 +451,25 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator
-func NewCalloc() Calloc {
-	return Calloc{}
+// NewCalloc creates a new allocator. Returns a pointer so the allocation
+// pool is shared across calls without copying.
+func NewCalloc() *Calloc {
+	return &Calloc{}
 }
 
-// String creates a new C string and retains a reference to it
-func (c Calloc) String(in string) *C.char {
+// String creates a new C string and retains a reference to it.
+func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
 	c.pool = append(c.pool, unsafe.Pointer(result))
 	return result
 }
 
 // Free frees all allocated C memory
-func (c Calloc) Free() {
+func (c *Calloc) Free() {
 	for _, str := range c.pool {
 		C.free(str)
 	}
-	c.pool = []unsafe.Pointer{}
+	c.pool = nil
 }
 
 type windowPointer *C.GtkWindow
@@ -567,8 +568,9 @@ func isOnMainThread() bool {
 
 // implementation below
 func appName() string {
+	// g_get_application_name() returns a pointer to GLib-internal storage;
+	// the caller must not free it. C.GoString copies into Go memory.
 	name := C.g_get_application_name()
-	defer C.free(unsafe.Pointer(name))
 	return C.GoString(name)
 }
 
@@ -697,6 +699,12 @@ func (a *linuxApp) setIcon(icon []byte) {
 func clipboardGet() string {
 	clip := C.gtk_clipboard_get(C.GDK_SELECTION_CLIPBOARD)
 	text := C.gtk_clipboard_wait_for_text(clip)
+	if text == nil {
+		return ""
+	}
+	// gtk_clipboard_wait_for_text returns a freshly allocated gchar*
+	// that the caller owns; release it with g_free after copying to Go.
+	defer C.g_free(C.gpointer(unsafe.Pointer(text)))
 	return C.GoString(text)
 }
 
@@ -1099,7 +1107,7 @@ func (w *linuxWebviewWindow) execJS(js string) {
 			value,
 			C.long(len(js)),
 			nil,
-			C.CString(""),
+			emptyWorldName,
 			nil,
 			nil,
 			nil)
@@ -1829,15 +1837,14 @@ func (w *linuxWebviewWindow) getZoom() float64 {
 	return float64(C.webkit_web_view_get_zoom_level(w.webKitWebView()))
 }
 
+const zoomInFactor = 1.10
+
 func (w *linuxWebviewWindow) zoomIn() {
-	// FIXME: ZoomIn/Out is assumed to be incorrect!
-	ZoomInFactor := 1.10
-	w.setZoom(w.getZoom() * ZoomInFactor)
+	w.setZoom(w.getZoom() * zoomInFactor)
 }
 
 func (w *linuxWebviewWindow) zoomOut() {
-	ZoomInFactor := -1.10
-	w.setZoom(w.getZoom() * ZoomInFactor)
+	w.setZoom(w.getZoom() * (1.0 / zoomInFactor))
 }
 
 func (w *linuxWebviewWindow) zoomReset() {
