@@ -153,6 +153,7 @@ func (a *linuxApp) run() error {
 			}
 		} else {
 			// Check if the argument matches any file associations
+			matched := false
 			if a.parent.options.FileAssociations != nil {
 				ext := filepath.Ext(arg1)
 				if slices.Contains(a.parent.options.FileAssociations, ext) {
@@ -163,10 +164,12 @@ func (a *linuxApp) run() error {
 						Id:  uint(events.Common.ApplicationOpenedWithFile),
 						ctx: eventContext,
 					}
-					return nil
+					matched = true
 				}
 			}
-			a.parent.debug("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+			if !matched {
+				a.parent.debug("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+			}
 		}
 	} else if len(os.Args) > 2 {
 		// Log if multiple arguments are passed
@@ -247,16 +250,24 @@ func (a *linuxApp) monitorThemeChanges() {
 		conn.Signal(c)
 
 		getTheme := func(body []interface{}) (string, bool) {
-			if len(body) < 2 {
+			if len(body) < 3 {
 				return "", false
 			}
 			if entry, ok := body[0].(string); !ok || entry != "org.gnome.desktop.interface" {
 				return "", false
 			}
-			if entry, ok := body[1].(string); ok && entry == "color-scheme" {
-				return body[2].(dbus.Variant).Value().(string), true
+			if entry, ok := body[1].(string); !ok || entry != "color-scheme" {
+				return "", false
 			}
-			return "", false
+			variant, ok := body[2].(dbus.Variant)
+			if !ok {
+				return "", false
+			}
+			value, ok := variant.Value().(string)
+			if !ok {
+				return "", false
+			}
+			return value, true
 		}
 
 		for v := range c {
