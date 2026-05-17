@@ -432,6 +432,36 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 	}
 }
 
+// processWindowKeyEquivalent is the synchronous counterpart to
+// processWindowKeyDownEvent. Called from -[WebviewWindow performKeyEquivalent:]
+// before the responder chain runs, so the caller can decide whether to
+// consume a modifier-key combo (returning true) or let the WKWebView see it
+// (returning false). Required for accelerators the webview would otherwise
+// swallow before NSWindow's keyDown: is ever reached — Ctrl+Tab is the
+// canonical example.
+//
+//export processWindowKeyEquivalent
+func processWindowKeyEquivalent(windowID C.uint, acceleratorString *C.char) C.bool {
+	if globalApplication == nil {
+		return C.bool(false)
+	}
+	globalApplication.windowsLock.RLock()
+	window, ok := globalApplication.windows[uint(windowID)]
+	globalApplication.windowsLock.RUnlock()
+	if !ok {
+		return C.bool(false)
+	}
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return C.bool(false)
+	}
+	accelerator, err := parseAccelerator(C.GoString(acceleratorString))
+	if err != nil {
+		return C.bool(false)
+	}
+	return C.bool(webviewWindow.processKeyBinding(accelerator.String()))
+}
+
 //export processDragItems
 func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
