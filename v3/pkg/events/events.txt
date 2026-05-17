@@ -2,6 +2,8 @@ common:ApplicationOpenedWithFile
 common:ApplicationStarted
 common:ApplicationLaunchedWithUrl
 common:ThemeChanged
+common:SystemDidWake
+common:SystemWillSleep
 common:WindowClosing
 common:WindowDidMove
 common:WindowDidResize
@@ -25,7 +27,9 @@ common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
 linux:ApplicationStartup
+linux:SystemDidWake!
 linux:SystemThemeChanged
+linux:SystemWillSleep!
 linux:WindowDeleteEvent
 linux:WindowDidMove
 linux:WindowDidResize
@@ -49,11 +53,15 @@ mac:ApplicationDidHide
 mac:ApplicationDidResignActive
 mac:ApplicationDidUnhide
 mac:ApplicationDidUpdate
+mac:ApplicationDidWake!
+mac:ApplicationScreensDidSleep!
+mac:ApplicationScreensDidWake!
 mac:ApplicationShouldHandleReopen!
 mac:ApplicationWillBecomeActive
 mac:ApplicationWillFinishLaunching
 mac:ApplicationWillHide
 mac:ApplicationWillResignActive
+mac:ApplicationWillSleep!
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate

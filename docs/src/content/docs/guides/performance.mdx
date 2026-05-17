@@ -236,12 +236,11 @@ func (b *BatchProcessor) flush() {
 
 ### Binary Size
 
-```bash
-# Strip debug symbols
-wails3 build -ldflags "-s -w"
+`wails3 build` itself has no `-ldflags` flag — the shipped Taskfile already passes `-ldflags="-s -w"` to `go build`. To further shrink the binary, edit the build task or call `go build` directly:
 
-# Reduce binary size further
-go build -ldflags="-s -w" -trimpath
+```bash
+# Strip debug symbols and trim file paths
+go build -ldflags="-s -w" -trimpath -o bin/myapp
 ```
 
 ### Compilation Speed

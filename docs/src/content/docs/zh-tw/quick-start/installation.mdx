@@ -268,7 +268,110 @@ wails3 doctor  # 驗證安裝
        ```powershell
        npm --version
        ```
-     </TabItem>#### Go 版本過舊
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **選項 1：官方安裝程式**
+       從 [nodejs.org](https://nodejs.org/) 下載
+
+       **選項 2：Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **驗證：**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **選項 1：NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **選項 2：套件管理員**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **驗證：**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[替代套件管理員]
+   偏好 `pnpm`、`yarn` 或 `bun`？沒問題！只需更新專案中的 `Taskfile.yml` 即可使用您偏好的工具。
+   :::
+
+</Steps>
+
+## 疑難排解
+
+#### 找不到 `wails3` 命令
+
+**原因：** `~/go/bin`（Windows 上為 `%USERPROFILE%\go\bin`）不在 PATH 中。
+
+**解決方案：**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. 開啟「環境變數」（在開始功能表搜尋）
+    2. 在「使用者變數」下找到 `Path`
+    3. 點選「編輯」→「新增」
+    4. 新增：`C:\Users\YourName\go\bin`（替換 YourName）
+    5. 在所有對話框點選「確定」
+    6. **重新啟動終端機**
+
+    **驗證：**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    新增至 `~/.zshrc`（macOS）或 `~/.bashrc`（Linux）：
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    重新載入：
+    ```bash
+    source ~/.zshrc  # 或 ~/.bashrc
+    ```
+
+    **驗證：**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+---
+
+#### `wails3 doctor` 回報缺少依賴項
+
+**Linux：** 輸出會準確告訴您需要安裝哪些套件。範例：
+```
+❌ 找不到 webkit2gtk
+   安裝方式：sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows：** 如果缺少 WebView2：
+- 從 [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) 下載
+- 或在執行第一個應用程式時會自動安裝
+
+**macOS：** 如果缺少 Xcode 工具：
+```bash
+xcode-select --install
+```
+---
+#### Go 版本過舊
 
 Wails v3 需要 Go 1.25+。如果您使用的是較舊版本：
 
