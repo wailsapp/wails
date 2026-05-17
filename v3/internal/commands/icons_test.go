@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -315,8 +316,13 @@ func TestGenerateIcon(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.requireDarwin && (runtime.GOOS != "darwin" || os.Getenv("CI") != "") {
-				t.Skip("Assets.car generation is only supported on macOS and not in CI")
+			if tt.requireDarwin {
+				if runtime.GOOS != "darwin" || os.Getenv("CI") != "" {
+					t.Skip("Assets.car generation is only supported on macOS and not in CI")
+				}
+				if exec.Command("/usr/bin/actool", "--version").Run() != nil {
+					t.Skip("actool not functional — install full Xcode (Xcode CLT alone is not sufficient)")
+				}
 			}
 
 			options := tt.setup()
@@ -331,5 +337,36 @@ func TestGenerateIcon(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestGenerateIconsFallthrough verifies that when both -input and -iconcomposerinput are
+// provided but Assets.car generation is unsupported, GenerateIcons still produces the
+// requested .ico file without returning an error.
+func TestGenerateIconsFallthrough(t *testing.T) {
+	_, thisFile, _, _ := runtime.Caller(0)
+	localDir := filepath.Dir(thisFile)
+	exampleIcon := filepath.Join(localDir, "build_assets", "appicon.png")
+	exampleIconFile := filepath.Join(localDir, "build_assets", "appicon.icon")
+	tmpDir := t.TempDir()
+	icoOut := filepath.Join(tmpDir, "appicon.ico")
+
+	options := &IconsOptions{
+		Input:             exampleIcon,
+		WindowsFilename:   icoOut,
+		IconComposerInput: exampleIconFile,
+		MacAssetDir:       tmpDir,
+	}
+
+	if err := GenerateIcons(options); err != nil {
+		t.Fatalf("GenerateIcons() unexpected error: %v", err)
+	}
+
+	f, err := os.Stat(icoOut)
+	if err != nil {
+		t.Fatalf("expected %s to exist: %v", icoOut, err)
+	}
+	if f.Size() == 0 {
+		t.Fatal("appicon.ico is empty")
 	}
 }

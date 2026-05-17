@@ -57,6 +57,15 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Workspace power notifications are posted on a separate notification
+	// center from the default one — apps must observe NSWorkspace's centre
+	// to receive sleep/wake events. Mirrors WM_POWERBROADCAST on Windows.
+	NSNotificationCenter *workspaceCenter = [[NSWorkspace sharedWorkspace] notificationCenter];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceWillSleep:) name:NSWorkspaceWillSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
+
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
 }
@@ -160,7 +169,13 @@ static unsigned int getCurrentWindowID(void) {
 		if (window == nil) {
 			return;
 		}
-		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
+		// System panels (e.g. PMPrintPanelController) can become the key window;
+		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		id delegateObj = [window delegate];
+		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
 		if (delegate != nil) {
 			result = delegate.windowId;
 		}

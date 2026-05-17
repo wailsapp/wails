@@ -1,0 +1,84 @@
+---
+title: v3 Alpha 回饋
+description: 如何為 Wails v3 提供回饋並回報問題
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+我們歡迎（並鼓勵）您提供回饋！在建立新的票證或文章之前，請先搜尋現有的內容。以下是提供回饋的不同方式：
+
+<Tabs>
+  <TabItem label="錯誤" icon="error">
+
+    如果您發現了錯誤，請在 Discord 的 [v3 Alpha 回饋](https://discord.gg/bdj28QNHmT) 頻道中發文告知我們。
+
+    - 文章應清楚說明錯誤內容，並提供簡單的可重現範例。如果文件不清楚說明 *應該* 發生什麼情況，請在文章中包含該資訊。
+    - 文章應加上 `Bug` 標籤。
+    - 請在文章中附上 `wails doctor` 的輸出結果。
+    - 如果該錯誤的行為與現有文件不符，例如視窗無法正確調整大小，請執行以下操作：
+      - 更新 `v3/example` 目錄中的現有範例，或在 `v3/examples` 資料夾中建立一個能清楚顯示問題的新範例。
+      - 開啟一個標題為 `[v3 alpha test] <錯誤描述>` 的 [PR](https://github.com/wailsapp/wails/pulls)。
+      - 請在文章中附上該 PR 的連結。
+
+    :::caution
+
+    _請記住_，非預期的行為不一定是錯誤——它可能只是沒有按照您的預期運作。請使用 `Suggestions` 來回報這類情況。
+
+    :::
+
+  </TabItem>
+
+  <TabItem label="修復" icon="approve-check">
+
+    如果您有修復錯誤或更新文件的方案，請執行以下操作：
+
+    - 在 [Wails 儲存庫](https://github.com/wailsapp/wails) 上開啟一個 pull request。PR 的標題應以 `[v3 alpha]` 開頭。
+    - 在 [v3 Alpha 回饋](https://discord.gg/bdj28QNHmT) 頻道中建立一篇文章。
+    - 文章應加上 `PR` 標籤。
+    - 請在文章中附上該 PR 的連結。
+
+  </TabItem>
+
+  <TabItem label="建議" icon="puzzle" id="abc">
+
+    如果您有任何建議，請在 Discord 的 [v3 Alpha 回饋](https://discord.gg/bdj28QNHmT) 頻道中發文告知我們：
+
+    - 文章應加上 `Suggestion` 標籤。
+
+    如果您有任何問題，歡迎隨時在 [Discord](https://discord.gg/bdj28QNHmT) 上與我們聯繫。
+
+  </TabItem>
+
+  <TabItem label="按讚" icon="star">
+
+    - 可以使用 :thumbsup: 表情符號對文章進行「按讚」。請對您認為優先的文章進行按讚。
+    - 請 *不要* 僅添加 "+1" 或「我也是」之類的留言。
+    - 如果文章還有更多內容可以補充，例如「此錯誤也影響 ARM 版本」或「另一個選項是....」，歡迎隨時留言。
+
+  </TabItem>
+
+</Tabs>
+
+已知問題列表及進行中的工作可於 [此處](https://github.com/orgs/wailsapp/projects/6) 查看。
+
+## 我們希望獲得回饋的主題
+
+- API
+  - 是否容易使用？
+  - 是否符合您的預期？
+  - 是否缺少任何功能？
+  - 是否有應該移除的部分？
+  - Go 和 JS 之間是否一致？
+- 建置系統
+  - 是否容易使用？
+  - 我們能否改進它？
+- 範例
+  - 是否清晰？
+  - 是否涵蓋了基本內容？
+- 功能
+  - 缺少哪些功能？
+  - 哪些功能是不需要的？
+- 文件
+  - 哪些部分可以更清晰？
