@@ -1,0 +1,87 @@
+---
+title: Feedback da Alpha v3
+description: Como fornecer feedback e relatar problemas para o Wails v3
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Agradecemos (e incentivamos) o seu feedback! Por favor, procure por tickets ou
+posts existentes antes de criar novos. Aqui estão as diferentes formas de fornecer feedback:
+
+<Tabs>
+  <TabItem label="Bugs" icon="error">
+
+    Se você encontrar um bug, por favor, nos avise postando no canal [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT) no Discord.
+
+    - O post deve declarar claramente qual é o bug e conter um exemplo reproduzível simples. Se a documentação não estiver clara sobre o que *deveria* acontecer, por favor, inclua isso no post.
+    - O post deve receber a tag `Bug`.
+    - Por favor, inclua a saída de `wails doctor` no seu post.
+    - Se o bug for um comportamento que não está alinhado com a documentação atual, por exemplo, uma janela que não redimensiona corretamente, por favor, faça o seguinte:
+      - Atualize um exemplo existente no diretório `v3/example` ou crie um novo exemplo na pasta `v3/examples` que mostre claramente o problema.
+      - Abra um [PR](https://github.com/wailsapp/wails/pulls) com o título `[v3 alpha test] <descrição do bug>`.
+      - Por favor, inclua um link para o PR no seu post.
+
+    :::caution
+
+    _Lembre-se_, comportamento inesperado não é necessariamente um bug - pode ser apenas que ele não faça
+    o que você espera. Use `Suggestions` para isso.
+
+    :::
+
+  </TabItem>
+
+  <TabItem label="Correções" icon="approve-check">
+
+    Se você tem uma correção para um bug ou uma atualização para a documentação, por favor, faça o seguinte:
+
+    - Abra um pull request no [repositório do Wails](https://github.com/wailsapp/wails). O título do PR deve começar com `[v3 alpha]`.
+    - Crie um post no canal [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT).
+    - O post deve receber a tag `PR`.
+    - Por favor, inclua um link para o PR no seu post.
+
+  </TabItem>
+
+  <TabItem label="Sugestões" icon="puzzle" id="abc">
+
+    Se você tem uma sugestão, por favor, nos avise postando no canal [v3 Alpha Feedback](https://discord.gg/bdj28QNHmT) no Discord:
+
+    - O post deve receber a tag `Suggestion`.
+
+    Sinta-se à vontade para entrar em contato conosco no [Discord](https://discord.gg/bdj28QNHmT) se tiver alguma dúvida.
+
+  </TabItem>
+
+  <TabItem label="Votação positiva" icon="star">
+
+    - Posts podem ser "apoiados" usando o emoji :thumbsup:. Por favor, aplique isso a qualquer post que seja uma prioridade para você.
+    - Por favor, *não* adicione apenas comentários como "+1" ou "eu também".
+    - Sinta-se à vontade para comentar se houver mais algo a adicionar ao post, como "esse bug também afeta builds para ARM" ou "Outra opção seria ....."
+
+  </TabItem>
+
+</Tabs>
+
+Existe uma lista de problemas conhecidos e trabalhos em andamento que pode ser encontrada
+[aqui](https://github.com/orgs/wailsapp/projects/6).
+
+## Assuntos pelos quais estamos buscando feedback
+
+- A API
+  - É fácil de usar?
+  - Ela faz o que você espera?
+  - Está faltando algo?
+  - Há algo que deveria ser removido?
+  - É consistente entre Go e JS?
+- O sistema de build
+  - É fácil de usar?
+  - Podemos melhorá-lo?
+- Os exemplos
+  - São claros?
+  - Eles cobrem o básico?
+- Recursos
+  - Quais recursos estão faltando?
+  - Quais recursos não são necessários?
+- Documentação
+  - O que poderia ser mais claro?

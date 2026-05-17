@@ -310,7 +310,7 @@ func main() {
     fileMenu := appMenu.AddSubmenu("File")
     fileMenu.Add("New").OnClick(func(ctx *application.Context) {
         // This will be available in all windows unless overridden
-        window := app.Windows.Current()
+        window := app.Window.Current()
         window.SetTitle("New Window")
     })
     
@@ -415,8 +415,8 @@ When creating a custom context menu, you provide a unique identifier (name) that
 
 ```go
 // Create a context menu with identifier "imageMenu"
-contextMenu := application.NewContextMenu()
-app.ContextMenus.Add("imageMenu", contextMenu)
+contextMenu := app.ContextMenu.New()
+app.ContextMenu.Add("imageMenu", contextMenu)
 ```
 
 The name parameter ("imageMenu" in this example) serves as a unique identifier that will be used to:
@@ -475,8 +475,8 @@ Here's a complete example of implementing a custom context menu for an image gal
 
 ```go
 // Backend: Create the context menu
-imageMenu := application.NewContextMenu()
-app.ContextMenus.Add("imageMenu", imageMenu)
+imageMenu := app.ContextMenu.New()
+app.ContextMenu.Add("imageMenu", imageMenu)
 
 // Add relevant operations
 imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {

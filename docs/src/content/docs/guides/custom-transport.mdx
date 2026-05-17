@@ -118,6 +118,9 @@ setTransport(myTransport);
 ```go
 type Transport interface {
     Start(ctx context.Context, messageProcessor *application.MessageProcessor) error
+    // JSClient returns the JavaScript shim that the runtime injects into the
+    // window so that frontend code can call into the transport.
+    JSClient() []byte
     Stop() error
 }
 ```

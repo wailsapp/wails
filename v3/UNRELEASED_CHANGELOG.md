@@ -17,17 +17,13 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add InstallScope flag and build option for machine/user install in [PR](https://github.com/wailsapp/wails/pull/5094) by @symball
-- Add no-op SetScreen method to BrowserWindow to satisfy Window interface in [PR](https://github.com/wailsapp/wails/pull/5294) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Detect NVIDIA GPUs and disable DMA-BUF renderer on Linux in [PR](https://github.com/wailsapp/wails/pull/5295) by @leaanthony
-- Fix git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) by @wayneforrest
-- Fix a family of Windows systray `SetMenu` crashes caused by a broken `DestroyMenu` syscall that was passing four arguments instead of one, so every call returned FALSE and freed nothing. Also release HMENU and HBITMAP handles (including those allocated at runtime via `MenuItem.SetBitmap`) on menu rebuilds, reset stale checkbox/radio maps in `Win32Menu.Update`, and drop a redundant `Update()` call in `systemtray.updateMenu` that doubled allocations. Long-running systray apps no longer leak GDI/USER objects on each menu rebuild.
+- Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
