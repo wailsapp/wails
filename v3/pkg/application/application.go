@@ -799,7 +799,15 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		a.warning("Window #%d not found", event.WindowID)
+		// Post-removal lifecycle notifications are expected: the default
+		// WindowClosing listener removes the window from the manager, then
+		// AppKit (or the equivalent on other platforms) keeps posting
+		// windowWillClose / windowDidResignKey / etc. for the same window.
+		// On darwin hasListeners always returns true today, so those
+		// notifications are queued unconditionally and would warn here on
+		// every window close. The same applies to App.cleanup nilling the
+		// map during shutdown. None of these are bugs — just log them.
+		a.debug("Window event for unknown window", "windowID", event.WindowID, "eventID", event.EventID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
