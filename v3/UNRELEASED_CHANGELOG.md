@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fixed variable handling when passing command-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
 - Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
 
 ## Deprecated
