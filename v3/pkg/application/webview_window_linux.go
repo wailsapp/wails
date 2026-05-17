@@ -427,13 +427,16 @@ func (w *linuxWebviewWindow) print() error {
 }
 
 func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	// accelerator, err := parseAccelerator(acceleratorString)
-	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %w", err)
-	// 	return
-	// }
-	w.parent.processKeyBinding(acceleratorString)
+	if !w.parent.processKeyBinding(acceleratorString) {
+		// No registered binding: apply built-in editing command fallbacks so that
+		// standard shortcuts work even in fresh projects without an Edit menu.
+		switch acceleratorString {
+		case "Ctrl+Z":
+			w.undo()
+		case "Ctrl+Shift+Z":
+			w.redo()
+		}
+	}
 }
 
 // SetMinimiseButtonState is unsupported on Linux
