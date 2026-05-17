@@ -4,11 +4,12 @@ package notifications
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"encoding/json"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"

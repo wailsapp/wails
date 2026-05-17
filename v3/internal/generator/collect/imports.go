@@ -3,8 +3,6 @@ package collect
 import (
 	"go/types"
 	"path/filepath"
-
-	"golang.org/x/tools/go/types/typeutil"
 )
 
 type (
@@ -122,12 +120,12 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // AddType does not support unsynchronised concurrent calls
 // on the same receiver.
 func (imports *ImportMap) AddType(typ types.Type) {
-	imports.addTypeImpl(typ, new(typeutil.Map))
+	imports.addTypeImpl(typ, make(map[*types.TypeName]bool))
 }
 
 // addTypeImpl provides the actual implementation of AddType.
 // The visited parameter is used to break cycles.
-func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
+func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeName]bool) {
 	collector := imports.collector
 	if collector == nil {
 		panic("AddType called on ImportMap with nil collector")
@@ -136,14 +134,20 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
 		case *types.Alias, *types.Named:
-			if visited.Set(typ, true) != nil {
-				// Break type cycles.
-				return
-			}
-
 			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
 			if obj.Pkg() == nil {
 				// Ignore universe type.
+				return
+			}
+
+			if visited[obj] {
+				// Break type cycles.
+				return
+			}
+			visited[obj] = true
+
+			// Special case: application.Void will render as TS void hence no dependencies and no model
+			if collector.IsVoidAlias(obj) {
 				return
 			}
 
@@ -207,7 +211,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 
 		case *types.Map:
 			if IsMapKey(t.Key()) {
-				if IsStringAlias(t.Key()) {
+				if IsStringAlias(t.Key()) || IsNumberAlias(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
 					imports.addTypeImpl(t.Key(), visited)
@@ -260,7 +264,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 			return
 
 		default:
-			collector.logger.Warningf("package %s: unknown type %s: please report this to Wails maintainers", imports.Self, typ)
+			collector.logger.Warningf("package %s: unknown or unexpected type %s: please report this to Wails maintainers", imports.Self, typ)
 			return
 		}
 	}

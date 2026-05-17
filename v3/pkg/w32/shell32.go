@@ -9,9 +9,10 @@ package w32
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type CSIDL uint32
@@ -79,8 +80,6 @@ const (
 	CSIDL_FLAG_NO_ALIAS           = 0x1000
 	CSIDL_FLAG_PER_USER_INIT      = 0x8000
 	CSIDL_FLAG_MASK               = 0xFF00
-
-	NOTIFYICON_VERSION = 4
 )
 
 var (

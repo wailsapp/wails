@@ -1,4 +1,15 @@
-@import './mermaid.css';
+/* Red accent color theme */
+:root {
+    --sl-color-accent-low: hsl(0, 85%, 95%);
+    --sl-color-accent: hsl(0, 90%, 45%);
+    --sl-color-accent-high: hsl(0, 90%, 35%);
+}
+
+[data-theme='dark'] {
+    --sl-color-accent-low: hsl(0, 85%, 15%);
+    --sl-color-accent: hsl(0, 90%, 50%);
+    --sl-color-accent-high: hsl(0, 90%, 60%);
+}
 
 html {
     scrollbar-gutter: stable;

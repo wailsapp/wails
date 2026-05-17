@@ -3,7 +3,6 @@ package generator
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/generator/render"
 	"io"
 	"io/fs"
 	"os"
@@ -14,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
+	"github.com/wailsapp/wails/v3/internal/generator/render"
 )
 
 const testcases = "github.com/wailsapp/wails/v3/internal/generator/testcases/..."
@@ -73,7 +72,7 @@ func TestGenerator(t *testing.T) {
 			}
 
 			// Skip got files.
-			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") {
+			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") || strings.HasSuffix(d.Name(), ".got.log") {
 				return nil
 			}
 
@@ -95,15 +94,17 @@ func TestGenerator(t *testing.T) {
 			generator := NewGenerator(
 				test.options,
 				creator,
-				config.DefaultPtermLogger(nil),
+				// Use NullLogger to suppress console output during tests.
+				// Warnings are written to warnings.log for comparison instead.
+				// This prevents GitHub Actions Go problem matcher from treating
+				// warning output as errors.
+				config.NullLogger,
 			)
 
 			_, err := generator.Generate(testcases)
 			if report := (*ErrorReport)(nil); errors.As(err, &report) {
 				if report.HasErrors() {
 					t.Error(report)
-				} else if report.HasWarnings() {
-					pterm.Warning.Println(report)
 				}
 
 				// Log warnings and compare with reference output.
@@ -116,8 +117,39 @@ func TestGenerator(t *testing.T) {
 						warnings := report.Warnings()
 						slices.Sort(warnings)
 
+						// Normalize paths in warnings to be relative to the testcases directory
+						// This ensures consistent output across different development environments and CI
+						for i, msg := range warnings {
+							// Handle both Unix and Windows path separators
+							msg = strings.ReplaceAll(msg, "\\", "/")
+							
+							// Check if this is a file path (contains line:column position)
+							// File paths look like: /path/to/file.go:123:45: message
+							// Package paths look like: package github.com/...: message
+							if strings.HasPrefix(msg, "package ") {
+								// Keep package warnings as-is
+								warnings[i] = msg
+							} else if idx := strings.Index(msg, "testcases/"); idx >= 0 {
+								// Check if it's a file path by looking for :line:column pattern after testcases/
+								testcasesEnd := idx + len("testcases/")
+								colonIdx := strings.Index(msg[testcasesEnd:], ":")
+								if colonIdx > 0 {
+									// This looks like a file path, normalize it
+									warnings[i] = "/testcases/" + msg[testcasesEnd:]
+								} else {
+									// Not a file path, keep as-is
+									warnings[i] = msg
+								}
+							} else {
+								// Keep other warnings as-is
+								warnings[i] = msg
+							}
+						}
+
 						for _, msg := range warnings {
-							fmt.Fprint(log, msg, render.Newline)
+							// Prefix with [warn] to prevent GitHub Actions Go problem matcher
+							// from treating these as errors when diff output is shown
+							fmt.Fprint(log, "[warn] "+msg, render.Newline)
 						}
 					}()
 				}

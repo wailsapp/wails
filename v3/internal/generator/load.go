@@ -9,7 +9,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// ResolveSystemPaths resolves paths for the Wails system
+// ResolveSystemPaths resolves paths for stdlib and Wails packages.
 func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err error) {
 	// Resolve context pkg path.
 	contextPkgPaths, err := ResolvePatterns(buildFlags, "context")
@@ -35,9 +35,22 @@ func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err err
 		panic("wails application package path matched multiple packages")
 	}
 
+	// Resolve wails internal pkg path.
+	wailsInternalPkgPaths, err := ResolvePatterns(buildFlags, config.WailsInternalPkgPath)
+	if err != nil {
+		return
+	} else if len(wailsInternalPkgPaths) < 1 {
+		err = ErrNoInternalPackage
+		return
+	} else if len(wailsInternalPkgPaths) > 1 {
+		// This should never happen...
+		panic("wails internal package path matched multiple packages")
+	}
+
 	paths = &config.SystemPaths{
 		ContextPackage:     contextPkgPaths[0],
 		ApplicationPackage: wailsAppPkgPaths[0],
+		InternalPackage:    wailsInternalPkgPaths[0],
 	}
 	return
 }

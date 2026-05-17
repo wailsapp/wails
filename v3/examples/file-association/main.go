@@ -65,7 +65,7 @@ func main() {
 	})
 
 	window.OnWindowEvent(events.Common.WindowShow, func(event *application.WindowEvent) {
-		application.InfoDialog().
+		app.Dialog.Info().
 			SetTitle("File Opened").
 			SetMessage("Application opened with file: " + filename).
 			Show()

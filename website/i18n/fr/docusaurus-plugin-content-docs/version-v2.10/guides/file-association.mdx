@@ -1,0 +1,243 @@
+# Associations de fichiers
+
+La fonction d'association de fichiers vous permet d'associer des types de fichiers spécifiques à votre application afin que lorsque les utilisateurs ouvrent ces fichiers,
+votre application est lancée pour les gérer. Cela peut être particulièrement utile pour les éditeurs de texte, les visualisateurs d'images ou n'importe quelle application
+qui fonctionne avec des formats de fichiers spécifiques. Dans ce guide, nous allons parcourir les étapes pour implémenter l'association de fichiers dans l'application Wails.
+
+## Configurer l'association de fichiers :
+
+Pour configurer l'association de fichiers, vous devez modifier le fichier wails.json de votre application.
+Dans la section "info", ajoutez une section "fileAssociations" spécifiant les types de fichiers auxquels votre application doit être associée.
+
+Par exemple :
+
+```json
+{
+  "info": {
+    "fileAssociations": [
+      {
+        "ext": "wails",
+        "name": "Wails",
+        "description": "Wails Application File",
+        "iconName": "wailsFileIcon",
+        "role": "Editor"
+      },
+    {
+        "ext": "jpg",
+        "name": "JPEG",
+        "description": "Image File",
+        "iconName": "jpegFileIcon",
+        "role": "Editor"
+      }
+    ]
+  }
+}
+```
+
+| Propriété    | Description                                                                                                                                                                       |
+| :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ext          | L'extension. ex: png                                                                                                                                                              |
+| name         | Le nom de l'extension. ex: PNG File                                                                                                                                               |
+| iconName     | Le nom de l'icône sans extension. Les icônes doivent être situées dans le dossier de build. Des icônes appropriées seront générées à partir du fichier .png pour macOS et Windows |
+| description  | Windows seulement. La description. Il est affiché dans la colonne `Type` dans l'explorateur Windows.                                                                              |
+| role         | macOS uniquement. Rôle de l'application par rapport au type. Correspond au rôle CFBundleTypeRole.                                                                                 |
+
+## Spécificités par platefome :
+
+### MacOS
+
+Lorsque vous ouvrez un fichier (ou des fichiers) avec votre application, le système lancera votre application et appellera la fonction `OnFileOpen` dans votre application Wails. Exemple:
+
+```go title="main.go"
+func main() {
+	// Création d'une application avec des options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		Mac: &mac.Options{
+			OnFileOpen: func(filePaths []string) { println(filestring) },
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```
+
+### Windows
+
+L'association de fichiers dans Windows n'est prise en charge qu'avec l'installateur NSS. Pendant l'installation, l'installateur créera une entrée de registre
+pour vos associations de fichiers. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance d'application est lancée et le chemin d'accès est passé à
+comme argument à votre application. Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+Vous pouvez également activer le verrouillage par instance unique pour votre application. Dans ce cas, lorsque vous ouvrez un fichier avec votre application, la nouvelle instance d'application n'est pas lancée
+et les arguments sont passés à l'instance déjà en cours d'exécution. Consultez le guide de verrouillage de l'instance unique pour plus de détails. Exemple:
+
+```go title="main.go"
+func main() {
+	// Création d'une application avec des options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```
+
+### Linux
+
+Actuellement, Wails ne prend pas en charge l'association de fichiers pour Linux. Vous devez donc créer des associations de fichiers manuellement.
+Par exemple, si vous distribuez votre application en tant que package .deb, vous pouvez créer des associations de fichiers en ajoutant les fichiers requis dans votre bundle.
+Vous pouvez utiliser [nfpm](https://nfpm.goreleaser.com/) pour créer un package .deb pour votre application.
+
+1. Créez un fichier .desktop pour votre application et spécifiez des associations de fichiers là-bas. Exemple:
+
+```ini
+[Desktop Entry]
+Categories=Office
+Exec=/usr/bin/wails-open-file %u
+Icon=wails-open-file.png
+Name=wails-open-file
+Terminal=false
+Type=Application
+MimeType=application/x-wails;application/x-test
+```
+
+2. Créer un fichier de type MIME. Exemple:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-wails">
+    <comment>Wails Application File</comment>
+    <glob pattern="*.wails"/>
+  </mime-type>
+</mime-info>
+```
+
+3. Créez des icônes pour vos types de fichiers. Les icônes SVG sont recommandées.
+4. Préparez les scripts postInstall/postRemove pour votre paquet. Exemple:
+
+```sh
+# Recharge les types MIME pour enregistrer votre association de fichiers
+update-mime-database /usr/share/mime
+# Recharge la base de données du bureau afin de rendre disponible votre application dans les choix possibles
+update-desktop-database /usr/share/applications
+# Mise à jour des icônes
+update-icon-caches /usr/share/icons/*
+```
+
+5. Configurez nfpm pour utiliser vos scripts et fichiers. Exemple:
+
+```yaml
+name: "wails-open-file"
+arch: "arm64"
+platform: "linux"
+version: "1.0.0"
+section: "default"
+priority: "extra"
+maintainer: "FooBarCorp <FooBarCorp@gmail.com>"
+description: "Sample Package"
+vendor: "FooBarCorp"
+homepage: "http://example.com"
+license: "MIT"
+contents:
+- src: ../bin/wails-open-file
+  dst: /usr/bin/wails-open-file
+- src: ./main.desktop
+  dst: /usr/share/applications/wails-open-file.desktop
+- src: ./application-wails-mime.xml
+  dst: /usr/share/mime/packages/application-x-wails.xml
+- src: ./application-test-mime.xml
+  dst: /usr/share/mime/packages/application-x-test.xml
+- src: ../appicon.svg
+  dst: /usr/share/icons/hicolor/scalable/apps/wails-open-file.svg
+- src: ../wailsFileIcon.svg
+  dst: /usr/share/icons/hicolor/scalable/mimetypes/application-x-wails.svg
+- src: ../testFileIcon.svg
+  dst: /usr/share/icons/hicolor/scalable/mimetypes/application-x-test.svg
+# copy icons to Yaru theme as well. For some reason Ubuntu didn't pick up fileicons from hicolor theme
+- src: ../appicon.svg
+  dst: /usr/share/icons/Yaru/scalable/apps/wails-open-file.svg
+- src: ../wailsFileIcon.svg
+  dst: /usr/share/icons/Yaru/scalable/mimetypes/application-x-wails.svg
+- src: ../testFileIcon.svg
+  dst: /usr/share/icons/Yaru/scalable/mimetypes/application-x-test.svg
+scripts:
+  postinstall: ./postInstall.sh
+  postremove: ./postRemove.sh
+```
+
+6. Construisez votre paquet .deb en utilisant nfpm:
+
+```sh
+nfpm pkg --packager deb --target .
+```
+
+7. Maintenant que votre paquet est installé, votre application sera associée aux types de fichiers qui ont été spécifiés. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance est lancée et le chemin du fichier est passé en argument à votre application.
+   Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+Vous pouvez également activer le verrouillage par instance unique pour votre application. Dans ce cas, lorsque vous ouvrez un fichier avec votre application, la nouvelle instance d'application n'est pas lancée
+et les arguments sont passés à l'instance déjà en cours d'exécution. Consultez le guide de verrouillage de l'instance unique pour plus de détails. Exemple:
+
+```go title="main.go"
+func main() {
+	// Création d'une application avec des options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```

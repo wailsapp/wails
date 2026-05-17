@@ -1,0 +1,14 @@
+# Angular
+
+Хотя у Wails нет шаблона с Angular, тем не менее Angular использовать возможно.
+
+## Режим разработчика
+
+Чтобы получить режим dev работы с Angular, вам нужно добавить следующие значения к `wails.json`:
+
+```json
+  "frontend:build": "npx ng build",
+  "frontend:install": "npm install",
+  "frontend:dev:watcher": "npx ng serve",
+  "frontend:dev:serverUrl": "http://localhost:4200",
+```

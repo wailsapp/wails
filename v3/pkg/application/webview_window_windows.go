@@ -10,20 +10,18 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/bep/debounce"
-	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
+	"github.com/wailsapp/wails/v3/internal/sliceutil"
 
-	"github.com/samber/lo"
-
-	"github.com/wailsapp/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -61,12 +59,13 @@ type windowsWebviewWindow struct {
 	showRequested     bool        // Track if show() was called before navigation completed
 	visibilityTimeout *time.Timer // Timeout to show window if navigation is delayed
 	windowShown       bool        // Track if window container has been shown
+	// Track whether content protection has been applied to the native window yet
+	contentProtectionApplied bool
 
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
 	focusingChromium   bool
-	dropTarget         *w32.DropTarget
 	onceDo             sync.Once
 
 	// Window move debouncer
@@ -77,8 +76,17 @@ type windowsWebviewWindow struct {
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
 
+	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
+	// Gate the dark-menubar force-repaint on a state transition so it does not fire
+	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
+	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
+	lastSizeWParam uintptr
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
+
+	// Modal window tracking
+	parentHWND w32.HWND // Parent window HWND when this window is a modal
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -234,8 +242,39 @@ func (w *windowsWebviewWindow) startDrag() error {
 	return nil
 }
 
-func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
-	return w.hwnd
+func (w *windowsWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+
+	// Get the modal window's Windows implementation
+	modalWindowsImpl, ok := modalWindow.impl.(*windowsWebviewWindow)
+	if !ok {
+		return
+	}
+
+	parentHWND := w.hwnd
+	modalHWND := modalWindowsImpl.hwnd
+
+	// Set parent-child relationship using GWLP_HWNDPARENT
+	// This ensures the modal stays above parent and moves with it
+	w32.SetWindowLongPtr(modalHWND, w32.GWLP_HWNDPARENT, uintptr(parentHWND))
+
+	// Track the parent HWND in the modal window for cleanup
+	modalWindowsImpl.parentHWND = parentHWND
+
+	// Disable the parent window to block interaction (Microsoft's recommended approach)
+	// This follows Windows modal dialog best practices
+	w32.EnableWindow(parentHWND, false)
+
+	// Ensure modal window is shown and brought to front
+	w32.ShowWindow(modalHWND, w32.SW_SHOW)
+	w32.SetForegroundWindow(modalHWND)
+	w32.BringWindowToTop(modalHWND)
+}
+
+func (w *windowsWebviewWindow) nativeWindow() unsafe.Pointer {
+	return unsafe.Pointer(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) setTitle(title string) {
@@ -243,8 +282,14 @@ func (w *windowsWebviewWindow) setTitle(title string) {
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
+	var hwndInsertAfter uintptr
+	if alwaysOnTop {
+		hwndInsertAfter = w32.HWND_TOPMOST
+	} else {
+		hwndInsertAfter = w32.HWND_NOTOPMOST
+	}
 	w32.SetWindowPos(w.hwnd,
-		lo.Ternary(alwaysOnTop, w32.HWND_TOPMOST, w32.HWND_NOTOPMOST),
+		hwndInsertAfter,
 		0,
 		0,
 		0,
@@ -283,7 +328,13 @@ func (w *windowsWebviewWindow) execJS(js string) {
 }
 
 func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
-	w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
+		w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
+		w.chromium.SetBackgroundColour(color.Red, color.Green, color.Blue, color.Alpha)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		w.chromium.SetBackgroundColour(0, 0, 0, 0)
+	}
 }
 
 func (w *windowsWebviewWindow) framelessWithDecorations() bool {
@@ -317,10 +368,11 @@ func (w *windowsWebviewWindow) run() {
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	// WS_EX_TOOLWINDOW hides the window from the taskbar without blocking keyboard focus.
+	// WS_EX_NOACTIVATE (previously used here) prevents the window from being activated,
+	// which blocks keyboard focus and causes click-through issues after Win+D or Alt+Tab.
 	if options.Windows.HiddenOnTaskbar {
-		//exStyle |= w32.WS_EX_TOOLWINDOW
-		exStyle |= w32.WS_EX_NOACTIVATE
+		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -351,8 +403,15 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Frameless {
 		userMenu := w.parent.options.Windows.Menu
 		if userMenu != nil {
+			// Explicit window menu takes priority
 			userMenu.Update()
 			w.menu = NewApplicationMenu(w, userMenu)
+			w.menu.parentWindow = w
+			appMenu = w.menu.menu
+		} else if options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+			// Use the global application menu if opted in
+			globalApplication.applicationMenu.Update()
+			w.menu = NewApplicationMenu(w, globalApplication.applicationMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
 		}
@@ -361,6 +420,11 @@ func (w *windowsWebviewWindow) run() {
 	var parent w32.HWND
 
 	var style uint = w32.WS_OVERLAPPEDWINDOW
+	// If the window should be hidden initially, exclude WS_VISIBLE from the style
+	// This prevents the white window flash reported in issue #4611
+	if options.Hidden {
+		style = style &^ uint(w32.WS_VISIBLE)
+	}
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
@@ -471,16 +535,9 @@ func (w *windowsWebviewWindow) run() {
 		// The updateTheme call above will handle custom themes
 	}
 
-	switch options.BackgroundType {
-	case BackgroundTypeSolid:
-		var col = options.BackgroundColour
-		w.setBackgroundColour(col)
-		w.chromium.SetBackgroundColour(col.Red, col.Green, col.Blue, col.Alpha)
-	case BackgroundTypeTransparent:
-		w.chromium.SetBackgroundColour(0, 0, 0, 0)
-	case BackgroundTypeTranslucent:
-		w.chromium.SetBackgroundColour(0, 0, 0, 0)
-		w.setBackdropType(options.Windows.BackdropType)
+	w.setBackgroundColour(options.BackgroundColour)
+	if options.BackgroundType == BackgroundTypeTranslucent {
+		w.setBackdropType(w.parent.options.Windows.BackdropType)
 	}
 
 	// Process StartState
@@ -501,7 +558,14 @@ func (w *windowsWebviewWindow) run() {
 		w.setWindowMask(options.Windows.WindowMask)
 	}
 
-	if options.InitialPosition == WindowCentered {
+	if options.Screen != nil {
+		if options.InitialPosition == WindowCentered {
+			w.centerOnScreen(options.Screen)
+		} else {
+			workArea := options.Screen.WorkArea
+			w.setPosition(workArea.X+options.X, workArea.Y+options.Y)
+		}
+	} else if options.InitialPosition == WindowCentered {
 		w.center()
 	} else {
 		w.setPosition(options.X, options.Y)
@@ -642,6 +706,13 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
 	)
 	w.ignoreDPIChangeResizing = previousFlag
+
+	// For WS_EX_LAYERED windows (frameless+transparent or IgnoreMouseEvents), the hit-test
+	// region is not updated by SetWindowPos alone. Calling SetLayeredWindowAttributes refreshes
+	// the layered region so that the full new window area responds to mouse events.
+	if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+		w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+	}
 }
 
 // Get window dip bounds
@@ -688,6 +759,14 @@ func (w *windowsWebviewWindow) setPosition(x int, y int) {
 	w.setBounds(bounds)
 }
 
+func (w *windowsWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
+}
+
 // Get window position relative to the screen WorkArea on which it is
 func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	screen, _ := w.getScreen()
@@ -709,10 +788,13 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
-	w.parent.markAsDestroyed()
-	if w.dropTarget != nil {
-		w.dropTarget.Release()
+	// Re-enable parent window if this was a modal window
+	if w.parentHWND != 0 {
+		w32.EnableWindow(w.parentHWND, true)
+		w.parentHWND = 0
 	}
+
+	w.parent.markAsDestroyed()
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }
@@ -796,7 +878,9 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -806,7 +890,9 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -853,7 +939,9 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
@@ -923,6 +1011,14 @@ func (w *windowsWebviewWindow) focus() {
 	}
 	if w.isMinimised() {
 		w.unminimise()
+	}
+
+	// Guard against calling Focus when the WebView2 controller is not yet
+	// initialized or has already been torn down (e.g. during dev hot-reload).
+	// go-webview2's Focus() calls os.Exit(1) on any MoveFocus error, so we
+	// must not call it when the controller is in a nil/invalid state.
+	if w.chromium.GetController() == nil {
+		return
 	}
 
 	w.focusingChromium = true
@@ -1091,6 +1187,7 @@ func (w *windowsWebviewWindow) show() {
 	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
 	w.windowShown = true
 	w.showRequested = true
+	w.updateContentProtection()
 
 	// Show WebView if navigation has completed
 	if w.webviewNavigationCompleted {
@@ -1165,7 +1262,11 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 }
 
 func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
-	// Create the menu
+	// Destroy previous context menu if it exists to prevent memory leak
+	if w.currentlyOpenContextMenu != nil {
+		w.currentlyOpenContextMenu.Destroy()
+	}
+	// Create the menu from current Go-side menu state
 	thisMenu := NewPopupMenu(w.hwnd, menu)
 	thisMenu.Update()
 	w.currentlyOpenContextMenu = thisMenu
@@ -1175,14 +1276,22 @@ func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
 func (w *windowsWebviewWindow) setStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
 	if currentStyle != 0 {
-		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
+		if b {
+			currentStyle = currentStyle | style
+		} else {
+			currentStyle = currentStyle &^ style
+		}
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(currentStyle))
 	}
 }
 func (w *windowsWebviewWindow) setExStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE))
 	if currentStyle != 0 {
-		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
+		if b {
+			currentStyle = currentStyle | style
+		} else {
+			currentStyle = currentStyle &^ style
+		}
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE, uintptr(currentStyle))
 	}
 }
@@ -1394,6 +1503,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 		defer func() {
+			// Re-enable parent window if this was a modal window
+			if w.parentHWND != 0 {
+				w32.EnableWindow(w.parentHWND, true)
+				w.parentHWND = 0
+			}
+
 			windowsApp := globalApplication.impl.(*windowsApp)
 			windowsApp.unregisterWindow(w)
 
@@ -1435,6 +1550,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SHOWWINDOW:
 		if wparam == 1 {
 			w.parent.emit(events.Windows.WindowShow)
+			w.updateContentProtection()
 		} else {
 			w.parent.emit(events.Windows.WindowHide)
 		}
@@ -1470,7 +1586,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 		}
 	case w32.WM_SYSKEYDOWN:
-		globalApplication.info("w32.WM_SYSKEYDOWN: %v", uint(wparam))
+		globalApplication.debug("w32.WM_SYSKEYDOWN", "wparam", uint(wparam))
 		w.parent.emit(events.Windows.WindowKeyDown)
 		if w.processKeyBinding(uint(wparam)) {
 			return 0
@@ -1485,11 +1601,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
+			if w.isMinimizing {
+				w.parent.emit(events.Windows.WindowUnMinimise)
+			}
+			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
-			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
-				// Invalidate the entire window to force complete redraw
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
@@ -1497,10 +1615,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
+			// Repaint the dark menubar only when leaving a maximized/snapped state.
+			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
+			// previous state avoids per-frame invalidations and the associated flicker.
+			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
+			// (Win+Left) bypasses those messages entirely.
+			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
+			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+		w.lastSizeWParam = wparam
 
 		doResize := func() {
 			// Get the new size from lparam
@@ -1579,6 +1706,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
 				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
+			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+			}
 		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
@@ -1789,11 +1920,27 @@ func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 
 // processMessage is given a message sent from JS via the postMessage API
 // We put it on the global window message buffer to be processed centrally
-func (w *windowsWebviewWindow) processMessage(message string) {
+func (w *windowsWebviewWindow) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		globalApplication.error("Unable to get source from sender: %s", err.Error())
+		topSource = ""
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		globalApplication.error("Unable to get source from args: %s", err.Error())
+		senderSource = ""
+	}
+
 	// We send all messages to the centralised window message buffer
 	windowMessageBuffer <- &windowMessage{
 		windowId: w.parent.id,
 		message:  message,
+		originInfo: &OriginInfo{
+			Origin:    senderSource,
+			TopOrigin: topSource,
+		},
 	}
 }
 
@@ -1878,23 +2025,27 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
+	// Browser flags apply globally to the shared WebView2 environment
+	// Use application-level options, not per-window options
+	appOpts := globalApplication.options.Windows
+
 	// We disable this by default. Can be overridden with the `EnableFraudulentWebsiteWarnings` option
-	opts.DisabledFeatures = append(opts.DisabledFeatures, "msSmartScreenProtection")
+	disabledFeatures := append([]string{"msSmartScreenProtection"}, appOpts.DisabledFeatures...)
 
-	if len(opts.DisabledFeatures) > 0 {
-		opts.DisabledFeatures = lo.Uniq(opts.DisabledFeatures)
-		arg := fmt.Sprintf("--disable-features=%s", strings.Join(opts.DisabledFeatures, ","))
+	if len(disabledFeatures) > 0 {
+		disabledFeatures = sliceutil.Unique(disabledFeatures)
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if len(opts.EnabledFeatures) > 0 {
-		opts.EnabledFeatures = lo.Uniq(opts.EnabledFeatures)
-		arg := fmt.Sprintf("--enable-features=%s", strings.Join(opts.EnabledFeatures, ","))
+	if len(appOpts.EnabledFeatures) > 0 {
+		enabledFeatures := sliceutil.Unique(appOpts.EnabledFeatures)
+		arg := fmt.Sprintf("--enable-features=%s", strings.Join(enabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if len(opts.AdditionalLaunchArgs) > 0 {
-		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalLaunchArgs...)
+	if len(appOpts.AdditionalBrowserArgs) > 0 {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, appOpts.AdditionalBrowserArgs...)
 	}
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
@@ -1932,62 +2083,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if w.parent.options.EnableDragAndDrop {
-		if chromium.HasCapability(edge.AllowExternalDrop) {
-			err := chromium.AllowExternalDrag(false)
-			if err != nil {
-				globalApplication.handleFatalError(err)
-			}
-		}
-		w.dropTarget = w32.NewDropTarget()
-		w.dropTarget.OnDrop = func(files []string, x int, y int) {
-			w.parent.emit(events.Windows.WindowDragDrop)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Raw screen coordinates", "x", x, "y", y)
-
-			// Convert screen coordinates to window-relative coordinates first
-			// Windows DropTarget gives us screen coordinates, but we need window-relative coordinates
-			windowRect := w32.GetWindowRect(w.hwnd)
-			windowRelativeX := x - int(windowRect.Left)
-			windowRelativeY := y - int(windowRect.Top)
-
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: After screen-to-window conversion", "windowRelativeX", windowRelativeX, "windowRelativeY", windowRelativeY)
-
-			// Convert window-relative coordinates to webview-relative coordinates
-			webviewX, webviewY := w.convertWindowToWebviewCoordinates(windowRelativeX, windowRelativeY)
-			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
-			w.parent.InitiateFrontendDropProcessing(files, webviewX, webviewY)
-		}
-		if opts.OnEnterEffect != 0 {
-			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
-		}
-		if opts.OnOverEffect != 0 {
-			w.dropTarget.OnOverEffect = convertEffect(opts.OnOverEffect)
-		}
-		w.dropTarget.OnEnter = func() {
-			w.parent.emit(events.Windows.WindowDragEnter)
-		}
-		w.dropTarget.OnLeave = func() {
-			w.parent.emit(events.Windows.WindowDragLeave)
-		}
-		w.dropTarget.OnOver = func() {
-			w.parent.emit(events.Windows.WindowDragOver)
-		}
-		// Enumerate all the child windows for this window and register them as drop targets
-		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
-			// Check if the window class is "Chrome_RenderWidgetHostHWND"
-			// If it is, then we register it as a drop target
-			//windowName := w32.GetClassName(hwnd)
-			//println(windowName)
-			//if windowName == "Chrome_RenderWidgetHostHWND" {
-			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
-			if err != nil && !errors.Is(err, syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED)) {
-				globalApplication.error("error registering drag and drop: %w", err)
-			}
-			//}
-			return 1
-		})
-
-	}
+	// File drop handling on Windows:
+	// WebView2's AllowExternalDrop controls ALL drag-and-drop (both external file drops
+	// AND internal HTML5 drag-and-drop). We cannot disable it without breaking HTML5 DnD.
+	//
+	// When EnableFileDrop is true:
+	// - JS dragenter/dragover/drop events fire for external file drags
+	// - JS calls preventDefault() to stop the browser from navigating to the file
+	// - JS uses chrome.webview.postMessageWithAdditionalObjects to send file paths to Go
+	// - Go receives paths via processMessageWithAdditionalObjects
+	//
+	// When EnableFileDrop is false:
+	// - We cannot use AllowExternalDrag(false) as it breaks HTML5 internal drag-and-drop
+	// - JS runtime checks window._wails.flags.enableFileDrop and shows "no drop" cursor
+	// - The enableFileDrop flag is injected in navigationCompleted callback
 
 	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
 	if err != nil {
@@ -2102,19 +2211,6 @@ func (w *windowsWebviewWindow) fullscreenChanged(
 	}
 }
 
-func convertEffect(effect DragEffect) w32.DWORD {
-	switch effect {
-	case DragEffectCopy:
-		return w32.DROPEFFECT_COPY
-	case DragEffectMove:
-		return w32.DROPEFFECT_MOVE
-	case DragEffectLink:
-		return w32.DROPEFFECT_LINK
-	default:
-		return w32.DROPEFFECT_NONE
-	}
-}
-
 func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
 }
@@ -2125,7 +2221,11 @@ func (w *windowsWebviewWindow) navigationCompleted(
 ) {
 
 	// Install the runtime core
-	w.execJS(runtime.Core())
+	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
+
+	// Set the EnableFileDrop flag for this window (Windows-specific)
+	// The JS runtime checks this before processing file drops
+	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
@@ -2228,7 +2328,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2WebMessageReceivedEventArgs,
 ) {
-	if strings.HasPrefix(message, "FilesDropped") {
+	if strings.HasPrefix(message, "file:drop:") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
 			globalApplication.handleError(err)
@@ -2270,14 +2370,14 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			filenames = append(filenames, filepath)
 		}
 
-		// Extract X/Y coordinates from message - format should be "FilesDropped:x:y"
+		// Extract X/Y coordinates from message - format is "file:drop:x:y"
 		var x, y int
 		parts := strings.Split(message, ":")
-		if len(parts) >= 3 {
-			if parsedX, err := strconv.Atoi(parts[1]); err == nil {
+		if len(parts) >= 4 {
+			if parsedX, err := strconv.Atoi(parts[2]); err == nil {
 				x = parsedX
 			}
-			if parsedY, err := strconv.Atoi(parts[2]); err == nil {
+			if parsedY, err := strconv.Atoi(parts[3]); err == nil {
 				y = parsedY
 			}
 		}
@@ -2388,6 +2488,10 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	}
 }
 
+func (w *windowsWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Windows has no dedicated fullscreen button in the standard title bar; no-op.
+}
+
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
 }
@@ -2437,4 +2541,43 @@ func (w *windowsWebviewWindow) snapAssist() {
 	w32.KeybdEvent(byte('Z'), 0, w32.KEYEVENTF_KEYUP, 0)
 	// Release Windows key
 	w32.KeybdEvent(byte(w32.VK_LWIN), 0, w32.KEYEVENTF_KEYUP, 0)
+}
+
+func (w *windowsWebviewWindow) setContentProtection(enabled bool) {
+	// Ensure the option reflects the requested state for future show() calls
+	w.parent.options.ContentProtectionEnabled = enabled
+	w.updateContentProtection()
+}
+
+func (w *windowsWebviewWindow) updateContentProtection() {
+	if w.hwnd == 0 {
+		return
+	}
+
+	if !w.isVisible() {
+		// Defer updates until the window is visible to avoid affinity glitches.
+		return
+	}
+
+	desired := w.parent.options.ContentProtectionEnabled
+
+	if desired {
+		if w.applyDisplayAffinity(w32.WDA_EXCLUDEFROMCAPTURE) {
+			w.contentProtectionApplied = true
+		}
+		return
+	}
+
+	if w.applyDisplayAffinity(w32.WDA_NONE) {
+		w.contentProtectionApplied = false
+	}
+}
+
+func (w *windowsWebviewWindow) applyDisplayAffinity(affinity uint32) bool {
+	if ok := w32.SetWindowDisplayAffinity(w.hwnd, affinity); !ok {
+		// Note: wrapper already falls back to WDA_MONITOR on older Windows.
+		globalApplication.warning("SetWindowDisplayAffinity failed: window=%v, affinity=%v", w.parent.id, affinity)
+		return false
+	}
+	return true
 }

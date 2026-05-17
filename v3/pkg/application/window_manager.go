@@ -59,7 +59,6 @@ func (wm *WindowManager) NewWithOptions(windowOptions WebviewWindowOptions) *Web
 	wm.app.windows[id] = newWindow
 	wm.app.windowsLock.Unlock()
 
-	// Call hooks
 	for _, hook := range wm.app.windowCreatedCallbacks {
 		hook(newWindow)
 	}
@@ -70,18 +69,14 @@ func (wm *WindowManager) NewWithOptions(windowOptions WebviewWindowOptions) *Web
 }
 
 // Current returns the current active window (may be nil)
-func (wm *WindowManager) Current() *WebviewWindow {
+func (wm *WindowManager) Current() Window {
 	if wm.app.impl == nil {
 		return nil
 	}
 	id := wm.app.impl.getCurrentWindowID()
 	wm.app.windowsLock.RLock()
 	defer wm.app.windowsLock.RUnlock()
-	result := wm.app.windows[id]
-	if result == nil {
-		return nil
-	}
-	return result.(*WebviewWindow)
+	return wm.app.windows[id]
 }
 
 // Add adds a window to the manager

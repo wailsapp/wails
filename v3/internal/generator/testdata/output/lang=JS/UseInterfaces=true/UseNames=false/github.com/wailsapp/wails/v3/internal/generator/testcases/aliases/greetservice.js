@@ -60,6 +60,13 @@ export function GetButGenericAliases() {
 }
 
 /**
+ * @returns {$CancellablePromise<$models.SubPackageAlias>}
+ */
+export function GetButSubPackageAlias() {
+    return $Call.ByID(1443276371);
+}
+
+/**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1

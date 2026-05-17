@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/Users/leaanthony/test/wails/v3/examples/ios/main_ios.gen.go": "/Users/leaanthony/test/wails/v3/examples/ios/build/ios/xcode/gen/main_ios.gen.go"
+  }
+}

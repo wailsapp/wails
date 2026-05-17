@@ -13,7 +13,7 @@ Wails comes with a number of pre-configured templates that allow you to get your
 
 ### 1. Generating a Template
 
-To create a custom template, you can use the `wails generate template` command:
+To create a custom template, you can use the `wails3 generate template` command:
 
 ```bash
 wails3 generate template -name mytemplate
@@ -142,7 +142,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 </Tabs>
 
 
-Now you have the frontend files in place, update `common/Taskfile.yml` with the appropriate commands:
+Now you have the frontend files in place, update `build/Taskfile.yml` with the appropriate commands:
    ```yaml
    tasks:
       install:frontend:deps:

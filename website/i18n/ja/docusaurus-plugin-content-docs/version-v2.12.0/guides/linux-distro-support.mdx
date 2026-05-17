@@ -1,0 +1,103 @@
+# Linuxディストリビューションサポート
+
+## 概要
+
+WailsはLinuxをサポートしていますが、すべてのLinuxディストリビューションに対してインストール手段を提供することは困難であるため、行っていません。 その代わりにWailsでは、アプリケーション開発に必要なパッケージが、システムのパッケージマネージャを介して利用可能かどうかを判断します。 現在、以下のパッケージマネージャをサポートしています:
+
+- apt
+- dnf
+- emerge
+- eopkg
+- nixpkgs
+- pacman
+- zypper
+
+## パッケージ名の追加
+
+あなたが使用しているディストリビューションが、Wailsがサポートしているパッケージマネージャを使用していたとしても、パッケージ名が想定と異なっている場合があります。 例えば、Ubuntuの派生ディストリビューションを使用している場合、gtkのパッケージ名が異なる場合があります。 Wailsは、パッケージ名のリストを繰り返し処理することで、正しいパッケージを見つけようと試みます。 パッケージ名のリストは、`v2/internal/system/packagemanager`ディレクトリ内に、パッケージマネージャごとのファイルで格納されています。 下記は、`v2/internal/system/packagemanager/apt.go`の例です。
+
+このファイルでは、パッケージのリストは`Packages()`メソッドによって定義されています:
+
+```go
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+お使いのLinuxディストリビューションが、`libgtk-3`パッケージが`lib-gtk3-dev`という名前で配布されていると仮定しましょう。 その場合、次の行を追加することで、対応することができます:
+
+```go {5}
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+            {Name: "lib-gtk3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+## パッケージマネージャの追加
+
+新しいパッケージマネージャを追加するには、次の手順を実行します:
+
+- `v2/internal/system/packagemanager`に、`<pm>.go`という名前の新しいファイルを作成します。`<pm>`はパッケージマネージャの名前です。
+- `pm.go`の中で、PackageManagerインターフェースを実装した構造体を定義します:
+
+```go
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
+}
+```
+
+- `Name()`メソッドで、パッケージマネージャの名前を返すように実装します。
+- `Packages()`メソッドで、依存関係の候補ファイル名を提供する`packagemap`を返すように実装します。
+- `PackageInstalled()`メソッドで、引数で渡されたパッケージがすでにインストールされている場合は`true`を返すように実装します。
+- `PackageAvailable()`メソッドで、引数で指定されたパッケージがインストールはされていないけれどもインストール可能であるなら`true`を返すように実装します。
+- `InstallCommand()`メソッドで、引数で指定されたパッケージをインストールするための正確なコマンドを返すように実装します。
+
+他のパッケージマネージャのコードを参考にして、これらのコードがどのように動作するか把握してください。
+
+:::info リマインド
+
+新しいパッケージマネージャを追加した場合は、このページも忘れずに更新してください。
+
+:::

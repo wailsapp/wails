@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
-	"golang.org/x/tools/go/types/typeutil"
 )
 
 // SkipCreate returns true if the given array of types needs no creation code.
@@ -22,28 +21,38 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
-	return m.needsCreateImpl(typ, new(typeutil.Map))
+	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
 }
 
 // needsCreateImpl provides the actual implementation of NeedsCreate.
 // The visited parameter is used to break cycles.
-func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
+func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
 	switch t := typ.(type) {
 	case *types.Alias:
-		return m.needsCreateImpl(types.Unalias(typ), visited)
-
-	case *types.Named:
-		if visited.Set(typ, true) != nil {
-			// The only way to hit a cycle here
-			// is through a chain of structs, nested pointers and arrays (not slices).
-			// We can safely return false at this point
-			// as the final answer is independent of the cycle.
+		if m.collector.IsVoidAlias(t.Obj()) {
 			return false
 		}
 
-		if t.Obj().Pkg() == nil {
+		return m.needsCreateImpl(types.Unalias(typ), visited)
+
+	case *types.Named:
+		obj := t.Obj()
+		if visited[obj] {
+			// The only way to hit a cycle here
+			// is through a chain of structs, nested pointers and arrays (not slices).
+			// We can safely return false at this point
+			// since the cycle will not contribute to the final answer.
+			return false
+		}
+		visited[obj] = true
+
+		if obj.Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
+		}
+
+		if m.collector.IsVoidAlias(obj) {
+			return false
 		}
 
 		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
@@ -97,13 +106,17 @@ func (m *module) JSCreate(typ types.Type) string {
 // JSCreateWithParams's output may be incorrect
 // if m.Imports.AddType has not been called for the given type.
 func (m *module) JSCreateWithParams(typ types.Type, params string) string {
-	if len(params) > 0 && !m.hasTypeParams(typ) {
+	if len(params) > 0 && !collect.IsParametric(typ) {
 		// Forget params for non-generic types.
 		params = ""
 	}
 
 	switch t := typ.(type) {
 	case *types.Alias:
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return "$Create.Any"
+		}
+
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array, *types.Pointer:
@@ -133,6 +146,10 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 		if t.Obj().Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.JSCreateWithParams(t.Underlying(), params)
+		}
+
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return "$Create.Any"
 		}
 
 		if !m.NeedsCreate(typ) {
@@ -340,52 +357,4 @@ func (m *module) PostponedCreates() []string {
 type postponed struct {
 	index  int
 	params string
-}
-
-// hasTypeParams returns true if the given type depends upon type parameters.
-func (m *module) hasTypeParams(typ types.Type) bool {
-	switch t := typ.(type) {
-	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: these are never rendered as templates.
-			return false
-		}
-
-		return m.hasTypeParams(types.Unalias(typ))
-
-	case *types.Array, *types.Pointer, *types.Slice:
-		return m.hasTypeParams(typ.(interface{ Elem() types.Type }).Elem())
-
-	case *types.Map:
-		return m.hasTypeParams(t.Key()) || m.hasTypeParams(t.Elem())
-
-	case *types.Named:
-		if t.Obj().Pkg() == nil {
-			// Builtin named type: these are never rendered as templates.
-			return false
-		}
-
-		if targs := t.TypeArgs(); targs != nil {
-			for i := range targs.Len() {
-				if m.hasTypeParams(targs.At(i)) {
-					return true
-				}
-			}
-		}
-
-	case *types.Struct:
-		info := m.collector.Struct(t)
-		info.Collect()
-
-		for _, field := range info.Fields {
-			if m.hasTypeParams(field.Type) {
-				return true
-			}
-		}
-
-	case *types.TypeParam:
-		return true
-	}
-
-	return false
 }

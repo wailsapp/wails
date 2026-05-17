@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
@@ -14,7 +14,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/webview2/webviewloader"
+
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -124,9 +125,9 @@ func (m *windowsApp) setIcon(_ []byte) {
 }
 
 func (m *windowsApp) name() string {
-	//appName := C.getAppName()
-	//defer C.free(unsafe.Pointer(appName))
-	//return C.GoString(appName)
+	// appName := C.getAppName()
+	// defer C.free(unsafe.Pointer(appName))
+	// return C.GoString(appName)
 	return ""
 }
 
@@ -159,7 +160,7 @@ func (m *windowsApp) run() error {
 		arg1 := os.Args[1]
 		// Check if the argument is likely a URL from a custom protocol invocation
 		if strings.Contains(arg1, "://") {
-			m.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			m.parent.debug("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
 			eventContext := newApplicationEventContext()
 			eventContext.setURL(arg1)
 			applicationEvents <- &ApplicationEvent{
@@ -171,7 +172,7 @@ func (m *windowsApp) run() error {
 			if m.parent.options.FileAssociations != nil {
 				ext := filepath.Ext(arg1)
 				if slices.Contains(m.parent.options.FileAssociations, ext) {
-					m.parent.info("Application launched with file via file association", "file", arg1)
+					m.parent.debug("Application launched with file via file association", "file", arg1)
 					eventContext := newApplicationEventContext()
 					eventContext.setOpenedWithFile(arg1)
 					applicationEvents <- &ApplicationEvent{
@@ -183,7 +184,7 @@ func (m *windowsApp) run() error {
 		}
 	} else if len(os.Args) > 2 {
 		// Log if multiple arguments are passed, though typical protocol/file launch is a single arg.
-		m.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+		m.parent.debug("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
 	_ = m.runMainLoop()
@@ -347,13 +348,37 @@ func (m *windowsApp) reshowSystrays() {
 	m.systrayMapLock.Lock()
 	defer m.systrayMapLock.Unlock()
 	for _, systray := range m.systrayMap {
-		systray.reshow()
+		if _, err := systray.show(); err != nil {
+			globalApplication.warning("failed to re-add system tray icon: %v", err)
+		}
 	}
 }
 
 func setupDPIAwareness() error {
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+
+	// Check if DPI awareness has already been set (e.g., via application manifest).
+	// Windows only allows setting DPI awareness once per process - either via manifest
+	// or API, not both. If already set, skip the API call to avoid "Access is denied" errors.
+	// See: https://github.com/wailsapp/wails/issues/4803 and #4835
+
+	// Prefer the newer GetThreadDpiAwarenessContext (Windows 10 1607+) over the older
+	// GetProcessDpiAwareness (SHCORE) because a manifest entry with permonitorv2 sets the
+	// context via SetProcessDpiAwarenessContext, which GetProcessDpiAwareness may not reflect.
+	if w32.HasGetThreadDpiAwarenessContextFunc() && w32.HasAreDpiAwarenessContextsEqualFunc() {
+		ctx := w32.GetThreadDpiAwarenessContext()
+		if !w32.AreDpiAwarenessContextsEqual(ctx, w32.DPI_AWARENESS_CONTEXT_UNAWARE) {
+			// DPI awareness already set (likely via manifest), skip API call
+			return nil
+		}
+	} else if w32.HasGetProcessDpiAwarenessFunc() {
+		awareness, err := w32.GetProcessDpiAwareness()
+		if err == nil && awareness != w32.PROCESS_DPI_UNAWARE {
+			// DPI awareness already set (likely via manifest), skip API call
+			return nil
+		}
+	}
 
 	if w32.HasSetProcessDpiAwarenessContextFunc() {
 		// This is most recent version with the best results

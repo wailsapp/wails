@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/services/badge"
+	"github.com/wailsapp/wails/v3/pkg/services/dock"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -28,13 +28,13 @@ func main() {
 	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
 	// 'Mac' options tailor the application when running an macOS.
 
-	badgeService := badge.New()
+	dockService := dock.New()
 
 	app := application.New(application.Options{
 		Name:        "badge",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(badgeService),
+			application.NewService(dockService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -62,7 +62,7 @@ func main() {
 
 	// Store cleanup functions for proper resource management
 	removeBadgeHandler := app.Event.On("remove:badge", func(event *application.CustomEvent) {
-		err := badgeService.RemoveBadge()
+		err := dockService.RemoveBadge()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,12 +70,12 @@ func main() {
 
 	setBadgeHandler := app.Event.On("set:badge", func(event *application.CustomEvent) {
 		text := event.Data.(string)
-		err := badgeService.SetBadge(text)
+		err := dockService.SetBadge(text)
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
-	
+
 	// Note: In a production application, you would call these cleanup functions
 	// when the handlers are no longer needed, e.g., during shutdown:
 	// defer removeBadgeHandler()

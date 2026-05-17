@@ -13,7 +13,7 @@ func newKeyBindingManager(app *App) *KeyBindingManager {
 }
 
 // Add adds a key binding
-func (kbm *KeyBindingManager) Add(accelerator string, callback func(window *WebviewWindow)) {
+func (kbm *KeyBindingManager) Add(accelerator string, callback func(window Window)) {
 	kbm.app.keyBindingsLock.Lock()
 	defer kbm.app.keyBindingsLock.Unlock()
 	kbm.app.keyBindings[accelerator] = callback
@@ -27,7 +27,7 @@ func (kbm *KeyBindingManager) Remove(accelerator string) {
 }
 
 // Process processes a key binding and returns true if handled
-func (kbm *KeyBindingManager) Process(accelerator string, window *WebviewWindow) bool {
+func (kbm *KeyBindingManager) Process(accelerator string, window Window) bool {
 	kbm.app.keyBindingsLock.RLock()
 	callback, exists := kbm.app.keyBindings[accelerator]
 	kbm.app.keyBindingsLock.RUnlock()
@@ -42,7 +42,7 @@ func (kbm *KeyBindingManager) Process(accelerator string, window *WebviewWindow)
 // KeyBinding represents a key binding with its accelerator and callback
 type KeyBinding struct {
 	Accelerator string
-	Callback    func(window *WebviewWindow)
+	Callback    func(window Window)
 }
 
 // GetAll returns all registered key bindings as a slice

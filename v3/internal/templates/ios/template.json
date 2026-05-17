@@ -1,0 +1,9 @@
+{
+  "name": "iOS Vanilla (Puppertino) + Vite",
+  "shortname": "ios",
+  "author": "Lea Anthony",
+  "description": "Vanilla + Vite with iOS-friendly styling and bundled Puppertino",
+  "helpurl": "https://wails.io",
+  "version": "v0.0.1",
+  "schema": 3
+}

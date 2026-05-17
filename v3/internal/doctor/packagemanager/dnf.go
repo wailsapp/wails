@@ -25,13 +25,17 @@ func NewDnf(osid string) *Dnf {
 // They will potentially differ on different distributions or versions
 func (y *Dnf) Packages() Packagemap {
 	return Packagemap{
-		"gtk3": []*Package{
-			{Name: "gtk3-devel", SystemPackage: true, Library: true},
+		"gtk3 (legacy)": []*Package{
+			{Name: "gtk3-devel", SystemPackage: true, Library: true, Optional: true},
 		},
-		"webkit2gtk": []*Package{
-			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true},
-			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
-			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
+		"webkit2gtk (legacy)": []*Package{
+			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true, Optional: true},
+		},
+		"gtk4": []*Package{
+			{Name: "gtk4-devel", SystemPackage: true, Library: true},
+		},
+		"webkitgtk-6.0": []*Package{
+			{Name: "webkitgtk6.0-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},
@@ -59,7 +63,7 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 		}
 		return false, nil
 	}
-	stdout, err := execCmd("dnf", "info", "installed", pkg.Name)
+	stdout, err := execCmd("dnf", "-q", "list", "--installed", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -68,15 +72,20 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 		return false, err
 	}
 
+	// Output format: "package-name.arch version repo"
+	// e.g., "webkit2gtk4.0-devel.x86_64 2.46.5-1.fc41 @updates"
 	splitoutput := strings.Split(stdout, "\n")
 	for _, line := range splitoutput {
-		if strings.HasPrefix(line, "Version") {
-			splitline := strings.Split(line, ":")
-			pkg.Version = strings.TrimSpace(splitline[1])
+		if strings.HasPrefix(line, pkg.Name) {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				pkg.Version = fields[1]
+			}
+			return true, nil
 		}
 	}
 
-	return true, err
+	return false, nil
 }
 
 // PackageAvailable tests if the given package is available for installation

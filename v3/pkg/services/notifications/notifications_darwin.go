@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 package notifications
 
@@ -15,11 +15,12 @@ package notifications
 import "C"
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 	"unsafe"
+
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

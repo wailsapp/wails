@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 
 package application
 
@@ -392,13 +392,13 @@ func (m *macosDialog) show() {
 		}
 		var iconData unsafe.Pointer
 		var iconLength C.int
-		if m.dialog.Icon != nil {
+		if len(m.dialog.Icon) > 0 {
 			iconData = unsafe.Pointer(&m.dialog.Icon[0])
 			iconLength = C.int(len(m.dialog.Icon))
 		} else {
 			// if it's an error, use the application Icon
 			if m.dialog.DialogType == ErrorDialogType {
-				if globalApplication.options.Icon != nil {
+				if len(globalApplication.options.Icon) > 0 {
 					iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
 					iconLength = C.int(len(globalApplication.options.Icon))
 				}
@@ -407,8 +407,7 @@ func (m *macosDialog) show() {
 		var parent unsafe.Pointer
 		if m.dialog.window != nil {
 			// get NSWindow from window
-			window, _ := m.dialog.window.NativeWindowHandle()
-			parent = unsafe.Pointer(window)
+			parent = m.dialog.window.NativeWindow()
 		}
 
 		alertType, ok := alertTypeMap[m.dialog.DialogType]
@@ -473,8 +472,7 @@ func (m *macosOpenFileDialog) show() (chan string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		window, _ := m.dialog.window.NativeWindowHandle()
-		nsWindow = unsafe.Pointer(window)
+		nsWindow = m.dialog.window.NativeWindow()
 	}
 
 	// Massage filter patterns into macOS format
@@ -554,8 +552,7 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		window, _ := m.dialog.window.NativeWindowHandle()
-		nsWindow = unsafe.Pointer(window)
+		nsWindow = m.dialog.window.NativeWindow()
 	}
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),

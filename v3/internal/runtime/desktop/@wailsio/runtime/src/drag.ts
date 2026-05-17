@@ -35,12 +35,37 @@ window._wails.setResizable = (value: boolean): void => {
     }
 };
 
-window.addEventListener('mousedown', update, { capture: true });
-window.addEventListener('mousemove', update, { capture: true });
-window.addEventListener('mouseup', update, { capture: true });
-for (const ev of ['click', 'contextmenu', 'dblclick']) {
-    window.addEventListener(ev, suppressEvent, { capture: true });
+// Defer attaching mouse listeners until we know we're not on mobile.
+let dragInitDone = false;
+function isMobile(): boolean {
+    const os = (window as any)._wails?.environment?.OS;
+    if (os === "ios" || os === "android") return true;
+    // Fallback heuristic if environment not yet set
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || "";
+    return /android|iphone|ipad|ipod|iemobile|wpdesktop/i.test(ua);
 }
+function tryInitDragHandlers(): void {
+    if (dragInitDone) return;
+    if (isMobile()) return;
+    window.addEventListener('mousedown', update, { capture: true });
+    window.addEventListener('mousemove', update, { capture: true });
+    window.addEventListener('mouseup', update, { capture: true });
+    for (const ev of ['click', 'contextmenu', 'dblclick']) {
+        window.addEventListener(ev, suppressEvent, { capture: true });
+    }
+    dragInitDone = true;
+}
+// Attempt immediate init (in case environment already present)
+tryInitDragHandlers();
+// Also attempt on DOM ready
+document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
+// As a last resort, poll for environment for a short period
+let dragEnvPolls = 0;
+const dragEnvPoll = window.setInterval(() => {
+    if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+    tryInitDragHandlers();
+    if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
+}, 50);
 
 function suppressEvent(event: Event) {
     // Suppress click events while resizing or dragging.

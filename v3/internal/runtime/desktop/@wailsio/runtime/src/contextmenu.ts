@@ -10,7 +10,7 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { IsDebug } from "./system.js";
-import { eventTarget } from "./utils";
+import { eventTarget } from "./utils.js";
 
 // setup
 window.addEventListener('contextmenu', contextMenuHandler);

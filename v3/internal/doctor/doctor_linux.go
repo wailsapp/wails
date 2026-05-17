@@ -3,13 +3,58 @@
 package doctor
 
 import (
+	"os"
+	"strings"
+
 	"github.com/wailsapp/wails/v3/internal/doctor/packagemanager"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 )
 
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
+
+	// Check session type (X11/Wayland)
+	result["XDG_SESSION_TYPE"] = getSessionType()
+
+	// Check desktop environment
+	result["Desktop Environment"] = getDesktopEnvironment()
+
+	// Check for NVIDIA driver
+	result["NVIDIA Driver"] = getNvidiaDriverInfo()
+
 	return result, true
+}
+
+func getSessionType() string {
+	sessionType := os.Getenv("XDG_SESSION_TYPE")
+	if sessionType == "" {
+		return "unset"
+	}
+	return sessionType
+}
+
+func getDesktopEnvironment() string {
+	de := os.Getenv("XDG_CURRENT_DESKTOP")
+	if de == "" {
+		return "unset"
+	}
+	return de
+}
+
+func getNvidiaDriverInfo() string {
+	version, err := os.ReadFile("/sys/module/nvidia/version")
+	if err != nil {
+		return "N/A"
+	}
+
+	versionStr := strings.TrimSpace(string(version))
+
+	srcVersion, err := os.ReadFile("/sys/module/nvidia/srcversion")
+	if err != nil {
+		return versionStr
+	}
+
+	return versionStr + " (" + strings.TrimSpace(string(srcVersion)) + ")"
 }
 
 func checkPlatformDependencies(result map[string]string, ok *bool) {

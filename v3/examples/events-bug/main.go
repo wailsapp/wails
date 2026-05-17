@@ -6,16 +6,18 @@ import (
 	"log"
 )
 
+var app *application.App
+
 func main() {
-	app := application.New(application.Options{
+	app = application.New(application.Options{
 		Name:        "Key Bindings Demo",
 		Description: "A demo of the Key Bindings Options",
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"shift+ctrl+c": func(window *application.WebviewWindow) {
-				selection, err := application.OpenFileDialog().
+		KeyBindings: map[string]func(window application.Window){
+			"shift+ctrl+c": func(window application.Window) {
+				selection, err := app.Dialog.OpenFile().
 					CanChooseFiles(true).
 					CanCreateDirectories(true).
 					ShowHiddenFiles(true).
@@ -32,8 +34,8 @@ func main() {
 		Name:  "Window 1",
 		Title: "Window 1",
 		URL:   "https://wails.io",
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F12": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
 				window.OpenDevTools()
 			},
 		},
@@ -43,8 +45,8 @@ func main() {
 		Name:  "Window 2",
 		Title: "Window 2",
 		URL:   "https://google.com",
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F12": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"F12": func(window application.Window) {
 				println("Window 2: Toggle Dev Tools")
 			},
 		},

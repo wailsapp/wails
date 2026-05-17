@@ -10,6 +10,8 @@ import (
 //go:embed assets/*
 var assets embed.FS
 
+var app *application.App
+
 type WindowService struct{}
 
 func (s *WindowService) GeneratePanic() {
@@ -27,7 +29,7 @@ func (s *WindowService) call2() {
 // ==============================================
 
 func main() {
-	app := application.New(application.Options{
+	app = application.New(application.Options{
 		Name:        "Panic Handler Demo",
 		Description: "A demo of Handling Panics",
 		Assets: application.AssetOptions{
@@ -44,7 +46,7 @@ func main() {
 			fmt.Printf("Time: %s\n", panicDetails.Time)
 			fmt.Printf("Error: %s\n", panicDetails.Error)
 			fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
-			application.InfoDialog().SetMessage("There was a panic!").Show()
+			app.Dialog.Info().SetMessage("There was a panic!").Show()
 		},
 	})
 

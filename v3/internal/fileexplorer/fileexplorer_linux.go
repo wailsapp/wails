@@ -11,10 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-
-	ini "gopkg.in/ini.v1"
 )
 
+// when possible; the fallback method does not support selecting a file.
 func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 	// Map of field codes to their replacements
 	var fieldCodes = map[string]string{
@@ -38,22 +37,22 @@ func explorerBinArgs(path string, selectFile bool) (string, []string, error) {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	desktopFile, err := findDesktopFile(strings.TrimSpace((buf.String())))
+	desktopFilePath, err := findDesktopFile(strings.TrimSpace((buf.String())))
 	if err != nil {
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	cfg, err := ini.Load(desktopFile)
+	entry, err := ParseDesktopFile(desktopFilePath)
 	if err != nil {
 		// Opting to fallback rather than fail
 		return fallbackExplorerBinArgs(path, selectFile)
 	}
 
-	exec := cfg.Section("Desktop Entry").Key("Exec").String()
+	execCmd := entry.Exec
 	for fieldCode, replacement := range fieldCodes {
-		exec = strings.ReplaceAll(exec, fieldCode, replacement)
+		execCmd = strings.ReplaceAll(execCmd, fieldCode, replacement)
 	}
-	args := strings.Fields(exec)
+	args := strings.Fields(execCmd)
 	if !strings.Contains(strings.Join(args, " "), path) {
 		args = append(args, path)
 	}
@@ -66,8 +65,18 @@ func sysProcAttr(path string, selectFile bool) *syscall.SysProcAttr {
 }
 
 func fallbackExplorerBinArgs(path string, selectFile bool) (string, []string, error) {
-	// NOTE: The linux fallback explorer opening is not supporting file selection
-	path = filepath.Dir(path)
+	// NOTE: The linux fallback explorer opening does not support file selection
+
+	stat, err := os.Stat(path)
+	if err != nil {
+		return "", []string{}, fmt.Errorf("stat path: %w", err)
+	}
+
+	// If the path is a file, we want to open the directory containing the file
+	if !stat.IsDir() {
+		path = filepath.Dir(path)
+	}
+
 	return "xdg-open", []string{path}, nil
 }
 
@@ -76,7 +85,14 @@ func pathToURI(path string) string {
 	if err != nil {
 		return path
 	}
-	return "file://" + url.PathEscape(absPath)
+	// Use url.URL to properly construct file URIs.
+	// url.PathEscape incorrectly escapes forward slashes (/ -> %2F),
+	// which breaks file manager path parsing.
+	u := &url.URL{
+		Scheme: "file",
+		Path:   absPath,
+	}
+	return u.String()
 }
 
 func findDesktopFile(xdgFileName string) (string, error) {

@@ -33,10 +33,24 @@ func main() {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
-	app.NewSubCommandFunction("build", "Build the project", commands.Build)
+
+	build := app.NewSubCommand("build", "Build the project")
+	var buildFlags flags.Build
+	build.AddFlags(&buildFlags)
+	build.Action(func() error {
+		return commands.Build(&buildFlags, build.OtherArgs())
+	})
+
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
-	app.NewSubCommandFunction("package", "Package application", commands.Package)
+
+	pkg := app.NewSubCommand("package", "Package application")
+	var pkgFlags flags.Package
+	pkg.AddFlags(&pkgFlags)
+	pkg.Action(func() error {
+		return commands.Package(&pkgFlags, pkg.OtherArgs())
+	})
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
@@ -80,6 +94,45 @@ func main() {
 	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
+	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
+	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
+
+	// Low-level sign tool (used by Taskfiles)
+	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
+	var toolSignFlags flags.Sign
+	toolSign.AddFlags(&toolSignFlags)
+	toolSign.Action(func() error {
+		return commands.Sign(&toolSignFlags)
+	})
+
+	// Setup commands
+	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
+	var setupSigningFlags flags.SigningSetup
+	setupSigning.AddFlags(&setupSigningFlags)
+	setupSigning.Action(func() error {
+		return commands.SigningSetup(&setupSigningFlags)
+	})
+
+	setupEntitlements := setup.NewSubCommand("entitlements", "Configure macOS entitlements")
+	var setupEntitlementsFlags flags.EntitlementsSetup
+	setupEntitlements.AddFlags(&setupEntitlementsFlags)
+	setupEntitlements.Action(func() error {
+		return commands.EntitlementsSetup(&setupEntitlementsFlags)
+	})
+
+	// Sign command (wrapper that calls platform-specific tasks)
+	sign := app.NewSubCommand("sign", "Sign binaries and packages for current or specified platform")
+	var signWrapperFlags flags.SignWrapper
+	sign.AddFlags(&signWrapperFlags)
+	sign.Action(func() error {
+		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
+	})
+
+	// iOS tools
+	ios := app.NewSubCommand("ios", "iOS tooling")
+	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
+	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux && !android && !server
 
 package application
 
@@ -6,12 +6,18 @@ import (
 	"fmt"
 	"time"
 
+	"unsafe"
+
 	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
+
+func init() {
+	shouldSkipHideOnFocusLost = detectFocusFollowsMouse
+}
 
 type dragInfo struct {
 	XRoot       int
@@ -87,10 +93,6 @@ func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
 	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
 
-func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	// Not implemented
-}
-
 func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
 }
@@ -101,7 +103,7 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
 	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
+	w.setMinMaxSize(x, y, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -114,11 +116,16 @@ func (w *linuxWebviewWindow) on(eventID uint) {
 }
 
 func (w *linuxWebviewWindow) zoom() {
-	w.zoomIn()
+	// Zoom toggles between maximized and normal state (like macOS green button)
+	if w.isMaximised() {
+		w.unmaximise()
+	} else {
+		w.maximise()
+	}
 }
 
 func (w *linuxWebviewWindow) windowZoom() {
-	w.zoom() // FIXME> This should be removed
+	w.zoom()
 }
 
 func (w *linuxWebviewWindow) forceReload() {
@@ -205,6 +212,30 @@ func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	w.move(x, y)
 }
 
+func (w *linuxWebviewWindow) applyScreenPlacement() {
+	opts := w.parent.options
+	if opts.Screen != nil {
+		if opts.InitialPosition == WindowCentered {
+			w.centerOnScreen(opts.Screen)
+		} else {
+			workArea := opts.Screen.WorkArea
+			w.setPosition(workArea.X+opts.X, workArea.Y+opts.Y)
+		}
+	} else if opts.InitialPosition == WindowCentered {
+		w.center()
+	} else {
+		w.setRelativePosition(opts.X, opts.Y)
+	}
+}
+
+func (w *linuxWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
+}
+
 func (w *linuxWebviewWindow) bounds() Rect {
 	// DOTO: do it in a single step + proper DPI scaling
 	x, y := w.position()
@@ -270,20 +301,36 @@ func (w *linuxWebviewWindow) run() {
 	app := getNativeApplication()
 
 	var menu = w.parent.options.Linux.Menu
+	if menu == nil {
+		menu = globalApplication.applicationMenu
+	}
 	if menu != nil {
+		// Explicit window menu takes priority
 		InvokeSync(func() {
 			menu.Update()
 		})
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	} else if w.parent.options.UseApplicationMenu && globalApplication.applicationMenu != nil {
+		// Use the global application menu if opted in
+		InvokeSync(func() {
+			globalApplication.applicationMenu.Update()
+		})
+		w.gtkmenu = (globalApplication.applicationMenu.impl).(*linuxMenu).native
 	}
 
-	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.options.Linux.MenuStyle, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
-	if w.parent.options.EnableDragAndDrop {
+	if w.parent.options.EnableFileDrop {
 		w.enableDND()
+	} else {
+		w.disableDND()
 	}
-	w.setTitle(w.parent.options.Title)
+	title := w.parent.options.Title
+	if title == "" {
+		title = w.parent.options.Name
+	}
+	w.setTitle(title)
 	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)
@@ -312,11 +359,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.InitialPosition == WindowCentered {
-		w.center()
-	} else {
-		w.setPosition(w.parent.options.X, w.parent.options.Y)
-	}
+	w.applyScreenPlacement()
 
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
@@ -337,8 +380,8 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
-		InvokeAsync(func() {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
+		gtkDispatch(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
@@ -349,19 +392,18 @@ func (w *linuxWebviewWindow) run() {
 		})
 	})
 
-	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
-		w.execJS(runtime.Core())
+	w.parent.RegisterHook(events.Linux.WindowLoadFinished, func(e *WindowEvent) {
+		// Inject runtime core and EnableFileDrop flag together
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.InitialPosition == WindowCentered {
-			w.center()
-		} else {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
-		}
+		w.applyScreenPlacement()
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
 		w.enableDevTools()
@@ -371,13 +413,12 @@ func (w *linuxWebviewWindow) run() {
 	}
 }
 
-func (w *linuxWebviewWindow) startResize(border string) error {
-	// FIXME: what do we need to do here?
-	return nil
+func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
+	return unsafe.Pointer(w.window)
 }
 
-func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.window)
+func (w *linuxWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on Linux
 }
 
 func (w *linuxWebviewWindow) print() error {
@@ -386,13 +427,16 @@ func (w *linuxWebviewWindow) print() error {
 }
 
 func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	// accelerator, err := parseAccelerator(acceleratorString)
-	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %w", err)
-	// 	return
-	// }
-	w.parent.processKeyBinding(acceleratorString)
+	if !w.parent.processKeyBinding(acceleratorString) {
+		// No registered binding: apply built-in editing command fallbacks so that
+		// standard shortcuts work even in fresh projects without an Edit menu.
+		switch acceleratorString {
+		case "Ctrl+Z":
+			w.undo()
+		case "Ctrl+Shift+Z":
+			w.redo()
+		}
+	}
 }
 
 // SetMinimiseButtonState is unsupported on Linux
@@ -403,6 +447,9 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+// SetFullscreenButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setFullscreenButtonState(state ButtonState) {}
 
 func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 	return w.ignoreMouseEvents
@@ -424,7 +471,8 @@ func (w *linuxWebviewWindow) hide() {
 	w.windowHide()
 }
 
-func (w *linuxWebviewWindow) showMenuBar()   {}
-func (w *linuxWebviewWindow) hideMenuBar()   {}
-func (w *linuxWebviewWindow) toggleMenuBar() {}
-func (w *linuxWebviewWindow) snapAssist()    {} // No-op on Linux
+func (w *linuxWebviewWindow) showMenuBar()                      {}
+func (w *linuxWebviewWindow) hideMenuBar()                      {}
+func (w *linuxWebviewWindow) toggleMenuBar()                    {}
+func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
+func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}

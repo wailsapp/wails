@@ -36,13 +36,13 @@ func (m *windowsDialog) show() {
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
 	flags := calculateMessageDialogFlags(m.dialog.MessageDialogOptions)
 	var button int32
+	var err error
 
 	var parentWindow uintptr
-	var err error
 	if m.dialog.window != nil {
-		parentWindow, err = m.dialog.window.NativeWindowHandle()
-		if err != nil {
-			globalApplication.handleFatalError(err)
+		nativeWindow := m.dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			parentWindow = uintptr(nativeWindow)
 		}
 	}
 
@@ -111,19 +111,12 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		Folder:      defaultFolder,
 	}
 
-	if m.dialog.window != nil {
-		config.ParentWindowHandle, err = m.dialog.window.NativeWindowHandle()
-		if err != nil {
-			globalApplication.handleFatalError(err)
-		}
-	}
-
 	var result []string
 	if m.dialog.allowsMultipleSelection && !m.dialog.canChooseDirectories {
 		temp, err := showCfdDialog(
 			func() (cfd.Dialog, error) {
 				return cfd.NewOpenMultipleFilesDialog(config)
-			}, true)
+			}, true, m.dialog.window)
 		if err != nil {
 			return nil, err
 		}
@@ -133,7 +126,7 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			temp, err := showCfdDialog(
 				func() (cfd.Dialog, error) {
 					return cfd.NewSelectFolderDialog(config)
-				}, false)
+				}, false, m.dialog.window)
 			if err != nil {
 				return nil, err
 			}
@@ -142,7 +135,7 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			temp, err := showCfdDialog(
 				func() (cfd.Dialog, error) {
 					return cfd.NewOpenFileDialog(config)
-				}, false)
+				}, false, m.dialog.window)
 			if err != nil {
 				return nil, err
 			}
@@ -195,7 +188,7 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 	result, err := showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewSaveFileDialog(config)
-		}, false)
+		}, false, m.dialog.window)
 	if err != nil {
 		close(files)
 		return files, err
@@ -241,11 +234,20 @@ func convertFilters(filters []FileFilter) []cfd.FileFilter {
 	return result
 }
 
-func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, error) {
+func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool, parentWindow Window) (any, error) {
 	dlg, err := newDlg()
 	if err != nil {
 		return nil, err
 	}
+
+	// Set parent window if provided
+	if parentWindow != nil {
+		nativeWindow := parentWindow.NativeWindow()
+		if nativeWindow != nil {
+			dlg.SetParentWindowHandle(uintptr(nativeWindow))
+		}
+	}
+
 	defer func() {
 		err := dlg.Release()
 		if err != nil {

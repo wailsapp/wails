@@ -74,37 +74,56 @@ import (
 
 func (s *Service) UpdateData() {
     // Do some data processing...
-    
+
     // Notify the frontend
     app := application.Get()
-    app.Event.EmitEvent(&application.CustomEvent{
-        Name: "my-app:data-updated",
-        Data: map[string]interface{}{
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
             "timestamp": time.Now(),
             "count": 42,
         },
-	})
+	)
 }
 ```
+
+### Emitting Events (Frontend)
+
+While not as commonly used, you can also emit events from your frontend that your Go code can listen to:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Event without data
+Events.Emit('myapp:close-window')
+
+// Event with data
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+If you are using TypeScript in your frontend and [registering typed events](#typed-events-with-typecheck) in your Go code, you will get event name autocomplete/checking and data type checking.
 
 ### Removing Event Listeners
 
 Always clean up your event listeners when they're no longer needed:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Store the handler reference
 const focusHandler = () => {
     console.log('Window focused');
 };
 
-// Add the listener
-Events.On('common:WindowFocus', focusHandler);
+// Add the listener — capture the unsubscribe function it returns
+const unsubscribe = Events.On('common:WindowFocus', focusHandler);
 
-// Later, remove it when no longer needed
-Events.Off('common:WindowFocus', focusHandler);
+// Later, remove this specific listener via the returned unsubscribe
+unsubscribe();
 
-// Or remove all listeners for an event
+// Or remove ALL listeners for one (or more) event names — Events.Off takes only event-name strings
 Events.Off('common:WindowFocus');
+// Events.Off('common:WindowFocus', 'common:WindowLostFocus'); // variadic
+// Events.OffAll(); // remove every listener for every event (no args)
 ```
 
 ## Common Use Cases
@@ -114,6 +133,8 @@ Events.Off('common:WindowFocus');
 Many applications need to pause certain activities when the window loses focus:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 let animationRunning = true;
 
 Events.On('common:WindowLostFocus', () => {
@@ -132,9 +153,11 @@ Events.On('common:WindowFocus', () => {
 Keep your app in sync with the system theme:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:ThemeChanged', (event) => {
-    const isDarkMode = event.data.isDark;
-    
+    const isDarkMode = event.data.isDarkMode;
+
     if (isDarkMode) {
         document.body.classList.add('dark-theme');
         document.body.classList.remove('light-theme');
@@ -150,9 +173,11 @@ Events.On('common:ThemeChanged', (event) => {
 Make your app accept dragged files:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:WindowFilesDropped', (event) => {
     const files = event.data.files;
-    
+
     files.forEach(file => {
         console.log('File dropped:', file);
         // Process the dropped files
@@ -166,10 +191,12 @@ Events.On('common:WindowFilesDropped', (event) => {
 Respond to window state changes:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 Events.On('common:WindowClosing', () => {
     // Save user data before closing
     saveApplicationState();
-    
+
     // You could also prevent closing by returning false
     // from a registered window close handler
 });
@@ -190,6 +217,8 @@ Events.On('common:WindowRestore', () => {
 Handle platform-specific events when needed:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Windows-specific power management
 Events.On('windows:APMSuspend', () => {
     console.log('System is going to sleep');
@@ -210,7 +239,7 @@ Events.On('mac:ApplicationWillTerminate', () => {
 
 ## Creating Custom Events
 
-You can create your own events for application-specific needs:
+You can create your own events for application-specific needs.
 
 ### Backend (Go)
 
@@ -222,15 +251,13 @@ func (s *Service) ProcessUserData(userData UserData) error {
 
     app := application.Get()
     // Notify all listeners
-    app.Event.EmitEvent(&application.CustomEvent{
-        Name: "user:data-processed",
-        Data: map[string]interface{}{
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
             "userId": userData.ID,
             "status": "completed",
             "timestamp": time.Now(),
         },
-    })
-    
+    )
     return nil
 }
 
@@ -250,10 +277,12 @@ func (s *Service) StartMonitoring() {
 ### Frontend (JavaScript)
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Listen for your custom events
 Events.On('user:data-processed', (event) => {
     const { userId, status, timestamp } = event.data;
-    
+
     showNotification(`User ${userId} processing ${status}`);
     updateUIWithNewData();
 });
@@ -262,6 +291,128 @@ Events.On('monitor:stats-updated', (event) => {
     updateDashboard(event.data);
 });
 ```
+
+## Typed Events with Type Safety
+
+Wails v3 supports typed events with full TypeScript type safety through event registration and automatic binding generation.
+
+### Registering Custom Events
+
+Call `application.RegisterEvent` at init time to register custom event names with their data types:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}
+
+func init() {
+    // Register events with their data types
+    application.RegisterEvent[UserLoginData]("user:login")
+    application.RegisterEvent[MonitorStats]("monitor:stats")
+
+    // Register events without data (void events)
+    application.RegisterEvent[application.Void]("app:ready")
+}
+```
+
+:::caution
+`RegisterEvent` is meant to be called at init time and will panic if:
+- Arguments are not valid
+- The same event name is registered twice with different data types
+:::
+
+:::note
+It is safe to register the same event multiple times as long as the data type is always the same. This can be useful to ensure an event is registered when any of multiple packages is loaded.
+:::
+
+### Benefits of Event Registration
+
+Once registered, data arguments passed to `Event.Emit` are type-checked against the specified type. On mismatch:
+- An error is emitted and logged (or passed to the registered error handler)
+- The offending event will not be propagated
+- This ensures the data field of registered events is always assignable to the declared type
+
+### Strict Mode
+
+Use the `strictevents` build tag to enable warnings for unregistered events in development:
+
+```bash
+go build -tags strictevents
+```
+
+With strict mode enabled, the runtime emits at most one warning per unregistered event name to avoid spamming logs.
+
+### TypeScript Binding Generation
+
+The binding generator outputs TypeScript definitions and glue code for transparent typed event support in the frontend.
+
+#### 1. Set up the Vite Plugin
+
+In your `vite.config.ts`:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+#### 2. Generate Bindings
+
+Run the binding generator:
+
+```bash
+wails3 generate bindings
+```
+
+This creates TypeScript files in your frontend directory with typed event creators and data interfaces.
+
+#### 3. Use Typed Events in Frontend
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserLogin, MonitorStats } from './bindings/events'
+
+// Type-safe event emission with autocomplete
+Events.Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+// Type-safe event listening
+Events.On(UserLogin, (event) => {
+    // event.data is typed as UserLoginData
+    console.log(`User ${event.data.Username} logged in`)
+})
+
+Events.On(MonitorStats, (event) => {
+    // event.data is typed as MonitorStats
+    updateDashboard({
+        cpu: event.data.CPUUsage,
+        memory: event.data.MemoryUsage
+    })
+})
+```
+
+The typed events provide:
+- **Autocomplete** for event names
+- **Type checking** for event data
+- **Compile-time errors** for mismatched data types
+- **IntelliSense** documentation
 
 ## Event Reference
 
@@ -274,6 +425,8 @@ These events work on all platforms:
 | `common:ApplicationStarted` | Application has fully started | Initialize your app, load saved state |
 | `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
 | `common:ThemeChanged` | System theme changed | Update app appearance |
+| `common:SystemWillSleep` | System is about to suspend | Flush state, close sockets |
+| `common:SystemDidWake` | System resumed from suspend | Reconnect, refresh stale data |
 | `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
 | `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
 | `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
@@ -294,7 +447,8 @@ Key events for Windows applications:
 |-------|-------------|----------|
 | `windows:SystemThemeChanged` | Windows theme changed | Update app colors |
 | `windows:APMSuspend` | System suspending | Save state, pause operations |
-| `windows:APMResumeSuspend` | System resumed | Restore state, refresh data |
+| `windows:APMResumeAutomatic` | System resumed (always fires on resume) | Restore state, refresh data |
+| `windows:APMResumeSuspend` | System resumed via user input (after `APMResumeAutomatic`) | Distinguish user-initiated wake |
 | `windows:APMPowerStatusChange` | Power status changed | Adjust performance settings |
 
 #### macOS Events
@@ -306,6 +460,10 @@ Important macOS application events:
 | `mac:ApplicationDidBecomeActive` | App became active | Resume operations |
 | `mac:ApplicationDidResignActive` | App became inactive | Pause operations |
 | `mac:ApplicationWillTerminate` | App will quit | Final cleanup |
+| `mac:ApplicationWillSleep` | System about to suspend | Save state, close sockets |
+| `mac:ApplicationDidWake` | System resumed | Reconnect, refresh |
+| `mac:ApplicationScreensDidSleep` | Displays went to sleep | Pause rendering (distinct from system sleep) |
+| `mac:ApplicationScreensDidWake` | Displays woke | Resume rendering |
 | `mac:WindowDidEnterFullScreen` | Entered fullscreen | Adjust UI for fullscreen |
 | `mac:WindowDidExitFullScreen` | Exited fullscreen | Restore normal UI |
 
@@ -316,8 +474,14 @@ Core Linux window events:
 | Event | Description | Use Case |
 |-------|-------------|----------|
 | `linux:SystemThemeChanged` | Desktop theme changed | Update app theme |
+| `linux:SystemWillSleep` | System about to suspend (logind) | Save state |
+| `linux:SystemDidWake` | System resumed (logind) | Reconnect, refresh |
 | `linux:WindowFocusIn` | Window gained focus | Resume activities |
 | `linux:WindowFocusOut` | Window lost focus | Pause activities |
+| `linux:WindowLoadStarted` | WebView started loading | Show loading indicator |
+| `linux:WindowLoadRedirected` | WebView redirected | Track navigation redirects |
+| `linux:WindowLoadCommitted` | WebView committed load | Content is being received |
+| `linux:WindowLoadFinished` | WebView finished loading | Hide loading indicator, inject JS/CSS |
 
 ## Best Practices
 
@@ -326,6 +490,8 @@ Core Linux window events:
 When creating custom events, use namespaces to avoid conflicts:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Good - namespaced events
 Events.Emit('myapp:user:login');
 Events.Emit('myapp:data:updated');
@@ -341,17 +507,19 @@ Events.Emit('update');
 Always remove event listeners when components unmount:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // React example
 useEffect(() => {
     const handler = (event) => {
         // Handle event
     };
-    
-    Events.On('common:WindowResize', handler);
-    
-    // Cleanup
+
+    const off = Events.On('common:WindowDidResize', handler);
+
+    // Cleanup — call the unsubscribe returned by Events.On
     return () => {
-        Events.Off('common:WindowResize', handler);
+        off();
     };
 }, []);
 ```
@@ -361,13 +529,12 @@ useEffect(() => {
 Check platform availability when using platform-specific events:
 
 ```javascript
-import { Platform } from '@wailsio/runtime';
+import { Events } from '@wailsio/runtime';
 
-if (Platform.isWindows) {
-    Events.On('windows:APMSuspend', handleSuspend);
-} else if (Platform.isMac) {
-    Events.On('mac:ApplicationWillTerminate', handleTerminate);
-}
+// Platform-specific events can be registered unconditionally;
+// they will simply never fire on unsupported platforms.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
 ```
 
 ### 4. Don't Overuse Events
@@ -382,6 +549,8 @@ While events are powerful, don't use them for everything:
 To debug event issues:
 
 ```javascript
+import { Events } from '@wailsio/runtime';
+
 // Log all events (development only)
 if (isDevelopment) {
     const originalOn = Events.On;

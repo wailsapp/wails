@@ -62,12 +62,13 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	// Stop spinner and print summary.
 	term.StopSpinner(spinner)
 	term.Infof(
-		"Processed: %s, %s, %s, %s, %s in %s.",
+		"Processed: %s, %s, %s, %s, %s, %s in %s.",
 		pluralise(stats.NumPackages, "Package"),
 		pluralise(stats.NumServices, "Service"),
 		pluralise(stats.NumMethods, "Method"),
 		pluralise(stats.NumEnums, "Enum"),
 		pluralise(stats.NumModels, "Model"),
+		pluralise(stats.NumEvents, "Event"),
 		stats.Elapsed().String(),
 	)
 

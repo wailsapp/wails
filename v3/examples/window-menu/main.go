@@ -44,14 +44,14 @@ func main() {
 		Windows: application.WindowsWindow{
 			Menu: menu,
 		},
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F1": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"F1": func(window application.Window) {
 				window.ToggleMenuBar()
 			},
-			"F2": func(window *application.WebviewWindow) {
+			"F2": func(window application.Window) {
 				window.ShowMenuBar()
 			},
-			"F3": func(window *application.WebviewWindow) {
+			"F3": func(window application.Window) {
 				window.HideMenuBar()
 			},
 		},

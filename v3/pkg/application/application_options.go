@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
@@ -27,6 +28,12 @@ type Options struct {
 
 	// Linux is the Linux specific configuration for Linux builds
 	Linux LinuxOptions
+
+	// IOS is the iOS specific configuration for iOS builds
+	IOS IOSOptions
+
+	// Android is the Android specific configuration for Android builds
+	Android AndroidOptions
 
 	// Services allows you to bind Go methods to the frontend.
 	Services []Service
@@ -66,7 +73,7 @@ type Options struct {
 	DisableDefaultSignalHandler bool
 
 	// KeyBindings is a map of key bindings to functions
-	KeyBindings map[string]func(window *WebviewWindow)
+	KeyBindings map[string]func(window Window)
 
 	// OnShutdown is called when the application is about to terminate.
 	// This is useful for cleanup tasks.
@@ -88,7 +95,7 @@ type Options struct {
 
 	// RawMessageHandler is called when the frontend sends a raw message.
 	// This is useful for implementing custom frontend-to-backend communication.
-	RawMessageHandler func(window Window, message string)
+	RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
 
 	// WarningHandler is called when a warning occurs
 	WarningHandler func(string)
@@ -103,6 +110,67 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
+
+	// Transport allows you to provide a custom IPC transport layer.
+	// When set, Wails will use your transport instead of the default HTTP fetch-based transport.
+	// This allows you to use WebSockets, custom protocols, or any other transport mechanism
+	// while retaining all Wails generated bindings and event communication.
+	//
+	// The default transport uses HTTP fetch requests to /wails/runtime + events via js.Exec in webview.
+	// If not specified, the default transport is used.
+	//
+	// Example use case: Implementing WebSocket-based or PostMessage IPC.
+	Transport Transport
+
+	// Server configures the HTTP server for server mode.
+	// Server mode is enabled by building with the "server" build tag:
+	//   go build -tags server
+	//
+	// In server mode, the application runs as an HTTP server without a native window.
+	// This enables deploying the same Wails application as a web server for:
+	//   - Docker/container deployments
+	//   - Server-side rendering
+	//   - Web-only access without desktop dependencies
+	Server ServerOptions
+}
+
+// ServerOptions configures the HTTP server for headless mode.
+type ServerOptions struct {
+	// Host is the address to bind to.
+	// Default: "localhost" for security. Use "0.0.0.0" for all interfaces.
+	Host string
+
+	// Port is the port to listen on.
+	// Default: 8080
+	Port int
+
+	// ReadTimeout is the maximum duration for reading the entire request.
+	// Default: 30 seconds
+	ReadTimeout time.Duration
+
+	// WriteTimeout is the maximum duration before timing out writes of the response.
+	// Default: 30 seconds
+	WriteTimeout time.Duration
+
+	// IdleTimeout is the maximum duration to wait for the next request.
+	// Default: 120 seconds
+	IdleTimeout time.Duration
+
+	// ShutdownTimeout is the maximum duration to wait for active connections to close.
+	// Default: 30 seconds
+	ShutdownTimeout time.Duration
+
+	// TLS configures HTTPS. If nil, HTTP is used.
+	TLS *TLSOptions
+}
+
+// TLSOptions configures HTTPS for the headless server.
+type TLSOptions struct {
+	// CertFile is the path to the TLS certificate file.
+	CertFile string
+
+	// KeyFile is the path to the TLS private key file.
+	KeyFile string
 }
 
 // AssetOptions defines the configuration of the AssetServer.
@@ -205,6 +273,14 @@ type WindowsOptions struct {
 
 	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
 	WebviewBrowserPath string
+
+	// EnabledFeatures, DisabledFeatures and AdditionalBrowserArgs configure the WebView2 browser.
+	// These apply globally to ALL windows because WebView2 shares a single browser environment.
+	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags
+	// AdditionalBrowserArgs must include the "--" prefix, e.g. "--remote-debugging-port=9222"
+	EnabledFeatures       []string
+	DisabledFeatures      []string
+	AdditionalBrowserArgs []string
 }
 
 /********* Linux Options *********/
@@ -222,4 +298,117 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+}
+
+/********* iOS Options *********/
+
+// IOSOptions contains options for iOS applications.
+type IOSOptions struct {
+    // DisableInputAccessoryView controls whether the iOS WKWebView shows the
+    // input accessory toolbar (the bar with Next/Previous/Done) above the keyboard.
+    // Default: false (accessory bar is shown).
+    // true  => accessory view is disabled/hidden
+    // false => accessory view is enabled/shown
+    DisableInputAccessoryView bool
+
+    // Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
+    // Use Disable* to keep default true behavior without surprising zero-values.
+    DisableScroll           bool
+    DisableBounce           bool
+    DisableScrollIndicators bool
+
+    // Navigation gestures (default false)
+    EnableBackForwardNavigationGestures bool
+
+    // Link previews (default true on iOS)
+    // Use Disable* so default (false) means previews are enabled.
+    DisableLinkPreview bool
+
+    // Media playback
+    // Inline playback (default false) -> Enable*
+    EnableInlineMediaPlayback        bool
+    // Autoplay without user action (default false) -> Enable*
+    EnableAutoplayWithoutUserAction  bool
+
+    // Inspector / Debug (default true in dev)
+    // Use Disable* so default (false) keeps inspector enabled.
+    DisableInspectable bool
+
+    // User agent customization
+    // If empty, defaults apply. ApplicationNameForUserAgent defaults to "wails.io".
+    UserAgent                   string
+    ApplicationNameForUserAgent string
+
+    // App-wide background colour for the main iOS window prior to any WebView creation.
+    // If AppBackgroundColourSet is true, the delegate will apply this colour to the app window
+    // during didFinishLaunching. Otherwise, it defaults to white.
+    AppBackgroundColourSet bool
+    BackgroundColour       RGBA
+
+    // EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
+    // When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
+    // to the window with detail: { index: number }.
+    // NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
+    // regardless of this flag, and the provided items will be used.
+    EnableNativeTabs bool
+
+    // NativeTabsItems configures the labels and optional SF Symbol icons for the
+    // native UITabBar. If one or more items are provided, native tabs are automatically
+    // enabled. If empty and EnableNativeTabs is true, default items are used.
+    NativeTabsItems []NativeTabItem
+}
+
+// NativeTabItem describes a single item in the iOS native UITabBar.
+// SystemImage is the SF Symbols name to use for the icon (iOS 13+). If empty or
+// unavailable on the current OS, no icon is shown.
+type NativeTabItem struct {
+    Title       string        `json:"Title"`
+    SystemImage NativeTabIcon `json:"SystemImage"`
+}
+
+// NativeTabIcon is a string-based enum for SF Symbols.
+// It allows using predefined constants for common symbols while still accepting
+// any valid SF Symbols name as a plain string.
+//
+// Example:
+//  NativeTabsItems: []NativeTabItem{
+//    { Title: "Home", SystemImage: NativeTabIconHouse },
+//    { Title: "Settings", SystemImage: "gearshape" }, // arbitrary string still allowed
+//  }
+type NativeTabIcon string
+
+const (
+    // Common icons
+    NativeTabIconNone    NativeTabIcon = ""
+    NativeTabIconHouse   NativeTabIcon = "house"
+    NativeTabIconGear    NativeTabIcon = "gear"
+    NativeTabIconStar    NativeTabIcon = "star"
+    NativeTabIconPerson  NativeTabIcon = "person"
+    NativeTabIconBell    NativeTabIcon = "bell"
+    NativeTabIconMagnify NativeTabIcon = "magnifyingglass"
+    NativeTabIconList    NativeTabIcon = "list.bullet"
+    NativeTabIconFolder  NativeTabIcon = "folder"
+)
+
+/********* Android Options *********/
+
+// AndroidOptions contains options for Android applications.
+type AndroidOptions struct {
+	// DisableScroll disables scrolling in the WebView
+	DisableScroll bool
+
+	// DisableBounce disables the overscroll bounce effect
+	DisableOverscroll bool
+
+	// EnableZoom allows pinch-to-zoom in the WebView (default: false)
+	EnableZoom bool
+
+	// UserAgent sets a custom user agent string
+	UserAgent string
+
+	// BackgroundColour sets the background colour of the WebView
+	BackgroundColour RGBA
+
+	// DisableHardwareAcceleration disables hardware acceleration for the WebView
+	DisableHardwareAcceleration bool
 }

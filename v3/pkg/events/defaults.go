@@ -48,7 +48,7 @@ var defaultWindowEventMapping = map[string]map[WindowEventType]WindowEventType{
 		Linux.WindowFocusOut:    Common.WindowLostFocus,
 		Linux.WindowDidMove:     Common.WindowDidMove,
 		Linux.WindowDidResize:   Common.WindowDidResize,
-		Linux.WindowLoadChanged: Common.WindowShow,
+		Linux.WindowLoadFinished: Common.WindowShow,
 	},
 }
 

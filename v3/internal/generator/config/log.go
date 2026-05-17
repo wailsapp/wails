@@ -77,7 +77,9 @@ func (logger *PtermLogger) Errorf(format string, a ...any) {
 
 func (logger *PtermLogger) Warningf(format string, a ...any) {
 	if logger.Warning != nil {
-		logger.Warning.Printfln(format, a...)
+		// Prefix with [warn] to prevent GitHub Actions Go problem matcher
+		// from treating warnings as errors (it matches file.go:line:col: patterns)
+		logger.Warning.Printfln("[warn] "+format, a...)
 	}
 }
 

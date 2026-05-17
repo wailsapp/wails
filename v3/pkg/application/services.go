@@ -80,7 +80,7 @@ type ServiceName interface {
 // specified at creation time. It can be used for initialising resources.
 //
 // The context will be valid as long as the application is running,
-// and will be canceled right before shutdown.
+// and will be cancelled right before shutdown.
 //
 // Services are guaranteed to receive the startup notification
 // in the exact order in which they were either

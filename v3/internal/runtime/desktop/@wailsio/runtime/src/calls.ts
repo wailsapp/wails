@@ -14,8 +14,6 @@ import { nanoid } from "./nanoid.js";
 
 // Setup
 window._wails = window._wails || {};
-window._wails.callResultHandler = resultHandler;
-window._wails.callErrorHandler = errorHandler;
 
 type PromiseResolvers = Omit<CancellablePromiseWithResolvers<any>, "promise" | "oncancelled">
 
@@ -63,93 +61,6 @@ export class RuntimeError extends Error {
 }
 
 /**
- * Handles the result of a call request.
- *
- * @param id - The id of the request to handle the result for.
- * @param data - The result data of the request.
- * @param isJSON - Indicates whether the data is JSON or not.
- */
-function resultHandler(id: string, data: string, isJSON: boolean): void {
-    const resolvers = getAndDeleteResponse(id);
-    if (!resolvers) {
-        return;
-    }
-
-    if (!data) {
-        resolvers.resolve(undefined);
-    } else if (!isJSON) {
-        resolvers.resolve(data);
-    } else {
-        try {
-            resolvers.resolve(JSON.parse(data));
-        } catch (err: any) {
-            resolvers.reject(new TypeError("could not parse result: " + err.message, { cause: err }));
-        }
-    }
-}
-
-/**
- * Handles the error from a call request.
- *
- * @param id - The id of the promise handler.
- * @param data - The error data to reject the promise handler with.
- * @param isJSON - Indicates whether the data is JSON or not.
- */
-function errorHandler(id: string, data: string, isJSON: boolean): void {
-    const resolvers = getAndDeleteResponse(id);
-    if (!resolvers) {
-        return;
-    }
-
-    if (!isJSON) {
-        resolvers.reject(new Error(data));
-    } else {
-        let error: any;
-        try {
-            error = JSON.parse(data);
-        } catch (err: any) {
-            resolvers.reject(new TypeError("could not parse error: " + err.message, { cause: err }));
-            return;
-        }
-
-        let options: ErrorOptions = {};
-        if (error.cause) {
-            options.cause = error.cause;
-        }
-
-        let exception;
-        switch (error.kind) {
-            case "ReferenceError":
-                exception = new ReferenceError(error.message, options);
-                break;
-            case "TypeError":
-                exception = new TypeError(error.message, options);
-                break;
-            case "RuntimeError":
-                exception = new RuntimeError(error.message, options);
-                break;
-            default:
-                exception = new Error(error.message, options);
-                break;
-        }
-
-        resolvers.reject(exception);
-    }
-}
-
-/**
- * Retrieves and removes the response associated with the given ID from the callResponses map.
- *
- * @param id - The ID of the response to be retrieved and removed.
- * @returns The response object associated with the given ID, if any.
- */
-function getAndDeleteResponse(id: string): PromiseResolvers | undefined {
-    const response = callResponses.get(id);
-    callResponses.delete(id);
-    return response;
-}
-
-/**
  * Generates a unique ID using the nanoid library.
  *
  * @returns A unique ID that does not exist in the callResponses set.
@@ -181,11 +92,14 @@ export function Call(options: CallOptions): CancellablePromise<any> {
     callResponses.set(id, { resolve: result.resolve, reject: result.reject });
 
     const request = call(CallBinding, Object.assign({ "call-id": id }, options));
-    let running = false;
+    let running = true;
 
-    request.then(() => {
-        running = true;
+    request.then((res) => {
+        running = false;
+        callResponses.delete(id);
+        result.resolve(res);
     }, (err) => {
+        running = false;
         callResponses.delete(id);
         result.reject(err);
     });

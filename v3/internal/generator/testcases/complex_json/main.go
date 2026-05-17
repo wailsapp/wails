@@ -122,3 +122,8 @@ func main() {
 	}
 
 }
+
+func init() {
+	application.RegisterEvent[map[string]int]("collision")
+	application.RegisterEvent[*struct{ Field []bool }]("overlap")
+}

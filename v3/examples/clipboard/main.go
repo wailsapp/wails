@@ -30,28 +30,28 @@ func main() {
 	setClipboardMenu.Add("Set Text 'Hello'").OnClick(func(ctx *application.Context) {
 		success := app.Clipboard.SetText("Hello")
 		if !success {
-			application.InfoDialog().SetMessage("Failed to set clipboard text").Show()
+			app.Dialog.Info().SetMessage("Failed to set clipboard text").Show()
 		}
 	})
 	setClipboardMenu.Add("Set Text 'World'").OnClick(func(ctx *application.Context) {
 		success := app.Clipboard.SetText("World")
 		if !success {
-			application.InfoDialog().SetMessage("Failed to set clipboard text").Show()
+			app.Dialog.Info().SetMessage("Failed to set clipboard text").Show()
 		}
 	})
 	setClipboardMenu.Add("Set Text (current time)").OnClick(func(ctx *application.Context) {
 		success := app.Clipboard.SetText(time.Now().String())
 		if !success {
-			application.InfoDialog().SetMessage("Failed to set clipboard text").Show()
+			app.Dialog.Info().SetMessage("Failed to set clipboard text").Show()
 		}
 	})
 	getClipboardMenu := menu.AddSubmenu("Get Clipboard")
 	getClipboardMenu.Add("Get Text").OnClick(func(ctx *application.Context) {
 		result, ok := app.Clipboard.Text()
 		if !ok {
-			application.InfoDialog().SetMessage("Failed to get clipboard text").Show()
+			app.Dialog.Info().SetMessage("Failed to get clipboard text").Show()
 		} else {
-			application.InfoDialog().SetMessage("Got:\n\n" + result).Show()
+			app.Dialog.Info().SetMessage("Got:\n\n" + result).Show()
 		}
 	})
 
@@ -59,9 +59,9 @@ func main() {
 	clearClipboardMenu.Add("Clear Text").OnClick(func(ctx *application.Context) {
 		success := app.Clipboard.SetText("")
 		if success {
-			application.InfoDialog().SetMessage("Clipboard text cleared").Show()
+			app.Dialog.Info().SetMessage("Clipboard text cleared").Show()
 		} else {
-			application.InfoDialog().SetMessage("Clipboard text not cleared").Show()
+			app.Dialog.Info().SetMessage("Clipboard text not cleared").Show()
 		}
 	})
 

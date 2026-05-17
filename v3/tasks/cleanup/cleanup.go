@@ -19,16 +19,19 @@ type CleanupPattern struct {
 var cleanupPatterns = []CleanupPattern{
 	// Test binaries from examples
 	{Type: "prefix", Pattern: "testbuild-", TargetFiles: true, Description: "test binary"},
-	
+
 	// Go test binaries
 	{Type: "suffix", Pattern: ".test", TargetFiles: true, Description: "Go test binary"},
-	
+
 	// Package artifacts from packaging tests (only in internal/commands directory)
 	// Note: Only clean these from the commands directory, not from test temp directories
-	
+	{Type: "exact", Pattern: "myapp.ARCHLINUX", TargetFiles: true, Description: "Linux ARCHLINUX package"},
+	{Type: "exact", Pattern: "myapp.DEB", TargetFiles: true, Description: "Linux DEB package"},
+	{Type: "exact", Pattern: "myapp.RPM", TargetFiles: true, Description: "Linux RPM package"},
+
 	// Test template directories from template tests
 	{Type: "prefix", Pattern: "test-template-", TargetFiles: false, Description: "test template directory"},
-	
+
 	// CLI test binaries (files named exactly "appimage_testfiles")
 	{Type: "exact", Pattern: "appimage_testfiles", TargetFiles: true, Description: "CLI test binary"},
 }

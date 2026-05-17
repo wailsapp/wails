@@ -22,6 +22,17 @@ const (
 	ButtonHidden   ButtonState = 2
 )
 
+// effectiveZoomButtonState returns the more restrictive of two ButtonState values.
+// Hidden > Disabled > Enabled, matching the integer ordering of the constants.
+// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton on
+// macOS; this helper ensures neither runtime setter can silently override the other.
+func effectiveZoomButtonState(a, b ButtonState) ButtonState {
+	if b > a {
+		return b
+	}
+	return a
+}
+
 type WindowStartPosition int
 
 const (
@@ -95,6 +106,12 @@ type WebviewWindowOptions struct {
 	// Y is the starting Y position of the window.
 	Y int
 
+	// Screen specifies the target screen for initial window placement.
+	// When set with WindowCentered, the window is centered on that screen's WorkArea.
+	// When set with WindowXY, X/Y are treated as relative to that screen's WorkArea origin.
+	// When nil, OS default behavior is used.
+	Screen *Screen
+
 	// Hidden will hide the window when it is first created.
 	Hidden bool
 
@@ -104,8 +121,10 @@ type WebviewWindowOptions struct {
 	// ZoomControlEnabled will enable the zoom control.
 	ZoomControlEnabled bool
 
-	// EnableDragAndDrop will enable drag and drop.
-	EnableDragAndDrop bool
+	// EnableFileDrop enables drag and drop of files onto the window.
+	// When enabled, files dragged from the OS onto elements with the
+	// `data-file-drop-target` attribute will trigger a FilesDropped event.
+	EnableFileDrop bool
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool
@@ -123,6 +142,10 @@ type WebviewWindowOptions struct {
 	MinimiseButtonState ButtonState
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
+	// FullscreenButtonState controls the fullscreen button state.
+	// On macOS this targets NSWindowZoomButton (the same green button as MaximiseButtonState);
+	// the more restrictive of the two states is applied. On other platforms this is a no-op.
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
@@ -131,10 +154,32 @@ type WebviewWindowOptions struct {
 	DefaultContextMenuDisabled bool
 
 	// KeyBindings is a map of key bindings to functions
-	KeyBindings map[string]func(window *WebviewWindow)
+	KeyBindings map[string]func(window Window)
 
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
+
+	// ContentProtectionEnabled specifies whether content protection is enabled, preventing screen capture and recording.
+	// Effective on Windows and macOS only; no-op on Linux.
+	// Best-effort protection with platform-specific caveats (see docs).
+	ContentProtectionEnabled bool
+
+	// HideOnFocusLost will hide the window when it loses focus.
+	// Useful for popup/transient windows like systray attached windows.
+	// On Linux with focus-follows-mouse WMs (Hyprland, Sway, i3), this is automatically disabled
+	// as it would cause the window to hide immediately when the mouse moves away.
+	HideOnFocusLost bool
+
+	// HideOnEscape will hide the window when the Escape key is pressed.
+	// Useful for popup/transient windows that should dismiss on Escape.
+	HideOnEscape bool
+
+	// UseApplicationMenu indicates this window should use the application menu
+	// set via app.Menu.Set() instead of requiring a window-specific menu.
+	// On macOS this has no effect as the application menu is always global.
+	// On Windows/Linux, if true and no explicit window menu is set, the window
+	// will use the application menu. Defaults to false for backwards compatibility.
+	UseApplicationMenu bool
 }
 
 type RGBA struct {
@@ -177,20 +222,6 @@ const (
 /******* Windows Options *******/
 
 type BackdropType int32
-type DragEffect int32
-
-const (
-	// DragEffectNone is used to indicate that the drop target cannot accept the data.
-	DragEffectNone DragEffect = 1
-	// DragEffectCopy is used to indicate that the data is copied to the drop target.
-	DragEffectCopy DragEffect = 2
-	// DragEffectMove is used to indicate that the data is removed from the drag source.
-	DragEffectMove DragEffect = 3
-	// DragEffectLink is used to indicate that a link to the original data is established.
-	DragEffectLink DragEffect = 4
-	// DragEffectScroll is used to indicate that the target can be scrolled while dragging to locate a drop position that is not currently visible in the target.
-
-)
 
 const (
 	Auto    BackdropType = 0
@@ -276,10 +307,6 @@ type WindowsWindow struct {
 	// Menu is the menu to use for the window.
 	Menu *Menu
 
-	// Drag Cursor Effects
-	OnEnterEffect DragEffect
-	OnOverEffect  DragEffect
-
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
 
@@ -291,16 +318,6 @@ type WindowsWindow struct {
 
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
-
-	// EnabledFeatures, DisabledFeatures and AdditionalLaunchArgs are used to enable or disable specific features in the WebView2 browser.
-	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
-	// WARNING: Apps in production shouldn't use WebView2 browser flags,
-	// because these flags might be removed or altered at any time,
-	// and aren't necessarily supported long-term.
-	// AdditionalLaunchArgs should always be preceded by "--"
-	EnabledFeatures      []string
-	DisabledFeatures     []string
-	AdditionalLaunchArgs []string
 }
 
 type Theme int
@@ -378,6 +395,8 @@ const (
 	MacBackdropTransparent
 	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
 	MacBackdropTranslucent
+	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	MacBackdropLiquidGlass
 )
 
 // MacToolbarStyle is the style of toolbar for macOS
@@ -395,6 +414,67 @@ const (
 	// MacToolbarStyleUnifiedCompact - Same as MacToolbarStyleUnified, but with reduced margins in the toolbar allowing more focus to be on the contents of the window
 	MacToolbarStyleUnifiedCompact
 )
+
+// MacLiquidGlassStyle defines the style of the Liquid Glass effect
+type MacLiquidGlassStyle int
+
+const (
+	// LiquidGlassStyleAutomatic - System determines the best style
+	LiquidGlassStyleAutomatic MacLiquidGlassStyle = iota
+	// LiquidGlassStyleLight - Light glass appearance
+	LiquidGlassStyleLight
+	// LiquidGlassStyleDark - Dark glass appearance
+	LiquidGlassStyleDark
+	// LiquidGlassStyleVibrant - Vibrant glass with enhanced effects
+	LiquidGlassStyleVibrant
+)
+
+// NSVisualEffectMaterial represents the NSVisualEffectMaterial enum for macOS
+type NSVisualEffectMaterial int
+
+const (
+	// NSVisualEffectMaterial values from macOS SDK
+	NSVisualEffectMaterialAppearanceBased       NSVisualEffectMaterial = 0
+	NSVisualEffectMaterialLight                 NSVisualEffectMaterial = 1
+	NSVisualEffectMaterialDark                  NSVisualEffectMaterial = 2
+	NSVisualEffectMaterialTitlebar              NSVisualEffectMaterial = 3
+	NSVisualEffectMaterialSelection             NSVisualEffectMaterial = 4
+	NSVisualEffectMaterialMenu                  NSVisualEffectMaterial = 5
+	NSVisualEffectMaterialPopover               NSVisualEffectMaterial = 6
+	NSVisualEffectMaterialSidebar               NSVisualEffectMaterial = 7
+	NSVisualEffectMaterialHeaderView            NSVisualEffectMaterial = 10
+	NSVisualEffectMaterialSheet                 NSVisualEffectMaterial = 11
+	NSVisualEffectMaterialWindowBackground      NSVisualEffectMaterial = 12
+	NSVisualEffectMaterialHUDWindow             NSVisualEffectMaterial = 13
+	NSVisualEffectMaterialFullScreenUI          NSVisualEffectMaterial = 15
+	NSVisualEffectMaterialToolTip               NSVisualEffectMaterial = 17
+	NSVisualEffectMaterialContentBackground     NSVisualEffectMaterial = 18
+	NSVisualEffectMaterialUnderWindowBackground NSVisualEffectMaterial = 21
+	NSVisualEffectMaterialUnderPageBackground   NSVisualEffectMaterial = 22
+	NSVisualEffectMaterialAuto                  NSVisualEffectMaterial = -1 // Use auto-selection based on Style
+)
+
+// MacLiquidGlass contains configuration for the Liquid Glass effect
+type MacLiquidGlass struct {
+	// Style of the glass effect
+	Style MacLiquidGlassStyle
+
+	// Material to use for NSVisualEffectView (when NSGlassEffectView is not available)
+	// Set to NSVisualEffectMaterialAuto to use automatic selection based on Style
+	Material NSVisualEffectMaterial
+
+	// Corner radius for the glass effect (0 for square corners)
+	CornerRadius float64
+
+	// Tint color for the glass (optional, nil for no tint)
+	TintColor *RGBA
+
+	// Group identifier for merging multiple glass windows
+	GroupID string
+
+	// Spacing between grouped glass elements (in points)
+	GroupSpacing float64
+}
 
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
@@ -420,6 +500,18 @@ type MacWindow struct {
 
 	// WindowLevel sets the window level to control the order of windows in the screen
 	WindowLevel MacWindowLevel
+
+	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
+	CollectionBehavior MacWindowCollectionBehavior
+
+	// LiquidGlass contains configuration for the Liquid Glass effect
+	LiquidGlass MacLiquidGlass
+
+	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
+	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
+	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
+	DisableEscapeExitsFullscreen bool
 }
 
 type MacWindowLevel string
@@ -433,6 +525,40 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
+// These correspond to NSWindowCollectionBehavior bitmask values and can be combined using bitwise OR.
+// For example: MacWindowCollectionBehaviorCanJoinAllSpaces | MacWindowCollectionBehaviorFullScreenAuxiliary
+type MacWindowCollectionBehavior int
+
+const (
+	// MacWindowCollectionBehaviorDefault is zero value - when set, FullScreenPrimary is used for backwards compatibility
+	MacWindowCollectionBehaviorDefault MacWindowCollectionBehavior = 0
+	// MacWindowCollectionBehaviorCanJoinAllSpaces allows window to appear on all Spaces
+	MacWindowCollectionBehaviorCanJoinAllSpaces MacWindowCollectionBehavior = 1 << 0 // 1
+	// MacWindowCollectionBehaviorMoveToActiveSpace moves window to active Space when shown
+	MacWindowCollectionBehaviorMoveToActiveSpace MacWindowCollectionBehavior = 1 << 1 // 2
+	// MacWindowCollectionBehaviorManaged is the default managed window behavior
+	MacWindowCollectionBehaviorManaged MacWindowCollectionBehavior = 1 << 2 // 4
+	// MacWindowCollectionBehaviorTransient marks window as temporary/transient
+	MacWindowCollectionBehaviorTransient MacWindowCollectionBehavior = 1 << 3 // 8
+	// MacWindowCollectionBehaviorStationary keeps window stationary during Space switches
+	MacWindowCollectionBehaviorStationary MacWindowCollectionBehavior = 1 << 4 // 16
+	// MacWindowCollectionBehaviorParticipatesInCycle includes window in Cmd+` cycling (default for normal windows)
+	MacWindowCollectionBehaviorParticipatesInCycle MacWindowCollectionBehavior = 1 << 5 // 32
+	// MacWindowCollectionBehaviorIgnoresCycle excludes window from Cmd+` cycling
+	MacWindowCollectionBehaviorIgnoresCycle MacWindowCollectionBehavior = 1 << 6 // 64
+	// MacWindowCollectionBehaviorFullScreenPrimary allows the window to enter fullscreen
+	MacWindowCollectionBehaviorFullScreenPrimary MacWindowCollectionBehavior = 1 << 7 // 128
+	// MacWindowCollectionBehaviorFullScreenAuxiliary allows window to overlay fullscreen apps
+	MacWindowCollectionBehaviorFullScreenAuxiliary MacWindowCollectionBehavior = 1 << 8 // 256
+	// MacWindowCollectionBehaviorFullScreenNone prevents window from entering fullscreen (macOS 10.7+)
+	MacWindowCollectionBehaviorFullScreenNone MacWindowCollectionBehavior = 1 << 9 // 512
+	// MacWindowCollectionBehaviorFullScreenAllowsTiling allows side-by-side tiling in fullscreen (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenAllowsTiling MacWindowCollectionBehavior = 1 << 11 // 2048
+	// MacWindowCollectionBehaviorFullScreenDisallowsTiling prevents tiling in fullscreen (macOS 10.11+)
+	MacWindowCollectionBehaviorFullScreenDisallowsTiling MacWindowCollectionBehavior = 1 << 12 // 4096
 )
 
 // MacWebviewPreferences contains preferences for the Mac webview
@@ -550,6 +676,17 @@ const (
 	WebviewGpuPolicyNever
 )
 
+// LinuxMenuStyle defines how the application menu is displayed on Linux (GTK4 only).
+// On GTK3 builds, this option is ignored and MenuBar style is always used.
+type LinuxMenuStyle int
+
+const (
+	// LinuxMenuStyleMenuBar displays a traditional menu bar below the title bar (default)
+	LinuxMenuStyleMenuBar LinuxMenuStyle = iota
+	// LinuxMenuStylePrimaryMenu displays a primary menu button in the header bar (GNOME style)
+	LinuxMenuStylePrimaryMenu
+)
+
 // LinuxWindow specific to Linux windows
 type LinuxWindow struct {
 	// Icon Sets up the icon representing the window. This icon is used when the window is minimized
@@ -575,4 +712,7 @@ type LinuxWindow struct {
 
 	// Menu is the window's menu
 	Menu *Menu
+
+	// MenuStyle controls how the menu is displayed (GTK4 only, ignored on GTK3)
+	MenuStyle LinuxMenuStyle
 }

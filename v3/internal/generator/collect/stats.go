@@ -8,6 +8,7 @@ type Stats struct {
 	NumMethods  int
 	NumEnums    int
 	NumModels   int
+	NumEvents   int
 	StartTime   time.Time
 	EndTime     time.Time
 }
@@ -31,4 +32,5 @@ func (stats *Stats) Add(other *Stats) {
 	stats.NumMethods += other.NumMethods
 	stats.NumEnums += other.NumEnums
 	stats.NumModels += other.NumModels
+	stats.NumEvents += other.NumEvents
 }

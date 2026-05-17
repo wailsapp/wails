@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -102,10 +101,12 @@ var (
 	gApplicationName      func() string
 	gApplicationRelease   func(pointer)
 	gApplicationRun       func(pointer, int, []string) int
+	gBytesNew             func(uintptr, int) uintptr
 	gBytesNewStatic       func(uintptr, int) uintptr
 	gBytesUnref           func(uintptr)
 	gFree                 func(pointer)
 	gIdleAdd              func(uintptr)
+	gListFree             func(*GList)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
 	gSignalConnectData    func(pointer, string, uintptr, pointer, bool, int) int
@@ -119,6 +120,7 @@ var (
 	gdkDisplayGetMonitorAtWindow func(pointer, pointer) pointer
 	gdkDisplayGetNMonitors       func(pointer) int
 	gdkMonitorGetGeometry        func(pointer, pointer) pointer
+	gdkMonitorGetWorkarea        func(pointer, pointer) pointer
 	gdkMonitorGetScaleFactor     func(pointer) int
 	gdkMonitorIsPrimary          func(pointer) int
 	gdkPixbufNewFromBytes        func(uintptr, int, int, int, int, int, int) pointer
@@ -127,6 +129,8 @@ var (
 	gdkScreenIsComposited        func(pointer) int
 	gdkWindowGetState            func(pointer) int
 	gdkWindowGetDisplay          func(pointer) pointer
+	gdkEventGetKeyval            func(pointer, pointer) bool // gdk_event_get_keyval (GTK ≥ 3.20)
+	gdkEventGetState             func(pointer, pointer) bool // gdk_event_get_state  (GTK ≥ 3.0)
 
 	// gtk functions
 	gtkApplicationNew               func(string, uint) pointer
@@ -139,6 +143,8 @@ var (
 	gtkCheckMenuItemNewWithLabel    func(string) pointer
 	gtkCheckMenuItemSetActive       func(pointer, int)
 	gtkContainerAdd                 func(pointer, pointer)
+	gtkContainerGetChildren         func(pointer) *GList
+	gtkContainerRemove              func(pointer, pointer)
 	gtkCSSProviderLoadFromData      func(pointer, string, int, pointer)
 	gtkCSSProviderNew               func() pointer
 	gtkDialogAddButton              func(pointer, string, int)
@@ -152,6 +158,7 @@ var (
 	gtkFileChooserSetAction         func(pointer, int)
 	gtkFileChooserSetCreateFolders  func(pointer, bool)
 	gtkFileChooserSetCurrentFolder  func(pointer, string)
+	gtkFileChooserSetCurrentName    func(pointer, string)
 	gtkFileChooserSetSelectMultiple func(pointer, bool)
 	gtkFileChooserSetShowHidden     func(pointer, bool)
 	gtkFileFilterAddPattern         func(pointer, string)
@@ -178,6 +185,7 @@ var (
 	gtkWidgetGetWindow              func(pointer) pointer
 	gtkWidgetHide                   func(pointer)
 	gtkWidgetIsVisible              func(pointer) bool
+	gtkWidgetRealize                func(pointer)
 	gtkWidgetShow                   func(pointer)
 	gtkWidgetShowAll                func(pointer)
 	gtkWidgetSetAppPaintable        func(pointer, int)
@@ -227,6 +235,17 @@ var (
 func init() {
 	// needed for GTK4 to function
 	_ = os.Setenv("GDK_BACKEND", "x11")
+
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
+	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" {
+		if _, err := os.Stat("/sys/module/nvidia"); err == nil {
+			_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
+		}
+	}
 	var err error
 
 	// gtk, err = purego.Dlopen(gtk4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
@@ -255,10 +274,12 @@ func init() {
 	purego.RegisterLibFunc(&gApplicationQuit, gtk, "g_application_quit")
 	purego.RegisterLibFunc(&gApplicationRelease, gtk, "g_application_release")
 	purego.RegisterLibFunc(&gApplicationRun, gtk, "g_application_run")
+	purego.RegisterLibFunc(&gBytesNew, gtk, "g_bytes_new")
 	purego.RegisterLibFunc(&gBytesNewStatic, gtk, "g_bytes_new_static")
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gFree, gtk, "g_free")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
+	purego.RegisterLibFunc(&gListFree, gtk, "g_list_free")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
 	purego.RegisterLibFunc(&gSignalConnectData, gtk, "g_signal_connect_data")
@@ -272,6 +293,7 @@ func init() {
 	purego.RegisterLibFunc(&gdkDisplayGetMonitorAtWindow, gtk, "gdk_display_get_monitor_at_window")
 	purego.RegisterLibFunc(&gdkDisplayGetNMonitors, gtk, "gdk_display_get_n_monitors")
 	purego.RegisterLibFunc(&gdkMonitorGetGeometry, gtk, "gdk_monitor_get_geometry")
+	purego.RegisterLibFunc(&gdkMonitorGetWorkarea, gtk, "gdk_monitor_get_workarea")
 	purego.RegisterLibFunc(&gdkMonitorGetScaleFactor, gtk, "gdk_monitor_get_scale_factor")
 	purego.RegisterLibFunc(&gdkMonitorIsPrimary, gtk, "gdk_monitor_is_primary")
 	purego.RegisterLibFunc(&gdkPixbufNewFromBytes, gtk, "gdk_pixbuf_new_from_bytes")
@@ -280,6 +302,8 @@ func init() {
 	purego.RegisterLibFunc(&gdkScreenIsComposited, gtk, "gdk_screen_is_composited")
 	purego.RegisterLibFunc(&gdkWindowGetDisplay, gtk, "gdk_window_get_display")
 	purego.RegisterLibFunc(&gdkWindowGetState, gtk, "gdk_window_get_state")
+	purego.RegisterLibFunc(&gdkEventGetKeyval, gtk, "gdk_event_get_keyval")
+	purego.RegisterLibFunc(&gdkEventGetState, gtk, "gdk_event_get_state")
 
 	// GTK3
 	purego.RegisterLibFunc(&gtkApplicationNew, gtk, "gtk_application_new")
@@ -292,6 +316,8 @@ func init() {
 	purego.RegisterLibFunc(&gtkCheckMenuItemNewWithLabel, gtk, "gtk_check_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkCheckMenuItemSetActive, gtk, "gtk_check_menu_item_set_active")
 	purego.RegisterLibFunc(&gtkContainerAdd, gtk, "gtk_container_add")
+	purego.RegisterLibFunc(&gtkContainerGetChildren, gtk, "gtk_container_get_children")
+	purego.RegisterLibFunc(&gtkContainerRemove, gtk, "gtk_container_remove")
 	purego.RegisterLibFunc(&gtkCSSProviderLoadFromData, gtk, "gtk_css_provider_load_from_data")
 	purego.RegisterLibFunc(&gtkDialogAddButton, gtk, "gtk_dialog_add_button")
 	purego.RegisterLibFunc(&gtkDialogGetContentArea, gtk, "gtk_dialog_get_content_area")
@@ -304,6 +330,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkFileChooserSetAction, gtk, "gtk_file_chooser_set_action")
 	purego.RegisterLibFunc(&gtkFileChooserSetCreateFolders, gtk, "gtk_file_chooser_set_create_folders")
 	purego.RegisterLibFunc(&gtkFileChooserSetCurrentFolder, gtk, "gtk_file_chooser_set_current_folder")
+	purego.RegisterLibFunc(&gtkFileChooserSetCurrentName, gtk, "gtk_file_chooser_set_current_name")
 	purego.RegisterLibFunc(&gtkFileChooserSetSelectMultiple, gtk, "gtk_file_chooser_set_select_multiple")
 	purego.RegisterLibFunc(&gtkFileChooserSetShowHidden, gtk, "gtk_file_chooser_set_show_hidden")
 	purego.RegisterLibFunc(&gtkFileFilterAddPattern, gtk, "gtk_file_filter_add_pattern")
@@ -330,6 +357,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkWidgetGetWindow, gtk, "gtk_widget_get_window")
 	purego.RegisterLibFunc(&gtkWidgetHide, gtk, "gtk_widget_hide")
 	purego.RegisterLibFunc(&gtkWidgetIsVisible, gtk, "gtk_widget_is_visible")
+	purego.RegisterLibFunc(&gtkWidgetRealize, gtk, "gtk_widget_realize")
 	purego.RegisterLibFunc(&gtkWidgetSetAppPaintable, gtk, "gtk_widget_set_app_paintable")
 	purego.RegisterLibFunc(&gtkWidgetSetName, gtk, "gtk_widget_set_name")
 	purego.RegisterLibFunc(&gtkWidgetSetSensitive, gtk, "gtk_widget_set_sensitive")
@@ -391,15 +419,15 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	GApplicationDefaultFlags := uint(0)
+	// Use NON_UNIQUE to allow multiple instances of the application to run
+	// This matches the behavior of gtk_init/gtk_main used in v2
+	// G_APPLICATION_NON_UNIQUE = (1 << 5) = 32
+	GApplicationNonUnique := uint(32)
 
-	name = strings.ToLower(name)
-	if name == "" {
-		name = "undefined"
-	}
-	identifier := fmt.Sprintf("org.wails.%s", strings.Replace(name, " ", "-", -1))
+	// Name is already sanitized by sanitizeAppName() in application_linux.go
+	identifier := fmt.Sprintf("org.wails.%s", name)
 
-	return pointer(gtkApplicationNew(identifier, GApplicationDefaultFlags))
+	return pointer(gtkApplicationNew(identifier, GApplicationNonUnique))
 }
 
 func appRun(application pointer) error {
@@ -517,6 +545,24 @@ func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 	return (*GSList)(gtkRadioMenuItemGetGroup(pointer(item.native)))
 }
 
+func menuClear(menu *Menu) {
+	menuShell := pointer((menu.impl).(*linuxMenu).native)
+	children := gtkContainerGetChildren(menuShell)
+	if children != nil {
+		// Save the original pointer to free later
+		originalList := children
+		// Iterate through all children and remove them
+		for children != nil {
+			child := children.data
+			if child != nilPointer {
+				gtkContainerRemove(menuShell, child)
+			}
+			children = children.next
+		}
+		gListFree(originalList)
+	}
+}
+
 func attachMenuHandler(item *MenuItem) {
 	handleClick := func() {
 		item := item
@@ -603,32 +649,66 @@ func menuRadioItemNew(group GSListPointer, label string) pointer {
 
 func getScreenByIndex(display pointer, index int) *Screen {
 	monitor := gdkDisplayGetMonitor(display, index)
-	// TODO: Do we need to update Screen to contain current info?
-	//	currentMonitor := C.gdk_display_get_monitor_at_window(display, window)
 
-	geometry := struct {
-		x      int32
-		y      int32
-		width  int32
-		height int32
-	}{}
-	result := pointer(unsafe.Pointer(&geometry))
-	gdkMonitorGetGeometry(monitor, result)
-
-	primary := false
-	if gdkMonitorIsPrimary(monitor) == 1 {
-		primary = true
+	type gdkRect struct {
+		x, y, width, height int32
 	}
 
+	var geometry gdkRect
+	gdkMonitorGetGeometry(monitor, pointer(unsafe.Pointer(&geometry)))
+
+	var workarea gdkRect
+	gdkMonitorGetWorkarea(monitor, pointer(unsafe.Pointer(&workarea)))
+
+	scaleFactor := float32(gdkMonitorGetScaleFactor(monitor))
+	primary := gdkMonitorIsPrimary(monitor) == 1
+
+	x := int(geometry.x)
+	y := int(geometry.y)
+	width := int(geometry.width)
+	height := int(geometry.height)
+
+	waX := int(workarea.x)
+	waY := int(workarea.y)
+	waWidth := int(workarea.width)
+	waHeight := int(workarea.height)
+
 	return &Screen{
+		ID:          fmt.Sprintf("%d", index),
+		Name:        "",
 		IsPrimary:   primary,
-		ScaleFactor: 1.0,
-		X:           int(geometry.x),
-		Y:           int(geometry.y),
+		ScaleFactor: scaleFactor,
+		X:           x,
+		Y:           y,
 		Size: Size{
-			Height: int(geometry.height),
-			Width:  int(geometry.width),
+			Height: height,
+			Width:  width,
 		},
+		Bounds: Rect{
+			X:      x,
+			Y:      y,
+			Height: height,
+			Width:  width,
+		},
+		PhysicalBounds: Rect{
+			X:      int(float32(x) * scaleFactor),
+			Y:      int(float32(y) * scaleFactor),
+			Height: int(float32(height) * scaleFactor),
+			Width:  int(float32(width) * scaleFactor),
+		},
+		WorkArea: Rect{
+			X:      waX,
+			Y:      waY,
+			Height: waHeight,
+			Width:  waWidth,
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(float32(waX) * scaleFactor),
+			Y:      int(float32(waY) * scaleFactor),
+			Height: int(float32(waHeight) * scaleFactor),
+			Width:  int(float32(waWidth) * scaleFactor),
+		},
+		Rotation: 0.0,
 	}
 }
 
@@ -701,12 +781,6 @@ func windowDestroy(window pointer) {
 
 func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
-}
-
-func windowGetPosition(window pointer) (int, int) {
-	var x, y int
-	gtkWindowGetPosition(window, &x, &y)
-	return x, y
 }
 
 func windowGetCurrentMonitor(window pointer) pointer {
@@ -863,6 +937,11 @@ func windowResize(window pointer, width, height int) {
 }
 
 func windowShow(window pointer) {
+	// Realize the window first to ensure it has a valid GdkWindow.
+	// This prevents crashes on Wayland when appmenu-gtk-module tries to
+	// set DBus properties for global menu integration before the window
+	// is fully realized. See: https://github.com/wailsapp/wails/issues/4769
+	gtkWidgetRealize(pointer(window))
 	gtkWidgetShowAll(pointer(window))
 }
 
@@ -979,6 +1058,63 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 		defer C.free(unsafe.Pointer(event))
 		C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, onButtonEvent, unsafe.Pointer(&id))
 	*/
+
+	// Wire key-press-event on the webview so that keyboard shortcuts (including
+	// Ctrl+Z undo / Ctrl+Shift+Z redo) are dispatched via windowKeyEvents →
+	// handleKeyEvent, mirroring the CGO path (linux_cgo.go onKeyPressEvent).
+	//
+	// GDK modifier bitmasks (stable since GDK 2.0):
+	const (
+		gdkShiftMask    = uint32(1 << 0)
+		gdkControlMask  = uint32(1 << 2)
+		gdkMod1Mask     = uint32(1 << 3)  // Alt
+		gdkSuperMask    = uint32(1 << 26) // Super/Win
+		gdkModifierMask = uint32(0x5c001fff)
+	)
+	keyPressCallback := purego.NewCallback(func(widget, event pointer, wid uintptr) uintptr {
+		// Read state and keyval via stable GDK API (GTK ≥ 3.0 / ≥ 3.20).
+		var state uint32
+		if !gdkEventGetState(event, pointer(unsafe.Pointer(&state))) {
+			return 0
+		}
+		var keyval uint32
+		if !gdkEventGetKeyval(event, pointer(unsafe.Pointer(&keyval))) {
+			return 0
+		}
+
+		modifiers := state & gdkModifierMask
+		var acc accelerator
+		if modifiers&gdkShiftMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, ShiftKey)
+		}
+		if modifiers&gdkControlMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, ControlKey)
+		}
+		if modifiers&gdkMod1Mask != 0 {
+			acc.Modifiers = append(acc.Modifiers, OptionOrAltKey)
+		}
+		if modifiers&gdkSuperMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, SuperKey)
+		}
+		keyString, ok := VirtualKeyCodes[uint(keyval)]
+		if !ok {
+			return 0
+		}
+		acc.Key = keyString
+		accelStr := acc.String()
+
+		windowKeyEvents <- &windowKeyEvent{
+			windowId:          uint(wid),
+			acceleratorString: accelStr,
+		}
+		// Return 1 to consume Ctrl+Z/Ctrl+Shift+Z so webkit2gtk's unreliable
+		// native undo handler for <input> elements does not also fire.
+		if accelStr == "Ctrl+Z" || accelStr == "Ctrl+Shift+Z" {
+			return 1
+		}
+		return 0
+	})
+	gSignalConnectData(webview, "key-press-event", keyPressCallback, pointer(uintptr(windowId)), false, 0)
 }
 
 func windowOpenDevTools(webview pointer) {
@@ -1020,7 +1156,7 @@ func windowMove(window pointer, x, y int) {
 	gtkWindowMove(window, x, y)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) ([]string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter, currentName string) ([]string, error) {
 	GtkResponseCancel := 0
 	GtkResponseAccept := 1
 
@@ -1050,6 +1186,12 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 
 	if currentFolder != "" {
 		gtkFileChooserSetCurrentFolder(fc, currentFolder)
+	}
+
+	// Set the current name for save dialogs to pre-populate the filename
+	const GtkFileChooserActionSave = 1
+	if currentName != "" && action == GtkFileChooserActionSave {
+		gtkFileChooserSetCurrentName(fc, currentName)
 	}
 
 	buildStringAndFree := func(s pointer) string {
@@ -1101,7 +1243,10 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 
 	window := pointer(0)
 	if dialog.window != nil {
-		window = (dialog.window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(uintptr(nativeWindow))
+		}
 	}
 
 	buttonText := dialog.buttonText
@@ -1116,9 +1261,10 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 		dialog.showHiddenFiles,
 		dialog.directory,
 		dialog.title,
-		GtkFileChooserActionOpen,
+		action,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		"")
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -1149,8 +1295,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 
 	GdkColorspaceRGB := 0
 
-	if img, err := pngToImage(options.Icon); err == nil {
-		gbytes := gBytesNewStatic(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
+	if img, err := pngToImage(options.Icon); err == nil && len(img.Pix) > 0 {
+		// Use gBytesNew instead of gBytesNewStatic because Go memory can be
+		// moved or freed by the GC. gBytesNew copies the data to C-owned memory.
+		gbytes := gBytesNew(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
 
 		defer gBytesUnref(gbytes)
 		pixBuf := gdkPixbufNewFromBytes(
@@ -1199,7 +1347,8 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 		dialog.title,
 		GtkFileChooserActionSave,
 		buttonText,
-		dialog.filters)
+		dialog.filters,
+		dialog.filename)
 
 	if err != nil || len(results) == 0 {
 		return "", err
@@ -1210,6 +1359,14 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 
 func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
+}
+
+func (w *linuxWebviewWindow) undo() {
+	windowExecJS(w.webview, "document.execCommand('undo')")
+}
+
+func (w *linuxWebviewWindow) redo() {
+	windowExecJS(w.webview, "document.execCommand('redo')")
 }
 
 // linuxWebviewWindow show/hide methods for purego implementation

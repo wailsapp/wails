@@ -1,10 +1,10 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 
 package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa -framework WebKit -framework QuartzCore
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
@@ -27,15 +27,15 @@ extern void registerListener(unsigned int event);
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
-		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
+		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
-	// Allow fullscreen. Needed for frameless windows
-	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
+	// to allow user configuration of Space and fullscreen behavior
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
@@ -111,6 +111,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
     // support webview events
     [webView setNavigationDelegate:delegate];
+    [webView setUIDelegate:delegate];
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -234,6 +235,19 @@ void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLev
 void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
 void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
 
+// Set NSWindow collection behavior for Spaces and fullscreen
+// The behavior parameter is a bitmask that can combine multiple NSWindowCollectionBehavior values
+void windowSetCollectionBehavior(void* nsWindow, int behavior) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if (behavior == 0) {
+		// Default: use FullScreenPrimary for backwards compatibility
+		window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+	} else {
+		// Pass through the combined bitmask directly
+		window.collectionBehavior = (NSWindowCollectionBehavior)behavior;
+	}
+}
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -317,6 +331,24 @@ void windowZoomOut(void* nsWindow) {
 	}
 }
 
+// createModalWindow presents a modal window as a sheet attached to the parent window
+void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
+	if (parentWindowPtr == NULL || modalWindowPtr == NULL) {
+		return;
+	}
+
+	NSWindow* parentWindow = (NSWindow*)parentWindowPtr;
+	NSWindow* modalWindow = (NSWindow*)modalWindowPtr;
+
+	// Present the modal window as a sheet attached to the parent window
+	// Must be dispatched to the main thread for UI thread safety
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[parentWindow beginSheet:modalWindow completionHandler:^(NSModalResponse returnCode) {
+			// Sheet was dismissed - window will be released automatically
+		}];
+	});
+}
+
 // set the window position relative to the screen
 void windowSetRelativePosition(void* nsWindow, int x, int y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -337,6 +369,12 @@ void windowExecJS(void* nsWindow, const char* js) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 	free((void*)js);
+}
+
+// Execute JS without allocation - buffer is NOT freed
+void windowExecJSNoAlloc(void* nsWindow, const char* js) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 }
 
 // Make NSWindow backdrop translucent
@@ -423,10 +461,13 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
+// setFullscreenButtonState sets the fullscreen button state
+static void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
+	setButtonState(fullscreenButton, state);
 }
 
 // Set the titlebar style
@@ -529,7 +570,7 @@ void windowCenter(void* nsWindow) {
         screen = [NSScreen mainScreen];
     }
 
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     NSRect windowFrame = [window frame];
 
     CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;
@@ -571,29 +612,88 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position
+// Get absolute window position in the canonical Wails coordinate space:
+// logical points, Y-down, with (0,0) at the top-left of the primary screen.
+// This matches Screen.Bounds (see screen_darwin.go), Windows, GTK and the
+// public APIs of Electron and the web. Screens above the primary have
+// negative Y.
 void windowGetPosition(void* nsWindow, int* x, int* y) {
-	NSRect frame = [(WebviewWindow*)nsWindow frame];
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	NSRect frame = [window frame];
 	*x = frame.origin.x;
-	*y = frame.origin.y;
+	*y = primaryHeight - frame.origin.y - frame.size.height;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
-    NSScreen* screen = [window screen];
-    if (screen == NULL) {
-        screen = [NSScreen mainScreen];
-    }
-	// Get the scale of the screen
-	CGFloat scale = [screen backingScaleFactor];
-    NSRect frame = [window frame];
-	// Scale the position
-	frame.origin.x = x / scale;
-	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
-	// Set the frame
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	NSRect frame = [window frame];
+	frame.origin.x = x;
+	frame.origin.y = primaryHeight - frame.size.height - y;
 	[window setFrame:frame display:YES];
 }
 
+
+// Center window on a specific screen identified by display ID
+void windowCenterOnScreen(void* nsWindow, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	CGFloat x = visibleFrame.origin.x + (visibleFrame.size.width - windowFrame.size.width) / 2;
+	CGFloat y = visibleFrame.origin.y + (visibleFrame.size.height - windowFrame.size.height) / 2;
+	[window setFrameOrigin:NSMakePoint(x, y)];
+}
+
+// Position window relative to a specific screen's visible frame
+void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	CGFloat scale = [targetScreen backingScaleFactor];
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	// x,y are in DIP top-origin coords relative to the screen's work area
+	CGFloat newX = visibleFrame.origin.x + (x / scale);
+	CGFloat newY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - (y / scale);
+	[window setFrameOrigin:NSMakePoint(newX, newY)];
+}
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
@@ -603,6 +703,11 @@ void windowDestroy(void* nsWindow) {
 // Remove drop shadow from window
 void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
+}
+
+// Set whether the Escape key should be prevented from exiting fullscreen
+void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
+	[(WebviewWindow*)nsWindow setDisableEscapeExitsFullscreen:disable];
 }
 
 
@@ -784,7 +889,7 @@ static void windowPrint(void *window) {
 		po.view.frame = webView.bounds;
 
 		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
-		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
+		[po runOperationModalForWindow:nsWindow delegate:windowDelegate didRunSelector:nil contextInfo:nil];
 	}
 #endif
 }
@@ -818,9 +923,23 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
     [window setIgnoresMouseEvents:ignore];
 }
 
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
+	}
+}
+
 */
 import "C"
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -858,6 +977,12 @@ func (w *macosWebviewWindow) setPosition(x int, y int) {
 	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
+	cID := C.CString(screen.ID)
+	defer C.free(unsafe.Pointer(cID))
+	C.windowCenterOnScreen(w.nsWindow, cID)
+}
+
 func (w *macosWebviewWindow) print() error {
 	C.windowPrint(w.nsWindow)
 	return nil
@@ -874,8 +999,11 @@ func (w *macosWebviewWindow) focus() {
 }
 
 func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
-	// Create the menu
-	thisMenu := newMenuImpl(menu)
+	// Reuse existing impl if available, otherwise create new one
+	if menu.impl == nil {
+		menu.impl = newMenuImpl(menu)
+	}
+	thisMenu := menu.impl.(*macosMenu)
 	thisMenu.update()
 	C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
 }
@@ -919,8 +1047,10 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setFullscreenButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.MaximiseButtonState)))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1065,6 +1195,17 @@ func (w *macosWebviewWindow) execJS(js string) {
 	})
 }
 
+// execJSDragOver executes JS for drag-over events with zero allocations
+// Must be called from main thread
+func (w *macosWebviewWindow) execJSDragOver(buffer []byte) {
+	if w.nsWindow == nil {
+		return
+	}
+	// Pass buffer directly to C without allocation
+	// Buffer must be null-terminated
+	C.windowExecJSNoAlloc(w.nsWindow, (*C.char)(unsafe.Pointer(&buffer[0])))
+}
+
 func (w *macosWebviewWindow) setURL(uri string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
@@ -1078,7 +1219,10 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 		parent: parent,
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		result.execJS(runtime.Core())
+		// Inject runtime core
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
+		result.execJS(js)
 	})
 	return result
 }
@@ -1146,6 +1290,10 @@ func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
 	}
 }
 
+func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
+	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1208,9 +1356,12 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.bool(options.EnableDragAndDrop),
+			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 		)
+		if macOptions.DisableEscapeExitsFullscreen {
+			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
+		}
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
@@ -1222,6 +1373,9 @@ func (w *macosWebviewWindow) run() {
 		//w.setZoom(options.Zoom)
 		w.enableDevTools()
 
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
+
 		w.setBackgroundColour(options.BackgroundColour)
 
 		switch macOptions.Backdrop {
@@ -1231,6 +1385,8 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropLiquidGlass:
+			w.applyLiquidGlass()
 		case MacBackdropNormal:
 		}
 
@@ -1239,10 +1395,19 @@ func (w *macosWebviewWindow) run() {
 		}
 		w.setWindowLevel(macOptions.WindowLevel)
 
+		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
+		w.setCollectionBehavior(macOptions.CollectionBehavior)
+
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
+		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
+		// Apply the more restrictive state to prevent one from silently overriding the other.
+		zoomState := options.MaximiseButtonState
+		if options.FullscreenButtonState > zoomState {
+			zoomState = options.FullscreenButtonState
+		}
+		w.setMaximiseButtonState(zoomState)
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1263,7 +1428,10 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
 
-		if macOptions.InvisibleTitleBarHeight != 0 {
+		// Only apply invisible title bar when the native drag area is hidden
+		// (frameless window or transparent/hidden title bar presets like HiddenInset)
+		if macOptions.InvisibleTitleBarHeight != 0 &&
+			(w.parent.options.Frameless || titleBarOptions.AppearsTransparent) {
 			C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
 		}
 
@@ -1276,7 +1444,15 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			cID := C.CString(options.Screen.ID)
+			if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenterOnScreen(w.nsWindow, cID)
+			} else {
+				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+			}
+			C.free(unsafe.Pointer(cID))
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			C.windowCenter(w.nsWindow)
 		} else {
 			w.setPosition(options.X, options.Y)
@@ -1326,13 +1502,62 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.nsWindow)
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
+	return w.nsWindow
 }
 
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+}
+
+func (w *macosWebviewWindow) applyLiquidGlass() {
+	options := w.parent.options.Mac.LiquidGlass
+
+	// Validate corner radius
+	if options.CornerRadius < 0 {
+		options.CornerRadius = 0
+	}
+
+	globalApplication.debug("Applying Liquid Glass effect", "window", w.parent.id)
+
+	// Check if liquid glass is supported
+	if !C.isLiquidGlassSupported() {
+		// Fallback to translucent
+		C.windowSetTranslucent(w.nsWindow)
+		C.webviewSetTransparent(w.nsWindow)
+		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
+		return
+	}
+
+	// Prepare tint color values (already clamped by uint8 type)
+	var r, g, b, a C.int
+	if options.TintColor != nil {
+		r = C.int(options.TintColor.Red)
+		g = C.int(options.TintColor.Green)
+		b = C.int(options.TintColor.Blue)
+		a = C.int(options.TintColor.Alpha)
+	}
+
+	// Prepare group ID
+	var groupIDCStr *C.char
+	if options.GroupID != "" {
+		groupIDCStr = C.CString(options.GroupID)
+		defer C.free(unsafe.Pointer(groupIDCStr))
+	}
+
+	// Apply liquid glass effect
+	C.windowSetLiquidGlass(
+		w.nsWindow,
+		C.int(options.Style),
+		C.int(options.Material),
+		C.double(options.CornerRadius),
+		r, g, b, a,
+		groupIDCStr,
+		C.double(options.GroupSpacing),
+	)
+
+	globalApplication.debug("Applied Liquid Glass effect", "window", w.parent.id, "style", options.Style)
 }
 
 func (w *macosWebviewWindow) relativePosition() (int, int) {
@@ -1387,10 +1612,8 @@ func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
-	// Remove window from the window manager
-	if globalApplication.Window != nil {
-		globalApplication.Window.Remove(w.parent.id)
-	}
+	// Clear caches for this window
+	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)
 }
 
@@ -1411,7 +1634,9 @@ func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
 }
 
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	C.setMaximiseButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setMaximiseButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.FullscreenButtonState)))
 }
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
@@ -1424,6 +1649,21 @@ func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 
 func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
+}
+
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+	modalNativeWindow := modalWindow.impl.nativeWindow()
+	if modalNativeWindow == nil {
+		return
+	}
+	C.createModalWindow(w.nsWindow, modalNativeWindow)
 }
 
 func (w *macosWebviewWindow) cut() {

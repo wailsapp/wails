@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,8 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/wailsapp/wails/v3/internal/signal"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
@@ -32,10 +29,6 @@ var globalApplication *App
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
 	Handler: BundledAssetFileServer(alphaAssets),
-}
-
-func init() {
-	runtime.LockOSThread()
 }
 
 type EventListener struct {
@@ -65,13 +58,8 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	if !appOptions.DisableDefaultSignalHandler {
-		result.signalHandler = signal.NewSignalHandler(result.Quit)
-		result.signalHandler.Logger = result.Logger
-		result.signalHandler.ExitMessage = func(sig os.Signal) string {
-			return "Quitting application..."
-		}
-	}
+	// Set up signal handling (platform-specific)
+	result.setupSignalHandler(appOptions)
 
 	result.logStartup()
 	result.logPlatformInfo()
@@ -80,52 +68,74 @@ func New(appOptions Options) *App {
 
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
-	opts := &assetserver.Options{
-		Handler: appOptions.Assets.Handler,
-		Middleware: assetserver.ChainMiddleware(
-			func(next http.Handler) http.Handler {
-				if m := appOptions.Assets.Middleware; m != nil {
-					return m(next)
-				}
-				return next
-			},
-			func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					path := req.URL.Path
-					switch path {
-					case "/wails/runtime.js":
-						err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
-						if err != nil {
-							result.fatal("unable to serve runtime.js: %w", err)
-						}
-					case "/wails/runtime":
-						messageProc.ServeHTTP(rw, req)
-					case "/wails/capabilities":
-						err := assetserver.ServeFile(
-							rw,
-							path,
-							globalApplication.capabilities.AsBytes(),
-						)
-						if err != nil {
-							result.fatal("unable to serve capabilities: %w", err)
-						}
-					case "/wails/flags":
-						updatedOptions := result.impl.GetFlags(appOptions)
-						flags, err := json.Marshal(updatedOptions)
-						if err != nil {
-							result.fatal("invalid flags provided to application: %w", err)
-						}
-						err = assetserver.ServeFile(rw, path, flags)
-						if err != nil {
-							result.fatal("unable to serve flags: %w", err)
-						}
-					default:
-						next.ServeHTTP(rw, req)
+
+	// Initialize transport (default to HTTP if not specified)
+	transport := appOptions.Transport
+	if transport == nil {
+		transport = NewHTTPTransport(HTTPTransportWithLogger(result.Logger))
+	}
+
+	err := transport.Start(result.ctx, messageProc)
+	if err != nil {
+		result.fatal("failed to start custom transport: %w", err)
+	}
+	// Register shutdown task to stop transport
+	result.OnShutdown(func() {
+		if err := transport.Stop(); err != nil {
+			result.error("failed to stop custom transport: %w", err)
+		}
+	})
+
+	// Auto-wire events if transport supports event delivery
+	if eventTransport, ok := transport.(WailsEventListener); ok {
+		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
+	} else {
+		// otherwise fallback to IPC
+		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
+			app: result,
+		})
+	}
+
+	middlewares := []assetserver.Middleware{
+		func(next http.Handler) http.Handler {
+			if m := appOptions.Assets.Middleware; m != nil {
+				return m(next)
+			}
+			return next
+		},
+		func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				path := req.URL.Path
+				switch path {
+				case "/wails/runtime.js":
+					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					if err != nil {
+						result.fatal("unable to serve runtime.js: %w", err)
 					}
-				})
-			},
-		),
-		Logger: result.Logger,
+				case "/wails/transport.js":
+					err := assetserver.ServeFile(rw, path, transport.JSClient())
+					if err != nil {
+						result.fatal("unable to serve transport.js: %w", err)
+					}
+				case "/wails/custom.js":
+					// custom.js is only served in server mode.
+					// Return 404 so the runtime's loadOptionalScript skips it.
+					http.NotFound(rw, req)
+				default:
+					next.ServeHTTP(rw, req)
+				}
+			})
+		},
+	}
+
+	if handler, ok := transport.(TransportHTTPHandler); ok {
+		middlewares = append(middlewares, handler.Handler())
+	}
+
+	opts := &assetserver.Options{
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserver.ChainMiddleware(middlewares...),
+		Logger:     result.Logger,
 	}
 
 	if appOptions.Assets.DisableLogging {
@@ -139,6 +149,15 @@ func New(appOptions Options) *App {
 
 	result.assets = srv
 	result.assets.LogDetails()
+
+	// If transport implements AssetServerTransport, configure it to serve assets
+	if assetTransport, ok := transport.(AssetServerTransport); ok {
+		err := assetTransport.ServeAssets(srv)
+		if err != nil {
+			result.fatal("failed to configure transport for serving assets: %w", err)
+		}
+		result.debug("Transport configured to serve assets")
+	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
 	result.options.Services = slices.Clone(appOptions.Services)
@@ -212,15 +231,22 @@ type (
 
 // Messages sent from javascript get routed here
 type windowMessage struct {
-	windowId uint
-	message  string
+	windowId   uint
+	message    string
+	originInfo *OriginInfo
+}
+
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
 }
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
 
-// DropZoneDetails contains information about the HTML element
-// at the location of a file drop.
-type DropZoneDetails struct {
+// DropTargetDetails contains information about the HTML element
+// where files were dropped (the element with data-file-drop-target attribute).
+type DropTargetDetails struct {
 	X          int               `json:"x"`
 	Y          int               `json:"y"`
 	ElementID  string            `json:"id"`
@@ -229,20 +255,20 @@ type DropZoneDetails struct {
 }
 
 type dragAndDropMessage struct {
-	windowId  uint
-	filenames []string
-	X         int
-	Y         int
-	DropZone  *DropZoneDetails
+	windowId   uint
+	filenames  []string
+	X          int
+	Y          int
+	DropTarget *DropTargetDetails
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string, dropZone *DropZoneDetails) {
+func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTargetDetails) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  windowId,
-		filenames: filenames,
-		DropZone:  dropZone,
+		windowId:   windowId,
+		filenames:  filenames,
+		DropTarget: dropTarget,
 	}
 }
 
@@ -252,7 +278,7 @@ const webViewRequestHeaderWindowId = "x-wails-window-id"
 const webViewRequestHeaderWindowName = "x-wails-window-name"
 
 type webViewAssetRequest struct {
-	webview.Request
+	Request    webview.Request
 	windowId   uint
 	windowName string
 }
@@ -264,6 +290,14 @@ type windowKeyEvent struct {
 	acceleratorString string
 }
 
+func (r *webViewAssetRequest) URL() (string, error) {
+	return r.Request.URL()
+}
+
+func (r *webViewAssetRequest) Method() (string, error) {
+	return r.Request.Method()
+}
+
 func (r *webViewAssetRequest) Header() (http.Header, error) {
 	h, err := r.Request.Header()
 	if err != nil {
@@ -272,7 +306,22 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 
 	hh := h.Clone()
 	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
+	if r.windowName != "" {
+		hh.Set(webViewRequestHeaderWindowName, r.windowName)
+	}
 	return hh, nil
+}
+
+func (r *webViewAssetRequest) Body() (io.ReadCloser, error) {
+	return r.Request.Body()
+}
+
+func (r *webViewAssetRequest) Response() webview.ResponseWriter {
+	return r.Request.Response()
+}
+
+func (r *webViewAssetRequest) Close() error {
+	return r.Request.Close()
 }
 
 var webviewRequests = make(chan *webViewAssetRequest, 5)
@@ -302,6 +351,7 @@ type App struct {
 	Screen      *ScreenManager
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
+	Autostart   *AutostartManager
 
 	// Windows
 	windows     map[uint]Window
@@ -350,7 +400,7 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window Window)
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
@@ -363,8 +413,8 @@ type App struct {
 	// The application option `OnShutdown` is run first.
 	shutdownTasks []func()
 
-	// signalHandler is used to handle signals
-	signalHandler *signal.SignalHandler
+	// Platform-specific fields (includes signal handler on desktop)
+	platformSignalHandler
 
 	// Wails ApplicationEvent Listener related
 	wailsEventListenerLock sync.Mutex
@@ -425,8 +475,6 @@ func (a *App) RegisterService(service Service) {
 	a.options.Services = append(a.options.Services, service)
 }
 
-// EmitEvent will emit an event
-
 func (a *App) handleFatalError(err error) {
 	a.handleError(&FatalError{err: err})
 	os.Exit(1)
@@ -439,7 +487,7 @@ func (a *App) init() {
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*ContextMenu)
-	a.keyBindings = make(map[string]func(window *WebviewWindow))
+	a.keyBindings = make(map[string]func(window Window))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 	a.wailsEventListeners = make([]WailsEventListener, 0)
@@ -456,21 +504,12 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Autostart = newAutostartManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
-
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
-//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
-//	a.assets.AttachServiceHandler(prefix, handler)
-//}
 
 func (a *App) GetPID() int {
 	return a.pid
@@ -518,7 +557,7 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
-	// Ensure application context is canceled in case of failures.
+	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
 	// Call post-create hooks
@@ -580,11 +619,6 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			dragAndDropMessage := <-windowDragAndDropBuffer
-			a.Logger.Debug(
-				"[DragDropDebug] App.Run: Received message from windowDragAndDropBuffer",
-				"message",
-				fmt.Sprintf("%+v", dragAndDropMessage),
-			)
 			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
@@ -658,7 +692,7 @@ func (a *App) shutdownServices() {
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
 
-	// Ensure app context is canceled first (duplicate calls don't hurt).
+	// Ensure app context is cancelled first (duplicate calls don't hurt).
 	a.cancel()
 
 	for len(a.options.Services) > 0 {
@@ -676,13 +710,7 @@ func (a *App) shutdownServices() {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Called with event",
-		"event",
-		fmt.Sprintf("%+v", event),
-	)
 	defer handlePanic()
-	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
@@ -690,13 +718,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Calling window.HandleDragAndDropMessage",
-		"windowID",
-		event.windowId,
-	)
-	window.HandleDragAndDropMessage(event.filenames, event.DropZone)
+	window.handleDragAndDropMessage(event.filenames, event.DropTarget)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -704,24 +726,38 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
+	// Debug: log all window IDs
+	var ids []uint
+	for id := range a.windows {
+		ids = append(ids, id)
+	}
 	a.windowsLock.RUnlock()
+
+	a.debug("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
+
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
-			a.options.RawMessageHandler(window, event.message)
+			a.options.RawMessageHandler(window, event.message, event.originInfo)
 		}
 	}
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
+	// Log that we're processing the request
+	url, _ := request.Request.URL()
+	a.debug("handleWebViewRequest: Processing request", "url", url)
+	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
+	a.debug("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
@@ -772,12 +808,12 @@ func (a *App) cleanup() {
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.RLock()
+		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Close()
 		}
 		a.windows = nil
-		a.windowsLock.RUnlock()
+		a.windowsLock.Unlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()
@@ -808,30 +844,6 @@ func (a *App) SetIcon(icon []byte) {
 	if a.impl != nil {
 		a.impl.setIcon(icon)
 	}
-}
-
-func InfoDialog() *MessageDialog {
-	return newMessageDialog(InfoDialogType)
-}
-
-func QuestionDialog() *MessageDialog {
-	return newMessageDialog(QuestionDialogType)
-}
-
-func WarningDialog() *MessageDialog {
-	return newMessageDialog(WarningDialogType)
-}
-
-func ErrorDialog() *MessageDialog {
-	return newMessageDialog(ErrorDialogType)
-}
-
-func OpenFileDialog() *OpenFileDialogStruct {
-	return newOpenFileDialog()
-}
-
-func SaveFileDialog() *SaveFileDialogStruct {
-	return newSaveFileDialog()
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {

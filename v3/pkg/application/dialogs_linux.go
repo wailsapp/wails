@@ -1,16 +1,21 @@
+//go:build linux && !android && !server
+
 package application
 
 func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window, _ := globalApplication.Window.GetByID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
 	}
 	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
-	InvokeAsync(func() {
+	gtkDispatch(func() {
 		runQuestionDialog(
 			pointer(parent),
 			about,
@@ -27,10 +32,13 @@ func (m *linuxDialog) show() {
 	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
 	if window != nil {
-		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
+		nativeWindow := window.NativeWindow()
+		if nativeWindow != nil {
+			parent = uintptr(nativeWindow)
+		}
 	}
 
-	InvokeAsync(func() {
+	gtkDispatch(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]

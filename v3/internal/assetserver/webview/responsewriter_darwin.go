@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 package webview
 
@@ -68,9 +68,10 @@ static bool URLSchemeTaskDidReceiveResponse(void *wkUrlSchemeTask, int statusCod
 import "C"
 
 import (
-	"encoding/json"
 	"net/http"
 	"unsafe"
+
+	"encoding/json"
 )
 
 var _ ResponseWriter = &responseWriter{}
@@ -101,7 +102,7 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 
 	var content unsafe.Pointer
 	var contentLen int
-	if buf != nil {
+	if buf != nil && len(buf) > 0 {
 		content = unsafe.Pointer(&buf[0])
 		contentLen = len(buf)
 	}

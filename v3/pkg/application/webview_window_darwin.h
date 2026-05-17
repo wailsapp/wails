@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #ifndef WebviewWindowDelegate_h
 #define WebviewWindowDelegate_h
@@ -15,10 +15,11 @@
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
 @property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+@property BOOL disableEscapeExitsFullscreen;
 
 @end
 
-@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination>
+@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination, WKUIDelegate>
 
 @property unsigned int windowId;
 @property (retain) NSEvent* leftMouseEvent;
@@ -33,5 +34,13 @@
 @end
 
 void windowSetScreen(void* window, void* screen, int yOffset);
+
+// Liquid Glass support functions
+bool isLiquidGlassSupported();
+void windowSetLiquidGlass(void* window, int style, int material, double cornerRadius, 
+                          int r, int g, int b, int a, 
+                          const char* groupID, double groupSpacing);
+void windowRemoveVisualEffects(void* window);
+void configureWebViewForLiquidGlass(void* window);
 
 #endif /* WebviewWindowDelegate_h */

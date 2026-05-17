@@ -3,7 +3,6 @@ package application
 import (
 	"slices"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -19,17 +18,44 @@ func newEventManager(app *App) *EventManager {
 	}
 }
 
-// Emit emits a custom event
-func (em *EventManager) Emit(name string, data ...any) {
-	em.app.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
+// Emit emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If no data argument is provided, Emit emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
+// If the given event name is registered, Emit validates the data parameter
+// against the expected data type. In case of a mismatch, Emit reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) Emit(name string, data ...any) bool {
+	event := &CustomEvent{Name: name}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
+
+	return event.IsCancelled()
 }
 
 // EmitEvent emits a custom event object (internal use)
-func (em *EventManager) EmitEvent(event *CustomEvent) {
-	em.app.customEventProcessor.Emit(event)
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (em *EventManager) EmitEvent(event *CustomEvent) bool {
+	if err := em.app.customEventProcessor.Emit(event); err != nil {
+		globalApplication.handleError(err)
+	}
+
+	return event.IsCancelled()
 }
 
 // On registers a listener for custom events
@@ -73,7 +99,9 @@ func (em *EventManager) OnApplicationEvent(eventType events.ApplicationEventType
 		em.app.applicationEventListenersLock.Lock()
 		defer em.app.applicationEventListenersLock.Unlock()
 		// Remove listener
-		em.app.applicationEventListeners[eventID] = lo.Without(em.app.applicationEventListeners[eventID], listener)
+		em.app.applicationEventListeners[eventID] = slices.DeleteFunc(em.app.applicationEventListeners[eventID], func(l *EventListener) bool {
+			return l == listener
+		})
 	}
 }
 
@@ -89,24 +117,15 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 	return func() {
 		em.app.applicationEventHooksLock.Lock()
-		em.app.applicationEventHooks[eventID] = lo.Without(em.app.applicationEventHooks[eventID], thisHook)
+		em.app.applicationEventHooks[eventID] = slices.DeleteFunc(em.app.applicationEventHooks[eventID], func(h *eventHook) bool {
+			return h == thisHook
+		})
 		em.app.applicationEventHooksLock.Unlock()
 	}
 }
 
 // Dispatch dispatches an event to listeners (internal use)
 func (em *EventManager) dispatch(event *CustomEvent) {
-	// Snapshot windows under RLock
-	em.app.windowsLock.RLock()
-	for _, window := range em.app.windows {
-		if event.IsCancelled() {
-			em.app.windowsLock.RUnlock()
-			return
-		}
-		window.DispatchWailsEvent(event)
-	}
-	em.app.windowsLock.RUnlock()
-
 	// Snapshot listeners under Lock
 	em.app.wailsEventListenerLock.Lock()
 	listeners := slices.Clone(em.app.wailsEventListeners)

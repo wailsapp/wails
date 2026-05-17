@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
 #import <CoreServices/CoreServices.h> // For Apple Event constants
@@ -17,6 +17,16 @@ extern void handleSecondInstanceData(char * message);
     HandleOpenFile((char*)utf8FileName);
     return YES;
  }
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> * _Nullable))restorationHandler {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        if (url) {
+            HandleOpenURL((char*)[[url absoluteString] UTF8String]);
+            return YES;
+        }
+    }
+    return NO;
+}
 // Create the applicationShouldTerminateAfterLastWindowClosed: method
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
@@ -25,6 +35,26 @@ extern void handleSecondInstanceData(char * message);
 - (void)themeChanged:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidChangeTheme) ) {
         processApplicationEvent(EventApplicationDidChangeTheme, NULL);
+    }
+}
+- (void)workspaceWillSleep:(NSNotification *)notification {
+    if( hasListeners(EventApplicationWillSleep) ) {
+        processApplicationEvent(EventApplicationWillSleep, NULL);
+    }
+}
+- (void)workspaceDidWake:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidWake) ) {
+        processApplicationEvent(EventApplicationDidWake, NULL);
+    }
+}
+- (void)workspaceScreensDidSleep:(NSNotification *)notification {
+    if( hasListeners(EventApplicationScreensDidSleep) ) {
+        processApplicationEvent(EventApplicationScreensDidSleep, NULL);
+    }
+}
+- (void)workspaceScreensDidWake:(NSNotification *)notification {
+    if( hasListeners(EventApplicationScreensDidWake) ) {
+        processApplicationEvent(EventApplicationScreensDidWake, NULL);
     }
 }
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
@@ -46,13 +76,12 @@ extern void handleSecondInstanceData(char * message);
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
         processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
     }
-    
     return TRUE;
 }
 - (void)handleSecondInstanceNotification:(NSNotification *)note;
 {
-   if (note.userInfo[@"message"] != nil) {
-        NSString *message = note.userInfo[@"message"];
+   if (note.object != nil) {
+        NSString *message = (NSString *)note.object;
         const char* utf8Message = message.UTF8String;
         handleSecondInstanceData((char*)utf8Message);
     }
@@ -185,7 +214,7 @@ extern void handleSecondInstanceData(char * message);
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
    NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
    if (urlStr) {
-       HandleCustomProtocol((char*)[urlStr UTF8String]);
+       HandleOpenURL((char*)[urlStr UTF8String]);
    }
 }
 @end
