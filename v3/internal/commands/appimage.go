@@ -56,10 +56,16 @@ func GenerateAppImage(options *GenerateAppImageOptions) error {
 			return err
 		}
 	}
-	var err error
-	options.OutputDir, err = filepath.Abs(options.OutputDir)
-	if err != nil {
-		return err
+	// Resolve every input path to absolute form up-front. The bundler does
+	// `s.CD` into the build directory partway through, so anything left as
+	// a relative path would be interpreted relative to the wrong CWD by
+	// downstream goroutines and shell-outs (e.g. `ldd <binary>`).
+	for _, p := range []*string{&options.OutputDir, &options.BuildDir, &options.Binary, &options.Icon, &options.DesktopFile} {
+		abs, err := filepath.Abs(*p)
+		if err != nil {
+			return err
+		}
+		*p = abs
 	}
 
 	term.Header("AppImage Generator")
@@ -197,6 +203,14 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	cmd := fmt.Sprintf("%s --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 
+	// Force linuxdeploy's appimage plugin to write the AppImage to a known
+	// filename. Without this it derives the name from the desktop file's
+	// `Name=` field, which often doesn't match the binary basename and
+	// causes the subsequent move-to-output step to fail.
+	appImageName := fmt.Sprintf("%s-%s.AppImage", name, arch)
+	targetFile := filepath.Join(options.BuildDir, appImageName)
+	s.SETENV("OUTPUT", appImageName)
+
 	// Check if system libraries use .relr.dyn sections (modern toolchains)
 	// If so, disable stripping as linuxdeploy's bundled strip can't handle them
 	if hasRelrDynSections() {
@@ -211,10 +225,9 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 
 	// Move file to output directory
-	targetFile := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppImage", name, arch))
 	s.MOVE(targetFile, options.OutputDir)
 
-	log(p, "AppImage created: "+targetFile)
+	log(p, "AppImage created: "+filepath.Join(options.OutputDir, appImageName))
 	return nil
 }
 

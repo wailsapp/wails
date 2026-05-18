@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix `wails3 generate appimage` on the GTK4 default: the bundler now detects the GTK stack from the binary before searching for runtime files, so it picks `libwebkitgtkinjectedbundle.so` (under `webkitgtk-6.0/`) for GTK4 builds and `libwebkit2gtkinjectedbundle.so` (under `webkit2gtk-4.1/`) for `-tags gtk3` builds. The `.relr.dyn` probe also checks `libgtk-4.so.1` so stripping is correctly disabled on modern toolchains regardless of stack. (#5475)
+- Fix `wails3 generate appimage` failing when invoked with a relative `-builddir`: the bundler now resolves `-binary`, `-icon`, `-desktopfile`, `-builddir` and `-outputdir` to absolute paths up-front so the mid-flow `s.CD` doesn't break the AppRun download goroutine or the post-copy `ldd` probe.
+- Fix `wails3 generate appimage` failing to move the final AppImage to `-outputdir` when the desktop `Name=` field doesn't match the binary basename: the bundler now forces linuxdeploy's appimage plugin (via the `OUTPUT` env var) to write the AppImage to `<binary>-<arch>.AppImage` instead of the name derived from the desktop file.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
