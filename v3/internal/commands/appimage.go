@@ -137,9 +137,35 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	wg.Wait()
 
+	// Determine which GTK stack the binary links against by ldd'ing the
+	// source binary. We need this before searching for runtime files,
+	// because GTK3 (WebKit2GTK 4.x) and GTK4 (WebKitGTK 6.0) ship the
+	// injected-bundle library under different names.
+	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %s", options.Binary))
+	if err != nil {
+		println(string(lddOutput))
+		return err
+	}
+	lddString := string(lddOutput)
+	var DeployGtkVersion string
+	switch {
+	case s.CONTAINS(lddString, "libgtk-4.so"):
+		DeployGtkVersion = "4"
+	case s.CONTAINS(lddString, "libgtk-3.so"):
+		DeployGtkVersion = "3"
+	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
+		DeployGtkVersion = "2"
+	default:
+		return fmt.Errorf("unable to determine GTK version")
+	}
+
 	// Processing GTK files
 	log(p, "Processing GTK files.")
-	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", "libwebkit2gtkinjectedbundle.so"}
+	injectedBundle := "libwebkit2gtkinjectedbundle.so"
+	if DeployGtkVersion == "4" {
+		injectedBundle = "libwebkitgtkinjectedbundle.so"
+	}
+	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", injectedBundle}
 	files, err := findGTKFiles(filesNeeded)
 	if err != nil {
 		return err
@@ -162,26 +188,6 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	err = os.WriteFile(filepath.Join(options.BuildDir, "linuxdeploy-plugin-gtk.sh"), gtkPlugin, 0755)
 	if err != nil {
 		return err
-	}
-
-	// Determine GTK Version
-	targetBinary := filepath.Join(appDir, "usr", "bin", options.Binary)
-	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %s", targetBinary))
-	if err != nil {
-		println(string(lddOutput))
-		return err
-	}
-	lddString := string(lddOutput)
-	var DeployGtkVersion string
-	switch {
-	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
-		DeployGtkVersion = "2"
-	case s.CONTAINS(lddString, "libgtk-3.so"):
-		DeployGtkVersion = "3"
-	case s.CONTAINS(lddString, "libgtk-4.so"):
-		DeployGtkVersion = "4"
-	default:
-		return fmt.Errorf("unable to determine GTK version")
 	}
 
 	// Run linuxdeploy to bundle the application
@@ -261,11 +267,20 @@ func findGTKFiles(files []string) ([]string, error) {
 // which are incompatible with linuxdeploy's bundled strip binary.
 // This is common on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+).
 func hasRelrDynSections() bool {
-	// Check common GTK library that will be bundled
+	// Check common GTK libraries that will be bundled. We probe both the
+	// GTK4 (default since v3.0.0-alpha.93) and GTK3 (legacy `-tags gtk3`)
+	// libraries because either may be present depending on the build.
 	testLibs := []string{
+		// GTK4
+		"/usr/lib/libgtk-4.so.1",
+		"/usr/lib64/libgtk-4.so.1",
+		"/usr/lib/x86_64-linux-gnu/libgtk-4.so.1",
+		"/usr/lib/aarch64-linux-gnu/libgtk-4.so.1",
+		// GTK3
 		"/usr/lib/libgtk-3.so.0",
 		"/usr/lib64/libgtk-3.so.0",
 		"/usr/lib/x86_64-linux-gnu/libgtk-3.so.0",
+		"/usr/lib/aarch64-linux-gnu/libgtk-3.so.0",
 	}
 
 	for _, lib := range testLibs {

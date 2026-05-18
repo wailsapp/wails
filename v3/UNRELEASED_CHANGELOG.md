@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `wails3 generate appimage` on the GTK4 default: the bundler now detects the GTK stack from the binary before searching for runtime files, so it picks `libwebkitgtkinjectedbundle.so` (under `webkitgtk-6.0/`) for GTK4 builds and `libwebkit2gtkinjectedbundle.so` (under `webkit2gtk-4.1/`) for `-tags gtk3` builds. The `.relr.dyn` probe also checks `libgtk-4.so.1` so stripping is correctly disabled on modern toolchains regardless of stack. (#5475)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
