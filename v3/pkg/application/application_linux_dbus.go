@@ -23,7 +23,11 @@ func (a *linuxApp) monitorThemeChanges() {
 		if err = conn.AddMatchSignal(
 			dbus.WithMatchObjectPath("/org/freedesktop/portal/desktop"),
 		); err != nil {
-			panic(err)
+			a.parent.warning(
+				"[WARNING] Failed to subscribe to portal SettingChanged; theme changes will not fire: %v",
+				err,
+			)
+			return
 		}
 
 		c := make(chan *dbus.Signal, 10)
