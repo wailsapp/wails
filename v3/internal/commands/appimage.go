@@ -146,8 +146,9 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Determine which GTK stack the binary links against by ldd'ing the
 	// source binary. We need this before searching for runtime files,
 	// because GTK3 (WebKit2GTK 4.x) and GTK4 (WebKitGTK 6.0) ship the
-	// injected-bundle library under different names.
-	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %s", options.Binary))
+	// injected-bundle library under different names. The %q quoting keeps
+	// `s.EXEC`'s shlex split intact when the binary path contains spaces.
+	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %q", options.Binary))
 	if err != nil {
 		println(string(lddOutput))
 		return err
@@ -162,7 +163,11 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
 		DeployGtkVersion = "2"
 	default:
-		return fmt.Errorf("unable to determine GTK version")
+		snippet := lddString
+		if len(snippet) > 200 {
+			snippet = snippet[:200] + "..."
+		}
+		return fmt.Errorf("unable to determine GTK version (looked for libgtk-4.so, libgtk-3.so, libgtk-x11-2.0.so in ldd %q output): %s", options.Binary, snippet)
 	}
 
 	// Processing GTK files
@@ -200,7 +205,10 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	s.CD(options.BuildDir)
 	linuxdeployAppImage := filepath.Join(options.BuildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
 
-	cmd := fmt.Sprintf("%s --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", linuxdeployAppImage, appDir)
+	// Quote the executable and --appdir args so `s.EXEC`'s shlex split
+	// keeps them as single tokens when the user-supplied paths contain
+	// spaces.
+	cmd := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q --output appimage --plugin gtk", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 
 	// Force linuxdeploy's appimage plugin to write the AppImage to a known
@@ -298,7 +306,7 @@ func hasRelrDynSections() bool {
 
 	for _, lib := range testLibs {
 		if _, err := os.Stat(lib); err == nil {
-			output, err := s.EXEC(fmt.Sprintf("readelf -S %s", lib))
+			output, err := s.EXEC(fmt.Sprintf("readelf -S %q", lib))
 			if err == nil && strings.Contains(string(output), ".relr.dyn") {
 				return true
 			}
