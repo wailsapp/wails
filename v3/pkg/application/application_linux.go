@@ -92,6 +92,10 @@ func (a *linuxApp) run() error {
 			a.parent.handleError(err)
 		}
 	})
+	a.setupCommonEvents()
+	// Theme changes are already monitored by listenForSystemThemeChanges via init();
+	// it uses the portal-standard org.freedesktop.appearance namespace.
+	a.monitorPowerEvents()
 	return appRun(a.application)
 }
 
@@ -292,7 +296,10 @@ func (a *linuxApp) isDarkMode() bool {
 		return false
 	}
 
-	innerVariant := result.Value().(dbus.Variant)
+	innerVariant, ok := result.Value().(dbus.Variant)
+	if !ok {
+		return false
+	}
 	colorScheme, ok := innerVariant.Value().(uint32)
 	if !ok {
 		return false

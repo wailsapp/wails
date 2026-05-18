@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `events.Common.ApplicationStarted`, `Common.ThemeChanged`, `Common.SystemWillSleep` and `Common.SystemDidWake` not firing on Linux after the GTK4 + WebKitGTK 6.0 stack was promoted to the default in alpha.93. The new default `application_linux.go` `run()` wasn't calling `setupCommonEvents()` (which forwards `Linux.*` events to their `Common.*` counterparts) or `monitorPowerEvents()`. The DBus power-monitor helper is now shared between the GTK3 and GTK4 build paths via `application_linux_dbus.go`. (#5474)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
