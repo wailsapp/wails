@@ -92,6 +92,9 @@ func (a *linuxApp) run() error {
 			a.parent.handleError(err)
 		}
 	})
+	a.setupCommonEvents()
+	a.monitorThemeChanges()
+	a.monitorPowerEvents()
 	return appRun(a.application)
 }
 
