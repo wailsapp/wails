@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -56,6 +57,37 @@ func TestRunHelperSwap_HappyPath_File(t *testing.T) {
 	}
 	if len(l.calls) != 1 || l.calls[0] != target {
 		t.Errorf("launcher calls: %+v", l.calls)
+	}
+}
+
+// The downloaded artifact is created via os.Create which masks 0o666 against
+// umask — on Unix the executable bit isn't set, so a direct rename would
+// produce a non-runnable binary at target. The helper must restore the
+// original target's mode after the swap.
+func TestRunHelperSwap_PreservesExecutableBit(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bit is not a Unix concept on Windows")
+	}
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	if err := os.Chmod(target, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, newPath, []byte("NEW")) // 0o644 — non-executable
+
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 0 {
+		t.Fatalf("code: %d", code)
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode := info.Mode().Perm(); mode != 0o755 {
+		t.Errorf("post-swap mode: got %o, want 0755 — exec bit not restored", mode)
 	}
 }
 

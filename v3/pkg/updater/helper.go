@@ -117,6 +117,15 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		return 12
 	}
 
+	// Snapshot the original mode before the swap. The downloaded artifact
+	// was created via os.Create which sets 0o666-minus-umask — on Unix
+	// that drops the executable bit, so a direct rename would leave the
+	// new binary non-executable and exec() would fail with EACCES.
+	var origMode os.FileMode
+	if origInfo, err := os.Stat(target); err == nil {
+		origMode = origInfo.Mode()
+	}
+
 	// Retry the swap up to 20 times in case the OS still holds a lock. Each
 	// attempt removes the target and renames the new artifact into place.
 	swapped := false
@@ -134,6 +143,13 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		swapped = true
 		lg.logf("swap succeeded on attempt %d", i+1)
 		break
+	}
+
+	// Restore the original executable bits on the new binary.
+	if swapped && origMode != 0 {
+		if err := os.Chmod(target, origMode.Perm()); err != nil {
+			lg.logf("chmod restored mode: %v (non-fatal)", err)
+		}
 	}
 
 	if !swapped {

@@ -163,8 +163,36 @@ const els = {
 let currentRelease = null;
 let currentVersion = "";
 
+// Wails' event bus dispatches each Emit on a fresh goroutine, so events
+// arrive at the frontend out of source-order under load (we have seen e.g.
+// installing → verifying → update-ready → download-complete). Rank the
+// states monotonically so a late "download-complete" can't downgrade a UI
+// that already advanced to "installing". Error short-circuits everything.
+const STATE_RANK = {
+  "":           0,
+  "checking":   1,
+  "available":  2,
+  "downloading":3,
+  "verifying":  4,
+  "installing": 5,
+  "ready":      6,
+};
+let currentRank = 0;
+let errored = false;
+
+// setState returns true if the transition was accepted. Handlers should
+// short-circuit on false so a late event doesn't overwrite text or
+// progress UI that has already advanced.
 function setState(name) {
-  if (!els.root) return;
+  if (!els.root) return false;
+  if (name === "error") {
+    errored = true;
+  } else {
+    if (errored) return false;
+    const rank = STATE_RANK[name] ?? 0;
+    if (rank < currentRank) return false;
+    currentRank = rank;
+  }
   els.root.classList.remove(
     "wails-updater--checking",
     "wails-updater--available",
@@ -175,6 +203,7 @@ function setState(name) {
     "wails-updater--error",
   );
   if (name) els.root.classList.add("wails-updater--" + name);
+  return true;
 }
 
 function fmt(bytes) {
@@ -194,7 +223,7 @@ function showError(msg) {
 
 function onUpdateAvailable(rel) {
   currentRelease = rel || null;
-  setState("available");
+  if (!setState("available")) return;
   if (els.title) els.title.textContent = "Update Available";
   if (els.version && rel) {
     els.version.textContent =
@@ -206,14 +235,14 @@ function onUpdateAvailable(rel) {
 }
 
 function onNoUpdate() {
-  setState();
+  if (!setState("")) return;
   if (els.title) els.title.textContent = "You're Up to Date";
   if (els.notes) els.notes.textContent = "You're running the latest version.";
   if (els.btnInstall) els.btnInstall.disabled = true;
 }
 
 function onDownloadStarted(rel) {
-  setState("downloading");
+  if (!setState("downloading")) return;
   if (els.progressBx) els.progressBx.hidden = false;
   if (els.progress) { els.progress.removeAttribute("value"); }
   if (els.status) els.status.textContent = "Starting download…";
@@ -221,6 +250,10 @@ function onDownloadStarted(rel) {
 
 function onDownloadProgress(p) {
   if (!p) return;
+  // Only paint progress while we're in the downloading state. A late tick
+  // arriving after verifying/installing/ready would otherwise resurrect a
+  // misleading progress bar.
+  if (currentRank !== STATE_RANK.downloading) return;
   if (els.progress) {
     if (p.total > 0) {
       els.progress.max = p.total;
@@ -237,17 +270,17 @@ function onDownloadProgress(p) {
 }
 
 function onVerifying() {
-  setState("verifying");
+  if (!setState("verifying")) return;
   if (els.status) els.status.textContent = "Verifying…";
 }
 
 function onInstalling() {
-  setState("installing");
+  if (!setState("installing")) return;
   if (els.status) els.status.textContent = "Installing…";
 }
 
 function onUpdateReady() {
-  setState("ready");
+  if (!setState("ready")) return;
   if (els.status) els.status.textContent = "Update ready — restart to apply.";
 }
 

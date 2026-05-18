@@ -16,6 +16,7 @@ import (
 	"io"
 	"math/big"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -36,6 +37,7 @@ type fakeHost struct {
 
 	openCalls []updater.WindowOptions
 	window    *fakeWindow
+	quits     int
 }
 
 type fakeEvent struct {
@@ -86,20 +88,20 @@ func (f *fakeHost) OpenWindow(opts updater.WindowOptions) updater.WindowHandle {
 	return w
 }
 
+func (f *fakeHost) Quit() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.quits++
+}
+
 // fakeWindow records every interaction the Updater performs on a window.
 type fakeWindow struct {
 	mu     sync.Mutex
-	html   []string
 	closed bool
 	shown  int
 	events []fakeEvent
 }
 
-func (w *fakeWindow) SetHTML(s string) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	w.html = append(w.html, s)
-}
 func (w *fakeWindow) EmitEvent(name string, data ...any) bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -431,6 +433,60 @@ func TestDownloadAndInstall_DigestMismatch_FailsClosed(t *testing.T) {
 	}
 	if ei.Provider != "p" {
 		t.Errorf("error provider: %s", ei.Provider)
+	}
+}
+
+// Restart must (a) refuse when nothing is staged, (b) on successful spawn
+// dispatch Host.Quit so the helper's "wait for parent to exit" step
+// completes. Previously Restart spawned the helper and returned, leaving
+// the caller responsible for calling app.Quit themselves — which everyone
+// missed, so "Restart" looked like a no-op.
+func TestRestart_QuitsAfterSpawn(t *testing.T) {
+	// Substitute a benign command in place of the real self re-exec so
+	// Start() succeeds without actually launching another test binary in
+	// helper mode.
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		if _, err := os.Stat("/usr/bin/true"); err == nil {
+			return "/usr/bin/true", nil
+		}
+		return "/bin/true", nil
+	}))
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		return exec.Command(path)
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	// Not ready yet: Restart should refuse.
+	if err := u.Restart(context.Background()); !errors.Is(err, updater.ErrNotReady) {
+		t.Fatalf("Restart pre-install: want ErrNotReady, got %v", err)
+	}
+	if host.quits != 0 {
+		t.Fatalf("Quit dispatched too early: %d", host.quits)
+	}
+
+	// Stage a release through the normal flow.
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+
+	if err := u.Restart(context.Background()); err != nil {
+		t.Fatalf("Restart: %v", err)
+	}
+	host.mu.Lock()
+	defer host.mu.Unlock()
+	if host.quits != 1 {
+		t.Errorf("Quit dispatch count: got %d, want 1", host.quits)
 	}
 }
 

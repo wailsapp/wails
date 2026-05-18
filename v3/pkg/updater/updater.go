@@ -48,12 +48,21 @@ type Host interface {
 	// OpenWindow creates and shows an update window. Implementations build
 	// a real Wails webview window from opts; tests return a recorder.
 	OpenWindow(opts WindowOptions) WindowHandle
+
+	// Quit asks the host application to begin its normal shutdown sequence.
+	// Called by Restart after the helper has been spawned so the helper's
+	// "wait for parent to exit" step actually completes.
+	Quit()
 }
 
 // WindowHandle is the minimal API the Updater drives once a window is open.
 // The application adapter satisfies this around a *WebviewWindow.
+//
+// SetHTML is deliberately omitted — loading HTML after construction puts it
+// on about:blank where the Wails runtime isn't injected (so JS event emits
+// no-op on webkit2gtk and in some WebView2 configurations). Templates are
+// passed via WindowOptions.InitialHTML at construction time instead.
 type WindowHandle interface {
-	SetHTML(html string)
 	EmitEvent(name string, data ...any) bool
 	Show()
 	Close()
@@ -272,19 +281,19 @@ func (u *Updater) CheckAndInstall(ctx context.Context) error {
 	return u.DownloadAndInstall(ctx)
 }
 
-// Restart kicks off the binary swap and relaunches the application. The
-// running process spawns a helper-mode child (the same binary with sentinel
-// env vars set), then asks the application to shut down cleanly. When the
-// parent exits the helper-mode process performs the swap and relaunches.
+// Restart performs the full restart-into-the-new-version dance: it spawns a
+// helper-mode child (the same binary with sentinel env vars set) and then
+// asks the host application to begin its shutdown sequence via Host.Quit.
+// Once the running process exits, the helper performs the binary swap and
+// relaunches the (now-replaced) application.
 //
 // Returns ErrNotReady if DownloadAndInstall has not produced an installed
-// artifact yet. If the spawn fails (which is the only failure mode that
-// keeps the caller's process alive) the error is surfaced.
+// artifact yet. If the helper spawn fails the error is surfaced and Quit is
+// not called — the caller's process stays alive on the old binary.
 //
-// On success this method does not necessarily return immediately — the
-// helper handoff is asynchronous and the caller's process will exit once
-// the application's shutdown sequence completes. Callers should typically
-// follow Restart with a clean shutdown trigger (e.g. app.Quit()).
+// On success Restart returns once the helper has started and Quit has been
+// dispatched. The caller's process will exit asynchronously as the host's
+// normal shutdown unwinds.
 func (u *Updater) Restart(_ context.Context) error {
 	u.mu.RLock()
 	staged := u.resolved
@@ -312,7 +321,10 @@ func (u *Updater) Restart(_ context.Context) error {
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("updater: spawn helper: %w", err)
 	}
-	// Don't wait — the helper outlives us.
+	// Helper is detached and now blocking on waitForPID(os.Getpid()). Hand
+	// off to the host's shutdown sequence so the wait completes and the
+	// swap proceeds.
+	u.host.Quit()
 	return nil
 }
 

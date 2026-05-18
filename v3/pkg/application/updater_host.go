@@ -19,6 +19,11 @@ func (h *updaterHost) Emit(name string, data ...any) bool {
 	return h.app.Event.Emit(name, data...)
 }
 
+// Quit forwards to the app's normal shutdown sequence — the updater calls
+// this from Restart after spawning the helper so the helper's "wait for
+// parent PID to exit" step actually completes.
+func (h *updaterHost) Quit() { h.app.Quit() }
+
 // OnEvent subscribes via the event bus, unwrapping CustomEvent.Data so the
 // updater's callback signature is decoupled from application's CustomEvent
 // type.
@@ -37,6 +42,12 @@ func (h *updaterHost) OnEvent(name string, cb func(payload any)) func() {
 // *WebviewWindow so the methods the updater calls do not collide with the
 // fluent-returning variants on the application's Window interface.
 func (h *updaterHost) OpenWindow(opts updater.WindowOptions) updater.WindowHandle {
+	// HTML must be supplied at construction time, not via a post-creation
+	// SetHTML() call. On webkit2gtk (and likely WebView2 in some
+	// configurations) SetHTML loads the supplied document into the
+	// about:blank context, which does not have the Wails runtime
+	// (window.wails, _wails.dispatchWailsEvent) injected — JS event emits
+	// from the loaded page silently no-op.
 	wopts := WebviewWindowOptions{
 		Title:         opts.Title,
 		Width:         opts.Width,
@@ -44,11 +55,9 @@ func (h *updaterHost) OpenWindow(opts updater.WindowOptions) updater.WindowHandl
 		Frameless:     opts.Frameless,
 		AlwaysOnTop:   opts.AlwaysOnTop,
 		DisableResize: opts.DisableResize,
+		HTML:          opts.InitialHTML,
 	}
 	win := h.app.Window.NewWithOptions(wopts)
-	if opts.InitialHTML != "" {
-		win.SetHTML(opts.InitialHTML)
-	}
 	win.Show()
 	return &updaterWindowHandle{win: win}
 }
@@ -60,9 +69,8 @@ type updaterWindowHandle struct {
 	win *WebviewWindow
 }
 
-func (h *updaterWindowHandle) SetHTML(s string) { h.win.SetHTML(s) }
-func (h *updaterWindowHandle) Show()            { h.win.Show() }
-func (h *updaterWindowHandle) Close()           { h.win.Close() }
+func (h *updaterWindowHandle) Show()  { h.win.Show() }
+func (h *updaterWindowHandle) Close() { h.win.Close() }
 func (h *updaterWindowHandle) EmitEvent(name string, data ...any) bool {
 	return h.win.EmitEvent(name, data...)
 }
