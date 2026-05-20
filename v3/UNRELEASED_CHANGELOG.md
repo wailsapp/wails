@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `-runtimedevtools` build flag and `application.OpenDevTools()` API for programmatic devtools access (#4371)
 
 ## Changed
 <!-- Changes in existing functionality -->

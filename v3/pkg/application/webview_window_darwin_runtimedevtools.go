@@ -1,4 +1,5 @@
-//go:build darwin && !ios && !server && (!production || devtools) && !runtimedevtools
+//go:build darwin && runtimedevtools && !ios && !server
+
 package application
 
 /*
@@ -40,7 +41,6 @@ void openDevTools(void *window) {
 // Enable NSWindow devtools
 void windowEnableDevTools(void* nsWindow) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Enable devtools in webview
 	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 }
 
