@@ -30,6 +30,7 @@ type Updater struct {
 	lastDigest []byte // digest computed streaming during the last successful download
 	skipped    string // version recorded by SkipVersion / the default window Skip button
 
+	dlMu    sync.Mutex     // serialises concurrent DownloadAndInstall calls
 	sessMu  sync.Mutex     // protects session pointer separately from u.mu
 	session *windowSession // current window session, if any
 }
@@ -187,10 +188,16 @@ func (u *Updater) Check(ctx context.Context) (*Release, error) {
 
 // DownloadAndInstall downloads the pending release (set by a previous Check),
 // verifies it, and stages it for swap. Returns ErrNoPendingRelease if Check
-// did not produce one. The actual binary swap is performed in a follow-up
+// did not produce one. Returns ErrDownloadInProgress if another download is
+// already running. The actual binary swap is performed in a follow-up
 // commit; v1 of this branch stages the verified file and reports
 // StateReady + EventUpdateReady.
 func (u *Updater) DownloadAndInstall(ctx context.Context) error {
+	if !u.dlMu.TryLock() {
+		return ErrDownloadInProgress
+	}
+	defer u.dlMu.Unlock()
+
 	u.mu.RLock()
 	cfg := u.cfg
 	pending := u.pending
@@ -396,7 +403,8 @@ func finaliseDownload(tmpPath, filename string) (string, error) {
 // errors
 
 var (
-	ErrAlreadyConfigured = errors.New("updater: Init already called")
-	ErrNotConfigured     = errors.New("updater: Init has not been called")
-	ErrNoPendingRelease  = errors.New("updater: no pending release (call Check first)")
+	ErrAlreadyConfigured  = errors.New("updater: Init already called")
+	ErrNotConfigured      = errors.New("updater: Init has not been called")
+	ErrNoPendingRelease   = errors.New("updater: no pending release (call Check first)")
+	ErrDownloadInProgress = errors.New("updater: download already in progress")
 )
