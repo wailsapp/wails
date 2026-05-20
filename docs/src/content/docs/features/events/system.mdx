@@ -224,9 +224,22 @@ app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.App
     app.Event.Emit("theme-changed", isDark)
 })
 
+// System about to suspend
+app.Event.OnApplicationEvent(events.Common.SystemWillSleep, func(e *application.ApplicationEvent) {
+    flushPendingWrites()
+})
+
+// System resumed from suspend
+app.Event.OnApplicationEvent(events.Common.SystemDidWake, func(e *application.ApplicationEvent) {
+    reconnectSockets()
+    refreshState()
+})
+
 // File opened
 app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *application.ApplicationEvent) {
-    filePath := e.Context().OpenedFile()
+    // Single-file: e.Context().Filename() returns ""; for multi-file launches
+    // (Finder "Open With..." → multiple selection) use OpenedFiles().
+    filePath := e.Context().Filename()
     openFile(filePath)
 })
 ```
@@ -245,6 +258,22 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(e *application.ApplicationEvent) {
         cleanup()
     })
+
+    // System about to sleep / resumed
+    app.Event.OnApplicationEvent(events.Mac.ApplicationWillSleep, func(e *application.ApplicationEvent) {
+        flushPendingWrites()
+    })
+    app.Event.OnApplicationEvent(events.Mac.ApplicationDidWake, func(e *application.ApplicationEvent) {
+        refreshState()
+    })
+
+    // Displays sleeping/waking — distinct from system sleep (e.g. lid lowered)
+    app.Event.OnApplicationEvent(events.Mac.ApplicationScreensDidSleep, func(e *application.ApplicationEvent) {
+        pauseRendering()
+    })
+    app.Event.OnApplicationEvent(events.Mac.ApplicationScreensDidWake, func(e *application.ApplicationEvent) {
+        resumeRendering()
+    })
     ```
   </TabItem>
 
@@ -259,6 +288,14 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     app.Event.OnApplicationEvent(events.Windows.APMSuspend, func(e *application.ApplicationEvent) {
         saveState()
     })
+
+    // System resumed. APMResumeAutomatic always fires on resume;
+    // APMResumeSuspend fires after it when the wake was triggered by
+    // user input. Prefer Common.SystemDidWake if you don't need to
+    // distinguish.
+    app.Event.OnApplicationEvent(events.Windows.APMResumeAutomatic, func(e *application.ApplicationEvent) {
+        refreshState()
+    })
     ```
   </TabItem>
 
@@ -272,6 +309,17 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
     // Theme changed
     app.Event.OnApplicationEvent(events.Linux.SystemThemeChanged, func(e *application.ApplicationEvent) {
         updateTheme()
+    })
+
+    // System sleep/wake — sourced from systemd-logind's PrepareForSleep
+    // signal on the system bus. Requires logind/elogind exposing
+    // org.freedesktop.login1, so it may be unavailable on distros/setups
+    // without it (Alpine, Void, some Devuan setups).
+    app.Event.OnApplicationEvent(events.Linux.SystemWillSleep, func(e *application.ApplicationEvent) {
+        flushPendingWrites()
+    })
+    app.Event.OnApplicationEvent(events.Linux.SystemDidWake, func(e *application.ApplicationEvent) {
+        refreshState()
     })
     ```
   </TabItem>
@@ -288,7 +336,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 })
 
 // Window blur
-window.OnWindowEvent(events.Common.WindowBlur, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window blurred")
 })
 
@@ -300,7 +348,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 
 // Window closed
-window.OnWindowEvent(events.Common.WindowClosed, func(e *application.WindowEvent) {
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
     cleanup()
 })
 ```
@@ -342,7 +390,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 ```go
 // Publisher (service)
 type OrderService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
@@ -451,7 +499,7 @@ import (
 )
 
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (n *NotificationService) Notify(message string) {
@@ -528,13 +576,13 @@ Events.On("window-focused", (event) => {
 // Handle close confirmation
 Events.On("confirm-close", (event) => {
     if (confirm("Close window?")) {
-        Emit("close-confirmed", true)
+        Events.Emit("close-confirmed", true)
     }
 })
 
 // Emit user actions
 document.getElementById('button').addEventListener('click', () => {
-    Emit("user-action", { action: "button-clicked" })
+    Events.Emit("user-action", { action: "button-clicked" })
 })
 ```
 
