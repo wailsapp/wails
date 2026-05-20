@@ -1,0 +1,156 @@
+---
+title: Sistema de Bindings
+description: Como o sistema de bindings coleta, processa e gera código JavaScript/TypeScript
+sidebar:
+  order: 1
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Este guia explica como o sistema de bindings do Wails funciona internamente, fornecendo insights para desenvolvedores que desejam entender a mecânica por trás da geração automática de código.
+
+## Visão Geral da Arquitetura
+
+O sistema de bindings do Wails consiste em três componentes principais:
+
+1. **Coleta**: Analisa o código Go para extrair informações sobre serviços, modelos e outras declarações
+2. **Configuração**: Gerencia configurações e opções para o processo de geração de bindings
+3. **Renderização**: Gera código JavaScript/TypeScript com base nas informações coletadas
+
+<FileTree>
+- internal/generator/
+  - collect/     # Análise de pacotes e extração de informações
+  - config/      # Estruturas e interfaces de configuração
+  - render/      # Geração de código para JS/TS
+</FileTree>
+
+## Processo de Coleta
+
+O processo de coleta é responsável por analisar os pacotes Go e extrair informações sobre serviços, modelos e outras declarações. Isso é tratado pelo pacote `collect`.
+
+### Componentes Principais
+
+- **Collector**: Gerencia informações do pacote e armazena em cache os dados coletados
+- **Package**: Representa um pacote Go sendo analisado e armazena serviços, modelos e diretivas coletados
+- **Service**: Coleta informações sobre tipos de serviço e seus métodos
+- **Model**: Coleta informações detalhadas sobre tipos de modelo, incluindo campos, valores e parâmetros de tipo
+- **Directive**: Analisa e interpreta diretivas `//wails:` no código-fonte Go
+
+### Fluxo de Coleta
+
+1. O collector escaneia os pacotes Go especificados no projeto
+2. Ele identifica tipos de serviço (structs com métodos que serão expostos ao frontend)
+3. Para cada serviço, ele coleta informações sobre seus métodos
+4. Ele identifica tipos de modelo (structs usados como parâmetros ou valores de retorno em métodos de serviço)
+5. Para cada modelo, ele coleta informações sobre seus campos e parâmetros de tipo
+6. Ele processa quaisquer diretivas `//wails:` encontradas no código
+
+## Processo de Renderização
+
+O processo de renderização é responsável por gerar código JavaScript/TypeScript com base nas informações coletadas. Isso é tratado pelo pacote `render`.
+
+### Componentes Principais
+
+- **Renderer**: Orquestra a renderização de arquivos de serviço, modelo e índice
+- **Module**: Representa um único módulo JavaScript/TypeScript gerado
+- **Templates**: Modelos de texto usados para geração de código
+
+### Fluxo de Renderização
+
+1. Para cada serviço, o renderer gera um arquivo JavaScript/TypeScript com funções que espelham os métodos do serviço
+2. Para cada modelo, o renderer gera uma classe JavaScript/TypeScript que espelha a struct do modelo
+3. O renderer gera arquivos de índice que reexportam todos os serviços e modelos
+4. O renderer aplica quaisquer injeções de código customizadas especificadas pelas diretivas `//wails:inject`
+
+## Mapeamento de Tipos
+
+Um dos aspectos mais importantes do sistema de bindings é como os tipos Go são mapeados para tipos JavaScript/TypeScript. Aqui está um resumo do mapeamento:
+
+| Tipo Go | Tipo JavaScript | Tipo TypeScript |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[K]V` | `Object` | `Record<K, V>` |
+| `struct` | `Object` | Classe customizada |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | Não suportado | Não suportado |
+| `chan` | Não suportado | Não suportado |
+
+## Sistema de Diretivas
+
+O sistema de bindings suporta várias diretivas que podem ser usadas para personalizar o código gerado. Essas diretivas são adicionadas como comentários no seu código Go.
+
+### Diretivas Disponíveis
+
+- `//wails:inject`: Injeta código JavaScript/TypeScript customizado nos bindings gerados
+- `//wails:include`: Inclui arquivos adicionais com os bindings gerados
+- `//wails:internal`: Marca um tipo ou método como interno, impedindo que seja exportado para o frontend
+- `//wails:ignore`: Ignora completamente um método durante a geração de bindings
+- `//wails:id`: Especifica um ID customizado para um método, substituindo o ID padrão baseado em hash
+
+### Processamento de Diretivas
+
+1. Durante a fase de coleta, o collector identifica e analisa diretivas no código Go
+2. As diretivas são armazenadas junto com as declarações correspondentes (serviços, métodos, modelos, etc.)
+3. Durante a fase de renderização, o renderer aplica as diretivas para personalizar o código gerado
+
+## Recursos Avançados
+
+### Geração de Código Condicional
+
+O sistema de bindings suporta geração de código condicional usando um prefixo de condição de dois caracteres para diretivas `include` e `inject`:
+
+```
+<language><style>:<content>
+```
+
+Onde:
+- `<language>` pode ser:
+  - `*` - Tanto JavaScript quanto TypeScript
+  - `j` - Apenas JavaScript
+  - `t` - Apenas TypeScript
+
+- `<style>` pode ser:
+  - `*` - Tanto classes quanto interfaces
+  - `c` - Apenas classes
+  - `i` - Apenas interfaces
+
+Por exemplo:
+```go
+//wails:inject j*:console.log("JavaScript only");
+//wails:inject t*:console.log("TypeScript only");
+```
+
+### IDs de Método Customizados
+
+Por padrão, os métodos são identificados por um ID baseado em hash. No entanto, você pode especificar um ID customizado usando a diretiva `//wails:id`:
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+Isso pode ser útil para manter a compatibilidade ao refatorar o código.
+
+## Considerações de Desempenho
+
+O gerador de bindings foi projetado para ser eficiente, mas há alguns pontos a considerar:
+
+1. A primeira execução será mais lenta, pois constrói um cache de pacotes para escanear
+2. Execuções subsequentes serão mais rápidas, pois usam as informações em cache
+3. O gerador processa todos os pacotes do projeto, o que pode ser demorado para projetos grandes
+4. Você pode usar a flag `-clean` para limpar o diretório de saída antes da geração
+
+## Depuração
+
+Se você encontrar problemas com a geração de bindings, pode usar a flag `-v` para habilitar a saída de depuração:
+
+```bash
+wails3 generate bindings -v
+```
+
+Isso fornecerá informações detalhadas sobre o processo de coleta e renderização, o que pode ajudar a identificar a origem do problema.

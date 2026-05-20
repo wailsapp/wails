@@ -73,7 +73,8 @@ One of the most important aspects of the binding system is how Go types are mapp
 | `string` | `string` | `string` |
 | `[]byte` | `Uint8Array` | `Uint8Array` |
 | `[]T` | `Array<T>` | `T[]` |
-| `map[K]V` | `Object` | `Record<K, V>` |
+| `map[string]V` | `Object` | `{ [_: string]: V }` |
+| `map[K]V` (non-string `K`) | `Object` | `{ [_ in K]?: V }` |
 | `struct` | `Object` | Custom class |
 | `interface{}` | `any` | `any` |
 | `*T` | `T \| null` | `T \| null` |
