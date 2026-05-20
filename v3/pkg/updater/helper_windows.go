@@ -5,6 +5,7 @@ package updater
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -58,6 +59,9 @@ func replaceTarget(target, newPath string) error {
 	// Best-effort first try: if nothing's actually holding it, a normal
 	// remove + rename is cleaner (no .old file left behind).
 	if err := os.RemoveAll(target); err == nil {
+		// Sweep any .old files leftover from prior updates — by now the
+		// kernel has released them.
+		sweepRenameAsides(target)
 		return os.Rename(newPath, target)
 	}
 	aside := fmt.Sprintf("%s.old.%d", target, time.Now().UnixNano())
@@ -65,11 +69,26 @@ func replaceTarget(target, newPath string) error {
 		return fmt.Errorf("rename-aside %s → %s: %w", target, aside, err)
 	}
 	if err := os.Rename(newPath, target); err != nil {
-		// Try to put the original back so we're not left in a half-state.
-		_ = os.Rename(aside, target)
+		_ = os.Rename(aside, target) // put the original back; avoid half-state
 		return err
 	}
-	// The .old file may still be locked by the loader; ignore failure.
+	// The just-created aside is probably still mapped by the kernel; this
+	// remove will fail. Sweep grabs older asides whose owning processes are
+	// long gone.
 	_ = os.Remove(aside)
+	sweepRenameAsides(target)
 	return nil
+}
+
+// sweepRenameAsides best-effort-deletes any "<target>.old.*" siblings.
+// Without this, a Windows app updated N times accumulates N stale
+// executables in its install directory.
+func sweepRenameAsides(target string) {
+	matches, err := filepath.Glob(target + ".old.*")
+	if err != nil {
+		return
+	}
+	for _, m := range matches {
+		_ = os.Remove(m)
+	}
 }
