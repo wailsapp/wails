@@ -63,8 +63,13 @@ var verifierRegistry = map[string]verifier{
 
 // runVerification is the single entry point used by the Updater. It enforces
 // the contract: if Verification has a digest, it must match; if it has a
-// signature, the signature must verify. Returns nil only when every present
-// check passed.
+// signature, the signature must verify under configKey. Returns nil only when
+// every present check passed.
+//
+// Signature verification uses configKey (Config.PublicKey) and nothing else.
+// The release source does not get to choose its own trust anchor — that would
+// defeat the purpose of pinning a key out-of-band at build time. Releases that
+// carry a Signature without a configured key fail closed.
 func runVerification(computedDigest []byte, v *Verification, configKey []byte) error {
 	if v == nil {
 		return nil // nothing to check
@@ -84,14 +89,10 @@ func runVerification(computedDigest []byte, v *Verification, configKey []byte) e
 	if err != nil {
 		return err
 	}
-	key := v.PublicKey
-	if len(key) == 0 {
-		key = configKey
-	}
-	if len(key) == 0 {
+	if len(configKey) == 0 {
 		return errors.New("updater: signature requires a public key but none configured")
 	}
-	return vf.verify(computedDigest, v, key)
+	return vf.verify(computedDigest, v, configKey)
 }
 
 func constantTimeEqual(a, b []byte) bool {

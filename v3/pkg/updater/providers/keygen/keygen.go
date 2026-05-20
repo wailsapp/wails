@@ -304,7 +304,15 @@ func (p *Provider) listReleaseArtifacts(ctx context.Context, releaseID string) (
 	var env struct {
 		Data []artifactResource `json:"data"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&env); err != nil {
+	// Cap the artifact list at 8 MiB to match the upgrade-envelope limit.
+	// Releases ship a handful of platform artifacts (typically <100 KiB of
+	// JSON); an unbounded read here would let a misbehaving / malicious
+	// account OOM the host.
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 8*1024*1024))
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(body, &env); err != nil {
 		return nil, fmt.Errorf("keygen: decode artifacts: %w", err)
 	}
 	return env.Data, nil

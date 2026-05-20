@@ -265,11 +265,16 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 func (u *Updater) CheckAndInstall(ctx context.Context) error {
 	// Tear down any session from a previous CheckAndInstall before opening a
 	// fresh one — otherwise its listeners and window leak and stale callbacks
-	// still fire on user-action events.
-	u.closeWindow()
-
-	sess := u.openSession(ctx)
+	// still fire on user-action events. Hold sessMu across the close → open →
+	// assign sequence so concurrent callers can't orphan each other's
+	// listeners (caller A opens, caller B closes A then opens its own, and
+	// A's assignment lands on top, leaking B's listeners).
 	u.sessMu.Lock()
+	if u.session != nil {
+		u.session.close()
+		u.session = nil
+	}
+	sess := u.openSession(ctx)
 	u.session = sess
 	u.sessMu.Unlock()
 
@@ -315,7 +320,9 @@ func (u *Updater) Restart(_ context.Context) error {
 	}
 
 	target := bundleTarget(self)
-	logPath := filepath.Join(os.TempDir(), "wails-update.log")
+	// Include PID so concurrent helpers (e.g. test runs, multiple installed
+	// Wails apps updating at the same time) don't truncate each other's logs.
+	logPath := filepath.Join(os.TempDir(), fmt.Sprintf("wails-update-%d.log", os.Getpid()))
 	env := append(os.Environ(),
 		envHelperMode+"=1",
 		envHelperTarget+"="+target,
@@ -390,7 +397,11 @@ func joinErrors(prefix string, errs []error) error {
 
 func finaliseDownload(tmpPath, filename string) (string, error) {
 	base := filepath.Base(filename)
-	if base == "" || base == "." || base == "/" {
+	// filepath.Base normalises away directory components, but it still passes
+	// through "." and "..", and on Windows ":" / drive prefixes get reduced to
+	// the suffix. Neutralise the ones that would otherwise resolve outside
+	// the staging dir or that filepath.Join would not handle sanely.
+	if base == "" || base == "." || base == ".." || base == "/" || strings.ContainsAny(base, `\/`) {
 		base = "wails-update.bin"
 	}
 	final := filepath.Join(filepath.Dir(tmpPath), base)

@@ -17,10 +17,16 @@ type Config struct {
 	// for "primary unreachable", not "providers disagree"). Required.
 	Providers []Provider
 
-	// PublicKey is the trust root used to verify release signatures. The
-	// Updater logs a warning at Init time when this is empty AND a provider
-	// returns a Release whose Verification carries a Signature. Optional but
-	// strongly recommended.
+	// PublicKey is the trust root used to verify release signatures. It is
+	// the ONLY trust anchor for signature verification — the release source
+	// cannot substitute its own key, since the whole point of pinning a key
+	// here is to bind verification to a value the application developer set
+	// at build time and the release feed cannot influence.
+	//
+	// When unset, releases that carry only a Digest still install (the digest
+	// is checked against the streaming hash), but any release that carries a
+	// Signature is rejected. Strongly recommended for any app whose
+	// distribution channel might be compromised or proxied.
 	PublicKey []byte
 
 	// CheckInterval, when non-zero, makes the Updater poll providers on a

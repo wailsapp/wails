@@ -170,6 +170,34 @@ func TestRunHelperSwap_AppBundle_RestoreOnLaunchFailure(t *testing.T) {
 	}
 }
 
+// When the parent process refuses to exit within the wait timeout, the helper
+// must abort before touching the target. On Windows the swap would otherwise
+// grind against the file lock; on macOS `open -n` would launch a second
+// instance alongside the still-running parent. Either way the user ends up
+// with a worse state than before they tried to update.
+func TestRunHelperSwap_ParentWaitTimeout_Aborts(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+
+	timeoutWaiter := func(_ int, _ time.Duration) error {
+		return errors.New("parent still alive")
+	}
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 1234, filepath.Join(dir, "log"), timeoutWaiter, l)
+	if code != 17 {
+		t.Fatalf("code: %d (want 17 — parent-timeout abort)", code)
+	}
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("target should be untouched, got %q", got)
+	}
+	if len(l.calls) != 0 {
+		t.Errorf("launcher must not be called after abort, got %+v", l.calls)
+	}
+}
+
 func TestHandleHelperMode_NoEnv_Returns(t *testing.T) {
 	// When the sentinel env var is absent the function must return
 	// immediately and NOT touch os.Exit.

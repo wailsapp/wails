@@ -128,9 +128,11 @@ app.Updater.Init(updater.Config{
 
 Supported algorithms: `ed25519`, `ed25519ph` (pre-hash, SHA-512), `ecdsa-p256` (over SHA-256), plus digest-only mode (SHA-256/SHA-512).
 
-Each provider populates `Release.Verification` with whatever its source publishes — keygen.sh ships Ed25519ph, Sparkle ships Ed25519, GitHub providers ship digests via `ChecksumAsset`. If a release carries a signature and no public key is configured, the install **fails closed** — never the other way around.
+Each provider populates `Release.Verification` with whatever its source publishes — keygen.sh ships Ed25519ph, Sparkle ships Ed25519, GitHub providers ship digests via `ChecksumAsset`. If a release carries a signature and no public key is configured, the install **fails closed** — never the other way around. The release source has no way to substitute its own trust anchor: signatures are verified against `Config.PublicKey` and nothing else.
 
 The verifier reads the SHA digest computed *while streaming* the download, so even on multi-GB updates verification adds no extra disk pass.
+
+> **Note on digest-only mode.** A release that carries only a `Digest` (no signature) is authenticated against the registry's TLS plus whatever integrity guarantee the registry itself provides — not against a cryptographic root you control. Use digest-only for bit-rot detection and as a sanity check; use signatures for tamper resistance against a compromised release pipeline. The Ed25519 algorithm names refer to signatures over the SHA-256 (or SHA-512 for `ed25519ph`) digest of the file, computed during download — your signing tool must produce signatures over that same digest, not over the raw file bytes.
 
 ## The default window
 

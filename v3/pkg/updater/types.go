@@ -64,12 +64,16 @@ type Artifact struct {
 //
 // Either Digest+DigestAlgo, Signature+SignatureAlgo, or both may be present.
 // When both are present, both are checked; either failing fails the update.
+//
+// Signature verification always uses Config.PublicKey as the trust root. The
+// release source has no say in which key authenticates it — that is the entire
+// point of pinning a key out-of-band at build time. Releases that ship a
+// Signature without a configured Config.PublicKey fail closed.
 type Verification struct {
 	DigestAlgo    string `json:"digestAlgo,omitempty"`    // "sha256", "sha512"
 	Digest        []byte `json:"digest,omitempty"`        // raw digest bytes
 	SignatureAlgo string `json:"signatureAlgo,omitempty"` // "ed25519", "ed25519ph", "ecdsa-p256"
 	Signature     []byte `json:"signature,omitempty"`     // raw signature bytes
-	PublicKey     []byte `json:"publicKey,omitempty"`     // optional override; Updater falls back to Config.PublicKey
 }
 
 // Progress is the payload of EventDownloadProgress.

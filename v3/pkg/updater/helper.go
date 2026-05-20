@@ -102,9 +102,16 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	// Wait for the parent (the running app) to exit so the file is no longer
 	// locked. On Windows this is the critical step.
+	//
+	// If the parent never exits — most commonly because a webview dialog is
+	// blocking shutdown — we must NOT proceed: on Windows the swap would
+	// grind against the lock; on macOS the subsequent `open -n` would launch
+	// a second instance alongside the still-running one, leaving the user
+	// with two copies of the app racing on shared state.
 	if parentPID > 0 {
 		if err := wait(parentPID, 30*time.Second); err != nil {
-			lg.logf("parent did not exit cleanly: %v — proceeding anyway", err)
+			lg.logf("parent did not exit within timeout: %v — aborting swap", err)
+			return 17
 		}
 	}
 

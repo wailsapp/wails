@@ -579,11 +579,10 @@ func TestDownloadAndInstall_Ed25519phSignature_Verifies(t *testing.T) {
 			DigestAlgo:    "sha512",
 			SignatureAlgo: "ed25519ph",
 			Signature:     sig,
-			PublicKey:     pkix,
 		},
 	}
 	p := &fakeProvider{name: "p", rel: rel, body: body}
-	u := newConfigured(t, host, p)
+	u := newConfiguredWithKey(t, host, pkix, p)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -621,11 +620,10 @@ func TestDownloadAndInstall_ECDSAP256Signature_Verifies(t *testing.T) {
 			DigestAlgo:    "sha256",
 			SignatureAlgo: "ecdsa-p256",
 			Signature:     sig,
-			PublicKey:     pkix,
 		},
 	}
 	p := &fakeProvider{name: "p", rel: rel, body: body}
-	u := newConfigured(t, host, p)
+	u := newConfiguredWithKey(t, host, pkix, p)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -668,11 +666,10 @@ func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
 			DigestAlgo:    "sha256",
 			SignatureAlgo: "ecdsa-p256",
 			Signature:     sig,
-			PublicKey:     pkix,
 		},
 	}
 	p := &fakeProvider{name: "p", rel: rel, body: body}
-	u := newConfigured(t, host, p)
+	u := newConfiguredWithKey(t, host, pkix, p)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -704,6 +701,55 @@ func TestDownloadAndInstall_SignatureWithoutPublicKey_Fails(t *testing.T) {
 	err := u.DownloadAndInstall(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "requires a public key") {
 		t.Fatalf("expected public-key-missing error, got %v", err)
+	}
+}
+
+// A release whose signature verifies against an attacker-controlled key must
+// be rejected when Config.PublicKey is set to a different key. The trust root
+// is pinned at Init time; the release source has no say in which key
+// authenticates it. Regression test: an earlier API allowed Verification to
+// carry its own PublicKey that took precedence over Config.PublicKey, which
+// would let a compromised release source self-attest with any key it liked.
+func TestDownloadAndInstall_Signature_RejectsAttackerKey(t *testing.T) {
+	host := &fakeHost{}
+
+	// Attacker generates a key and signs the payload with it.
+	_, attackerPriv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("payload")
+	digest := sha256.Sum256(body)
+	attackerSig := ed25519.Sign(attackerPriv, digest[:])
+
+	// The user has pinned a different key as the trust root.
+	pinnedPub, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pinnedPKIX, err := x509.MarshalPKIXPublicKey(pinnedPub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo:    "sha256",
+			SignatureAlgo: "ed25519",
+			Signature:     attackerSig,
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfiguredWithKey(t, host, pinnedPKIX, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	err = u.DownloadAndInstall(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "did not verify") {
+		t.Fatalf("expected signature-verification failure under pinned key, got %v", err)
 	}
 }
 
@@ -746,10 +792,18 @@ func TestCheckAndInstall_HappyPath(t *testing.T) {
 
 func newConfigured(t *testing.T, host updater.Host, providers ...updater.Provider) *updater.Updater {
 	t.Helper()
+	return newConfiguredWithKey(t, host, nil, providers...)
+}
+
+// newConfiguredWithKey is the same as newConfigured but also sets
+// Config.PublicKey — used by tests that verify signed releases.
+func newConfiguredWithKey(t *testing.T, host updater.Host, publicKey []byte, providers ...updater.Provider) *updater.Updater {
+	t.Helper()
 	u := updater.New(host)
 	if err := u.Init(updater.Config{
 		CurrentVersion: "1.0.0",
 		Providers:      providers,
+		PublicKey:      publicKey,
 	}); err != nil {
 		t.Fatal(err)
 	}
