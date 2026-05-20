@@ -1,0 +1,91 @@
+name: Release webview2
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.24). Leave empty to auto-increment.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: "webview2/go.sum"
+
+      - name: Determine next version
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Auto-increment patch from last webview2/v* tag
+            LAST_TAG=$(git tag -l "webview2/v*" | sort -V | tail -n 1)
+            if [ -z "$LAST_TAG" ]; then
+              VERSION="v1.0.24"
+            else
+              # Extract version number without webview2/ prefix
+              LAST_VERSION=${LAST_TAG#webview2/}
+              # Increment patch version
+              MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
+              MINOR=$(echo $LAST_VERSION | cut -d. -f2)
+              PATCH=$(echo $LAST_VERSION | cut -d. -f3)
+              PATCH=$((PATCH + 1))
+              VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+            fi
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Releasing webview2 at version: $VERSION"
+
+      - name: Build and test webview2
+        working-directory: webview2
+        run: |
+          echo "Building webview2..."
+          go build ./...
+          go test ./...
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "webview2/${{ steps.version.outputs.version }}" -m "Release webview2 ${{ steps.version.outputs.version }}"
+          git push origin "webview2/${{ steps.version.outputs.version }}"
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: webview2/${{ steps.version.outputs.version }}
+          release_name: webview2 ${{ steps.version.outputs.version }}
+          body: |
+            Release of webview2 ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          latest: false
+
+      - name: Trigger bump workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: bump-webview2-v3
+          client-payload:
+            version: ${{ steps.version.outputs.version }}
