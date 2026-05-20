@@ -1,6 +1,7 @@
 package updater_test
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"crypto"
@@ -509,6 +510,86 @@ func TestDownloadAndInstall_DigestMatch_Succeeds(t *testing.T) {
 	if u.State() != updater.StateReady {
 		t.Errorf("state: %s", u.State())
 	}
+}
+
+// End-to-end check that .zip artifacts get unpacked between verify and ready.
+// macOS distributes .app bundles inside .zip archives; without extraction the
+// helper would replace a directory target with a single zip file. This test
+// downloads a zip carrying a single top-level .app directory and asserts that
+// u.DownloadedPath() points at the extracted directory.
+func TestDownloadAndInstall_ZipBundle_Extracted(t *testing.T) {
+	host := &fakeHost{}
+
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	mkEntry := func(name string, body []byte, mode os.FileMode, dir bool) {
+		hdr := &zip.FileHeader{Name: name, Method: zip.Deflate}
+		if dir {
+			hdr.SetMode(mode | os.ModeDir)
+		} else {
+			hdr.SetMode(mode)
+		}
+		w, err := zw.CreateHeader(hdr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !dir {
+			if _, err := w.Write(body); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	mkEntry("MyApp.app/", nil, 0o755, true)
+	mkEntry("MyApp.app/Contents/", nil, 0o755, true)
+	mkEntry("MyApp.app/Contents/Info.plist", []byte("<plist/>"), 0o644, false)
+	mkEntry("MyApp.app/Contents/MacOS/", nil, 0o755, true)
+	mkEntry("MyApp.app/Contents/MacOS/MyApp", []byte("ELF"), 0o755, false)
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	body := buf.Bytes()
+	digest := sha256.Sum256(body)
+
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "MyApp-darwin.zip", Size: int64(len(body))},
+		Verification: &updater.Verification{
+			DigestAlgo: "sha256",
+			Digest:     digest[:],
+		},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+	u := newConfigured(t, host, p)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+	staged := u.DownloadedPath()
+	info, err := os.Stat(staged)
+	if err != nil {
+		t.Fatalf("stat staged: %v", err)
+	}
+	if !info.IsDir() {
+		t.Fatalf("staged path should be a directory after extraction, got %v", info.Mode())
+	}
+	if filepath.Base(staged) != "MyApp.app" {
+		t.Errorf("staged base: got %q, want MyApp.app", filepath.Base(staged))
+	}
+	if got := readFileT(t, filepath.Join(staged, "Contents", "Info.plist")); string(got) != "<plist/>" {
+		t.Errorf("Info.plist after extract: %q", got)
+	}
+}
+
+func readFileT(t *testing.T, path string) []byte {
+	t.Helper()
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
 }
 
 func TestDownloadAndInstall_Ed25519Signature_Verifies(t *testing.T) {

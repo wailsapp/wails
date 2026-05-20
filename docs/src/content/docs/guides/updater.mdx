@@ -134,6 +134,16 @@ The verifier reads the SHA digest computed *while streaming* the download, so ev
 
 > **Note on digest-only mode.** A release that carries only a `Digest` (no signature) is authenticated against the registry's TLS plus whatever integrity guarantee the registry itself provides — not against a cryptographic root you control. Use digest-only for bit-rot detection and as a sanity check; use signatures for tamper resistance against a compromised release pipeline. The Ed25519 algorithm names refer to signatures over the SHA-256 (or SHA-512 for `ed25519ph`) digest of the file, computed during download — your signing tool must produce signatures over that same digest, not over the raw file bytes.
 
+## Artifact formats
+
+Providers stream the bytes for whichever file you publish; the framework then unpacks it before the swap:
+
+- **Single binary** (e.g. `myapp-linux-amd64`) — used as-is. Common on Linux.
+- **`.zip`** — extracted in place. The archive must contain exactly one top-level entry (typically a macOS `.app` bundle or a single binary). This is the recommended packaging for macOS releases.
+- **`.tar.gz` / `.tgz`** — extracted in place under the same single-top-level-entry rule. Useful for Linux distributions that ship a runtime tree alongside the binary.
+
+Archives carrying more than one top-level entry are rejected: the framework swaps a single on-disk target, so the meaning of "swap this archive into place" is ambiguous when the archive contains multiple things. `.dmg` and `.pkg` (macOS) and `.msi` (Windows) are not supported in v1 — distribute a `.zip` of the bundle instead. Extraction enforces zip-slip protection, rejects symlinks that escape the archive root, and caps total uncompressed size and entry count.
+
 ## The default window
 
 Out of the box `CheckAndInstall` opens a small framework-owned window with release notes, a progress bar, and Install / Skip / Remind / Cancel buttons. It listens to `updater:*` events on the Wails event bus and emits `updater:user:*` actions back to Go; you can theme, override, or replace it.

@@ -246,6 +246,19 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 		return err
 	}
 
+	// If the artifact is an archive (.zip / .tar.gz), unpack it now so the
+	// helper has a real binary or .app bundle to rename into place. Most
+	// macOS distributions ship the .app inside a .zip; without this step the
+	// helper would replace /Applications/MyApp.app (a directory) with the
+	// downloaded .zip (a file). Non-archive artifacts pass through unchanged.
+	finalPath, _, err = maybeExtractInto(finalPath)
+	if err != nil {
+		_ = os.RemoveAll(tmpDir)
+		u.transition(StateError)
+		u.host.Emit(EventError, ErrorInfo{Stage: StageInstall, Message: err.Error(), Provider: provider.Name()})
+		return err
+	}
+
 	u.mu.Lock()
 	u.resolved = finalPath
 	u.stagingDir = tmpDir
