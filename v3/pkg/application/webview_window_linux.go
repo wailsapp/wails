@@ -93,10 +93,6 @@ func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
 	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
 
-func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	// Not implemented
-}
-
 func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
 }
@@ -214,6 +210,30 @@ func (w *linuxWebviewWindow) height() int {
 func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
 	w.move(x, y)
+}
+
+func (w *linuxWebviewWindow) applyScreenPlacement() {
+	opts := w.parent.options
+	if opts.Screen != nil {
+		if opts.InitialPosition == WindowCentered {
+			w.centerOnScreen(opts.Screen)
+		} else {
+			workArea := opts.Screen.WorkArea
+			w.setPosition(workArea.X+opts.X, workArea.Y+opts.Y)
+		}
+	} else if opts.InitialPosition == WindowCentered {
+		w.center()
+	} else {
+		w.setRelativePosition(opts.X, opts.Y)
+	}
+}
+
+func (w *linuxWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
 }
 
 func (w *linuxWebviewWindow) bounds() Rect {
@@ -339,11 +359,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.InitialPosition == WindowCentered {
-		w.center()
-	} else {
-		w.setPosition(w.parent.options.X, w.parent.options.Y)
-	}
+	w.applyScreenPlacement()
 
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
@@ -365,7 +381,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
-		InvokeAsync(func() {
+		gtkDispatch(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
@@ -387,11 +403,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.InitialPosition == WindowCentered {
-			w.center()
-		} else {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
-		}
+		w.applyScreenPlacement()
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
 		w.enableDevTools()
@@ -399,11 +411,6 @@ func (w *linuxWebviewWindow) run() {
 			w.openDevTools()
 		}
 	}
-}
-
-func (w *linuxWebviewWindow) startResize(border string) error {
-	// FIXME: what do we need to do here?
-	return nil
 }
 
 func (w *linuxWebviewWindow) nativeWindow() unsafe.Pointer {
@@ -420,13 +427,16 @@ func (w *linuxWebviewWindow) print() error {
 }
 
 func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	// accelerator, err := parseAccelerator(acceleratorString)
-	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %w", err)
-	// 	return
-	// }
-	w.parent.processKeyBinding(acceleratorString)
+	if !w.parent.processKeyBinding(acceleratorString) {
+		// No registered binding: apply built-in editing command fallbacks so that
+		// standard shortcuts work even in fresh projects without an Edit menu.
+		switch acceleratorString {
+		case "Ctrl+Z":
+			w.undo()
+		case "Ctrl+Shift+Z":
+			w.redo()
+		}
+	}
 }
 
 // SetMinimiseButtonState is unsupported on Linux
@@ -437,6 +447,9 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+// SetFullscreenButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setFullscreenButtonState(state ButtonState) {}
 
 func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 	return w.ignoreMouseEvents

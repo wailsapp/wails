@@ -90,6 +90,7 @@ type (
 		setBounds(bounds Rect)
 		position() (int, int)
 		setPosition(x int, y int)
+		centerOnScreen(screen *Screen)
 		relativePosition() (int, int)
 		setRelativePosition(x int, y int)
 		flash(enabled bool)
@@ -98,6 +99,7 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		setFullscreenButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
 		cut()
@@ -653,6 +655,16 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 	return w
 }
 
+func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
+	w.options.FullscreenButtonState = state
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setFullscreenButtonState(state)
+		})
+	}
+	return w
+}
+
 // Flash flashes the window's taskbar button/icon.
 // Useful to indicate that attention is required. Windows only.
 func (w *WebviewWindow) Flash(enabled bool) {
@@ -950,6 +962,22 @@ func (w *WebviewWindow) SetPosition(x int, y int) {
 	})
 }
 
+// SetScreen moves the window to the center of the given screen's WorkArea.
+// If called before Run() (impl is nil), the screen is stored for deferred application.
+func (w *WebviewWindow) SetScreen(screen *Screen) Window {
+	if screen == nil {
+		return w
+	}
+	w.options.Screen = screen
+	if w.impl == nil || w.isDestroyed() {
+		return w
+	}
+	InvokeSync(func() {
+		w.impl.centerOnScreen(screen)
+	})
+	return w
+}
+
 // RelativePosition returns the position of the window relative to the screen WorkArea on which it is
 func (w *WebviewWindow) RelativePosition() (int, int) {
 	if w.impl == nil || w.isDestroyed() {
@@ -1215,6 +1243,9 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	// Guard against race condition where event fires before runtime is initialized
 	// This can happen during page reload when WindowLoadFinished fires before
 	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
@@ -1290,12 +1321,12 @@ func (w *WebviewWindow) AttachModal(modalWindow Window) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	
+
 	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
 	if !ok || modalWebviewWindow == nil {
 		return
 	}
-	
+
 	InvokeSync(func() {
 		w.impl.attachModal(modalWebviewWindow)
 	})

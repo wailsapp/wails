@@ -116,6 +116,10 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve transport.js: %w", err)
 					}
+				case "/wails/custom.js":
+					// custom.js is only served in server mode.
+					// Return 404 so the runtime's loadOptionalScript skips it.
+					http.NotFound(rw, req)
 				default:
 					next.ServeHTTP(rw, req)
 				}
@@ -346,6 +350,7 @@ type App struct {
 	Screen      *ScreenManager
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
+	Autostart   *AutostartManager
 
 	// Windows
 	windows     map[uint]Window
@@ -495,6 +500,7 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Autostart = newAutostartManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
