@@ -51,7 +51,7 @@ func newPackageManager(pmname string, osid string) PackageManager {
 	case "nix-env":
 		return NewNixpkgs(osid)
 	case "xbps-install":
-		return NewXbps(osid)		
+		return NewXbps(osid)
 	}
 	return nil
 }
