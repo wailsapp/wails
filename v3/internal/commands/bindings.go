@@ -37,13 +37,14 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	}
 
 	// When clean mode is active and we're writing real files, generate bindings
-	// into a dot-prefixed sibling temp directory first, then atomically swap it
-	// into place with a single os.Rename. This prevents chokidar (used by Vite)
-	// from entering a rename-event loop caused by rapid directory delete+recreate,
-	// which would otherwise cause the node process to leak memory at ~2-6 MB/s.
+	// into a dot-prefixed sibling temp directory first, then swap it into place
+	// with RemoveAll+Rename. This prevents chokidar (used by Vite) from entering
+	// a rename-event loop caused by rapid directory delete+recreate, which would
+	// otherwise cause the node process to leak memory at ~2-6 MB/s.
 	// Dot-prefixed directories are ignored by chokidar's default glob pattern,
 	// so no spurious HMR events fire during file generation.
 	generationDir := absPath
+	swapped := false
 	if options.Clean && !options.DryRun {
 		if err := os.MkdirAll(filepath.Dir(absPath), 0o777); err != nil {
 			return fmt.Errorf("failed to create bindings parent directory: %w", err)
@@ -54,8 +55,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		}
 		generationDir = tmpDir
 		defer func() {
-			// Clean up temp dir on error (rename sets generationDir = absPath).
-			if generationDir != absPath {
+			if !swapped {
 				_ = os.RemoveAll(tmpDir)
 			}
 		}()
@@ -118,29 +118,16 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		}
 	}
 
-	// Atomically replace the output directory with the temp dir.
-	// Move the old directory aside BEFORE installing the new one so that if the
-	// rename into place fails we can restore the original bindings. Deleting first
-	// would leave no bindings at all on a rename failure.
-	if generationDir != absPath {
-		var oldDir string
-		if _, statErr := os.Stat(absPath); statErr == nil {
-			oldDir = absPath + ".old"
-			if err := os.Rename(absPath, oldDir); err != nil {
-				return fmt.Errorf("failed to move existing bindings aside: %w", err)
-			}
+	// Swap the temp dir into place. The -clean contract does not guarantee
+	// atomic replacement; RemoveAll+Rename matches the existing behaviour.
+	if !swapped && generationDir != absPath {
+		if err := os.RemoveAll(absPath); err != nil {
+			return fmt.Errorf("failed to remove old bindings directory %q: %w\nExisting bindings are untouched; generated output has been discarded.", absPath, err)
 		}
 		if err := os.Rename(generationDir, absPath); err != nil {
-			if oldDir != "" {
-				_ = os.Rename(oldDir, absPath) // best-effort restore
-			}
-			return fmt.Errorf("failed to install new bindings: %w", err)
+			return fmt.Errorf("failed to install new bindings at %q: %w\nOld bindings have been removed. Re-run the command to regenerate them.", absPath, err)
 		}
-		if oldDir != "" {
-			_ = os.RemoveAll(oldDir)
-		}
-		// Signal the defer that cleanup is no longer needed.
-		generationDir = absPath
+		swapped = true
 	}
 
 	return nil
