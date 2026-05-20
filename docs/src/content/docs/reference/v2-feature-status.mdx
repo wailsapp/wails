@@ -252,40 +252,6 @@ No migration action required — replace the v2 `SingleInstance` plugin with thi
 
 ---
 
-## Auto-Update Hooks
-
-**v3 status: different**
-
-v2 exposed lifecycle hooks (`onBeforeQuit`, `onQuit`, etc.) that developers used together with third-party updater libraries. v3 ships a first-class `UpdaterService` with built-in update checking, downloading, and installation.
-
-**v2 (manual pattern):**
-```go
-// v2: bring your own updater, wire into lifecycle hooks
-err := wails.Run(&options.App{
-    OnBeforeQuit: func() bool {
-        return checkAndInstallUpdate()
-    },
-})
-```
-
-**v3:**
-```go
-updater, err := application.CreateUpdaterService(
-    "1.0.0",
-    application.WithUpdateURL("https://updates.example.com/myapp/"),
-    application.WithCheckInterval(24 * time.Hour),
-)
-app := application.New(application.Options{
-    Services: []application.Service{
-        application.NewService(updater),
-    },
-})
-```
-
-**Migration action:** Remove your manual updater integration and replace it with `CreateUpdaterService`. See [Updater API reference](/reference/updater).
-
----
-
 ## v2 Runtime JS Functions
 
 **v3 status: different**
