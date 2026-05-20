@@ -1,0 +1,298 @@
+---
+title: Cross-Platform Building
+description: Build for multiple platforms from a single machine
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+## Quick Start
+
+Wails v3 supports building for Windows, macOS, and Linux from any host operating system. The build system automatically detects your environment and chooses the right compilation method.
+
+**Want to cross-compile to macOS and Linux?** Run this once to set up the Docker images (~800MB download):
+
+```bash
+wails3 task setup:docker
+```
+
+Then build for any platform:
+
+```bash
+# Build for current platform (production by default)
+wails3 build
+
+# Build for specific platforms
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# Build for ARM64 architecture
+wails3 build GOOS=windows GOARCH=arm64
+wails3 build GOOS=darwin GOARCH=arm64
+wails3 build GOOS=linux GOARCH=arm64
+
+# Environment variable style also works
+GOOS=darwin GOARCH=arm64 wails3 build
+```
+
+### Windows
+
+Windows is the simplest cross-compilation target because it doesn't require CGO by default.
+
+```bash
+wails3 build GOOS=windows
+```
+
+This works from any host OS with no additional setup. Go's built-in cross-compilation handles everything.
+
+**If your app requires CGO** (e.g., you're using a C library or CGO-dependent package), you'll need Docker when building from macOS or Linux:
+
+```bash
+# One-time setup
+wails3 task setup:docker
+
+# Build with CGO enabled
+wails3 task windows:build CGO_ENABLED=1
+```
+
+The Taskfile detects `CGO_ENABLED=1` on non-Windows hosts and automatically uses the Docker image.
+
+### macOS
+
+macOS builds require CGO for WebView integration, which means cross-compilation needs special tooling.
+
+```bash
+# Build for Apple Silicon (arm64) - default
+wails3 build GOOS=darwin
+
+# Build for Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+
+# Build universal binary (both architectures)
+wails3 task darwin:build:universal
+```
+
+**From Linux or Windows**, you'll need to set up Docker first:
+
+```bash
+wails3 task setup:docker
+```
+
+Once the images are built, the build system detects that you're not on macOS and uses Docker automatically. You don't need to change your build commands.
+
+Note that cross-compiled macOS binaries are not code-signed. You'll need to sign them on macOS or in CI before distribution.
+
+### Linux
+
+Linux builds require CGO for WebView integration.
+
+```bash
+wails3 build GOOS=linux
+
+# Build for specific architecture
+wails3 build GOOS=linux GOARCH=amd64
+wails3 build GOOS=linux GOARCH=arm64
+```
+
+**From macOS or Windows**, you'll need to set up Docker first:
+
+```bash
+wails3 task setup:docker
+```
+
+The build system detects that you're not on Linux and uses Docker automatically.
+
+**On Linux without a C compiler**, the build system checks for `gcc` or `clang`. If neither is found, it falls back to Docker. This is useful for minimal containers or systems without build tools installed. You can either:
+
+1. Install a C compiler: `sudo apt install build-essential` (Debian/Ubuntu) or `sudo pacman -S base-devel` (Arch)
+2. Build the Docker image and let it be used automatically
+
+### ARM Architecture
+
+All platforms support ARM64 cross-compilation using `GOARCH`:
+
+```bash
+# Windows ARM64 (Surface Pro X, Windows on ARM)
+wails3 build GOOS=windows GOARCH=arm64
+
+# Linux ARM64 (Raspberry Pi 4/5, AWS Graviton)
+wails3 build GOOS=linux GOARCH=arm64
+
+# macOS ARM64 (Apple Silicon - this is the default on macOS)
+wails3 build GOOS=darwin GOARCH=arm64
+
+# macOS Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+```
+
+The Docker image includes Zig cross-compiler targets for both amd64 and arm64 on all platforms, so ARM builds work from any host:
+
+| Build ARM64 for | From Windows | From macOS | From Linux |
+|-----------------|--------------|------------|------------|
+| **Windows ARM64** | Native Go | Native Go | Native Go |
+| **macOS ARM64** | Docker | Native | Docker |
+| **Linux ARM64** | Docker | Docker | Docker* |
+
+*Linux ARM64 from Linux x86_64 uses Docker because CGO cross-compilation requires a different toolchain.
+
+## How It Works
+
+### Cross-Compilation Matrix
+
+| Host → Target | Windows | macOS | Linux |
+|---------------|---------|-------|-------|
+| **Windows**   | Native  | Docker | Docker |
+| **macOS**     | Native Go | Native | Docker |
+| **Linux**     | Native Go | Docker | Native |
+
+- **Native** = Platform's native toolchain, no additional setup
+- **Native Go** = Go's built-in cross-compilation (`CGO_ENABLED=0`)
+- **Docker** = Docker image with Zig cross-compiler
+
+### CGO Requirements
+
+| Target | CGO Required | Cross-Compilation Method |
+|--------|--------------|--------------------------|
+| Windows | No (default) | Native Go. Docker only if `CGO_ENABLED=1` |
+| macOS | Yes | Docker with macOS SDK |
+| Linux | Yes | Docker, or native if C compiler available |
+
+### Auto-Detection
+
+The Taskfiles automatically choose the right build method based on your environment:
+
+- **Windows target:** Uses native Go cross-compilation by default. If you explicitly set `CGO_ENABLED=1` on a non-Windows host, it switches to Docker.
+- **macOS target:** Uses Docker automatically when not on macOS. No manual intervention needed.
+- **Linux target:** Checks for `gcc` or `clang`. Uses native compilation if found, otherwise falls back to Docker.
+
+### Docker Image
+
+Wails uses a single Docker image (`wails-cross`) that can build for all platforms. It uses [Zig](https://ziglang.org/) as the cross-compiler, which can target any platform from any host. The macOS SDK is included for darwin targets.
+
+```bash
+wails3 task setup:docker
+```
+
+You can check if the image is ready by running `wails3 doctor`.
+
+### macOS SDK
+
+The Docker image downloads the macOS SDK from [joseluisq/macosx-sdks](https://github.com/joseluisq/macosx-sdks) during the image build process. This is required because macOS headers are needed for CGO compilation.
+
+By default, the image uses **macOS SDK 14.5** (Sonoma). To use a different version, rebuild with:
+
+```bash
+docker build -t wails-cross \
+  --build-arg MACOS_SDK_VERSION=15.0 \
+  -f build/docker/Dockerfile.cross build/docker/
+```
+
+See the [available SDK versions](https://github.com/joseluisq/macosx-sdks/releases) for options.
+
+**Important:** Wails does not distribute the macOS SDK. Users are responsible for reviewing Apple's SDK license terms before using this feature.
+
+## CI/CD Integration
+
+For production releases, we recommend using CI/CD with native runners for each platform. This avoids cross-compilation entirely and ensures you get properly signed binaries.
+
+```yaml
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+          - os: macos-latest
+            goos: darwin
+          - os: windows-latest
+            goos: windows
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Build
+        run: wails3 build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.goos }}
+          path: bin/
+```
+
+## Troubleshooting
+
+### Docker image not found
+
+```
+Docker image 'wails-cross' not found.
+```
+
+Run `wails3 task setup:docker` to build the Docker image. You only need to do this once.
+
+### Docker daemon not running
+
+```
+Docker is required for cross-compilation. Please install Docker.
+```
+
+Start Docker Desktop or the Docker daemon. On Linux, you may need to run `sudo systemctl start docker`.
+
+### No C compiler on Linux
+
+If you see CGO-related errors when building on Linux, you have two options:
+
+1. **Install a C compiler:**
+   - Debian/Ubuntu: `sudo apt install build-essential`
+   - Arch Linux: `sudo pacman -S base-devel`
+   - Fedora: `sudo dnf install gcc`
+
+2. **Use Docker instead:** Run `wails3 task setup:docker` and the Taskfile will use it automatically when no compiler is detected.
+
+### macOS binaries not signed
+
+Cross-compiled macOS binaries are not code-signed. Apple requires code signing for distribution, so you'll need to:
+
+1. Sign the binary on a macOS machine, or
+2. Sign in CI using a macOS runner
+
+See [Signing Applications](/guides/build/signing) for details.
+
+### Universal binary creation
+
+Universal binaries (arm64 + amd64 combined) can be built on any platform:
+
+```bash
+wails3 task darwin:build:universal
+```
+
+On Linux and Windows, Wails uses its built-in `wails3 tool lipo` command (powered by [konoui/lipo](https://github.com/konoui/lipo)) to combine the binaries. This creates a single binary that runs natively on both Apple Silicon and Intel Macs.
+
+## Next Steps
+
+- [Building Applications](/guides/build/building) - Basic build commands and options
+- [Signing Applications](/guides/build/signing) - Code signing for distribution

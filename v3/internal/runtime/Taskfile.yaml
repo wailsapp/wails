@@ -1,0 +1,112 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  install-deps:
+    internal: true
+    dir: desktop/@wailsio/runtime
+    sources:
+      - package.json
+    cmds:
+      - npm install
+
+  check:
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run check
+
+  test:
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm test
+
+  build:debug:
+    internal: true
+    cmds:
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
+
+  build:production:
+    internal: true
+    cmds:
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
+
+  build:docs:
+    internal: true
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run build:docs
+
+  build:docs:md:
+    internal: true
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run build:docs:md
+
+  build:runtime:
+    internal: true
+    deps:
+      - build:debug
+      - build:production
+
+    cmds:
+      - cmd: echo "Runtime build complete."
+
+  build:all:
+    internal: true
+    cmds:
+      - task: generate:events
+      - task: build:docs
+      - task: build:runtime
+      - echo "Build Complete."
+
+  build:
+    deps:
+      - install-deps
+    cmds:
+      - task: build:all
+
+  docs:
+    summary: Generate TypeDoc documentation for the runtime
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run build:docs
+      - echo "Documentation generated at desktop/@wailsio/runtime/docs/"
+
+  docs:md:
+    summary: Generate markdown documentation for the runtime
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run build:docs:md
+      - echo "Markdown documentation generated"
+
+  generate:events:
+    dir: ../../tasks/events
+    cmds:
+      - go run generate.go
+      - go fmt ../../pkg/events/events.go
+
+  clean:
+    summary: Clean built artifacts and documentation
+    dir: desktop/@wailsio/runtime
+    cmds:
+      - npm run clean
+      - echo "Cleaned runtime artifacts"
+
+  generate:
+    summary: Generate events only (use runtime:build to rebuild everything)
+    cmds:
+      - task: generate:events
+      - echo "Events generated. Run 'wails3 task runtime:build' to rebuild runtime with updated documentation"

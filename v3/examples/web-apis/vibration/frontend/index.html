@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibration API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.1s;
+        }
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.95); }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .preset-btn {
+            background: rgba(0,0,0,0.2);
+            border: 2px solid #333;
+            color: #eee;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .preset-btn:hover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .preset-btn.active {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.2);
+        }
+        .preset-btn .icon { font-size: 1.5rem; margin-bottom: 5px; }
+        .preset-btn .name { font-weight: 600; }
+        .preset-btn .pattern { font-size: 0.75rem; color: #666; margin-top: 5px; }
+        .pattern-builder {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .pattern-display {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-height: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .pattern-segment {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .pattern-segment:hover { transform: scale(1.05); }
+        .pattern-segment.vibrate { background: #4ade80; color: #1a1a2e; }
+        .pattern-segment.pause { background: #333; color: #aaa; }
+        .pattern-segment.remove::after {
+            content: ' x';
+            opacity: 0.5;
+        }
+        .control-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label { color: #aaa; font-size: 0.9rem; }
+        input[type="number"], input[type="range"] {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #eee;
+            padding: 8px;
+            border-radius: 4px;
+            width: 80px;
+        }
+        input[type="range"] {
+            width: 120px;
+            padding: 0;
+        }
+        .timeline {
+            position: relative;
+            height: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .timeline-bar {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            transition: left 0.1s linear;
+        }
+        .timeline-bar.vibrate { background: rgba(74, 222, 128, 0.6); }
+        .timeline-bar.pause { background: rgba(100, 100, 100, 0.3); }
+        .timeline-playhead {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #f87171;
+            left: 0;
+            transition: left 0.05s linear;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .log-entry .time { color: #666; margin-right: 10px; }
+        .log-entry.event { color: #60a5fa; }
+        .log-entry.data { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .haptic-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .haptic-btn {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .haptic-btn:hover {
+            border-color: #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+        .haptic-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vibration API Demo</h1>
+        <p class="description">
+            The Vibration API provides access to the device's vibration hardware.
+            It allows triggering single vibrations or complex patterns of vibrations and pauses.
+        </p>
+
+        <div id="status" class="status">
+            Vibration API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Quick Vibrations</h2>
+            <button onclick="vibrate(50)">Short (50ms)</button>
+            <button onclick="vibrate(200)">Medium (200ms)</button>
+            <button onclick="vibrate(500)">Long (500ms)</button>
+            <button onclick="vibrate(1000)">Very Long (1s)</button>
+            <button onclick="stopVibration()" class="danger">Stop</button>
+        </div>
+
+        <div class="card">
+            <h2>Vibration Presets</h2>
+            <div class="preset-grid">
+                <div class="preset-btn" onclick="playPreset('notification')">
+                    <div class="icon">*</div>
+                    <div class="name">Notification</div>
+                    <div class="pattern">[100, 50, 100]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('success')">
+                    <div class="icon">+</div>
+                    <div class="name">Success</div>
+                    <div class="pattern">[50, 50, 50, 50, 200]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('error')">
+                    <div class="icon">!</div>
+                    <div class="name">Error</div>
+                    <div class="pattern">[200, 100, 200, 100, 200]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('warning')">
+                    <div class="icon">?</div>
+                    <div class="name">Warning</div>
+                    <div class="pattern">[100, 100, 100]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('heartbeat')">
+                    <div class="icon">&lt;3</div>
+                    <div class="name">Heartbeat</div>
+                    <div class="pattern">[100, 100, 100, 400]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('sos')">
+                    <div class="icon">SOS</div>
+                    <div class="name">SOS</div>
+                    <div class="pattern">[100,50,100,50,100,200,...]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('ringtone')">
+                    <div class="icon">~</div>
+                    <div class="name">Ringtone</div>
+                    <div class="pattern">[300, 200, 300, 200, ...]</div>
+                </div>
+                <div class="preset-btn" onclick="playPreset('countdown')">
+                    <div class="icon">3-2-1</div>
+                    <div class="name">Countdown</div>
+                    <div class="pattern">[100, 900, 100, 900, ...]</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Pattern Builder</h2>
+            <div class="pattern-builder">
+                <div class="pattern-display" id="patternDisplay">
+                    <span style="color: #666;">Click buttons below to build a pattern...</span>
+                </div>
+
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>Duration:</label>
+                        <input type="number" id="segmentDuration" value="100" min="10" max="2000" step="10">
+                        <span style="color: #666;">ms</span>
+                    </div>
+                    <button onclick="addVibrate()">+ Vibrate</button>
+                    <button onclick="addPause()" class="secondary">+ Pause</button>
+                    <button onclick="clearPattern()" class="danger">Clear</button>
+                </div>
+
+                <div class="control-row">
+                    <button onclick="playPattern()">Play Pattern</button>
+                    <button onclick="loopPattern()" class="secondary" id="loopBtn">Loop Pattern</button>
+                    <button onclick="exportPattern()" class="secondary">Copy to Clipboard</button>
+                </div>
+
+                <div class="timeline" id="timeline">
+                    <div class="timeline-playhead" id="playhead"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Haptic Pad</h2>
+            <p style="color: #aaa; margin-bottom: 15px; text-align: center;">
+                Tap the buttons for different haptic feedback
+            </p>
+            <div class="haptic-pad">
+                <button class="haptic-btn" onclick="haptic(1)">1</button>
+                <button class="haptic-btn" onclick="haptic(2)">2</button>
+                <button class="haptic-btn" onclick="haptic(3)">3</button>
+                <button class="haptic-btn" onclick="haptic(4)">4</button>
+                <button class="haptic-btn" onclick="haptic(5)">5</button>
+                <button class="haptic-btn" onclick="haptic(6)">6</button>
+                <button class="haptic-btn" onclick="haptic(7)">7</button>
+                <button class="haptic-btn" onclick="haptic(8)">8</button>
+                <button class="haptic-btn" onclick="haptic(9)">9</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">
+                <div class="log-entry">Waiting for vibration events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pattern = [];
+        let looping = false;
+        let loopTimeout = null;
+
+        const presets = {
+            notification: [100, 50, 100],
+            success: [50, 50, 50, 50, 200],
+            error: [200, 100, 200, 100, 200],
+            warning: [100, 100, 100],
+            heartbeat: [100, 100, 100, 400, 100, 100, 100, 400],
+            sos: [100, 50, 100, 50, 100, 200, 300, 50, 300, 50, 300, 200, 100, 50, 100, 50, 100],
+            ringtone: [300, 200, 300, 200, 300, 1000, 300, 200, 300, 200, 300],
+            countdown: [100, 900, 100, 900, 100, 900, 500]
+        };
+
+        function checkSupport() {
+            const supported = 'vibrate' in navigator;
+            document.getElementById('supported').textContent = supported ? 'Supported' : 'Not supported';
+            document.getElementById('status').className = supported ? 'status success' : 'status error';
+
+            if (!supported) {
+                log('Vibration API not supported on this device/browser', 'error');
+            }
+
+            return supported;
+        }
+
+        function log(message, type = 'event') {
+            const logEl = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="time">${time}</span>${message}`;
+            logEl.insertBefore(entry, logEl.firstChild);
+
+            while (logEl.children.length > 50) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        function vibrate(duration) {
+            if (!checkSupport()) return;
+
+            const result = navigator.vibrate(duration);
+            log(`Vibrating for ${duration}ms - result: ${result}`, 'data');
+        }
+
+        function stopVibration() {
+            if (!checkSupport()) return;
+
+            looping = false;
+            if (loopTimeout) {
+                clearTimeout(loopTimeout);
+                loopTimeout = null;
+            }
+            document.getElementById('loopBtn').textContent = 'Loop Pattern';
+            document.getElementById('loopBtn').classList.remove('danger');
+
+            navigator.vibrate(0);
+            log('Vibration stopped', 'event');
+        }
+
+        function playPreset(name) {
+            if (!checkSupport()) return;
+
+            const p = presets[name];
+            navigator.vibrate(p);
+            log(`Playing preset "${name}": [${p.join(', ')}]`, 'data');
+
+            // Highlight active preset
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.preset-btn').classList.add('active');
+
+            animateTimeline(p);
+        }
+
+        function addVibrate() {
+            const duration = parseInt(document.getElementById('segmentDuration').value) || 100;
+            pattern.push({ type: 'vibrate', duration });
+            updatePatternDisplay();
+            log(`Added vibrate segment: ${duration}ms`, 'event');
+        }
+
+        function addPause() {
+            const duration = parseInt(document.getElementById('segmentDuration').value) || 100;
+            pattern.push({ type: 'pause', duration });
+            updatePatternDisplay();
+            log(`Added pause segment: ${duration}ms`, 'event');
+        }
+
+        function removeSegment(index) {
+            pattern.splice(index, 1);
+            updatePatternDisplay();
+        }
+
+        function updatePatternDisplay() {
+            const display = document.getElementById('patternDisplay');
+
+            if (pattern.length === 0) {
+                display.innerHTML = '<span style="color: #666;">Click buttons below to build a pattern...</span>';
+                return;
+            }
+
+            display.innerHTML = pattern.map((seg, i) => `
+                <div class="pattern-segment ${seg.type}" onclick="removeSegment(${i})">
+                    ${seg.type === 'vibrate' ? '~' : '_'} ${seg.duration}ms
+                </div>
+            `).join('');
+
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            const totalDuration = pattern.reduce((sum, seg) => sum + seg.duration, 0);
+
+            // Clear previous bars
+            timeline.querySelectorAll('.timeline-bar').forEach(bar => bar.remove());
+
+            let offset = 0;
+            pattern.forEach((seg, i) => {
+                const bar = document.createElement('div');
+                bar.className = `timeline-bar ${seg.type}`;
+                bar.style.left = (offset / totalDuration * 100) + '%';
+                bar.style.width = (seg.duration / totalDuration * 100) + '%';
+                bar.textContent = seg.duration + 'ms';
+                timeline.appendChild(bar);
+                offset += seg.duration;
+            });
+        }
+
+        function getPatternArray() {
+            // Convert pattern objects to vibration API format
+            // [vibrate, pause, vibrate, pause, ...]
+            const arr = [];
+            pattern.forEach((seg, i) => {
+                if (seg.type === 'vibrate') {
+                    arr.push(seg.duration);
+                    // Add 0 pause if next segment is also vibrate
+                    if (pattern[i + 1]?.type === 'vibrate') {
+                        arr.push(0);
+                    }
+                } else {
+                    // It's a pause - if previous was vibrate, this becomes the pause
+                    // If we're starting with a pause, we need to add a 0 vibrate first
+                    if (arr.length === 0 || arr.length % 2 === 0) {
+                        arr.push(0); // Add 0ms vibrate
+                    }
+                    arr.push(seg.duration);
+                }
+            });
+            return arr;
+        }
+
+        function playPattern() {
+            if (!checkSupport()) return;
+            if (pattern.length === 0) {
+                log('No pattern to play - add some segments first', 'error');
+                return;
+            }
+
+            const arr = getPatternArray();
+            navigator.vibrate(arr);
+            log(`Playing pattern: [${arr.join(', ')}]`, 'data');
+
+            animateTimeline(arr);
+        }
+
+        function loopPattern() {
+            if (looping) {
+                stopVibration();
+                return;
+            }
+
+            if (pattern.length === 0) {
+                log('No pattern to loop - add some segments first', 'error');
+                return;
+            }
+
+            looping = true;
+            document.getElementById('loopBtn').textContent = 'Stop Loop';
+            document.getElementById('loopBtn').classList.add('danger');
+
+            const arr = getPatternArray();
+            const totalDuration = arr.reduce((sum, val) => sum + val, 0);
+
+            function loop() {
+                if (!looping) return;
+                navigator.vibrate(arr);
+                animateTimeline(arr);
+                loopTimeout = setTimeout(loop, totalDuration + 100);
+            }
+
+            loop();
+            log(`Looping pattern: [${arr.join(', ')}]`, 'data');
+        }
+
+        function animateTimeline(arr) {
+            const playhead = document.getElementById('playhead');
+            const totalDuration = arr.reduce((sum, val) => sum + val, 0);
+
+            playhead.style.transition = 'none';
+            playhead.style.left = '0%';
+
+            requestAnimationFrame(() => {
+                playhead.style.transition = `left ${totalDuration}ms linear`;
+                playhead.style.left = '100%';
+            });
+        }
+
+        function clearPattern() {
+            pattern = [];
+            updatePatternDisplay();
+            document.getElementById('timeline').querySelectorAll('.timeline-bar').forEach(bar => bar.remove());
+            log('Pattern cleared', 'event');
+        }
+
+        function exportPattern() {
+            const arr = getPatternArray();
+            const text = `navigator.vibrate([${arr.join(', ')}]);`;
+            navigator.clipboard.writeText(text).then(() => {
+                log('Pattern copied to clipboard!', 'data');
+            }).catch(err => {
+                log('Failed to copy: ' + err.message, 'error');
+            });
+        }
+
+        function haptic(num) {
+            if (!checkSupport()) return;
+
+            // Different vibration patterns for each button
+            const patterns = {
+                1: [20],
+                2: [30],
+                3: [40],
+                4: [50],
+                5: [60],
+                6: [80],
+                7: [100],
+                8: [30, 30, 30],
+                9: [50, 50, 50, 50, 50]
+            };
+
+            navigator.vibrate(patterns[num]);
+            log(`Haptic ${num}: [${patterns[num].join(', ')}]`, 'data');
+        }
+
+        // Initialize
+        checkSupport();
+    </script>
+</body>
+</html>

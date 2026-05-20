@@ -1,0 +1,293 @@
+---
+title: API Reference
+description: Complete API documentation for Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## About This Reference
+
+This is the complete API reference for Wails v3. It documents every public type, method, and option available in the framework.
+
+**Organisation:**
+- [Application](/reference/application) - Core application APIs
+- [Window](/reference/window) - Window creation and management
+- [Menu](/reference/menu) - Application, context, and system tray menus
+- [Events](/reference/events) - Event system and built-in events
+- [Dialogs](/reference/dialogs) - File and message dialogs
+- [Frontend Runtime](/reference/frontend-runtime) - Frontend runtime APIs
+- [CLI](/reference/cli) - Command-line interface
+
+## API Conventions
+
+<details>
+<summary><strong>Go API Conventions</strong> - For developers new to Go</summary>
+
+#### Naming
+
+- **Types**: PascalCase (e.g., `WebviewWindow`)
+- **Methods**: PascalCase (e.g., `SetTitle()`)
+- **Options**: PascalCase structs (e.g., `WindowOptions`)
+- **Constants**: PascalCase (e.g., `WindowStartStateMaximised`)
+
+#### Error Handling
+
+Most methods that can fail return `error` as the last return value. `app.Run()` blocks until the application exits and returns any startup error:
+
+```go
+if err := app.Run(); err != nil {
+    log.Fatal(err)
+}
+```
+
+Window construction does not return an error — `app.Window.New()` returns `*WebviewWindow` directly.
+
+#### Context
+
+Service lifecycle methods receive a `context.Context`:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // ctx is cancelled when the application is shutting down.
+    return nil
+}
+```
+
+The application's lifetime context is available via `app.Context()`. There is no `RunWithContext` — call `app.Run()`.
+
+#### Options Pattern
+
+Configuration uses option structs:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### JavaScript API Conventions
+
+#### Naming
+
+- **Functions**: camelCase (e.g., `setTitle()`)
+- **Constants**: SCREAMING_SNAKE_CASE (e.g., `WINDOW_EVENT_FOCUS`)
+
+#### Async by Default
+
+All Go method calls return Promises:
+
+```javascript
+// Async/await (recommended)
+const result = await MyService.DoSomething()
+
+// Promise chain
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### Error Handling
+
+Go errors become JavaScript exceptions:
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### Type Safety
+
+TypeScript definitions are auto-generated:
+
+```typescript
+// Fully typed
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## Package Structure
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # Core application package
+│   ├── application.go    # App type
+│   ├── webview_window.go # Window management
+│   ├── menu.go           # Menu types
+│   ├── event_manager.go  # Event system
+│   └── dialogs.go        # Dialog APIs
+├── events/               # Event constants
+└── services/             # Built-in services
+    ├── dock/             # macOS dock (includes badge support)
+    ├── fileserver/       # File-server service
+    ├── kvstore/          # Key/value store
+    ├── log/              # Structured logging service
+    ├── notifications/    # Notifications service
+    └── sqlite/           # SQLite service
+```
+
+## Import Paths
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// Auto-generated bindings
+import { MyMethod } from './bindings/MyService'
+
+// Runtime APIs
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## Type Reference
+
+### Common Types
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type App struct { /* ... */ }
+    type Options struct { /* ... */ }
+
+    // Window
+    type WebviewWindow struct { /* ... */ } // implements the Window interface
+    type WebviewWindowOptions struct { /* ... */ }
+
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+
+    // Events — there is no generic Event type; events are typed by source.
+    type ApplicationEvent struct { /* ... */ }
+    type WindowEvent struct { /* ... */ }
+    type CustomEvent struct { /* ... */ }
+    type EventListener struct { /* ... */ }
+
+    // Dialogs
+    type OpenFileDialogOptions struct { /* ... */ }
+    type SaveFileDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // Window runtime
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // Events
+    type EventCallback = (data: any) => void
+    
+    // Bindings (auto-generated)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## Platform Differences
+
+Some APIs behave differently on different platforms:
+
+| Feature | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **Application Menu** | Window menu bar | Global menu bar | Window menu bar |
+| **System Tray** | Notification area | Menu bar | System tray |
+| **Dock** | N/A | ✅ Available | N/A |
+| **File dialogs** | Native | Native | Native (GTK) |
+| **Transparency** | ✅ Full | ✅ Full | ⚠️ Limited |
+
+Platform-specific behaviour is documented in each API section.
+
+## Versioning
+
+Wails v3 follows semantic versioning:
+
+- **Major** (v3.x.x): Breaking changes
+- **Minor** (v3.x.x): New features, backwards-compatible
+- **Patch** (v3.x.x): Bug fixes, backwards-compatible
+
+**Current status:** Alpha (API stable, refinements ongoing)
+
+## Deprecation Policy
+
+When APIs are deprecated:
+
+1. **Marked in docs** with deprecation notice
+2. **Alternative provided** with migration guide
+3. **Maintained for 1 major version** before removal
+4. **Compiler warnings** (where possible)
+
+## API Stability
+
+### Stable APIs ✅
+
+These APIs are stable and safe for production use:
+
+- Core application APIs
+- Window management
+- Menu system
+- Event system
+- File dialogs
+- Service bindings
+
+### Unstable APIs ⚠️
+
+These APIs may change before final release:
+
+- Some advanced window options
+- Platform-specific features
+- Experimental features
+
+Unstable APIs are marked in documentation.
+
+## Getting Help
+
+### API Questions
+
+1. **Check this reference** - Complete API documentation
+2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **Search Discord** - [Discord server](https://discord.gg/JDdSxwjhGf)
+4. **Ask the community** - Discord #help channel
+
+### Reporting API Issues
+
+Found a bug or inconsistency?
+
+1. **Check existing issues** - [GitHub issues](https://github.com/wailsapp/wails/issues)
+2. **Create detailed report** - Include code, error, platform
+3. **Provide reproduction** - Minimal example that demonstrates issue
+
+## Related Documentation
+
+- [Tutorials](/tutorials/overview) - Learn by building real applications
+- [Guides](/guides/architecture) - Task-oriented guides for common scenarios
+- [Features](/features/windows/basics) - Feature-by-feature documentation
+- [Examples](https://github.com/wailsapp/wails/tree/master/v3/examples) - Working code examples on GitHub
+
+---
+
+**Browse the API:** Use the navigation on the left to explore specific APIs.

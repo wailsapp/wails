@@ -1,0 +1,283 @@
+---
+title: Extending Wails
+description: Practical guide to adding new features and platforms to Wails v3
+sidebar:
+  order: 8
+---
+
+> Wails is designed to be **hackable**.
+> Every major subsystem lives in Go code you can read, modify, and ship.
+> This page shows _where_ to start and _how_ to stay cross-platform when you:
+
+* Add a **Service** (notifications, KV store, custom IPC, …)
+* Create a **new CLI command** (`wails3 <foo>`)
+* Extend the **Runtime** (window API, dialogs, events)
+* Introduce a **Platform capability** (Wayland, …)
+* Keep **cross-platform compatibility** without drowning in `//go:build` tags
+
+---
+
+## 1. Adding a Service
+
+A "service" in v3 is a user-supplied Go type that's registered through
+`application.Options.Services` and exposed to JS via generated bindings. The
+v3 codebase ships:
+
+* `internal/service/` — scaffolding for `wails3 generate service`:
+  ```
+  internal/service/
+  ├── service.go              # Install(options *flags.ServiceInit)
+  └── template/
+      ├── README.tmpl.md
+      ├── go.mod.tmpl
+      ├── service.go.tmpl
+      └── service.tmpl.yml
+  ```
+* `pkg/services/` — ready-made services you can register today
+  (notifications, kvstore, sqlite, log, fileserver, dock, …).
+
+The generator and CLI files referenced by older drafts as
+`internal/service/template/template.go` and
+`internal/generator/collect/services.go` don't exist — the scaffolder is
+`internal/service/service.go` (entry point `service.Install`), and binding
+metadata for services is collected in `internal/generator/collect/service.go`.
+
+### 1.1 Define the Service
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 Implement the lifecycle interfaces (optional)
+
+A service may optionally satisfy these interfaces (from `pkg/application`):
+
+```go
+func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error { return nil }
+func (s *Service) ServiceShutdown() error                                                       { return nil }
+```
+
+> **Important:** `ServiceShutdown` takes **no arguments**. A method with the
+> signature `ServiceShutdown(ctx context.Context) error` does **not** satisfy
+> the interface and will silently never be called.
+
+### 1.3 Register the service with the application
+
+There is no global `services.Register(...)` call. Services are registered at
+runtime via `application.Options.Services`:
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(chat.New()),
+    },
+})
+```
+
+Once registered, `wails3 generate bindings` emits ES modules under
+`frontend/bindings/<your import path>/...` that wrap the exported methods.
+
+### 1.4 Calling from JS
+
+```js
+import { Send } from "../bindings/github.com/you/yourapp/chat";
+
+await Send("hi");
+```
+
+There is no `window.backend.*` global in v3 — calls go through the generated
+ES modules, which in turn call `Call.ByID(...)` from `/wails/runtime.js`.
+
+---
+
+## 2. Writing a New CLI Command
+
+The v3 CLI uses **`github.com/leaanthony/clir`** (not cobra). Wiring lives in
+`v3/cmd/wails3/main.go`:
+
+```go
+import "github.com/leaanthony/clir"
+
+func main() {
+    app := clir.NewCli("wails", "The Wails3 CLI", "v3")
+    app.NewSubCommand("hello", "Prints Hello Wails").Action(func() error {
+        fmt.Println("Hello Wails!")
+        return nil
+    })
+    // ... other subcommands explicitly wired here
+    _ = app.Run()
+}
+```
+
+There is no `init()`-based auto-registration. Add your new subcommand to
+`cmd/wails3/main.go`, plus a backing function in `internal/commands/` (and a
+flag struct under `internal/flags/` if it takes options). Re-build the CLI:
+
+```
+cd v3
+go install ./cmd/wails3
+wails3 hello
+```
+
+If your command needs the Taskfile glue, reuse helpers in
+`internal/commands/task_wrapper.go` (`wrapTask("yourtask", args)`).
+
+---
+
+## 3. Modifying the Runtime
+
+Common reasons:
+
+* New window feature (`SetOpacity`, `Shake`, …)
+* Extra dialog (`ColorPicker`)
+* System-level API (screen brightness)
+
+### 3.1 Public API
+
+Add the method to `pkg/application/webview_window.go` (the interface lives in
+`window.go`):
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) Window {
+    InvokeSync(func() { w.impl.setOpacity(o) })
+    return w
+}
+```
+
+Use the existing `InvokeSync`/`InvokeAsync` helpers to ensure the call runs on
+the main thread.
+
+### 3.2 Message Processor
+
+If JS needs to invoke the new method, extend the appropriate
+`pkg/application/messageprocessor_*.go` file. The message processor uses
+switch-based methods on `MessageProcessor`, not a global `register(...)` call:
+
+```go
+// inside messageprocessor_window.go
+case "setOpacity":
+    var args struct {
+        WindowID uint    `json:"windowID"`
+        Opacity  float32 `json:"opacity"`
+    }
+    if err := json.Unmarshal(payload, &args); err != nil { ... }
+    window, _ := m.app.Window.GetByID(args.WindowID)
+    window.SetOpacity(args.Opacity)
+```
+
+There is **no** `messageprocessor_window_opacity.go` file or `init()`-based
+`register(MsgSetOpacity, ...)` pattern in the codebase.
+
+### 3.3 Platform Implementation
+
+Add the implementation to each per-OS file under `pkg/application/`:
+
+```
+pkg/application/
+├── webview_window_darwin.go   //go:build darwin
+├── webview_window_linux.go    //go:build linux
+└── webview_window_windows.go  //go:build windows
+```
+
+If a platform can't support the feature, write a no-op stub. The framework
+has no `ErrCapability` sentinel — surface support via documentation and, if
+needed, via the relevant boolean field on `Options` / the platform-specific
+options struct.
+
+### 3.4 Capability Flag (optional)
+
+The `internal/capabilities/` package exists for declaring per-platform
+capability sets. There is no public `application.HasCapability` /
+`application.CapOpacity` API. If you want a runtime-checkable capability,
+add it under `internal/capabilities/` and surface a typed getter from
+`pkg/application`.
+
+---
+
+## 4. Adding New Platform Capabilities
+
+Example: optional Wayland support on Linux.
+
+1. Split the relevant `pkg/application/*_linux.go` file into
+   `*_linux_x11.go` (`//go:build linux && !wayland`) and
+   `*_linux_wayland.go` (`//go:build linux && wayland`).
+2. Have users opt in with `wails3 build --tags wayland`. Forward extra tags
+   through the existing `EXTRA_TAGS` plumbing in
+   `internal/commands/task_wrapper.go`. There is no `dev`-level
+   `--tags wayland` flag — `wails3 dev` accepts only `--config`, `--port`,
+   and `-s`.
+3. Update docs and any platform-specific README under
+   `pkg/application/`.
+
+> Keep default build tags minimal; reserve opt-in tags for niche features.
+
+---
+
+## 5. Cross-Platform Compatibility Checklist
+
+| ✅ Step | Why |
+|---------|-----|
+| Provide **every** public method in all platform files (even if stub) | Keeps the build green on every OS |
+| Document graceful degradation per OS | Apps can branch on `runtime.GOOS` without hidden errors |
+| Use **pure Go** first, Cgo only when needed | Simplifies cross-compiles (Linux already pays the Cgo tax) |
+| Run `task test:cli`, `task test:generator`, `task test:templates` | Reproduces CI locally |
+| Document new build tags in the contributor docs / template README | Users must know about opt-ins |
+
+---
+
+## 6. Debug Builds & Iteration Speed
+
+* Use `Options.LogLevel = slog.LevelDebug` (`Options.Logger = slog.Default()`)
+  to print verbose runtime activity. There is no `WAILS_LOG_LEVEL`
+  environment variable.
+* `wails3 dev` flags are `--config`, `--port`, `-s`. There is no `-race` or
+  `-verbose` flag — exercise the race detector with `go test -race ./...` or
+  by `go build -race`-ing your app and running it directly.
+* The race / Cgo testing guide lives in `v3/TESTING.md` (older drafts pointed
+  at `pkg/application/RACE.md`, which doesn't exist).
+
+---
+
+## 7. Upstream Contributions
+
+1. Open an **issue** to discuss the idea & design.
+2. Follow the techniques above to implement.
+3. Add:
+   * Unit tests (`*_test.go`)
+   * Documentation (this file or the relevant `docs/...` page)
+   * A regression test under `internal/generator/testcases/` if you touched
+     the bindings generator
+4. Run `task precommit` plus the relevant `task test:*` targets locally
+   before pushing.
+
+---
+
+### Quick Links
+
+| Area | Location |
+|------|----------|
+| Built-in services | `pkg/services/` |
+| Service scaffolder | `internal/service/` |
+| CLI wiring | `v3/cmd/wails3/main.go` |
+| CLI command bodies | `internal/commands/` |
+| Per-OS runtime | `pkg/application/*_{darwin,linux,windows}.go` |
+| Capability declarations | `internal/capabilities/` |
+| Taskfile DSL | `v3/Taskfile.yaml` |
+| Event-constants generator | `v3/tasks/events/generate.go` |
+
+---
+
+You now have a **roadmap** for bending Wails to your will — add services,
+sprinkle CLI magic, hack the runtime, or bring entirely new OS features.
+Happy extending!

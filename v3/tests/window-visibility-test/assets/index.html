@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Window Visibility Test - Issue #2861</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .test-section h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-section p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .test-button:active {
+            transform: translateY(0);
+        }
+
+        .test-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .test-button:hover::before {
+            left: 100%;
+        }
+
+        .status-display {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .status-display h3 {
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .critical-test {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .critical-test h2 {
+            color: #ff6b6b;
+        }
+
+        .info-box {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+
+        .timing-display {
+            text-align: center;
+            font-size: 1.1em;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+
+        .menu-note {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        .menu-note strong {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪟 Window Visibility Test</h1>
+            <p>Testing fixes for Wails v3 Issue #2861 - Windows 10 Pro Efficiency Mode</p>
+            <div class="timing-display">
+                <span id="current-time">Current Time: --:--:--</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><span class="emoji">✅</span>Basic Window Tests</h2>
+            <p>These tests verify that windows appear immediately when requested, regardless of WebView content loading state.</p>
+            <div class="button-grid">
+                <button class="test-button" onclick="createNormalWindow()">
+                    Create Normal Window
+                </button>
+                <button class="test-button" onclick="createDelayedContentWindow()">
+                    Create Delayed Content Window
+                </button>
+                <button class="test-button" onclick="createHiddenThenShowWindow()">
+                    Hidden → Show Test
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><span class="emoji">⚡</span>Stress Tests</h2>
+            <p>These tests push the window system to verify robustness under load and timing edge cases.</p>
+            <div class="button-grid">
+                <button class="test-button" onclick="createMultipleWindows()">
+                    Multiple Windows (3x)
+                </button>
+                <button class="test-button" onclick="rapidWindowCreation()">
+                    Rapid Creation Test
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section critical-test">
+            <h2><span class="emoji">🔬</span>Critical Issue #2861 Test</h2>
+            <p>This test specifically targets the Windows efficiency mode bug where WebView2 NavigationCompleted events could be delayed or missed.</p>
+            
+            <div class="info-box">
+                <h4>Expected Behavior:</h4>
+                <ul>
+                    <li>Window container appears <strong>immediately</strong> upon button click</li>
+                    <li>Content loads progressively (may take 2-3 seconds)</li>
+                    <li>No blank or invisible windows, even under efficiency mode</li>
+                </ul>
+            </div>
+            
+            <div class="button-grid">
+                <button class="test-button" onclick="createEfficiencyModeTestWindow()">
+                    🎯 Efficiency Mode Test
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><span class="emoji">📊</span>Test Results & Timing</h2>
+            <p>Monitor window creation timing and behavior. Each button click should result in immediate window visibility.</p>
+            
+            <div class="status-display">
+                <h3>Activity Log</h3>
+                <div id="activity-log">
+                    <div class="log-entry">Ready for testing... Click any button to begin.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><span class="emoji">📝</span>Testing Instructions</h2>
+            <div class="info-box">
+                <h4>What to Look For:</h4>
+                <ul>
+                    <li><strong>Immediate Window Appearance:</strong> Windows should appear within 100ms of clicking</li>
+                    <li><strong>Progressive Loading:</strong> Content may load progressively, but window container should be visible immediately</li>
+                    <li><strong>No Efficiency Mode Issues:</strong> On Windows, windows should still appear even if Task Manager shows "efficiency mode"</li>
+                    <li><strong>Consistent Behavior:</strong> All platforms (Windows, macOS, Linux) should behave similarly</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h4>How to Test:</h4>
+                <ol>
+                    <li>Note the current time displayed above</li>
+                    <li>Click any test button</li>
+                    <li>Immediately observe if a window appears (should be within 100ms)</li>
+                    <li>Wait for content to load and check the reported timing</li>
+                    <li>Try multiple tests in sequence</li>
+                    <li>Test both buttons and menu items</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import {WindowTestService} from "./bindings/window-visibility-test";
+        
+        let logCounter = 0;
+
+        // Update current time every second
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = 
+                'Current Time: ' + now.toLocaleTimeString() + '.' + String(now.getMilliseconds()).padStart(3, '0');
+        }
+        setInterval(updateCurrentTime, 100);
+        updateCurrentTime();
+
+        // Logging function
+        function logActivity(message, isError = false) {
+            const log = document.getElementById('activity-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            if (isError) entry.style.borderLeft = '4px solid #ff6b6b';
+            
+            const timestamp = new Date().toLocaleTimeString() + '.' + String(new Date().getMilliseconds()).padStart(3, '0');
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep only last 10 entries
+            while (log.children.length > 10) {
+                log.removeChild(log.firstChild);
+            }
+            
+            console.log(`[Window Test] ${timestamp}: ${message}`);
+        }
+
+        // Window creation functions that call the Go backend
+        async function createNormalWindow() {
+            const startTime = performance.now();
+            logActivity('🚀 Creating normal window...');
+            
+            try {
+                const result = await WindowTestService.CreateNormalWindow();
+                const endTime = performance.now();
+                logActivity(`✅ ${result} (${Math.round(endTime - startTime)}ms)`);
+            } catch (error) {
+                logActivity(`❌ Error creating normal window: ${error.message}`, true);
+            }
+        }
+
+        async function createDelayedContentWindow() {
+            const startTime = performance.now();
+            logActivity('⏳ Creating delayed content window...');
+            
+            try {
+                const result = await WindowTestService.CreateDelayedContentWindow();
+                const endTime = performance.now();
+                logActivity(`✅ ${result} (${Math.round(endTime - startTime)}ms)`);
+            } catch (error) {
+                logActivity(`❌ Error creating delayed content window: ${error.message}`, true);
+            }
+        }
+
+        async function createHiddenThenShowWindow() {
+            const startTime = performance.now();
+            logActivity('🔄 Creating hidden then show window...');
+            
+            try {
+                const result = await WindowTestService.CreateHiddenThenShowWindow();
+                const endTime = performance.now();
+                logActivity(`✅ ${result} (${Math.round(endTime - startTime)}ms)`);
+                logActivity('⏰ Watch for window to appear in 2 seconds...');
+            } catch (error) {
+                logActivity(`❌ Error creating hidden then show window: ${error.message}`, true);
+            }
+        }
+
+        async function createMultipleWindows() {
+            const startTime = performance.now();
+            logActivity('🔢 Creating multiple windows...');
+            
+            try {
+                const result = await WindowTestService.CreateMultipleWindows();
+                const endTime = performance.now();
+                logActivity(`✅ ${result} (${Math.round(endTime - startTime)}ms)`);
+            } catch (error) {
+                logActivity(`❌ Error creating multiple windows: ${error.message}`, true);
+            }
+        }
+
+        async function createEfficiencyModeTestWindow() {
+            const startTime = performance.now();
+            logActivity('🎯 Creating efficiency mode test window...');
+            
+            try {
+                const result = await WindowTestService.CreateEfficiencyModeTestWindow();
+                const endTime = performance.now();
+                logActivity(`✅ ${result} (${Math.round(endTime - startTime)}ms)`);
+                logActivity('🔍 Check: Did the window appear immediately?');
+            } catch (error) {
+                logActivity(`❌ Error creating efficiency mode test window: ${error.message}`, true);
+            }
+        }
+
+        async function rapidWindowCreation() {
+            logActivity('🚄 Starting rapid window creation test...');
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(async () => {
+                    try {
+                        await createNormalWindow();
+                        logActivity(`✅ Rapid window ${i + 1} created`);
+                    } catch (error) {
+                        logActivity(`❌ Rapid window ${i + 1} failed: ${error.message}`, true);
+                    }
+                }, i * 200); // 200ms intervals
+            }
+        }
+
+        // Make functions globally available for onclick handlers
+        window.createNormalWindow = createNormalWindow;
+        window.createDelayedContentWindow = createDelayedContentWindow;
+        window.createHiddenThenShowWindow = createHiddenThenShowWindow;
+        window.createMultipleWindows = createMultipleWindows;
+        window.createEfficiencyModeTestWindow = createEfficiencyModeTestWindow;
+        window.rapidWindowCreation = rapidWindowCreation;
+
+        // Log when the page loads
+        window.addEventListener('load', function() {
+            logActivity('📱 Main window loaded and ready for testing');
+        });
+    </script>
+</body>
+</html>
