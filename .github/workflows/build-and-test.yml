@@ -13,6 +13,8 @@ jobs:
     name: Run Go Tests
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
+    env:
+      GOWORK: "off"
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04, windows-latest, macos-latest]
@@ -86,6 +88,8 @@ jobs:
     name: Test Templates
     needs: test_go
     runs-on: ${{ matrix.os }}
+    env:
+      GOWORK: "off"
     strategy:
       fail-fast: true
       matrix:

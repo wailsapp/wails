@@ -10,6 +10,8 @@ on:
   workflow_dispatch: {}
 
 name: PR Checks (master)
+permissions:
+  contents: read
 
 jobs:
   check_docs:
@@ -52,6 +54,8 @@ jobs:
           )
         )
       )
+    env:
+      GOWORK: "off"
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
@@ -98,6 +102,25 @@ jobs:
         working-directory: ./v2
         run: go test -v -tags webkit2_41 ./...
 
+  # Gate job: provides the bare "Run Go Tests" check name that branch protection requires.
+  # The matrix job above posts "Run Go Tests (os, version)" per platform; this job
+  # aggregates those results under the exact name the rule expects.
+  test_go_gate:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    needs: [test_go]
+    if: always()
+    steps:
+      - name: Check matrix result
+        run: |
+          result="${{ needs.test_go.result }}"
+          if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+            echo "Go tests result: $result — gate passed"
+          else
+            echo "Go tests result: $result — gate failed"
+            exit 1
+          fi
+
   # This job will run instead of test_go for the update-sponsors branch
   skip_tests:
     name: Skip Tests (Sponsor Update)
@@ -109,3 +132,47 @@ jobs:
           echo "Skipping tests for sponsor update branch"
           echo "This is an automated update of the sponsors image."
         continue-on-error: true
+
+  # Aggregate job that satisfies the "Run Go Tests" branch protection required check.
+  # Matrix jobs report as "Run Go Tests (os, version)" — no single check with the bare
+  # name is ever posted, so the requirement is never fulfilled without this fan-in job.
+  go_test_results:
+    name: Run Go Tests
+    if: >
+      always() &&
+      github.repository == 'wailsapp/wails' &&
+      (
+        github.event.pull_request.head.ref == 'update-sponsors' ||
+        (
+          github.event.pull_request.head.ref != 'update-sponsors' &&
+          (
+            github.event_name == 'workflow_dispatch' ||
+            (
+              github.event.pull_request.base.ref == 'master' &&
+              (
+                github.event_name == 'pull_request' ||
+                (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+              )
+            )
+          )
+        )
+      )
+    needs: [test_go, skip_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          test_result="${{ needs.test_go.result }}"
+          skip_result="${{ needs.skip_tests.result }}"
+          branch="${{ github.event.pull_request.head.ref }}"
+
+          if [[ "$test_result" == "success" ]]; then
+            exit 0
+          fi
+
+          if [[ "$branch" == "update-sponsors" && "$skip_result" == "success" ]]; then
+            exit 0
+          fi
+
+          echo "Go tests result: $test_result"
+          echo "Skip tests result: $skip_result"
+          exit 1
