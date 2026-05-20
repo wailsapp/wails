@@ -1,0 +1,285 @@
+---
+title: v2 Feature Status in v3
+description: Status of every significant Wails v2 capability in v3
+sidebar:
+  order: 9
+---
+
+import { Badge } from "@astrojs/starlight/components";
+
+This page tracks the status of every significant Wails v2 capability in v3. It is a **reference table**, not a migration guide — for step-by-step migration instructions see [Migrating from v2 to v3](/migration/v2-to-v3).
+
+## Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| **available** | Feature exists in v3 with the same or equivalent behaviour |
+| **different** | Feature exists but the API has changed; migration action required |
+| **deferred** | Planned for a post-beta release; not yet available |
+| **won't-implement** | Explicitly out of scope for v3 |
+
+## Feature Status Table
+
+| v2 Feature | v3 Status | Notes / Migration action |
+|---|---|---|
+| [Window API](#window-api) | **different** | Replaced by object-oriented window methods; see below |
+| [Menu API](#menu-api) | **different** | New fluent menu builder API; see below |
+| [Events](#events) | **different** | Typed event objects, no context required; see below |
+| [Dialogs](#dialogs) | **different** | Accessed via `app.Dialog` manager instead of runtime functions; see below |
+| [System Tray](#system-tray) | **available** | New in v3; not available in v2 |
+| [Bindings generation](#bindings-generation) | **different** | Output path and CLI command changed; see below |
+| [File dialogs](#file-dialogs) | **different** | Part of the unified Dialogs API; see below |
+| [Drag-and-drop](#drag-and-drop) | **available** | Enable via `EnableFileDrop` window option |
+| [Single-instance lock](#single-instance-lock) | **available** | Available via `SingleInstance` application option |
+| [Auto-update hooks](#auto-update-hooks) | **different** | Full `UpdaterService` replaces manual hooks; see below |
+| [v2 runtime JS functions](#v2-runtime-js-functions) | **different** | Replaced by `@wailsio/runtime` package; see below |
+
+---
+
+## Window API
+
+**v3 status: different**
+
+v2 exposed all window operations as global `runtime` functions that implicitly targeted the single application window. v3 introduces native multi-window support; every window is an explicit object and all operations are methods on that object.
+
+**v2:**
+```go
+runtime.WindowSetTitle(ctx, "New Title")
+runtime.WindowSetSize(ctx, 800, 600)
+runtime.WindowShow(ctx)
+```
+
+**v3:**
+```go
+window := app.CurrentWindow()
+window.SetTitle("New Title")
+window.SetSize(800, 600)
+window.Show()
+```
+
+**Migration action:** Replace `runtime.Window*` calls with equivalent methods on your `WebviewWindow` instances. See [Window API reference](/reference/window) and [Migrating from v2 to v3 — Windows](/migration/v2-to-v3#windows).
+
+---
+
+## Menu API
+
+**v3 status: different**
+
+The menu package used in v2 (`menu.NewMenu()`, `menu.Text()`, etc.) has been replaced with a fluent builder API accessed directly from the application instance.
+
+**v2:**
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3:**
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+app.SetMenu(menu)
+```
+
+**Migration action:** Rebuild menus using `app.NewMenu()` and the `AddSubmenu` / `Add` / `OnClick` chain. See [Menu API reference](/reference/menu) and [Migrating from v2 to v3 — Menus](/migration/v2-to-v3#menus).
+
+---
+
+## Events
+
+**v3 status: different**
+
+v2 events used variadic `interface{}` parameters and required passing a context to every function. v3 introduces typed event objects and removes the context requirement; handlers receive a `*CustomEvent` with structured data.
+
+**v2:**
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // Handle event
+})
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3:**
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+})
+app.Event.Emit("event-name", data)
+```
+
+**Migration action:** Replace `runtime.Events*` calls with `app.Event.On` / `app.Event.Emit`. Update frontend imports from `../wailsjs/runtime/runtime` to `@wailsio/runtime`. See [Events reference](/reference/events) and [Migrating from v2 to v3 — Events](/migration/v2-to-v3#events).
+
+---
+
+## Dialogs
+
+**v3 status: different**
+
+v2 dialogs were called through global `runtime` functions. v3 unifies all dialogs under an `app.Dialog` manager with a consistent options-struct pattern.
+
+**v2:**
+```go
+result, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+    Type:    runtime.InfoDialog,
+    Title:   "Info",
+    Message: "Hello",
+})
+```
+
+**v3:**
+```go
+result, err := app.Dialog.Info().
+    SetTitle("Info").
+    SetMessage("Hello").
+    Ask()
+```
+
+**Migration action:** Replace `runtime.MessageDialog` and `runtime.OpenFileDialog` / `runtime.SaveFileDialog` with the equivalent `app.Dialog` methods. See [Dialogs API reference](/reference/dialogs).
+
+---
+
+## System Tray
+
+**v3 status: available**
+
+System tray support did not exist in v2. v3 introduces it as a first-class feature.
+
+```go
+tray := app.NewSystemTray()
+tray.SetIcon(iconBytes)
+tray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(func(ctx *application.Context) { window.Show() })
+menu.Add("Quit").OnClick(func(ctx *application.Context) { app.Quit() })
+tray.SetMenu(menu)
+```
+
+No migration action required — this is a new capability.
+
+---
+
+## Bindings Generation
+
+**v3 status: different**
+
+The CLI command and output directory have changed. v2 generated bindings into `frontend/wailsjs/go/<package>/<Struct>`. v3 generates them into `frontend/bindings/<appname>/<servicename>`.
+
+**v2:**
+```bash
+wails generate bindings   # output: frontend/wailsjs/go/main/App.js
+```
+
+**v3:**
+```bash
+wails3 generate bindings  # output: frontend/bindings/<appname>/<servicename>.js
+```
+
+**Migration action:** Run `wails3 generate bindings`, then update all frontend import paths from `../wailsjs/go/<pkg>/<Struct>` to `./bindings/<appname>/<servicename>`. See [Migrating from v2 to v3 — Frontend Bindings](/migration/v2-to-v3#frontend-bindings).
+
+---
+
+## File Dialogs
+
+**v3 status: different**
+
+File open and save dialogs are part of the unified Dialogs API in v3 instead of standalone `runtime` functions.
+
+**v2:**
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3:**
+```go
+selection, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+**Migration action:** Replace `runtime.OpenFileDialog` / `runtime.SaveFileDialog` with `app.Dialog.OpenFile()` / `app.Dialog.SaveFile()` and use the method chain to set options. See [Dialogs API reference](/reference/dialogs).
+
+---
+
+## Drag-and-Drop
+
+**v3 status: available**
+
+v3 supports OS-level file drag-and-drop (files dragged from the file manager or desktop) via the `EnableFileDrop` window option and `data-file-drop-target` HTML attributes. This maps to the v2 `EnableFileDrop` and `OnFileDrop` options, but uses event-based delivery instead.
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    EnableFileDrop: true,
+})
+```
+
+```html
+<div data-file-drop-target>Drop files here</div>
+```
+
+No migration action required beyond enabling the option and updating the event handler. See the [File Drop guide](/features/drag-and-drop/files).
+
+---
+
+## Single-Instance Lock
+
+**v3 status: available**
+
+Single-instance locking is available via the `SingleInstance` field of `application.Options`. The callback receives structured data about the second launch attempt.
+
+```go
+app := application.New(application.Options{
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.example.myapp",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Bring existing window to front
+            window.Show()
+            window.Focus()
+        },
+    },
+})
+```
+
+No migration action required — replace the v2 `SingleInstance` plugin with this built-in option.
+
+---
+
+## v2 Runtime JS Functions
+
+**v3 status: different**
+
+The v2 frontend shipped a generated `wailsjs/runtime/runtime.js` module with functions like `EventsOn`, `EventsEmit`, `WindowSetTitle`, etc. v3 replaces this with the `@wailsio/runtime` npm package (or a pre-built bundle generated by `wails3 generate runtime`), which provides the same capabilities under a reorganised namespace.
+
+**v2:**
+```javascript
+import { EventsOn, EventsEmit, WindowSetTitle } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", handler)
+EventsEmit("action", data)
+WindowSetTitle("New Title")
+```
+
+**v3:**
+```javascript
+import { Events, Window } from '@wailsio/runtime'
+
+Events.On("update", handler)
+Events.Emit("action", data)
+Window.SetTitle("New Title")
+```
+
+**Migration action:**
+
+1. Install the runtime package: `npm install --save @wailsio/runtime`
+2. Replace `../wailsjs/runtime/runtime` imports with `@wailsio/runtime`
+3. Update call sites to use the new namespace (e.g. `Events.On` instead of `EventsOn`)
+
+See [Frontend Runtime reference](/reference/frontend-runtime) and [Migrating from v2 to v3 — Events](/migration/v2-to-v3#events).
