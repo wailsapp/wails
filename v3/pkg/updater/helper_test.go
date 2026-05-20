@@ -198,6 +198,55 @@ func TestRunHelperSwap_ParentWaitTimeout_Aborts(t *testing.T) {
 	}
 }
 
+// Regression for "user clicks Restart, app silently exits 11 instead of
+// relaunching." Helper-mode env vars were inherited by the launched binary
+// because exec.Command defaults cmd.Env to os.Environ(); HandleHelperMode at
+// the top of the new process saw the still-set sentinels and ran another
+// (doomed) swap. Fix: scrub the env in the helper before launching.
+func TestRunHelperSwap_ClearsHelperEnvBeforeLaunch(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+
+	// Seed the env exactly as Restart() does before spawning the helper.
+	t.Setenv(envHelperMode, "1")
+	t.Setenv(envHelperTarget, target)
+	t.Setenv(envHelperNew, newPath)
+	t.Setenv(envHelperPID, "1234")
+	t.Setenv(envHelperLog, filepath.Join(dir, "log"))
+
+	// envAtLaunch is captured by the launcher at the moment it would spawn the
+	// new binary — that's exactly the snapshot the inherited exec would see.
+	var envAtLaunch map[string]string
+	envCapturingLauncher := &funcLauncher{fn: func(path string) error {
+		envAtLaunch = map[string]string{}
+		for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+			envAtLaunch[k] = os.Getenv(k)
+		}
+		return nil
+	}}
+
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, envCapturingLauncher)
+	if code != 0 {
+		t.Fatalf("swap code: %d", code)
+	}
+	for k, v := range envAtLaunch {
+		if v != "" {
+			t.Errorf("env var %s leaked to launched process: %q", k, v)
+		}
+	}
+}
+
+// funcLauncher is a launcher whose launch is provided by the test. Different
+// from fakeLauncher in that the callback runs custom inspection logic.
+type funcLauncher struct {
+	fn func(path string) error
+}
+
+func (f *funcLauncher) launch(path string) error { return f.fn(path) }
+
 func TestHandleHelperMode_NoEnv_Returns(t *testing.T) {
 	// When the sentinel env var is absent the function must return
 	// immediately and NOT touch os.Exit.

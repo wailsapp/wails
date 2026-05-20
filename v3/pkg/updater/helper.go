@@ -168,6 +168,15 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		return 13
 	}
 
+	// Strip our helper-mode sentinels from the environment before launching
+	// the new binary. exec.Command inherits the parent's env when cmd.Env is
+	// unset, so without this the relaunched app would see WAILS_UPDATER_HELPER
+	// still set, call HandleHelperMode at start-up, try to perform another
+	// swap against a path we've already cleaned up, and exit with code 11 —
+	// the visible effect being "user clicks Restart, app dies, never reopens."
+	// Discovered against wailsapp/updater-demo on macOS arm64.
+	clearHelperEnv()
+
 	if err := l.launch(target); err != nil {
 		lg.logf("launch new failed: %v — restoring backup", err)
 		if err := restoreFromBackup(backup, target, l); err != nil {
@@ -332,6 +341,16 @@ func (h *helperLog) logf(format string, args ...any) {
 func (h *helperLog) Close() {
 	if h != nil && h.file != nil {
 		_ = h.file.Close()
+	}
+}
+
+// clearHelperEnv unsets every WAILS_UPDATER_HELPER_* variable in the current
+// process. Called by runHelperSwap immediately before launching the new
+// binary so the launched process boots in normal mode instead of inheriting
+// our helper-mode sentinels.
+func clearHelperEnv() {
+	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+		_ = os.Unsetenv(k)
 	}
 }
 
