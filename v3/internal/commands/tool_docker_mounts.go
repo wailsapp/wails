@@ -55,8 +55,9 @@ func ToolDockerMounts(_ *DockerMountsOptions) error {
 	}
 
 	// Parse go.mod for local replace directives and add volume mounts.
-	// The container project root is /app; replace paths must be remapped accordingly.
-	gomodDir, _ := filepath.Abs(".")
+	// Relative replace paths map under /app (the container project root);
+	// absolute replace paths are mounted at the same path inside the container,
+	// because Go inside the container resolves them literally.
 	data, err := os.ReadFile("go.mod")
 	if err == nil {
 		f, err := modfile.Parse("go.mod", data, nil)
@@ -92,14 +93,9 @@ func ToolDockerMounts(_ *DockerMountsOptions) error {
 					if len(relPath) >= 2 && relPath[1] == ':' {
 						continue
 					}
-					// Unix absolute paths: compute the offset from the project root so
-					// the container destination stays under /app, matching where Go
-					// resolves the module inside the container.
-					rel, err := filepath.Rel(gomodDir, hostAbsPath)
-					if err != nil {
-						continue
-					}
-					containerPath = path.Clean("/app/" + filepath.ToSlash(rel))
+					// Mount at the same absolute path inside the container so Go
+					// finds the module at the literal path written in go.mod.
+					containerPath = hostDockerPath
 				} else {
 					containerPath = path.Clean("/app/" + relPath)
 				}
