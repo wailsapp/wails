@@ -307,10 +307,11 @@ func (u *Updater) Restart(_ context.Context) error {
 		return fmt.Errorf("updater: resolve self: %w", err)
 	}
 
+	target := bundleTarget(self)
 	logPath := filepath.Join(os.TempDir(), "wails-update.log")
 	env := append(os.Environ(),
 		envHelperMode+"=1",
-		envHelperTarget+"="+self,
+		envHelperTarget+"="+target,
 		envHelperNew+"="+staged,
 		envHelperPID+"="+itoa(os.Getpid()),
 		envHelperLog+"="+logPath,

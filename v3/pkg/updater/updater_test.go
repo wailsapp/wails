@@ -445,14 +445,9 @@ func TestRestart_QuitsAfterSpawn(t *testing.T) {
 	// Substitute a benign command in place of the real self re-exec so
 	// Start() succeeds without actually launching another test binary in
 	// helper mode.
-	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
-		if _, err := os.Stat("/usr/bin/true"); err == nil {
-			return "/usr/bin/true", nil
-		}
-		return "/bin/true", nil
-	}))
+	t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
 	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
-		return exec.Command(path)
+		return exec.Command(path, "-test.run=^$")
 	}))
 
 	host := &fakeHost{}

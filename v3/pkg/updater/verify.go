@@ -7,6 +7,7 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/subtle"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
@@ -94,14 +95,7 @@ func runVerification(computedDigest []byte, v *Verification, configKey []byte) e
 }
 
 func constantTimeEqual(a, b []byte) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	var diff byte
-	for i := range a {
-		diff |= a[i] ^ b[i]
-	}
-	return diff == 0
+	return subtle.ConstantTimeCompare(a, b) == 1
 }
 
 // --- ed25519 (raw, payload-signing) ---
