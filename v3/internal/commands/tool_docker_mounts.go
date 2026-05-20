@@ -59,50 +59,55 @@ func ToolDockerMounts(_ *DockerMountsOptions) error {
 	// absolute replace paths are mounted at the same path inside the container,
 	// because Go inside the container resolves them literally.
 	data, err := os.ReadFile("go.mod")
-	if err == nil {
-		f, err := modfile.Parse("go.mod", data, nil)
-		if err == nil {
-			for _, r := range f.Replace {
-				// Only handle local directory replacements (no version = local path)
-				if r.New.Version != "" {
-					continue
-				}
-				relPath := r.New.Path // forward-slash path as written in go.mod
-
-				// Resolve absolute host path from the (possibly relative) replace path.
-				hostAbsPath := relPath
-				if !filepath.IsAbs(relPath) {
-					abs, err := filepath.Abs(relPath)
-					if err != nil {
-						continue
-					}
-					hostAbsPath = abs
-				}
-				if info, err := os.Stat(hostAbsPath); err != nil || !info.IsDir() {
-					continue
-				}
-				hostDockerPath := filepath.ToSlash(hostAbsPath)
-
-				// Compute the container-side destination.
-				// Relative replace paths in go.mod are relative to the project root,
-				// which maps to /app inside the container. path.Clean handles ".." correctly.
-				var containerPath string
-				if filepath.IsAbs(relPath) {
-					// Windows drive-letter absolute paths (e.g. C:\vendor\lib) cannot be
-					// mapped to valid Linux container destination paths — skip them.
-					if len(relPath) >= 2 && relPath[1] == ':' {
-						continue
-					}
-					// Mount at the same absolute path inside the container so Go
-					// finds the module at the literal path written in go.mod.
-					containerPath = hostDockerPath
-				} else {
-					containerPath = path.Clean("/app/" + relPath)
-				}
-
-				mounts = append(mounts, fmt.Sprintf(`-v "%s:%s:ro"`, hostDockerPath, containerPath))
-			}
+	if err != nil {
+		return fmt.Errorf("reading go.mod: %w", err)
+	}
+	f, err := modfile.Parse("go.mod", data, nil)
+	if err != nil {
+		return fmt.Errorf("parsing go.mod: %w", err)
+	}
+	for _, r := range f.Replace {
+		// Only handle local directory replacements (no version = local path)
+		if r.New.Version != "" {
+			continue
 		}
+		relPath := r.New.Path // forward-slash path as written in go.mod
+
+		// Resolve absolute host path from the (possibly relative) replace path.
+		hostAbsPath := relPath
+		if !filepath.IsAbs(relPath) {
+			abs, err := filepath.Abs(relPath)
+			if err != nil {
+				return fmt.Errorf("resolving replace path %q: %w", relPath, err)
+			}
+			hostAbsPath = abs
+		}
+		// Skip silently if the replace target doesn't exist locally —
+		// a sibling may legitimately not be cloned on every machine, matching
+		// the original Taskfile bash behaviour (`if [ -d "$path" ]`).
+		if info, err := os.Stat(hostAbsPath); err != nil || !info.IsDir() {
+			continue
+		}
+		hostDockerPath := filepath.ToSlash(hostAbsPath)
+
+		// Compute the container-side destination.
+		// Relative replace paths in go.mod are relative to the project root,
+		// which maps to /app inside the container. path.Clean handles ".." correctly.
+		var containerPath string
+		if filepath.IsAbs(relPath) {
+			// Windows drive-letter absolute paths (e.g. C:\vendor\lib) cannot be
+			// mapped to valid Linux container destination paths — skip them.
+			if len(relPath) >= 2 && relPath[1] == ':' {
+				continue
+			}
+			// Mount at the same absolute path inside the container so Go
+			// finds the module at the literal path written in go.mod.
+			containerPath = hostDockerPath
+		} else {
+			containerPath = path.Clean("/app/" + relPath)
+		}
+
+		mounts = append(mounts, fmt.Sprintf(`-v "%s:%s:ro"`, hostDockerPath, containerPath))
 	}
 
 	fmt.Print(strings.Join(mounts, " "))
