@@ -386,6 +386,27 @@ type User struct {
 func GetUser(id int) (*User, error) {
     return &User{
         ID:    id,
-        Name:  "Alice",---
+        Name:  "Alice",
+        Email: "alice@example.com",
+    }, nil
+}
+```
+
+```typescript
+// TypeScript（自动生成）
+interface User {
+    id: number
+    name: string
+    email: string
+}
+
+function GetUser(id: number): Promise<User>
+
+// 用法
+const user = await GetUser(1)
+console.log(user.name)  // "Alice"
+```
+
+**JSON 标签：** 使用 `json:` 标签来控制 TypeScript 中的字段名称。
 
 **有关桥接的问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或查看 [绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。
