@@ -51,7 +51,7 @@ Create professional installers for your Wails application on all platforms.
     
     ```bash
     # Create DMG
-    hdiutil create -volname "MyApp" -srcfolder build/bin/MyApp.app -ov -format UDZO MyApp.dmg
+    hdiutil create -volname "MyApp" -srcfolder bin/MyApp.app -ov -format UDZO MyApp.dmg
     ```
     
     ### Code Signing
@@ -78,7 +78,7 @@ Create professional installers for your Wails application on all platforms.
     mkdir -p myapp_1.0.0/usr/bin
     
     # Copy binary
-    cp build/bin/myapp myapp_1.0.0/usr/bin/
+    cp bin/myapp myapp_1.0.0/usr/bin/
     
     # Create control file
     cat > myapp_1.0.0/DEBIAN/control << EOF

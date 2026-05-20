@@ -8,7 +8,7 @@ esbuild
         bundle: true,
         minify: true,
         outfile: "../ipc_websocket.js",
-        plugins: [sveltePlugin({compileOptions: {css: true}})],
+        plugins: [sveltePlugin({compilerOptions: {css: "injected"}})],
         logLevel: "info",
         sourcemap: "inline",
     })
