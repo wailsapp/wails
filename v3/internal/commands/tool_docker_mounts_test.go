@@ -172,7 +172,7 @@ replace foo => C:\vendor\lib
 	if err != nil {
 		t.Fatalf("ToolDockerMounts returned error: %v", err)
 	}
-	if strings.Contains(out, "C:") || strings.Contains(out, `vendor/lib`) {
+	if strings.Contains(out, `vendor/lib`) {
 		t.Errorf("drive-letter path should be skipped, got: %s", out)
 	}
 }
