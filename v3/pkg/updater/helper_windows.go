@@ -2,7 +2,12 @@
 
 package updater
 
-import "syscall"
+import (
+	"fmt"
+	"os"
+	"syscall"
+	"time"
+)
 
 // processQueryLimitedInformation grants only enough access to ask whether a
 // process is still running — the minimum permissions required to call
@@ -35,4 +40,36 @@ func platformIsAlive(pid int) bool {
 		return false
 	}
 	return code == stillActive
+}
+
+// replaceTarget puts the file at newPath into target's slot. On Windows the
+// kernel keeps an executable's image file held for some time after the
+// process that ran it exits — long enough that os.Remove(target) fails with
+// "Access is denied" through multiple retry attempts. Discovered against
+// wailsapp/updater-demo on Windows 11 amd64 (helper logged 20 consecutive
+// unlinkat failures, ~10s total).
+//
+// Windows does, however, allow renaming a file whose image is still mapped.
+// So we rename the target aside (giving the new file a free slot at target)
+// and let the stale .old file be cleaned up later — best-effort delete here,
+// and a sweep in maybeCleanReplacedAsides on the next helper run takes care
+// of any leftovers once the kernel has finally released them.
+func replaceTarget(target, newPath string) error {
+	// Best-effort first try: if nothing's actually holding it, a normal
+	// remove + rename is cleaner (no .old file left behind).
+	if err := os.RemoveAll(target); err == nil {
+		return os.Rename(newPath, target)
+	}
+	aside := fmt.Sprintf("%s.old.%d", target, time.Now().UnixNano())
+	if err := os.Rename(target, aside); err != nil {
+		return fmt.Errorf("rename-aside %s → %s: %w", target, aside, err)
+	}
+	if err := os.Rename(newPath, target); err != nil {
+		// Try to put the original back so we're not left in a half-state.
+		_ = os.Rename(aside, target)
+		return err
+	}
+	// The .old file may still be locked by the loader; ignore failure.
+	_ = os.Remove(aside)
+	return nil
 }

@@ -133,17 +133,16 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		origMode = origInfo.Mode()
 	}
 
-	// Retry the swap up to 20 times in case the OS still holds a lock. Each
-	// attempt removes the target and renames the new artifact into place.
+	// Retry the swap up to 20 times in case the OS still holds a transient
+	// lock on the target. The actual replace strategy is platform-specific —
+	// Unix unlinks and renames in place (open file handles keep working
+	// because the inode lives on); Windows moves the target aside because
+	// it can't delete a recently-running executable but it CAN rename it,
+	// even with the loader still mapping its image.
 	swapped := false
 	for i := 0; i < 20; i++ {
-		if err := os.RemoveAll(target); err != nil {
-			lg.logf("remove old (attempt %d): %v", i+1, err)
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		if err := os.Rename(newPath, target); err != nil {
-			lg.logf("rename new (attempt %d): %v", i+1, err)
+		if err := replaceTarget(target, newPath); err != nil {
+			lg.logf("replace (attempt %d): %v", i+1, err)
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
