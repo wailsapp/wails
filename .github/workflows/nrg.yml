@@ -18,17 +18,31 @@ on:
       - 'README.tr.md'
       - 'README.uz.md'
       - 'README.src.md'
+
+# Least-privilege default: only the `regenerate` job upgrades to write.
 permissions:
-  contents: write
+  contents: read
+
 jobs:
   regenerate:
+    # Pushes to master regenerate localized READMEs from README.src.md and
+    # commit the result back. Uses the default GITHUB_TOKEN, which does NOT
+    # bypass branch protection — if master has "Require pull request before
+    # merging" enabled, the push is rejected and the job fails safely without
+    # altering protected content. To forbid direct writes entirely, disable
+    # this workflow or switch to a PR-creation strategy.
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: nanolaba/nrg-action@v1
+      # nanolaba/nrg-action pinned to the v1 release commit SHA for
+      # supply-chain hardening (mutable tags can be force-moved). Bump this
+      # SHA together with `nrg-version` below when upgrading.
+      - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
         with:
           file: README.src.md
           nrg-version: '1.1'
@@ -42,11 +56,13 @@ jobs:
             git push
           fi
   drift-check:
+    # PRs are checked for drift only — no commits, no write permissions needed
+    # (inherits top-level `contents: read`).
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nanolaba/nrg-action@v1
+      - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
         with:
           file: README.src.md
           mode: check
