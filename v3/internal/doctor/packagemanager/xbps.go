@@ -79,6 +79,12 @@ func (x *Xbps) PackageAvailable(pkg *Package) (bool, error) {
 
 	output, err := execCmd("xbps-query", "-Rs", pkg.Name)
 	if err != nil {
+		// xbps-query -Rs exits non-zero when no packages match, writing nothing
+		// to stdout (the error message goes to stderr). Treat empty-stdout errors
+		// as "not available", the same way PackageInstalled silences all errors.
+		if output == "" {
+			return false, nil
+		}
 		return false, err
 	}
 
@@ -116,14 +122,14 @@ func (x *Xbps) InstallCommand(pkg *Package) string {
 }
 
 func (x *Xbps) getPackageVersion(pkg *Package, output string) {
-	// xbps-query output: "pkgname-version_revision" or inline in -Rs output
+	lowerName := strings.ToLower(pkg.Name)
+	prefix := lowerName + "-"
 	for _, line := range strings.Split(output, "\n") {
-		if strings.Contains(line, pkg.Name) {
+		if strings.Contains(strings.ToLower(line), lowerName) {
 			fields := strings.Fields(line)
 			for _, f := range fields {
-				if strings.HasPrefix(f, pkg.Name+"-") {
-					// strip pkgname- prefix, keep version_revision
-					pkg.Version = strings.TrimPrefix(f, pkg.Name+"-")
+				if strings.HasPrefix(strings.ToLower(f), prefix) {
+					pkg.Version = f[len(prefix):]
 					return
 				}
 			}
