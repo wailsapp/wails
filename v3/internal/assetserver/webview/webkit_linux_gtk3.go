@@ -56,6 +56,7 @@ func webkit_uri_scheme_request_finish(req *C.WebKitURISchemeRequest, code int, h
 	C.free(unsafe.Pointer(cMimeType))
 
 	hdrs := C.soup_message_headers_new(C.SOUP_MESSAGE_HEADERS_RESPONSE)
+	defer C.soup_message_headers_unref(hdrs)
 	for name, values := range header {
 		cName := C.CString(name)
 		for _, value := range values {
