@@ -1,13 +1,13 @@
 ---
 title: Updater
-description: Self-updating Wails v3 applications — pluggable providers, automatic verification, and a default UI you can theme or replace.
+description: In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace.
 ---
 
 The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on `app.Updater`, accepts one or more pluggable `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.
 
-## Quick start (30 seconds)
+## Quick start
 
-```go
+```go title="main.go"
 package main
 
 import (
@@ -38,7 +38,26 @@ func main() {
 }
 ```
 
-That's it. The framework opens an update window, checks GitHub, downloads the release asset for the running platform, swaps the binary, and is ready for restart.
+That opens the framework's update window, checks GitHub, downloads the platform asset, verifies it, swaps the binary, and waits for the user to restart.
+
+## The lifecycle
+
+`app.Updater` is a state machine with these states (`updater.State`):
+
+| State | When |
+|---|---|
+| `unconfigured` | Before `Init` is called |
+| `idle` | After `Init`, before any check |
+| `checking` | A `Check` is in flight |
+| `up-to-date` | The latest provider response said the caller is current |
+| `available` | A new release was found; not yet downloading |
+| `downloading` | Bytes are streaming from the provider |
+| `verifying` | Download complete, signature/digest being checked |
+| `installing` | Verified bytes being unpacked and renamed into the staging dir |
+| `ready` | Update staged; call `Restart` to apply |
+| `error` | Any prior step failed |
+
+You can read the current state with `app.Updater.State()` at any time. Every transition also emits a Wails event (see [Events](#events)).
 
 ## Providers
 
@@ -52,64 +71,112 @@ type Provider interface {
 }
 ```
 
-Three are built in:
+Three implementations ship in-tree.
 
-### GitHub Releases (`updater/providers/github`)
+### GitHub Releases — `updater/providers/github`
 
-```go
-gh, _ := github.New(github.Config{
-    Repository:    "myorg/myapp",   // your owner/repo
-    Token:         "ghp_…",         // optional; raises rate limit + private repos
-    Prerelease:    false,           // include pre-releases
-    ChecksumAsset: "SHA256SUMS",    // optional sibling asset for verification
+```go title="github provider"
+gh, err := github.New(github.Config{
+    Repository:    "myorg/myapp",     // your owner/repo (required)
+    Token:         "ghp_…",           // optional; raises rate limit + private repos
+    Prerelease:    false,             // include pre-releases in latest lookup
+    ChecksumAsset: "SHA256SUMS",      // optional sibling asset for digest verification
+    BaseURL:       "",                // optional override (e.g. GitHub Enterprise)
+    AssetMatcher:  nil,               // optional custom asset-picker; nil uses DefaultAssetMatcher
+    HTTPClient:    nil,               // optional client override
 })
 ```
 
-For a runnable demo against a live GitHub release, see
-[`v3/examples/updater`](https://github.com/wailsapp/wails/pull/5449) —
-it points at [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
-out of the box and walks the full check → download → verify → swap →
-restart flow.
-
-The default asset matcher picks by `GOOS` + `GOARCH` substring on the filename, recognising common aliases (`amd64`/`x86_64`/`x64`, `arm64`/`aarch64`, `386`/`i386`/`x86`). Override with `Config.AssetMatcher` for custom naming schemes.
-
-### keygen.sh (`updater/providers/keygen`)
+The default asset matcher picks by `GOOS` + `GOARCH` substring on the filename, recognising common aliases (`amd64` / `x86_64` / `x64`, `arm64` / `aarch64`, `386` / `i386` / `x86` / `ia32`). For custom naming schemes:
 
 ```go
-kg, _ := keygen.New(keygen.Config{
-    Account: "your-account-slug",
-    Product: "your-product-id",
-    Token:   "admi-…",   // or LicenseKey for license-authenticated checks
-    Channel: "stable",
+gh, _ := github.New(github.Config{
+    Repository: "myorg/myapp",
+    AssetMatcher: func(req updater.CheckRequest, assets []github.ReleaseAsset) int {
+        for i, a := range assets {
+            if strings.Contains(a.Name, "my-naming-convention") &&
+               strings.Contains(a.Name, req.Platform) {
+                return i
+            }
+        }
+        return -1 // no match
+    },
+})
+```
+
+`ChecksumAsset` is the name of a sibling release asset whose content is `<sha256>  <filename>` lines (the format `sha256sum` and `shasum -a 256` produce). The provider fetches it during `Check`, finds the line that matches the picked artifact, and populates `Release.Verification.Digest` so the framework verifies the download.
+
+### keygen.sh — `updater/providers/keygen`
+
+```go title="keygen provider"
+kg, err := keygen.New(keygen.Config{
+    Account:    "your-account-slug", // required
+    Product:    "product-uuid",      // optional but recommended when account has multiple products
+    Package:    "",                  // optional further narrowing
+    Channel:    "stable",            // "stable" / "rc" / "beta" / "alpha" / "dev"
+    Filetype:   "",                  // optional artifact filetype filter ("dmg", "exe", …)
+    Token:      "prod-…",            // product / environment / user / admin token; wins over LicenseKey
+    LicenseKey: "",                  // license key auth (used only when Token is empty)
+    BaseURL:    "",                  // optional API base override
+    HTTPClient: nil,                 // optional client override; redirect-strip wrapper still applied
 })
 ```
 
 The provider automatically maps keygen.sh's per-artifact SHA-512 checksum and Ed25519ph signature into the framework's `Release.Verification` block — no extra wiring required.
 
-### Sparkle AppCast (`updater/providers/appcast`)
+**Token formats:** keygen.sh tokens carry a role prefix (`admi-` / `prod-` / `envi-` / `user-`). The raw UUID you see in the dashboard is the token's *identifier*, not its secret value — the secret is only visible at token-create time. See keygen.sh's [auth docs](https://keygen.sh/docs/api/authentication/) for details.
 
-```go
-ac, _ := appcast.New(appcast.Config{
-    URL:     "https://your.app/appcast.xml",
-    Channel: "stable",  // optional sparkle:channel filter
+### Sparkle AppCast — `updater/providers/appcast`
+
+```go title="appcast provider"
+ac, err := appcast.New(appcast.Config{
+    URL:        "https://your.app/appcast.xml", // required
+    Channel:    "stable",                       // optional sparkle:channel filter
+    HTTPClient: nil,                            // optional client override
 })
 ```
 
-Drops in to existing Sparkle/WinSparkle infrastructure unchanged. Reads `sparkle:shortVersionString`, `<enclosure>`, and `sparkle:edSignature` from the feed.
+Drops in to existing Sparkle / WinSparkle infrastructure unchanged. Reads `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>`, and `sparkle:channel` from the feed.
+
+Sparkle 1's DSA signatures (`sparkle:dsaSignature`) are not supported — projects on that signing scheme should rotate to EdDSA (Sparkle 2).
 
 ### Fallback chain
 
-`Config.Providers` is ordered. The updater walks it in sequence: the first provider that returns a release wins; the first provider that reports "up to date" short-circuits the chain. An error advances to the next provider. Useful for "primary unreachable" scenarios:
+`Config.Providers` is ordered. The updater walks it sequentially: the first provider that returns a release wins, the first that reports "up to date" short-circuits the chain (fallback is for "primary unreachable", not "providers disagree"). An error advances to the next provider.
 
 ```go
 app.Updater.Init(updater.Config{
     CurrentVersion: "1.0.0",
     Providers: []updater.Provider{
-        keygen.New(...),  // primary: licensed customers
-        github.New(...),  // fallback: public mirror
+        kg, // primary: licensed customers
+        gh, // fallback: public mirror
     },
 })
 ```
+
+### Writing your own provider
+
+Three methods, ~150 lines for a typical implementation. The Updater owns verification, atomic staging, swap, and the window — provider code resolves the next release and streams the bytes:
+
+```go
+type CustomProvider struct { /* config */ }
+
+func (p *CustomProvider) Name() string { return "custom" }
+
+func (p *CustomProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
+    // Hit your update endpoint, decide whether req.CurrentVersion is current,
+    // and return either nil (no upgrade) or a *Release with Artifact + optional
+    // Verification populated.
+    // Errors here drop through to the next provider in Config.Providers.
+}
+
+func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
+    // Stream the artifact's bytes to dst. Call onProgress(written, total) as
+    // bytes flow past; the Updater debounces emits to ~10 Hz on the event bus.
+}
+```
+
+Use the in-tree providers as references — they're each one Go file.
 
 ## Cryptographic verification
 
@@ -126,29 +193,66 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Supported algorithms: `ed25519`, `ed25519ph` (pre-hash, SHA-512), `ecdsa-p256` (over SHA-256), plus digest-only mode (SHA-256/SHA-512).
+Supported algorithms (`Release.Verification.SignatureAlgo`):
 
-Each provider populates `Release.Verification` with whatever its source publishes — keygen.sh ships Ed25519ph, Sparkle ships Ed25519, GitHub providers ship digests via `ChecksumAsset`. If a release carries a signature and no public key is configured, the install **fails closed** — never the other way around. The release source has no way to substitute its own trust anchor: signatures are verified against `Config.PublicKey` and nothing else.
+| Algorithm | What's signed | Notes |
+|---|---|---|
+| `ed25519` | The SHA-256 digest of the artifact | Used by Sparkle EdDSA |
+| `ed25519ph` | The full artifact via Ed25519ph's pre-hash (SHA-512 internally) | Used by keygen.sh |
+| `ecdsa-p256` | The SHA-256 digest of the artifact | Both raw `r∥s` and DER signatures accepted |
 
-The verifier reads the SHA digest computed *while streaming* the download, so even on multi-GB updates verification adds no extra disk pass.
+Plus digest-only (`DigestAlgo`: `sha256` / `sha512`) when a release ships a hash but no signature.
 
-> **Note on digest-only mode.** A release that carries only a `Digest` (no signature) is authenticated against the registry's TLS plus whatever integrity guarantee the registry itself provides — not against a cryptographic root you control. Use digest-only for bit-rot detection and as a sanity check; use signatures for tamper resistance against a compromised release pipeline. The Ed25519 algorithm names refer to signatures over the SHA-256 (or SHA-512 for `ed25519ph`) digest of the file, computed during download — your signing tool must produce signatures over that same digest, not over the raw file bytes.
+`Config.PublicKey` is the ONLY trust anchor for signature verification — the release source has no way to substitute its own key. Releases that carry a `Signature` without a configured `Config.PublicKey` fail closed. The verifier computes the digest in a streaming pass during download, so even on multi-GB updates verification adds no extra disk pass.
+
+:::caution[Digest-only ≠ cryptographic verification]
+A release with only `Digest` is authenticated against the registry's TLS plus whatever integrity guarantee the registry itself provides — not against a cryptographic root you control. Use digest-only for bit-rot detection; use signatures for tamper resistance against a compromised release pipeline.
+:::
+
+### Generating a signing key
+
+```bash
+# Generate a fresh Ed25519 keypair for signing
+ssh-keygen -t ed25519 -f updater-key -N "" -C "wails-updater"
+# updater-key       — keep secret, use to sign releases
+# updater-key.pub   — bundle in your app via go:embed
+```
+
+Or in Go:
+
+```go
+import "crypto/ed25519"
+import "crypto/rand"
+
+pub, priv, _ := ed25519.GenerateKey(rand.Reader)
+// Persist `priv` securely (HSM, signing CI, etc.); embed `pub` in your binary.
+```
 
 ## Artifact formats
 
 Providers stream the bytes for whichever file you publish; the framework then unpacks it before the swap:
 
 - **Single binary** (e.g. `myapp-linux-amd64`) — used as-is. Common on Linux.
-- **`.zip`** — extracted in place. The archive must contain exactly one top-level entry (typically a macOS `.app` bundle or a single binary). This is the recommended packaging for macOS releases.
-- **`.tar.gz` / `.tgz`** — extracted in place under the same single-top-level-entry rule. Useful for Linux distributions that ship a runtime tree alongside the binary.
+- **`.zip`** — extracted in place. The archive must contain exactly one top-level entry (typically a macOS `.app` bundle or a single binary). Recommended packaging for macOS.
+- **`.tar.gz`** / **`.tgz`** — extracted in place under the same single-top-level-entry rule. Useful for Linux distributions that ship a runtime tree alongside the binary.
 
-Archives carrying more than one top-level entry are rejected: the framework swaps a single on-disk target, so the meaning of "swap this archive into place" is ambiguous when the archive contains multiple things. `.dmg` and `.pkg` (macOS) and `.msi` (Windows) are not supported in v1 — distribute a `.zip` of the bundle instead. Extraction enforces zip-slip protection, rejects symlinks that escape the archive root, and caps total uncompressed size and entry count.
+Archives carrying more than one top-level entry are rejected: the framework swaps a single on-disk target, so "swap this archive into place" is ambiguous when the archive contains multiple things. `.dmg` and `.pkg` (macOS) and `.msi` (Windows) are not supported in v1 — distribute a `.zip` of the bundle instead. Extraction enforces zip-slip protection, rejects symlinks that escape the archive root, and caps total uncompressed size (2 GiB) and entry count (50 000).
 
 ## The default window
 
-Out of the box `CheckAndInstall` opens a small framework-owned window with release notes, a progress bar, and Install / Skip / Remind / Cancel buttons. It listens to `updater:*` events on the Wails event bus and emits `updater:user:*` actions back to Go; you can theme, override, or replace it.
+`app.Updater.CheckAndInstall(ctx)` opens a 520×540 framework-owned window with:
 
-### Theme via CSS
+- A state-driven hero icon (blue ↓ for available/downloading, green ✓ for ready/up-to-date, red ! for error)
+- A version pill: `v1.0.0 → v2.0.1 · 8.8 MB`
+- A scrollable release-notes panel with **rendered Markdown** (paragraphs, bold/italic, lists, GFM tables, inline code, fenced code blocks, h1–h3, links)
+- A single primary action per state (Install / Restart & Apply / Try Again)
+- Ghost-styled secondary actions (Skip This Version / Remind Me Later)
+- Dark/light mode via `prefers-color-scheme`
+- Indeterminate progress shimmer when total size is unknown
+
+It listens to `updater:*` events on the Wails event bus and emits `updater:user:*` actions back to Go.
+
+### Theme via CSS variables
 
 ```go
 app.Updater.Init(updater.Config{
@@ -159,11 +263,27 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-The default stylesheet uses CSS variables (`--bg`, `--fg`, `--fg-dim`, `--accent`, `--accent-fg`, `--surface`, `--border`, `--error`, `--radius`, `--pad`, `--font`) — override any of them.
+The default stylesheet exposes these variables — override any of them:
+
+| Variable | Default (light) | Default (dark) |
+|---|---|---|
+| `--bg` | `#f8f8fa` | `#1a1a1c` |
+| `--surface` | `#ffffff` | `#232326` |
+| `--surface-2` | `#f0f0f3` | `#2c2c30` |
+| `--fg` | `#1d1d1f` | `#f5f5f7` |
+| `--fg-dim` | `#6b6b73` | `#b0b0b8` |
+| `--fg-faint` | `#99999f` | `#7a7a82` |
+| `--border` | `#d6d6dc` | `#3a3a3e` |
+| `--accent` | `#0a84ff` | `#0a84ff` |
+| `--accent-fg` | `#ffffff` | — |
+| `--success` | `#34c759` | — |
+| `--error` | `#ff3b30` | — |
+| `--radius` | `10px` | — |
+| `--font` | system stack | — |
 
 ### Replace the template
 
-Provide your own HTML; it just needs to listen to `updater:*` events and emit `updater:user:*` actions using the standard Wails runtime:
+Provide your own HTML; it just needs to listen to `updater:*` events and emit `updater:user:*` actions:
 
 ```go
 app.Updater.Init(updater.Config{
@@ -174,34 +294,72 @@ app.Updater.Init(updater.Config{
 })
 ```
 
+Inside an InitialHTML window the page can't load `/runtime.js` (the base URL is not the asset server), so the standard `@wailsio/runtime` imports won't work. Use this minimal shim instead — it's what the default template uses:
+
+```html
+<script>
+(function () {
+  var w = window._wails = window._wails || {};
+  var L = Object.create(null);
+  w.dispatchWailsEvent = function (ev) {
+    var cbs = L[ev && ev.name]; if (!cbs) return;
+    for (var i = 0; i < cbs.length; i++) try { cbs[i](ev); } catch (_) {}
+  };
+  function on(n, cb)   { (L[n] = L[n] || []).push(cb); }
+  function emit(name)  { if (typeof w.invoke === "function") w.invoke("wails:event:emit:" + name); }
+  window.updater = { on: on, emit: emit };
+  // Wait for the runtime to be injected, then unlock pending event delivery
+  (function announce() {
+    if (window._wails && typeof window._wails.invoke === "function") {
+      window._wails.invoke("wails:runtime:ready");
+      emit("updater:window:ready"); // tell the host to replay current state
+    } else { setTimeout(announce, 30); }
+  })();
+})();
+// Now use updater.on(name, fn) / updater.emit(name)
+updater.on("updater:update-available", (e) => {
+    const rel = e.data ?? e;
+    document.getElementById("ver").textContent = rel.version;
+});
+document.getElementById("install").addEventListener("click",
+    () => updater.emit("updater:user:install"));
+</script>
+```
+
 ### Window chrome
 
-Override the window options (frameless, size, always-on-top, …) without touching the HTML:
+Override window options (size, frameless, always-on-top) without touching the HTML:
 
 ```go
 Window: &updater.BuiltinWindow{
     Options: updater.WindowOptions{
-        Frameless:   true,
-        Width:       640,
-        Height:      480,
-        AlwaysOnTop: true,
+        Title:         "My App Updater",
+        Width:         640,
+        Height:        480,
+        Frameless:     true,
+        AlwaysOnTop:   true,
+        DisableResize: false,
     },
 },
 ```
 
 ### Bring your own window
 
-Pass any value implementing `updater.WindowHandle` (e.g. an `*application.WebviewWindow` you create yourself):
+Drive the update flow against an `*application.WebviewWindow` you create yourself:
 
 ```go
-myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{...})
+myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Updater",
+    Width:  520, Height: 460,
+    HTML:   myCustomHTML,
+})
 app.Updater.Init(updater.Config{
     // …
-    Window: myWin,
+    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),
 })
 ```
 
-You're responsible for what the window renders. The framework just fires events at it.
+The Updater will call `Show()` / `Close()` / `EmitEvent()` on your window through the same event channel as the builtin. Your HTML is responsible for responding — same shim pattern as above. The framework doesn't touch the window's HTML if you supply your own.
 
 ### Headless
 
@@ -212,7 +370,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-No window is opened. Subscribe to `updater:*` events from your own UI and call `app.Updater.CheckAndInstall(ctx)` from a button handler.
+No window is ever opened. Subscribe to `updater:*` events from your own UI (or your existing main window) and call `app.Updater.CheckAndInstall(ctx)` from a button handler. Useful for periodic background checks that should only surface when something is found, or for apps that integrate the update flow into a custom settings panel.
 
 ## Events
 
@@ -220,91 +378,173 @@ Both Go and JavaScript subscribe through the standard Wails event bus.
 
 ### From Go
 
+`*application.CustomEvent` has a `Data any` field. The updater sets it directly to the typed payload listed in the [event reference](#event-reference) — type-assert, don't JSON-decode:
+
 ```go
+app.Event.On(updater.EventUpdateAvailable, func(e *application.CustomEvent) {
+    rel, ok := e.Data.(*updater.Release)
+    if !ok { return }
+    log.Printf("update found: %s", rel.Version)
+})
+
 app.Event.On(updater.EventDownloadProgress, func(e *application.CustomEvent) {
-    var p updater.Progress
-    _ = json.Unmarshal(e.JSON(), &p)
-    log.Printf("downloaded %d/%d", p.Written, p.Total)
+    p, ok := e.Data.(updater.Progress)
+    if !ok { return }
+    log.Printf("%d / %d bytes (%.0f KB/s)", p.Written, p.Total, p.Rate/1024)
+})
+
+app.Event.On(updater.EventError, func(e *application.CustomEvent) {
+    info, ok := e.Data.(updater.ErrorInfo)
+    if !ok { return }
+    log.Printf("update failed during %s: %s", info.Stage, info.Message)
 })
 ```
 
 ### From JavaScript
 
 ```js
-wails.Events.On("updater:download-progress", (e) => {
-    const { written, total, rate } = e.data
-    progressBar.value = written
-    progressBar.max = total
-})
+import { Events } from "@wailsio/runtime";
+
+Events.On("updater:download-progress", (e) => {
+    const p = e.data;
+    console.log(`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`);
+});
 ```
 
 ### Event reference
 
-| Event | Payload | When |
-|---|---|---|
-| `updater:check-started` | nil | Check round trip starts |
-| `updater:update-available` | `*Release` | Provider returned a newer release |
-| `updater:no-update` | nil | Already up to date |
-| `updater:download-started` | `*Release` | Streaming begins |
-| `updater:download-progress` | `Progress` | ~10/sec during streaming |
-| `updater:download-complete` | `*Release` | Bytes on disk, pre-verify |
-| `updater:verifying` | `*Release` | Signature/digest check |
-| `updater:installing` | `*Release` | Binary swap |
-| `updater:update-ready` | `*Release` | Installed; restart pending |
-| `updater:error` | `ErrorInfo` | Any stage failed |
+| Event constant | Wire name | Payload | When |
+|---|---|---|---|
+| `EventCheckStarted` | `updater:check-started` | none | Before each `Check` round-trip |
+| `EventUpdateAvailable` | `updater:update-available` | `*Release` | `Check` found a newer release |
+| `EventNoUpdate` | `updater:no-update` | none | `Check` confirmed up-to-date |
+| `EventDownloadStarted` | `updater:download-started` | `*Release` | Bytes start streaming |
+| `EventDownloadProgress` | `updater:download-progress` | `Progress` | ~10 Hz during download |
+| `EventDownloadComplete` | `updater:download-complete` | `*Release` | All bytes written, before verify |
+| `EventVerifying` | `updater:verifying` | `*Release` | Signature/digest check begins |
+| `EventInstalling` | `updater:installing` | `*Release` | Unpack + staging begins |
+| `EventUpdateReady` | `updater:update-ready` | `*Release` | Restart pending |
+| `EventError` | `updater:error` | `ErrorInfo` | Any stage failed |
 
-User-action events emitted by the default window (and any custom UI you build):
+User-action events emitted *by* the window template (your code subscribes if you write a custom template):
 
-| Event | Effect |
+| Event | When |
 |---|---|
-| `updater:user:install` | Triggers `DownloadAndInstall` |
-| `updater:user:cancel` | Closes the window |
-| `updater:user:skip` | Calls `SkipVersion` then closes |
-| `updater:user:remind` | Closes the window |
-| `updater:user:restart` | Triggers `Restart` |
+| `updater:window:ready` | Window finished loading; host replays current state in response |
+| `updater:user:install` | Primary action in `available` state |
+| `updater:user:restart` | Primary action in `ready` state |
+| `updater:user:skip` | "Skip This Version" |
+| `updater:user:remind` | "Remind Me Later" |
+| `updater:user:cancel` | Close button |
 
-## Writing your own provider
+## API reference
 
-Implement the three-method interface. Populate `Release.Verification` with whatever your source publishes — the framework handles the crypto.
+### `updater.Config`
 
-```go
-type myProvider struct{ feedURL string }
+| Field | Type | Notes |
+|---|---|---|
+| `CurrentVersion` | `string` | **Required.** Same string you tag releases with (no `v` prefix) |
+| `Providers` | `[]updater.Provider` | **Required.** Ordered fallback chain |
+| `PublicKey` | `[]byte` | PEM or raw bytes. Optional but signed releases fail closed without it |
+| `CheckInterval` | `time.Duration` | Non-zero starts a background poll loop calling `CheckAndInstall` |
+| `Platform` | `string` | Override `runtime.GOOS` for asset selection |
+| `Arch` | `string` | Override `runtime.GOARCH` for asset selection |
+| `Channel` | `string` | Currently informational; provider-specific channel filtering |
+| `Window` | `updater.WindowOption` | `nil` (builtin defaults), `&BuiltinWindow{…}`, `BYOWindow(handle)`, or `WindowNone` |
 
-func (p *myProvider) Name() string { return "myCDN" }
+### Methods on `*updater.Updater`
 
-func (p *myProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
-    // Fetch your manifest, compare versions, pick a platform-matching artifact.
-    // Return (nil, nil) when up to date.
-    return &updater.Release{
-        Version: "2.0.0",
-        Artifact: updater.Artifact{
-            Filename: "app-darwin-arm64.dmg",
-            Size:     12345,
-        },
-        Verification: &updater.Verification{
-            DigestAlgo: "sha256",
-            Digest:     digestBytes,
-        },
-        Metadata: map[string]any{"download.url": "https://cdn.example.com/asset.dmg"},
-    }, nil
-}
+| Signature | Purpose |
+|---|---|
+| `Init(cfg Config) error` | Configure. Returns `ErrAlreadyConfigured` on second call |
+| `State() State` | Current lifecycle phase |
+| `CurrentVersion() string` | The version passed to `Init` |
+| `Check(ctx) (*Release, error)` | Walk the provider chain. `(rel, nil)` = found, `(nil, nil)` = up-to-date, `(nil, err)` = all failed |
+| `DownloadAndInstall(ctx) error` | Stream, verify, extract (if archive), stage. Requires prior `Check` |
+| `CheckAndInstall(ctx) error` | Convenience: open window, `Check`, then `DownloadAndInstall` if found |
+| `Restart(ctx) error` | Spawn the helper, call `Host.Quit`, leave; helper swaps + relaunches |
+| `DownloadedPath() string` | Where the staged update lives on disk, or `""` if none |
+| `SkipVersion(v string)` | Record `v` as skipped; subsequent `Check`s treat it as up-to-date |
+| `SkippedVersion() string` | Read the currently-skipped version |
+| `StopPeriodicCheck()` | Cancel the timer started by `Config.CheckInterval` and wait for the loop to return |
 
-func (p *myProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
-    // Stream r's bytes to dst; call onProgress periodically.
-}
-```
+### Errors
 
-That's the whole contract. Register your provider just like any built-in:
+| Sentinel | Returned by |
+|---|---|
+| `ErrAlreadyConfigured` | `Init` after first success |
+| `ErrNotConfigured` | Any operation before `Init` |
+| `ErrNoPendingRelease` | `DownloadAndInstall` without prior `Check` |
+| `ErrDownloadInProgress` | `DownloadAndInstall` called while another is running |
+| `ErrNotReady` | `Restart` with no staged update |
+
+## How the swap works
+
+`Restart` re-execs the current binary with sentinel environment variables set. `application.New` detects them at startup and diverts to helper-mode:
+
+1. Helper waits up to 30 s for the parent PID to exit (`platformIsAlive` polls via `syscall.OpenProcess` + `GetExitCodeProcess` on Windows, `os.FindProcess` + `proc.Signal(syscall.Signal(0))` on Unix).
+2. Helper backs up the target (copy for files, recursive copy for macOS `.app` bundle directories).
+3. Helper replaces the target with the staged artifact, retrying up to 20 times with a 500 ms backoff between attempts:
+   - **Unix** — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. Open file descriptors against the old inode remain valid.
+   - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. Windows allows renaming files whose image is still mapped, but not deleting them; on the next update the helper sweeps any leftover `.old.*` siblings whose owning kernel mapping has been released.
+4. Helper restores the original executable mode on the new binary (the downloaded file was created with the default umask, which drops `+x` on Unix; on Windows this is a no-op).
+5. Helper scrubs the helper-mode env vars and re-launches the (now-replaced) binary.
+6. Helper exits.
+
+If the launch fails, the helper restores the backup. If the parent never exits within 30 s, the helper aborts before touching the target (so the user keeps a working app even if a shutdown dialog blocks `Quit`).
+
+For macOS `.app` bundles distributed as `.zip` (the recommended packaging), the archive is unpacked between verify and ready so the helper has a real directory to swap into place.
+
+## Periodic checking
 
 ```go
 app.Updater.Init(updater.Config{
-    CurrentVersion: "1.0.0",
-    Providers:      []updater.Provider{&myProvider{}},
+    // …
+    CheckInterval: 6 * time.Hour,
 })
 ```
 
-## How the binary swap works
+When `CheckInterval > 0`, a background goroutine calls `CheckAndInstall` on the configured interval. Ticks that arrive while another flow is already in progress (checking / downloading / verifying / installing) are dropped — concurrent state machines aren't supported.
 
-After a successful download + verify, the framework writes the artifact to a temp file and atomic-renames it into place. For replacing a *running* executable (which Windows in particular forbids), the updater re-executes the current binary with sentinel environment variables set: that helper-mode process waits for the parent to exit, swaps the on-disk binary, and relaunches the new version. macOS `.app` bundles are copied recursively (symlinks preserved); Linux and Windows do a single-file swap.
+For silent background polling that only surfaces when something is found, set `Window: updater.WindowNone` and react to `EventUpdateAvailable` from your own UI.
 
-The handoff is automatic — call `app.Updater.Restart(ctx)` from a menu item or the default window's Restart button, and the framework does the rest. No separate helper binary to ship.
+## Skip & remind
+
+The default window's "Skip This Version" button records the available version via `SkipVersion(rel.Version)`. Subsequent `Check`s find the same version and treat it as up-to-date (until the user updates `CurrentVersion`, which happens automatically after a successful `Restart`). "Remind Me Later" just closes the window without recording anything.
+
+```go
+// Reading what the user skipped (e.g. to surface in app settings)
+if v := app.Updater.SkippedVersion(); v != "" {
+    log.Printf("user skipped %s", v)
+}
+
+// Programmatically clearing the skip:
+app.Updater.SkipVersion("")
+```
+
+## Distribution checklist
+
+Before you publish a release that the updater will install:
+
+1. **Pick the right archive format.** macOS: `.zip` of the `.app` bundle. Linux: single binary or `.tar.gz`. Windows: single `.exe` or `.zip`. `.dmg` / `.msi` / `.pkg` are not supported.
+2. **Sign the artifact** with the private key matching `Config.PublicKey`. For provider-published feeds (keygen.sh, AppCast), follow each provider's signing workflow. For GitHub Releases with `ChecksumAsset`, generate a `SHA256SUMS` file with `sha256sum` / `shasum -a 256`.
+3. **Match the version string.** `Config.CurrentVersion` and the release's version tag must match exactly (e.g. `1.0.0` ↔ tag `v1.0.0`; the leading `v` is stripped on the provider side).
+4. **Test the swap on the target platform** at least once before shipping — codesigning, notarization, and Gatekeeper handling are platform-specific and not covered by the updater itself.
+
+## Troubleshooting
+
+**"signature requires a public key but none configured"** — the release has a `Signature` field but `Config.PublicKey` is empty. Set the public key or change your release pipeline to not include a signature.
+
+**"digest mismatch"** — the downloaded bytes don't match what the provider promised. Usually a partial download (network hiccup) or a corrupted artifact. Re-running often fixes it.
+
+**Window opens but immediately disappears, no markdown, no progress** — your custom HTML didn't invoke `wails:runtime:ready`. See the [Replace the template](#replace-the-template) shim.
+
+**Windows update never completes; helper log says "remove old (attempt N): Access is denied"** — only happens on pre-`de764fb` versions of this PR; the current implementation uses rename-aside which doesn't suffer this. Upgrade.
+
+**macOS Gatekeeper blocks the swapped binary** — code-signing has to be preserved end-to-end. Sign the original `.app` *and* re-sign the relaunched binary if your build pipeline modifies entitlements at update time.
+
+## See also
+
+- Runnable example: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Test demo repo: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
+- Tutorial: [Adding self-updates to a Wails app](/tutorials/04-self-update-a-wails-app)
