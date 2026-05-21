@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Updater is the singleton exposed as app.Updater. It is constructed during
@@ -33,6 +34,10 @@ type Updater struct {
 	dlMu    sync.Mutex     // serialises concurrent DownloadAndInstall calls
 	sessMu  sync.Mutex     // protects session pointer separately from u.mu
 	session *windowSession // current window session, if any
+
+	periodicCtx    context.Context
+	periodicCancel context.CancelFunc
+	periodicDone   chan struct{}
 }
 
 // Host is the minimal surface the Updater needs from the application that
@@ -107,7 +112,55 @@ func (u *Updater) Init(cfg Config) error {
 	u.cfg = &cfg
 	u.current = cfg.CurrentVersion
 	u.state = StateIdle
+	if cfg.CheckInterval > 0 {
+		u.periodicCtx, u.periodicCancel = context.WithCancel(context.Background())
+		u.periodicDone = make(chan struct{})
+		go u.periodicCheckLoop(cfg.CheckInterval)
+	}
 	return nil
+}
+
+// periodicCheckLoop polls the provider chain on the configured interval.
+// Each tick runs CheckAndInstall so the default UI (or the user's headless
+// subscribers) sees the found update. Ticks that arrive while another flow
+// is already in progress are dropped — concurrent state machines are not
+// supported and CheckAndInstall's own session-setup lock would defer the
+// second call anyway.
+func (u *Updater) periodicCheckLoop(d time.Duration) {
+	defer close(u.periodicDone)
+	t := time.NewTicker(d)
+	defer t.Stop()
+	for {
+		select {
+		case <-u.periodicCtx.Done():
+			return
+		case <-t.C:
+			s := u.State()
+			if s == StateChecking || s == StateDownloading || s == StateVerifying || s == StateInstalling {
+				continue
+			}
+			_ = u.CheckAndInstall(u.periodicCtx)
+		}
+	}
+}
+
+// StopPeriodicCheck cancels the timer started by Init when
+// Config.CheckInterval > 0 and blocks until the polling goroutine has
+// returned (so callers can safely inspect provider state afterward). Safe
+// to call when no periodic check was configured.
+func (u *Updater) StopPeriodicCheck() {
+	u.mu.Lock()
+	cancel := u.periodicCancel
+	done := u.periodicDone
+	u.periodicCancel = nil
+	u.periodicDone = nil
+	u.mu.Unlock()
+	if cancel != nil {
+		cancel()
+	}
+	if done != nil {
+		<-done
+	}
 }
 
 // State returns the Updater's current high-level lifecycle phase.

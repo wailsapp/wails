@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
@@ -199,6 +200,46 @@ func TestInit_RejectsNilProvider(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), "nil entry") {
 		t.Fatalf("expected nil-entry error, got %v", err)
+	}
+}
+
+// Config.CheckInterval starts a background poll loop that invokes
+// CheckAndInstall on each tick. Verify that an Init with a short interval
+// produces ticks against the provider and that StopPeriodicCheck cleanly
+// halts the loop.
+func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
+	host := &fakeHost{}
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin"},
+		Verification: &updater.Verification{DigestAlgo: "sha256", Digest: sha256.New().Sum(nil)},
+	}
+	// Pre-compute matching digest so Check finds + DownloadAndInstall succeeds.
+	body := []byte("payload")
+	d := sha256.Sum256(body)
+	rel.Verification.Digest = d[:]
+	rel.Artifact.Size = int64(len(body))
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		CheckInterval:  50 * time.Millisecond,
+		Window:         updater.WindowNone,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer u.StopPeriodicCheck()
+
+	// Allow at least two ticks. CheckAndInstall is a no-op after the first
+	// success (state stays in StateReady which periodic loop ignores) so we
+	// only assert at least one Check landed.
+	time.Sleep(200 * time.Millisecond)
+	u.StopPeriodicCheck()
+
+	if p.calls == 0 {
+		t.Fatalf("periodic check never invoked the provider")
 	}
 }
 
