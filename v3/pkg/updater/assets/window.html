@@ -578,10 +578,6 @@ body {
   (function announce() {
     if (window._wails && typeof window._wails.invoke === "function") {
       window._wails.invoke("wails:runtime:ready");
-      /* And tell the updater host that we're up so it re-fires the current
-         state — handles the case where we opened mid-flow after a
-         periodic-check find and the dispatches that occurred before us
-         already passed through the queue. */
       Events.emit("updater:window:ready");
     } else {
       setTimeout(announce, 30);
