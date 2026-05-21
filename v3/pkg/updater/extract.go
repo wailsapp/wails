@@ -117,6 +117,12 @@ func maybeExtractInto(stagedPath string) (newPath string, didExtract bool, err e
 
 // extractZip unpacks src into dst. Path traversal, symlink escape, entry
 // count, and total-size caps are all enforced.
+//
+// Symlinks are deferred to a second pass: planting a symlink first and then
+// writing through it (e.g. archive contains "link → /etc" followed by
+// "link/passwd") is the standard zip-slip-via-symlink escalation. Two
+// passes mean every file write happens before any symlinks exist in the
+// destination tree, so writes can't be redirected through them.
 func extractZip(src, dst string) error {
 	zr, err := zip.OpenReader(src)
 	if err != nil {
@@ -129,6 +135,10 @@ func extractZip(src, dst string) error {
 	}
 
 	rootClean := filepath.Clean(dst)
+
+	// Pass 1 — directories and regular files. Symlinks recorded for pass 2.
+	type pendingLink struct{ src *zip.File; target string }
+	var symlinks []pendingLink
 	var written int64
 	for _, f := range zr.File {
 		target, err := safeJoin(rootClean, f.Name)
@@ -138,9 +148,11 @@ func extractZip(src, dst string) error {
 		mode := f.Mode()
 		switch {
 		case mode&os.ModeSymlink != 0:
-			if err := writeArchiveSymlink(f, target, rootClean); err != nil {
+			// Reject escapes up front so we don't waste pass 1 on a doomed archive.
+			if err := validateSymlinkTarget(f, target, rootClean); err != nil {
 				return err
 			}
+			symlinks = append(symlinks, pendingLink{src: f, target: target})
 		case f.FileInfo().IsDir():
 			if err := os.MkdirAll(target, dirModeFrom(mode)); err != nil {
 				return fmt.Errorf("updater: zip mkdir: %w", err)
@@ -156,11 +168,22 @@ func extractZip(src, dst string) error {
 			written = n
 		}
 	}
+
+	// Pass 2 — symlinks only. By the time any of these are created, the file
+	// tree on disk matches what was in the archive (sans symlinks), so a link
+	// that resolves to a directory under root can never have been used to
+	// redirect a write from pass 1.
+	for _, sl := range symlinks {
+		if err := writeArchiveSymlink(sl.src, sl.target, rootClean); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // extractTarGz unpacks src (a gzipped tar) into dst, enforcing the same
-// invariants as extractZip.
+// invariants as extractZip. See that function for the rationale behind the
+// two-pass extraction (regular files + dirs first, symlinks last).
 func extractTarGz(src, dst string) error {
 	f, err := os.Open(src)
 	if err != nil {
@@ -175,12 +198,14 @@ func extractTarGz(src, dst string) error {
 	tr := tar.NewReader(gz)
 
 	rootClean := filepath.Clean(dst)
+	type pendingLink struct{ linkname, target string }
+	var symlinks []pendingLink
 	var entries int
 	var written int64
 	for {
 		hdr, err := tr.Next()
 		if errors.Is(err, io.EOF) {
-			return nil
+			break
 		}
 		if err != nil {
 			return fmt.Errorf("updater: tar: %w", err)
@@ -200,9 +225,12 @@ func extractTarGz(src, dst string) error {
 				return fmt.Errorf("updater: tar mkdir: %w", err)
 			}
 		case tar.TypeSymlink:
-			if err := writeSymlinkPath(hdr.Linkname, target, rootClean); err != nil {
+			// Reject escapes up front; defer creation until pass 2 so no
+			// file write can be redirected through a planted symlink.
+			if err := validateSymlinkPath(hdr.Linkname, target, rootClean); err != nil {
 				return err
 			}
+			symlinks = append(symlinks, pendingLink{linkname: hdr.Linkname, target: target})
 		case tar.TypeReg, tar.TypeRegA:
 			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 				return fmt.Errorf("updater: tar mkdir: %w", err)
@@ -228,6 +256,14 @@ func extractTarGz(src, dst string) error {
 			// bundles never contain these.
 		}
 	}
+
+	// Pass 2 — symlinks last (see extractZip rationale).
+	for _, sl := range symlinks {
+		if err := writeSymlinkPath(sl.linkname, sl.target, rootClean); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // writeArchiveFile streams one zip entry to disk, accumulating into the
@@ -259,8 +295,40 @@ func writeArchiveFile(f *zip.File, target string, mode os.FileMode, written *int
 	return total, nil
 }
 
-// writeArchiveSymlink writes a symlink for one zip entry, validating that the
-// link target stays inside the extraction root.
+// validateSymlinkTarget reads a zip entry's symlink body and validates that
+// the link target stays inside the extraction root. Used in pass 1 so we can
+// reject malicious archives before any file write happens.
+func validateSymlinkTarget(f *zip.File, target, root string) error {
+	rc, err := f.Open()
+	if err != nil {
+		return fmt.Errorf("updater: zip symlink read: %w", err)
+	}
+	defer rc.Close()
+	link, err := io.ReadAll(io.LimitReader(rc, 4096))
+	if err != nil {
+		return fmt.Errorf("updater: zip symlink body: %w", err)
+	}
+	return validateSymlinkPath(string(link), target, root)
+}
+
+// validateSymlinkPath checks that creating target → link would not escape
+// root. Returns nil if safe.
+func validateSymlinkPath(link, target, root string) error {
+	if filepath.IsAbs(link) {
+		return fmt.Errorf("updater: archive symlink has absolute target: %s", link)
+	}
+	resolved := filepath.Join(filepath.Dir(target), link)
+	rel, err := filepath.Rel(root, resolved)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+		return fmt.Errorf("updater: archive symlink escapes root: %s -> %s", target, link)
+	}
+	return nil
+}
+
+// writeArchiveSymlink writes a previously-validated zip symlink entry. Called
+// only from pass 2 of extractZip, after all regular files and directories
+// have been written, so a planted symlink can't be used to redirect any
+// earlier write.
 func writeArchiveSymlink(f *zip.File, target, root string) error {
 	rc, err := f.Open()
 	if err != nil {
@@ -274,16 +342,11 @@ func writeArchiveSymlink(f *zip.File, target, root string) error {
 	return writeSymlinkPath(string(link), target, root)
 }
 
-// writeSymlinkPath creates target as a symlink to link, rejecting absolute
-// targets and targets that resolve outside root.
+// writeSymlinkPath creates target as a symlink to link. Re-validates the
+// path even though pass 1 already checked it — defence in depth.
 func writeSymlinkPath(link, target, root string) error {
-	if filepath.IsAbs(link) {
-		return fmt.Errorf("updater: archive symlink has absolute target: %s", link)
-	}
-	resolved := filepath.Join(filepath.Dir(target), link)
-	rel, err := filepath.Rel(root, resolved)
-	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
-		return fmt.Errorf("updater: archive symlink escapes root: %s -> %s", target, link)
+	if err := validateSymlinkPath(link, target, root); err != nil {
+		return err
 	}
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		return fmt.Errorf("updater: archive symlink mkdir: %w", err)
