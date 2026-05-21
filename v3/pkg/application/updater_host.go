@@ -74,3 +74,19 @@ func (h *updaterWindowHandle) Close() { h.win.Close() }
 func (h *updaterWindowHandle) EmitEvent(name string, data ...any) bool {
 	return h.win.EmitEvent(name, data...)
 }
+
+// AsUpdaterWindow wraps the receiver as an updater.WindowHandle so it can
+// be passed via updater.BYOWindow to Config.Window. Use this when you want
+// the updater to drive a webview window you own rather than letting it
+// create its own builtin.
+//
+//	myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{...})
+//	app.Updater.Init(updater.Config{
+//	    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),
+//	    ...,
+//	})
+//
+// Returned values are independently allocated; create one per Init call.
+func (w *WebviewWindow) AsUpdaterWindow() updater.WindowHandle {
+	return &updaterWindowHandle{win: w}
+}

@@ -39,6 +39,28 @@ func (windowNoneType) isWindowOption() {}
 // asks the host to open a window. Subscribe to events from your own UI.
 var WindowNone WindowOption = windowNoneType{}
 
+// BYOWindow wraps a caller-owned WindowHandle (typically an
+// *application.WebviewWindow created outside the updater) so it can be
+// passed via Config.Window. The Updater drives Show / Close / EmitEvent on
+// the wrapped handle instead of creating its own window.
+//
+// The WindowOption interface has an unexported marker method that prevents
+// arbitrary types from being assigned to Config.Window directly; this
+// constructor is the bridge — call it once at Init time:
+//
+//	myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{...})
+//	app.Updater.Init(updater.Config{
+//	    Window: updater.BYOWindow(myWin),
+//	    ...,
+//	})
+func BYOWindow(w WindowHandle) WindowOption {
+	return &byoWindow{handle: w}
+}
+
+type byoWindow struct{ handle WindowHandle }
+
+func (*byoWindow) isWindowOption() {}
+
 // defaultBuiltinOptions returns the chrome the framework uses when the user
 // doesn't override Options. Width gives release-note paragraphs room to
 // breathe; height accommodates the notes panel + progress / spinner area
@@ -110,8 +132,8 @@ func classifyWindowOption(opt WindowOption) (mode windowMode, bw *BuiltinWindow,
 		return windowModeBuiltin, v, nil
 	case windowNoneType:
 		return windowModeNone, nil, nil
-	case WindowHandle:
-		return windowModeBYO, nil, v
+	case *byoWindow:
+		return windowModeBYO, nil, v.handle
 	}
 	return windowModeBuiltin, nil, nil
 }
