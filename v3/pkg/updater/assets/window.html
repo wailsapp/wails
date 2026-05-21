@@ -3,324 +3,591 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Update Available</title>
+<title>Software Update</title>
 <style>
 :root {
-  --bg: #ffffff;
-  --fg: #1d1d1f;
-  --fg-dim: #6e6e73;
-  --accent: #007aff;
+  /* Light palette — Apple/Microsoft system defaults */
+  --bg:        #f8f8fa;
+  --surface:   #ffffff;
+  --surface-2: #f0f0f3;
+  --fg:        #1d1d1f;
+  --fg-dim:    #6b6b73;
+  --fg-faint:  #99999f;
+  --border:    #d6d6dc;
+  --accent:    #0a84ff;
   --accent-fg: #ffffff;
-  --surface: #f5f5f7;
-  --border: #d2d2d7;
-  --error: #d93025;
-  --radius: 8px;
-  --pad: 16px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --accent-dim:#3a99ff33;
+  --success:   #34c759;
+  --error:     #ff3b30;
+  --warning:   #ff9500;
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --pad:       20px;
+  --gap:       14px;
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI",
+          "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1e1e1e;
-    --fg: #f5f5f7;
-    --fg-dim: #98989d;
-    --surface: #2c2c2e;
-    --border: #3a3a3c;
+    --bg:        #1a1a1c;
+    --surface:   #232326;
+    --surface-2: #2c2c30;
+    --fg:        #f5f5f7;
+    --fg-dim:    #b0b0b8;
+    --fg-faint:  #7a7a82;
+    --border:    #3a3a3e;
+    --accent:    #0a84ff;
+    --accent-dim:#0a84ff44;
   }
 }
-*, *::before, *::after { box-sizing: border-box; }
+
+* { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body {
-  font-family: var(--font);
-  font-size: 14px;
+  font: 13px/1.4 var(--font);
   background: var(--bg);
   color: var(--fg);
-  display: flex;
-  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
-.wails-updater {
+
+/* === Layout === */
+.u {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  height: 100%;
   padding: var(--pad);
-  gap: 12px;
-  min-width: 0;
+  gap: var(--gap);
 }
-.wails-updater__header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.wails-updater__title { font-size: 16px; font-weight: 600; margin: 0; }
-.wails-updater__version { color: var(--fg-dim); font-variant-numeric: tabular-nums; font-size: 12px; }
-.wails-updater__notes {
-  flex: 1;
+.u__hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.u__icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  user-select: none;
+}
+.u--up-to-date .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+.u--error      .u__icon { background: rgba(255, 59, 48, 0.15); color: var(--error); }
+.u__head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.u__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.u__subtitle {
+  font-size: 12px;
+  color: var(--fg-dim);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.u__ver-from {
+  text-decoration: line-through;
+  color: var(--fg-faint);
+}
+.u__ver-arrow { color: var(--fg-faint); }
+.u__ver-to {
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.u__size {
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Notes === */
+.u__notes {
+  flex: 1 1 auto;
+  min-height: 60px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px;
-  font-size: 13px;
-  line-height: 1.4;
+  padding: 12px 14px;
   overflow-y: auto;
   white-space: pre-wrap;
-  min-height: 80px;
-  max-height: 240px;
+  color: var(--fg);
+  line-height: 1.5;
+  font-size: 12.5px;
 }
-.wails-updater__progress-wrap {
+.u__notes:empty::before {
+  content: "No release notes provided.";
+  color: var(--fg-faint);
+  font-style: italic;
+}
+.u__notes::-webkit-scrollbar { width: 10px; }
+.u__notes::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid var(--surface); border-radius: 5px; }
+
+/* === Progress === */
+.u__progress-box {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex: 0 0 auto;
 }
-.wails-updater__progress {
+.u__progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+.u__progress-state { font-weight: 500; color: var(--fg); }
+.u__progress-rate { font-variant-numeric: tabular-nums; }
+.u__bar {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  height: 6px;
+  height: 4px;
   border: none;
-  border-radius: 3px;
-  background: var(--surface);
-  overflow: hidden;
+  border-radius: 2px;
+  background: var(--surface-2);
 }
-.wails-updater__progress::-webkit-progress-bar { background: var(--surface); border-radius: 3px; }
-.wails-updater__progress::-webkit-progress-value { background: var(--accent); border-radius: 3px; transition: width 100ms linear; }
-.wails-updater__progress::-moz-progress-bar { background: var(--accent); border-radius: 3px; }
-.wails-updater__status { color: var(--fg-dim); font-size: 12px; min-height: 1.2em; }
-.wails-updater__buttons { display: flex; gap: 8px; justify-content: flex-end; }
-.wails-updater__btn {
+.u__bar::-webkit-progress-bar { background: var(--surface-2); border-radius: 2px; }
+.u__bar::-webkit-progress-value { background: var(--accent); border-radius: 2px; transition: width 80ms linear; }
+.u__bar::-moz-progress-bar { background: var(--accent); border-radius: 2px; }
+.u__bar:indeterminate {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--accent-dim) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: u-pulse 1.4s linear infinite;
+}
+@keyframes u-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* === Spinner === */
+.u__spinner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 80px;
+  color: var(--fg-dim);
+}
+.u__spinner::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2);
+  border-top-color: var(--accent);
+  animation: u-spin 0.9s linear infinite;
+}
+@keyframes u-spin { to { transform: rotate(360deg); } }
+
+/* === Error banner === */
+.u__error {
+  background: rgba(255, 59, 48, 0.12);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 12.5px;
+  flex: 0 0 auto;
+}
+
+/* === Buttons === */
+.u__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.u__secondary-actions {
+  display: flex;
+  gap: 4px;
+}
+.u__primary-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.u__btn {
   font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
-  padding: 6px 14px;
-  border-radius: var(--radius);
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background 120ms ease;
+  transition: background 120ms ease, transform 80ms ease;
+  user-select: none;
+  white-space: nowrap;
 }
-.wails-updater__btn:hover:not(:disabled) { background: var(--border); }
-.wails-updater__btn:disabled { opacity: 0.5; cursor: default; }
-.wails-updater__btn--primary {
+.u__btn:hover:not(:disabled) { background: var(--surface-2); }
+.u__btn:active:not(:disabled) { transform: scale(0.98); }
+.u__btn:disabled { opacity: 0.4; cursor: default; }
+.u__btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--fg-dim);
+  padding: 7px 10px;
+}
+.u__btn--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); }
+.u__btn--primary {
   background: var(--accent);
   color: var(--accent-fg);
   border-color: transparent;
 }
-.wails-updater__btn--primary:hover:not(:disabled) { filter: brightness(0.92); }
-.wails-updater__error {
-  background: rgba(217, 48, 37, 0.1);
-  border: 1px solid var(--error);
-  color: var(--error);
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  font-size: 12px;
-  display: none;
-}
-.wails-updater--error .wails-updater__error { display: block; }
-.wails-updater--ready .wails-updater__btn--install { display: none; }
-.wails-updater__btn--restart { display: none; }
-.wails-updater--ready .wails-updater__btn--restart { display: inline-flex; }
-.wails-updater--downloading .wails-updater__btn { display: none; }
-.wails-updater--downloading .wails-updater__btn--cancel { display: inline-flex; }
-.wails-updater__btn--cancel { display: none; }
+.u__btn--primary:hover:not(:disabled) { filter: brightness(1.08); }
+.u__btn--primary:active:not(:disabled) { filter: brightness(0.94); }
+
+/* === State-driven visibility ===
+   Each state shows only what's relevant. Hide everything by default
+   under the data-state attribute, then opt-in per state. */
+.u [data-show] { display: none; }
+.u[data-state="checking"]     [data-show~="checking"]     { display: flex; }
+.u[data-state="available"]    [data-show~="available"]    { display: flex; }
+.u[data-state="downloading"]  [data-show~="downloading"]  { display: flex; }
+.u[data-state="verifying"]    [data-show~="verifying"]    { display: flex; }
+.u[data-state="installing"]   [data-show~="installing"]   { display: flex; }
+.u[data-state="ready"]        [data-show~="ready"]        { display: flex; }
+.u[data-state="up-to-date"]   [data-show~="up-to-date"]   { display: flex; }
+.u[data-state="error"]        [data-show~="error"]        { display: flex; }
+
+/* Buttons default to inline-flex when shown */
+.u[data-state] .u__btn[data-show] { display: none; }
+.u[data-state="available"]   .u__btn[data-show~="available"]   { display: inline-flex; }
+.u[data-state="downloading"] .u__btn[data-show~="downloading"] { display: inline-flex; }
+.u[data-state="ready"]       .u__btn[data-show~="ready"]       { display: inline-flex; }
+.u[data-state="up-to-date"]  .u__btn[data-show~="up-to-date"]  { display: inline-flex; }
+.u[data-state="error"]       .u__btn[data-show~="error"]       { display: inline-flex; }
+
+/* The hero subtitle (version line) only appears when there's content for it */
+.u__subtitle:empty { display: none; }
 </style>
 </head>
 <body>
-<main class="wails-updater" id="root">
-  <header class="wails-updater__header">
-    <h1 class="wails-updater__title" id="title">Update Available</h1>
-    <span class="wails-updater__version" id="version-line">—</span>
+<main class="u wails-updater" id="root" data-state="checking" data-wails-updater-window="1">
+  <header class="u__hero">
+    <div class="u__icon" id="state-icon" aria-hidden="true">↓</div>
+    <div class="u__head">
+      <h1 class="u__title" id="title">Checking for Updates…</h1>
+      <div class="u__subtitle" id="subtitle"></div>
+    </div>
   </header>
-  <div class="wails-updater__notes" id="notes">Looking for updates&hellip;</div>
-  <div class="wails-updater__error" id="error"></div>
-  <div class="wails-updater__progress-wrap" id="progress-wrap" hidden>
-    <progress class="wails-updater__progress" id="progress" max="100" value="0"></progress>
-    <div class="wails-updater__status" id="status"></div>
+
+  <!-- Checking / Verifying / Installing all share a spinner -->
+  <div class="u__spinner" data-show="checking verifying installing" id="spinner-text">Contacting update server…</div>
+
+  <!-- Release notes (Available + Ready + Up-to-date) -->
+  <div class="u__notes" data-show="available ready" id="notes"></div>
+
+  <!-- Download progress -->
+  <div class="u__progress-box" data-show="downloading">
+    <div class="u__progress-row">
+      <span class="u__progress-state" id="progress-state">Downloading…</span>
+      <span class="u__progress-rate" id="progress-rate"></span>
+    </div>
+    <progress class="u__bar" id="bar" max="100" value="0"></progress>
   </div>
-  <footer class="wails-updater__buttons">
-    <button class="wails-updater__btn wails-updater__btn--cancel" id="btn-cancel" type="button">Cancel</button>
-    <button class="wails-updater__btn wails-updater__btn--remind" id="btn-remind" type="button">Remind Me Later</button>
-    <button class="wails-updater__btn wails-updater__btn--skip" id="btn-skip" type="button">Skip This Version</button>
-    <button class="wails-updater__btn wails-updater__btn--install wails-updater__btn--primary" id="btn-install" type="button">Install Update</button>
-    <button class="wails-updater__btn wails-updater__btn--restart wails-updater__btn--primary" id="btn-restart" type="button">Restart &amp; Apply</button>
+
+  <!-- Error banner -->
+  <div class="u__error" data-show="error" id="error-text">An error occurred.</div>
+
+  <!-- Up-to-date message body -->
+  <div class="u__notes" data-show="up-to-date" id="up-to-date-msg">You're running the latest version.</div>
+
+  <footer class="u__footer">
+    <div class="u__secondary-actions">
+      <button class="u__btn u__btn--ghost" data-show="available" id="btn-skip" type="button">Skip This Version</button>
+      <button class="u__btn u__btn--ghost" data-show="available" id="btn-remind" type="button">Remind Me Later</button>
+    </div>
+    <div class="u__primary-actions">
+      <button class="u__btn" data-show="available downloading ready error up-to-date" id="btn-cancel" type="button">Close</button>
+      <button class="u__btn u__btn--primary" data-show="available" id="btn-install" type="button">Install Update</button>
+      <button class="u__btn u__btn--primary" data-show="ready" id="btn-restart" type="button">Restart &amp; Apply</button>
+      <button class="u__btn u__btn--primary" data-show="error" id="btn-retry" type="button">Try Again</button>
+    </div>
   </footer>
 </main>
-<script type="module">
-// The script is intentionally framework-free: it talks to Wails purely
-// through the runtime exposed on `window.wails`. This makes the template
-// override-friendly — a user can ship their own HTML and pull in the same
-// minimal bindings without depending on this file's DOM ids.
-const w = (typeof window !== "undefined" && window.wails) ? window.wails : null;
 
-const els = {
-  root:       document.getElementById("root"),
-  title:      document.getElementById("title"),
-  version:    document.getElementById("version-line"),
-  notes:      document.getElementById("notes"),
-  error:      document.getElementById("error"),
-  progressBx: document.getElementById("progress-wrap"),
-  progress:   document.getElementById("progress"),
-  status:     document.getElementById("status"),
-  btnInstall: document.getElementById("btn-install"),
-  btnSkip:    document.getElementById("btn-skip"),
-  btnRemind:  document.getElementById("btn-remind"),
-  btnCancel:  document.getElementById("btn-cancel"),
-  btnRestart: document.getElementById("btn-restart"),
-};
+<script>
+/* ===============================================================
+   Wails events shim
+   ===============================================================
+   The Wails v3 runtime is normally loaded as an ES module from
+   /runtime.js. Our InitialHTML page is loaded with a `nil` base
+   URL on macOS (`loadHTMLString:baseURL:nil`) and via
+   `NavigateToString` on Windows, neither of which resolves the
+   asset-server origin — so `import {Events} from "/runtime.js"`
+   would fail. We don't need the full runtime: this page only
+   uses Events.On + Events.Emit, which are five lines of glue.
 
-let currentRelease = null;
-let currentVersion = "";
+   The framework already injects `window._wails.invoke` during
+   the runtime Core() step (see internal/runtime/runtime.go) and
+   probes for `window._wails.dispatchWailsEvent` before pushing
+   events into the page (see pkg/application/webview_window.go).
+   Setting up both ourselves closes the loop without needing the
+   bundle. */
+(function () {
+  /* Minimal Wails event bindings for an InitialHTML window. The default
+     `loadHTMLString:baseURL:nil` (macOS) / `NavigateToString` (Windows)
+     load gives the page no asset-server origin, so the modern runtime's
+     `fetch("/wails/runtime")` transport fails — we can't import the
+     full @wailsio/runtime bundle here.
+     Two helpers do the whole job:
+       - `dispatchWailsEvent` (we install) receives events from Go.
+       - `_wails.invoke("wails:event:emit:NAME")` (handled framework-side
+         in pkg/application/webview_window.go) sends bare-named events
+         back. No payload — enough for user-action buttons. */
+  var w = window._wails = window._wails || {};
+  var listeners = Object.create(null);
 
-// Wails' event bus dispatches each Emit on a fresh goroutine, so events
-// arrive at the frontend out of source-order under load (we have seen e.g.
-// installing → verifying → update-ready → download-complete). Rank the
-// states monotonically so a late "download-complete" can't downgrade a UI
-// that already advanced to "installing". Error short-circuits everything.
-const STATE_RANK = {
-  "":           0,
-  "checking":   1,
-  "available":  2,
-  "downloading":3,
-  "verifying":  4,
-  "installing": 5,
-  "ready":      6,
-};
-let currentRank = 0;
-let errored = false;
+  w.dispatchWailsEvent = function (ev) {
+    if (!ev || !ev.name) return;
+    var cbs = listeners[ev.name];
+    if (!cbs) return;
+    for (var i = 0; i < cbs.length; i++) {
+      try { cbs[i](ev); } catch (e) { /* swallow handler errors */ }
+    }
+  };
 
-// setState returns true if the transition was accepted. Handlers should
-// short-circuit on false so a late event doesn't overwrite text or
-// progress UI that has already advanced.
-function setState(name) {
-  if (!els.root) return false;
-  if (name === "error") {
-    errored = true;
-  } else {
-    if (errored) return false;
-    const rank = STATE_RANK[name] ?? 0;
-    if (rank < currentRank) return false;
-    currentRank = rank;
+  function on(name, cb) {
+    (listeners[name] = listeners[name] || []).push(cb);
   }
-  els.root.classList.remove(
-    "wails-updater--checking",
-    "wails-updater--available",
-    "wails-updater--downloading",
-    "wails-updater--verifying",
-    "wails-updater--installing",
-    "wails-updater--ready",
-    "wails-updater--error",
-  );
-  if (name) els.root.classList.add("wails-updater--" + name);
-  return true;
-}
-
-function fmt(bytes) {
-  if (!bytes || bytes <= 0) return "";
-  const k = 1024, units = ["B", "KB", "MB", "GB"];
-  const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(k)));
-  return (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + " " + units[i];
-}
-
-function showError(msg) {
-  setState("error");
-  if (els.error) {
-    els.error.textContent = msg || "Update failed.";
+  function emit(name) {
+    if (typeof w.invoke !== "function") return;
+    w.invoke("wails:event:emit:" + name);
   }
-  if (els.progressBx) els.progressBx.hidden = true;
-}
 
-function onUpdateAvailable(rel) {
-  currentRelease = rel || null;
-  if (!setState("available")) return;
-  if (els.title) els.title.textContent = "Update Available";
-  if (els.version && rel) {
-    els.version.textContent =
-      (currentVersion ? currentVersion + " → " : "") + (rel.version || "");
+  window.__updaterEvents = { on: on, emit: emit };
+})();
+
+/* ===============================================================
+   Updater window controller
+   =============================================================== */
+(function () {
+  var Events = window.__updaterEvents;
+
+  var els = {
+    root:        document.getElementById("root"),
+    icon:        document.getElementById("state-icon"),
+    title:       document.getElementById("title"),
+    subtitle:    document.getElementById("subtitle"),
+    notes:       document.getElementById("notes"),
+    spinnerText: document.getElementById("spinner-text"),
+    progress:    document.getElementById("bar"),
+    progressRate:document.getElementById("progress-rate"),
+    progressState: document.getElementById("progress-state"),
+    error:       document.getElementById("error-text"),
+    btnInstall:  document.getElementById("btn-install"),
+    btnSkip:     document.getElementById("btn-skip"),
+    btnRemind:   document.getElementById("btn-remind"),
+    btnCancel:   document.getElementById("btn-cancel"),
+    btnRestart:  document.getElementById("btn-restart"),
+    btnRetry:    document.getElementById("btn-retry"),
+  };
+
+  /* Per-state visual identity for the hero icon */
+  var ICONS = {
+    "checking":    "↻",
+    "available":   "↓",
+    "downloading": "↓",
+    "verifying":   "✓",
+    "installing":  "↓",
+    "ready":       "✓",
+    "up-to-date":  "✓",
+    "error":       "!",
+  };
+
+  /* Wails' event bus dispatches each Emit on a fresh goroutine, so
+     events arrive out of source order under load (we have seen
+     installing → verifying → update-ready → download-complete).
+     Rank monotonically so a late event can't downgrade the UI. */
+  var RANK = {
+    "":            0,
+    "checking":    1,
+    "available":   2,
+    "downloading": 3,
+    "verifying":   4,
+    "installing":  5,
+    "ready":       6,
+    "up-to-date":  6,
+    "error":       99,
+  };
+  var rank = 0;
+  var errored = false;
+  var currentRelease = null;
+  var currentVersion = null;
+
+  function setState(name) {
+    if (errored && name !== "error") return false;
+    if (name === "error") {
+      errored = true;
+    } else {
+      if ((RANK[name] || 0) < rank) return false;
+      rank = RANK[name] || 0;
+    }
+    els.root.setAttribute("data-state", name);
+    els.root.classList.toggle("u--up-to-date", name === "up-to-date");
+    els.root.classList.toggle("u--error",      name === "error");
+    if (els.icon) els.icon.textContent = ICONS[name] || "";
+    return true;
   }
-  if (els.notes) {
-    els.notes.textContent = (rel && rel.notes) ? rel.notes : "No release notes provided.";
+
+  function fmtBytes(n) {
+    if (!n || n <= 0) return "";
+    var u = ["B", "KB", "MB", "GB"], k = 1024;
+    var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(k)));
+    return (n / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + " " + u[i];
   }
-}
+  function fmtRate(bps) {
+    var s = fmtBytes(bps);
+    return s ? s + "/s" : "";
+  }
 
-function onNoUpdate() {
-  if (!setState("")) return;
-  if (els.title) els.title.textContent = "You're Up to Date";
-  if (els.notes) els.notes.textContent = "You're running the latest version.";
-  if (els.btnInstall) els.btnInstall.disabled = true;
-}
+  function renderSubtitle(rel) {
+    if (!rel) { els.subtitle.textContent = ""; return; }
+    els.subtitle.innerHTML = "";
+    if (currentVersion) {
+      var from = document.createElement("span"); from.className = "u__ver-from"; from.textContent = currentVersion;
+      var arr  = document.createElement("span"); arr.className  = "u__ver-arrow"; arr.textContent  = "→";
+      els.subtitle.appendChild(from);
+      els.subtitle.appendChild(arr);
+    }
+    if (rel.version) {
+      var to = document.createElement("span"); to.className = "u__ver-to"; to.textContent = "v" + rel.version;
+      els.subtitle.appendChild(to);
+    }
+    var size = (rel.artifact && rel.artifact.size) || 0;
+    if (size > 0) {
+      var sz = document.createElement("span"); sz.className = "u__size"; sz.textContent = "· " + fmtBytes(size);
+      els.subtitle.appendChild(sz);
+    }
+  }
 
-function onDownloadStarted(rel) {
-  if (!setState("downloading")) return;
-  if (els.progressBx) els.progressBx.hidden = false;
-  if (els.progress) { els.progress.removeAttribute("value"); }
-  if (els.status) els.status.textContent = "Starting download…";
-}
-
-function onDownloadProgress(p) {
-  if (!p) return;
-  // Only paint progress while we're in the downloading state. A late tick
-  // arriving after verifying/installing/ready would otherwise resurrect a
-  // misleading progress bar.
-  if (currentRank !== STATE_RANK.downloading) return;
-  if (els.progress) {
+  /* === State handlers === */
+  function onCheckStarted() {
+    if (!setState("checking")) return;
+    els.title.textContent = "Checking for Updates…";
+    els.spinnerText.textContent = "Contacting update server…";
+  }
+  function onUpdateAvailable(rel) {
+    currentRelease = rel || null;
+    if (!setState("available")) return;
+    els.title.textContent = "Update Available";
+    renderSubtitle(rel);
+    els.notes.textContent = (rel && rel.notes) ? rel.notes : "";
+  }
+  function onNoUpdate() {
+    if (!setState("up-to-date")) return;
+    els.title.textContent = "You're Up to Date";
+    els.subtitle.textContent = currentVersion ? "Running v" + currentVersion : "";
+  }
+  function onDownloadStarted(rel) {
+    if (!setState("downloading")) return;
+    els.title.textContent = "Downloading Update";
+    els.progressState.textContent = "Starting download…";
+    els.progressRate.textContent = "";
+    els.progress.removeAttribute("value");
+  }
+  function onDownloadProgress(p) {
+    if (!p) return;
+    if (rank !== RANK.downloading) return;
     if (p.total > 0) {
       els.progress.max = p.total;
       els.progress.value = p.written;
+      var pct = Math.round((p.written / p.total) * 100);
+      els.progressState.textContent = pct + "% · " + fmtBytes(p.written) + " of " + fmtBytes(p.total);
     } else {
       els.progress.removeAttribute("value");
+      els.progressState.textContent = "Downloaded " + fmtBytes(p.written);
+    }
+    els.progressRate.textContent = p.rate ? fmtRate(p.rate) : "";
+  }
+  function onVerifying() {
+    if (!setState("verifying")) return;
+    els.title.textContent = "Verifying Update";
+    els.spinnerText.textContent = "Checking signature…";
+  }
+  function onInstalling() {
+    if (!setState("installing")) return;
+    els.title.textContent = "Installing Update";
+    els.spinnerText.textContent = "Unpacking and staging…";
+  }
+  function onUpdateReady() {
+    if (!setState("ready")) return;
+    els.title.textContent = "Update Ready";
+    if (currentRelease) renderSubtitle(currentRelease);
+    if (currentRelease && currentRelease.notes && els.notes) {
+      els.notes.textContent = currentRelease.notes;
     }
   }
-  if (els.status) {
-    const rate = p.rate ? " · " + fmt(p.rate) + "/s" : "";
-    const totalStr = p.total > 0 ? " of " + fmt(p.total) : "";
-    els.status.textContent = "Downloaded " + fmt(p.written) + totalStr + rate;
+  function onError(info) {
+    setState("error");
+    els.title.textContent = "Update Failed";
+    var msg = (info && info.message) ? info.message : "An unexpected error occurred.";
+    if (info && info.stage) msg = "During " + info.stage + ": " + msg;
+    els.error.textContent = msg;
   }
-}
 
-function onVerifying() {
-  if (!setState("verifying")) return;
-  if (els.status) els.status.textContent = "Verifying…";
-}
+  /* === Wire up === */
+  Events.on("updater:check-started",     function () { onCheckStarted(); });
+  Events.on("updater:update-available",  function (e) { onUpdateAvailable(e && (e.data != null ? e.data : e)); });
+  Events.on("updater:no-update",         function () { onNoUpdate(); });
+  Events.on("updater:download-started",  function (e) { onDownloadStarted(e && (e.data != null ? e.data : e)); });
+  Events.on("updater:download-progress", function (e) { onDownloadProgress(e && (e.data != null ? e.data : e)); });
+  Events.on("updater:download-complete", function () {});
+  Events.on("updater:verifying",         function () { onVerifying(); });
+  Events.on("updater:installing",        function () { onInstalling(); });
+  Events.on("updater:update-ready",      function (e) { onUpdateReady(); });
+  Events.on("updater:error",             function (e) { onError(e && (e.data != null ? e.data : e)); });
 
-function onInstalling() {
-  if (!setState("installing")) return;
-  if (els.status) els.status.textContent = "Installing…";
-}
+  if (els.btnInstall) els.btnInstall.addEventListener("click", function () { Events.emit("updater:user:install"); });
+  if (els.btnSkip)    els.btnSkip.addEventListener   ("click", function () { Events.emit("updater:user:skip"); });
+  if (els.btnRemind)  els.btnRemind.addEventListener ("click", function () { Events.emit("updater:user:remind"); });
+  if (els.btnCancel)  els.btnCancel.addEventListener ("click", function () { Events.emit("updater:user:cancel"); });
+  if (els.btnRestart) els.btnRestart.addEventListener("click", function () { Events.emit("updater:user:restart"); });
+  if (els.btnRetry)   els.btnRetry.addEventListener  ("click", function () { Events.emit("updater:user:install"); });
 
-function onUpdateReady() {
-  if (!setState("ready")) return;
-  if (els.status) els.status.textContent = "Update ready — restart to apply.";
-}
-
-function onError(info) {
-  showError((info && info.message) ? info.message : "Update failed.");
-}
-
-function emit(name) {
-  if (w && w.Events && typeof w.Events.Emit === "function") {
-    w.Events.Emit(name);
-  }
-}
-
-function on(name, fn) {
-  if (w && w.Events && typeof w.Events.On === "function") {
-    w.Events.On(name, fn);
-  }
-}
-
-on("updater:check-started",     () => setState("checking"));
-on("updater:update-available",  (e) => onUpdateAvailable(e && (e.data ?? e)));
-on("updater:no-update",         onNoUpdate);
-on("updater:download-started",  (e) => onDownloadStarted(e && (e.data ?? e)));
-on("updater:download-progress", (e) => onDownloadProgress(e && (e.data ?? e)));
-on("updater:download-complete", () => {});
-on("updater:verifying",         onVerifying);
-on("updater:installing",        onInstalling);
-on("updater:update-ready",      (e) => onUpdateReady(e && (e.data ?? e)));
-on("updater:error",             (e) => onError(e && (e.data ?? e)));
-
-if (els.btnInstall)  els.btnInstall.addEventListener("click",  () => emit("updater:user:install"));
-if (els.btnSkip)     els.btnSkip.addEventListener("click",     () => emit("updater:user:skip"));
-if (els.btnRemind)   els.btnRemind.addEventListener("click",   () => emit("updater:user:remind"));
-if (els.btnCancel)   els.btnCancel.addEventListener("click",   () => emit("updater:user:cancel"));
-if (els.btnRestart)  els.btnRestart.addEventListener("click",  () => emit("updater:user:restart"));
-
-// Ask the host to send us the current snapshot so we open in the right state
-// whether we just popped because of a periodic-check find or because the
-// user triggered CheckAndInstall.
-emit("updater:window:ready");
+  /* Wails queues ExecJS calls (including dispatchWailsEvent pushes) until
+     the page invokes "wails:runtime:ready" — see HandleMessage in
+     pkg/application/webview_window.go. Without this handshake every state
+     event the framework dispatched while we were still loading sits in the
+     pendingJS list forever and the UI stays on its initial HTML. Poll for
+     invoke (set by runtime Core after WebViewDidFinishNavigation) and
+     trigger the flush. */
+  (function announce() {
+    if (window._wails && typeof window._wails.invoke === "function") {
+      window._wails.invoke("wails:runtime:ready");
+      /* And tell the updater host that we're up so it re-fires the current
+         state — handles the case where we opened mid-flow after a
+         periodic-check find and the dispatches that occurred before us
+         already passed through the queue. */
+      Events.emit("updater:window:ready");
+    } else {
+      setTimeout(announce, 30);
+    }
+  })();
+})();
 </script>
 </body>
 </html>

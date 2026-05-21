@@ -776,6 +776,20 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				w.impl.execJS(js)
 			})
 		}
+	case strings.HasPrefix(message, "wails:event:emit:"):
+		// Forward an event from a page that can't reach the modern HTTP
+		// runtime (e.g. an InitialHTML pop-up loaded with `baseURL:nil`
+		// where `window.location.origin` is "null" and fetch fails). Sent
+		// as `wails:event:emit:<event-name>`; bare names only (no payload).
+		// Enough for the updater window's user-action buttons; pages that
+		// need to send structured data should use the full runtime.
+		name := strings.TrimPrefix(message, "wails:event:emit:")
+		if name == "" {
+			w.Error("empty event name in wails:event:emit")
+			return
+		}
+		evt := &CustomEvent{Name: name, Sender: w.Name()}
+		globalApplication.Event.EmitEvent(evt)
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}

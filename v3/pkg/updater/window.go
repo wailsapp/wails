@@ -40,12 +40,14 @@ func (windowNoneType) isWindowOption() {}
 var WindowNone WindowOption = windowNoneType{}
 
 // defaultBuiltinOptions returns the chrome the framework uses when the user
-// doesn't override Options.
+// doesn't override Options. Width gives release-note paragraphs room to
+// breathe; height accommodates the notes panel + progress / spinner area
+// + footer without crowding when the release ships substantial notes.
 func defaultBuiltinOptions() WindowOptions {
 	return WindowOptions{
-		Title:         "Update",
-		Width:         480,
-		Height:        420,
+		Title:         "Software Update",
+		Width:         520,
+		Height:        540,
 		Frameless:     false,
 		AlwaysOnTop:   false,
 		DisableResize: false,
