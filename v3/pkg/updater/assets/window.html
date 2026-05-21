@@ -113,7 +113,8 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* === Notes === */
+/* === Notes ===
+   Block-flow content (Markdown rendered to HTML by renderMarkdown). */
 .u__notes {
   flex: 1 1 auto;
   min-height: 60px;
@@ -122,7 +123,6 @@ body {
   border-radius: var(--radius);
   padding: 12px 14px;
   overflow-y: auto;
-  white-space: pre-wrap;
   color: var(--fg);
   line-height: 1.5;
   font-size: 12.5px;
@@ -134,6 +134,51 @@ body {
 }
 .u__notes::-webkit-scrollbar { width: 10px; }
 .u__notes::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid var(--surface); border-radius: 5px; }
+/* Markdown subset rendered by renderMarkdown() inside notes */
+.u__notes p { margin: 0 0 8px 0; }
+.u__notes p:last-child { margin-bottom: 0; }
+.u__notes strong { font-weight: 600; }
+.u__notes em { font-style: italic; }
+.u__notes code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  padding: 1px 5px;
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+.u__notes pre {
+  background: var(--surface-2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 6px 0;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  white-space: pre;
+}
+.u__notes pre code { background: none; padding: 0; font-size: inherit; }
+.u__notes ul, .u__notes ol { margin: 4px 0 8px 0; padding-left: 22px; }
+.u__notes li { margin: 2px 0; }
+.u__notes h1, .u__notes h2, .u__notes h3 {
+  margin: 10px 0 6px 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+.u__notes h1 { font-size: 14px; }
+.u__notes table {
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 11.5px;
+  border: 1px solid var(--border);
+}
+.u__notes th, .u__notes td {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.u__notes th { background: var(--surface-2); font-weight: 600; }
+.u__notes a { color: var(--accent); text-decoration: none; }
+.u__notes a:hover { text-decoration: underline; }
 
 /* === Progress === */
 .u__progress-box {
@@ -261,7 +306,10 @@ body {
 
 /* === State-driven visibility ===
    Each state shows only what's relevant. Hide everything by default
-   under the data-state attribute, then opt-in per state. */
+   under the data-state attribute, then opt-in per state. Default display
+   value when shown is `flex` (matches the hero, footer, progress-box,
+   spinner layouts); .u__notes overrides to `block` because its children
+   are HTML flow content (paragraphs, lists, tables). */
 .u [data-show] { display: none; }
 .u[data-state="checking"]     [data-show~="checking"]     { display: flex; }
 .u[data-state="available"]    [data-show~="available"]    { display: flex; }
@@ -271,6 +319,13 @@ body {
 .u[data-state="ready"]        [data-show~="ready"]        { display: flex; }
 .u[data-state="up-to-date"]   [data-show~="up-to-date"]   { display: flex; }
 .u[data-state="error"]        [data-show~="error"]        { display: flex; }
+
+/* Notes are block-flow content (markdown-rendered); never a flex container */
+.u[data-state="available"] .u__notes[data-show~="available"],
+.u[data-state="ready"]     .u__notes[data-show~="ready"],
+.u[data-state="up-to-date"] .u__notes[data-show~="up-to-date"] {
+  display: block;
+}
 
 /* Buttons default to inline-flex when shown */
 .u[data-state] .u__btn[data-show] { display: none; }
@@ -453,6 +508,87 @@ body {
     return true;
   }
 
+  /* Minimal Markdown→HTML renderer for release notes. Handles the subset
+     real release notes actually contain — paragraphs, bold, italic, inline
+     code, fenced code blocks, bullet/numbered lists, GFM tables, and
+     headings. Source is escaped before any HTML substitution so a
+     compromised release note can't inject script tags (links use a fixed
+     rel="noopener" + target="_blank"). Anything outside this subset falls
+     through as literal text. */
+  function renderMarkdown(src) {
+    if (!src) return "";
+    function escapeHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function inline(s) {
+      s = s.replace(/`([^`]+)`/g, function (_, c) { return "<code>" + c + "</code>"; });
+      s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      s = s.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+      s = s.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      return s;
+    }
+    var lines = escapeHtml(src).split(/\r?\n/);
+    var out = [];
+    var i = 0;
+    while (i < lines.length) {
+      var L = lines[i];
+      // Fenced code block
+      if (/^```/.test(L)) {
+        var buf = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+        out.push("<pre><code>" + buf.join("\n") + "</code></pre>");
+        i++; continue;
+      }
+      // Heading
+      var h = /^(#{1,6})\s+(.+)$/.exec(L);
+      if (h) {
+        var lvl = Math.min(h[1].length, 3); // cap at h3 visual-weight-wise
+        out.push("<h" + lvl + ">" + inline(h[2]) + "</h" + lvl + ">");
+        i++; continue;
+      }
+      // GFM-style table
+      if (/^\|.*\|$/.test(L) && i + 1 < lines.length && /^\|[\s:|-]+\|$/.test(lines[i+1])) {
+        var rows = [L];
+        i += 2; // skip header + separator
+        while (i < lines.length && /^\|.*\|$/.test(lines[i])) { rows.push(lines[i]); i++; }
+        var html = "<table>";
+        rows.forEach(function (r, idx) {
+          var cells = r.replace(/^\||\|$/g, "").split("|").map(function (c) { return inline(c.trim()); });
+          var tag = idx === 0 ? "th" : "td";
+          html += "<tr><" + tag + ">" + cells.join("</" + tag + "><" + tag + ">") + "</" + tag + "></tr>";
+        });
+        html += "</table>";
+        out.push(html);
+        continue;
+      }
+      // List (bullet or numbered)
+      var ulRe = /^[-*]\s+(.+)$/;
+      var olRe = /^\d+\.\s+(.+)$/;
+      if (ulRe.test(L) || olRe.test(L)) {
+        var isOL = olRe.test(L);
+        var re = isOL ? olRe : ulRe;
+        var items = [];
+        while (i < lines.length && re.test(lines[i])) {
+          items.push("<li>" + inline(re.exec(lines[i])[1]) + "</li>");
+          i++;
+        }
+        out.push("<" + (isOL ? "ol" : "ul") + ">" + items.join("") + "</" + (isOL ? "ol" : "ul") + ">");
+        continue;
+      }
+      // Blank line — paragraph break
+      if (L.trim() === "") { i++; continue; }
+      // Paragraph (collect contiguous non-empty lines)
+      var para = [L];
+      i++;
+      while (i < lines.length && lines[i].trim() !== "" && !/^[-*]\s/.test(lines[i]) && !/^\d+\.\s/.test(lines[i]) && !/^\|.*\|$/.test(lines[i]) && !/^#{1,6}\s/.test(lines[i]) && !/^```/.test(lines[i])) {
+        para.push(lines[i]); i++;
+      }
+      out.push("<p>" + inline(para.join(" ")) + "</p>");
+    }
+    return out.join("\n");
+  }
+
   function fmtBytes(n) {
     if (!n || n <= 0) return "";
     var u = ["B", "KB", "MB", "GB"], k = 1024;
@@ -495,7 +631,7 @@ body {
     if (!setState("available")) return;
     els.title.textContent = "Update Available";
     renderSubtitle(rel);
-    els.notes.textContent = (rel && rel.notes) ? rel.notes : "";
+    els.notes.innerHTML = (rel && rel.notes) ? renderMarkdown(rel.notes) : "";
   }
   function onNoUpdate() {
     if (!setState("up-to-date")) return;
@@ -538,7 +674,7 @@ body {
     els.title.textContent = "Update Ready";
     if (currentRelease) renderSubtitle(currentRelease);
     if (currentRelease && currentRelease.notes && els.notes) {
-      els.notes.textContent = currentRelease.notes;
+      els.notes.innerHTML = renderMarkdown(currentRelease.notes);
     }
   }
   function onError(info) {
