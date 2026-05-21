@@ -326,8 +326,16 @@ func (u *Updater) DownloadAndInstall(ctx context.Context) error {
 // (unless Config.Window == WindowNone) and runs Check + DownloadAndInstall.
 // Returns nil with no side effects if the application is already up to date.
 //
-// The window stays open for the duration of the flow and across user
-// dismissal until the caller (or the user) explicitly closes it.
+// The window stays open for the duration of the flow AND across the
+// "up-to-date" / error terminal states — the user dismisses it via the
+// Close button. Opening + immediately closing on the no-update branch
+// produced a perceptible flicker on every check; keeping the window up so
+// the "You're up to date" panel actually renders matches what users expect
+// from system-style updaters.
+//
+// Apps that want silent background polling should use Config.Window =
+// updater.WindowNone (no window ever opens) or invoke Check() directly and
+// subscribe to EventNoUpdate / EventUpdateAvailable themselves.
 func (u *Updater) CheckAndInstall(ctx context.Context) error {
 	// Tear down any session from a previous CheckAndInstall before opening a
 	// fresh one — otherwise its listeners and window leak and stale callbacks
@@ -351,9 +359,10 @@ func (u *Updater) CheckAndInstall(ctx context.Context) error {
 		return err
 	}
 	if rel == nil {
-		// "Up to date" — close immediately. If WindowNone we never opened
-		// anything, so close is a no-op.
-		u.closeWindow()
+		// "Up to date" — leave the window open showing the up-to-date panel
+		// (window.html's onNoUpdate handler renders "You're Up to Date" and
+		// the current version). Closing here caused a flicker on every
+		// check that found nothing.
 		return nil
 	}
 	return u.DownloadAndInstall(ctx)

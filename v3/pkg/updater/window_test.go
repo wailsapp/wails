@@ -47,7 +47,11 @@ func TestCheckAndInstall_BuiltinWindow_OpensClosesOnSuccess(t *testing.T) {
 	}
 }
 
-func TestCheckAndInstall_BuiltinWindow_ClosesOnUpToDate(t *testing.T) {
+// CheckAndInstall must keep the window open when the user is already on
+// the latest version — closing immediately produced a flicker on every
+// manual check. The user dismisses the window via the Close button (which
+// fires EventUserCancel and goes through the regular closeWindow path).
+func TestCheckAndInstall_BuiltinWindow_StaysOpenWhenUpToDate(t *testing.T) {
 	host := &fakeHost{}
 	p := &fakeProvider{name: "p"} // returns (nil, nil)
 	u := newConfigured(t, host, p)
@@ -56,12 +60,24 @@ func TestCheckAndInstall_BuiltinWindow_ClosesOnUpToDate(t *testing.T) {
 		t.Fatalf("CheckAndInstall: %v", err)
 	}
 	host.mu.Lock()
-	defer host.mu.Unlock()
-	if host.window == nil {
+	w := host.window
+	host.mu.Unlock()
+	if w == nil {
 		t.Fatal("window was never created")
 	}
-	if !host.window.closed {
-		t.Errorf("window should auto-close when up to date")
+	if w.closed {
+		t.Errorf("window should stay open in up-to-date state until user dismisses")
+	}
+
+	// User dismisses by firing the cancel event the Close button emits.
+	host.Emit(updater.EventUserCancel)
+	// closeWindow runs synchronously in the EventUserCancel listener so the
+	// window's Close() method has been called by the time Emit returns in the
+	// fakeHost's synchronous fan-out.
+	host.mu.Lock()
+	defer host.mu.Unlock()
+	if !w.closed {
+		t.Errorf("window should close after EventUserCancel; closed=%v", w.closed)
 	}
 }
 
@@ -224,15 +240,20 @@ func TestUserCancel_ClosesWindow(t *testing.T) {
 }
 
 // Repeated CheckAndInstall calls (e.g. periodic timer + manual click) must
-// tear down the previous session before opening a new one — otherwise the
-// stale listeners and window leak. Regression guard for the bug where each
-// call appended 5 fresh listeners under sessMu without closing the prior set.
+// tear down the previous session before opening a new one — otherwise each
+// invocation appends another 5 fresh listeners and the count grows
+// unboundedly. Regression guard.
+//
+// After my fix to keep the window open on up-to-date, each call's listeners
+// stay alive until the NEXT call's open-session tears them down. After N
+// calls the count should equal exactly the per-session listener count
+// (currently 5 user-action listeners), never N * 5.
 func TestCheckAndInstall_RepeatedCalls_DoNotLeakListeners(t *testing.T) {
 	host := &fakeHost{}
 	p := &fakeProvider{name: "p"} // returns (nil, nil) — fast up-to-date path
 	u := newConfigured(t, host, p)
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		if err := u.CheckAndInstall(context.Background()); err != nil {
 			t.Fatalf("CheckAndInstall #%d: %v", i, err)
 		}
@@ -240,9 +261,10 @@ func TestCheckAndInstall_RepeatedCalls_DoNotLeakListeners(t *testing.T) {
 
 	host.mu.Lock()
 	defer host.mu.Unlock()
-	// Each call opens then closes a window — but closeWindow tears down all
-	// listeners registered in that session, so after the last close the host
-	// should be back to zero listeners for each user-action event.
+	// After 5 calls the only listeners that should still exist are the 5
+	// from the most recent session. A leak would show as ~25 (or 5 per call
+	// × 5 calls) and a regression of the close-before-open ordering would
+	// likewise grow.
 	for _, name := range []string{
 		updater.EventUserInstall,
 		updater.EventUserCancel,
@@ -250,8 +272,8 @@ func TestCheckAndInstall_RepeatedCalls_DoNotLeakListeners(t *testing.T) {
 		updater.EventUserRemind,
 		updater.EventUserRestart,
 	} {
-		if got := len(host.listeners[name]); got != 0 {
-			t.Errorf("listeners for %q: got %d, want 0 (session not torn down)", name, got)
+		if got := len(host.listeners[name]); got != 1 {
+			t.Errorf("listeners for %q: got %d, want 1 (only the most recent session's set)", name, got)
 		}
 	}
 }
