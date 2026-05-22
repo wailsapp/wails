@@ -396,6 +396,8 @@ func (w *linuxWebviewWindow) run() {
 		// Inject runtime core and EnableFileDrop flag together
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		js += fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", w.parent.options.Frameless)
+		js += fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", !w.parent.options.DisableResize)
 		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
