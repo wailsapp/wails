@@ -979,6 +979,7 @@ static void window_send_always_on_top_x11(GtkWindow *window, gboolean always_on_
 
     XEvent xev = {0};
     xev.type = ClientMessage;
+    xev.xclient.display = xdisplay;
     xev.xclient.window = xwindow;
     xev.xclient.message_type = net_wm_state;
     xev.xclient.format = 32;
