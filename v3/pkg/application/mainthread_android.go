@@ -13,13 +13,13 @@ func (a *androidApp) isOnMainThread() bool {
 func (a *androidApp) dispatchOnMainThread(id uint) {
 	// TODO: Implement via JNI callback to Activity.runOnUiThread()
 	// For now, execute the callback directly
-	mainThreadFunctionStoreLock.RLock()
+	mainThreadFunctionStoreLock.Lock()
 	fn := mainThreadFunctionStore[id]
 	if fn == nil {
-		mainThreadFunctionStoreLock.RUnlock()
+		mainThreadFunctionStoreLock.Unlock()
 		return
 	}
 	delete(mainThreadFunctionStore, id)
-	mainThreadFunctionStoreLock.RUnlock()
+	mainThreadFunctionStoreLock.Unlock()
 	fn()
 }

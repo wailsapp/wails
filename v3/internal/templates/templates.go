@@ -74,10 +74,26 @@ func GetDefaultTemplates() []TemplateData {
 }
 
 type TemplateOptions struct {
+	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
+	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
 	*flags.Init
 	LocalModulePath string
 	UseTypescript   bool
 	WailsVersion    string
+}
+
+type FileAssociation struct {
+	Ext         string `yaml:"ext"`
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	IconName    string `yaml:"iconName"`
+	Role        string `yaml:"role"`
+	MimeType    string `yaml:"mimeType"`
+}
+
+type ProtocolConfig struct {
+	Scheme      string `yaml:"scheme"                json:"scheme"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
 }
 
 func getInternalTemplate(templateName string) (*Template, error) {
@@ -263,6 +279,8 @@ func Install(options *flags.Init) error {
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
+		Opn:             "{{",
+		Cls:             "}}",
 	}
 
 	defer func() {
@@ -342,33 +360,50 @@ func Install(options *flags.Init) error {
 			return err
 		}
 	case sourceLocal, sourceRemote:
+		publisher := fmt.Sprintf("CN=%s", options.ProductCompany)
 		data := struct {
-			TemplateOptions
-			Dir                string
-			Name               string
-			BinaryName         string
-			ProductName        string
-			ProductDescription string
-			ProductVersion     string
-			ProductCompany     string
-			ProductCopyright   string
-			ProductComments    string
-			ProductIdentifier  string
-			Silent             bool
-			Typescript         bool
-		}{
-			Name:               options.ProjectName,
-			Silent:             true,
-			ProductCompany:     options.ProductCompany,
-			ProductName:        options.ProductName,
-			ProductDescription: options.ProductDescription,
-			ProductVersion:     options.ProductVersion,
-			ProductIdentifier:  options.ProductIdentifier,
-			ProductCopyright:   options.ProductCopyright,
-			ProductComments:    options.ProductComments,
-			Typescript:         templateData.UseTypescript,
-			TemplateOptions:    templateData,
-		}
+		TemplateOptions
+		Dir                   string
+		Name                  string
+		BinaryName            string
+		ProductName           string
+		ProductDescription    string
+		ProductVersion        string
+		ProductCompany        string
+		ProductCopyright      string
+		ProductComments       string
+		ProductIdentifier     string
+		Publisher             string
+		ProcessorArchitecture string
+		ExecutableName        string
+		ExecutablePath        string
+		OutputPath            string
+		CertificatePath       string
+		FileAssociations      []FileAssociation
+		Protocols             []ProtocolConfig
+		Silent                bool
+		Typescript            bool
+	}{
+		Name:                  options.ProjectName,
+		Silent:                true,
+		ProductCompany:        options.ProductCompany,
+		ProductName:           options.ProductName,
+		ProductDescription:    options.ProductDescription,
+		ProductVersion:        options.ProductVersion,
+		ProductIdentifier:     options.ProductIdentifier,
+		ProductCopyright:      options.ProductCopyright,
+		ProductComments:       options.ProductComments,
+		Publisher:             publisher,
+		ProcessorArchitecture: "x64",
+		ExecutableName:        options.ProjectName,
+		ExecutablePath:        options.ProjectName,
+		OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
+		CertificatePath:       "",
+		FileAssociations:      []FileAssociation{},
+		Protocols:             []ProtocolConfig{},
+		Typescript:            templateData.UseTypescript,
+		TemplateOptions:       templateData,
+	}
 		// If options.ProjectDir does not exist, create it
 		if _, err := os.Stat(options.ProjectDir); os.IsNotExist(err) {
 			err = os.Mkdir(options.ProjectDir, 0755)
