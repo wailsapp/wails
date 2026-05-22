@@ -86,34 +86,11 @@ body {
 .u--error      .u__icon { background: rgba(255, 59, 48, 0.15); color: var(--error); }
 
 /* === Up-to-date compact layout ===
-   This state is purely confirmational ("nothing to do here"). The
-   default left-aligned hero + empty notes panel reads as a half-filled
-   form. Center the hero vertically, stack icon-on-top, scale the icon
-   up, and hide the notes panel so the window doesn't show a giant
-   empty surface with one short sentence inside it. */
-.u--up-to-date {
-  justify-content: center;
-}
-.u--up-to-date .u__hero {
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
-  margin-top: -12px; /* compensate for the missing notes block height */
-}
-.u--up-to-date .u__icon {
-  width: 72px;
-  height: 72px;
-  font-size: 40px;
-  border-radius: 18px;
-}
-.u--up-to-date .u__title { font-size: 20px; }
-.u--up-to-date .u__subtitle {
-  font-size: 13px;
-  justify-content: center;   /* center the version pill, since hero is centered */
-}
-.u--up-to-date .u__footer { justify-content: center; }
-.u--up-to-date .u__primary-actions { flex: 0 0 auto; }
+   Same hero shape as Update Available (left-aligned icon + title + version
+   pill) but with the green check and a "this is the latest version" suffix
+   in the pill. The Go side resizes the window via WindowSizer to ~210px
+   tall when entering this state so the layout doesn't show a wasted
+   bottom half. No notes panel here. */
 .u__head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .u__title {
   margin: 0;

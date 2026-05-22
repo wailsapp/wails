@@ -74,6 +74,17 @@ type WindowHandle interface {
 	Close()
 }
 
+// WindowSizer is an optional capability a WindowHandle may implement to
+// allow the Updater to resize the window in response to state changes.
+// The default window template uses this to shrink the Up-to-Date state
+// to a compact card; the framework adapter for *application.WebviewWindow
+// implements it transparently. BYO windows can opt in by adding the
+// SetSize method themselves; if they don't, the Updater silently skips
+// the resize and the window stays whatever size the host opened it at.
+type WindowSizer interface {
+	SetSize(width, height int)
+}
+
 // WindowOptions describes the chrome and starting content for a window the
 // Updater asks the host to open. Maps to (a subset of)
 // application.WebviewWindowOptions on the host side.
@@ -428,10 +439,34 @@ func (u *Updater) DownloadedPath() string {
 
 // --- internals ---
 
+// upToDateWidth/Height are the compact dimensions the Up-to-Date state
+// shrinks the default window to via WindowSizer. The full-flow window is
+// 520x540; once the answer is "nothing to do", the layout only needs the
+// hero row and a Close button. 348x161 is what the visual designer
+// landed on after interactively dragging the window down to the
+// smallest size that still fit all the content without truncation.
+const (
+	upToDateWidth  = 348
+	upToDateHeight = 161
+)
+
 func (u *Updater) transition(s State) {
 	u.mu.Lock()
 	u.state = s
 	u.mu.Unlock()
+	if s == StateUpToDate {
+		// Shrink the default window if the host's WindowHandle supports it.
+		// BYO windows can opt into the resize by implementing WindowSizer;
+		// handles that don't satisfy it just stay at their opened size.
+		u.sessMu.Lock()
+		sess := u.session
+		u.sessMu.Unlock()
+		if sess != nil {
+			if sizer, ok := sess.handle.(WindowSizer); ok {
+				sizer.SetSize(upToDateWidth, upToDateHeight)
+			}
+		}
+	}
 }
 
 // discardStaging removes any temp directory the previous DownloadAndInstall

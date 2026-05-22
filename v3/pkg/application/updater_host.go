@@ -82,6 +82,14 @@ func (h *updaterWindowHandle) EmitEvent(name string, data ...any) bool {
 	return h.win.EmitEvent(name, data...)
 }
 
+// SetSize implements updater.WindowSizer so the Updater can shrink the
+// Up-to-Date state's window to a compact card. WebviewWindow.SetSize is
+// fluent (returns the window); the return value is dropped here to keep
+// the updater-facing interface free of application-package types.
+func (h *updaterWindowHandle) SetSize(width, height int) {
+	h.win.SetSize(width, height)
+}
+
 // AsUpdaterWindow wraps the receiver as an updater.WindowHandle so it can
 // be passed via updater.BYOWindow to Config.Window. Use this when you want
 // the updater to drive a webview window you own rather than letting it
