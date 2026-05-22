@@ -332,9 +332,20 @@ Per-platform behaviour:
 
   <TabItem label="Linux" icon="fa-brands:linux">
 
-    On Linux, notification behaviour depends on the desktop environment:
+    On Linux, notifications use the D-Bus `org.freedesktop.Notifications` interface. A compatible notification daemon **must be running** for notifications to work.
 
-    - Use native notifications via D-Bus `org.freedesktop.Notifications` when available
+    :::caution[System requirement: notification daemon]
+    A freedesktop-compatible notification daemon must be installed and running. Common choices:
+    - **dunst** — lightweight, highly configurable (`apt install dunst` / `dnf install dunst`)
+    - **mako** — Wayland-native (`apt install mako-notifier`)
+    - **GNOME Shell** — registers the interface automatically on GNOME 43+. On Ubuntu 24.04 (GNOME Shell 46) the interface may not self-register at session start; install `dunst` as a fallback if notifications are not appearing.
+    - **xfce4-notifyd** — bundled with XFCE desktops
+
+    If no daemon is running, `SendNotification` will return a D-Bus error: `The name org.freedesktop.Notifications was not provided by any .service files`. Handle this error in your app and inform the user to install a notification daemon.
+    :::
+
+    On Linux, notifications:
+
     - Follow desktop environment theme
     - Position according to desktop environment rules
     - Support `Subtitle` (concatenated into the body for daemons that don't render it separately)
@@ -364,6 +375,10 @@ Per-platform behaviour:
 4. Consider platform conventions:
    - Follow platform-specific notification patterns
    - Respect system settings
+
+5. On Linux, handle the daemon dependency:
+   - Check the error returned by `SendNotification` — a missing daemon produces a D-Bus error
+   - Package docs or app README should note that a freedesktop notification daemon is required
 
 ## Examples
 
