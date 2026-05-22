@@ -173,6 +173,9 @@ Let's add a new feature to understand the workflow.
    Add this to `greetservice.go`:
 
    ```go title="greetservice.go"
+    import (
+    	"fmt"
+     )
    func (g *GreetService) GreetMany(names []string) []string {
        greetings := make([]string, len(names))
        for i, name := range names {
