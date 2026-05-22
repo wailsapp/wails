@@ -213,9 +213,9 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	// TODO: Implement GTK4 icon setting using GdkTexture
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
-	defer C.g_bytes_unref(gbytes)
+	// GTK4 removed per-window icon APIs. The application icon is determined by
+	// the .desktop file's Icon= field at the desktop-integration level.
+	// No programmatic equivalent exists for setting icons from bytes in GTK4.
 }
 
 func clipboardGet() string {
@@ -1271,10 +1271,13 @@ func (w *linuxWebviewWindow) windowShow() {
 		return
 	}
 	C.gtk_window_present(w.gtkWindow())
+	// Re-apply always-on-top state now that the surface exists.
+	C.window_apply_pending_always_on_top(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	// GTK4: No direct equivalent - compositor-dependent
+	// X11 only: uses _NET_WM_STATE_ABOVE. No-op on Wayland (no standard protocol).
+	C.window_set_always_on_top(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
 func (w *linuxWebviewWindow) setBorderless(borderless bool) {
@@ -1295,7 +1298,8 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 }
 
 func (w *linuxWebviewWindow) setIcon(icon pointer) {
-	// GTK4: Window icons handled differently - no gtk_window_set_icon
+	// GTK4 removed gtk_window_set_icon. Window icons are set via the
+	// application's .desktop file at the desktop-integration level.
 }
 
 func (w *linuxWebviewWindow) startDrag() error {
