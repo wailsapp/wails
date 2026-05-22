@@ -709,28 +709,28 @@ body {
   }
 
   /* === Wire up === */
-  Events.on("wails:updater:Meta", function (e) {
+  Events.on("wails:updater:meta", function (e) {
     var m = e && (e.data != null ? e.data : e);
     if (m && typeof m.currentVersion === "string") currentVersion = m.currentVersion;
     if (m && typeof m.skippedVersion === "string") skippedVersion = m.skippedVersion;
   });
-  Events.on("wails:updater:CheckStarted",     function () { onCheckStarted(); });
-  Events.on("wails:updater:UpdateAvailable",  function (e) { onUpdateAvailable(e && (e.data != null ? e.data : e)); });
-  Events.on("wails:updater:NoUpdate",         function () { onNoUpdate(); });
-  Events.on("wails:updater:DownloadStarted",  function (e) { onDownloadStarted(e && (e.data != null ? e.data : e)); });
-  Events.on("wails:updater:DownloadProgress", function (e) { onDownloadProgress(e && (e.data != null ? e.data : e)); });
-  Events.on("wails:updater:DownloadComplete", function () {});
-  Events.on("wails:updater:Verifying",         function () { onVerifying(); });
-  Events.on("wails:updater:Installing",        function () { onInstalling(); });
-  Events.on("wails:updater:UpdateReady",      function (e) { onUpdateReady(); });
-  Events.on("wails:updater:Error",             function (e) { onError(e && (e.data != null ? e.data : e)); });
+  Events.on("wails:updater:check-started",     function () { onCheckStarted(); });
+  Events.on("wails:updater:update-available",  function (e) { onUpdateAvailable(e && (e.data != null ? e.data : e)); });
+  Events.on("wails:updater:no-update",         function () { onNoUpdate(); });
+  Events.on("wails:updater:download-started",  function (e) { onDownloadStarted(e && (e.data != null ? e.data : e)); });
+  Events.on("wails:updater:download-progress", function (e) { onDownloadProgress(e && (e.data != null ? e.data : e)); });
+  Events.on("wails:updater:download-complete", function () {});
+  Events.on("wails:updater:verifying",         function () { onVerifying(); });
+  Events.on("wails:updater:installing",        function () { onInstalling(); });
+  Events.on("wails:updater:update-ready",      function (e) { onUpdateReady(); });
+  Events.on("wails:updater:error",             function (e) { onError(e && (e.data != null ? e.data : e)); });
 
-  if (els.btnInstall) els.btnInstall.addEventListener("click", function () { Events.emit("wails:updater:user:Install"); });
-  if (els.btnSkip)    els.btnSkip.addEventListener   ("click", function () { Events.emit("wails:updater:user:Skip"); });
-  if (els.btnRemind)  els.btnRemind.addEventListener ("click", function () { Events.emit("wails:updater:user:Remind"); });
-  if (els.btnCancel)  els.btnCancel.addEventListener ("click", function () { Events.emit("wails:updater:user:Cancel"); });
-  if (els.btnRestart) els.btnRestart.addEventListener("click", function () { Events.emit("wails:updater:user:Restart"); });
-  if (els.btnRetry)   els.btnRetry.addEventListener  ("click", function () { Events.emit("wails:updater:user:Install"); });
+  if (els.btnInstall) els.btnInstall.addEventListener("click", function () { Events.emit("wails:updater:user:install"); });
+  if (els.btnSkip)    els.btnSkip.addEventListener   ("click", function () { Events.emit("wails:updater:user:skip"); });
+  if (els.btnRemind)  els.btnRemind.addEventListener ("click", function () { Events.emit("wails:updater:user:remind"); });
+  if (els.btnCancel)  els.btnCancel.addEventListener ("click", function () { Events.emit("wails:updater:user:cancel"); });
+  if (els.btnRestart) els.btnRestart.addEventListener("click", function () { Events.emit("wails:updater:user:restart"); });
+  if (els.btnRetry)   els.btnRetry.addEventListener  ("click", function () { Events.emit("wails:updater:user:install"); });
 
   /* Wails queues ExecJS calls (including dispatchWailsEvent pushes) until
      the page invokes "wails:runtime:ready" — see HandleMessage in
@@ -742,7 +742,7 @@ body {
   (function announce() {
     if (window._wails && typeof window._wails.invoke === "function") {
       window._wails.invoke("wails:runtime:ready");
-      Events.emit("wails:updater:window:Ready");
+      Events.emit("wails:updater:window:ready");
     } else {
       setTimeout(announce, 30);
     }

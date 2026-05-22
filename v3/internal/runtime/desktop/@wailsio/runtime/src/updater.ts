@@ -32,46 +32,46 @@ The electron alternative for Go
  */
 export const Events = Object.freeze({
     /** A Check round-trip is starting. Payload: null. */
-    CheckStarted: "wails:updater:CheckStarted",
+    CheckStarted: "wails:updater:check-started",
     /** Check found a newer release. Payload: Release. */
-    UpdateAvailable: "wails:updater:UpdateAvailable",
+    UpdateAvailable: "wails:updater:update-available",
     /** Check confirmed the caller is up to date. Payload: null. */
-    NoUpdate: "wails:updater:NoUpdate",
+    NoUpdate: "wails:updater:no-update",
     /** Download is starting. Payload: Release. */
-    DownloadStarted: "wails:updater:DownloadStarted",
+    DownloadStarted: "wails:updater:download-started",
     /** Periodic progress tick during download (~10 Hz). Payload: Progress. */
-    DownloadProgress: "wails:updater:DownloadProgress",
+    DownloadProgress: "wails:updater:download-progress",
     /** All bytes are on disk, but verification has not yet started. Payload: Release. */
-    DownloadComplete: "wails:updater:DownloadComplete",
+    DownloadComplete: "wails:updater:download-complete",
     /** Signature / digest verification has started. Payload: Release. */
-    Verifying: "wails:updater:Verifying",
+    Verifying: "wails:updater:verifying",
     /** The Updater is swapping the binary into place. Payload: Release. */
-    Installing: "wails:updater:Installing",
+    Installing: "wails:updater:installing",
     /** Update is staged and a restart is pending. Payload: Release. */
-    UpdateReady: "wails:updater:UpdateReady",
+    UpdateReady: "wails:updater:update-ready",
     /** Something failed. Payload: ErrorInfo { stage, message, provider }. */
-    Error: "wails:updater:Error",
+    Error: "wails:updater:error",
     /** Host-side context delivered once per session. Payload: Meta { currentVersion, skippedVersion }. */
-    Meta: "wails:updater:Meta",
+    Meta: "wails:updater:meta",
 
     /** Sub-namespace: user-action events that the UI emits BACK to the host. */
     User: Object.freeze({
         /** User clicked Install on an Available update. */
-        Install: "wails:updater:user:Install",
+        Install: "wails:updater:user:install",
         /** User clicked Restart & Apply on a Ready update. */
-        Restart: "wails:updater:user:Restart",
+        Restart: "wails:updater:user:restart",
         /** User clicked Skip This Version. */
-        Skip: "wails:updater:user:Skip",
+        Skip: "wails:updater:user:skip",
         /** User clicked Remind Me Later. */
-        Remind: "wails:updater:user:Remind",
+        Remind: "wails:updater:user:remind",
         /** User clicked Close / Cancel. */
-        Cancel: "wails:updater:user:Cancel",
+        Cancel: "wails:updater:user:cancel",
     }),
 
     /** Sub-namespace: framework-internal events the UI emits to coordinate
      *  with the host. Most app code can ignore these. */
     Window: Object.freeze({
         /** The window finished loading and asks the host to replay current state. */
-        Ready: "wails:updater:window:Ready",
+        Ready: "wails:updater:window:ready",
     }),
 });

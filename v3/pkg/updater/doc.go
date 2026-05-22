@@ -17,5 +17,5 @@
 //	    _ = json.Unmarshal(e.JSON(), &p)
 //	})
 //
-//	wails.Events.On("wails:updater:DownloadProgress", (e) => { /* ... */ })
+//	wails.Events.On("wails:updater:download-progress", (e) => { /* ... */ })
 package updater

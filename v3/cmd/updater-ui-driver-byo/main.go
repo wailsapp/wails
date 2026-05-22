@@ -65,26 +65,26 @@ const customHTML = `<!doctype html>
   };
   function on(n, cb) { (L[n] = L[n] || []).push(cb); }
   function emit(n) { if (typeof w.invoke === "function") w.invoke("wails:event:emit:" + n); }
-  on("wails:updater:CheckStarted",    function () { setState("Checking…", "blue"); });
-  on("wails:updater:UpdateAvailable", function (e) {
+  on("wails:updater:check-started",    function () { setState("Checking…", "blue"); });
+  on("wails:updater:update-available", function (e) {
     var rel = e && (e.data != null ? e.data : e);
     setState("Update Available", "green");
     document.getElementById("title").textContent = "BYO Heard You";
     document.getElementById("version").textContent = "v" + (rel && rel.version || "?");
     if (rel && rel.notes) document.getElementById("notes").textContent = rel.notes;
   });
-  on("wails:updater:DownloadStarted",  function () { setState("Downloading…", "blue"); });
-  on("wails:updater:DownloadProgress", function (e) {
+  on("wails:updater:download-started",  function () { setState("Downloading…", "blue"); });
+  on("wails:updater:download-progress", function (e) {
     var p = e && (e.data != null ? e.data : e);
     if (p && p.total) {
       var pct = Math.round((p.written / p.total) * 100);
       document.getElementById("state").textContent = "Downloading " + pct + "%";
     }
   });
-  on("wails:updater:Verifying",  function () { setState("Verifying…", "blue"); });
-  on("wails:updater:Installing", function () { setState("Installing…", "blue"); });
-  on("wails:updater:UpdateReady", function () { setState("Ready to restart", "green"); });
-  on("wails:updater:Error",      function (e) {
+  on("wails:updater:verifying",  function () { setState("Verifying…", "blue"); });
+  on("wails:updater:installing", function () { setState("Installing…", "blue"); });
+  on("wails:updater:update-ready", function () { setState("Ready to restart", "green"); });
+  on("wails:updater:error",      function (e) {
     var info = e && (e.data != null ? e.data : e);
     setState("Error", "red");
     document.getElementById("notes").textContent = (info && info.message) || "Unknown error";
@@ -96,7 +96,7 @@ const customHTML = `<!doctype html>
   (function announce() {
     if (window._wails && typeof window._wails.invoke === "function") {
       window._wails.invoke("wails:runtime:ready");
-      emit("wails:updater:window:Ready");
+      emit("wails:updater:window:ready");
     } else { setTimeout(announce, 30); }
   })();
 })();

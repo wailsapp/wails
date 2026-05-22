@@ -323,17 +323,17 @@ Inside an InitialHTML window the page can't load `/runtime.js` (the base URL is 
   (function announce() {
     if (window._wails && typeof window._wails.invoke === "function") {
       window._wails.invoke("wails:runtime:ready");
-      emit("wails:updater:window:Ready"); // tell the host to replay current state
+      emit("wails:updater:window:ready"); // tell the host to replay current state
     } else { setTimeout(announce, 30); }
   })();
 })();
 // Now use updater.on(name, fn) / updater.emit(name)
-updater.on("wails:updater:UpdateAvailable", (e) => {
+updater.on("wails:updater:update-available", (e) => {
     const rel = e.data ?? e;
     document.getElementById("ver").textContent = rel.version;
 });
 document.getElementById("install").addEventListener("click",
-    () => updater.emit("wails:updater:user:Install"));
+    () => updater.emit("wails:updater:user:install"));
 </script>
 ```
 
