@@ -323,17 +323,17 @@ Inside an InitialHTML window the page can't load `/runtime.js` (the base URL is 
   (function announce() {
     if (window._wails && typeof window._wails.invoke === "function") {
       window._wails.invoke("wails:runtime:ready");
-      emit("updater:window:ready"); // tell the host to replay current state
+      emit("wails:updater:window:Ready"); // tell the host to replay current state
     } else { setTimeout(announce, 30); }
   })();
 })();
 // Now use updater.on(name, fn) / updater.emit(name)
-updater.on("updater:update-available", (e) => {
+updater.on("wails:updater:UpdateAvailable", (e) => {
     const rel = e.data ?? e;
     document.getElementById("ver").textContent = rel.version;
 });
 document.getElementById("install").addEventListener("click",
-    () => updater.emit("updater:user:install"));
+    () => updater.emit("wails:updater:user:Install"));
 </script>
 ```
 
@@ -425,12 +425,35 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 
 ### From JavaScript
 
-```js
-import { Events } from "@wailsio/runtime";
+Use the `Updater.Events` constants exported from `@wailsio/runtime` instead of typing the strings yourself — the names are checked at compile time (with TypeScript) and a regression test keeps the JS exports in sync with the Go-side constants.
 
-Events.On("updater:download-progress", (e) => {
+```js
+import { Events, Updater } from "@wailsio/runtime";
+
+Events.On(Updater.Events.UpdateAvailable, (e) => {
+    console.log("update found:", e.data.version);
+});
+
+Events.On(Updater.Events.DownloadProgress, (e) => {
     const p = e.data;
     console.log(`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`);
+});
+
+Events.On(Updater.Events.Error, (e) => {
+    const info = e.data;
+    console.error(`update failed during ${info.stage}: ${info.message}`);
+});
+```
+
+User-action events your custom HTML emits *back* to the host live under `Updater.Events.User`:
+
+```js
+import { Updater } from "@wailsio/runtime";
+
+document.getElementById("install-btn").addEventListener("click", () => {
+    // The framework window does this internally via the postMessage shim;
+    // shown here for BYO templates that need to drive the flow themselves.
+    window._wails.invoke("wails:event:emit:" + Updater.Events.User.Install);
 });
 ```
 

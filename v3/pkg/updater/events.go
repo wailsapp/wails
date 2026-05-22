@@ -5,45 +5,45 @@ package updater
 // inline next to each constant.
 const (
 	// EventCheckStarted fires before a Check round trip. Payload: nil.
-	EventCheckStarted = "updater:check-started"
+	EventCheckStarted = "wails:updater:CheckStarted"
 
 	// EventUpdateAvailable fires when Check returns a newer release. Payload: *Release.
-	EventUpdateAvailable = "updater:update-available"
+	EventUpdateAvailable = "wails:updater:UpdateAvailable"
 
 	// EventNoUpdate fires when Check confirms the caller is up to date. Payload: nil.
-	EventNoUpdate = "updater:no-update"
+	EventNoUpdate = "wails:updater:NoUpdate"
 
 	// EventDownloadStarted fires when the Updater begins streaming bytes from
 	// a provider. Payload: *Release.
-	EventDownloadStarted = "updater:download-started"
+	EventDownloadStarted = "wails:updater:DownloadStarted"
 
 	// EventDownloadProgress fires periodically during download (~10/sec). Payload: Progress.
-	EventDownloadProgress = "updater:download-progress"
+	EventDownloadProgress = "wails:updater:DownloadProgress"
 
 	// EventDownloadComplete fires once all bytes are on disk and the file has
 	// been closed, but BEFORE verification. Payload: *Release.
-	EventDownloadComplete = "updater:download-complete"
+	EventDownloadComplete = "wails:updater:DownloadComplete"
 
 	// EventVerifying fires when the Updater begins verifying the downloaded
 	// artifact. Payload: *Release.
-	EventVerifying = "updater:verifying"
+	EventVerifying = "wails:updater:Verifying"
 
 	// EventInstalling fires when the Updater begins swapping the binary.
 	// Payload: *Release.
-	EventInstalling = "updater:installing"
+	EventInstalling = "wails:updater:Installing"
 
 	// EventUpdateReady fires when an update is installed and a restart is
 	// pending. Payload: *Release.
-	EventUpdateReady = "updater:update-ready"
+	EventUpdateReady = "wails:updater:UpdateReady"
 
 	// EventError fires whenever any stage fails. Payload: ErrorInfo.
-	EventError = "updater:error"
+	EventError = "wails:updater:Error"
 
 	// EventMeta fires once per session before the first state-snapshot
 	// replay, carrying host-side context the page can't derive from any
 	// Release: the version currently running, and the version the user
 	// has marked skipped (or "" if none). Payload: Meta.
-	EventMeta = "updater:meta"
+	EventMeta = "wails:updater:Meta"
 )
 
 // Meta is the payload of EventMeta — host-side context the default window

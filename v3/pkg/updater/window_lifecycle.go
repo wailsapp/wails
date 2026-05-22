@@ -6,12 +6,12 @@ import "context"
 // template that follows the same contract. The Updater listens to these to
 // drive the flow without ever calling into the window directly.
 const (
-	EventWindowReady = "updater:window:ready"
-	EventUserInstall = "updater:user:install"
-	EventUserSkip    = "updater:user:skip"
-	EventUserRemind  = "updater:user:remind"
-	EventUserCancel  = "updater:user:cancel"
-	EventUserRestart = "updater:user:restart"
+	EventWindowReady = "wails:updater:window:Ready"
+	EventUserInstall = "wails:updater:user:Install"
+	EventUserSkip    = "wails:updater:user:Skip"
+	EventUserRemind  = "wails:updater:user:Remind"
+	EventUserCancel  = "wails:updater:user:Cancel"
+	EventUserRestart = "wails:updater:user:Restart"
 )
 
 // windowSession captures the window the Updater opened for the current
