@@ -294,7 +294,7 @@ The default stylesheet exposes these variables — override any of them:
 
 ### Replace the template
 
-Provide your own HTML; it just needs to listen to `updater:*` events and emit `updater:user:*` actions:
+Provide your own HTML; it just needs to listen to `wails:updater:*` events and emit `wails:updater:user:*` actions:
 
 ```go
 app.Updater.Init(updater.Config{
@@ -305,37 +305,28 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Inside an InitialHTML window the page can't load `/runtime.js` (the base URL is not the asset server), so the standard `@wailsio/runtime` imports won't work. Use this minimal shim instead — it's what the default template uses:
+Inside an InitialHTML window the page can't load `/runtime.js` (the base URL is not the asset server), so the standard `@wailsio/runtime` imports don't work. The framework solves this by **auto-injecting a minimal `window.wails.Events` shim** into any window opened with `WebviewWindowOptions.AllowSimpleEventEmit = true` and `HTML` set — which is exactly what the updater's builtin and BYO paths do. So your custom HTML can just call the same `Events.On` / `Events.Emit` API as a normal Wails page:
 
 ```html
 <script>
-(function () {
-  var w = window._wails = window._wails || {};
-  var L = Object.create(null);
-  w.dispatchWailsEvent = function (ev) {
-    var cbs = L[ev && ev.name]; if (!cbs) return;
-    for (var i = 0; i < cbs.length; i++) try { cbs[i](ev); } catch (_) {}
-  };
-  function on(n, cb)   { (L[n] = L[n] || []).push(cb); }
-  function emit(name)  { if (typeof w.invoke === "function") w.invoke("wails:event:emit:" + name); }
-  window.updater = { on: on, emit: emit };
-  // Wait for the runtime to be injected, then unlock pending event delivery
-  (function announce() {
-    if (window._wails && typeof window._wails.invoke === "function") {
-      window._wails.invoke("wails:runtime:ready");
-      emit("wails:updater:window:ready"); // tell the host to replay current state
-    } else { setTimeout(announce, 30); }
-  })();
-})();
-// Now use updater.on(name, fn) / updater.emit(name)
-updater.on("wails:updater:update-available", (e) => {
+const { On, Emit } = window.wails.Events;
+
+On("wails:updater:update-available", (e) => {
     const rel = e.data ?? e;
     document.getElementById("ver").textContent = rel.version;
 });
+
 document.getElementById("install").addEventListener("click",
-    () => updater.emit("wails:updater:user:install"));
+    () => Emit("wails:updater:user:install"));
+
+// Ask the host to replay the current state so we paint correctly on (re)open.
+Emit("wails:updater:window:ready");
 </script>
 ```
+
+The shim exposes the subset of the modern runtime that bare-name events need: `Events.On(name, cb)` returns an unsubscribe function, and `Events.Emit(nameOrEventObject)` routes to the host via the gated `wails:event:emit:` postMessage path. It's installed once at page-load time before any of your inline scripts run.
+
+If you _want_ to override the shim (or you're loading the full runtime some other way), set `window.wails.Events` before the page's first `<script>` tag executes and the injection skips itself.
 
 ### Window chrome
 
@@ -374,7 +365,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Your HTML wires up the same shim pattern shown in [Replace the template](#replace-the-template) — the runtime injection works identically whether the window is framework-owned or yours. The framework never touches the HTML you supplied.
+Your HTML uses `window.wails.Events.On` / `Events.Emit` just like the builtin template — the framework's auto-injected shim ships into any window with `AllowSimpleEventEmit: true` regardless of whether the window is framework-owned or yours. See [Replace the template](#replace-the-template) for the API.
 
 :::caution[`AllowSimpleEventEmit` is required for BYO updater windows]
 The framework gates the `wails:event:emit:` postMessage shortcut on this field for security: a window without it set can't synthesise host-side custom events. The updater's custom-HTML shim emits `updater:user:*` events via that shortcut, so a BYO window that forgets the field silently swallows every button click — the user clicks Install and nothing happens.

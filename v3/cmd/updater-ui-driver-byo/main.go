@@ -55,50 +55,39 @@ const customHTML = `<!doctype html>
   <div id="notes"></div>
 </div>
 <script>
+// window.wails.Events is auto-injected by the framework because this
+// window was created with AllowSimpleEventEmit: true (see main.go).
+// No need to hand-roll a dispatchWailsEvent receiver here.
 (function () {
-  var w = window._wails = window._wails || {};
-  var L = Object.create(null);
-  w.dispatchWailsEvent = function (ev) {
-    if (!ev || !ev.name) return;
-    var cbs = L[ev.name]; if (!cbs) return;
-    for (var i = 0; i < cbs.length; i++) try { cbs[i](ev); } catch (_) {}
-  };
-  function on(n, cb) { (L[n] = L[n] || []).push(cb); }
-  function emit(n) { if (typeof w.invoke === "function") w.invoke("wails:event:emit:" + n); }
-  on("wails:updater:check-started",    function () { setState("Checking…", "blue"); });
-  on("wails:updater:update-available", function (e) {
+  var Events = window.wails.Events;
+  function setState(text) { document.getElementById("state").textContent = text; }
+
+  Events.On("wails:updater:check-started",    function () { setState("Checking…"); });
+  Events.On("wails:updater:update-available", function (e) {
     var rel = e && (e.data != null ? e.data : e);
-    setState("Update Available", "green");
+    setState("Update Available");
     document.getElementById("title").textContent = "BYO Heard You";
     document.getElementById("version").textContent = "v" + (rel && rel.version || "?");
     if (rel && rel.notes) document.getElementById("notes").textContent = rel.notes;
   });
-  on("wails:updater:download-started",  function () { setState("Downloading…", "blue"); });
-  on("wails:updater:download-progress", function (e) {
+  Events.On("wails:updater:download-started",  function () { setState("Downloading…"); });
+  Events.On("wails:updater:download-progress", function (e) {
     var p = e && (e.data != null ? e.data : e);
     if (p && p.total) {
       var pct = Math.round((p.written / p.total) * 100);
       document.getElementById("state").textContent = "Downloading " + pct + "%";
     }
   });
-  on("wails:updater:verifying",  function () { setState("Verifying…", "blue"); });
-  on("wails:updater:installing", function () { setState("Installing…", "blue"); });
-  on("wails:updater:update-ready", function () { setState("Ready to restart", "green"); });
-  on("wails:updater:error",      function (e) {
+  Events.On("wails:updater:verifying",  function () { setState("Verifying…"); });
+  Events.On("wails:updater:installing", function () { setState("Installing…"); });
+  Events.On("wails:updater:update-ready", function () { setState("Ready to restart"); });
+  Events.On("wails:updater:error",      function (e) {
     var info = e && (e.data != null ? e.data : e);
-    setState("Error", "red");
+    setState("Error");
     document.getElementById("notes").textContent = (info && info.message) || "Unknown error";
   });
-  function setState(text, _color) {
-    document.getElementById("state").textContent = text;
-  }
-  // Wait for invoke, then signal runtime ready so queued events flush.
-  (function announce() {
-    if (window._wails && typeof window._wails.invoke === "function") {
-      window._wails.invoke("wails:runtime:ready");
-      emit("wails:updater:window:ready");
-    } else { setTimeout(announce, 30); }
-  })();
+  // Ask the host to replay the current state so we paint correctly on load.
+  Events.Emit("wails:updater:window:ready");
 })();
 </script>
 </body></html>`

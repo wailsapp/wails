@@ -286,6 +286,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)
 	}
 
+	// Inject the minimal `window.wails.Events` shim into HTML-supplied
+	// pages that opted into the simple postMessage emit path. Without this
+	// they can't load /wails/runtime.js (their origin is "null") so they'd
+	// have to hand-roll a dispatch receiver and an invoke caller every
+	// time. See inline_event_shim.go.
+	options.HTML = maybeInjectInlineEventShim(options.HTML, options.AllowSimpleEventEmit)
+
 	result := &WebviewWindow{
 		id:             thisWindowID,
 		options:        options,
