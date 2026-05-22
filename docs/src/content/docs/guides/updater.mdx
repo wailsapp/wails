@@ -397,13 +397,22 @@ No window is ever opened. Subscribe to `updater:*` events from your own UI (or y
 
 ## Events
 
-Both Go and JavaScript subscribe through the standard Wails event bus.
+Both Go and JavaScript subscribe through the standard Wails event bus. **Don't type the wire strings by hand** — use the constants exported from the updater package (Go) or the runtime package (JS). Both layers share the same set of names, kept in sync by a regression test.
 
 ### From Go
 
-`*application.CustomEvent` has a `Data any` field. The updater sets it directly to the typed payload listed in the [event reference](#event-reference) — type-assert, don't JSON-decode:
+The constants live in `github.com/wailsapp/wails/v3/pkg/updater`. Subscribe via `app.Event.On(name, fn)`; the callback receives a `*application.CustomEvent` whose `Data` field is the typed payload listed in the [event reference](#event-reference) — type-assert, don't JSON-decode:
 
-```go
+```go title="main.go"
+import (
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/updater"
+)
+
+// …
+
 app.Event.On(updater.EventUpdateAvailable, func(e *application.CustomEvent) {
     rel, ok := e.Data.(*updater.Release)
     if !ok { return }
@@ -423,9 +432,31 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 })
 ```
 
+All available Go constants:
+
+| Constant | Wire string |
+|---|---|
+| `updater.EventCheckStarted` | `wails:updater:check-started` |
+| `updater.EventUpdateAvailable` | `wails:updater:update-available` |
+| `updater.EventNoUpdate` | `wails:updater:no-update` |
+| `updater.EventDownloadStarted` | `wails:updater:download-started` |
+| `updater.EventDownloadProgress` | `wails:updater:download-progress` |
+| `updater.EventDownloadComplete` | `wails:updater:download-complete` |
+| `updater.EventVerifying` | `wails:updater:verifying` |
+| `updater.EventInstalling` | `wails:updater:installing` |
+| `updater.EventUpdateReady` | `wails:updater:update-ready` |
+| `updater.EventError` | `wails:updater:error` |
+| `updater.EventMeta` | `wails:updater:meta` |
+| `updater.EventWindowReady` | `wails:updater:window:ready` |
+| `updater.EventUserInstall` | `wails:updater:user:install` |
+| `updater.EventUserSkip` | `wails:updater:user:skip` |
+| `updater.EventUserRemind` | `wails:updater:user:remind` |
+| `updater.EventUserCancel` | `wails:updater:user:cancel` |
+| `updater.EventUserRestart` | `wails:updater:user:restart` |
+
 ### From JavaScript
 
-Use the `Updater.Events` constants exported from `@wailsio/runtime` instead of typing the strings yourself — the names are checked at compile time (with TypeScript) and a regression test keeps the JS exports in sync with the Go-side constants.
+The constants live under `Updater.Events` in `@wailsio/runtime`. Same names as Go, organised by sub-namespace (`User.*`, `Window.*`) for autocomplete discoverability:
 
 ```js
 import { Events, Updater } from "@wailsio/runtime";
@@ -459,29 +490,32 @@ document.getElementById("install-btn").addEventListener("click", () => {
 
 ### Event reference
 
-| Event constant | Wire name | Payload | When |
+Subscribe-side (host → page):
+
+| Constant (Go) | Constant (JS) | Payload | When |
 |---|---|---|---|
-| `EventCheckStarted` | `updater:check-started` | none | Before each `Check` round-trip |
-| `EventUpdateAvailable` | `updater:update-available` | `*Release` | `Check` found a newer release |
-| `EventNoUpdate` | `updater:no-update` | none | `Check` confirmed up-to-date |
-| `EventDownloadStarted` | `updater:download-started` | `*Release` | Bytes start streaming |
-| `EventDownloadProgress` | `updater:download-progress` | `Progress` | ~10 Hz during download |
-| `EventDownloadComplete` | `updater:download-complete` | `*Release` | All bytes written, before verify |
-| `EventVerifying` | `updater:verifying` | `*Release` | Signature/digest check begins |
-| `EventInstalling` | `updater:installing` | `*Release` | Unpack + staging begins |
-| `EventUpdateReady` | `updater:update-ready` | `*Release` | Restart pending |
-| `EventError` | `updater:error` | `ErrorInfo` | Any stage failed |
+| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | none | Before each `Check` round-trip |
+| `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` found a newer release |
+| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | none | `Check` confirmed up-to-date |
+| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Bytes start streaming |
+| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ~10 Hz during download |
+| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | All bytes written, before verify |
+| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | Signature/digest check begins |
+| `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | Unpack + staging begins |
+| `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | Restart pending |
+| `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | Any stage failed |
+| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Once per session before snapshot replay |
 
-User-action events emitted *by* the window template (your code subscribes if you write a custom template):
+Page-side (page → host) — your code subscribes if you write a custom template:
 
-| Event | When |
-|---|---|
-| `updater:window:ready` | Window finished loading; host replays current state in response |
-| `updater:user:install` | Primary action in `available` state |
-| `updater:user:restart` | Primary action in `ready` state |
-| `updater:user:skip` | "Skip This Version" |
-| `updater:user:remind` | "Remind Me Later" |
-| `updater:user:cancel` | Close button |
+| Constant (Go) | Constant (JS) | When |
+|---|---|---|
+| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | Window finished loading; host replays current state |
+| `updater.EventUserInstall` | `Updater.Events.User.Install` | Primary action in `available` state |
+| `updater.EventUserRestart` | `Updater.Events.User.Restart` | Primary action in `ready` state |
+| `updater.EventUserSkip` | `Updater.Events.User.Skip` | "Skip This Version" |
+| `updater.EventUserRemind` | `Updater.Events.User.Remind` | "Remind Me Later" |
+| `updater.EventUserCancel` | `Updater.Events.User.Cancel` | Close button |
 
 ## API reference
 
