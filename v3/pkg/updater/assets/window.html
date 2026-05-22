@@ -81,6 +81,7 @@ body {
   line-height: 1;
   user-select: none;
 }
+.u--ready      .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
 .u--up-to-date .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
 .u--error      .u__icon { background: rgba(255, 59, 48, 0.15); color: var(--error); }
 .u__head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -502,6 +503,7 @@ body {
       rank = RANK[name] || 0;
     }
     els.root.setAttribute("data-state", name);
+    els.root.classList.toggle("u--ready",      name === "ready");
     els.root.classList.toggle("u--up-to-date", name === "up-to-date");
     els.root.classList.toggle("u--error",      name === "error");
     if (els.icon) els.icon.textContent = ICONS[name] || "";
