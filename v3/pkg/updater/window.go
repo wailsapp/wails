@@ -62,14 +62,21 @@ type byoWindow struct{ handle WindowHandle }
 func (*byoWindow) isWindowOption() {}
 
 // defaultBuiltinOptions returns the chrome the framework uses when the user
-// doesn't override Options. Width gives release-note paragraphs room to
-// breathe; height accommodates the notes panel + progress / spinner area
-// + footer without crowding when the release ships substantial notes.
+// doesn't override Options.
+//
+// The dimensions match the compact Checking / Up-to-Date / Error states so
+// the window opens at its smallest natural size. If the Updater finds an
+// available release (or downloads / installs / verifies one), transition()
+// grows the window to availableWidth × availableHeight via WindowSizer.
+// Opening small and *growing* feels like the window adapting to fit richer
+// content; opening big and *shrinking* when the answer is "nothing to do"
+// reads as a janky deflate after the window's already been shown — which
+// is the artifact Lea flagged during interactive testing.
 func defaultBuiltinOptions() WindowOptions {
 	return WindowOptions{
 		Title:         "Software Update",
-		Width:         520,
-		Height:        540,
+		Width:         upToDateWidth,
+		Height:        upToDateHeight,
 		Frameless:     false,
 		AlwaysOnTop:   false,
 		DisableResize: false,

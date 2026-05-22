@@ -648,9 +648,11 @@ body {
   function onNoUpdate() {
     if (!setState("up-to-date")) return;
     els.title.textContent = "You're Up to Date";
-    // Mirror the Update-Available subtitle pill shape: bold version on the
-    // left, dim explanatory text on the right. Reuses the same .u__ver-to
-    // and .u__size styles so both states share the visual rhythm.
+    // The title already conveys "this is the latest version"; the subtitle
+    // just carries the current version number so the user knows WHICH
+    // version they're on. Keeping it to a single version token (no
+    // explanatory suffix) leaves room for long versions like
+    // 1.0.0-rc.4+build.20260522.x86_64 without the line wrapping.
     els.subtitle.innerHTML = "";
     if (currentVersion) {
       var v = document.createElement("span");
@@ -658,10 +660,6 @@ body {
       v.textContent = "v" + currentVersion;
       els.subtitle.appendChild(v);
     }
-    var msg = document.createElement("span");
-    msg.className = "u__size";
-    msg.textContent = (currentVersion ? "· " : "") + "This is the latest version";
-    els.subtitle.appendChild(msg);
   }
   function onDownloadStarted(rel) {
     if (!setState("downloading")) return;
