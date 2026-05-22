@@ -101,11 +101,27 @@ func (u *Updater) openSession(ctx context.Context) *windowSession {
 // current state. The default window subscribes to these events for normal
 // updates; replaying the latest one whenever the window asks for a snapshot
 // is enough for it to render correctly on (re)open.
+//
+// EventMeta is emitted first so the page has the host-side context
+// (currentVersion, skipped version) before the state-specific event lands —
+// the default template's renderSubtitle uses currentVersion to draw the
+// "from" version in the Update Available pill and the "v1.2.3 · This is
+// the latest version" pill in the Up-to-Date state.
 func (u *Updater) replayStateSnapshot() {
 	u.mu.RLock()
 	state := u.state
 	pending := u.pending
+	currentVersion := ""
+	if u.cfg != nil {
+		currentVersion = u.cfg.CurrentVersion
+	}
+	skipped := u.skipped
 	u.mu.RUnlock()
+
+	u.host.Emit(EventMeta, Meta{
+		CurrentVersion: currentVersion,
+		SkippedVersion: skipped,
+	})
 
 	switch state {
 	case StateChecking:

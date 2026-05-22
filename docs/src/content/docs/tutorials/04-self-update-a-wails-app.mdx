@@ -205,7 +205,7 @@ We'll use **GitHub Releases** as the update source because it's free and require
 
    Click **App → Check for Updates…**. This time you should see something like:
 
-   <Image src={updateReady} alt="Default updater window in the Update Ready state, showing the version pill, Markdown-rendered release notes, and the Restart & Apply primary button." style="max-width: 480px; margin: 1rem auto; display: block; border-radius: 12px; box-shadow: 0 6px 30px rgba(0,0,0,0.18);" />
+   <Image src={updateReady} alt="Default updater window in the Update Ready state, showing the version pill, Markdown-rendered release notes, and the Restart & Apply primary button." style="max-width: 480px; margin: 1rem auto; display: block; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));" />
 
    - Hero icon flips from blue ↓ ("Update Available") to green ✓ ("Update Ready").
    - Subtitle shows `v1.0.0 → v2.0.0 · <size>`.
@@ -339,7 +339,7 @@ We'll use **GitHub Releases** as the update source because it's free and require
 
             Useful when you already have your own window infrastructure and want the updater to drive it instead of opening another window. A completely custom HTML template — driven by the same updater events as the default — looks like this:
 
-            <Image src={byoCustomShot} alt="A bring-your-own updater window with a pink-orange gradient background and a custom rounded card layout, demonstrating that the default UI is fully replaceable." style="max-width: 380px; margin: 1rem auto; display: block; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.14);" />
+            <Image src={byoCustomShot} alt="A bring-your-own updater window with a pink-orange gradient background and a custom rounded card layout, demonstrating that the default UI is fully replaceable." style="max-width: 380px; margin: 1rem auto; display: block; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));" />
 
             <Aside type="caution" title="`AllowSimpleEventEmit` is required">
                 The updater's custom-HTML shim drives Install / Skip / Remind / Restart through the `wails:event:emit:` postMessage shortcut, and that shortcut is gated on this field for security. Forgetting it makes the buttons silently no-op. Don't enable it on windows that load HTML you don't fully control — see the [Bring your own window](/guides/updater#bring-your-own-window) section of the guide for the threat model.

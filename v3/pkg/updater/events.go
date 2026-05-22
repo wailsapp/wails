@@ -38,4 +38,18 @@ const (
 
 	// EventError fires whenever any stage fails. Payload: ErrorInfo.
 	EventError = "updater:error"
+
+	// EventMeta fires once per session before the first state-snapshot
+	// replay, carrying host-side context the page can't derive from any
+	// Release: the version currently running, and the version the user
+	// has marked skipped (or "" if none). Payload: Meta.
+	EventMeta = "updater:meta"
 )
+
+// Meta is the payload of EventMeta — host-side context the default window
+// template uses to render the "from" version in the update pill and the
+// "v1.2.3 · This is the latest version" pill in the up-to-date state.
+type Meta struct {
+	CurrentVersion string `json:"currentVersion"`
+	SkippedVersion string `json:"skippedVersion,omitempty"`
+}

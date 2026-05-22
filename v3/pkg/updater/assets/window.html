@@ -84,6 +84,36 @@ body {
 .u--ready      .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
 .u--up-to-date .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
 .u--error      .u__icon { background: rgba(255, 59, 48, 0.15); color: var(--error); }
+
+/* === Up-to-date compact layout ===
+   This state is purely confirmational ("nothing to do here"). The
+   default left-aligned hero + empty notes panel reads as a half-filled
+   form. Center the hero vertically, stack icon-on-top, scale the icon
+   up, and hide the notes panel so the window doesn't show a giant
+   empty surface with one short sentence inside it. */
+.u--up-to-date {
+  justify-content: center;
+}
+.u--up-to-date .u__hero {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin-top: -12px; /* compensate for the missing notes block height */
+}
+.u--up-to-date .u__icon {
+  width: 72px;
+  height: 72px;
+  font-size: 40px;
+  border-radius: 18px;
+}
+.u--up-to-date .u__title { font-size: 20px; }
+.u--up-to-date .u__subtitle {
+  font-size: 13px;
+  justify-content: center;   /* center the version pill, since hero is centered */
+}
+.u--up-to-date .u__footer { justify-content: center; }
+.u--up-to-date .u__primary-actions { flex: 0 0 auto; }
 .u__head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .u__title {
   margin: 0;
@@ -321,10 +351,11 @@ body {
 .u[data-state="up-to-date"]   [data-show~="up-to-date"]   { display: flex; }
 .u[data-state="error"]        [data-show~="error"]        { display: flex; }
 
-/* Notes are block-flow content (markdown-rendered); never a flex container */
+/* Notes are block-flow content (markdown-rendered); never a flex container.
+   No up-to-date entry — that state uses the compact centered-hero layout
+   (see .u--up-to-date rules above) and renders no notes panel. */
 .u[data-state="available"] .u__notes[data-show~="available"],
-.u[data-state="ready"]     .u__notes[data-show~="ready"],
-.u[data-state="up-to-date"] .u__notes[data-show~="up-to-date"] {
+.u[data-state="ready"]     .u__notes[data-show~="ready"] {
   display: block;
 }
 
@@ -369,7 +400,8 @@ body {
   <div class="u__error" data-show="error" id="error-text">An error occurred.</div>
 
   <!-- Up-to-date message body -->
-  <div class="u__notes" data-show="up-to-date" id="up-to-date-msg">You're running the latest version.</div>
+  <!-- Up-to-Date state has no notes panel — the compact centered hero (.u--up-to-date) carries everything. -->
+
 
   <footer class="u__footer">
     <div class="u__secondary-actions">
@@ -493,6 +525,7 @@ body {
   var errored = false;
   var currentRelease = null;
   var currentVersion = null;
+  var skippedVersion = "";
 
   function setState(name) {
     if (errored && name !== "error") return false;
@@ -638,7 +671,20 @@ body {
   function onNoUpdate() {
     if (!setState("up-to-date")) return;
     els.title.textContent = "You're Up to Date";
-    els.subtitle.textContent = currentVersion ? "Running v" + currentVersion : "";
+    // Mirror the Update-Available subtitle pill shape: bold version on the
+    // left, dim explanatory text on the right. Reuses the same .u__ver-to
+    // and .u__size styles so both states share the visual rhythm.
+    els.subtitle.innerHTML = "";
+    if (currentVersion) {
+      var v = document.createElement("span");
+      v.className = "u__ver-to";
+      v.textContent = "v" + currentVersion;
+      els.subtitle.appendChild(v);
+    }
+    var msg = document.createElement("span");
+    msg.className = "u__size";
+    msg.textContent = (currentVersion ? "· " : "") + "This is the latest version";
+    els.subtitle.appendChild(msg);
   }
   function onDownloadStarted(rel) {
     if (!setState("downloading")) return;
@@ -688,6 +734,11 @@ body {
   }
 
   /* === Wire up === */
+  Events.on("updater:meta", function (e) {
+    var m = e && (e.data != null ? e.data : e);
+    if (m && typeof m.currentVersion === "string") currentVersion = m.currentVersion;
+    if (m && typeof m.skippedVersion === "string") skippedVersion = m.skippedVersion;
+  });
   Events.on("updater:check-started",     function () { onCheckStarted(); });
   Events.on("updater:update-available",  function (e) { onUpdateAvailable(e && (e.data != null ? e.data : e)); });
   Events.on("updater:no-update",         function () { onNoUpdate(); });
