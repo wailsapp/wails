@@ -3,7 +3,14 @@ title: Updater
 description: In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace.
 ---
 
+import { Image } from "astro:assets";
+import defaultWindowReady from "../../../assets/updater/default-window-ready.png";
+import defaultWindowUpToDate from "../../../assets/updater/default-window-up-to-date.png";
+import byoCustomWindow from "../../../assets/updater/byo-custom-window.png";
+
 The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on `app.Updater`, accepts one or more pluggable `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.
+
+<Image src={defaultWindowReady} alt="The default updater window in the Update Ready state — state-aware icon, version pill (v1.0.0 → v2.0.1 · 8.8 MB), Markdown-rendered release notes including a GFM table, and a single primary action." style="max-width: 480px; margin: 1.25rem auto; display: block; border-radius: 12px; box-shadow: 0 6px 30px rgba(0,0,0,0.18);" />
 
 ## Quick start
 
@@ -58,6 +65,10 @@ That opens the framework's update window, checks GitHub, downloads the platform 
 | `error` | Any prior step failed |
 
 You can read the current state with `app.Updater.State()` at any time. Every transition also emits a Wails event (see [Events](#events)).
+
+The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
+
+<Image src={defaultWindowUpToDate} alt="The default updater window in the Up-to-Date state — green checkmark, 'You're Up to Date' heading, single Close button." style="max-width: 420px; margin: 1rem auto; display: block; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.14);" />
 
 ## Providers
 
@@ -345,13 +356,17 @@ Window: &updater.BuiltinWindow{
 
 ### Bring your own window
 
-Drive the update flow against an `*application.WebviewWindow` you create yourself:
+Drive the update flow against an `*application.WebviewWindow` you create yourself. The updater calls `Show()` / `Close()` / `EmitEvent()` on your window — your HTML decides what to render:
+
+<Image src={byoCustomWindow} alt="A 'Bring your own' updater window with a pink-orange gradient background, a single white rounded card, custom typography, and the same updater events driving the visible state. Demonstrates how completely the default UI can be replaced." style="max-width: 380px; margin: 1rem auto; display: block; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.14);" />
+
 
 ```go
 myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "My Updater",
-    Width:  520, Height: 460,
-    HTML:   myCustomHTML,
+    Title:                "My Updater",
+    Width:                520, Height: 460,
+    HTML:                 myCustomHTML,
+    AllowSimpleEventEmit: true,           // see security note below
 })
 app.Updater.Init(updater.Config{
     // …
@@ -359,7 +374,15 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-The Updater will call `Show()` / `Close()` / `EmitEvent()` on your window through the same event channel as the builtin. Your HTML is responsible for responding — same shim pattern as above. The framework doesn't touch the window's HTML if you supply your own.
+Your HTML wires up the same shim pattern shown in [Replace the template](#replace-the-template) — the runtime injection works identically whether the window is framework-owned or yours. The framework never touches the HTML you supplied.
+
+:::caution[`AllowSimpleEventEmit` is required for BYO updater windows]
+The framework gates the `wails:event:emit:` postMessage shortcut on this field for security: a window without it set can't synthesise host-side custom events. The updater's custom-HTML shim emits `updater:user:*` events via that shortcut, so a BYO window that forgets the field silently swallows every button click — the user clicks Install and nothing happens.
+
+Keep `AllowSimpleEventEmit` **off** for any window that loads HTML you don't fully control (remote URLs, user-supplied content). When on, any JavaScript in the page — including XSS sinks — can fire any `app.Event.On(name, …)` handler. The shortcut conveys bare names only (no payload) and cannot reach the binding/Call path, but it can still trigger privileged custom-event handlers in your Go code if those handlers act on the event name alone.
+
+The framework's *builtin* updater window has this set internally — only BYO callers need to remember it.
+:::
 
 ### Headless
 

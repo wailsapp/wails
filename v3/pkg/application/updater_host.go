@@ -56,6 +56,13 @@ func (h *updaterHost) OpenWindow(opts updater.WindowOptions) updater.WindowHandl
 		AlwaysOnTop:   opts.AlwaysOnTop,
 		DisableResize: opts.DisableResize,
 		HTML:          opts.InitialHTML,
+		// The updater's window has to drive Restart / Install / Skip / etc.
+		// via the simple postMessage path — its HTML is loaded with no
+		// asset-server origin so the modern HTTP runtime is unreachable.
+		// HTML for this window is fully controlled by the framework (or by
+		// a developer who opted in via BYOWindow), so the broader threat
+		// model AllowSimpleEventEmit guards against doesn't apply here.
+		AllowSimpleEventEmit: true,
 	}
 	win := h.app.Window.NewWithOptions(wopts)
 	win.Show()
@@ -80,7 +87,16 @@ func (h *updaterWindowHandle) EmitEvent(name string, data ...any) bool {
 // the updater to drive a webview window you own rather than letting it
 // create its own builtin.
 //
-//	myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{...})
+// The owning window MUST be constructed with AllowSimpleEventEmit set —
+// the updater's HTML drives the install/skip/remind/cancel/restart actions
+// through the `wails:event:emit:` postMessage path, and that path is gated
+// on the field. Without it the buttons silently no-op.
+//
+//	myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
+//	    Title:                "My Updater",
+//	    HTML:                 myCustomHTML,
+//	    AllowSimpleEventEmit: true,
+//	})
 //	app.Updater.Init(updater.Config{
 //	    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),
 //	    ...,
