@@ -1271,6 +1271,8 @@ func (w *linuxWebviewWindow) windowShow() {
 		return
 	}
 	C.gtk_window_present(w.gtkWindow())
+	// Re-apply always-on-top state now that the surface exists.
+	C.window_apply_pending_always_on_top(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {

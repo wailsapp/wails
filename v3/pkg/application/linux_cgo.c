@@ -956,7 +956,7 @@ void window_get_position_x11(GtkWindow *window, int *x, int *y) {
 // Always-on-top (X11 only via _NET_WM_STATE_ABOVE)
 // ============================================================================
 
-void window_set_always_on_top(GtkWindow *window, gboolean always_on_top) {
+static void window_send_always_on_top_x11(GtkWindow *window, gboolean always_on_top) {
 #ifdef GDK_WINDOWING_X11
     GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
     if (native == NULL) return;
@@ -991,6 +991,22 @@ void window_set_always_on_top(GtkWindow *window, gboolean always_on_top) {
                      SubstructureRedirectMask | SubstructureNotifyMask, &xev);
     if (wails_XFlush != NULL) wails_XFlush(xdisplay);
 #endif
+}
+
+void window_set_always_on_top(GtkWindow *window, gboolean always_on_top) {
+    // Store the desired state so windowShow can re-apply it if the surface
+    // doesn't exist yet. Use 1=true, 2=false as sentinels (NULL means never set).
+    g_object_set_data(G_OBJECT(window), "wails-always-on-top",
+                      GINT_TO_POINTER(always_on_top ? 1 : 2));
+    window_send_always_on_top_x11(window, always_on_top);
+}
+
+// Apply a previously-set always-on-top state once the window surface exists.
+// Called from windowShow after gtk_window_present.
+void window_apply_pending_always_on_top(GtkWindow *window) {
+    gpointer stored = g_object_get_data(G_OBJECT(window), "wails-always-on-top");
+    if (stored == NULL) return; // never been set
+    window_send_always_on_top_x11(window, GPOINTER_TO_INT(stored) == 1 ? TRUE : FALSE);
 }
 
 // ============================================================================
