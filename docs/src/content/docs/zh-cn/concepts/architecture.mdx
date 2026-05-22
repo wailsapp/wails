@@ -10,62 +10,33 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 Wails 是一个用于构建桌面应用程序的框架，它使用 **Go 作为后端** 和 **Web 技术作为前端**。但与 Electron 不同，Wails 并不捆绑浏览器——它使用**操作系统的原生 WebView**。
 
 ```d2
-direction: right
+direction: left
 
-User: "User" {
-  shape: person
-  style.fill: "#3B82F6"
-}
+Wails App: {
+  shape: sequence_diagram
+  label: "Wails App"
 
-Application: "Your Wails Application" {
-  Frontend: "Frontend\n(HTML/CSS/JS)" {
-    shape: rectangle
-    style.fill: "#8B5CF6"
+  frontend: 前端
+  backend: Go 后端
+  os: 操作系统
+
+  Initialisation: {
+    shape: sequence_diagram
+    backend."提供静态 Web 应用"
+    backend -> frontend: HTML / JS / CSS
+    frontend."通过 WebKit 渲染站点"
   }
-  
-  Runtime: "Wails Runtime" {
-    Bridge: "Message Bridge" {
-      shape: diamond
-      style.fill: "#10B981"
-    }
-    
-    Bindings: "Type-Safe Bindings" {
-      shape: rectangle
-      style.fill: "#10B981"
-    }
-  }
-  
-  Backend: "Go Backend" {
-    Services: "Your Services" {
-      shape: rectangle
-      style.fill: "#00ADD8"
-    }
-    
-    NativeAPIs: "OS APIs" {
-      shape: rectangle
-      style.fill: "#00ADD8"
-    }
+  Regular Communication: {
+    shape: sequence_diagram
+    frontend."发起 API 调用"
+    frontend -> backend.a: JSON
+    backend.a."服务处理请求"
+    backend.a -> os: 调用系统 API
+    backend.a."生成响应"
+    backend.a -> frontend: JSON
+    frontend."处理响应"
   }
 }
-
-OS: "Operating System" {
-  WebView: "Native WebView\n(WebKit/WebView2/WebKitGTK)" {
-    shape: rectangle
-    style.fill: "#6B7280"
-  }
-  
-  SystemAPIs: "System APIs\n(Windows/macOS/Linux)" {
-    shape: rectangle
-    style.fill: "#6B7280"
-  }
-}
-
-User -> Application.Frontend: "Interacts with UI"
-Application.Frontend <-> Application.Runtime.Bridge: "JSON messages"
-Application.Runtime.Bridge <-> Application.Backend.Services: "Direct function calls"
-Application.Runtime.Bindings -> Application.Frontend: "TypeScript definitions"
-Application.Frontend -> OS.WebView: "Renders in"
-Application.Backend.NativeAPIs -> OS.SystemAPIs: "Native calls"
 ```
 
 **与 Electron 的关键区别：**
@@ -285,44 +256,36 @@ Events.On('user-logged-in', (user) => {
 ```d2
 direction: down
 
-Start: "Application Start" {
+Start: "应用启动" {
   shape: oval
-  style.fill: "#10B981"
 }
 
-Init: "Initialisation" {
-  Create: "Create Application" {
-    shape: rectangle
-  }
-  
-  Register: "Register Services" {
-    shape: rectangle
-  }
-  
-  Setup: "Setup Windows/Menus" {
-    shape: rectangle
-  }
+Init: "初始化" {
+  Create: "创建应用"
+  Register: "注册服务"
+  Setup: "创建窗口和菜单"
 }
 
-Run: "Event Loop" {
-  Events: "Process Events" {
-    shape: rectangle
-  }
-  
-  Messages: "Handle Messages" {
-    shape: rectangle
-  }
-  
-  Render: "Update UI" {
-    shape: rectangle
-  }
+Run: "事件循环" {
+  Events: "处理事件"
+  Messages: "处理消息"
+  Render: "更新界面"
 }
 
-Shutdown: "Shutdown" {
-  Cleanup: "Cleanup Resources" {
-    shape: rectangle
-  }
-  
-  Save: "Save State" {---
+Shutdown: "关闭" {
+  Cleanup: "清理资源"
+  Save: "保存状态"
+}
+
+End: "应用退出" {
+  shape: oval
+}
+
+Start -> Init -> Run -> Shutdown -> End
+```
+
+详细的生命周期文档请参阅 [生命周期指南](/concepts/lifecycle)。
+
+---
 
 **有关架构的问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问或查看 [API 参考](/reference/overview)。

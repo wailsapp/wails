@@ -115,7 +115,7 @@ func (x *Xbps) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (x *Xbps) InstallCommand(pkg *Package) string {
 	if !pkg.SystemPackage {
-		return pkg.InstallCommand[x.osid]
+		return pkg.InstallCommand
 	}
 
 	return "sudo xbps-install -Sy " + pkg.Name
