@@ -379,8 +379,20 @@ func validateNotificationOptions(options NotificationOptions) error {
 			if err != nil {
 				// Windows backslash fallback: strip prefix and let filepath
 				// normalise the remaining native path.
-				statPath = filepath.FromSlash(strings.TrimPrefix(statPath, "file://"))
+				p := filepath.FromSlash(strings.TrimPrefix(statPath, "file://"))
+				if !filepath.IsAbs(p) {
+					return fmt.Errorf("attachments[%d].path: file:// URL must be absolute", i)
+				}
+				statPath = p
 			} else {
+				// Reject non-empty hosts other than localhost. A URL like
+				// "file://relative/image.png" parses with Host="relative" and
+				// Path="/image.png" — it looks absolute but is not a valid local
+				// file reference. Only "file:///..." (empty host) and
+				// "file://localhost/..." are valid local file:// URLs.
+				if u.Host != "" && u.Host != "localhost" {
+					return fmt.Errorf("attachments[%d].path: file:// URL must be absolute (use file:///path)", i)
+				}
 				// Standard three-slash form (file:///C:/path or file:///tmp/path).
 				// u.Path is already the URL-decoded path component. On Windows,
 				// file:///C:/path parses to path "/C:/path" — drop the leading
@@ -389,11 +401,16 @@ func validateNotificationOptions(options NotificationOptions) error {
 				if len(p) > 2 && p[0] == filepath.Separator && p[2] == ':' {
 					p = p[1:]
 				}
+				if !filepath.IsAbs(p) {
+					return fmt.Errorf("attachments[%d].path: file:// URL must be absolute", i)
+				}
 				statPath = p
 			}
+		} else if !filepath.IsAbs(statPath) {
+			return fmt.Errorf("attachments[%d].path must be an absolute path", i)
 		}
 		if _, err := os.Stat(statPath); err != nil {
-			return fmt.Errorf("attachments[%d].path %q: %w", i, a.Path, err)
+			return fmt.Errorf("attachments[%d].path is not accessible", i)
 		}
 	}
 
