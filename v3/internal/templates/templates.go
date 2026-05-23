@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
@@ -123,7 +122,6 @@ func getLocalTemplate(templateName string) (*Template, error) {
 
 	template, err = parseTemplate(os.DirFS(templateName), "")
 	if err != nil {
-		println("err2 = ", err.Error())
 		return nil, err
 	}
 	template.source = sourceLocal
@@ -182,7 +180,7 @@ func parseTemplate(template fs.FS, templateName string) (Template, error) {
 		return result, fmt.Errorf("template not supported by wails 3. This template is probably for wails 2")
 	}
 	if result.Schema != 3 {
-		return result, fmt.Errorf("template version %s is not supported by wails 3. Ensure 'version' is set to 3 in the `template.json` file", result.Version)
+		return result, fmt.Errorf("template schema %d is not supported by wails 3. Ensure 'schema' is set to 3 in the `template.json` file", result.Schema)
 	}
 
 	return result, nil
@@ -444,40 +442,56 @@ func GenerateTemplate(options *BaseTemplate) error {
 		return fmt.Errorf("please provide a template name using the -name flag")
 	}
 
-	// Get current directory
 	baseOutputDir, err := filepath.Abs(options.Dir)
 	if err != nil {
 		return err
 	}
 	outDir := filepath.Join(baseOutputDir, options.Name)
 
-	// Extract base files
-	_, filename, _, _ := runtime.Caller(0)
-	basePath := filepath.Join(filepath.Dir(filename), "_common")
-	s.COPYDIR2(basePath, outDir)
-	s.RMDIR(filepath.Join(outDir, "build"))
-
-	// Copy frontend
-	targetFrontendPath := filepath.Join(outDir, "frontend")
-	sourceFrontendPath := options.Frontend
-	if sourceFrontendPath == "" {
-		sourceFrontendPath = filepath.Join(filepath.Dir(filename), "base", "frontend")
+	if _, err := os.Stat(outDir); !os.IsNotExist(err) {
+		return fmt.Errorf("directory '%s' already exists", outDir)
 	}
-	s.COPYDIR2(sourceFrontendPath, targetFrontendPath)
 
-	// Copy files from relative directory ../commands/build_assets
-	// Get the path to THIS file
-	assetPath := filepath.Join(filepath.Dir(filename), "..", "commands", "build_assets")
-	assetdir := filepath.Join(outDir, "build")
+	// Copy the common files (Go backend, Taskfile, go.mod, etc.) verbatim.
+	// These files contain template variables like {{.ProjectName}} that must be
+	// preserved so they are expanded when users later run `wails init -t <template>`.
+	commonFS, err := fs.Sub(templates, "_common")
+	if err != nil {
+		return err
+	}
+	if err = os.CopyFS(outDir, commonFS); err != nil {
+		return err
+	}
 
-	s.COPYDIR2(assetPath, assetdir)
+	// Replace the placeholder frontend directory with the real frontend content.
+	frontendDir := filepath.Join(outDir, "frontend")
+	if err = os.RemoveAll(frontendDir); err != nil {
+		return err
+	}
+	if options.Frontend != "" {
+		if err = os.CopyFS(frontendDir, os.DirFS(options.Frontend)); err != nil {
+			return fmt.Errorf("failed to copy frontend from '%s': %w", options.Frontend, err)
+		}
+	} else {
+		baseFrontendFS, err := fs.Sub(templates, "base/frontend")
+		if err != nil {
+			return err
+		}
+		if err = os.CopyFS(frontendDir, baseFrontendFS); err != nil {
+			return err
+		}
+	}
 
-	// Copy the template NEXTSTEPS.md
-	s.COPY(filepath.Join(filepath.Dir(filename), "base", "NEXTSTEPS.md"), filepath.Join(outDir, "NEXTSTEPS.md"))
+	// Copy NEXTSTEPS.md from the embedded base directory.
+	nextstepsData, err := templates.ReadFile("base/NEXTSTEPS.md")
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(filepath.Join(outDir, "NEXTSTEPS.md"), nextstepsData, 0644); err != nil {
+		return err
+	}
 
-	// Write the template.json file
-	templateJSON := filepath.Join(outDir, "template.json")
-	// Marshall
+	// Write template.json with the provided metadata.
 	optionsJSON, err := json.MarshalIndent(&Template{
 		BaseTemplate: *options,
 		Schema:       3,
@@ -485,22 +499,35 @@ func GenerateTemplate(options *BaseTemplate) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(templateJSON, optionsJSON, 0o755)
-	if err != nil {
+	if err = os.WriteFile(filepath.Join(outDir, "template.json"), optionsJSON, 0644); err != nil {
 		return err
 	}
 
-	fmt.Printf("Successfully generated template in %s\n", outDir)
+	fmt.Printf("Template '%s' generated in %s\n", options.Name, outDir)
+	fmt.Printf("See NEXTSTEPS.md for guidance on customising and publishing your template.\n")
 	return nil
 }
 
 func confirmRemote(template *Template) bool {
-	pterm.Println(pterm.LightRed("\n--- REMOTE TEMPLATES ---"))
+	pterm.Println(pterm.LightRed("\n⚠  THIRD-PARTY TEMPLATE WARNING ⚠"))
+	pterm.Println()
+	pterm.Println(pterm.LightYellow("You are about to create a project from a remote template:"))
+	pterm.Printf("  Name:   %s\n", template.Name)
+	pterm.Printf("  Author: %s\n", template.Author)
+	if template.HelpURL != "" {
+		pterm.Printf("  URL:    %s\n", template.HelpURL)
+	}
+	pterm.Println()
+	pterm.Println(pterm.LightYellow("Remote templates are third-party code. The Wails project does not review,"))
+	pterm.Println(pterm.LightYellow("endorse, or accept any responsibility for their contents."))
+	pterm.Println(pterm.LightYellow("Only proceed if you trust the source of this template."))
+	pterm.Println()
 
-	// Create boxes with the title positioned differently and containing different content
-	pterm.Println(pterm.LightYellow("You are creating a project using a remote template.\nThe Wails project takes no responsibility for 3rd party templates.\nOnly use remote templates that you trust."))
-
-	result, _ := pterm.DefaultInteractiveConfirm.WithConfirmText("Are you sure you want to continue?").WithConfirmText("y").WithRejectText("n").Show()
+	result, _ := pterm.DefaultInteractiveConfirm.
+		WithDefaultText("Do you accept responsibility for using this third-party template?").
+		WithConfirmText("y").
+		WithRejectText("n").
+		Show()
 
 	return result
 }
