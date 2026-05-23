@@ -11,31 +11,39 @@ import (
 
 var devMode = false
 
+// preRun is called before the application starts. In dev mode it waits for the
+// frontend dev server to become reachable, retrying up to 10 times with
+// exponential backoff (250 ms base, capped at 5 s per attempt).
 func (a *App) preRun() error {
-	// Check for frontend server url
 	frontendURL := assetserver.GetDevServerURL()
-	if frontendURL != "" {
-		devMode = true
-		// We want to check if the frontend server is running by trying to http get the url
-		// and if it is not, we wait 500ms and try again for a maximum of 10 times. If it is
-		// still not available, we return an error.
-		// This is to allow the frontend server to start up before the backend server.
-		client := http.Client{}
-		a.Logger.Info("Waiting for frontend dev server to start...", "url", frontendURL)
-		for i := 0; i < 10; i++ {
-			_, err := client.Get(frontendURL)
-			if err == nil {
-				a.Logger.Info("Connected to frontend dev server!")
-				return nil
-			}
-			// Wait 500ms
-			time.Sleep(500 * time.Millisecond)
-			if i%2 == 0 {
-				a.Logger.Info("Retrying...")
-			}
-		}
-		a.fatal("unable to connect to frontend server. Please check it is running - FRONTEND_DEVSERVER_URL='%s'", frontendURL)
+	if frontendURL == "" {
+		return nil
 	}
+
+	devMode = true
+	a.Logger.Info("Waiting for frontend dev server to start...", "url", frontendURL)
+
+	const (
+		maxRetries = 10
+		maxDelay   = 5 * time.Second
+	)
+	client := http.DefaultClient
+	delay := 250 * time.Millisecond
+
+	for i := range maxRetries {
+		_, err := client.Get(frontendURL)
+		if err == nil {
+			a.Logger.Info("Connected to frontend dev server!")
+			return nil
+		}
+		a.Logger.Info("Retrying...", "attempt", i+1, "next_delay", delay)
+		time.Sleep(delay)
+		if delay *= 2; delay > maxDelay {
+			delay = maxDelay
+		}
+	}
+
+	a.fatal("unable to connect to frontend server. Please check it is running - FRONTEND_DEVSERVER_URL='%s'", frontendURL)
 	return nil
 }
 
