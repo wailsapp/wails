@@ -91,6 +91,31 @@ type WebviewWindowOptions struct {
 	// HTML is the HTML to load in the window.
 	HTML string
 
+	// AllowSimpleEventEmit gates the `wails:event:emit:<name>` postMessage
+	// shortcut for this window. When true, JavaScript running in this
+	// window can fire bare-named Wails custom events on the host bus via
+	// `window._wails.invoke("wails:event:emit:<name>")`. The shortcut
+	// exists so InitialHTML pages (loaded with no asset-server origin —
+	// the framework's built-in updater window is the canonical case) can
+	// still talk to the Go side without depending on the modern HTTP
+	// runtime that requires `fetch("/wails/runtime")` to work.
+	//
+	// SECURITY: leave this off (the default) unless you control every byte
+	// of HTML that this window will ever load. When enabled, ANY script
+	// running in the page — including content from a remote URL or any
+	// XSS sink in user-supplied content — can synthesise Wails custom
+	// events. The shortcut conveys bare names only (no payload) and
+	// cannot reach the binding/Call path, but it CAN trigger any
+	// `app.Event.On(name, ...)` handler your application code registers.
+	// If you have a handler that performs a privileged action based on
+	// the event name alone, that handler is exposed to anyone with
+	// scripting access to this window.
+	//
+	// Use [WebviewWindow.AsUpdaterWindow] in concert with
+	// updater.BYOWindow to opt in cleanly when you're writing your own
+	// updater UI; otherwise leave this false.
+	AllowSimpleEventEmit bool
+
 	// JS is the JavaScript to load in the window.
 	JS string
 

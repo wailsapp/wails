@@ -145,6 +145,8 @@ void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, doubl
 
 void window_move_x11(GtkWindow *window, int x, int y);
 void window_get_position_x11(GtkWindow *window, int *x, int *y);
+void window_set_always_on_top(GtkWindow *window, gboolean always_on_top);
+void window_apply_pending_always_on_top(GtkWindow *window);
 
 // ============================================================================
 // Drag and drop (GtkDropTarget for GTK4)
