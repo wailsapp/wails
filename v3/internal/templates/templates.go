@@ -448,8 +448,10 @@ func GenerateTemplate(options *BaseTemplate) error {
 	}
 	outDir := filepath.Join(baseOutputDir, options.Name)
 
-	if _, err := os.Stat(outDir); !os.IsNotExist(err) {
+	if _, err := os.Stat(outDir); err == nil {
 		return fmt.Errorf("directory '%s' already exists", outDir)
+	} else if !os.IsNotExist(err) {
+		return err
 	}
 
 	// Copy the common files (Go backend, Taskfile, go.mod, etc.) verbatim.

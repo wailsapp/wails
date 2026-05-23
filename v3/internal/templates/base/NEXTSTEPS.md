@@ -94,10 +94,10 @@ top of whatever your template provides, so place only files that are not auto-ge
 3. Users can now create projects from your template:
    ```sh
    # Latest commit on the default branch
-   wails init -n myapp -t https://github.com/yourname/your-template
+   wails3 init -n myapp -t https://github.com/yourname/your-template
 
    # Pinned to a specific release tag
-   wails init -n myapp -t https://github.com/yourname/your-template@v1.0.0
+   wails3 init -n myapp -t https://github.com/yourname/your-template@v1.0.0
    ```
 
 ---
@@ -117,6 +117,6 @@ As a template author you are responsible for:
 
 ## Further Reading
 
-- [Creating Custom Templates](https://v3.wails.io/guides/custom-templates)
+- [Creating Custom Templates](https://v3.wails.io/guides/advanced/custom-templates)
 - [Template JSON Schema](https://v3.wails.io/reference/template-json)
 - [Wails Init Reference](https://v3.wails.io/reference/cli#init)
