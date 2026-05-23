@@ -7,7 +7,13 @@ version: 3
 # site locally; it is not distributed with the Wails Go module or the
 # @wailsio/runtime npm package, so it is out of scope for the license
 # compliance posture we want FOSSA to enforce.
+# Example-app frontends are demo/development tooling; they are not
+# distributed as part of the Wails Go module or @wailsio/runtime and
+# are excluded to keep the compliance posture focused on distributed
+# artifacts.
 targets:
   exclude:
     - type: npm
       path: website
+    - type: npm
+      path: v3/examples
