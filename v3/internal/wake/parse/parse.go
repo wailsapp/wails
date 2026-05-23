@@ -340,16 +340,27 @@ func parseEnv(node *yaml.Node) (map[string]string, error) {
 func parseStringList(node *yaml.Node) []string {
 	var list []string
 	for _, item := range node.Content {
-		list = append(list, item.Value)
+		if item.Kind == yaml.ScalarNode {
+			list = append(list, item.Value)
+		} else if item.Kind == yaml.MappingNode && len(item.Content) >= 2 {
+			key := item.Content[0].Value
+			val := item.Content[1].Value
+			if key == "exclude" {
+				list = append(list, "exclude: "+val)
+			} else {
+				list = append(list, val)
+			}
+		}
 	}
 	return list
 }
 
 func ResolveIncludes(tf *ast.Taskfile) error {
-	return resolveIncludes(tf, make(map[string]bool))
+	resolved := make(map[string]*ast.Taskfile)
+	return resolveIncludes(tf, resolved)
 }
 
-func resolveIncludes(tf *ast.Taskfile, visited map[string]bool) error {
+func resolveIncludes(tf *ast.Taskfile, resolved map[string]*ast.Taskfile) error {
 	baseDir := filepath.Dir(tf.Location)
 	for name, inc := range tf.Includes {
 		incPath := inc.Taskfile
@@ -373,24 +384,28 @@ func resolveIncludes(tf *ast.Taskfile, visited map[string]bool) error {
 		}
 
 		cleanPath, _ := filepath.EvalSymlinks(incPath)
-		if visited[cleanPath] {
-			continue
-		}
-		visited[cleanPath] = true
 
-		resolved, err := Parse(incPath)
-		if err != nil {
-			return fmt.Errorf("wake: include %q: %w", name, err)
-		}
-		inc.Resolved = resolved
+		var tfResolved *ast.Taskfile
+		if existing, ok := resolved[cleanPath]; ok {
+			tfResolved = existing
+		} else {
+			var err error
+			tfResolved, err = Parse(incPath)
+			if err != nil {
+				return fmt.Errorf("wake: include %q: %w", name, err)
+			}
+			resolved[cleanPath] = tfResolved
 
-		for taskName, task := range resolved.Tasks {
+			if err := resolveIncludes(tfResolved, resolved); err != nil {
+				return err
+			}
+		}
+
+		inc.Resolved = tfResolved
+
+		for taskName, task := range tfResolved.Tasks {
 			namespaced := name + ":" + taskName
 			tf.Tasks[namespaced] = task
-		}
-
-		if err := resolveIncludes(resolved, visited); err != nil {
-			return err
 		}
 	}
 	return nil
@@ -454,21 +469,7 @@ func exeExt(goos string) string {
 	return ""
 }
 
-func ExpandTemplates(s string, vars map[string]*ast.Var) string {
-	if !strings.Contains(s, "{{") {
-		return s
-	}
-	result := s
-	for name, vr := range vars {
-		val := vr.Value
-		if val == "" {
-			val = vr.Static
-		}
-		result = strings.ReplaceAll(result, "{{."+name+"}}", val)
-		result = strings.ReplaceAll(result, "{{ ."+name+" }}", val)
-	}
-	return result
-}
+
 
 func ResolveVars(vars map[string]*ast.Var) error {
 	resolved := make(map[string]bool)

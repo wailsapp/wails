@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Test App
+Comment=Test
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/testapp %u
+Terminal=false
+Type=Application
+Icon=testapp
+Categories=Utility;
+StartupWMClass=testapp
+
+ 

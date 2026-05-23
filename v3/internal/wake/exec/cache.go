@@ -137,8 +137,10 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
-	for _, pattern := range task.Sources {
+	sources, excludes := splitSources(task.Sources)
+	for _, pattern := range sources {
 		files := globMatches(baseDir, pattern)
+		files = applyExcludes(files, baseDir, excludes)
 		for _, file := range files {
 			info, err := os.Stat(file)
 			if err != nil {
@@ -151,6 +153,67 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 	}
 
 	return true
+}
+
+func splitSources(sources []string) ([]string, []string) {
+	var includes, excludes []string
+	for _, s := range sources {
+		if strings.HasPrefix(s, "exclude:") || strings.HasPrefix(s, "exclude ") {
+			pattern := strings.TrimSpace(strings.TrimPrefix(s, "exclude:"))
+			pattern = strings.TrimSpace(strings.TrimPrefix(pattern, "exclude "))
+			if pattern != "" {
+				excludes = append(excludes, pattern)
+			}
+		} else {
+			includes = append(includes, s)
+		}
+	}
+	return includes, excludes
+}
+
+func applyExcludes(files []string, baseDir string, excludes []string) []string {
+	if len(excludes) == 0 {
+		return files
+	}
+
+	var result []string
+	for _, file := range files {
+		rel, err := filepath.Rel(baseDir, file)
+		if err != nil {
+			rel = file
+		}
+		excluded := false
+		for _, ex := range excludes {
+			if matchesGlob(rel, ex) {
+				excluded = true
+				break
+			}
+		}
+		if !excluded {
+			result = append(result, file)
+		}
+	}
+	return result
+}
+
+func matchesGlob(path, pattern string) bool {
+	if strings.Contains(pattern, "**") {
+		return recursiveMatch(path, pattern)
+	}
+	matched, err := filepath.Match(pattern, path)
+	if err != nil {
+		return false
+	}
+	return matched
+}
+
+func recursiveMatch(path, pattern string) bool {
+	parts := strings.Split(pattern, "**")
+	suffix := strings.TrimLeft(parts[len(parts)-1], "/")
+	if suffix == "" {
+		return true
+	}
+	return strings.HasSuffix(path, suffix) || strings.Contains(path, suffix)
 }
 
 func (tc *TaskCache) RecordTask(task *ast.Task, baseDir string) error {
