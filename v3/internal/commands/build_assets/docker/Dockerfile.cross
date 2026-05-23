@@ -13,7 +13,7 @@
 #   docker run --rm -v $(pwd):/app wails-cross windows amd64
 #   docker run --rm -v $(pwd):/app wails-cross windows arm64
 
-FROM golang:1.25-bookworm
+FROM golang:1.26-bookworm
 
 ARG TARGETARCH
 ARG GARBLE_VERSION=v0.16.0

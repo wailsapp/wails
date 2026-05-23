@@ -11,7 +11,7 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
 ## Prerequisites
 
-- **Go 1.24 or later** — required by Garble v0.16.0
+- **Go 1.26.2 or later** — required by Garble v0.16.0
 - **Garble v0.16.0**
 
 ```bash
@@ -21,19 +21,6 @@ go install mvdan.cc/garble@v0.16.0
 <Aside type="tip">
 Garble's minimum Go version changes between releases. If you are on an older Go toolchain, check the [Garble releases page](https://github.com/burrowers/garble/releases) for a version that matches your toolchain before installing.
 </Aside>
-
-## Why Wails needs extra steps
-
-Garble renames exported symbols at compile time. This breaks two things Wails relies on at runtime.
-
-**Binding IDs** — Wails identifies each bound service method with a numeric ID derived from the fully-qualified method name. Garble renames the method, so the hash changes and the frontend can no longer invoke it.
-
-**JSON wire format** — Runtime structs like `Screen` and `EnvironmentInfo`, and your own service return types, are serialised with `json.Marshal`. Without explicit `json:"..."` tags, Go uses the field name as the JSON key. Garble renames the field, so the frontend receives keys it does not recognise.
-
-Wails v3 solves both problems:
-
-- The binding ID problem is solved automatically by a generated registration file that uses function-pointer identity (which survives renaming) instead of reflection-visible names.
-- Wails's own runtime structs already carry `json:"..."` tags. Your service types need them too.
 
 ## Required: add JSON tags to your service types
 
@@ -56,7 +43,7 @@ type OrderSummary struct {
 ```
 
 <Aside type="caution">
-An obfuscated build without JSON tags will compile without errors. At runtime your frontend will receive garbled or empty field names. Add tags before running an obfuscated build.
+Garble renames exported struct fields, and Wails passes these structs to `json.Marshal` through an `interface{}` parameter that Garble cannot statically trace. An obfuscated build without JSON tags will compile successfully but your frontend will receive garbled or empty field names at runtime. Add tags before running an obfuscated build.
 </Aside>
 
 Wails's own types — `Screen`, `Rect`, `Point`, `Size`, `EnvironmentInfo`, `OSInfo`, `Capabilities` — are already tagged. You only need to tag your own types.
@@ -73,11 +60,7 @@ Wails's own types — `Screen`, `Rect`, `Point`, `Size`, `EnvironmentInfo`, `OSI
    wails3 generate bindings -obfuscated
    ```
 
-   This creates `wails_obfuscated.gen.go` in your main package directory. The file registers a stable numeric ID for every bound method using `init()` functions. Because the registration uses function-pointer identity rather than reflected names, the IDs are unaffected by Garble's renaming.
-
-   <Aside type="tip">
-   Commit `wails_obfuscated.gen.go` to source control. Checking it in keeps your CI pipeline simple — a production build does not need to re-run the generator. Regenerate it whenever your bound service methods change.
-   </Aside>
+   This creates `wails_obfuscated.gen.go` in your main package directory — commit this file.
 
 2. **Build with Garble**
 
@@ -85,7 +68,7 @@ Wails's own types — `Screen`, `Rect`, `Point`, `Size`, `EnvironmentInfo`, `OSI
    wails3 build --obfuscated
    ```
 
-   This replaces `go build` with `garble build` and automatically adds the `wails_obfuscated` build tag so the stable ID registrations are compiled in.
+   Builds the application using the obfuscated bindings.
 
 </Steps>
 
@@ -103,20 +86,6 @@ wails3 build --obfuscated --garbleargs "-seed=deadbeef"
 
 See the [Garble documentation](https://github.com/burrowers/garble#flags) for the full list of supported flags.
 
-## Cross-platform obfuscated builds
-
-The `--obfuscated` flag works with all the standard cross-compilation targets. Docker is required for macOS and Linux cross-compilation, exactly as with a non-obfuscated build:
-
-```bash
-wails3 build --obfuscated GOOS=windows
-wails3 build --obfuscated GOOS=darwin GOARCH=arm64
-wails3 build --obfuscated GOOS=linux
-```
-
-<Aside type="tip">
-Run `wails3 task setup:docker` once before cross-compiling to macOS or Linux. See [Cross-Platform Builds](/guides/build/cross-platform) for setup details.
-</Aside>
-
 ## Advanced: writing the ID file to a different package
 
 By default `wails_obfuscated.gen.go` is written next to your `main` package. If your project keeps services in a sub-package imported by `main`, you can write the file there instead with `-obfuscated-output`:
@@ -128,20 +97,6 @@ wails3 generate bindings -obfuscated -obfuscated-output ./internal/services
 <Aside type="caution">
 The destination package must be imported — directly or transitively — by your `main` package so its `init()` runs at startup. If the package is not reachable, the stable IDs are never registered and binding calls will fail (for example, with `binding not found` errors at runtime).
 </Aside>
-
-## Complete workflow
-
-```bash
-# One-time: add json:"..." tags to your service structs
-
-# Regenerate after adding, renaming, or removing bound methods
-wails3 generate bindings -obfuscated
-
-# Build
-wails3 build --obfuscated
-
-# The resulting binary behaves identically to a non-obfuscated build
-```
 
 ## Troubleshooting
 
