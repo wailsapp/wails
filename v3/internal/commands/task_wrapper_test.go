@@ -488,3 +488,98 @@ func TestSignWrapperCommand(t *testing.T) {
 	assert.Equal(t, currentOS+":sign", capturedOptions.Name)
 	assert.Equal(t, []string{"IDENTITY=Developer ID", "ARCH=" + currentArch}, capturedOtherArgs)
 }
+
+func TestWrapTaskWakeEnabled(t *testing.T) {
+	// Save original RunTask and env
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	originalWakeEnv := os.Getenv("WAILS_USE_WAKE")
+	defer func() {
+		if originalWakeEnv == "" {
+			os.Unsetenv("WAILS_USE_WAKE")
+		} else {
+			os.Setenv("WAILS_USE_WAKE", originalWakeEnv)
+		}
+	}()
+
+	originalGOOS := os.Getenv("GOOS")
+	originalGOARCH := os.Getenv("GOARCH")
+	defer func() {
+		if originalGOOS == "" {
+			os.Unsetenv("GOOS")
+		} else {
+			os.Setenv("GOOS", originalGOOS)
+		}
+		if originalGOARCH == "" {
+			os.Unsetenv("GOARCH")
+		} else {
+			os.Setenv("GOARCH", originalGOARCH)
+		}
+	}()
+
+	// Create temp dir with Taskfile
+	dir := t.TempDir()
+	taskfilePath := dir + "/Taskfile.yml"
+	err := os.WriteFile(taskfilePath, []byte(`
+version: "3"
+tasks:
+  darwin:build:
+    cmds:
+      - echo building
+`), 0644)
+	assert.NoError(t, err)
+
+	// Change to temp dir
+	originalWd, _ := os.Getwd()
+	defer os.Chdir(originalWd)
+	os.Chdir(dir)
+
+	// Enable wake
+	os.Setenv("WAILS_USE_WAKE", "true")
+	os.Unsetenv("GOOS")
+	os.Unsetenv("GOARCH")
+
+	// Mock RunTask - should NOT be called when wake is enabled
+	called := false
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		called = true
+		return nil
+	}
+
+	err = wrapTask("build", []string{})
+	assert.NoError(t, err) // wake successfully executed the task
+	assert.False(t, called, "RunTask should not be called when WAILS_USE_WAKE=true")
+}
+
+func TestWrapTaskWakeDisabled(t *testing.T) {
+	// Save original RunTask and env
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	originalWakeEnv := os.Getenv("WAILS_USE_WAKE")
+	defer func() {
+		if originalWakeEnv == "" {
+			os.Unsetenv("WAILS_USE_WAKE")
+		} else {
+			os.Setenv("WAILS_USE_WAKE", originalWakeEnv)
+		}
+	}()
+
+	// Disable wake
+	os.Unsetenv("WAILS_USE_WAKE")
+
+	// Mock RunTask - SHOULD be called when wake is disabled
+	called := false
+	var capturedOptions *RunTaskOptions
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		called = true
+		capturedOptions = options
+		return nil
+	}
+
+	err := wrapTask("build", []string{})
+	assert.NoError(t, err)
+	assert.True(t, called, "RunTask should be called when WAILS_USE_WAKE is not set")
+	assert.Contains(t, capturedOptions.Name, ":build")
+}

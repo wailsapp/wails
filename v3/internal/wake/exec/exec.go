@@ -9,6 +9,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/cmds"
+	"github.com/wailsapp/wails/v3/internal/wake/parse"
 )
 
 type Executor struct {
@@ -36,6 +37,7 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 
 	task := e.Taskfile.Tasks[target]
 	if task == nil {
+		fmt.Fprintf(os.Stderr, "[wake-debug] task %q not found in Taskfile.Tasks (total: %d)\n", target, len(e.Taskfile.Tasks))
 		return fmt.Errorf("wake: task %q not found", target)
 	}
 
@@ -53,7 +55,7 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 		return nil
 	}
 
-	if err := e.runTask(ctx, task); err != nil {
+	if err := e.runTask(ctx, task, nil); err != nil {
 		return err
 	}
 
@@ -71,7 +73,7 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 	return nil
 }
 
-func (e *Executor) runTask(ctx context.Context, task *ast.Task) error {
+func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[string]*ast.Var) error {
 	if !matchesPlatform(task.Platforms) {
 		return nil
 	}
@@ -85,18 +87,29 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task) error {
 		return nil
 	}
 
-	var env = os.Environ()
-	for k, v := range task.Env {
-		env = append(env, k+"="+v)
+	mergedVars := e.mergeVars(task, depVars)
+
+	for _, dep := range task.Deps {
+		expandedDep := parse.ExpandTemplates(dep.Task, mergedVars)
+		resolvedDep := e.resolveTaskName(expandedDep, task.Name)
+		if err := e.Execute(ctx, resolvedDep); err != nil {
+			return err
+		}
 	}
 
-	dir := task.Dir
+	var env = os.Environ()
+	for k, v := range task.Env {
+		expanded := parse.ExpandTemplates(v, mergedVars)
+		env = append(env, k+"="+expanded)
+	}
+
+	dir := parse.ExpandTemplates(task.Dir, mergedVars)
 	if dir != "" && !strings.HasPrefix(dir, "/") {
 		dir = e.Dir + "/" + dir
 	}
 
 	for _, cmd := range task.Cmds {
-		if err := e.runCmd(ctx, cmd, dir, env); err != nil {
+		if err := e.runCmd(ctx, cmd, dir, env, mergedVars); err != nil {
 			if !cmd.IgnoreError {
 				return err
 			}
@@ -106,16 +119,41 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task) error {
 	return nil
 }
 
-func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string) error {
+func (e *Executor) resolveTaskName(name, contextTask string) string {
+	if _, ok := e.Taskfile.Tasks[name]; ok {
+		return name
+	}
+
+	if strings.Contains(contextTask, ":") {
+		parts := strings.SplitN(contextTask, ":", 2)
+		candidate := parts[0] + ":" + name
+		if _, ok := e.Taskfile.Tasks[candidate]; ok {
+			return candidate
+		}
+	}
+
+	for incName := range e.Taskfile.Includes {
+		candidate := incName + ":" + name
+		if _, ok := e.Taskfile.Tasks[candidate]; ok {
+			return candidate
+		}
+	}
+
+	return name
+}
+
+func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var) error {
 	if cmd.For != nil {
-		return e.runForLoop(ctx, cmd, dir, env)
+		return e.runForLoop(ctx, cmd, dir, env, vars)
 	}
 	if cmd.Task != "" {
-		subTask := e.Taskfile.Tasks[cmd.Task]
+		expandedTask := parse.ExpandTemplates(cmd.Task, vars)
+		resolvedTask := e.resolveTaskName(expandedTask, "")
+		subTask := e.Taskfile.Tasks[resolvedTask]
 		if subTask == nil {
-			return fmt.Errorf("wake: sub-task %q not found", cmd.Task)
+			return fmt.Errorf("wake: sub-task %q not found", expandedTask)
 		}
-		return e.runTask(ctx, subTask)
+		return e.runTask(ctx, subTask, cmd.Vars)
 	}
 	if cmd.Cmd == "" {
 		return nil
@@ -125,12 +163,14 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 		return nil
 	}
 
+	expandedCmd := parse.ExpandTemplates(cmd.Cmd, vars)
+
 	silent := cmd.Silent || e.Taskfile.Silent || e.Silent
 	if !silent {
-		fmt.Printf("[wake] %s\n", cmd.Cmd)
+		fmt.Printf("[wake] %s\n", expandedCmd)
 	}
 
-	executor := cmds.Route(cmd.Cmd, cmds.RouteOptions{
+	executor := cmds.Route(expandedCmd, cmds.RouteOptions{
 		Dir: dir,
 		Env: env,
 	})
@@ -145,7 +185,7 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 	return executor.Run()
 }
 
-func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env []string) error {
+func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var) error {
 	fl := cmd.For
 	if fl == nil {
 		return nil
@@ -153,7 +193,10 @@ func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env
 
 	var items []string
 	if fl.Var != "" {
-		vr := e.Taskfile.Vars[fl.Var]
+		vr := vars[fl.Var]
+		if vr == nil {
+			vr = e.Taskfile.Vars[fl.Var]
+		}
 		if vr != nil {
 			val := vr.Value
 			if val == "" {
@@ -167,19 +210,45 @@ func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env
 	}
 
 	for _, item := range items {
-		_ = item
+		loopVars := make(map[string]*ast.Var)
+		for k, v := range vars {
+			loopVars[k] = v
+		}
+		loopVars["ITEM"] = &ast.Var{Static: item, Value: item}
+
 		if fl.Task != "" {
-			subTask := e.Taskfile.Tasks[fl.Task]
+			expandedTask := parse.ExpandTemplates(fl.Task, loopVars)
+			subTask := e.Taskfile.Tasks[expandedTask]
 			if subTask == nil {
-				return fmt.Errorf("wake: for-loop task %q not found", fl.Task)
+				return fmt.Errorf("wake: for-loop task %q not found", expandedTask)
 			}
-			if err := e.runTask(ctx, subTask); err != nil {
+			if err := e.runTask(ctx, subTask, fl.Vars); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
+}
+
+func (e *Executor) mergeVars(task *ast.Task, depVars map[string]*ast.Var) map[string]*ast.Var {
+	merged := make(map[string]*ast.Var)
+
+	for k, v := range e.Taskfile.Vars {
+		merged[k] = v
+	}
+
+	for k, v := range task.Vars {
+		merged[k] = v
+	}
+
+	if depVars != nil {
+		for k, v := range depVars {
+			merged[k] = v
+		}
+	}
+
+	return merged
 }
 
 func ExecuteParallel(ctx context.Context, tasks []*ast.Task, execFn func(context.Context, *ast.Task) error, maxWorkers int) error {
