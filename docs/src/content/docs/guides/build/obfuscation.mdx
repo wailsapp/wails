@@ -126,7 +126,7 @@ wails3 generate bindings -obfuscated -obfuscated-output ./internal/services
 ```
 
 <Aside type="caution">
-The destination package must be imported — directly or transitively — by your `main` package so its `init()` runs at startup. If the package is not reachable, the stable IDs are never registered and binding calls will fail silently.
+The destination package must be imported — directly or transitively — by your `main` package so its `init()` runs at startup. If the package is not reachable, the stable IDs are never registered and binding calls will fail (for example, with `binding not found` errors at runtime).
 </Aside>
 
 ## Complete workflow
