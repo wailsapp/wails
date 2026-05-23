@@ -154,6 +154,15 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 // Shutdown will attempt to save the categories to the registry when the service unloads
 func (wn *windowsNotifier) Shutdown() error {
+	// Cancel pending scheduled timers before tearing down COM/wintoast so their
+	// callbacks cannot fire against a deregistered toast activator.
+	wn.scheduledLock.Lock()
+	for id, t := range wn.scheduledTimers {
+		t.Stop()
+		delete(wn.scheduledTimers, id)
+	}
+	wn.scheduledLock.Unlock()
+
 	wn.categoriesLock.Lock()
 	defer wn.categoriesLock.Unlock()
 

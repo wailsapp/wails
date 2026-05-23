@@ -126,8 +126,12 @@ func TestValidateNotificationOptions_Attachments(t *testing.T) {
 	t.Run("missing file fails", func(t *testing.T) {
 		opts := NotificationOptions{ID: "n", Title: "t", Attachments: []NotificationAttachment{{Path: filepath.Join(dir, "absent.png")}}}
 		err := validateNotificationOptions(opts)
-		if err == nil {
-			t.Fatal("expected error for missing attachment")
+		if err == nil || !strings.Contains(err.Error(), "not accessible") {
+			t.Fatalf("got %v, want not-accessible error", err)
+		}
+		// Error must not expose raw OS error text (no filesystem oracle).
+		if strings.Contains(err.Error(), "no such file") || strings.Contains(err.Error(), "cannot find") {
+			t.Fatalf("error leaks OS-level details: %v", err)
 		}
 	})
 
@@ -136,6 +140,22 @@ func TestValidateNotificationOptions_Attachments(t *testing.T) {
 		err := validateNotificationOptions(opts)
 		if err == nil || !strings.Contains(err.Error(), "cannot be empty") {
 			t.Fatalf("got %v, want empty-path error", err)
+		}
+	})
+
+	t.Run("relative path fails", func(t *testing.T) {
+		opts := NotificationOptions{ID: "n", Title: "t", Attachments: []NotificationAttachment{{Path: "relative/image.png"}}}
+		err := validateNotificationOptions(opts)
+		if err == nil || !strings.Contains(err.Error(), "absolute") {
+			t.Fatalf("got %v, want absolute-path error", err)
+		}
+	})
+
+	t.Run("relative file:// URL fails", func(t *testing.T) {
+		opts := NotificationOptions{ID: "n", Title: "t", Attachments: []NotificationAttachment{{Path: "file://relative/image.png"}}}
+		err := validateNotificationOptions(opts)
+		if err == nil || !strings.Contains(err.Error(), "absolute") {
+			t.Fatalf("got %v, want absolute-path error", err)
 		}
 	})
 

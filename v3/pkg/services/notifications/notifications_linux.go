@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -87,6 +88,15 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 
 // Shutdown will save categories and close the D-Bus connection when the service unloads.
 func (ln *linuxNotifier) Shutdown() error {
+	// Cancel pending scheduled timers before tearing down the D-Bus connection
+	// so their callbacks cannot fire against a closed connection.
+	ln.scheduledLock.Lock()
+	for id, t := range ln.scheduledTimers {
+		t.Stop()
+		delete(ln.scheduledTimers, id)
+	}
+	ln.scheduledLock.Unlock()
+
 	if ln.cancel != nil {
 		ln.cancel()
 	}
@@ -211,9 +221,13 @@ func (ln *linuxNotifier) notify(options NotificationOptions, actions []string, a
 		if a.Path == "" {
 			continue
 		}
-		// freedesktop spec only honours one image hint; use the first.
-		hints["image-path"] = dbus.MakeVariant(a.Path)
-		break
+		// freedesktop spec only honours one image hint; use the first entry
+		// whose extension is a recognised image type. Non-image paths are
+		// skipped to prevent arbitrary files from being surfaced to the daemon.
+		if isImagePath(a.Path) {
+			hints["image-path"] = dbus.MakeVariant(a.Path)
+			break
+		}
 	}
 
 	if options.ThreadID != "" {
@@ -660,4 +674,15 @@ func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
 			ns.handleNotificationResult(result)
 		}
 	}
+}
+
+// isImagePath reports whether path has an extension recognised as an image by
+// freedesktop notification daemons. Only image files are valid for the
+// image-path hint; passing arbitrary paths (e.g. text files) is rejected.
+func isImagePath(path string) bool {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".ico", ".webp", ".tiff", ".tif":
+		return true
+	}
+	return false
 }
