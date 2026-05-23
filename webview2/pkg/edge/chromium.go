@@ -28,13 +28,13 @@ func globalErrorHandler(err error) {
 		return
 	}
 
-	fmt.Printf("[WebView2 Error] %v\n", err)
+	log.Printf("[WebView2 Error] %v\n", err)
 
 	stackBuf := make([]uintptr, 64)
 	stackSize := runtime.Callers(2, stackBuf)
 	frames := runtime.CallersFrames(stackBuf[:stackSize])
 
-	fmt.Println("\nStack trace:")
+	log.Printf("\nStack trace:")
 	stackIndex := 1
 	for {
 		frame, more := frames.Next()

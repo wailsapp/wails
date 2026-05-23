@@ -235,6 +235,11 @@ export default defineConfig({
               ],
             },
             {
+              label: "Autostart",
+              collapsed: true,
+              autogenerate: { directory: "features/autostart" },
+            },
+            {
               label: "Clipboard",
               collapsed: true,
               autogenerate: { directory: "features/clipboard" },
@@ -310,7 +315,7 @@ export default defineConfig({
               label: "Distribution",
               collapsed: true,
               items: [
-                { label: "Auto-Updates", link: "/guides/distribution/auto-updates" },
+                { label: "In-App Updater", link: "/guides/updater" },
                 { label: "File Associations", link: "/guides/distribution/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
                 { label: "Single Instance", link: "/guides/distribution/single-instance" },
