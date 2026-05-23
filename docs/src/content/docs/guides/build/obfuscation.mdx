@@ -121,6 +121,23 @@ The stable ID file is missing or was not compiled in. Check:
 - You ran `wails3 build --obfuscated`, which adds the `wails_obfuscated` build tag
 - If you used `-obfuscated-output`, the destination package is imported by `main`
 
+### Windows Defender flags the build as a virus
+
+Garble-obfuscated Go binaries are heuristically flagged by Windows Defender during the build because they lack debug symbols and resemble packed executables. The build fails with:
+
+```
+open C:\Users\...\AppData\Local\Temp\go-build...\a.out.exe: The file contains a virus or potentially unwanted software.
+```
+
+Add your temp directory (where Go writes intermediate build artifacts) and your project directory to Defender's exclusion list:
+
+```powershell
+Add-MpPreference -ExclusionPath "$env:TEMP"
+Add-MpPreference -ExclusionPath "C:\path\to\your\project"
+```
+
+These exclusions apply only to the specified paths and do not disable Defender globally.
+
 ### Build fails with `unsupported Go version`
 
-Garble v0.16.0 requires Go 1.24 or later. Either upgrade Go, or consult the [Garble releases page](https://github.com/burrowers/garble/releases) for a version compatible with your toolchain.
+Garble v0.16.0 requires Go 1.26.2 or later. Either upgrade Go, or consult the [Garble releases page](https://github.com/burrowers/garble/releases) for a version compatible with your toolchain.
