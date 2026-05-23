@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/exec"
@@ -114,15 +113,6 @@ func discoverAndParse(dir string) (*ast.Taskfile, error) {
 }
 
 func resolveVars(tf *ast.Taskfile) error {
-	if err := parse.ResolveAllVarShells(tf.Vars); err != nil {
-		return err
-	}
-	for _, task := range tf.Tasks {
-		if err := parse.ResolveAllVarShells(task.Vars); err != nil {
-			return err
-		}
-	}
-
 	if err := parse.ResolveVars(tf.Vars); err != nil {
 		return err
 	}
@@ -135,94 +125,11 @@ func resolveVars(tf *ast.Taskfile) error {
 }
 
 func expandTemplates(tf *ast.Taskfile) {
-	type taskUpdate struct {
-		oldName string
-		newName string
-		task    *ast.Task
-	}
-
-	var updates []taskUpdate
-	for taskName, task := range tf.Tasks {
-		newName := parse.ExpandTemplates(taskName, tf.Vars)
-		task.Name = newName
+	for _, task := range tf.Tasks {
 		task.Dir = parse.ExpandTemplates(task.Dir, tf.Vars)
 		task.Label = parse.ExpandTemplates(task.Label, tf.Vars)
-		task.Summary = parse.ExpandTemplates(task.Summary, tf.Vars)
-
-		for i, dep := range task.Deps {
-			dep.Task = parse.ExpandTemplates(dep.Task, tf.Vars)
-			task.Deps[i] = dep
-		}
-
 		for _, cmd := range task.Cmds {
 			cmd.Cmd = parse.ExpandTemplates(cmd.Cmd, tf.Vars)
-			cmd.Task = parse.ExpandTemplates(cmd.Task, tf.Vars)
-		}
-
-		for k, v := range task.Env {
-			task.Env[k] = parse.ExpandTemplates(v, tf.Vars)
-		}
-
-		updates = append(updates, taskUpdate{oldName: taskName, newName: newName, task: task})
-	}
-
-	for _, u := range updates {
-		delete(tf.Tasks, u.oldName)
-		tf.Tasks[u.newName] = u.task
-	}
-
-	resolveDepNamespaces(tf)
-}
-
-func resolveDepNamespaces(tf *ast.Taskfile) {
-	for _, task := range tf.Tasks {
-		for i, dep := range task.Deps {
-			if _, ok := tf.Tasks[dep.Task]; ok {
-				continue
-			}
-
-			if strings.Contains(task.Name, ":") {
-				parts := strings.SplitN(task.Name, ":", 2)
-				candidate := parts[0] + ":" + dep.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					task.Deps[i].Task = candidate
-					continue
-				}
-			}
-
-			for incName := range tf.Includes {
-				candidate := incName + ":" + dep.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					task.Deps[i].Task = candidate
-					break
-				}
-			}
-		}
-
-		for _, cmd := range task.Cmds {
-			if cmd.Task == "" {
-				continue
-			}
-			if _, ok := tf.Tasks[cmd.Task]; ok {
-				continue
-			}
-
-			if strings.Contains(task.Name, ":") {
-				parts := strings.SplitN(task.Name, ":", 2)
-				candidate := parts[0] + ":" + cmd.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					cmd.Task = candidate
-					continue
-				}
-			}
-
-			for incName := range tf.Includes {
-				candidate := incName + ":" + cmd.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					cmd.Task = candidate
-					break
-				}
-			}
 		}
 	}
 }
