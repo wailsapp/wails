@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Use exponential backoff when waiting for the frontend dev server to become reachable, extending the total retry window to ~32 s and preventing premature failures when dev servers are slow to start (#5504)
 
 ## Fixed
 <!-- Bug fixes -->
