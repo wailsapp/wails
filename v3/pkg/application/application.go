@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
 //go:embed assets/*
@@ -40,6 +41,12 @@ func Get() *App {
 }
 
 func New(appOptions Options) *App {
+	// If we were spawned as an updater helper the process must perform the
+	// swap and exit before any application machinery touches the disk. This
+	// is a no-op when the sentinel env vars are absent, so normal startup is
+	// unaffected.
+	updater.HandleHelperMode()
+
 	if globalApplication != nil {
 		return globalApplication
 	}
@@ -351,6 +358,7 @@ type App struct {
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
 	Autostart   *AutostartManager
+	Updater     *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -501,6 +509,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
+	a.Updater = updater.New(newUpdaterHost(a))
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {

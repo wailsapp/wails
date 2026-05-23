@@ -13,10 +13,10 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 	"github.com/wailsapp/wails/webview2/webviewloader"
@@ -366,12 +366,15 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) ||
-			w.parent.options.IgnoreMouseEvents {
-			// Always if transparent and frameless
+		if w.parent.options.IgnoreMouseEvents {
+			// WS_EX_TRANSPARENT makes WM_NCHITTEST return HTTRANSPARENT, so the window
+			// passes mouse input through to whatever is behind it. Only apply it when
+			// the caller explicitly opts in via IgnoreMouseEvents — applying it to every
+			// frameless + transparent window causes clicks to fall through to the desktop
+			// in any area the child WebView2 HWND does not currently cover (issue #4871).
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
 		} else {
-			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			// Transparent/translucent composition via DirectComposition.
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
@@ -855,6 +858,9 @@ func (w *windowsWebviewWindow) getZoom() float64 {
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 	w.chromium.PutZoomFactor(zoom)
 }
 
@@ -903,6 +909,27 @@ func (w *windowsWebviewWindow) restore() {
 	if w.chromium.GetController() != nil {
 		w.chromium.Focus()
 	}
+	w.enforceMinSizeConstraints()
+}
+
+func (w *windowsWebviewWindow) enforceMinSizeConstraints() {
+	options := w.parent.options
+	if options.MinWidth <= 0 && options.MinHeight <= 0 {
+		return
+	}
+	b := w.bounds()
+	changed := false
+	if options.MinWidth > 0 && b.Width < options.MinWidth {
+		b.Width = options.MinWidth
+		changed = true
+	}
+	if options.MinHeight > 0 && b.Height < options.MinHeight {
+		b.Height = options.MinHeight
+		changed = true
+	}
+	if changed {
+		w.setBounds(b)
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -936,7 +963,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
@@ -1489,6 +1516,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if w.routeCompositionMouseInput(msg, wparam, lparam) {
 			return 0
 		}
+	}
+
+	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
+		return w32.HTCLIENT
 	}
 
 	switch msg {

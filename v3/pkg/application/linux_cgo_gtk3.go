@@ -222,12 +222,34 @@ static void install_signal_handlers() {
 	#if defined(SIGSEGV)
 		fix_signal(SIGSEGV);
 	#endif
+	#if defined(SIGUSR1)
+		fix_signal(SIGUSR1);
+	#endif
 	#if defined(SIGXCPU)
 		fix_signal(SIGXCPU);
 	#endif
 	#if defined(SIGXFSZ)
 		fix_signal(SIGXFSZ);
 	#endif
+}
+
+// WebKit's JSC lazily installs signal handlers without SA_ONSTACK when
+// JavaScript first executes. This timer re-applies the fix every 50ms
+// for the first 5 seconds, covering the JSC initialization window.
+static gboolean install_signal_handlers_timeout(gpointer data) {
+    install_signal_handlers();
+    int *remaining = (int *)data;
+    (*remaining)--;
+    if (*remaining <= 0) {
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
+
+static void schedule_signal_handler_fix() {
+    int *remaining = (int *)g_malloc(sizeof(int));
+    *remaining = 100;
+    g_timeout_add_full(G_PRIORITY_DEFAULT, 50, install_signal_handlers_timeout, remaining, g_free);
 }
 
 static int GetNumScreens(){
@@ -1222,14 +1244,15 @@ func (w *linuxWebviewWindow) destroy() {
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
 	//w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	x, y, width, height, _ := w.getCurrentMonitorGeometry()
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	physicalWidth := int(float64(width) * scaleFactor)
-	physicalHeight := int(float64(height) * scaleFactor)
-	w.setMinMaxSize(0, 0, physicalWidth, physicalHeight)
-	w.setSize(physicalWidth, physicalHeight)
+	// gdk_monitor_get_geometry returns logical pixels, and
+	// gtk_window_resize / the geometry hints below also work in logical pixels,
+	// so we intentionally avoid multiply by the scale factor
+	w.setMinMaxSize(0, 0, 0, 0)
+	w.setSize(width, height)
 	C.gtk_window_fullscreen(w.gtkWindow())
 	w.setRelativePosition(0, 0)
 }
@@ -1419,6 +1442,7 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 
 	fixSignalHandlers.Do(func() {
 		C.install_signal_handlers()
+		C.schedule_signal_handler_fix()
 	})
 
 	C.save_webview_to_content_manager(unsafe.Pointer(manager), unsafe.Pointer(webView))
@@ -1587,13 +1611,19 @@ func getPrimaryScreen() (*Screen, error) {
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
-	size := C.GdkGeometry{
-		min_width:  C.int(minWidth),
-		min_height: C.int(minHeight),
-		max_width:  C.int(maxWidth),
-		max_height: C.int(maxHeight),
+	var size C.GdkGeometry
+	var mask C.GdkWindowHints
+	if minWidth > 0 || minHeight > 0 {
+		size.min_width = C.int(minWidth)
+		size.min_height = C.int(minHeight)
+		mask |= C.GDK_HINT_MIN_SIZE
 	}
-	C.gtk_window_set_geometry_hints((*C.GtkWindow)(window), nil, &size, C.GDK_HINT_MAX_SIZE|C.GDK_HINT_MIN_SIZE)
+	if maxWidth > 0 || maxHeight > 0 {
+		size.max_width = C.int(maxWidth)
+		size.max_height = C.int(maxHeight)
+		mask |= C.GDK_HINT_MAX_SIZE
+	}
+	C.gtk_window_set_geometry_hints((*C.GtkWindow)(window), nil, &size, mask)
 }
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
@@ -1731,6 +1761,9 @@ func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }

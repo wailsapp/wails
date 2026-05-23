@@ -83,6 +83,7 @@ void dispatchOnMainThread(unsigned int id);
 // ============================================================================
 
 void install_signal_handlers(void);
+void schedule_signal_handler_fix(void);
 
 // ============================================================================
 // Object data helpers
@@ -125,6 +126,7 @@ void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);
 
 // ============================================================================
 // Window event controllers (GTK4 style)
@@ -145,6 +147,8 @@ void beginWindowResize(GtkWindow *window, GdkSurfaceEdge edge, int button, doubl
 
 void window_move_x11(GtkWindow *window, int x, int y);
 void window_get_position_x11(GtkWindow *window, int *x, int *y);
+void window_set_always_on_top(GtkWindow *window, gboolean always_on_top);
+void window_apply_pending_always_on_top(GtkWindow *window);
 
 // ============================================================================
 // Drag and drop (GtkDropTarget for GTK4)
