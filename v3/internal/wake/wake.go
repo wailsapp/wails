@@ -64,11 +64,15 @@ func Execute(name string, opts ExecuteOptions) error {
 		return fmt.Errorf("wake: unsupported feature: %s (task CLI not available for fallback)", reason)
 	}
 
-	if err := override.LoadTaskfileOverrides(dir); err != nil {
-		return fmt.Errorf("wake: load Taskfile overrides: %w", err)
+	if !overridesDisabled() {
+		locals, err := override.LoadLocal(dir)
+		if err != nil {
+			return fmt.Errorf("wake: load local Taskfile overrides: %w", err)
+		}
+		for _, local := range locals {
+			resolve.MergeTaskfile(tf, local)
+		}
 	}
-
-	resolve.ApplyOverrides(tf, override.Named(), override.All())
 
 	resolve.FilterPlatforms(tf)
 
@@ -288,6 +292,14 @@ func useWake() bool {
 		return env == "true"
 	}
 	return false
+}
+
+// overridesDisabled reports whether local override files (Taskfile.local.* /
+// Taskfile.override.*) should be ignored. Setting WAILS_NO_OVERRIDES=true skips
+// auto-loading entirely, giving CI and security-sensitive builds deterministic
+// behaviour from the committed base Taskfile alone.
+func overridesDisabled() bool {
+	return os.Getenv("WAILS_NO_OVERRIDES") == "true"
 }
 
 func checkSupported(tf *ast.Taskfile) (string, bool) {

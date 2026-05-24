@@ -71,6 +71,12 @@ func Parse(path string) (*ast.Taskfile, error) {
 		return nil, fmt.Errorf("wake: unsupported Taskfile version %q in %s (only v3 supported)", tf.Version, path)
 	}
 
+	// A Taskfile without a `tasks:` key leaves Tasks nil; downstream code
+	// (merges, builtins, DAG) assumes a non-nil map, so normalise it here.
+	if tf.Tasks == nil {
+		tf.Tasks = make(map[string]*ast.Task)
+	}
+
 	return tf, nil
 }
 

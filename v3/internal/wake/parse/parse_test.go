@@ -28,6 +28,22 @@ tasks:
 	require.Contains(t, tf.Tasks, "hello")
 }
 
+func TestParseNoTasksYieldsNonNilMap(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "Taskfile.yml")
+	err := os.WriteFile(path, []byte(`
+version: "3"
+vars:
+  FOO: bar
+`), 0644)
+	require.NoError(t, err)
+
+	tf, err := Parse(path)
+	require.NoError(t, err)
+	require.NotNil(t, tf.Tasks, "Tasks must be non-nil even with no tasks: key")
+	require.Empty(t, tf.Tasks)
+}
+
 func TestParseIncludes(t *testing.T) {
 	dir := t.TempDir()
 
