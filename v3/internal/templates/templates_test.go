@@ -155,11 +155,12 @@ func TestStripUnsafe_RemovesControlChars(t *testing.T) {
 	}
 }
 
-func TestStripUnsafe_PreservesNewlineAndTab(t *testing.T) {
+func TestStripUnsafe_StripsNewlineAndTab(t *testing.T) {
 	input := "line1\nline2\ttabbed"
 	got := stripUnsafe(input)
-	if got != input {
-		t.Errorf("stripUnsafe(%q) = %q, want original preserved", input, got)
+	want := "line1line2tabbed"
+	if got != want {
+		t.Errorf("stripUnsafe(%q) = %q, want %q", input, got, want)
 	}
 }
 
