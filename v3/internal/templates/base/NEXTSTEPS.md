@@ -9,7 +9,7 @@ how to customise it, and how to publish it so others can use it.
 
 ```text
 <template-name>/
-├── template.json          # Template metadata (name, author, description, etc.)
+├── template.yaml          # Template metadata (name, author, wailsVersion, etc.)
 ├── NEXTSTEPS.md           # This file — delete it before publishing
 ├── README.md              # Shown to users after they create a project
 ├── main.go.tmpl           # Application entry point (template variables expanded at init time)
@@ -50,8 +50,8 @@ The following variables are available inside `.tmpl` files:
 
 ## Customising Your Template
 
-1. **Edit `template.json`** — update the `name`, `shortname`, `author`, `description`,
-   and `helpurl` fields. The `schema` field must remain `3`.
+1. **Edit `template.yaml`** — update the `name`, `shortname`, `author`, `description`,
+   and `helpurl` fields. The `wailsVersion` field must remain `3`.
 
 2. **Replace `frontend/`** — drop in your framework of choice (Vite, React, Vue, Svelte,
    etc.). The frontend directory is copied verbatim; add `.tmpl` to any file you want
@@ -111,7 +111,7 @@ its contents. Users must explicitly confirm before the project is created.
 As a template author you are responsible for:
 - The security and correctness of all code in your template
 - Keeping your template up to date with new Wails versions
-- Providing clear documentation (`README.md`, `helpurl` in `template.json`)
+- Providing clear documentation (`README.md`, `helpurl` in `template.yaml`)
 
 ---
 
