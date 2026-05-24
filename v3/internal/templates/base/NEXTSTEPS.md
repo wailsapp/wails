@@ -7,7 +7,7 @@ how to customise it, and how to publish it so others can use it.
 
 ## What Was Generated
 
-```
+```text
 <template-name>/
 ├── template.json          # Template metadata (name, author, description, etc.)
 ├── NEXTSTEPS.md           # This file — delete it before publishing

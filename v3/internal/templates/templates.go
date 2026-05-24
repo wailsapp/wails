@@ -510,14 +510,25 @@ func GenerateTemplate(options *BaseTemplate) error {
 	return nil
 }
 
+// stripUnsafe removes ANSI escape sequences and non-printable control characters
+// from untrusted strings before printing them to the terminal.
+func stripUnsafe(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r == '\x1b' || (r < 0x20 && r != '\n' && r != '\t') || r == 0x7f {
+			return -1
+		}
+		return r
+	}, s)
+}
+
 func confirmRemote(template *Template) bool {
 	pterm.Println(pterm.LightRed("\n⚠  THIRD-PARTY TEMPLATE WARNING ⚠"))
 	pterm.Println()
 	pterm.Println(pterm.LightYellow("You are about to create a project from a remote template:"))
-	pterm.Printf("  Name:   %s\n", template.Name)
-	pterm.Printf("  Author: %s\n", template.Author)
+	pterm.Printf("  Name:   %s\n", stripUnsafe(template.Name))
+	pterm.Printf("  Author: %s\n", stripUnsafe(template.Author))
 	if template.HelpURL != "" {
-		pterm.Printf("  URL:    %s\n", template.HelpURL)
+		pterm.Printf("  URL:    %s\n", stripUnsafe(template.HelpURL))
 	}
 	pterm.Println()
 	pterm.Println(pterm.LightYellow("Remote templates are third-party code. The Wails project does not review,"))
