@@ -2,12 +2,16 @@ package wake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/report/termui"
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/exec"
 	"github.com/wailsapp/wails/v3/internal/wake/fallback"
@@ -17,14 +21,31 @@ import (
 )
 
 type ExecuteOptions struct {
-	Dir       string
-	Platform  string
-	Arch      string
-	Dev       bool
-	Vars      map[string]string
-	Verbose   bool
-	Silent    bool
-	Parallel  bool
+	Dir      string
+	Platform string
+	Arch     string
+	Dev      bool
+	Verb     string // command the user ran (e.g. "build"); shown in the header
+	Vars     map[string]string
+	Silent   bool // show failures only
+	Verbose  bool // show commands + live subprocess output
+	Debug    bool // show resolver internals (implies verbose detail)
+	Parallel bool
+}
+
+// verbosity collapses the boolean options into a single level. Debug wins, then
+// Verbose, then Silent; the default is Normal.
+func (o ExecuteOptions) verbosity() report.Verbosity {
+	switch {
+	case o.Debug:
+		return report.Debug
+	case o.Verbose:
+		return report.Verbose
+	case o.Silent:
+		return report.Silent
+	default:
+		return report.Normal
+	}
 }
 
 func Parse(path string) (*ast.Taskfile, error) {
@@ -94,30 +115,98 @@ func Execute(name string, opts ExecuteOptions) error {
 		return fmt.Errorf("wake: load cache: %w", err)
 	}
 
+	level := opts.verbosity()
+	rep := termui.New(os.Stdout, level)
+
+	// Make the reporter reachable by in-process producers for the duration of
+	// the build. Subprocess producers reach it over the wire protocol instead
+	// (see internal/report and the executor's output capture).
+	report.SetActive(rep)
+	defer report.SetActive(nil)
+
 	ex := &exec.Executor{
 		Taskfile: tf,
 		Dir:      dir,
-		Verbose:  opts.Verbose,
-		Silent:   opts.Silent,
+		Level:    level,
+		Reporter: rep,
 		Cache:    cache,
 	}
 
-	if opts.Verbose {
-		fmt.Fprintf(os.Stderr, "[wake-dag] target=%q order=%v\n", name, dag.Order)
+	rep.BuildStart(opts.Verb, name, countSteps(tf, name))
+
+	if level >= report.Debug {
+		rep.Debug(report.DebugLine{Category: "dag", Subject: name, Arrow: strings.Join(dag.Order, " · ")})
 	}
 
 	ctx := context.Background()
+	start := time.Now()
+	var runErr error
 	if opts.Parallel {
-		if err := executeParallel(ctx, ex, name, dag); err != nil {
-			return err
-		}
+		runErr = executeParallel(ctx, ex, name, dag)
 	} else {
-		if err := ex.Execute(ctx, name); err != nil {
-			return err
+		runErr = ex.Execute(ctx, name)
+	}
+
+	rep.BuildEnd(time.Since(start), runErr == nil)
+	if runErr != nil {
+		return errReported{runErr}
+	}
+	return nil
+}
+
+// countSteps mirrors execution to predict how many steps will be shown: it walks
+// the target's transitive dependencies (deps) and task-ref commands, and counts
+// the unique tasks that run at least one real command. This is the N in the
+// [k/N] step counter. Names are already namespace-resolved at this point.
+func countSteps(tf *ast.Taskfile, target string) int {
+	seen := make(map[string]bool)
+	steps := make(map[string]bool)
+
+	var visit func(name string)
+	visit = func(name string) {
+		if seen[name] {
+			return
+		}
+		seen[name] = true
+		t := tf.Tasks[name]
+		if t == nil {
+			return
+		}
+		for _, d := range t.Deps {
+			visit(d.Task)
+		}
+		real := false
+		for _, c := range t.Cmds {
+			if c.Cmd != "" {
+				real = true
+			}
+			if c.Task != "" {
+				visit(c.Task)
+			}
+			if c.For != nil && c.For.Task != "" {
+				visit(c.For.Task)
+			}
+		}
+		if real {
+			steps[name] = true
 		}
 	}
 
-	return nil
+	visit(target)
+	return len(steps)
+}
+
+// errReported marks an error whose failure has already been rendered by the
+// reporter, so the top-level CLI can avoid printing it a second time.
+type errReported struct{ err error }
+
+func (e errReported) Error() string { return e.err.Error() }
+func (e errReported) Unwrap() error { return e.err }
+
+// IsReported reports whether err was already rendered to the build UI.
+func IsReported(err error) bool {
+	var r errReported
+	return errors.As(err, &r)
 }
 
 func discoverAndParse(dir string) (*ast.Taskfile, error) {

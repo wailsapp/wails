@@ -11,25 +11,43 @@ type Executor interface {
 	Run() error
 }
 
-type ShellCmd struct {
-	Cmd    string
-	Dir    string
-	Env    []string
+// Output is embedded in every command type to give the executor one uniform way
+// to redirect a command's streams. The executor captures into a buffer by
+// default and streams live when verbose; a nil writer discards (the os/exec
+// default of /dev/null).
+type Output struct {
 	Stdout io.Writer
 	Stderr io.Writer
+}
+
+// OutputSetter is implemented (via the embedded Output) by every command type,
+// so the executor can set streams without a type switch.
+type OutputSetter interface {
+	SetOutput(stdout, stderr io.Writer)
+}
+
+func (o *Output) SetOutput(stdout, stderr io.Writer) {
+	o.Stdout = stdout
+	o.Stderr = stderr
+}
+
+func (o Output) apply(c *exec.Cmd) {
+	c.Stdout = o.Stdout
+	c.Stderr = o.Stderr
+}
+
+type ShellCmd struct {
+	Output
+	Cmd string
+	Dir string
+	Env []string
 }
 
 func (s *ShellCmd) Run() error {
 	c := exec.Command("sh", "-c", s.Cmd)
 	c.Dir = s.Dir
 	c.Env = s.Env
-	if s.Stdout != nil {
-		c.Stdout = s.Stdout
-		c.Stderr = s.Stderr
-	} else {
-		c.Stdout = nil
-		c.Stderr = nil
-	}
+	s.apply(c)
 	return c.Run()
 }
 

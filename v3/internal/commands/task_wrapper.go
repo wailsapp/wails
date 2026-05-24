@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
 )
 
@@ -35,6 +36,10 @@ func SignWrapper(_ *flags.SignWrapper, otherArgs []string) error {
 }
 
 func wrapTask(action string, otherArgs []string) error {
+	// Match the banner other wails3 commands print; the footer is restored by
+	// leaving DisableFooter at its default so printFooter runs on exit.
+	term.Header(title(action))
+
 	goos := os.Getenv("GOOS")
 	if goos == "" {
 		goos = runtime.GOOS
@@ -65,7 +70,7 @@ func wrapTask(action string, otherArgs []string) error {
 	remainingArgs = append(remainingArgs, "ARCH="+goarch)
 
 	if useWake() {
-		return runWakeTask(taskName, goos, goarch, remainingArgs)
+		return runWakeTask(action, taskName, goos, goarch, remainingArgs)
 	}
 
 	newArgs := []string{"wails3", "task", taskName}
@@ -78,7 +83,15 @@ func useWake() bool {
 	return os.Getenv("WAILS_USE_WAKE") == "true"
 }
 
-func runWakeTask(taskName, goos, goarch string, cliVars []string) error {
+// title capitalises an action ("build" -> "Build") for the command banner.
+func title(action string) string {
+	if action == "" {
+		return action
+	}
+	return strings.ToUpper(action[:1]) + action[1:]
+}
+
+func runWakeTask(verb, taskName, goos, goarch string, cliVars []string) error {
 	dir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -98,9 +111,12 @@ func runWakeTask(taskName, goos, goarch string, cliVars []string) error {
 		Dir:      dir,
 		Platform: goos,
 		Arch:     goarch,
+		Verb:     verb,
 		Vars:     vars,
 		Verbose:  os.Getenv("WAKE_VERBOSE") != "",
 		Silent:   os.Getenv("WAKE_SILENT") != "",
+		Debug:    os.Getenv("WAKE_DEBUG") != "",
+		Parallel: os.Getenv("WAKE_PARALLEL") != "",
 	}
 
 	return wake.Execute(taskName, opts)

@@ -1,7 +1,6 @@
 package cmds
 
 import (
-	"os"
 	"os/exec"
 )
 
@@ -19,6 +18,7 @@ type GoBuildOptions struct {
 }
 
 type GoBuildCmd struct {
+	Output
 	Opts GoBuildOptions
 	Dir  string
 	Env  []string
@@ -62,8 +62,7 @@ func (g *GoBuildCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -75,6 +74,7 @@ type GoRunOptions struct {
 }
 
 type GoRunCmd struct {
+	Output
 	Opts GoRunOptions
 	Dir  string
 	Env  []string
@@ -100,8 +100,7 @@ func (g *GoRunCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -117,6 +116,7 @@ type GoTestOptions struct {
 }
 
 type GoTestCmd struct {
+	Output
 	Opts GoTestOptions
 	Dir  string
 	Env  []string
@@ -154,12 +154,12 @@ func (g *GoTestCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoModTidyCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -172,8 +172,7 @@ func (g *GoModTidyCmd) Run() error {
 	c := exec.Command("go", "mod", "tidy")
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -182,6 +181,7 @@ type GoInstallOptions struct {
 }
 
 type GoInstallCmd struct {
+	Output
 	Opts GoInstallOptions
 	Dir  string
 	Env  []string
@@ -199,8 +199,7 @@ func (g *GoInstallCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -210,6 +209,7 @@ type GoModOptions struct {
 }
 
 type GoModCmd struct {
+	Output
 	Opts GoModOptions
 	Dir  string
 	Env  []string
@@ -224,12 +224,12 @@ func (g *GoModCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoVetCmd struct {
+	Output
 	Package string
 	Dir     string
 	Env     []string
@@ -247,12 +247,12 @@ func (g *GoVetCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoFmtCmd struct {
+	Output
 	Write bool
 	Paths []string
 	Dir   string
@@ -272,8 +272,7 @@ func (g *GoFmtCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 

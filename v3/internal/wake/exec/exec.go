@@ -2,11 +2,16 @@ package exec
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	osexec "os/exec"
+	"sort"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/cmds"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
@@ -15,13 +20,71 @@ import (
 type Executor struct {
 	Taskfile   *ast.Taskfile
 	Dir        string
-	Verbose    bool
-	Silent     bool
+	Level      report.Verbosity
+	Reporter   report.Reporter
 	MaxWorkers int
 	Cache      *TaskCache
 	executed   map[string]bool
+	reported   map[string]bool
 	depRuns    map[string]bool
 	mu         sync.Mutex
+}
+
+// beginStep opens a reported step for task unless it has no real commands or was
+// already reported. Returning false means the caller should not emit step
+// output: this is the single chokepoint that bounds the [k/N] counter at k <= N,
+// even when a cache-pruned subtree and a real execution path reach the same task.
+func (e *Executor) beginStep(task *ast.Task, label string) bool {
+	if !hasRealCmds(task) {
+		return false
+	}
+	e.mu.Lock()
+	if e.reported == nil {
+		e.reported = make(map[string]bool)
+	}
+	if e.reported[task.Name] {
+		e.mu.Unlock()
+		return false
+	}
+	e.reported[task.Name] = true
+	e.mu.Unlock()
+	e.rep().StepStart(task.Name, label)
+	return true
+}
+
+// reportStep emits a complete, instantaneous step (cache hit, skip).
+func (e *Executor) reportStep(task *ast.Task, label string, status report.Status) {
+	if e.beginStep(task, label) {
+		e.rep().StepEnd(status, 0)
+	}
+}
+
+// reportPrunedCached reports task and the dependency subtree a cache hit just
+// pruned, all as cached. Without it the live counter would never reach N on an
+// incremental build, because a cache hit skips deps that the plan counted.
+func (e *Executor) reportPrunedCached(task *ast.Task) {
+	for _, d := range task.Deps {
+		if t := e.Taskfile.Tasks[d.Task]; t != nil {
+			e.reportPrunedCached(t)
+		}
+	}
+	for _, c := range task.Cmds {
+		if c.Task != "" {
+			if t := e.Taskfile.Tasks[c.Task]; t != nil {
+				e.reportPrunedCached(t)
+			}
+		}
+	}
+	e.reportStep(task, "", report.StatusCached)
+}
+
+// rep returns the reporter, defaulting to a no-op so the executor is safe to use
+// without a reporter wired in (e.g. in tests).
+func (e *Executor) rep() report.Reporter {
+	if e.Reporter == nil {
+		return report.Nop{}
+	}
+	return e.Reporter
 }
 
 func (e *Executor) Execute(ctx context.Context, target string) error {
@@ -53,6 +116,7 @@ func (e *Executor) ExecuteWithVars(ctx context.Context, target string, extraVars
 
 	if e.Cache != nil && e.Cache.ShouldSkip(task, e.Dir) {
 		e.log("task %q up-to-date (cache hit)", task.Name)
+		e.reportPrunedCached(task)
 		e.mu.Lock()
 		e.executed[target] = true
 		e.mu.Unlock()
@@ -93,13 +157,15 @@ func (e *Executor) resolveDepVars(depVars map[string]*ast.Var, mergedVars map[st
 				}
 				expanded := parse.ExpandTemplates(val, mergedVars)
 				resolved[k] = &ast.Var{Static: expanded, Value: expanded}
-				if e.Verbose {
-					fmt.Fprintf(os.Stderr, "[wake-resolve-dep-var] %q ref=%q -> %q\n", k, v.Ref, expanded)
-				}
+				e.rep().Debug(report.DebugLine{
+					Category: "var", Subject: k, Arrow: expanded,
+					Fields: []report.DebugField{{Key: "ref", Val: v.Ref}},
+				})
 			} else {
-				if e.Verbose {
-					fmt.Fprintf(os.Stderr, "[wake-resolve-dep-var] %q ref=%q NOT FOUND in mergedVars (keys: %v)\n", k, v.Ref, mapKeys(mergedVars))
-				}
+				e.rep().Debug(report.DebugLine{
+					Category: "var", Subject: k,
+					Fields: []report.DebugField{{Key: "ref", Val: v.Ref}, {Key: "status", Val: "unresolved"}},
+				})
 				resolved[k] = &ast.Var{Static: v.Ref, Value: v.Ref}
 			}
 		} else {
@@ -114,16 +180,9 @@ func (e *Executor) resolveDepVars(depVars map[string]*ast.Var, mergedVars map[st
 	return resolved
 }
 
-func mapKeys(m map[string]*ast.Var) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
 func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[string]*ast.Var) error {
 	if !matchesPlatform(task.Platforms) {
+		e.reportStep(task, "", report.StatusSkipped)
 		return nil
 	}
 
@@ -133,6 +192,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 
 	if isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
+		e.reportPrunedCached(task)
 		return nil
 	}
 
@@ -148,8 +208,17 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 
 		resolvedDepVars := e.resolveDepVars(dep.Vars, mergedVars)
 
-		if e.Verbose {
-			fmt.Fprintf(os.Stderr, "[wake-dep] task=%q dep=%q resolved=%q depVars=%v\n", task.Name, dep.Task, resolvedDep, resolvedDepVars)
+		if e.Level >= report.Debug {
+			fields := make([]report.DebugField, 0, len(resolvedDepVars))
+			for k, v := range resolvedDepVars {
+				val := v.Value
+				if val == "" {
+					val = v.Static
+				}
+				fields = append(fields, report.DebugField{Key: k, Val: val})
+			}
+			sort.Slice(fields, func(i, j int) bool { return fields[i].Key < fields[j].Key })
+			e.rep().Debug(report.DebugLine{Category: "dep", Subject: task.Name, Arrow: resolvedDep, Fields: fields})
 		}
 
 		method := task.Method
@@ -177,6 +246,10 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		expanded := parse.ExpandTemplates(v, mergedVars)
 		env = append(env, k+"="+expanded)
 	}
+	// Tell wails subprocess producers (e.g. `wails3 generate bindings`) to emit
+	// live feedback as wire events on stdout instead of printing their own UI;
+	// the output capture decodes and routes them to this build's reporter.
+	env = append(env, "WAKE_REPORT=1")
 
 	dir := parse.ExpandTemplates(task.Dir, mergedVars)
 	if dir != "" && !strings.HasPrefix(dir, "/") {
@@ -184,9 +257,6 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	}
 
 	label := parse.ExpandTemplates(task.Label, mergedVars)
-	if label != "" && !e.Silent && !task.Silent {
-		fmt.Printf("[wake:%s]\n", label)
-	}
 
 	// Implicit caching of native Go commands (`go build`, `go mod tidy`).
 	// The task CLI always re-runs these because the Taskfile declares no
@@ -205,6 +275,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 			sources, output := e.goCmdInputs(kind, task, expanded, goDir)
 			if e.Cache.ShouldSkipGoCmd(task.Name, expanded, sources, output) {
 				e.log("task %q up-to-date (go-cache hit)", task.Name)
+				e.reportStep(task, label, report.StatusCached)
 				return nil
 			}
 			goRecord = func() {
@@ -215,9 +286,34 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		}
 	}
 
+	// A "step" is a task that runs at least one real command; pure wrappers
+	// (only dep/task-ref cmds) emit no step of their own — their work shows up
+	// as the steps of the tasks they dispatch to. This keeps the [k/N] counter
+	// aligned with the visible per-command work and avoids nested steps.
+	// A "step" is a task that runs at least one real command; pure wrappers
+	// (only dep/task-ref cmds) emit no step of their own. step reports whether
+	// this run should be displayed (false if already reported via a cache-pruned
+	// path). Commands run regardless; only display is gated.
+	step := e.beginStep(task, label)
+	var cw *captureWriter
+	var start time.Time
+	if hasRealCmds(task) {
+		cw = newCaptureWriter(e.rep(), e.Level >= report.Verbose)
+		start = time.Now()
+	}
+
 	for _, cmd := range task.Cmds {
-		if err := e.runCmd(ctx, cmd, dir, env, mergedVars); err != nil {
+		if err := e.runCmd(ctx, cmd, dir, env, mergedVars, cw); err != nil {
 			if !cmd.IgnoreError {
+				if cw != nil {
+					cw.flush()
+				}
+				// A failure always surfaces, even if the step was previously
+				// reported (e.g. cached) and so would otherwise be silent.
+				if !step {
+					e.rep().StepStart(task.Name, label)
+				}
+				e.rep().StepFailed(e.failure(task, cmd, mergedVars, cw, err))
 				return err
 			}
 		}
@@ -227,7 +323,38 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		goRecord()
 	}
 
+	if step {
+		cw.flush()
+		e.rep().StepEnd(report.StatusOK, time.Since(start))
+	}
+
 	return nil
+}
+
+// hasRealCmds reports whether task runs any shell/native command (as opposed to
+// only dispatching to other tasks via deps or task-ref commands).
+func hasRealCmds(task *ast.Task) bool {
+	for _, c := range task.Cmds {
+		if c.Cmd != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// failure assembles a render-ready Failure for a command that errored.
+func (e *Executor) failure(task *ast.Task, cmd *ast.Cmd, vars map[string]*ast.Var, cw *captureWriter, err error) report.Failure {
+	f := report.Failure{
+		Task:    task.Name,
+		Command: parse.ExpandTemplates(cmd.Cmd, vars),
+		Output:  cw.output(),
+		Err:     err,
+	}
+	var ee *osexec.ExitError
+	if errors.As(err, &ee) {
+		f.ExitCode = ee.ExitCode()
+	}
+	return f
 }
 
 func (e *Executor) resolveTaskName(name, contextTask string) string {
@@ -270,7 +397,7 @@ func (e *Executor) resolveTaskName(name, contextTask string) string {
 	return name
 }
 
-func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var) error {
+func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var, cw *captureWriter) error {
 	if cmd.For != nil {
 		return e.runForLoop(ctx, cmd, dir, env, vars)
 	}
@@ -292,21 +419,19 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 	}
 
 	expandedCmd := parse.ExpandTemplates(cmd.Cmd, vars)
-
-	silent := cmd.Silent || e.Taskfile.Silent || e.Silent
-	if !silent {
-		fmt.Printf("[wake] %s\n", expandedCmd)
-	}
+	e.rep().StepCommand(expandedCmd)
 
 	executor := cmds.Route(expandedCmd, cmds.RouteOptions{
 		Dir: dir,
 		Env: env,
 	})
 
-	if silent {
-		if sc, ok := executor.(*cmds.ShellCmd); ok {
-			sc.Stdout = nil
-			sc.Stderr = nil
+	// Output is captured (shown only on failure) and streamed live when verbose;
+	// the writer also intercepts wire events from subprocess producers and routes
+	// them to the live reporter. cw is non-nil whenever the task is a step.
+	if cw != nil {
+		if s, ok := executor.(cmds.OutputSetter); ok {
+			s.SetOutput(cw, cw)
 		}
 	}
 
@@ -449,8 +574,8 @@ func ExecuteParallel(ctx context.Context, tasks []*ast.Task, execFn func(context
 }
 
 func (e *Executor) log(format string, args ...interface{}) {
-	if e.Verbose {
-		fmt.Printf(format+"\n", args...)
+	if e.Level >= report.Debug {
+		e.rep().Debug(report.DebugLine{Category: "exec", Subject: fmt.Sprintf(format, args...)})
 	}
 }
 

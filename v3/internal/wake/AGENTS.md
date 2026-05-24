@@ -18,6 +18,9 @@ cmds/                Command routing: shell, native Go (go build, npm, etc), fro
 platform/            OS/arch detection
 ```
 
+Build output is rendered through `internal/report` (a leaf contract) and
+`internal/report/termui` (the lipgloss renderer). See "Build Reporting" below.
+
 ## Execution Flow
 
 1. **Discover** `Taskfile.yml` / `Taskfile.yaml` / `build/Taskfile.yml`
@@ -76,6 +79,49 @@ Result (badge example, no-op rebuild): wake ~20ms vs `task` ~316ms (~94% faster)
 - **Dep namespace resolution**: Short dep names resolved to full namespace via `resolveDepNamespaces` (pre-execution) and `resolveTaskName` (runtime). Tries `prefix:task`, then `prefix:common:task`, then `include:task`.
 - **Fallback**: When `WAILS_USE_WAKE` not set or unsupported features detected (dotenv, output modes, defer, interval, short), falls back to `task` CLI if available.
 
+## Build Reporting (UI)
+
+Wake renders builds through a small reporting layer, kept separate from the
+executor so it can be reused and so producers in other processes can feed it.
+
+- **`internal/report`** — leaf contract (no lipgloss, no executor deps):
+  - `Reporter` interface: `BuildStart` / `StepStart` / `StepInfo` / `StepCommand`
+    / `StepOutput` / `StepEnd` / `StepFailed` / `BuildEnd`. `Nop` is the safe
+    default (used by tests and a reporter-less `Executor`).
+  - `Verbosity`: `Silent` < `Normal` < `Verbose` < `Debug`.
+  - Wire protocol: `Encode`/`Decode`/`Emit`/`Route` move `Event`s across a
+    process boundary on a single stdout line prefixed with a `\x1f`-delimited
+    sentinel that never occurs in ordinary output.
+- **`internal/report/termui`** — the renderer. On a TTY at `Normal` it draws one
+  live spinner line per step, rewritten in place to a final `✓`/`·`/`✗` line
+  with `[k/N]` and a duration. With no TTY / `NO_COLOR` it degrades to plain
+  one-line-per-step output. No emojis (✓ U+2713, ✗ U+2717, `·`, Braille spinner).
+
+**Verbosity behaviour (capture-by-default):** subprocess stdout/stderr is always
+captured (via `exec/capture.go`) and shown **only on failure**, so a clean
+`[k/N] task  1.2s ✓` is the dominant signal. `Verbose` additionally streams each
+command (`$ …`) and its output live; `Debug` adds resolver internals
+(`[wake-debug] …`, dep wiring, DAG order) on stderr. Set via `WAKE_SILENT` /
+`WAKE_VERBOSE` / `WAKE_DEBUG` (mapped to `ExecuteOptions` in `task_wrapper.go`).
+
+**Step counting:** `countSteps` (wake.go) walks deps **and** task-ref commands
+from the target and counts tasks with a real command — this is the `N`. The
+executor reports each task exactly once through the `beginStep`/`reported`
+chokepoint, so `k ≤ N`. A cache hit that prunes a dependency subtree reports the
+pruned tasks as `cached` (`reportPrunedCached`) so an incremental build still
+reaches `[N/N]` truthfully.
+
+**Producer feedback (cross-process):** the executor sets `WAKE_REPORT=1` for
+child processes. `wails3 generate bindings` (a subprocess) detects it and routes
+its `config.Logger` through `commands.wakeLogger`, emitting wire events on stdout
+instead of drawing its own spinner. The parent's `captureWriter` decodes those
+events and forwards them to the live step as `StepInfo` sub-lines. In-process
+producers can instead use `report.Active()`.
+
+**Failures:** a failed command's captured output, command string and exit code
+are rendered in a bordered panel; `wake.Execute` wraps the error as
+`errReported` and `cmd/wails3/main.go` skips re-printing it (no double output).
+
 ## Unsupported Features (triggers fallback)
 
 - `dotenv` at taskfile level
@@ -119,7 +165,9 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 | `exec/cache.go` | Cache load/save, hash computation, ShouldSkip, glob matching |
 | `exec/precond.go` | Precondition checking |
 | `exec/runner.go` | Run confirmation |
-| `exec/output.go` | Output capture |
+| `exec/capture.go` | Per-command output capture + wire-event routing |
+| `report/report.go` | Reporter contract, verbosity, wire protocol (leaf pkg) |
+| `report/termui/termui.go` | Terminal renderer (spinner, [k/N], panels) |
 | `fallback/task_cli.go` | External task CLI fallback |
 | `override/override.go` | Taskfile.local.yml / override.yml loading |
 | `cmds/shell.go` | Shell command execution |

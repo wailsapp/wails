@@ -136,8 +136,8 @@ func TestParseGoBuildArgs(t *testing.T) {
 			expected: GoBuildOptions{Package: "./cmd/app"},
 		},
 		{
-			name:     "complex build",
-			args:     []string{"go", "build", "-tags", "production", "-ldflags", "-s -w", "-trimpath", "-o", "bin/app", "./cmd/app"},
+			name: "complex build",
+			args: []string{"go", "build", "-tags", "production", "-ldflags", "-s -w", "-trimpath", "-o", "bin/app", "./cmd/app"},
 			expected: GoBuildOptions{
 				Tags:     []string{"production"},
 				Ldflags:  "-s -w",
