@@ -532,7 +532,8 @@ func GenerateTemplate(options *BaseTemplate) error {
 	if err != nil {
 		return err
 	}
-	if err = os.WriteFile(filepath.Join(outDir, "template.yaml"), optionsYAML, 0644); err != nil {
+	const modeline = "# yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json\n"
+	if err = os.WriteFile(filepath.Join(outDir, "template.yaml"), append([]byte(modeline), optionsYAML...), 0644); err != nil {
 		return err
 	}
 

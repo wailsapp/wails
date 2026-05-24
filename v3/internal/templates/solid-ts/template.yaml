@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
 name: "Solid + Vite (Typescript)"
 shortname: solid-ts
 author: Lea Anthony
