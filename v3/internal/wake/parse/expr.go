@@ -11,6 +11,7 @@ import (
 )
 
 var bareVarRegex = regexp.MustCompile(`\{\{(\s*)([A-Z_][A-Z0-9_]*)(\s*)\}\}`)
+var defaultBareVarRegex = regexp.MustCompile(`(\|\s*default\s+)([A-Z_][A-Z0-9_]*)(\s*[\}\|])`)
 
 func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	if !strings.Contains(s, "{{") {
@@ -18,6 +19,7 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	}
 
 	s = bareVarRegex.ReplaceAllString(s, "{{${1}.${2}${3}}}")
+	s = defaultBareVarRegex.ReplaceAllString(s, "${1}.${2}${3}")
 
 	funcMap := template.FuncMap{
 		"default": func(def, val interface{}) interface{} {
@@ -70,8 +72,12 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	tmplData := make(map[string]interface{})
 	for name, vr := range vars {
 		val := vr.Value
-		if val == "" {
-			val = vr.Static
+		if val == "" || strings.Contains(val, "{{") {
+			if val == "" && !strings.Contains(vr.Static, "{{") {
+				val = vr.Static
+			} else if strings.Contains(val, "{{") {
+				val = ""
+			}
 		}
 		tmplData[name] = val
 	}

@@ -54,6 +54,16 @@ func Parse(path string) (*ast.Taskfile, error) {
 			tf.Shopt = parseStringList(val)
 		case "silent":
 			tf.Silent = val.Value == "true"
+		case "dotenv":
+			tf.Dotenv = parseStringList(val)
+		case "output":
+			tf.Output = val.Value
+		case "run":
+			tf.Run = val.Value
+		case "interval":
+			tf.Interval = val.Value
+		case "requires":
+			tf.Requires = parseRequires(val)
 		}
 	}
 
@@ -203,6 +213,14 @@ func parseTask(name string, node *yaml.Node) (*ast.Task, error) {
 			task.Env = env
 		case "method":
 			task.Method = val.Value
+		case "run":
+			task.Run = val.Value
+		case "short":
+			task.Short = val.Value
+		case "defer":
+			task.Defer = parseStringList(val)
+		case "interval":
+			task.Interval = val.Value
 		}
 	}
 	return task, nil
@@ -327,6 +345,19 @@ func parsePreconditions(node *yaml.Node) ([]*ast.Precondition, error) {
 	return preconds, nil
 }
 
+func parseRequires(node *yaml.Node) *ast.Requires {
+	req := &ast.Requires{}
+	for i := 0; i < len(node.Content); i += 2 {
+		k := node.Content[i].Value
+		v := node.Content[i+1]
+		switch k {
+		case "preconditions":
+			req.Preconditions = parseStringList(v)
+		}
+	}
+	return req
+}
+
 func parseEnv(node *yaml.Node) (map[string]string, error) {
 	env := make(map[string]string)
 	for i := 0; i < len(node.Content); i += 2 {
@@ -405,7 +436,7 @@ func resolveIncludes(tf *ast.Taskfile, resolved map[string]*ast.Taskfile) error 
 
 		for taskName, task := range tfResolved.Tasks {
 			namespaced := name + ":" + taskName
-			tf.Tasks[namespaced] = task
+			tf.Tasks[namespaced] = task.Clone()
 		}
 	}
 	return nil
@@ -434,15 +465,18 @@ func PopulateBuiltins(tf *ast.Taskfile) {
 	if tf.Vars == nil {
 		tf.Vars = make(map[string]*ast.Var)
 	}
+	wd, _ := os.Getwd()
 	builtins := map[string]string{
-		"OS":       runtime.GOOS,
-		"ARCH":     runtime.GOARCH,
-		"OSFAMILY": osFamily(runtime.GOOS),
-		"NUMCPU":   fmt.Sprintf("%d", runtime.NumCPU()),
-		"ROOT_DIR": filepath.Dir(tf.Location),
-		"TASKFILE": tf.Location,
-		"TASKFILE_DIR": filepath.Dir(tf.Location),
-		"exeExt":   exeExt(runtime.GOOS),
+		"OS":                 runtime.GOOS,
+		"ARCH":               runtime.GOARCH,
+		"OSFAMILY":           osFamily(runtime.GOOS),
+		"NUMCPU":             fmt.Sprintf("%d", runtime.NumCPU()),
+		"ROOT_DIR":           filepath.Dir(tf.Location),
+		"TASKFILE":           tf.Location,
+		"TASKFILE_DIR":       filepath.Dir(tf.Location),
+		"exeExt":             exeExt(runtime.GOOS),
+		"BUILD_TAGS":         os.Getenv("BUILD_TAGS"),
+		"USER_WORKING_DIR":   wd,
 	}
 	for k, v := range builtins {
 		if _, ok := tf.Vars[k]; !ok {
@@ -506,7 +540,7 @@ func resolveVar(name string, vars map[string]*ast.Var, done, visiting map[string
 		if ref != nil {
 			vr.Value = ref.Value
 		}
-	} else if vr.Value == "" {
+	} else if vr.Value == "" && !strings.Contains(vr.Static, "{{") {
 		vr.Value = vr.Static
 	}
 
