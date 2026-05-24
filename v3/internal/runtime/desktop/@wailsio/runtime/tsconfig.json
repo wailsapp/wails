@@ -1,0 +1,37 @@
+{
+  "include": ["src"],
+  "exclude": ["./src/**/*.test.*"],
+  "compilerOptions": {
+    "composite": true,
+
+    "allowJs": false,
+
+    "noEmitOnError": true,
+    "declaration": true,
+    "declarationMap": false,
+    "declarationDir": "types",
+    "outDir": "dist",
+    "rootDir": "src",
+
+    "target": "ES2017",
+    "module": "ES2015",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "stripInternal": true,
+    "skipLibCheck": true,
+
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}

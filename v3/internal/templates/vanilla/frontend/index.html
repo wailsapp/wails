@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Wails App</title>
+</head>
+<body>
+<div class="container">
+    <div>
+        <a data-wml-openURL="https://wails.io">
+            <img src="/wails.png" class="logo" alt="Wails logo"/>
+        </a>
+        <a data-wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+            <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+        </a>
+    </div>
+    <h1>Wails + Javascript</h1>
+    <div class="card">
+        <div aria-label="result" class="result" id="result">Please enter your name below 👇</div>
+        <div class="input-box" id="input">
+            <input aria-label="input" class="input" id="name" type="text" autocomplete="off"/>
+            <button aria-label="greet-btn" class="btn" onclick="doGreet()">Greet</button>
+        </div>
+    </div>
+    <div class="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p id="time">Listening for Time event...</p></div>
+    </div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

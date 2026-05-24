@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blob API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            height: 100vh;
+            padding: 12px;
+            overflow: hidden;
+        }
+        .container { max-width: 950px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h1 { color: #4ade80; font-size: 1.3rem; }
+        h1 a { color: #4ade80; text-decoration: none; }
+        h1 a:hover { text-decoration: underline; }
+        .status { font-size: 0.8rem; color: #4ade80; }
+        .main { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; min-height: 0; }
+        .card.span2 { grid-column: span 2; }
+        h2 { font-size: 0.9rem; margin-bottom: 8px; color: #e94560; }
+        label { display: block; margin-bottom: 3px; color: #888; font-size: 0.75rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        textarea { resize: none; font-family: monospace; font-size: 0.75rem; }
+        select { padding: 5px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L2 4h8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+        select option { background: #1a1a2e; color: #eee; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        button:hover { opacity: 0.9; }
+        button.sm { padding: 4px 8px; font-size: 0.7rem; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .form-row { display: flex; gap: 8px; }
+        .form-row > * { flex: 1; }
+        .output {
+            flex: 1;
+            background: #0a0a1a;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 0;
+        }
+        .blob-list { flex: 1; overflow-y: auto; min-height: 0; }
+        .blob-item {
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .blob-name { font-size: 0.8rem; color: #4ade80; font-weight: 600; }
+        .blob-meta { font-size: 0.7rem; color: #666; }
+        .blob-actions { display: flex; gap: 4px; }
+        .features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .feature { font-size: 0.7rem; padding: 3px 8px; border-radius: 3px; background: rgba(74,222,128,0.2); color: #4ade80; }
+        .feature.no { background: rgba(248,113,113,0.2); color: #f87171; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+        .tab { padding: 4px 10px; background: transparent; border: 1px solid #333; color: #888; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .tab.active { background: #4ade80; color: #1a1a2e; border-color: #4ade80; }
+        .tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; }
+        .tab-content.active { display: flex; }
+        .preview { text-align: center; margin: 8px 0; }
+        .preview img { max-height: 60px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob" target="_blank">Blob API</a> Demo</h1>
+            <span class="status" id="status">Checking...</span>
+        </header>
+
+        <div class="main">
+            <!-- Create Blobs Column -->
+            <div class="card">
+                <h2>Create Blob</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('text')">Text</button>
+                    <button class="tab" onclick="showTab('json')">JSON</button>
+                    <button class="tab" onclick="showTab('binary')">Binary</button>
+                    <button class="tab" onclick="showTab('svg')">SVG</button>
+                </div>
+
+                <div id="tab-text" class="tab-content active">
+                    <textarea id="textContent" rows="3">Hello from Blob API!</textarea>
+                    <div class="form-row">
+                        <div><label>Type</label><select id="textType">
+                            <option value="text/plain">text/plain</option>
+                            <option value="text/html">text/html</option>
+                            <option value="application/json">application/json</option>
+                        </select></div>
+                        <div><label>Name</label><input id="textName" value="text-blob"></div>
+                    </div>
+                    <button onclick="createTextBlob()">Create Text Blob</button>
+                </div>
+
+                <div id="tab-json" class="tab-content">
+                    <textarea id="jsonContent" rows="4">{"name": "demo", "value": 42}</textarea>
+                    <button onclick="createJsonBlob()">Create JSON Blob</button>
+                </div>
+
+                <div id="tab-binary" class="tab-content">
+                    <div class="form-row">
+                        <div><label>Type</label><select id="binaryType">
+                            <option value="uint8">Uint8Array</option>
+                            <option value="uint16">Uint16Array</option>
+                            <option value="float32">Float32Array</option>
+                        </select></div>
+                    </div>
+                    <label>Values (comma-separated)</label>
+                    <input id="binaryValues" value="72, 101, 108, 108, 111">
+                    <button onclick="createBinaryBlob()">Create Binary Blob</button>
+                </div>
+
+                <div id="tab-svg" class="tab-content">
+                    <div class="form-row">
+                        <div><label>BG</label><input type="color" id="svgBg" value="#4ade80"></div>
+                        <div><label>FG</label><input type="color" id="svgFg" value="#1a1a2e"></div>
+                        <div><label>Text</label><input id="svgText" value="BLOB"></div>
+                    </div>
+                    <button onclick="createSvgBlob()">Create SVG Blob</button>
+                    <div class="preview" id="svgPreview"></div>
+                </div>
+
+                <div class="output" id="createOutput">Select a tab and create a blob...</div>
+            </div>
+
+            <!-- Stored Blobs Column -->
+            <div class="card">
+                <h2>Stored Blobs</h2>
+                <div class="blob-list" id="blobList">
+                    <p style="color:#555;font-size:0.8rem;">No blobs yet</p>
+                </div>
+                <div style="border-top:1px solid #333;padding-top:8px;margin-top:auto;">
+                    <h2 style="margin-top:0;">Operations</h2>
+                    <div class="form-row">
+                        <div><label>Source</label><select id="opSource"></select></div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="sm secondary" onclick="convertTo('text')">→Text</button>
+                        <button class="sm secondary" onclick="convertTo('buffer')">→Buffer</button>
+                        <button class="sm secondary" onclick="convertTo('base64')">→Base64</button>
+                    </div>
+                    <div class="form-row">
+                        <div><label>Start</label><input type="number" id="sliceStart" value="0" min="0"></div>
+                        <div><label>End</label><input type="number" id="sliceEnd" value="10"></div>
+                        <div style="display:flex;align-items:end;"><button class="sm" onclick="sliceBlob()">Slice</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output & Features Column -->
+            <div class="card">
+                <h2>API Features</h2>
+                <div class="features" id="features"></div>
+                <h2>Output</h2>
+                <div class="output" id="opOutput">Conversion/slice results appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const blobs = new Map();
+
+        // Check support
+        const hasBlob = typeof Blob !== 'undefined';
+        document.getElementById('status').textContent = hasBlob ? 'Blob API: Supported' : 'Not Supported';
+        document.getElementById('status').style.color = hasBlob ? '#4ade80' : '#f87171';
+
+        const checks = [
+            ['Blob', typeof Blob !== 'undefined'],
+            ['slice()', hasBlob && 'slice' in Blob.prototype],
+            ['text()', hasBlob && 'text' in Blob.prototype],
+            ['arrayBuffer()', hasBlob && 'arrayBuffer' in Blob.prototype],
+            ['stream()', hasBlob && 'stream' in Blob.prototype],
+            ['createObjectURL', typeof URL !== 'undefined' && 'createObjectURL' in URL],
+        ];
+        document.getElementById('features').innerHTML = checks.map(([n, s]) =>
+            `<span class="feature${s ? '' : ' no'}">${n}</span>`
+        ).join('');
+
+        // Tabs
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${name}')"]`).classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        // Blob storage
+        function store(name, blob) {
+            const url = URL.createObjectURL(blob);
+            blobs.set(name, { blob, url });
+            updateList();
+        }
+
+        function updateList() {
+            const list = document.getElementById('blobList');
+            const select = document.getElementById('opSource');
+            if (blobs.size === 0) {
+                list.innerHTML = '<p style="color:#555;font-size:0.8rem;">No blobs yet</p>';
+                select.innerHTML = '';
+                return;
+            }
+            list.innerHTML = '';
+            select.innerHTML = '';
+            blobs.forEach((data, name) => {
+                list.innerHTML += `<div class="blob-item">
+                    <div><div class="blob-name">${name}</div><div class="blob-meta">${fmtSize(data.blob.size)} - ${data.blob.type || 'no type'}</div></div>
+                    <div class="blob-actions">
+                        <button class="sm secondary" onclick="download('${name}')">DL</button>
+                        <button class="sm danger" onclick="del('${name}')">X</button>
+                    </div>
+                </div>`;
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
+
+        function fmtSize(b) { return b < 1024 ? b + 'B' : (b/1024).toFixed(1) + 'KB'; }
+
+        function download(name) {
+            const d = blobs.get(name); if (!d) return;
+            const a = document.createElement('a');
+            a.href = d.url; a.download = name; a.click();
+        }
+
+        function del(name) {
+            const d = blobs.get(name); if (!d) return;
+            URL.revokeObjectURL(d.url);
+            blobs.delete(name);
+            updateList();
+        }
+
+        // Create blobs
+        function createTextBlob() {
+            const content = document.getElementById('textContent').value;
+            const type = document.getElementById('textType').value;
+            const name = document.getElementById('textName').value || 'text-' + Date.now();
+            const blob = new Blob([content], { type });
+            store(name, blob);
+            document.getElementById('createOutput').textContent = `Created: ${name}\nSize: ${fmtSize(blob.size)}\nType: ${blob.type}\n\nContent:\n${content.substring(0, 200)}`;
+        }
+
+        function createJsonBlob() {
+            const content = document.getElementById('jsonContent').value;
+            try {
+                JSON.parse(content);
+                const blob = new Blob([content], { type: 'application/json' });
+                const name = 'json-' + Date.now();
+                store(name, blob);
+                document.getElementById('createOutput').textContent = `Created: ${name}\nSize: ${fmtSize(blob.size)}\nType: ${blob.type}\n\nJSON:\n${content}`;
+            } catch (e) {
+                document.getElementById('createOutput').textContent = 'Invalid JSON: ' + e.message;
+            }
+        }
+
+        function createBinaryBlob() {
+            const type = document.getElementById('binaryType').value;
+            const vals = document.getElementById('binaryValues').value.split(',').map(v => parseFloat(v.trim()));
+            const arr = type === 'uint8' ? new Uint8Array(vals) : type === 'uint16' ? new Uint16Array(vals) : new Float32Array(vals);
+            const blob = new Blob([arr], { type: 'application/octet-stream' });
+            const name = 'binary-' + Date.now();
+            store(name, blob);
+            document.getElementById('createOutput').textContent = `Created: ${name}\nSize: ${fmtSize(blob.size)}\nArray: ${type}\nValues: ${vals.join(', ')}\nAs text: ${new TextDecoder().decode(arr)}`;
+        }
+
+        function createSvgBlob() {
+            const bg = document.getElementById('svgBg').value;
+            const fg = document.getElementById('svgFg').value;
+            const text = document.getElementById('svgText').value;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="${bg}" rx="8"/><text x="60" y="38" font-family="system-ui" font-size="20" font-weight="bold" fill="${fg}" text-anchor="middle">${text}</text></svg>`;
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const name = 'svg-' + Date.now();
+            const url = URL.createObjectURL(blob);
+            document.getElementById('svgPreview').innerHTML = `<img src="${url}">`;
+            store(name, blob);
+            document.getElementById('createOutput').textContent = `Created: ${name}\nSize: ${fmtSize(blob.size)}\nType: image/svg+xml`;
+        }
+
+        // Operations
+        async function convertTo(format) {
+            const name = document.getElementById('opSource').value;
+            const d = blobs.get(name);
+            if (!d) { document.getElementById('opOutput').textContent = 'Select a blob first'; return; }
+
+            const out = document.getElementById('opOutput');
+            try {
+                if (format === 'text') {
+                    const text = await d.blob.text();
+                    out.textContent = `${name} as Text:\n\n${text}`;
+                } else if (format === 'buffer') {
+                    const buf = await d.blob.arrayBuffer();
+                    const arr = new Uint8Array(buf);
+                    const hex = Array.from(arr.slice(0, 64)).map(b => b.toString(16).padStart(2, '0')).join(' ');
+                    out.textContent = `${name} as ArrayBuffer:\n\nSize: ${buf.byteLength} bytes\n\nHex (first 64):\n${hex}`;
+                } else if (format === 'base64') {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const b64 = reader.result.split(',')[1];
+                        out.textContent = `${name} as Base64:\n\n${b64.substring(0, 200)}${b64.length > 200 ? '...' : ''}`;
+                    };
+                    reader.readAsDataURL(d.blob);
+                }
+            } catch (e) { out.textContent = 'Error: ' + e.message; }
+        }
+
+        async function sliceBlob() {
+            const name = document.getElementById('opSource').value;
+            const d = blobs.get(name);
+            if (!d) { document.getElementById('opOutput').textContent = 'Select a blob first'; return; }
+
+            const start = parseInt(document.getElementById('sliceStart').value);
+            const end = parseInt(document.getElementById('sliceEnd').value);
+            const slice = d.blob.slice(start, end);
+            const text = await slice.text();
+            const sliceName = name + `-slice-${start}-${end}`;
+            store(sliceName, slice);
+            document.getElementById('opOutput').textContent = `Sliced ${name} [${start}:${end}]\n\nNew blob: ${sliceName}\nSize: ${fmtSize(slice.size)}\n\nContent:\n${text}`;
+        }
+    </script>
+</body>
+</html>

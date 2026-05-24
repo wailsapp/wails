@@ -53,7 +53,7 @@ func NewAssetHandler(options assetserver.Options, log Logger) (http.Handler, err
 					msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
 				}
 
-				return nil, fmt.Errorf(msg)
+				return nil, errors.New(msg)
 			}
 
 			return nil, err
@@ -120,7 +120,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	statInfo, err := file.Stat()
 	if err != nil {
@@ -143,7 +145,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
 		statInfo, err = file.Stat()
 		if err != nil {

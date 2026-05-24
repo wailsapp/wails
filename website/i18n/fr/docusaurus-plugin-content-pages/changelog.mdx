@@ -14,158 +14,158 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changements
-- Updated recommendation for Svelte router in [#4085](https://github.com/wailsapp/wails/pull/4085) by [@benmccann](https://github.com/benmccann)
+- Mise à jour de la recommandation pour le routeur Svelte en [#4085](https://github.com/wailsapp/wails/pull/4085) par [@benmccann](https://github.com/benmccann)
 
 ### Ajouts
-- Added "Branding" section to `wails doctor` to correctly identify Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) by [@ronen25](https://github.com/ronen25)
+- Ajout de la section « Branding» dans `wails doctor` pour identifier correctement Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) par [@ronen25](https://github.com/ronen25)
 
 
 ## v2.10.1 - 2025-02-24
 
 ### Corrections
-- Fixed [listenerOff issue](https://github.com/wailsapp/wails/issues/3850) by @leaanthony.
-- Fixed issues building with `darwin/universal` target by @leaanthony.
+- Correction du problème [listenerOff](https://github.com/wailsapp/wails/issues/3850) par @leaanthony.
+- Correction de problèmes de construction avec `darwin/universal` par @leaanthony.
 
 ## v2.10 - 2025-02-15
 
 ### Ajouts
-- Added option to set window class name on Windows. Added in [PR](https://github.com/wailsapp/wails/pull/3828) by @APshenkin
+- Ajout d'une option pour définir le nom de la classe de fenêtre sous Windows. Ajouté dans la [PR](https://github.com/wailsapp/wails/pull/3828) par @APshenkin
 
 ### Corrections
-- Fixed dev mode logging bug by @attperac in [#3972](https://wailsapp/wails/pull/3972)
-- Fixed `reloaddirs` wails.json config options by @atterpac in [#4005](https//github.com/wailsapp/wails/pull/4005)
-- Fixed cross compilation failed with CGO [PR](https://github.com/wailsapp/wails/pull/3795) by [@fcying](https://github.com/fcying)
-- Using go-webview2 v0.1.17 to fix native webview2loader issue, by @leaanthony
-- Fixed example for macOS menu by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3847)
-- Fixed typo by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3846)
-- Fixed incorrect TS definition of `WindowSetSize` by @leaanthony
-- Ensure showHiddenFiles works with directory dialog by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3904)
-- chore: fix some comments in [PR](https://github.com/wailsapp/wails/pull/3932) by @lvyaoting
-- [windows] Fixed frameless window flickering when minimizing/restoring by preventing unnecessary redraws [#3951](https://github.com/wailsapp/wails/issues/3951)
-- Fixed failed models.ts build due to non-json-encodable Go types [PR](https://github.com/wailsapp/wails/pull/3975) by [@pbnjay](https://github.com/pbnjay)
-- Fixed more binding and typescript export bugs [PR](https://github.com/wailsapp/wails/pull/3978) by [@pbnjay](https://github.com/pbnjay)
-- Fixed Dispatcher.ProcessMessage crash process instead of return error [PR](https://github.com/wailsapp/wails/pull/4016) [#4015](https://github.com/wailsapp/wails/issues/4015) by [@ronaldinho_x86](https://github.com/RonaldinhoL)
-- Fixed Windows SaveDialog crash by [@leaanthony](https://github.com/leaanthony)
-- Fixed `buildvcs` errors by [@leaanthony](https://github.com/leaanthony)
-- Fixed updating menus on MacOS by [@stffabi](https://github.com/stffabi)
-- Fixed a build error on macOS that occurred when the `outputfilename` and `name` fields in wails.json were different. Fixed in [PR](https://github.com/wailsapp/wails/pull/3789) by [@nickisworking](https://github.com/nickisworking)
+- Correction du bug de logging en mode dev par @attperac dans [#3972](https://wailsapp/wails/pull/3972)
+- Correction des options de configuration `reloaddirs` dans wails.json par @atterpac dans [#4005](https//github.com/wailsapp/wails/pull/4005)
+- La compilation croisée a échoué avec CGO corrigée dans la [PR](https://github.com/wailsapp/wails/pull/3795) par [@fcying](https://github.com/fcying)
+- Utilisation de go-webview2 v0.1.17 pour corriger le problème natif de webview2loader, par @leaanthony
+- Correction de l'exemple du menu macOS par @takuyahara dans cette [PR](https://github.com/wailsapp/wails/pull/3847)
+- Correction de typos par @takuyahara dans cette [PR](https://github.com/wailsapp/wails/pull/3846)
+- Correction d'une définition TS incorrecte de `WindowSetSize` par @leaanthony
+- Modification pour s'assurer que showHiddenFiles fonctionne avec la boîte de dialogue de répertoire par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/3904)
+- Corriger quelques commentaires dans cette [PR](https://github.com/wailsapp/wails/pull/3932) par @lvyaoting
+- [windows] Correction d'un clignotage de fenêtre sans cadre lors de la minimisation/restauration en empêchant les redessinations inutiles [#3951](https://github.com/wailsapp/wails/issues/3951)
+- Correction de l'échec de la construction de models.ts à cause des types Go non-json-encodable -[PR](https://github.com/wailsapp/wails/pull/3975) par [@pbnjay](https://github.com/pbnjay)
+- Correction d'autres bugs d'exportation de liaisons et de typescript - [PR](https://github.com/wailsapp/wails/pull/3978) par [@pbnjay](https://github.com/pbnjay)
+- Correction du processus de plantage de Dispatcher.ProcessMessage au lieu de renvoyer l'erreur - [PR](https://github.com/wailsapp/wails/pull/4016) [#4015](https://github.com/wailsapp/wails/issues/4015) par [@ronaldinho_x86](https://github.com/RonaldinhoL)
+- Correction du plantage de Windows SaveDialog par [@leaanthony](https://github.com/leaanthony)
+- Correction d'erreurs `buildvcs` par [@leaanthony](https://github.com/leaanthony)
+- Correction des mises à jour des menus sur MacOS par [@stffabi](https://github.com/stffabi)
+- Correction d'une erreur de compilation sur macOS qui se produisait lorsque les champs `outputfilename` et `name` dans wails.json étaient différents. Correction dans cette [PR](https://github.com/wailsapp/wails/pull/3789) par [@nickisworking](https://github.com/nickisworking)
 
 ### Changements
-- Removed documentation references for 'The default module name in go.mod is "changeme". You should change this to something more appropriate.' as it appears to be no longer relevant.
-- Update script in Mac App Store guide to support app names containing spaces by @cristianrgreco
-- Allow to specify macos-min-version externally. Implemented by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3756)
-- Updated installation docs for latest linux os version and libwebkit issue [PR](https://github.com/wailsapp/wails/pull/3806) by [@pratikmota](https://github.com/pratikmota)
+- Suppression des références de documentation pour 'Le nom du module par défaut dans go.mod est "changeme". Vous devriez changer cela en quelque chose de plus approprié." car il ne semble plus pertinent.
+- Mise à jour du script dans le guide Mac App Store pour prendre en charge les noms des applications contenant des espaces, par@cristianrgreco
+- Permettre de spécifier macos-min-version en externe. Implémenté par @APshenkin dans cette [PR](https://github.com/wailsapp/wails/pull/3756)
+- Mise à jour de la documentation d'installation pour la dernière version de Linux os et le problème de libwebkit - [PR](https://github.com/wailsapp/wails/pull/3806) par [@pratikmota](https://github.com/pratikmota)
 
 
 
 ## v2.9.3 - 2025-02-13
 
 ### Ajouts
-- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
+- Prendre en charge go 1.24 par [@leaanthony](https://github.com/leaanthony)
 
 ### Corrections
-- Now using `-buildvcs=false` build tag by default to remove `error obtaining VCS status: exit status 128` errors by [@leaanthony](https://github.com/leaanthony)
+- Changement pour utiliser la balise `-buildvcs=false` par défaut pour supprimer l'`erreur obtenant le statut VCS : état de sortie 128` - par [@leaanthony](https://github.com/leaanthony)
 
 ## v2.9.2 - 2024-09-18
 
 ### Corrections
-- Fixed CGO memory issue on Darwin by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3590)
-- Fixed an error that occurred when an author name contains a string that is not suitable for JSON. Fixed by @taiseiotsuka in [PR](https://github.com/wailsapp/wails/pull/3638)
-- Fixed MacOS build to use `outputfilename` from wails.json. [#3200](https://github.com/wailsapp/wails/issues/3200)
-- Fixed file drop events on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
-- Fixed doctor command not finding pkg-config on Solus. [PR #3670](https://github.com/wailsapp/wails/pull/3670) by [@ianmjones](https://github.com/ianmjones)
-- Fixed binding for struct fields that were exported but had no json tags. [PR #3678](https://github.com/wailsapp/wails/pull/3678)
-- Fixed file drop events on Windows in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
-- Modified `ZoomFactor` and `IsZoomControlEnabled` options to be Windows-only options in PR[#3644](https://github.com/wailsapp/wails/pull/3644) by @levinit
-- Added nil check for Drag-n-Drop on Windows. Fixed by in [PR](https://github.com/wailsapp/wails/pull/3597) by @leaanthony based on the suggestion by @Alpa-1 in [#3596](https://github.com/wailsapp/wails/issues/3596).
-- Fixed typos in various .mdx files. [PR #3628](https://github.com/wailsapp/wails/pull/3628) by [@deining](https://github.com/deining)
-- Fixed `notifyListeners()` race condition when terminated mid-emission [PR](https://github.com/wailsapp/wails/pull/3695) by [@mrf345](https://github.com/mrf345)
-- Fixed dialogs in Windows when using Go 1.23 in [PR](https://github.com/wailsapp/wails/pull/3707) by [@leaanthony](https://github.com/leaanthony)
-- More syscall fixes for Go 1.23 support in [PR](https://github.com/wailsapp/wails/pull/3713) by [@leaanthony](https://github.com/leaanthony)
-- Fixed drag and drop missing cursor icon [PR](https://github.com/wailsapp/wails/pull/3703) by [@mrf345](https://github.com/mrf345)
+- Correction du problème de mémoire CGO sur Darwin par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/3590)
+- Correction d'une erreur qui se produisait lorsqu'un nom d'auteur contient un string qui n'est pas approprié pour JSON. Correction par @taiseiotsuka dans cette [PR](https://github.com/wailsapp/wails/pull/3638)
+- Correction de la compilation MacOS pour utiliser l'option `outputfilename` de wails.json. [#3200](https://github.com/wailsapp/wails/issues/3200)
+- Correction des événements de dépôt de fichiers sur windows. Correction dans cette [PR](https://github.com/wailsapp/wails/pull/3595) par @FrancescoLuzzi
+- La commande doctor ne trouve pas pkg-config sur Solus. [PR #3670](https://github.com/wailsapp/wails/pull/3670) par [@ianmjones](https://github.com/ianmjones)
+- Correction de la liaison pour les champs de structure qui étaient exportés mais n'avaient pas de balises json. [PR #3678](https://github.com/wailsapp/wails/pull/3678)
+- Correction d'événements de drop de fichier sous Windows dans la [PR](https://github.com/wailsapp/wails/pull/3595), par @FrancescoLuzzi
+- Les options `ZoomFactor` et `IsZoomControlEnabled` ont été modifiées pour uniquement  être des options Windows. Modifié dans la PR[#3644](https://github.com/wailsapp/wails/pull/3644) par @levinit
+- Ajout de la vérification nulle pour le Drag-n-Drop sous Windows. Correction dans la [PR](https://github.com/wailsapp/wails/pull/3597) ouverte par @leaanthony sur la base de la suggestion de @Alpa-1 dans [#3596](https://github.com/wailsapp/wails/issues/3596).
+- Correction de fautes de frappe dans divers fichiers .mdx. [PR #3628](https://github.com/wailsapp/wails/pull/3628) par [@deining](https://github.com/deining)
+- Correction de la race condition de `notifyListeners()` quand elle est arrêtée durant l'exécution du processus - [PR](https://github.com/wailsapp/wails/pull/3695) par [@mrf345](https://github.com/mrf345)
+- Correction des boites de dialogues dans Windows avec Go 1.23 - [PR](https://github.com/wailsapp/wails/pull/3707) par [@leaanthony](https://github.com/leaanthony)
+- D'autres corrections de syscall pour le support de Go 1.23 - [PR](https://github.com/wailsapp/wails/pull/3713) par [@leaanthony](https://github.com/leaanthony)
+- Correction de l'icône de curseur lors d'un drag and drop - [PR](https://github.com/wailsapp/wails/pull/3703) par [@mrf345](https://github.com/mrf345)
 
 ### Changements
-- Modified docs to reflect the correct password syntax for the `gon-sign.json` file [PR](https://github.com/wailsapp/wails/pull/3620) by [@ignasbernotas](github.com/ignasbernotas)
+- Documentation modifiée pour refléter la syntaxe de mot de passe correcte pour le fichier `gon-sign.json` - [PR](https://github.com/wailsapp/wails/pull/3620) par [@ignasbernotas](github.com/ignasbernotas)
 ## v2.9.1 - 2024-06-18
 
 ### Corrections
-- Fixed build issues on Linux for some glibc versions. Fixed in [PR](https://github.com/wailsapp/wails/pull/3545) by @leaanthony.
+- Correction des problèmes de compilation sur Linux pour certaines versions de la glibc. Correction dans cette [PR](https://github.com/wailsapp/wails/pull/3545) par @leaanthony.
 
 ## v2.9.0 - 2024-06-16
 
 ### Ajouts
-- Added Drag & Drop (files or folders) support for Windows and Linux. Added by [@lyimmi](https://github.com/lyimmi) in [PR](https://github.com/wailsapp/wails/pull/3203). Based on the work of [@ayatkyo](https://github.com/ayatkyo) for Windows in [PR](https://github.com/wailsapp/wails/pull/2774).
-- Added Drag & Drop (files or folders) support for macOS. Added by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3250).
-- Support for compiling with `libwebkit2gtk-4.1` instead of `4.0` to support latest Ubuntu release by [atterpac](https://github.com/atterpac) in [#3465](https://github.com/wailsapp/wails/pull/3465)
-- Extended Routing guide with Svelte example by [@stanislav-zeman](https://github.com/stanislav-zeman) in [#3481](https://github.com/wailsapp/wails/pull/3481)
-- Unit test for fix [#3476](https://github.com/wailsapp/wails/pull/3476) by [gjergj](https://github.com/Gjergj) in [#3485](https://github.com/wailsapp/wails/pull/3485)
-- German Readme Translation by [Zeiichenfolge](https://github.com/Zeiichenfolge) in [#3483](https://github.com/wailsapp/wails/pull/3483)
-- Added support generating bindings for structs without fields. Added by [gjergj](https://github.com/Gjergj) in [PR](https://github.com/wailsapp/wails/pull/3489)
+- Ajout du support du Glisser-Déposer (fichiers et dossiers) sur Windows et Linux. Ajouté par [@lyimmi](https://github.com/lyimmi) dans cette [PR](https://github.com/wailsapp/wails/pull/3203). Basé sur le travail de [@ayatkyo](https://github.com/ayatkyo) pour Windows dans la [PR](https://github.com/wailsapp/wails/pull/2774).
+- Ajout de la prise en charge du Glisser-Déposer (fichiers ou dossiers) pour macOS. Ajouté par [@APshenkin](https://github.com/APshenkin) dans cette [PR](https://github.com/wailsapp/wails/pull/3250).
+- Support de la compilation avec `libwebkit2gtk-4.1` au lieu de `4.0` pour supporter la dernière version d'Ubuntu - par [atterpac](https://github.com/atterpac) dans [#3465](https://github.com/wailsapp/wails/pull/3465)
+- Guide approfondi sur le routage avec un exemple Svelte par [@stanislav-zeman](https://github.com/stanislav-zeman) dans [#3481](https://github.com/wailsapp/wails/pull/3481)
+- Ajout de tests unitaires pour le fix [#3476](https://github.com/wailsapp/wails/pull/3476) par [gjergj](https://github.com/Gjergj) en [#3485](https://github.com/wailsapp/wails/pull/3485)
+- Traduction en allemand du Readme par [Zeiichenfolge](https://github.com/Zeiichenfolge) dans [#3483](https://github.com/wailsapp/wails/pull/3483)
+- Ajout du support générant des liaisons pour les structures sans champs. Ajouté par [gjergj](https://github.com/Gjergj) dans cette [PR](https://github.com/wailsapp/wails/pull/3489)
 
 ### Changements
-- Updated several broken links in the "How Does It Work?" page on the website. Changed by [@oguz-yilmaz](https://github.com/oguz-yilmaz) in [PR #3469](https://github.com/wailsapp/wails/pull/3469)
-- Upgraded Go version in CI to 1.22 by [@leaanthony](https://github.com/leaanthony) in [#3473](https://github.com/wailsapp/wails/pull/3473).
+- Mise à jour de plusieurs liens cassés dans la page "Comment ça marche?" du site Web. Changé par [@oguz-yilmaz](https://github.com/oguz-yilmaz) dans la [PR #3469](https://github.com/wailsapp/wails/pull/3469)
+- Version de Go mise à jour en CI 1.22 par [@leaanthony](https://github.com/leaanthony) dans [#3473](https://github.com/wailsapp/wails/pull/3473).
 
 ### Corrections
-- Fix Drag & Drop JS runtime. Added by [@jakubpeleska](https://github.com/jakubpeleska), provided by [Beam Transfer](https://beamtransfer.io) in [PR](https://github.com/wailsapp/wails/pull/3516).
-- Fixed optional type generation where an extra `?` would be placed inside the field name instead of outside the name `"field?"?` vs `"field"?`. Fixed  by [@atterpac](https://github.com/atterpac) in [#3476](https://github.com/wailsapp/wails/pull/3476)
-- Fixed an issue where `WindowGetPosition` and `WindowSetPosition` values were inconsistent on MacOS. Fixed by [@cenan](https://github.com/wailsapp/wails/pull/3479)
-- Fix scoop command usage typo. Fixed by [@fieu](https://github.com/fieu) in [#3501](https://github.com/wailsapp/wails/pull/3501)
-- Fixed macOS single instance lock reset after some time. Fixed by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3526)
+- Correction du Glisser-Déposer JS. Ajouté par [@jakubpeleska](https://github.com/jakubpeleska), fourni par [Beam Transfer](https://beamtransfer.io) dans cette [PR](https://github.com/wailsapp/wails/pull/3516).
+- Correction de la génération de type optionnelle où un extra `?` serait placé dans le nom de la variable au lieu de se mettre après. `"field?"?` vs `"field"?`. Correction par [@atterpac](https://github.com/atterpac) dans [#3476](https://github.com/wailsapp/wails/pull/3476)
+- Correction d'un problème où les valeurs `WindowGetPosition` et `WindowSetPosition` étaient incohérentes sur MacOS. Fixé par [@cenan](https://github.com/wailsapp/wails/pull/3479)
+- Correction de l'erreur de typo de la commande scoop. Correction par [@fieu](https://github.com/fieu) dans [#3501](https://github.com/wailsapp/wails/pull/3501)
+- Correction de la réinitialisation de l'instance mono macOS après un certain temps. Correction par [@APshenkin](https://github.com/APshenkin) dans cette [PR](https://github.com/wailsapp/wails/pull/3526)
 
 ## v2.8.2 - 2024-05-08
 
 ### Breaking Change
-- The `-noPackage` flag was misnamed and is being renamed to `nopackage` to match the other flags. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/issues/3421).
+- Le drapeau `-noPackage` a été mal nommé et est en cours de renommage en `nopackage` pour correspondre à la nomenclature des autres drapeaux. Changé par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/issues/3421).
 
 ### Ajouts
-- Added support for proxying assets requests to an external server. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3463)
+- Ajout de la prise en charge d'un proxy pour les requêtes récupérant des ressources auprès d'un serveur externe. Ajouté par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/3463)
 
 ### Corrections
-- Fixed an issue with missing icon for Windows. Fixed by [@APshenkin](https://github.com/wailsapp/wails/pull/3400)
+- Correction d'un problème avec l'icône manquante pour Windows. Correction par [@APshenkin](https://github.com/wailsapp/wails/pull/3400)
 
 ## v2.8.1 - 2024-04-11
 
 ### Ajouts
 
-- Added docs help to indicate that in IDE options you can choose between vscode and goland. Added by @DiegPS in [PR](https://github.com/wailsapp/wails/pull/3419)
-- Added docs to help fix NixOs/Wayland font-size css issue. Added by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3268)
-- Added -m (skip `go mod tidy`) flag to dev command by @te5se in [PR](https://github.com/wailsapp/wails/pull/3275)
-- Added mac option `DisableZoom` to remove zoom button. Added by @wizzymore in [PR](https://github.com/wailsapp/wails/pull/3289)
+- Ajout de docs aide à indiquer que dans les options de l'IDE vous pouvez choisir entre vscode et goland. Ajouté par @DiegPS dans cette [PR](https://github.com/wailsapp/wails/pull/3419)
+- Ajout de docs pour aider à résoudre le problème css de taille de police dans NixOs/Wayland. Ajouté par @atterpac dans cette [PR](https://github.com/wailsapp/wails/pull/3268)
+- Ajout du flag -m (sauter `go mod tidy`) à la commande de dev par @te5se dans cette [PR](https://github.com/wailsapp/wails/pull/3275)
+- Ajout de l'option mac `DisableZoom` pour supprimer le bouton de zoom. Ajouté par @wizzymore dans cette [PR](https://github.com/wailsapp/wails/pull/3289)
 
 ### Corrections
 
-- Fixed an issue where embed directives with patterned paths would create illegal directories. Changed by [@twonull](https://github.com/twonull) in [PR](https://github.com/wailsapp/wails/pull/3445)
-- Fixed an issue where certain calls to createFrom in TypeScript would fail. Changed by [@twonull](https://github.com/twonull) in [PR](https://github.com/wailsapp/wails/pull/3435)
-- Fixed some typos in comments. Changed by [@reallylowest](https://github.com/reallylowest) in [PR](https://github.com/wailsapp/wails/pull/3357)
-- Fixed an issue where the destination file was not properly closed after copying. Changed by [@testwill](https://github.com/testwill) in [PR](https://github.com/wailsapp/wails/pull/3384)
-- Fixed an issue where `xattr` calls were not working. Fixed by [@leaanthony](https://github.com/wailsapp/wails/pull/3328)
-- Warn in the documentation that the fixed version of the WebView 2 Runtime must be extracted before use. Documented by [@ALizarazoTellez](https://github.com/ALizarazoTellez) in [PR](https://github.com/wailsapp/wails/pull/3444).
+- Correction d'un problème où les directives incorporées avec des chemins suivant des patterns créaient des répertoires illégaux. Changé par [@twonull](https://github.com/twonull) dans cette [PR](https://github.com/wailsapp/wails/pull/3445)
+- Correction d'un problème où certains appels à createFrom dans TypeScript échouaient. Changé par [@twonull](https://github.com/twonull) dans cette [PR](https://github.com/wailsapp/wails/pull/3435)
+- Correction de certaines fautes de frappe dans les commentaires. Changé par [@reallylowest](https://github.com/reallylowest) dans cette [PR](https://github.com/wailsapp/wails/pull/3357)
+- Correction d'un problème où le fichier de destination n'était pas correctement fermé après la copie. Changé par [@testwill](https://github.com/testwill) dans cette [PR](https://github.com/wailsapp/wails/pull/3384)
+- Correction d'un problème où les appels `xattr` ne fonctionnaient pas. Correction par [@leaanthony](https://github.com/wailsapp/wails/pull/3328)
+- Ajout d'un avertissement dans la documentation que la version fixant le runtime WebView 2 doit être extrait du fichier téléchargé avant de l'utiliser. Documenté par [@ALizarazoTellez](https://github.com/ALizarazoTellez) dans cette [PR](https://github.com/wailsapp/wails/pull/3444).
 
 ### Changements
 
-- Changed Create a project with changing the default name to the project’s name. Changed by [@Twacqwq](https://github.com/Twacqwq) in [PR](https://github.com/wailsapp/wails/pull/3303)
+- Changement du nom par défaut par celui du projet. Changé par [@Twacqwq](https://github.com/Twacqwq) dans cette [PR](https://github.com/wailsapp/wails/pull/3303)
 
 ## v2.8.0 - 2024-02-08
 
 ### Ajouts
 
-- Added windows options supports `DisablePinchZoom` configuration. Added by @tuuzed in [PR](https://github.com/wailsapp/wails/pull/3115)
-- Add Apple Silicon hardware detection to `wails doctor`. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3129)
-- Remove quarantine attribute on macOS binaries. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3118)
-- Added documentation for a common GStreamer error on Linux systems. Changed by [@mkwsnyder](https://github.com/mkwsnyder) in [PR](https://github.com/wailsapp/wails/pull/3134)
-- Added documentation on explicity example of importing JS runtime. Changed by [@danawoodman](https://github.com/danawoodman) in [PR](https://github.com/wailsapp/wails/pull/3178)
-- Add dock icon right-click exit handling by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3157)
+- Les options Windows ajoutées prennent en charge la configuration `DisablePinchZoom`. Ajouté par @tuuzed dans cette [PR](https://github.com/wailsapp/wails/pull/3115)
+- Ajouter la détection du matériel Silicon d'Apple dans `wails doctor`. Changé par @almas1992 dans cette [PR](https://github.com/wailsapp/wails/pull/3129)
+- Supprimer l'attribut de quarantaine sur les binaires macOS. Changé par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/3118)
+- Ajout de la documentation pour une erreur GStreamer courante sur les systèmes Linux. Changé par [@mkwsnyder](https://github.com/mkwsnyder) dans cette [PR](https://github.com/wailsapp/wails/pull/3134)
+- Ajout de la documentation sur un exemple explicite d'import de runtime JS. Changé par [@danawoodman](https://github.com/danawoodman) dans cette [PR](https://github.com/wailsapp/wails/pull/3178)
+- Ajouter l'icône du dock à l'aide du bouton droit de la souris par @almas1992 dans cette [PR](https://github.com/wailsapp/wails/pull/3157)
 
 ### Corrections
-- Fixed vue-ts template build error. Fixed by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3243)
-- Docs for IsZoomControlEnabled and ZoomFactor. Fixed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3137)
-- Fixed `-compiler` flag for `wails build`, `wails dev` and `wails generate module`. Fixed in [PR](https://github.com/wailsapp/wails/pull/3121) by [@xtrafrancyz](https://github.com/xtrafrancyz)
-- Fixed uninitialized `SecondInstanceData.WorkingDirectory` on linux and windows ([#3154](https://github.com/wailsapp/wails/pull/3154)).
-- Fixed React Routing documentation add 'Routes' and 'Route'. Fixed by @doracpphp in [PR](https://github.com/wailsapp/wails/pull/3206)
-- Fixed save file dialog not appending file extension automatically on Windows by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3205)
-- Fixed compatibility for wails cli being built with go 1.22 and later. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/3244)
-- Fixed documentation for Window API return types. Fixed by @jangler in [PR](https://github.com/wailsapp/wails/pull/3247)
+- Erreur de construction du modèle vue-ts. Correction par @atterpac dans cette [PR](https://github.com/wailsapp/wails/pull/3243)
+- Docs pour IsZoomControlEnabled et ZoomFactor. Correction par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/3137)
+- Correction du drapeau `-compiler` pour `wails build`, `wails dev` et `wails generate module`. Correction dans cette [PR](https://github.com/wailsapp/wails/pull/3121) par [@xtrafrancyz](https://github.com/xtrafrancyz)
+- Correction de la non initialisation de `SecondInstanceData.WorkingDirectory`  sur linux et windows ([#3154](https://github.com/wailsapp/wails/pull/3154)).
+- Correction de la documentation de React Routing pour ajouter 'Routes' et 'Route'. Correction par @doracpphp dans cette [PR](https://github.com/wailsapp/wails/pull/3206)
+- Correction de la boîte de dialogue de sauvegarde n'ajoutant pas automatiquement l'extension de fichier sous Windows par @almas1992 dans cette [PR](https://github.com/wailsapp/wails/pull/3205)
+- Correction de la compatibilité pour wails cli construit avec go 1.22 et plus. Correction par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/3244)
+- Documentation corrigée pour les types de retour de l'API Window . Correction par @jangler dans cette [PR](https://github.com/wailsapp/wails/pull/3247)
 
 ## v2.7.1 - 2023-12-10
 
@@ -174,7 +174,7 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fixed building on macOS 11. Updated other build guards. Fixed in [#3111](https://github.com/wailsapp/wails/pull/3108) by [@leaanthony](https://github.com/leaanthony).
 
 ### Changements
-- Go 1.20 is now the minimum supported Go version.
+- Go 1.20 est maintenant la version minimale de Go supportée.
 
 
 ## v2.7.0 - 2023-12-09
@@ -349,13 +349,13 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Ajout du support de WebKit2GTK 2.36+ sous Linux. Cela apporte des fonctionnalités supplémentaires pour l' [AssetServer](/docs/reference/options#assetserver), comme le support des méthodes HTTP et des en-têtes. L'application doit être compilée avec la balise Go `webkit2_36` pour activer le support de ces fonctionnalités. Cela repousse également l'exigence minimale de WebKit2GTK à 2.36 pour votre application. Correction par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2151)
 - Ajout de la prise en charge de la sélection des entrées de fichier sur macOS. Ajouté par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2209)
 - Ajout du flux de requête/réponse de l'AssetServer sur macOS. Ajouté par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2219)
-- Added request path checks for the AssetServer. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2235)
-- Added new App Store guide. Added by @achhabra2 in [PR](https://github.com/wailsapp/wails/pull/2142)
-- Added extra libwebkit check for dnf package manager (required for latest Fedora). Fixed by @NullCode1337 in this [PR](https://github.com/wailsapp/wails/pull/2218)
-- Added new `-nomodsync` flag to disable the automatic syncing of the `go.mod` file. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2215)
-- Added support for adding prefix and postfix text to generated Typescript classes. Ajouté par @OlegGulevskyy dans [PR](https://github.com/wailsapp/wails/pull/2101)
-- Added reference to NSIS as optional dependency. Added by @acheong08 in [PR](https://github.com/wailsapp/wails/pull/2070)
-- Added Korean translation for the website. Added by @cybertramp in [PR](https://github.com/wailsapp/wails/pull/2093)
+- Ajout de validation sur les paths des requêtes pour AssetServer. Ajouté par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2235)
+- Ajout d'un nouveau guide pour l'App Store. Ajouté par @achhabra2 dans cette [PR](https://github.com/wailsapp/wails/pull/2142)
+- Ajout d'une vérification supplémentaire sur libwebkit pour le gestionnaire de paquets dnf (requis pour la dernière version de Fedora). Correction par @NullCode1337 dans cette [PR](https://github.com/wailsapp/wails/pull/2218)
+- Ajout du nouveau drapeau `-nomodsync` pour désactiver la synchronisation automatique du fichier `go.mod`. Ajouté par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/2215)
+- Ajout du support pour l'ajout de préfixes et de suffixes aux classes Typescript générées. Ajouté par @OlegGulevskyy dans [PR](https://github.com/wailsapp/wails/pull/2101)
+- Ajout de la référence à NSIS comme dépendance optionnelle. Ajouté par @acheong08 dans cette [PR](https://github.com/wailsapp/wails/pull/2070)
+- Ajout de la traduction coréenne pour le site web. Ajouté par @cybertramp dans cette [PR](https://github.com/wailsapp/wails/pull/2093)
 
 ### Corrections
 
@@ -363,15 +363,15 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `le dossier build/bin` se dupliquait sur chaque rechargement en mode `wails dev`. Corrigé par @OlegGulevskyy dans cette [PR](https://github.com/wailsapp/wails/pull/2103)
 - Empêcher une fine ligne blanche au bas d'une fenêtre sans cadre sous Windows. Correction par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2111)
 - Meilleure gestion des signaux pour Linux. Corrigé par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/2152)
-- Running the docs locally was broken due to mandatory crowdin token requirement. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2231)
-- Generated typescript for Go functions that returned a single error was incorrect. Fixed by @ATenderholt in this [PR](https://github.com/wailsapp/wails/pull/2247)
-- The right mouse event was not being raised correctly for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2190)
-- Remove extra spaces in Wails version when querying `go.mod`. Fixed by @matholt in this [PR](https://github.com/wailsapp/wails/pull/2197)
-- Fix go tests failure on Mac. Fixed by @avengerweb in this [PR](https://github.com/wailsapp/wails/pull/2187)
-- Fix go test errors. Fixed by @misitebao & @avengerweb in [these](https://github.com/wailsapp/wails/pull/2169) [PRs](https://github.com/wailsapp/wails/pull/2187)
-- Added `WindowSetAlwaysOnTop` to the JS runtime. Fixé par @gotid dans la [PR](https://github.com/wailsapp/wails/pull/2128)
-- Fixed obfuscated flag typo in docs. Fixed by @ckilb in [PR](https://github.com/wailsapp/wails/pull/2102)
-- Fixed React Hash Router link in docs. Fixed by @marvinhosea in [PR](https://github.com/wailsapp/wails/pull/2050)
+- L'exécution locale des docs a été cassée en raison de la prérequis de jeton crowdin obligatoire. Correction par @OlegGulevskyy dans cette [PR](https://github.com/wailsapp/wails/pull/2231)
+- Le typescript généré pour les fonctions Go qui retournaient une seule erreur était incorrecte. Correction par @ATenderholt dans cette [PR](https://github.com/wailsapp/wails/pull/2247)
+- L'événement de la souris droite n'était pas capturé correctement pour Linux. Correction par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/2190)
+- Supprimer les espaces supplémentaires dans la version de Wails lors de la requête sur `go.mod`. Correction par @matholt dans cette [PR](https://github.com/wailsapp/wails/pull/2197)
+- Correction des tests en erreur sur Mac Correction par @avengerweb dans cette [PR](https://github.com/wailsapp/wails/pull/2187)
+- Corriger les erreurs de test. Correction par @misitebao & @avengerweb dans [ces](https://github.com/wailsapp/wails/pull/2169) [PRs](https://github.com/wailsapp/wails/pull/2187)
+- Ajout de `WindowSetAlwaysOnTop` dans le runtime JS. Fixé par @gotid dans la [PR](https://github.com/wailsapp/wails/pull/2128)
+- Correction de la typo sur le drapeau d'obfusquage dans la documentation. Correction par @ckilb dans la [PR](https://github.com/wailsapp/wails/pull/2102)
+- Correction du lien vers le Hash Router React dans la documentation. Correction par @marvinhosea dans la [PR](https://github.com/wailsapp/wails/pull/2050)
 
 ### Changements
 

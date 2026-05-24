@@ -1,0 +1,1082 @@
+---
+title: Window Options
+description: Complete reference for WebviewWindowOptions
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Window Configuration Options
+
+Wails provides comprehensive window configuration with dozens of options for size, position, appearance, and behaviour. This reference covers all available options across Windows, macOS, and Linux as the **complete reference** for `WebviewWindowOptions`. Every option, every platform, with examples and constraints.
+
+## WebviewWindowOptions Structure
+
+```go
+type WebviewWindowOptions struct {
+    // Identity
+    Name  string
+    Title string
+
+    // Size and Position
+    Width           int
+    Height          int
+    X               int
+    Y               int
+    MinWidth        int
+    MinHeight       int
+    MaxWidth        int
+    MaxHeight       int
+    InitialPosition WindowStartPosition // WindowCentered (default) or WindowXY
+    Screen          *Screen             // target screen for initial placement
+
+    // Initial State
+    Hidden        bool
+    Frameless     bool
+    DisableResize bool        // inverted vs v2's `Resizable`
+    AlwaysOnTop   bool
+    StartState    WindowState // WindowStateNormal | Minimised | Maximised | Fullscreen
+
+    // Appearance
+    BackgroundColour RGBA
+    BackgroundType   BackgroundType
+    Zoom             float64
+    ZoomControlEnabled bool
+
+    // Content
+    URL  string
+    HTML string
+    JS   string
+    CSS  string
+
+    // Behaviour
+    EnableFileDrop              bool
+    IgnoreMouseEvents           bool
+    HideOnFocusLost             bool
+    DevToolsEnabled             bool
+    DefaultContextMenuDisabled  bool
+    ContentProtectionEnabled    bool
+    KeyBindings                 map[string]func(window *WebviewWindow)
+
+    // Window-control button states
+    MinimiseButtonState ButtonState
+    MaximiseButtonState ButtonState
+    CloseButtonState    ButtonState
+
+    // Menu
+    UseApplicationMenu bool
+
+    // Platform-specific (per-window)
+    Mac     MacWindow
+    Windows WindowsWindow
+    Linux   LinuxWindow
+}
+```
+
+`WebviewWindowOptions` has **no** `Parent` field — for parent/modal relationships use `parentWindow.AttachModal(childWindow)`. It also has **no** `Assets` field — asset configuration lives on `application.Options` (`Assets AssetOptions`).
+
+Full source: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+
+## Core Options
+
+### Name
+
+**Type:** `string`  
+**Default:** Auto-generated UUID  
+**Platform:** All
+
+```go
+Name: "main-window"
+```
+
+**Purpose:** Unique identifier for finding windows later.
+
+**Best practices:**
+- Use descriptive names: `"main"`, `"settings"`, `"about"`
+- Use kebab-case: `"file-browser"`, `"color-picker"`
+- Keep it short and memorable
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name: "settings-window",
+})
+
+// Later...
+if settings, ok := app.Window.GetByName("settings-window"); ok {
+    settings.Focus()
+}
+```
+
+### Title
+
+**Type:** `string`  
+**Default:** Application name  
+**Platform:** All
+
+```go
+Title: "My Application"
+```
+
+**Purpose:** Text shown in title bar and taskbar.
+
+**Dynamic updates:**
+
+```go
+window.SetTitle("My Application - Document.txt")
+```
+
+### Width / Height
+
+**Type:** `int` (pixels)  
+**Default:** 800 x 600  
+**Platform:** All  
+**Constraints:** Must be positive
+
+```go
+Width:  1200,
+Height: 800,
+```
+
+**Purpose:** Initial window size in logical pixels.
+
+**Notes:**
+- Wails handles DPI scaling automatically
+- Use logical pixels, not physical pixels
+- Consider minimum screen resolution (1024x768)
+
+**Example sizes:**
+
+| Use Case | Width | Height |
+|----------|-------|--------|
+| Small utility | 400 | 300 |
+| Standard app | 1024 | 768 |
+| Large app | 1440 | 900 |
+| Full HD | 1920 | 1080 |
+
+### X / Y
+
+**Type:** `int` (pixels)  
+**Default:** Centred on screen  
+**Platform:** All
+
+```go
+X: 100,  // 100px from left edge
+Y: 100,  // 100px from top edge
+```
+
+**Purpose:** Initial window position.
+
+**Coordinate system:**
+- (0, 0) is top-left of primary screen
+- Positive X goes right
+- Positive Y goes down
+
+**Example:**
+
+`X` and `Y` only take effect when `InitialPosition: application.WindowXY` is set. Without that, `InitialPosition` defaults to `WindowCentered` and `X`/`Y` are ignored.
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:            "coordinate-window",
+    InitialPosition: application.WindowXY, // opt into X/Y coordinates
+    X:               100,
+    Y:               100,
+})
+```
+
+**Best practice:** Use `Center()` to centre a window after creation if you don't care about specific coordinates:
+
+```go
+window := app.Window.New()
+window.Center()
+```
+
+### MinWidth / MinHeight
+
+**Type:** `int` (pixels)  
+**Default:** 0 (no minimum)  
+**Platform:** All
+
+```go
+MinWidth:  400,
+MinHeight: 300,
+```
+
+**Purpose:** Prevent window from being too small.
+
+**Use cases:**
+- Prevent broken layouts
+- Ensure usability
+- Maintain aspect ratio
+
+**Example:**
+
+```go
+// Prevent window smaller than 400x300
+MinWidth:  400,
+MinHeight: 300,
+```
+
+### MaxWidth / MaxHeight
+
+**Type:** `int` (pixels)  
+**Default:** 0 (no maximum)  
+**Platform:** All
+
+```go
+MaxWidth:  1920,
+MaxHeight: 1080,
+```
+
+**Purpose:** Prevent window from being too large.
+
+**Use cases:**
+- Fixed-size applications
+- Prevent excessive resource usage
+- Maintain design constraints
+
+## State Options
+
+### Hidden
+
+**Type:** `bool`
+**Default:** `false`
+**Platform:** All
+
+```go
+Hidden: true,
+```
+
+**Purpose:** Create window without showing it.
+
+**Use cases:**
+- Background windows
+- Windows shown on demand
+- Splash screens (create, load, then show)
+- Prevent white flash while loading content
+
+**Platform improvements:**
+- **Windows:** Fixed white window flash - window stays invisible until `Show()` is called
+- **macOS:** Full support
+- **Linux:** Full support
+
+**Recommended pattern for smooth loading:**
+
+```go
+// Create hidden window
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:             "main-window",
+    Hidden:           true,
+    BackgroundColour: application.NewRGB(30, 30, 30), // Match your theme
+})
+
+// Load content while hidden
+// ... content loads ...
+
+// Show when ready (no flash!)
+window.Show()
+```
+
+**Example:**
+
+```go
+settings := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Hidden: true,
+})
+
+// Show when needed
+settings.Show()
+```
+
+### Frameless
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+Frameless: true,
+```
+
+**Purpose:** Remove title bar and window borders.
+
+**Use cases:**
+- Custom window chrome
+- Splash screens
+- Kiosk applications
+- Custom-designed windows
+
+**Important:** You'll need to implement:
+- Window dragging
+- Close/minimise/maximise buttons
+- Resize handles (if resizable)
+
+**See [Frameless Windows](/features/windows/frameless) for details.**
+
+### DisableResize
+
+**Type:** `bool`
+**Default:** `false` (window is resizable by default)
+**Platform:** All
+
+```go
+DisableResize: true,
+```
+
+**Purpose:** Prevent window resizing. Note that the field is the **inverse** of v2's `Resizable` — set `DisableResize: true` to make a window non-resizable.
+
+**Use cases:**
+- Fixed-size applications
+- Splash screens
+- Dialogs
+
+**Note:** Users can still maximise/fullscreen unless you also disable those via `MaximiseButtonState` / collection behaviour.
+
+### AlwaysOnTop
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+AlwaysOnTop: true,
+```
+
+**Purpose:** Keep window above all other windows.
+
+**Use cases:**
+- Floating toolbars
+- Notifications
+- Picture-in-picture
+- Timers
+
+**Platform notes:**
+- **macOS:** Full support
+- **Windows:** Full support
+- **Linux:** Depends on window manager
+
+### StartState
+
+**Type:** `WindowState` enum
+**Default:** `WindowStateNormal`
+**Platform:** All
+
+```go
+StartState: application.WindowStateMaximised,
+```
+
+**Purpose:** Initial state of the window when shown.
+
+**Values:**
+- `WindowStateNormal` - Normal window
+- `WindowStateMinimised` - Minimised
+- `WindowStateMaximised` - Maximised
+- `WindowStateFullscreen` - Fullscreen
+
+There is no `WindowStateHidden` constant — use the `Hidden` boolean field to start the window invisible.
+
+**Toggle fullscreen at runtime:**
+
+```go
+window.Fullscreen()
+window.UnFullscreen()
+window.ToggleFullscreen() // there is no SetFullscreen(bool)
+```
+
+## Appearance Options
+
+### BackgroundColour
+
+**Type:** `RGBA` struct
+**Default:** White
+**Platform:** All
+
+```go
+BackgroundColour: application.RGBA{Red: 0, Green: 0, Blue: 0, Alpha: 255},
+```
+
+`RGBA` fields are `Red, Green, Blue, Alpha` (uint8). Prefer the helpers `application.NewRGB(r, g, b)` (alpha 255) or `application.NewRGBA(r, g, b, a)`.
+
+**Purpose:** Window background colour before content loads.
+
+**Use cases:**
+- Match your app's theme
+- Prevent white flash on dark themes
+- Smooth loading experience
+
+**Example:**
+
+```go
+// Dark theme
+BackgroundColour: application.NewRGB(30, 30, 30),
+
+// Light theme
+BackgroundColour: application.NewRGB(255, 255, 255),
+```
+
+**Helper method:**
+
+```go
+window.SetBackgroundColour(application.NewRGB(30, 30, 30))
+```
+
+### BackgroundType
+
+**Type:** `BackgroundType` enum  
+**Default:** `BackgroundTypeSolid`  
+**Platform:** macOS, Windows (partial)
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+```
+
+**Values:**
+- `BackgroundTypeSolid` - Solid colour
+- `BackgroundTypeTransparent` - Fully transparent
+- `BackgroundTypeTranslucent` - Semi-transparent blur
+
+**Platform support:**
+- **macOS:** All types supported
+- **Windows:** Transparent and Translucent (Windows 11+)
+- **Linux:** Solid only
+
+**Example (macOS):**
+
+```go
+BackgroundType: application.BackgroundTypeTranslucent,
+Mac: application.MacWindow{
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+## Content Options
+
+### URL
+
+**Type:** `string`  
+**Default:** Empty (loads from Assets)  
+**Platform:** All
+
+```go
+URL: "https://example.com",
+```
+
+**Purpose:** Load external URL instead of embedded assets.
+
+**Use cases:**
+- Development (load from dev server)
+- Web-based applications
+- Hybrid applications
+
+**Example:**
+
+```go
+// Development — point the window at the Vite dev server
+URL: "http://localhost:9245",
+
+// Production — embedded assets are configured at the application level
+// (Assets is application.Options.Assets, not a WebviewWindowOptions field).
+```
+
+Application-level snippet for the production case:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+    },
+})
+```
+
+### HTML
+
+**Type:** `string`  
+**Default:** Empty  
+**Platform:** All
+
+```go
+HTML: "<h1>Hello World</h1>",
+```
+
+**Purpose:** Load HTML string directly.
+
+**Use cases:**
+- Simple windows
+- Generated content
+- Testing
+
+**Example:**
+
+```go
+HTML: `
+<!DOCTYPE html>
+<html>
+<head><title>Simple Window</title></head>
+<body><h1>Hello from Wails!</h1></body>
+</html>
+`,
+```
+
+### Assets (application-level only)
+
+Asset configuration is **not** a `WebviewWindowOptions` field. Frontend assets are served by the application itself via `application.Options.Assets` (`AssetOptions`); every window inherits that asset server.
+
+```go
+app := application.New(application.Options{
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+    },
+})
+```
+
+**See [Build System](/concepts/build-system) for details.**
+
+### UseApplicationMenu
+
+**Type:** `bool`
+**Default:** `false`
+**Platform:** Windows, Linux (no effect on macOS)
+
+```go
+UseApplicationMenu: true,
+```
+
+**Purpose:** Use the application menu (set via `app.Menu.Set()`) for this window.
+
+On **macOS**, this option has no effect because macOS always uses a global application menu at the top of the screen.
+
+On **Windows** and **Linux**, windows don't display a menu by default. Setting `UseApplicationMenu: true` tells the window to use the application-level menu, providing a simple cross-platform solution.
+
+**Example:**
+
+```go
+// Set the application menu once
+menu := app.NewMenu()
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+app.Menu.Set(menu)
+
+// All windows with UseApplicationMenu will display this menu
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Main Window",
+    UseApplicationMenu: true,
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:              "Second Window",
+    UseApplicationMenu: true,  // Also gets the app menu
+})
+```
+
+**Notes:**
+- If both `UseApplicationMenu` and a window-specific menu are set, the window-specific menu takes priority
+- This simplifies cross-platform code by eliminating the need for runtime OS checks
+- See [Application Menus](/features/menus/application) for complete menu documentation
+
+## Input Options
+
+### EnableFileDrop
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** All
+
+```go
+EnableFileDrop: true,
+```
+
+**Purpose:** Enable drag-and-drop of files from the operating system into the window.
+
+When enabled:
+- Files dragged from file managers can be dropped into your application
+- The `WindowFilesDropped` event fires with the dropped file paths
+- Elements with `data-file-drop-target` attribute provide detailed drop information
+
+**Use cases:**
+- File upload interfaces
+- Document editors
+- Media importers
+- Any app that accepts files
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+// Handle dropped files
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+**HTML drop zones:**
+
+```html
+<!-- Mark elements as drop targets -->
+<div id="upload" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+**See [File Drop](/features/drag-and-drop/files) for complete documentation.**
+
+## Security Options
+
+### ContentProtectionEnabled
+
+**Type:** `bool`  
+**Default:** `false`  
+**Platform:** Windows (10+), macOS
+
+```go
+ContentProtectionEnabled: true,
+```
+
+**Purpose:** Prevent screen capture of window contents.
+
+**Platform support:**
+- **Windows:** Windows 10 build 19041+ (full), older versions (partial)
+- **macOS:** Full support
+- **Linux:** Not supported
+
+**Use cases:**
+- Banking applications
+- Password managers
+- Medical records
+- Confidential documents
+
+**Important notes:**
+1. Doesn't prevent physical photography
+2. Some tools may bypass protection
+3. Part of comprehensive security, not sole protection
+4. DevTools windows not protected automatically
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Secure Window",
+    ContentProtectionEnabled: true,
+})
+
+// Toggle at runtime
+window.SetContentProtection(true)
+```
+
+## Window Lifecycle Events
+
+Window lifecycle events are handled using `OnWindowEvent` and `RegisterHook`. These methods provide fine-grained control over window closing and destruction behavior.
+
+### Cancelling Window Close
+
+To prevent a window from closing (e.g., unsaved changes), use `RegisterHook` with the `WindowClosing` event and call `event.Cancel()`:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "My Application",
+})
+
+// Register a hook to intercept the closing event
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
+    }
+})
+```
+
+**Key points:**
+- `RegisterHook` intercepts events before they occur
+- Call `event.Cancel()` to prevent the window from closing
+- The window will remain open after cancelling
+
+### Handling Window Close
+
+To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClosing` event:
+
+```go
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    // Cleanup code runs here
+    fmt.Printf("Window %s is closing\n", window.Name())
+    
+    // Close database connection
+    if db != nil {
+        db.Close()
+    }
+    
+    // Remove from window list
+    removeWindow(window.ID())
+})
+```
+
+**Key points:**
+- `OnWindowEvent` handles events that are about to happen
+- Cleanup runs before the window is destroyed
+- Cannot cancel the close from here (use `RegisterHook` for that)
+
+### Singleton Window Cleanup Pattern
+
+For singleton windows (ensure only one instance), use `WindowClosing` to clean up the reference:
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func ShowSettings(app *application.App) {
+    // Create if doesn't exist
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:  "settings",
+            Title: "Settings",
+            Width: 600,
+            Height: 400,
+        })
+        
+        // Cleanup on close
+        settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+            settingsWindow = nil
+        })
+    }
+    
+    // Show and focus
+    settingsWindow.Show()
+    settingsWindow.Focus()
+}
+```
+
+## Platform-Specific Options
+
+### Mac Options
+
+```go
+Mac: application.MacWindow{
+    TitleBar: application.MacTitleBar{
+        AppearsTransparent: true,
+        Hide:               false,
+        HideTitle:          true,
+        FullSizeContent:    true,
+    },
+    Backdrop:                application.MacBackdropTranslucent,
+    InvisibleTitleBarHeight: 50,
+    WindowLevel:             application.MacWindowLevelNormal,
+    CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+},
+```
+
+**TitleBar** (`MacTitleBar`)
+- `AppearsTransparent` - Makes title bar transparent, content extends into title bar area
+- `Hide` - Hides the title bar completely
+- `HideTitle` - Hides only the title text
+- `FullSizeContent` - Extends content to full window size
+
+**Backdrop** (`MacBackdrop`)
+- `MacBackdropNormal` - Standard opaque background
+- `MacBackdropTranslucent` - Blurred translucent background
+- `MacBackdropTransparent` - Fully transparent background
+
+**InvisibleTitleBarHeight** (`int`)
+- Height of invisible title bar area (for dragging)
+- Only takes effect when the native title bar drag area is hidden — i.e. when the window is frameless (`Frameless: true`) or uses a transparent title bar (`AppearsTransparent: true`)
+- Has no effect on standard windows with a visible title bar
+
+**WindowLevel** (`MacWindowLevel`)
+- `MacWindowLevelNormal` - Standard window level (default)
+- `MacWindowLevelFloating` - Floats above normal windows
+- `MacWindowLevelTornOffMenu` - Torn-off menu level
+- `MacWindowLevelModalPanel` - Modal panel level
+- `MacWindowLevelMainMenu` - Main menu level
+- `MacWindowLevelStatus` - Status window level
+- `MacWindowLevelPopUpMenu` - Pop-up menu level
+- `MacWindowLevelScreenSaver` - Screen saver level
+
+**CollectionBehavior** (`MacWindowCollectionBehavior`)
+
+Controls how the window behaves across macOS Spaces and fullscreen. These are bitmask values that can be combined using bitwise OR (`|`).
+
+**Space behavior:**
+- `MacWindowCollectionBehaviorDefault` - Uses FullScreenPrimary (default, backwards compatible)
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Window appears on all Spaces
+- `MacWindowCollectionBehaviorMoveToActiveSpace` - Moves to active Space when shown
+- `MacWindowCollectionBehaviorManaged` - Default managed window behavior
+- `MacWindowCollectionBehaviorTransient` - Temporary/transient window
+- `MacWindowCollectionBehaviorStationary` - Stays stationary during Space switches
+
+**Window cycling:**
+- `MacWindowCollectionBehaviorParticipatesInCycle` - Included in Cmd+` cycling
+- `MacWindowCollectionBehaviorIgnoresCycle` - Excluded from Cmd+` cycling
+
+**Fullscreen behavior:**
+- `MacWindowCollectionBehaviorFullScreenPrimary` - Can enter fullscreen mode
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
+- `MacWindowCollectionBehaviorFullScreenNone` - Disables fullscreen capability
+- `MacWindowCollectionBehaviorFullScreenAllowsTiling` - Allows side-by-side tiling (macOS 10.11+)
+- `MacWindowCollectionBehaviorFullScreenDisallowsTiling` - Prevents tiling (macOS 10.11+)
+
+**Example - Spotlight-like window:**
+
+```go
+// Window that appears on all Spaces AND can overlay fullscreen apps
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+                        application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+    WindowLevel:        application.MacWindowLevelFloating,
+},
+```
+
+**Example - Single behavior:**
+
+```go
+// Window that can appear over fullscreen applications
+Mac: application.MacWindow{
+    CollectionBehavior: application.MacWindowCollectionBehaviorFullScreenAuxiliary,
+},
+```
+
+### Windows Options (per-window)
+
+The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions` (that's the *application*-level struct).
+
+```go
+Windows: application.WindowsWindow{
+    DisableIcon:                       false,
+    BackdropType:                      application.Auto,
+    CustomTheme:                       application.ThemeSettings{},
+    DisableFramelessWindowDecorations: false,
+},
+```
+
+**DisableIcon** (`bool`)
+- Remove icon from title bar.
+
+**BackdropType** (`BackdropType`)
+- `application.Auto` - System default
+- `application.None` - No backdrop
+- `application.Mica` - Mica material (Windows 11)
+- `application.Acrylic` - Acrylic material (Windows 11)
+- `application.Tabbed` - Tabbed material (Windows 11)
+
+There are no `WindowsBackdropTypeMica`-style constants — use `application.Mica` etc.
+
+**CustomTheme** (`ThemeSettings`)
+- Value (not pointer). Custom dark/light-mode colours for window border, title bar text/background, and menu bar.
+
+**DisableFramelessWindowDecorations** (`bool`)
+- Disable default frameless decorations (Aero shadow, rounded corners).
+
+**Example:**
+
+```go
+Windows: application.WindowsWindow{
+    BackdropType: application.Mica,
+    DisableIcon:  true,
+},
+```
+
+### Linux Options (per-window)
+
+The per-window struct is `application.LinuxWindow` — **not** `LinuxOptions`.
+
+```go
+Linux: application.LinuxWindow{
+    Icon:                []byte{/* PNG data */},
+    WindowIsTranslucent: false,
+},
+```
+
+**Icon** (`[]byte`)
+- Window icon (PNG format).
+
+**WindowIsTranslucent** (`bool`)
+- Requires compositor support.
+
+**Example:**
+
+```go
+//go:embed icon.png
+var icon []byte
+
+Linux: application.LinuxWindow{
+    Icon: icon,
+},
+```
+
+## Application-Level Windows Options
+
+Some Windows-specific options must be configured at the application level rather than per-window. This is because WebView2 shares a single browser environment per user data path.
+
+### Browser Flags
+
+WebView2 browser flags control experimental features and behavior across **all windows** in your application. These must be set in `application.Options.Windows`:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // Enable experimental WebView2 features
+        EnabledFeatures: []string{
+            "msWebView2EnableDraggableRegions",
+        },
+
+        // Disable specific features
+        DisabledFeatures: []string{
+            "msSmartScreenProtection",  // Always disabled by Wails
+        },
+
+        // Additional Chromium command-line arguments
+        AdditionalBrowserArgs: []string{
+            "--disable-gpu",
+            "--remote-debugging-port=9222",
+        },
+    },
+})
+```
+
+**EnabledFeatures** (`[]string`)
+- List of WebView2 feature flags to enable
+- See [WebView2 browser flags](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags) for available flags
+- Example: `"msWebView2EnableDraggableRegions"`
+
+**DisabledFeatures** (`[]string`)
+- List of WebView2 feature flags to disable
+- Wails automatically disables `msSmartScreenProtection`
+- Example: `"msExperimentalFeature"`
+
+**AdditionalBrowserArgs** (`[]string`)
+- Chromium command-line arguments passed to the browser process
+- Must include the `--` prefix (e.g., `"--remote-debugging-port=9222"`)
+- See [Chromium command line switches](https://peter.sh/experiments/chromium-command-line-switches/) for available arguments
+
+:::caution[Important]
+These flags apply globally to ALL windows because WebView2 shares a single browser environment per user data path. You cannot have different browser flags for different windows.
+:::
+
+**Complete Example:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Windows: application.WindowsOptions{
+            // Enable draggable regions feature
+            EnabledFeatures: []string{
+                "msWebView2EnableDraggableRegions",
+            },
+            // Enable remote debugging
+            AdditionalBrowserArgs: []string{
+                "--remote-debugging-port=9222",
+            },
+        },
+    })
+
+    // All windows will use the browser flags configured above
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "Main Window",
+        Width:  1024,
+        Height: 768,
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+## Complete Example
+
+Here's a production-ready window configuration:
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+//go:embed icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        // Identity
+        Name:  "main-window",
+        Title: "My Application",
+
+        // Size and Position
+        Width:     1200,
+        Height:    800,
+        MinWidth:  800,
+        MinHeight: 600,
+
+        // Initial State
+        StartState: application.WindowStateNormal,
+
+        // Appearance
+        BackgroundColour: application.NewRGB(255, 255, 255),
+
+        // Platform-Specific (per-window structs)
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
+        },
+
+        Windows: application.WindowsWindow{
+            BackdropType: application.Mica,
+            DisableIcon:  false,
+        },
+
+        Linux: application.LinuxWindow{
+            Icon: icon,
+        },
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+
+Frontend assets are served at the application level (`application.Options.Assets`), not per window.
+
+## Next Steps
+
+- [Window Basics](/features/windows/basics) - Creating and controlling windows
+- [Multiple Windows](/features/windows/multiple) - Multi-window patterns
+- [Frameless Windows](/features/windows/frameless) - Custom window chrome
+- [Window Events](/features/windows/events) - Lifecycle events
+
+---
+
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

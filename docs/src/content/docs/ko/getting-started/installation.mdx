@@ -1,0 +1,106 @@
+---
+title: 설치
+description: Wails 설치 및 개발 환경 설정
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 지원 플랫폼
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (macOS 10.13+ 배포 가능)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (다른 리눅스 배포판도 작동할 수 있습니다!)
+
+## 의존성
+
+Wails를 설치하기 전에 여러 공통 의존성이 필요합니다:
+
+<Tabs>
+  <TabItem label="Go (최소 1.24)" icon="seti:go">
+
+    [Go 다운로드 페이지](https://go.dev/dl/)에서 Go를 다운로드하세요.
+
+    공식 [Go 설치 지침](https://go.dev/doc/install)을 따르세요. 또한 `PATH` 환경 변수에 `~/go/bin` 디렉토리의 경로가 포함되어 있는지 확인해야 합니다. 터미널을 다시 시작하고 다음 확인을 수행하세요:
+
+    - Go가 올바르게 설치되었는지 확인: `go version`
+    - `~/go/bin`이 PATH 변수에 있는지 확인
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (선택 사항)" icon="seti:npm">
+
+    Wails는 npm 설치를 필수로 요구하지는 않지만, 번들로 제공되는 템플릿의 대부분에서 필요합니다.
+
+    [Node 다운로드 페이지](https://nodejs.org/en/download/)에서 최신 Node 설치 프로그램을 다운로드하세요. 일반적으로 테스트하는 최신 릴리스를 사용하는 것이 가장 좋습니다.
+
+    `npm --version`을 실행하여 확인하세요.
+
+      :::note
+      npm 대신 다른 패키지 관리자를 선호한다면 자유롭게 사용하세요. 프로젝트 Taskfiles를 업데이트하여 해당 패키지 관리자를 사용해야 합니다.
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## 플랫폼별 의존성
+
+또한 플랫폼별 의존성을 설치해야 합니다:
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    Wails는 xcode 명령줄 도구가 설치되어 있어야 합니다. 다음을 실행하여 설치할 수 있습니다:
+
+    ```sh
+    xcode-select --install
+    ```
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    Wails는 [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)이 설치되어 있어야 합니다. 대부분의 Windows 설치에는 이미 이 런타임이 설치되어 있습니다. `wails doctor` 명령을 사용하여 확인할 수 있습니다.
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    Linux에는 표준 `gcc` 빌드 도구와 `gtk3`, `webkit2gtk`가 필요합니다. 설치 후 <code>wails doctor</code>를 실행하여 의존성 설치 방법을 확인하세요. 배포판이나 패키지 관리자가 지원되지 않는 경우 Discord에서 알려주세요.
+
+  </TabItem>
+
+</Tabs>
+
+## 설치
+
+Go Modules를 사용하여 Wails CLI를 설치하려면 다음 명령을 실행하세요:
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+최신 개발 버전을 설치하려면 다음 명령을 실행하세요:
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+개발 버전을 사용할 때 생성된 모든 프로젝트는 Wails의 개발 버전을 사용하도록 Go의 [replace](https://go.dev/ref/mod#go-mod-file-replace) 지시문을 사용합니다.
+
+## 시스템 확인
+
+`wails3 doctor`를 실행하면 올바른 의존성이 설치되어 있는지 확인합니다. 그렇지 않다면 누락된 항목을 알려주고 문제를 해결하는 방법을 안내합니다.
+
+## `wails3` 명령이 누락된 것으로 표시되나요?
+
+시스템에서 `wails3` 명령이 누락되었다고 보고하는 경우 다음을 확인하세요:
+
+- 위의 `Go 설치 가이드`를 올바르게 따랐고 `go/bin` 디렉토리가 `PATH` 환경 변수에 있는지 확인하세요.
+- 새 `PATH` 변수를 적용하려면 현재 터미널을 닫고 다시 여세요.

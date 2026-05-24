@@ -1,0 +1,5 @@
+[
+    ".InternalService",
+    ".Service",
+    ".unexportedService"
+]
