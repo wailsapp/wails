@@ -24,7 +24,7 @@ platform/            OS/arch detection
 2. **Parse** YAML into AST, recursively resolve includes with cycle detection
 3. **Clone** included tasks (`task.Clone()`) to prevent pointer aliasing across namespaces
 4. **Populate** built-in vars (`OS`, `ARCH`, `ROOT_DIR`, `TASKFILE_DIR`, etc.)
-5. **Apply** overrides from `Taskfile.local.yml` / `Taskfile.override.yml`
+5. **Layer** local overrides (`override.LoadLocal` + `resolve.MergeTaskfile`): two stacked layers in increasing precedence — `Taskfile.override.*` (committed team layer) then `Taskfile.local.*` (personal layer, wins last); within a layer the first existing extension wins. Local-wins precedence — a same-named task replaces the base task (list fields replace, `env`/`vars` maps merge per-key); local-only tasks are added; top-level vars layer over base.
 6. **Filter** platforms (remove non-matching `darwin:`/`linux:`/`windows:` namespaces)
 7. **Resolve** vars (shell execution, ref chains, cycle detection)
 8. **Expand** templates (`{{.VAR}}`) in task names, dirs, deps, cmds, env
