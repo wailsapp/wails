@@ -13,6 +13,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 	"github.com/wailsapp/wails/v3/internal/s"
 	"github.com/wailsapp/wails/v3/internal/version"
+	"gopkg.in/yaml.v3"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -130,14 +131,15 @@ func getLocalTemplate(templateName string) (*Template, error) {
 }
 
 type BaseTemplate struct {
-	Name        string `json:"name" description:"The name of the template"`
-	ShortName   string `json:"shortname" description:"The short name of the template"`
-	Author      string `json:"author" description:"The author of the template"`
-	Description string `json:"description" description:"The template description"`
-	HelpURL     string `json:"helpurl" description:"The help url for the template"`
-	Version     string `json:"version" description:"The version of the template" default:"v0.0.1"`
-	Dir         string `json:"-" description:"The directory to generate the template" default:"."`
-	Frontend    string `json:"-" description:"The frontend directory to migrate"`
+	Name         string `json:"name"         yaml:"name"         description:"The name of the template"`
+	ShortName    string `json:"shortname"    yaml:"shortname"    description:"The short name of the template"`
+	Author       string `json:"author"       yaml:"author"       description:"The author of the template"`
+	Description  string `json:"description"  yaml:"description"  description:"The template description"`
+	HelpURL      string `json:"helpurl"      yaml:"helpurl"      description:"The help url for the template"`
+	Version      string `json:"version"      yaml:"version"      description:"The version of the template" default:"v0.0.1"`
+	WailsVersion uint8  `json:"wailsVersion" yaml:"wailsVersion" description:"The Wails major version this template targets"`
+	Dir          string `json:"-"            yaml:"-"            description:"The directory to generate the template" default:"."`
+	Frontend     string `json:"-"            yaml:"-"            description:"The frontend directory to migrate"`
 }
 
 type source int
@@ -150,37 +152,65 @@ const (
 
 // Template holds data relating to a template including the metadata stored in template.yaml
 type Template struct {
-	BaseTemplate
-	Schema uint8 `json:"schema"`
+	BaseTemplate `yaml:",inline"`
+	// Schema is kept for backwards-compatible reading of legacy template.json files.
+	// New templates use template.yaml with WailsVersion instead.
+	Schema uint8 `json:"schema" yaml:"-"`
 
 	// Other data
-	FS      fs.FS `json:"-"`
+	FS      fs.FS `json:"-" yaml:"-"`
 	source  source
 	tempDir string
 }
 
-func parseTemplate(template fs.FS, templateName string) (Template, error) {
+// parseTemplate loads and validates a template's metadata.
+//
+// It first looks for template.yaml (the v3 native format). If found, wailsVersion
+// must be present and equal to 3. If only template.json exists (legacy format),
+// schema must be 3 for a v3 template; schema 0 means the template is for Wails v2.
+func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	var result Template
-	jsonFile := "template.json"
-	if templateName != "" {
-		jsonFile = templateName + "/template.json"
-	}
-	data, err := fs.ReadFile(template, jsonFile)
-	if err != nil {
-		return result, errors.Wrap(err, "Error parsing template")
-	}
-	err = json.Unmarshal(data, &result)
-	if err != nil {
-		return result, err
-	}
-	result.FS = template
 
-	// We need to do a version check here
+	prefix := ""
+	if templateName != "" {
+		prefix = templateName + "/"
+	}
+
+	// --- YAML path: preferred v3 format ---
+	yamlData, yamlErr := fs.ReadFile(templateFS, prefix+"template.yaml")
+	if yamlErr == nil {
+		if err := yaml.Unmarshal(yamlData, &result); err != nil {
+			return result, fmt.Errorf("error parsing template.yaml: %w", err)
+		}
+		result.FS = templateFS
+		if result.WailsVersion == 0 {
+			return result, fmt.Errorf("template.yaml must specify 'wailsVersion' (e.g. wailsVersion: 3)")
+		}
+		if result.WailsVersion != 3 {
+			return result, fmt.Errorf("template targets Wails v%d and is not compatible with this version of Wails", result.WailsVersion)
+		}
+		return result, nil
+	}
+
+	// --- JSON path: legacy / backwards-compat ---
+	jsonData, jsonErr := fs.ReadFile(templateFS, prefix+"template.json")
+	if jsonErr != nil {
+		if errors.Is(yamlErr, fs.ErrNotExist) {
+			return result, fmt.Errorf("no template.yaml or template.json found in template")
+		}
+		return result, errors.Wrap(jsonErr, "error reading template.json")
+	}
+
+	if err := json.Unmarshal(jsonData, &result); err != nil {
+		return result, fmt.Errorf("error parsing template.json: %w", err)
+	}
+	result.FS = templateFS
+
 	if result.Schema == 0 {
-		return result, fmt.Errorf("template not supported by wails 3. This template is probably for wails 2")
+		return result, fmt.Errorf("template not supported by Wails v3: no schema or wailsVersion found. This template is probably for Wails v2")
 	}
 	if result.Schema != 3 {
-		return result, fmt.Errorf("template schema %d is not supported by wails 3. Ensure 'schema' is set to 3 in the `template.json` file", result.Schema)
+		return result, fmt.Errorf("template schema %d is not supported by Wails v3. Ensure 'schema' is set to 3 in template.json", result.Schema)
 	}
 
 	return result, nil
@@ -210,25 +240,25 @@ func gitclone(uri string) (string, error) {
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {
-	// git clone to temporary dir
-	var tempDir string
 	tempDir, err := gitclone(uri)
-
-	if err != nil {
-		return nil, err
-	}
-	// Remove the .git directory
-	err = os.RemoveAll(filepath.Join(tempDir, ".git"))
 	if err != nil {
 		return nil, err
 	}
 
-	templateFS := os.DirFS(tempDir)
-	var parsedTemplate Template
-	parsedTemplate, err = parseTemplate(templateFS, "")
-	if err != nil {
+	// cleanup is called on any error path so the temp dir is never leaked.
+	cleanup := func() { os.RemoveAll(tempDir) }
+
+	if err = os.RemoveAll(filepath.Join(tempDir, ".git")); err != nil {
+		cleanup()
 		return nil, err
 	}
+
+	parsedTemplate, err := parseTemplate(os.DirFS(tempDir), "")
+	if err != nil {
+		cleanup()
+		return nil, err
+	}
+
 	parsedTemplate.tempDir = tempDir
 	parsedTemplate.source = sourceRemote
 	return &parsedTemplate, nil
@@ -282,7 +312,9 @@ func Install(options *flags.Init) error {
 	}
 
 	defer func() {
-		// if `template.json` exists, remove it
+		// Remove template metadata files from the generated project — they are
+		// for the template system only, not part of the user's project.
+		_ = os.Remove(filepath.Join(templateData.ProjectDir, "template.yaml"))
 		_ = os.Remove(filepath.Join(templateData.ProjectDir, "template.json"))
 	}()
 
@@ -493,15 +525,14 @@ func GenerateTemplate(options *BaseTemplate) error {
 		return err
 	}
 
-	// Write template.json with the provided metadata.
-	optionsJSON, err := json.MarshalIndent(&Template{
-		BaseTemplate: *options,
-		Schema:       3,
-	}, "", "  ")
+	// Write template.yaml with the provided metadata.
+	// wailsVersion is mandatory in the YAML format and set to 3.
+	options.WailsVersion = 3
+	optionsYAML, err := yaml.Marshal(&options)
 	if err != nil {
 		return err
 	}
-	if err = os.WriteFile(filepath.Join(outDir, "template.json"), optionsJSON, 0644); err != nil {
+	if err = os.WriteFile(filepath.Join(outDir, "template.yaml"), optionsYAML, 0644); err != nil {
 		return err
 	}
 
