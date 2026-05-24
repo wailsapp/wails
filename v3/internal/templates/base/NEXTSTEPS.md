@@ -83,7 +83,7 @@ top of whatever your template provides, so place only files that are not auto-ge
 ## Publishing on GitHub
 
 1. Commit your template directory as the root of a public GitHub repository.
-   Your repository must contain `template.json` at the top level.
+   Your repository must contain `template.yaml` at the top level.
 
 2. Tag a release:
    ```sh
@@ -118,5 +118,5 @@ As a template author you are responsible for:
 ## Further Reading
 
 - [Creating Custom Templates](https://v3.wails.io/guides/advanced/custom-templates)
-- [Template JSON Schema](https://v3.wails.io/reference/template-json)
+- [Template Schema](https://v3.wails.io/reference/template-json)
 - [Wails Init Reference](https://v3.wails.io/reference/cli#init)
