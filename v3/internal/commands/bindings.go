@@ -23,7 +23,9 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		defer term.DisableDebug()
 	}
 
-	term.Header("Generate Bindings")
+	if !underWake() {
+		term.Header("Generate Bindings")
+	}
 
 	if len(patterns) == 0 {
 		// No input pattern, load package from current directory.
@@ -71,19 +73,25 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		creator = config.DirCreator(generationDir)
 	}
 
-	// Start a spinner for progress messages.
-	spinner := term.StartSpinner("Initialising...")
+	// Under a wake build, forward progress to the build UI as wire events rather
+	// than drawing a competing spinner; otherwise use the interactive spinner.
+	var logger config.Logger
+	var spinner term.Spinner
+	if underWake() {
+		logger = newWakeLogger()
+	} else {
+		spinner = term.StartSpinner("Initialising...")
+		logger = spinner.Logger()
+	}
 
 	// Initialise and run generator.
 	stats, err := generator.NewGenerator(
 		options,
 		creator,
-		spinner.Logger(),
+		logger,
 	).Generate(patterns...)
 
-	// Stop spinner and print summary.
-	term.StopSpinner(spinner)
-	term.Infof(
+	summary := fmt.Sprintf(
 		"Processed: %s, %s, %s, %s, %s, %s in %s.",
 		pluralise(stats.NumPackages, "Package"),
 		pluralise(stats.NumServices, "Service"),
@@ -94,8 +102,14 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		stats.Elapsed().String(),
 	)
 
-	// Report output directory.
-	term.Infof("Output directory: %s", absPath)
+	if underWake() {
+		logger.Infof("%s", summary)
+		logger.Infof("Output directory: %s", absPath)
+	} else {
+		term.StopSpinner(spinner)
+		term.Infof("%s", summary)
+		term.Infof("Output directory: %s", absPath)
+	}
 
 	// Process generator error.
 	if err != nil {
