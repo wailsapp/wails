@@ -240,70 +240,47 @@ func filterTaskNamespaces(tf *ast.Taskfile, target string) {
 func resolveDepNamespaces(tf *ast.Taskfile) {
 	for _, task := range tf.Tasks {
 		for i, dep := range task.Deps {
-			if _, ok := tf.Tasks[dep.Task]; ok {
-				continue
-			}
-
-			if strings.Contains(task.Name, ":") {
-				parts := strings.SplitN(task.Name, ":", 2)
-				prefix := parts[0]
-
-				candidate := prefix + ":" + dep.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					task.Deps[i].Task = candidate
-					continue
-				}
-
-				candidate2 := prefix + ":common:" + strings.TrimPrefix(dep.Task, "common:")
-				if _, ok := tf.Tasks[candidate2]; ok {
-					task.Deps[i].Task = candidate2
-					continue
-				}
-			}
-
-			for incName := range tf.Includes {
-				candidate := incName + ":" + dep.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					task.Deps[i].Task = candidate
-					break
-				}
+			if resolved, ok := resolveInNamespace(tf, task.Name, dep.Task); ok {
+				task.Deps[i].Task = resolved
 			}
 		}
-
 		for _, cmd := range task.Cmds {
 			if cmd.Task == "" {
 				continue
 			}
-			if _, ok := tf.Tasks[cmd.Task]; ok {
-				continue
-			}
-
-			if strings.Contains(task.Name, ":") {
-				parts := strings.SplitN(task.Name, ":", 2)
-				prefix := parts[0]
-
-				candidate := prefix + ":" + cmd.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					cmd.Task = candidate
-					continue
-				}
-
-				candidate2 := prefix + ":common:" + strings.TrimPrefix(cmd.Task, "common:")
-				if _, ok := tf.Tasks[candidate2]; ok {
-					cmd.Task = candidate2
-					continue
-				}
-			}
-
-			for incName := range tf.Includes {
-				candidate := incName + ":" + cmd.Task
-				if _, ok := tf.Tasks[candidate]; ok {
-					cmd.Task = candidate
-					break
-				}
+			if resolved, ok := resolveInNamespace(tf, task.Name, cmd.Task); ok {
+				cmd.Task = resolved
 			}
 		}
 	}
+}
+
+// resolveInNamespace resolves a short task reference made from within
+// contextName's namespace. A bare name inside `darwin:foo` resolves to
+// `darwin:<name>` *before* any same-named top-level task — this is Taskfile's
+// local-namespace-wins rule. Without it, a dep like `build` in `darwin:package`
+// binds to the top-level `build` wrapper, which silently drops the caller's
+// vars (e.g. PRODUCTION=true), so prod packaging built with dev flags.
+func resolveInNamespace(tf *ast.Taskfile, contextName, name string) (string, bool) {
+	if strings.Contains(contextName, ":") {
+		prefix := strings.SplitN(contextName, ":", 2)[0]
+		if _, ok := tf.Tasks[prefix+":"+name]; ok {
+			return prefix + ":" + name, true
+		}
+		candidate := prefix + ":common:" + strings.TrimPrefix(name, "common:")
+		if _, ok := tf.Tasks[candidate]; ok {
+			return candidate, true
+		}
+	}
+	if _, ok := tf.Tasks[name]; ok {
+		return name, true
+	}
+	for incName := range tf.Includes {
+		if _, ok := tf.Tasks[incName+":"+name]; ok {
+			return incName + ":" + name, true
+		}
+	}
+	return name, false
 }
 
 func useWake() bool {

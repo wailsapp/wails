@@ -231,18 +231,8 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 }
 
 func (e *Executor) resolveTaskName(name, contextTask string) string {
-	if _, ok := e.Taskfile.Tasks[name]; ok {
-		return name
-	}
-
-	for _, task := range e.Taskfile.Tasks {
-		for _, alias := range task.Aliases {
-			if alias == name {
-				return task.Name
-			}
-		}
-	}
-
+	// Same-namespace resolution wins over a same-named top-level task, matching
+	// resolveInNamespace at parse time. See its comment for why.
 	if strings.Contains(contextTask, ":") {
 		parts := strings.SplitN(contextTask, ":", 2)
 		prefix := parts[0]
@@ -252,10 +242,20 @@ func (e *Executor) resolveTaskName(name, contextTask string) string {
 			return candidate
 		}
 
-		if strings.HasPrefix(name, "common:") {
-			candidate2 := prefix + ":common:" + strings.TrimPrefix(name, "common:")
-			if _, ok := e.Taskfile.Tasks[candidate2]; ok {
-				return candidate2
+		candidate2 := prefix + ":common:" + strings.TrimPrefix(name, "common:")
+		if _, ok := e.Taskfile.Tasks[candidate2]; ok {
+			return candidate2
+		}
+	}
+
+	if _, ok := e.Taskfile.Tasks[name]; ok {
+		return name
+	}
+
+	for _, task := range e.Taskfile.Tasks {
+		for _, alias := range task.Aliases {
+			if alias == name {
+				return task.Name
 			}
 		}
 	}
