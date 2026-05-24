@@ -107,6 +107,15 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
+	taskDir := baseDir
+	if task.Dir != "" {
+		if filepath.IsAbs(task.Dir) {
+			taskDir = task.Dir
+		} else {
+			taskDir = filepath.Join(baseDir, task.Dir)
+		}
+	}
+
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
 			c := exec.Command("sh", "-c", cmd)
@@ -118,7 +127,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 	}
 
 	for _, pattern := range task.Generates {
-		if !globExists(baseDir, pattern) {
+		if !globExists(taskDir, pattern) {
 			return false
 		}
 	}
@@ -139,8 +148,8 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 
 	sources, excludes := splitSources(task.Sources)
 	for _, pattern := range sources {
-		files := globMatches(baseDir, pattern)
-		files = applyExcludes(files, baseDir, excludes)
+		files := globMatches(taskDir, pattern)
+		files = applyExcludes(files, taskDir, excludes)
 		for _, file := range files {
 			info, err := os.Stat(file)
 			if err != nil {
@@ -208,12 +217,26 @@ func matchesGlob(path, pattern string) bool {
 }
 
 func recursiveMatch(path, pattern string) bool {
-	parts := strings.Split(pattern, "**")
-	suffix := strings.TrimLeft(parts[len(parts)-1], "/")
-	if suffix == "" {
+	parts := strings.SplitN(pattern, "**", 2)
+	prefix := parts[0]
+	suffix := ""
+	if len(parts) > 1 {
+		suffix = strings.TrimLeft(parts[1], "/")
+	}
+
+	// The portion before `**` is a literal path prefix the file must live under.
+	if prefix != "" && !strings.HasPrefix(path, prefix) {
+		return false
+	}
+
+	if suffix == "" || suffix == "*" {
 		return true
 	}
-	return strings.HasSuffix(path, suffix) || strings.Contains(path, suffix)
+
+	if matched, _ := filepath.Match(suffix, filepath.Base(path)); matched {
+		return true
+	}
+	return strings.HasSuffix(path, suffix)
 }
 
 func (tc *TaskCache) RecordTask(task *ast.Task, baseDir string) error {
@@ -243,21 +266,33 @@ func globMatches(baseDir, pattern string) []string {
 
 func recursiveGlob(baseDir, pattern string) []string {
 	var results []string
-	parts := strings.Split(pattern, "**")
-	suffix := strings.TrimLeft(parts[len(parts)-1], "/")
+	parts := strings.SplitN(pattern, "**", 2)
+	prefix := parts[0]
+	suffix := ""
+	if len(parts) > 1 {
+		suffix = strings.TrimLeft(parts[1], "/")
+	}
 
-	filepath.WalkDir(baseDir, func(path string, d os.DirEntry, err error) error {
+	// Only walk the subtree named by the literal prefix (e.g. `frontend/dist`),
+	// not the whole baseDir. Without this, `frontend/dist/**/*` matched every
+	// file under baseDir, including unrelated paths like `.wake/cache.json`.
+	root := baseDir
+	if prefix != "" {
+		root = filepath.Join(baseDir, prefix)
+	}
+
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil
 		}
 		if d.IsDir() {
 			return nil
 		}
-		rel, err := filepath.Rel(baseDir, path)
-		if err != nil {
+		if suffix == "" || suffix == "*" {
+			results = append(results, path)
 			return nil
 		}
-		if suffix == "" || strings.HasSuffix(rel, suffix) || matchesPattern(rel, suffix) {
+		if matchesPattern(filepath.Base(path), suffix) || strings.HasSuffix(path, suffix) {
 			results = append(results, path)
 		}
 		return nil

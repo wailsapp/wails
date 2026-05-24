@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/exec"
@@ -16,13 +17,14 @@ import (
 )
 
 type ExecuteOptions struct {
-	Dir      string
-	Platform string
-	Arch     string
-	Dev      bool
-	Vars     map[string]string
-	Verbose  bool
-	Silent   bool
+	Dir       string
+	Platform  string
+	Arch      string
+	Dev       bool
+	Vars      map[string]string
+	Verbose   bool
+	Silent    bool
+	Parallel  bool
 }
 
 func Parse(path string) (*ast.Taskfile, error) {
@@ -55,6 +57,13 @@ func Execute(name string, opts ExecuteOptions) error {
 		return err
 	}
 
+	if reason, supported := checkSupported(tf); !supported {
+		if fallback.Available() {
+			return fallback.TaskCLI(name, opts.Dir, nil)
+		}
+		return fmt.Errorf("wake: unsupported feature: %s (task CLI not available for fallback)", reason)
+	}
+
 	if err := override.LoadTaskfileOverrides(dir); err != nil {
 		return fmt.Errorf("wake: load Taskfile overrides: %w", err)
 	}
@@ -62,6 +71,8 @@ func Execute(name string, opts ExecuteOptions) error {
 	resolve.ApplyOverrides(tf, override.Named(), override.All())
 
 	resolve.FilterPlatforms(tf)
+
+	filterTaskNamespaces(tf, name)
 
 	if err := resolveVars(tf); err != nil {
 		return err
@@ -87,9 +98,17 @@ func Execute(name string, opts ExecuteOptions) error {
 		Cache:    cache,
 	}
 
+	if opts.Verbose {
+		fmt.Fprintf(os.Stderr, "[wake-dag] target=%q order=%v\n", name, dag.Order)
+	}
+
 	ctx := context.Background()
-	for _, taskName := range dag.Order {
-		if err := ex.Execute(ctx, taskName); err != nil {
+	if opts.Parallel {
+		if err := executeParallel(ctx, ex, name, dag); err != nil {
+			return err
+		}
+	} else {
+		if err := ex.Execute(ctx, name); err != nil {
 			return err
 		}
 	}
@@ -146,7 +165,7 @@ func expandTemplates(tf *ast.Taskfile) {
 		newName := parse.ExpandTemplates(taskName, tf.Vars)
 		task.Name = newName
 		task.Dir = parse.ExpandTemplates(task.Dir, tf.Vars)
-		task.Label = parse.ExpandTemplates(task.Label, tf.Vars)
+		// Label is NOT pre-expanded here - it's expanded at execution time with mergedVars
 		task.Summary = parse.ExpandTemplates(task.Summary, tf.Vars)
 
 		for i, dep := range task.Deps {
@@ -155,7 +174,7 @@ func expandTemplates(tf *ast.Taskfile) {
 		}
 
 		for _, cmd := range task.Cmds {
-			cmd.Cmd = parse.ExpandTemplates(cmd.Cmd, tf.Vars)
+			// Commands are NOT pre-expanded here - they're expanded at execution time with mergedVars
 			cmd.Task = parse.ExpandTemplates(cmd.Task, tf.Vars)
 		}
 
@@ -174,6 +193,50 @@ func expandTemplates(tf *ast.Taskfile) {
 	resolveDepNamespaces(tf)
 }
 
+func filterTaskNamespaces(tf *ast.Taskfile, target string) {
+	if !strings.Contains(target, ":") {
+		return
+	}
+
+	prefix := strings.SplitN(target, ":", 2)[0]
+
+	platformPrefixes := map[string]bool{
+		"darwin":  true,
+		"linux":   true,
+		"windows": true,
+		"ios":     true,
+		"android": true,
+	}
+
+	if !platformPrefixes[prefix] {
+		return
+	}
+
+	for name := range tf.Tasks {
+		if strings.HasPrefix(name, "common:") {
+			delete(tf.Tasks, name)
+			continue
+		}
+
+		if strings.Contains(name, ":") {
+			parts := strings.SplitN(name, ":", 2)
+			taskPrefix := parts[0]
+			if platformPrefixes[taskPrefix] && taskPrefix != prefix {
+				delete(tf.Tasks, name)
+				continue
+			}
+
+			if len(parts) >= 3 {
+				taskPrefix2 := parts[1]
+				if platformPrefixes[taskPrefix2] && taskPrefix2 != prefix {
+					delete(tf.Tasks, name)
+					continue
+				}
+			}
+		}
+	}
+}
+
 func resolveDepNamespaces(tf *ast.Taskfile) {
 	for _, task := range tf.Tasks {
 		for i, dep := range task.Deps {
@@ -183,9 +246,17 @@ func resolveDepNamespaces(tf *ast.Taskfile) {
 
 			if strings.Contains(task.Name, ":") {
 				parts := strings.SplitN(task.Name, ":", 2)
-				candidate := parts[0] + ":" + dep.Task
+				prefix := parts[0]
+
+				candidate := prefix + ":" + dep.Task
 				if _, ok := tf.Tasks[candidate]; ok {
 					task.Deps[i].Task = candidate
+					continue
+				}
+
+				candidate2 := prefix + ":common:" + strings.TrimPrefix(dep.Task, "common:")
+				if _, ok := tf.Tasks[candidate2]; ok {
+					task.Deps[i].Task = candidate2
 					continue
 				}
 			}
@@ -209,9 +280,17 @@ func resolveDepNamespaces(tf *ast.Taskfile) {
 
 			if strings.Contains(task.Name, ":") {
 				parts := strings.SplitN(task.Name, ":", 2)
-				candidate := parts[0] + ":" + cmd.Task
+				prefix := parts[0]
+
+				candidate := prefix + ":" + cmd.Task
 				if _, ok := tf.Tasks[candidate]; ok {
 					cmd.Task = candidate
+					continue
+				}
+
+				candidate2 := prefix + ":common:" + strings.TrimPrefix(cmd.Task, "common:")
+				if _, ok := tf.Tasks[candidate2]; ok {
+					cmd.Task = candidate2
 					continue
 				}
 			}
@@ -232,4 +311,92 @@ func useWake() bool {
 		return env == "true"
 	}
 	return false
+}
+
+func checkSupported(tf *ast.Taskfile) (string, bool) {
+	if len(tf.Dotenv) > 0 {
+		return "dotenv", false
+	}
+	if tf.Output != "" && tf.Output != "interleaved" {
+		return "output: " + tf.Output, false
+	}
+	if tf.Requires != nil {
+		return "requires", false
+	}
+	if tf.Interval != "" {
+		return "interval", false
+	}
+
+	for _, task := range tf.Tasks {
+		if task.Run != "" && task.Run != "always" {
+			return "run: " + task.Run + " in task " + task.Name, false
+		}
+		if task.Short != "" {
+			return "short in task " + task.Name, false
+		}
+		if len(task.Defer) > 0 {
+			return "defer in task " + task.Name, false
+		}
+		if task.Interval != "" {
+			return "interval in task " + task.Name, false
+		}
+	}
+
+	return "", true
+}
+
+func executeParallel(ctx context.Context, ex *exec.Executor, target string, dag *resolve.DAG) error {
+	inDeg := make(map[string]int)
+	for k, v := range dag.InDegree {
+		inDeg[k] = v
+	}
+
+	completed := make(map[string]bool)
+	var mu sync.Mutex
+
+	for len(completed) < len(dag.Tasks) {
+		var ready []*ast.Task
+		for _, task := range dag.Tasks {
+			if completed[task.Name] {
+				continue
+			}
+			if inDeg[task.Name] == 0 {
+				ready = append(ready, task)
+			}
+		}
+
+		if len(ready) == 0 {
+			return fmt.Errorf("wake: deadlock detected in parallel execution")
+		}
+
+		var wg sync.WaitGroup
+		errCh := make(chan error, len(ready))
+
+		for _, task := range ready {
+			wg.Add(1)
+			go func(t *ast.Task) {
+				defer wg.Done()
+				if err := ex.Execute(ctx, t.Name); err != nil {
+					errCh <- err
+				}
+				mu.Lock()
+				completed[t.Name] = true
+				for _, dependent := range dag.Edges[t.Name] {
+					inDeg[dependent]--
+				}
+				mu.Unlock()
+			}(task)
+		}
+
+		wg.Wait()
+		close(errCh)
+
+		for err := range errCh {
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

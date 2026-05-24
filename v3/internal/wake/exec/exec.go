@@ -20,10 +20,15 @@ type Executor struct {
 	MaxWorkers int
 	Cache      *TaskCache
 	executed   map[string]bool
+	depRuns    map[string]bool
 	mu         sync.Mutex
 }
 
 func (e *Executor) Execute(ctx context.Context, target string) error {
+	return e.ExecuteWithVars(ctx, target, nil)
+}
+
+func (e *Executor) ExecuteWithVars(ctx context.Context, target string, extraVars map[string]*ast.Var) error {
 	e.mu.Lock()
 	if e.executed == nil {
 		e.executed = make(map[string]bool)
@@ -37,7 +42,6 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 
 	task := e.Taskfile.Tasks[target]
 	if task == nil {
-		fmt.Fprintf(os.Stderr, "[wake-debug] task %q not found in Taskfile.Tasks (total: %d)\n", target, len(e.Taskfile.Tasks))
 		return fmt.Errorf("wake: task %q not found", target)
 	}
 
@@ -55,7 +59,7 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 		return nil
 	}
 
-	if err := e.runTask(ctx, task, nil); err != nil {
+	if err := e.runTask(ctx, task, extraVars); err != nil {
 		return err
 	}
 
@@ -71,6 +75,51 @@ func (e *Executor) Execute(ctx context.Context, target string) error {
 
 	RecordRun(target)
 	return nil
+}
+
+func (e *Executor) resolveDepVars(depVars map[string]*ast.Var, mergedVars map[string]*ast.Var) map[string]*ast.Var {
+	if depVars == nil {
+		return nil
+	}
+
+	resolved := make(map[string]*ast.Var)
+	for k, v := range depVars {
+		if v.Ref != "" {
+			refName := strings.TrimPrefix(v.Ref, ".")
+			if ref, ok := mergedVars[refName]; ok {
+				val := ref.Value
+				if val == "" {
+					val = ref.Static
+				}
+				expanded := parse.ExpandTemplates(val, mergedVars)
+				resolved[k] = &ast.Var{Static: expanded, Value: expanded}
+				if e.Verbose {
+					fmt.Fprintf(os.Stderr, "[wake-resolve-dep-var] %q ref=%q -> %q\n", k, v.Ref, expanded)
+				}
+			} else {
+				if e.Verbose {
+					fmt.Fprintf(os.Stderr, "[wake-resolve-dep-var] %q ref=%q NOT FOUND in mergedVars (keys: %v)\n", k, v.Ref, mapKeys(mergedVars))
+				}
+				resolved[k] = &ast.Var{Static: v.Ref, Value: v.Ref}
+			}
+		} else {
+			val := v.Value
+			if val == "" {
+				val = v.Static
+			}
+			expanded := parse.ExpandTemplates(val, mergedVars)
+			resolved[k] = &ast.Var{Static: expanded, Value: expanded}
+		}
+	}
+	return resolved
+}
+
+func mapKeys(m map[string]*ast.Var) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[string]*ast.Var) error {
@@ -89,10 +138,36 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 
 	mergedVars := e.mergeVars(task, depVars)
 
+	if e.depRuns == nil {
+		e.depRuns = make(map[string]bool)
+	}
+
 	for _, dep := range task.Deps {
 		expandedDep := parse.ExpandTemplates(dep.Task, mergedVars)
 		resolvedDep := e.resolveTaskName(expandedDep, task.Name)
-		if err := e.Execute(ctx, resolvedDep); err != nil {
+
+		resolvedDepVars := e.resolveDepVars(dep.Vars, mergedVars)
+
+		if e.Verbose {
+			fmt.Fprintf(os.Stderr, "[wake-dep] task=%q dep=%q resolved=%q depVars=%v\n", task.Name, dep.Task, resolvedDep, resolvedDepVars)
+		}
+
+		method := task.Method
+		if method == "" {
+			method = "all"
+		}
+
+		switch method {
+		case "once":
+			if e.depRuns[resolvedDep] {
+				continue
+			}
+			e.depRuns[resolvedDep] = true
+		case "none":
+			continue
+		}
+
+		if err := e.ExecuteWithVars(ctx, resolvedDep, resolvedDepVars); err != nil {
 			return err
 		}
 	}
@@ -108,12 +183,48 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		dir = e.Dir + "/" + dir
 	}
 
+	label := parse.ExpandTemplates(task.Label, mergedVars)
+	if label != "" && !e.Silent && !task.Silent {
+		fmt.Printf("[wake:%s]\n", label)
+	}
+
+	// Implicit caching of native Go commands (`go build`, `go mod tidy`).
+	// The task CLI always re-runs these because the Taskfile declares no
+	// sources/generates; wake derives the inputs itself and skips the
+	// subprocess when nothing has changed. Only applies to single-command
+	// tasks that opt out of explicit caching.
+	var goRecord func()
+	if e.Cache != nil && len(task.Cmds) == 1 &&
+		len(task.Sources) == 0 && len(task.Generates) == 0 && len(task.Status) == 0 {
+		goDir := dir
+		if goDir == "" {
+			goDir = e.Dir
+		}
+		expanded := expandCmd(task.Cmds[0].Cmd, mergedVars)
+		if kind := classifyGoCmd(expanded); kind != goCmdNone {
+			sources, output := e.goCmdInputs(kind, task, expanded, goDir)
+			if e.Cache.ShouldSkipGoCmd(task.Name, expanded, sources, output) {
+				e.log("task %q up-to-date (go-cache hit)", task.Name)
+				return nil
+			}
+			goRecord = func() {
+				if err := e.Cache.RecordGoCmd(task.Name, expanded); err != nil {
+					e.log("go-cache record failed for %q: %v", task.Name, err)
+				}
+			}
+		}
+	}
+
 	for _, cmd := range task.Cmds {
 		if err := e.runCmd(ctx, cmd, dir, env, mergedVars); err != nil {
 			if !cmd.IgnoreError {
 				return err
 			}
 		}
+	}
+
+	if goRecord != nil {
+		goRecord()
 	}
 
 	return nil
@@ -124,11 +235,28 @@ func (e *Executor) resolveTaskName(name, contextTask string) string {
 		return name
 	}
 
+	for _, task := range e.Taskfile.Tasks {
+		for _, alias := range task.Aliases {
+			if alias == name {
+				return task.Name
+			}
+		}
+	}
+
 	if strings.Contains(contextTask, ":") {
 		parts := strings.SplitN(contextTask, ":", 2)
-		candidate := parts[0] + ":" + name
+		prefix := parts[0]
+
+		candidate := prefix + ":" + name
 		if _, ok := e.Taskfile.Tasks[candidate]; ok {
 			return candidate
+		}
+
+		if strings.HasPrefix(name, "common:") {
+			candidate2 := prefix + ":common:" + strings.TrimPrefix(name, "common:")
+			if _, ok := e.Taskfile.Tasks[candidate2]; ok {
+				return candidate2
+			}
 		}
 	}
 
@@ -238,13 +366,48 @@ func (e *Executor) mergeVars(task *ast.Task, depVars map[string]*ast.Var) map[st
 		merged[k] = v
 	}
 
+	if depVars != nil {
+		for k, v := range depVars {
+			merged[k] = v
+		}
+	}
+
 	for k, v := range task.Vars {
 		merged[k] = v
 	}
 
-	if depVars != nil {
-		for k, v := range depVars {
-			merged[k] = v
+	for k, v := range task.Env {
+		if _, exists := merged[k]; !exists {
+			merged[k] = &ast.Var{Static: v}
+		}
+	}
+
+	// Expand templated vars to a fixed point. A single pass is order-dependent:
+	// a var like `{{.OUTPUT | default .DEFAULT_OUTPUT}}` resolves to empty when
+	// DEFAULT_OUTPUT happens to be visited later in Go's randomized map order.
+	// Iterating until no value changes makes resolution deterministic.
+	for iter := 0; iter < 10; iter++ {
+		changed := false
+		for k, v := range merged {
+			needsExpand := v.Static != "" && strings.Contains(v.Static, "{{")
+			if !needsExpand && v.Value != "" && strings.Contains(v.Value, "{{") {
+				needsExpand = true
+			}
+			if !needsExpand {
+				continue
+			}
+			src := v.Value
+			if src == "" {
+				src = v.Static
+			}
+			expanded := parse.ExpandTemplates(src, merged)
+			if expanded != v.Value {
+				merged[k] = &ast.Var{Static: v.Static, Value: expanded, Ref: v.Ref, Shell: v.Shell}
+				changed = true
+			}
+		}
+		if !changed {
+			break
 		}
 	}
 
