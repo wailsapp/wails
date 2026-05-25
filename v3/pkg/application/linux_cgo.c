@@ -114,6 +114,9 @@ void install_signal_handlers(void) {
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
+#if defined(SIGUSR1)
+    fix_signal(SIGUSR1);
+#endif
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif

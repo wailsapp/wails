@@ -65,6 +65,9 @@ static void install_signal_handlers()
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
+#if defined(SIGUSR1)
+    fix_signal(SIGUSR1);
+#endif
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif
@@ -458,6 +461,9 @@ var edgeMap = map[string]uintptr{
 
 func (f *Frontend) processMessage(message string) {
 	if message == "DomReady" {
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		if f.frontendOptions.OnDomReady != nil {
 			f.frontendOptions.OnDomReady(f.ctx)
 		}

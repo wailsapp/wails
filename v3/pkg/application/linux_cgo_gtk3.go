@@ -222,6 +222,9 @@ static void install_signal_handlers() {
 	#if defined(SIGSEGV)
 		fix_signal(SIGSEGV);
 	#endif
+	#if defined(SIGUSR1)
+		fix_signal(SIGUSR1);
+	#endif
 	#if defined(SIGXCPU)
 		fix_signal(SIGXCPU);
 	#endif
@@ -1751,6 +1754,9 @@ func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }

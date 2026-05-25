@@ -81,7 +81,10 @@ var (
 	mainThreadId        *C.GThread
 )
 
-var registerURIScheme sync.Once
+var (
+	registerURIScheme sync.Once
+	fixSignalHandlers sync.Once
+)
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -131,7 +134,6 @@ func appName() string {
 
 func appNew(name string) pointer {
 	C.install_signal_handlers()
-	C.schedule_signal_handler_fix()
 
 	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
@@ -1191,6 +1193,13 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 			(*[0]byte)(C.onProcessRequest), nil, nil)
 	})
 
+	// Start the periodic signal-handler fix now that a WebView exists and JSC
+	// can actually initialise. Anchoring to first webview creation (not appNew)
+	// ensures the 5s window covers the JSC lazy-init race window.
+	fixSignalHandlers.Do(func() {
+		C.schedule_signal_handler_fix()
+	})
+
 	_ = networkSession
 	return pointer(webView)
 }
@@ -1493,6 +1502,9 @@ func handleLoadChanged(wv *C.WebKitWebView, event C.WebKitLoadEvent, data C.uint
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }
