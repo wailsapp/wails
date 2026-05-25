@@ -26,5 +26,9 @@ func open(target string) error {
 	default:
 		cmd = exec.Command("xdg-open", target)
 	}
-	return cmd.Start()
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go cmd.Wait() //nolint:errcheck
+	return nil
 }

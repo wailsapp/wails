@@ -196,8 +196,11 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	// --- JSON path: legacy / backwards-compat ---
 	jsonData, jsonErr := fs.ReadFile(templateFS, prefix+"template.json")
 	if jsonErr != nil {
-		if errors.Is(yamlErr, fs.ErrNotExist) {
+		if errors.Is(yamlErr, fs.ErrNotExist) && errors.Is(jsonErr, fs.ErrNotExist) {
 			return result, fmt.Errorf("no template.yaml or template.json found in template")
+		}
+		if !errors.Is(yamlErr, fs.ErrNotExist) {
+			return result, fmt.Errorf("error reading template.yaml: %w", yamlErr)
 		}
 		return result, fmt.Errorf("error reading template.json: %w", jsonErr)
 	}

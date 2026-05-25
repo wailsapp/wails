@@ -44,7 +44,7 @@ func GenerateSyso(options *SysoOptions) (err error) {
 	defer func() {
 		err2 := iconFile.Close()
 		if err == nil && err2 != nil {
-			err = fmt.Errorf("error closing icon file: %s", err2.Error())
+			err = fmt.Errorf("error closing icon file: %w", err2)
 		}
 	}()
 	ico, err := winres.LoadICO(iconFile)
