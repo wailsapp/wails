@@ -1197,6 +1197,7 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	// can actually initialise. Anchoring to first webview creation (not appNew)
 	// ensures the 5s window covers the JSC lazy-init race window.
 	fixSignalHandlers.Do(func() {
+		C.install_signal_handlers()
 		C.schedule_signal_handler_fix()
 	})
 
