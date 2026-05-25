@@ -470,7 +470,10 @@ func (s *Stmt) Close() error {
 		delete(s.db.stmts, s.id)
 	}()
 
-	return fmt.Errorf("error closing prepared statement: %w", err)
+	if err != nil {
+		return fmt.Errorf("error closing prepared statement: %w", err)
+	}
+	return nil
 }
 
 func (s *Stmt) MarshalText() ([]byte, error) {

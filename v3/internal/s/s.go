@@ -270,8 +270,11 @@ func splitShell(s string) ([]string, error) {
 	var args []string
 	var cur strings.Builder
 	inSingle, inDouble := false, false
-	for i := 0; i < len(s); i++ {
-		c := rune(s[i])
+	// inWord tracks whether we are inside a token (including empty quoted args).
+	inWord := false
+	runes := []rune(s)
+	for i := 0; i < len(runes); i++ {
+		c := runes[i]
 		switch {
 		case inSingle:
 			if c == '\'' {
@@ -282,32 +285,37 @@ func splitShell(s string) ([]string, error) {
 		case inDouble:
 			if c == '"' {
 				inDouble = false
-			} else if c == '\\' && i+1 < len(s) {
+			} else if c == '\\' && i+1 < len(runes) {
 				i++
-				cur.WriteByte(s[i])
+				cur.WriteRune(runes[i])
 			} else {
 				cur.WriteRune(c)
 			}
 		case c == '\'':
 			inSingle = true
+			inWord = true
 		case c == '"':
 			inDouble = true
-		case c == '\\' && i+1 < len(s):
+			inWord = true
+		case c == '\\' && i+1 < len(runes):
 			i++
-			cur.WriteByte(s[i])
+			cur.WriteRune(runes[i])
+			inWord = true
 		case unicode.IsSpace(c):
-			if cur.Len() > 0 {
+			if inWord {
 				args = append(args, cur.String())
 				cur.Reset()
+				inWord = false
 			}
 		default:
 			cur.WriteRune(c)
+			inWord = true
 		}
 	}
 	if inSingle || inDouble {
 		return nil, fmt.Errorf("unterminated quote in: %s", s)
 	}
-	if cur.Len() > 0 {
+	if inWord {
 		args = append(args, cur.String())
 	}
 	return args, nil

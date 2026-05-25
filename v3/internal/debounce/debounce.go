@@ -15,9 +15,10 @@ func New(after time.Duration) func(f func()) {
 }
 
 type debouncer struct {
-	mu    sync.Mutex
-	after time.Duration
-	timer *time.Timer
+	mu         sync.Mutex
+	after      time.Duration
+	timer      *time.Timer
+	generation uint64
 }
 
 func (d *debouncer) add(f func()) {
@@ -26,5 +27,15 @@ func (d *debouncer) add(f func()) {
 	if d.timer != nil {
 		d.timer.Stop()
 	}
-	d.timer = time.AfterFunc(d.after, f)
+	d.generation++
+	gen := d.generation
+	d.timer = time.AfterFunc(d.after, func() {
+		d.mu.Lock()
+		if d.generation != gen {
+			d.mu.Unlock()
+			return
+		}
+		d.mu.Unlock()
+		f()
+	})
 }

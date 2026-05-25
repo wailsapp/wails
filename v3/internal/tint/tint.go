@@ -113,22 +113,33 @@ func (h *handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 		buf.WriteByte(' ')
 		h.appendAttr(&buf, a, h.groups)
 	}
+	extra := buf.Bytes()
+	pre := make([]byte, len(h.preformatted)+len(extra))
+	copy(pre, h.preformatted)
+	copy(pre[len(h.preformatted):], extra)
+	gs := make([]string, len(h.groups))
+	copy(gs, h.groups)
 	return &handler{
 		w:            h.w,
 		opts:         h.opts,
 		timeFormat:   h.timeFormat,
-		preformatted: append(h.preformatted, buf.Bytes()...),
-		groups:       h.groups,
+		preformatted: pre,
+		groups:       gs,
 	}
 }
 
 func (h *handler) WithGroup(name string) slog.Handler {
+	gs := make([]string, len(h.groups)+1)
+	copy(gs, h.groups)
+	gs[len(h.groups)] = name
+	pre := make([]byte, len(h.preformatted))
+	copy(pre, h.preformatted)
 	return &handler{
 		w:            h.w,
 		opts:         h.opts,
 		timeFormat:   h.timeFormat,
-		preformatted: h.preformatted,
-		groups:       append(h.groups, name),
+		preformatted: pre,
+		groups:       gs,
 	}
 }
 

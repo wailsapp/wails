@@ -6,6 +6,7 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
+#include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"
 #include "systemtray_darwin.h"
@@ -260,9 +261,11 @@ func (s *macosSystemTray) setLabel(label string) {
 	}
 	cLabel, cFg, cBg := partToCStrings(parts[0])
 	attr := C.createAttributedString(cLabel, cFg, cBg)
+	freeCStrings(cLabel, cFg, cBg)
 	for _, p := range parts[1:] {
 		cLabel, cFg, cBg = partToCStrings(p)
 		attr = C.appendAttributedString(attr, cLabel, cFg, cBg)
+		freeCStrings(cLabel, cFg, cBg)
 	}
 	C.systemTraySetANSILabel(s.nsStatusItem, attr)
 }
@@ -280,6 +283,16 @@ func partToCStrings(p SystemTrayLabelPart) (label, fg, bg *C.char) {
 		bg = C.CString(p.BgColor)
 	}
 	return
+}
+
+func freeCStrings(label, fg, bg *C.char) {
+	C.free(unsafe.Pointer(label))
+	if fg != nil {
+		C.free(unsafe.Pointer(fg))
+	}
+	if bg != nil {
+		C.free(unsafe.Pointer(bg))
+	}
 }
 
 func (s *macosSystemTray) destroy() {

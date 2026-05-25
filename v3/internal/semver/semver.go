@@ -96,8 +96,36 @@ func (v *Version) compare(other *Version) int {
 	case other.Prerelease == "":
 		return -1
 	default:
-		return strings.Compare(v.Prerelease, other.Prerelease)
+		return comparePrerelease(v.Prerelease, other.Prerelease)
 	}
+}
+
+// comparePrerelease compares two prerelease strings per SemVer 2.0 §11.4:
+// dot-separated identifiers, numeric identifiers compared numerically,
+// alphanumeric identifiers compared lexically, numeric < alphanumeric,
+// longer wins when all shorter identifiers are equal.
+func comparePrerelease(a, b string) int {
+	as := strings.Split(a, ".")
+	bs := strings.Split(b, ".")
+	for i := 0; i < len(as) && i < len(bs); i++ {
+		ai, aErr := strconv.ParseUint(as[i], 10, 64)
+		bi, bErr := strconv.ParseUint(bs[i], 10, 64)
+		switch {
+		case aErr == nil && bErr == nil:
+			if c := cmpUint(ai, bi); c != 0 {
+				return c
+			}
+		case aErr == nil:
+			return -1 // numeric < alphanumeric
+		case bErr == nil:
+			return 1
+		default:
+			if c := strings.Compare(as[i], bs[i]); c != 0 {
+				return c
+			}
+		}
+	}
+	return cmpUint(uint64(len(as)), uint64(len(bs)))
 }
 
 func cmpUint(a, b uint64) int {
