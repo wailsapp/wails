@@ -189,3 +189,45 @@ func TestBoundMethodCall(t *testing.T) {
 	}
 
 }
+
+func TestRegisteredBindingMethodID(t *testing.T) {
+	const stableID uint32 = 4000000001
+
+	// init globalApplication
+	_ = application.New(application.Options{})
+
+	application.RegisterBindingMethodID((*TestService).String, stableID)
+	t.Cleanup(func() { application.UnregisterBindingMethodID((*TestService).String) })
+
+	bindings := application.NewBindings(nil, nil)
+	if err := bindings.Add(application.NewService(&TestService{})); err != nil {
+		t.Fatalf("bindings.Add() error = %v", err)
+	}
+
+	method := bindings.GetByID(stableID)
+	if method == nil {
+		t.Fatalf("bound method not found by registered stable ID %d", stableID)
+	}
+
+	result, err := method.Call(context.TODO(), newArgs(`"foo"`))
+	if err != nil {
+		t.Fatalf("method.Call() error = %v", err)
+	}
+	if result != "foo" {
+		t.Fatalf("result: %v, expected result: foo", result)
+	}
+}
+
+func TestRegisterBindingMethodIDPanicsForNonFunction(t *testing.T) {
+	defer func() {
+		err := recover()
+		if err == nil {
+			t.Fatalf("RegisterBindingMethodID() did not panic")
+		}
+		if !strings.Contains(err.(string), "expects a function") {
+			t.Fatalf("RegisterBindingMethodID() panic = %v", err)
+		}
+	}()
+
+	application.RegisterBindingMethodID("not a function", 1)
+}

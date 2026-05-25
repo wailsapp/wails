@@ -22,6 +22,12 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
 	}
+	if buildFlags.Obfuscated {
+		otherArgs = append(otherArgs, "OBFUSCATED=true")
+	}
+	if buildFlags.GarbleArgs != "" {
+		otherArgs = append(otherArgs, "GARBLE_ARGS="+buildFlags.GarbleArgs)
+	}
 	return wrapTask("build", otherArgs)
 }
 

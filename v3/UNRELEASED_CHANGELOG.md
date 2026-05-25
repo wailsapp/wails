@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Garble obfuscation support ([#4563](https://github.com/wailsapp/wails/issues/4563)): stable binding method IDs, build/Taskfile plumbing (`build --obfuscated --garbleargs`, `generate bindings -obfuscated`), and JSON struct tags on every runtime-facing payload (`EnvironmentInfo`, `OSInfo`, `Screen`, `Rect`, `Point`, `Size`, `Capabilities`) so the wire format survives Garble's exported-field renaming.
 
 ## Changed
 <!-- Changes in existing functionality -->
