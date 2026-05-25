@@ -3,13 +3,13 @@ package s
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/google/shlex"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 var (
@@ -266,11 +266,57 @@ func TOUCH(filepath string) {
 	closefile(f)
 }
 
+func splitShell(s string) ([]string, error) {
+	var args []string
+	var cur strings.Builder
+	inSingle, inDouble := false, false
+	for i := 0; i < len(s); i++ {
+		c := rune(s[i])
+		switch {
+		case inSingle:
+			if c == '\'' {
+				inSingle = false
+			} else {
+				cur.WriteRune(c)
+			}
+		case inDouble:
+			if c == '"' {
+				inDouble = false
+			} else if c == '\\' && i+1 < len(s) {
+				i++
+				cur.WriteByte(s[i])
+			} else {
+				cur.WriteRune(c)
+			}
+		case c == '\'':
+			inSingle = true
+		case c == '"':
+			inDouble = true
+		case c == '\\' && i+1 < len(s):
+			i++
+			cur.WriteByte(s[i])
+		case unicode.IsSpace(c):
+			if cur.Len() > 0 {
+				args = append(args, cur.String())
+				cur.Reset()
+			}
+		default:
+			cur.WriteRune(c)
+		}
+	}
+	if inSingle || inDouble {
+		return nil, fmt.Errorf("unterminated quote in: %s", s)
+	}
+	if cur.Len() > 0 {
+		args = append(args, cur.String())
+	}
+	return args, nil
+}
+
 func EXEC(command string) ([]byte, error) {
 	log("EXEC %s", command)
 
-	// Split input using shlex
-	args, err := shlex.Split(command)
+	args, err := splitShell(command)
 	checkError(err)
 	// Execute command
 	cmd := exec.Command(args[0], args[1:]...)

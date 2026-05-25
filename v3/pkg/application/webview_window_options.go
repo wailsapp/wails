@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -589,13 +589,13 @@ const (
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {
 	// TabFocusesLinks will enable tabbing to links
-	TabFocusesLinks u.Bool
+	TabFocusesLinks optional.Bool
 	// TextInteractionEnabled will enable text interaction
-	TextInteractionEnabled u.Bool
+	TextInteractionEnabled optional.Bool
 	// FullscreenEnabled will enable fullscreen
-	FullscreenEnabled u.Bool
+	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
-	AllowsBackForwardNavigationGestures u.Bool
+	AllowsBackForwardNavigationGestures optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

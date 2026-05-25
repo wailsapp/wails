@@ -15,17 +15,18 @@ import (
 	"github.com/wailsapp/wails/v3/internal/version"
 	"gopkg.in/yaml.v3"
 
+	"errors"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 )
 
 //go:embed *
@@ -198,7 +199,7 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 		if errors.Is(yamlErr, fs.ErrNotExist) {
 			return result, fmt.Errorf("no template.yaml or template.json found in template")
 		}
-		return result, errors.Wrap(jsonErr, "error reading template.json")
+		return result, fmt.Errorf("error reading template.json: %w", jsonErr)
 	}
 
 	if err := json.Unmarshal(jsonData, &result); err != nil {

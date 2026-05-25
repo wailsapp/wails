@@ -9,9 +9,9 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 )
 
 //go:embed template
