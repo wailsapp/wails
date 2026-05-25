@@ -1,293 +1,227 @@
 ---
 title: Creating Custom Templates
-description: Learn how to create and customise your own Wails v3 templates
+description: How to generate, customise, and host your own Wails v3 project templates
 sidebar:
     order: 50
 ---
 
-This guide will walk you through the process of creating a custom template for Wails v3. 
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
 
-## Why would I make a custom template?
+Wails ships with a set of built-in templates, but you can create your own and share them with the community. A custom template is just a Git repository — once it is hosted publicly, anyone can scaffold a project from it with a single command.
 
-Wails comes with a number of pre-configured templates that allow you to get your application up and running quickly. But if you need a more customised setup, you can create your own template to suit your needs. This can then be shared with the Wails community for others to use.
+## Generate a template skeleton
 
-### 1. Generating a Template
-
-To create a custom template, you can use the `wails3 generate template` command:
+The `wails3 generate template` command produces a ready-to-customise template directory:
 
 ```bash
-wails3 generate template -name mytemplate
+wails3 generate template -name MyTemplate
 ```
 
-This will create a new directory called "mytemplate" in your current directory.
+All flags:
 
-The `wails3 generate template` command supports the following options:
+| Flag           | Description                                        | Default           |
+|----------------|----------------------------------------------------|-------------------|
+| `-name`        | Template name (required)                           | —                 |
+| `-author`      | Author name                                        | —                 |
+| `-description` | Short description shown in the CLI                 | —                 |
+| `-helpurl`     | URL to documentation for this template             | —                 |
+| `-version`     | Initial version                                    | `v0.0.1`          |
+| `-frontend`    | Copy an existing frontend directory into the template | —              |
+| `-dir`         | Where to write the template directory              | Current directory |
 
-| Option         | Description                                       | Default           |
-|----------------|---------------------------------------------------|-------------------|
-| `-name`        | The name of your template (required)              | -                 |
-| `-frontend`    | Path to an existing frontend directory to include | -                 |
-| `-author`      | The author of the template                        | -                 |
-| `-description` | A description of the template                     | -                 |
-| `-helpurl`     | URL for template documentation                    | -                 |
-| `-dir`         | Directory to generate the template in             | Current directory |
-| `-version`     | Template version                                  | v0.0.1            |
-
-For example, to create a template with all options:
+Example with all flags:
 
 ```bash
 wails3 generate template \
-  -name "My Custom Template" \
-  -frontend ./my-existing-frontend \
+  -name "My Template" \
   -author "Your Name" \
-  -description "A template with my preferred setup" \
-  -helpurl "https://github.com/yourusername/template-docs" \
-  -dir ./templates \
-  -version "v1.0.0"
+  -description "React + custom setup" \
+  -helpurl "https://github.com/yourname/my-template" \
+  -version "v1.0.0" \
+  -frontend ./my-existing-frontend
 ```
 
-  :::tip
-  Using the `-frontend` option will copy an existing web frontend project into the template.
-  :::
+The generated directory looks like this:
 
-### 2. Configure Template Metadata
-
-If you didn't specify the template configuration when generating the template, you can update the `template.json` file in the template directory:
-
-```json5
-{
-  "name": "Your Template Name",          // Display name of your template
-  "shortname": "template-shortname",     // Used when referencing your template
-  "author": "Your Name",                 // Template author
-  "description": "Template description", // Template description
-  "helpurl": "https://your-docs.com",    // Documentation URL
-  "version": "v0.0.1",                   // Template version
-  "schema": 3                            // Must be kept as 3 for Wails v3
-}
 ```
-:::caution
-The `schema` field must remain set to `3` for compatibility with Wails v3.
+MyTemplate/
+├── template.yaml          # Template metadata — edit this
+├── NEXTSTEPS.md           # Guidance for you as the template author — delete before publishing
+├── README.md              # Shown to users after they create a project
+├── main.go.tmpl           # Application entry point
+├── greetservice.go        # Example Go service
+├── go.mod.tmpl            # Go module file
+├── go.sum.tmpl            # Go checksums
+├── gitignore.tmpl         # Becomes .gitignore in generated projects
+├── Taskfile.tmpl.yml      # Build task definitions
+└── frontend/              # Your frontend code
+```
+
+:::tip[Read NEXTSTEPS.md]
+The generated `NEXTSTEPS.md` contains detailed guidance on every part of the template. Read it before customising. Delete it before publishing — it must not appear in projects created from your template.
 :::
 
-### 3. Set Up Build Tasks
+## Configure template metadata
 
-In the `build` directory is `Taskfile.yml` where you can define your template's build process. 
-This file uses [Task](https://taskfile.dev) for build automation. The key steps are:
+Open `template.yaml` to set your template's metadata:
+
+```yaml
+# yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
+name: "My Template"
+shortname: my-template
+author: Your Name
+description: A template with my preferred setup
+helpurl: https://github.com/yourname/my-template
+version: v1.0.0
+wailsVersion: 3
+```
+
+The `wailsVersion` field is **required** and must be `3`. The `# yaml-language-server` comment at the top enables autocomplete and inline validation in VS Code (with the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)) and JetBrains IDEs — you can leave it or remove it; it has no effect at runtime.
+
+## Customise the template
+
+### Frontend
+
+The `frontend/` directory is copied verbatim into every project created from your template. Replace the placeholder content with your actual frontend:
+
+<Tabs>
+  <TabItem label="Start from scratch">
+    ```bash
+    cd MyTemplate/frontend
+    npm create vite@latest .
+    ```
+    Follow the prompts, then install dependencies:
+    ```bash
+    npm install
+    ```
+  </TabItem>
+  <TabItem label="Use an existing project">
+    Pass `-frontend` when generating the template to copy an existing frontend in one step:
+    ```bash
+    wails3 generate template -name MyTemplate -frontend ./my-app/frontend
+    ```
+    Or copy it manually into the `frontend/` directory afterwards.
+  </TabItem>
+</Tabs>
+
+### Build tasks
+
+`Taskfile.tmpl.yml` defines the build workflow. Update the `install:frontend:deps` and `build:frontend` tasks to match your frontend toolchain:
 
 ```yaml
 tasks:
   install:frontend:deps:
-    summary: Install frontend dependencies
     dir: frontend
-    sources:
-      - package.json
-      - package-lock.json
-    generates:
-      - node_modules/*
-    preconditions:
-      - sh: npm version
-        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
     cmds:
-      - npm install
+      - npm install       # replace with pnpm install, yarn, etc.
 
   build:frontend:
-    summary: Build the frontend project
     dir: frontend
-    sources:
-      - "**/*"
-    generates:
-      - dist/*
-    deps:
-      - task: install:frontend:deps
-      - task: generate:bindings
+    deps: [install:frontend:deps, generate:bindings]
     cmds:
-      - npm run build -q
-
-
+      - npm run build     # replace with your build command
 ```
 
-### 4. Frontend Setup
+### Go application
 
-If you did not use `-frontend` when generating the template, you need to add frontend files to your template. 
+The `main.go.tmpl` file is the application entry point. It is processed by Wails' template engine when a project is created — template variables like `{{.ProductName}}` are replaced with the values the user supplies.
 
-There are a number of ways to set up your frontend: starting from scratch or using an existing framework.
+To edit it as a real Go file (with IDE support), temporarily rename it to `main.go`, make your changes, then rename it back to `main.go.tmpl` before committing.
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+#### Template variables
 
-<Tabs>
-  <TabItem label="Start from Scratch">
-    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
-    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
-    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
-    JavaScript - it's entirely up to you!
+These variables are available in any `.tmpl` file:
 
-    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+| Variable               | Description                              | Example                         |
+|------------------------|------------------------------------------|---------------------------------|
+| `{{.ProjectName}}`     | Project name supplied by the user        | `"MyApp"`                       |
+| `{{.BinaryName}}`      | Binary filename                          | `"myapp"`                       |
+| `{{.ProductName}}`     | Product display name                     | `"My Application"`              |
+| `{{.ProductDescription}}` | Product description                   | `"An awesome application"`      |
+| `{{.ProductVersion}}`  | Product version                          | `"1.0.0"`                       |
+| `{{.ProductCompany}}`  | Company / author name                    | `"My Company Ltd"`              |
+| `{{.ProductCopyright}}`| Copyright string                         | `"Copyright 2024 My Company Ltd"` |
+| `{{.ProductComments}}` | Additional product comments              | `"Built with Wails"`            |
+| `{{.ProductIdentifier}}`| Reverse-DNS product identifier          | `"com.mycompany.myapp"`         |
+| `{{.ModulePath}}`      | Go module path                           | `"github.com/you/myapp"`        |
+| `{{.WailsVersion}}`    | Wails version used to create the project | `"3.0.0"`                       |
+| `{{.Typescript}}`      | `true` if the template name ends in `-ts` | `true`                         |
+| `{{.Opn}}`             | Literal `{{` — escape inside templates   | `{{`                            |
+| `{{.Cls}}`             | Literal `}}` — escape inside templates   | `}}`                            |
 
-    ```bash
-    npm create vite@latest .
-    ```
+:::tip
+Any file in your template can be a `.tmpl` file — including HTML, JSON, and YAML files. Files without the `.tmpl` suffix are copied verbatim.
+:::
 
-    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
-  </TabItem>
-  <TabItem label="Use Existing Framework">
-    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+## Test your template locally
 
-       ```bash
-       npm create vite@latest frontend -- --template react
-       cd frontend
-       npm install
-       ```
-
-  </TabItem>
-</Tabs>
-
-
-Now you have the frontend files in place, update `build/Taskfile.yml` with the appropriate commands:
-   ```yaml
-   tasks:
-      install:frontend:deps:
-        summary: Install frontend dependencies
-        dir: frontend
-        sources:
-          - package.json
-          - package-lock.json
-        generates:
-          - node_modules/*
-        preconditions:
-          - sh: npm version
-            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
-        cmds:
-          - npm install
-
-      build:frontend:
-        summary: Build the frontend project
-        dir: frontend
-        sources:
-          - "**/*"
-        generates:
-          - dist/*
-        deps:
-          - task: install:frontend:deps
-          - task: generate:bindings
-        cmds:
-          - npm run build -q
-   ```
-
-  :::note
-  For this example, the default Tasks do not need updating as they use the standard `npm install` and `npm run build` commands.
-  :::
-
-### 5. Configure the Go Application
-
-The default files in the template directory are sufficient to get users started. However, you may want to provide some additional functionality to demonstrate your template's capabilities. The best way to do this is to rename `main.go.tmpl` to `main.go` and edit it like any other Go file. Once finished, ensure you rename it back to `main.go.tmpl` before committing your changes. If you do not care about having a templated `main.go` file (the default template injests the project name into the `Name` field of the application), you can skip this step.
-
-#### Template Variables
-
-Wails uses Go's templating engine to process files with the `.tmpl` extension. During template generation, several variables are available for use in your template files:
-
-| Variable             | Description                      | Example                           |
-|----------------------|----------------------------------|-----------------------------------|
-| `Name`               | The name of the project          | `"MyApp"`                         |
-| `BinaryName`         | The name of the generated binary | `"myapp"`                         |
-| `ProductName`        | The product name                 | `"My Application"`                |
-| `ProductDescription` | Description of the product       | `"An awesome application"`        |
-| `ProductVersion`     | Version of the product           | `"1.0.0"`                         |
-| `ProductCompany`     | Company name                     | `"My Company Ltd"`                |
-| `ProductCopyright`   | Copyright information            | `"Copyright 2024 My Company Ltd"` |
-| `ProductComments`    | Additional product comments      | `"Built with Wails"`              |
-| `ProductIdentifier`  | Unique product identifier        | `"com.mycompany.myapp"`           |
-| `Typescript`         | Whether TypeScript is being used | `true` or `false`                 |
-| `WailsVersion`       | The version of Wails being used  | `"3.0.0"`                         |
-
-You can use these variables in your template files using Go's template syntax:
-
-```go
-// main.go.tmpl
-package main
-
-import (
-    "github.com/wailsapp/wails/v3/pkg/application"
-)
-
-func main() {
-    app := application.New(application.Options{
-        Name:        "{{.ProductName}}",
-        Description: "{{.ProductDescription}}",
-    })
-    // ...
-}
-```
-
-    :::tip
-    Templating can be applied to any file in your template, even html files, so long as the filename has `.tmpl` in its name.
-    :::
-
-### 6. Testing Your Template
-
-To test your template:
-
-1. Generate a project using your template: `wails3 init -n testproject -t path/to/your/template`
-2. Run `wails3 build` to generate the production build and make sure the binary in `bin` runs correctly
-3. Run `wails3 dev` to start the development server. 
-4. Test that changes to the frontend code are reflected in the application.
-5. Test that changes to the Go code rebuild and relaunch the application
-
-### 7. Sharing Your Template
-
-Once your template is ready, you can share it with the community by hosting it on GitHub. Here's how:
-
-1. Create a new GitHub repository for your template
-2. Push your template code to the repository
-3. Tag your releases using semantic versioning (e.g., v1.0.0)
-
-Users can then use your template directly from GitHub using the HTTPS URL:
+Before publishing, test the template by creating a project from a local path:
 
 ```bash
-wails3 init -n myapp -t https://github.com/yourusername/your-template
+wails3 init -n testproject -t /path/to/MyTemplate
 ```
 
-You can also specify a particular version using the URL format:
+Then verify the project works:
 
 ```bash
-# Use a specific version tag
-wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
-
-# Use a specific branch
-wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+cd testproject
+wails3 dev    # development mode with hot reload
+wails3 build  # production binary
 ```
 
-To test your template before sharing:
+Check that:
+- Frontend hot reload works
+- Go code changes rebuild and relaunch the app
+- The production binary in `bin/` runs correctly
 
-1. Push your changes to GitHub
-2. Create a new test project using the HTTPS URL:
+## Publish on GitHub
+
+<Steps>
+
+1. **Create a public GitHub repository** for your template. The repository root must contain `template.yaml`.
+
+2. **Delete `NEXTSTEPS.md`** — this file is guidance for template authors and must not appear in projects users create from your template.
+
+3. **Commit and push** the template directory contents as the repository root:
+
    ```bash
-   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   git init
+   git add .
+   git commit -m "Initial template"
+   git remote add origin https://github.com/yourname/my-template.git
+   git push -u origin main
    ```
-3. Verify that all files are correctly generated
-4. Test the build and development workflow as described in the testing section
 
-    :::note
-    Make sure your repository is public if you want others to use your template.
-    :::
+4. **Tag a release** using semantic versioning:
 
-For more information, visit the [Wails documentation](https://wails.io)
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
 
+</Steps>
 
-## Best Practices
+Users can now create projects from your template:
 
-Let's talk about some key practices that will help make your template more useful and maintainable. Here are the main areas to focus on:
+```bash
+# Latest commit on the default branch
+wails3 init -n myapp -t https://github.com/yourname/my-template
 
-1. **Make Your Template Easy to Understand**
-   - Write a clear, helpful README.md that gets users started quickly
-   - Add comments in your config files to explain the "why" behind your choices
-   - Show examples of common customisations - users love to see real-world use cases!
+# Pinned to a specific release tag
+wails3 init -n myapp -t https://github.com/yourname/my-template@v1.0.0
+```
 
-2. **Keep Dependencies Happy**
-   - Stay on top of your frontend package updates
-   - Lock down specific versions in package.json to avoid surprises
-   - Let users know upfront what they'll need to have installed
+:::caution[Third-party template warning]
+When a user installs a remote template, Wails displays a warning explaining that the template is third-party code and that the Wails project takes no responsibility for its contents. Users must explicitly confirm before the project is created.
 
-3. **Love Your Template**
-   - Keep it fresh with regular updates
-   - Give it a thorough test drive before sharing
-   - Share it with the Wails community - we'd love to see what you create!
+As a template author you are responsible for the security and correctness of all code in your template.
+:::
+
+## Best practices
+
+- **Write a clear `README.md`** — this is shown to users after they create a project. Explain how to run, build, and customise the project.
+- **Fill in `helpurl`** — link to your repository or dedicated documentation. Users see it in the Wails CLI template list.
+- **Pin frontend dependency versions** in `package.json` to avoid broken installs from upstream updates.
+- **Test before tagging** — create a fresh project from the tagged release before announcing it to the community.
+- **Keep `wailsVersion: 3`** — this field tells Wails which major version the template targets. Do not change it.
+- **Update regularly** — keep dependencies current and test against new Wails releases.
