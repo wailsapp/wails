@@ -16,9 +16,7 @@ var Nil UUID
 // New returns a random UUID (version 4).
 func New() UUID {
 	var id UUID
-	if _, err := rand.Read(id[:]); err != nil {
-		panic("uuid: cannot read random bytes: " + err.Error())
-	}
+	rand.Read(id[:]) //nolint:errcheck // crypto/rand.Read never returns an error in Go 1.20+
 	id[6] = (id[6] & 0x0f) | 0x40 // version 4
 	id[8] = (id[8] & 0x3f) | 0x80 // variant RFC 4122
 	return id
