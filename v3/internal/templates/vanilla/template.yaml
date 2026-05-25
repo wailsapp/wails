@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
+name: "Vanilla + Vite"
+shortname: vanilla
+author: Lea Anthony
+description: "Vanilla + Vite development server"
+helpurl: https://wails.io
+version: v0.0.1
+wailsVersion: 3
