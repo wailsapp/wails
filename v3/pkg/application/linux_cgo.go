@@ -131,6 +131,7 @@ func appName() string {
 
 func appNew(name string) pointer {
 	C.install_signal_handlers()
+	C.schedule_signal_handler_fix()
 
 	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
