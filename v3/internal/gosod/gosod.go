@@ -14,6 +14,12 @@ import (
 	"text/template"
 )
 
+// hooks overridable in tests
+var (
+	absPath      = filepath.Abs
+	osCreateFile = func(name string) (io.WriteCloser, error) { return os.Create(name) }
+)
+
 // TemplateDir processes an fs.FS and extracts it to a directory.
 type TemplateDir struct {
 	fs              fs.FS
@@ -52,7 +58,7 @@ func (t *TemplateDir) RenameFiles(renameFiles map[string]string) {
 
 // Extract processes the FS and writes files to targetDirectory using data as template input.
 func (t *TemplateDir) Extract(targetDirectory string, data interface{}) error {
-	abs, err := filepath.Abs(targetDirectory)
+	abs, err := absPath(targetDirectory)
 	if err != nil {
 		return err
 	}
@@ -148,7 +154,7 @@ func (t *TemplateDir) processTemplates(targetDir string, data interface{}) error
 			name = r
 		}
 		target = filepath.Join(baseDir, name)
-		w, err := os.Create(target)
+		w, err := osCreateFile(target)
 		if err != nil {
 			return err
 		}

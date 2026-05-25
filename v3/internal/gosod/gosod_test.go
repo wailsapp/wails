@@ -573,3 +573,43 @@ func TestExtract_CategoriseCallbackError(t *testing.T) {
 		t.Fatal("expected error from WalkDir callback")
 	}
 }
+
+// ---- hook overrides for unreachable OS-level error paths ----
+
+// TestExtract_AbsPathError covers the filepath.Abs error branch by swapping
+// the absPath hook with a failing stub.
+func TestExtract_AbsPathError(t *testing.T) {
+	orig := absPath
+	absPath = func(_ string) (string, error) { return "", io.ErrUnexpectedEOF }
+	t.Cleanup(func() { absPath = orig })
+
+	td := New(fstest.MapFS{})
+	err := td.Extract("anything", nil)
+	if err != io.ErrUnexpectedEOF {
+		t.Fatalf("expected ErrUnexpectedEOF, got %v", err)
+	}
+}
+
+// failingWriteCloser is an io.WriteCloser whose Close always returns an error.
+type failingWriteCloser struct{ io.Writer }
+
+func (f failingWriteCloser) Close() error { return io.ErrClosedPipe }
+
+// TestProcessTemplates_CloseError covers the w.Close() error branch by
+// swapping the osCreateFile hook with a stub that returns a failing closer.
+func TestProcessTemplates_CloseError(t *testing.T) {
+	orig := osCreateFile
+	osCreateFile = func(_ string) (io.WriteCloser, error) {
+		return failingWriteCloser{Writer: io.Discard}, nil
+	}
+	t.Cleanup(func() { osCreateFile = orig })
+
+	fsys := fstest.MapFS{
+		"out.tmpl": {Data: []byte("hello")},
+	}
+	td := New(fsys)
+	err := td.Extract(t.TempDir(), nil)
+	if err != io.ErrClosedPipe {
+		t.Fatalf("expected ErrClosedPipe from w.Close(), got %v", err)
+	}
+}
