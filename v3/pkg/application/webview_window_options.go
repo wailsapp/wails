@@ -596,6 +596,11 @@ type MacWebviewPreferences struct {
 	FullscreenEnabled u.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
 	AllowsBackForwardNavigationGestures u.Bool
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. When unset or false, WebKit's default
+	// behaviour is preserved (gesture required).
+	// Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction u.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar
