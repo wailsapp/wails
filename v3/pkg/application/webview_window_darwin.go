@@ -19,6 +19,7 @@ struct WebviewPreferences {
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
     bool *AllowsBackForwardNavigationGestures;
+    bool *EnableAutoplayWithoutUserAction;
 };
 
 extern void registerListener(unsigned int event);
@@ -91,6 +92,10 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
          config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
 #endif
+
+	if (preferences.EnableAutoplayWithoutUserAction != NULL && *preferences.EnableAutoplayWithoutUserAction) {
+		config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+	}
 
 	// Setup user content controller
     WKUserContentController* userContentController = [WKUserContentController new];
@@ -1338,6 +1343,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	}
 	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
 		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
+	}
+	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
+		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
 	}
 
 	return result
