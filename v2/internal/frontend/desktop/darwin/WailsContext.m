@@ -275,6 +275,10 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     }
 #endif
 
+    if (preferences.enableAutoplayWithoutUserAction != NULL && *preferences.enableAutoplayWithoutUserAction) {
+        config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    }
+
     WKUserContentController* userContentController = [WKUserContentController new];
     [userContentController addScriptMessageHandler:self name:@"external"];
     config.userContentController = userContentController;
