@@ -296,6 +296,56 @@ func TestBuildCommandWithMultipleTags(t *testing.T) {
 	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,server", "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
+func TestBuildCommandWithObfuscation(t *testing.T) {
+	currentOS := runtime.GOOS
+	currentArch := runtime.GOARCH
+
+	// Save original RunTask
+	originalRunTask := runTaskFunc
+	defer func() { runTaskFunc = originalRunTask }()
+
+	// Mock RunTask to capture the arguments
+	var capturedOptions *RunTaskOptions
+	var capturedOtherArgs []string
+	runTaskFunc = func(options *RunTaskOptions, otherArgs []string) error {
+		capturedOptions = options
+		capturedOtherArgs = otherArgs
+		return nil
+	}
+
+	// Save original os.Args and environment
+	originalArgs := os.Args
+	defer func() { os.Args = originalArgs }()
+
+	originalGOOS := os.Getenv("GOOS")
+	originalGOARCH := os.Getenv("GOARCH")
+	defer func() {
+		if originalGOOS == "" {
+			os.Unsetenv("GOOS")
+		} else {
+			os.Setenv("GOOS", originalGOOS)
+		}
+		if originalGOARCH == "" {
+			os.Unsetenv("GOARCH")
+		} else {
+			os.Setenv("GOARCH", originalGOARCH)
+		}
+	}()
+	os.Unsetenv("GOOS")
+	os.Unsetenv("GOARCH")
+
+	buildFlags := &flags.Build{
+		Tags:       "gtk4",
+		Obfuscated: true,
+		GarbleArgs: "-literals -tiny",
+	}
+
+	err := Build(buildFlags, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, currentOS+":build", capturedOptions.Name)
+	assert.Equal(t, []string{"EXTRA_TAGS=gtk4", "OBFUSCATED=true", "GARBLE_ARGS=-literals -tiny", "ARCH=" + currentArch}, capturedOtherArgs)
+}
+
 func TestBuildCommandWithoutTags(t *testing.T) {
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH

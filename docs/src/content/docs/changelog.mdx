@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.96 - 2026-05-25
+
+## Added
+- Add Garble obfuscation support ([#4563](https://github.com/wailsapp/wails/issues/4563)): stable binding method IDs, build/Taskfile plumbing (`build --obfuscated --garbleargs`, `generate bindings -obfuscated`), and JSON struct tags on every runtime-facing payload (`EnvironmentInfo`, `OSInfo`, `Screen`, `Rect`, `Point`, `Size`, `Capabilities`) so the wire format survives Garble's exported-field renaming.
+
 ## v3.0.0-alpha.95 - 2026-05-20
 
 ## Added
