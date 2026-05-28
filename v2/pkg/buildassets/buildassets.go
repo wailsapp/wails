@@ -5,10 +5,10 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	iofs "io/fs"
 	"os"
 	"path/filepath"
-	"text/template"
 
 	"github.com/leaanthony/gosod"
 	"github.com/samber/lo"
