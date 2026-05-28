@@ -90,34 +90,37 @@ function notifyListeners(eventData) {
     // Get the event name
     let eventName = eventData.name;
 
-    // Keep a list of listener indexes to destroy
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
-
     // Check if we have any listeners for this event
-    if (newEventListenerList.length) {
+    let listeners = eventListeners[eventName];
+    if (!listeners || listeners.length === 0) {
+        return;
+    }
 
-        // Iterate listeners
-        for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
+    // Snapshot the current listeners to iterate safely
+    // (callbacks may modify eventListeners[eventName] via listenerOff)
+    const snapshot = listeners.slice();
 
-            // Get next listener
-            const listener = newEventListenerList[count];
+    for (let count = snapshot.length - 1; count >= 0; count -= 1) {
+        const listener = snapshot[count];
 
-            let data = eventData.data;
-
-            // Do the callback
-            const destroy = listener.Callback(data);
-            if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
-            }
+        // Skip if the listener was already removed during a previous callback
+        if (!eventListeners[eventName] || !eventListeners[eventName].includes(listener)) {
+            continue;
         }
 
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
-        } else {
-            eventListeners[eventName] = newEventListenerList;
+        let data = eventData.data;
+
+        // Do the callback
+        const destroy = listener.Callback(data);
+        if (destroy) {
+            // Remove from the live list
+            eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
         }
+    }
+
+    // Clean up if there are no event listeners left
+    if (!eventListeners[eventName] || eventListeners[eventName].length === 0) {
+        removeListener(eventName);
     }
 }
 
