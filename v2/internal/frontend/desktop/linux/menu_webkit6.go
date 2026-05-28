@@ -114,12 +114,12 @@ func processMenu(window *Window, menu *menu.Menu) {
 
 	for _, menuItem := range menu.Items {
 		itemLabel := C.CString(menuItem.Label)
-		defer C.free(unsafe.Pointer(itemLabel))
-
 		submenu := processSubmenu(window, menuItem)
-		defer C.g_object_unref(C.gpointer(submenu))
 
 		C.g_menu_append_submenu(gmenu, itemLabel, C.toGMenuModel(submenu))
+
+		C.free(unsafe.Pointer(itemLabel))
+		C.g_object_unref(C.gpointer(submenu))
 	}
 
 	window.menubar = C.gtk_popover_menu_bar_new_from_model(C.toGMenuModel(gmenu))
@@ -249,7 +249,7 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem) {
 		key, mods := acceleratorToGTK(menuItem.Accelerator)
 
 		accelName := C.gtk_accelerator_name(key, mods)
-		defer C.free(unsafe.Pointer(accelName))
+		defer C.g_free(C.gpointer(accelName))
 
 		C.setAccels(window.gtkApp, detActionName, accelName)
 	}
