@@ -16,6 +16,12 @@ import (
 	"github.com/wailsapp/wails/v2/internal/project"
 )
 
+func xmlEscape(s string) string {
+	var buf bytes.Buffer
+	template.HTMLEscape(&buf, []byte(s))
+	return buf.String()
+}
+
 //go:embed build
 var assets embed.FS
 
@@ -108,7 +114,10 @@ type assetData struct {
 }
 
 func resolveProjectData(content []byte, projectData *project.Project) ([]byte, error) {
-	tmpl, err := template.New("").Parse(string(content))
+	funcMap := template.FuncMap{
+		"xml": xmlEscape,
+	}
+	tmpl, err := template.New("").Funcs(funcMap).Parse(string(content))
 	if err != nil {
 		return nil, err
 	}
