@@ -46,12 +46,12 @@ func (i *ICoreWebView2Frame5) GetFrameId() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetFrameId.Call(
+	hr, _, _ := i.Vtbl.GetFrameId.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

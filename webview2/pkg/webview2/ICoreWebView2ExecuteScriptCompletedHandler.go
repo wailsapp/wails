@@ -37,8 +37,9 @@ func ICoreWebView2ExecuteScriptCompletedHandlerIUnknownRelease(this *ICoreWebVie
 	return uintptr(this.impl.Release())
 }
 
-func ICoreWebView2ExecuteScriptCompletedHandlerInvoke(this *ICoreWebView2ExecuteScriptCompletedHandler, errorCode uintptr, result string) uintptr {
-	return this.impl.ExecuteScriptCompleted(errorCode, result)
+func ICoreWebView2ExecuteScriptCompletedHandlerInvoke(this *ICoreWebView2ExecuteScriptCompletedHandler, errorCode uintptr, result *uint16) uintptr {
+	_result := UTF16PtrToString(result)
+	return this.impl.ExecuteScriptCompleted(errorCode, _result)
 }
 
 type ICoreWebView2ExecuteScriptCompletedHandlerImpl interface {

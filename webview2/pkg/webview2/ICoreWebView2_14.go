@@ -48,7 +48,7 @@ func (i *ICoreWebView2_14) AddServerCertificateErrorDetected(eventHandler *ICore
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddServerCertificateErrorDetected.Call(
+	hr, _, _ := i.Vtbl.AddServerCertificateErrorDetected.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -56,31 +56,31 @@ func (i *ICoreWebView2_14) AddServerCertificateErrorDetected(eventHandler *ICore
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_14) RemoveServerCertificateErrorDetected(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveServerCertificateErrorDetected.Call(
+	hr, _, _ := i.Vtbl.RemoveServerCertificateErrorDetected.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_14) ClearServerCertificateErrorActions(handler *ICoreWebView2ClearServerCertificateErrorActionsCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.ClearServerCertificateErrorActions.Call(
+	hr, _, _ := i.Vtbl.ClearServerCertificateErrorActions.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

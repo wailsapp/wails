@@ -62,7 +62,7 @@ func (i *ICoreWebView2_11) CallDevToolsProtocolMethodForSession(sessionId string
 		return err
 	}
 
-	hr, _, err := i.Vtbl.CallDevToolsProtocolMethodForSession.Call(
+	hr, _, _ := i.Vtbl.CallDevToolsProtocolMethodForSession.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_sessionId)),
 		uintptr(unsafe.Pointer(_methodName)),
@@ -72,14 +72,14 @@ func (i *ICoreWebView2_11) CallDevToolsProtocolMethodForSession(sessionId string
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_11) AddContextMenuRequested(eventHandler *ICoreWebView2ContextMenuRequestedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddContextMenuRequested.Call(
+	hr, _, _ := i.Vtbl.AddContextMenuRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -87,18 +87,18 @@ func (i *ICoreWebView2_11) AddContextMenuRequested(eventHandler *ICoreWebView2Co
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_11) RemoveContextMenuRequested(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveContextMenuRequested.Call(
+	hr, _, _ := i.Vtbl.RemoveContextMenuRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

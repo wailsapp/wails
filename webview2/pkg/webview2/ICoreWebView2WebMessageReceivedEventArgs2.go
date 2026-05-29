@@ -46,12 +46,12 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs2) GetAdditionalObjects() (*ICo
 
 	var value *ICoreWebView2ObjectCollectionView
 
-	hr, _, err := i.Vtbl.GetAdditionalObjects.Call(
+	hr, _, _ := i.Vtbl.GetAdditionalObjects.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

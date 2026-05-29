@@ -40,35 +40,35 @@ func (i *ICoreWebView2Find) GetActiveMatchIndex() (int32, error) {
 
 	var value int32
 
-	hr, _, err := i.Vtbl.GetActiveMatchIndex.Call(
+	hr, _, _ := i.Vtbl.GetActiveMatchIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Find) GetMatchCount() (int32, error) {
 
 	var value int32
 
-	hr, _, err := i.Vtbl.GetMatchCount.Call(
+	hr, _, _ := i.Vtbl.GetMatchCount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Find) AddActiveMatchIndexChanged(eventHandler *ICoreWebView2FindActiveMatchIndexChangedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddActiveMatchIndexChanged.Call(
+	hr, _, _ := i.Vtbl.AddActiveMatchIndexChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -76,27 +76,27 @@ func (i *ICoreWebView2Find) AddActiveMatchIndexChanged(eventHandler *ICoreWebVie
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2Find) RemoveActiveMatchIndexChanged(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveActiveMatchIndexChanged.Call(
+	hr, _, _ := i.Vtbl.RemoveActiveMatchIndexChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Find) AddMatchCountChanged(eventHandler *ICoreWebView2FindMatchCountChangedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddMatchCountChanged.Call(
+	hr, _, _ := i.Vtbl.AddMatchCountChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -104,26 +104,26 @@ func (i *ICoreWebView2Find) AddMatchCountChanged(eventHandler *ICoreWebView2Find
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2Find) RemoveMatchCountChanged(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveMatchCountChanged.Call(
+	hr, _, _ := i.Vtbl.RemoveMatchCountChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Find) Start(options *ICoreWebView2FindOptions, handler *ICoreWebView2FindStartCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.Start.Call(
+	hr, _, _ := i.Vtbl.Start.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(options)),
 		uintptr(unsafe.Pointer(handler)),
@@ -131,41 +131,41 @@ func (i *ICoreWebView2Find) Start(options *ICoreWebView2FindOptions, handler *IC
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Find) FindNext() error {
 
 
-	hr, _, err := i.Vtbl.FindNext.Call(
+	hr, _, _ := i.Vtbl.FindNext.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Find) FindPrevious() error {
 
 
-	hr, _, err := i.Vtbl.FindPrevious.Call(
+	hr, _, _ := i.Vtbl.FindPrevious.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Find) Stop() error {
 
 
-	hr, _, err := i.Vtbl.Stop.Call(
+	hr, _, _ := i.Vtbl.Stop.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

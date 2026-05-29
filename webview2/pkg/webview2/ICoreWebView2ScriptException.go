@@ -35,28 +35,28 @@ func (i *ICoreWebView2ScriptException) GetLineNumber() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetLineNumber.Call(
+	hr, _, _ := i.Vtbl.GetLineNumber.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScriptException) GetColumnNumber() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetColumnNumber.Call(
+	hr, _, _ := i.Vtbl.GetColumnNumber.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScriptException) GetName() (string, error) {
@@ -64,7 +64,7 @@ func (i *ICoreWebView2ScriptException) GetName() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetName.Call(
+	hr, _, _ := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -74,7 +74,7 @@ func (i *ICoreWebView2ScriptException) GetName() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScriptException) GetMessage() (string, error) {
@@ -82,7 +82,7 @@ func (i *ICoreWebView2ScriptException) GetMessage() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetMessage.Call(
+	hr, _, _ := i.Vtbl.GetMessage.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -92,7 +92,7 @@ func (i *ICoreWebView2ScriptException) GetMessage() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScriptException) GetToJson() (string, error) {
@@ -100,7 +100,7 @@ func (i *ICoreWebView2ScriptException) GetToJson() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetToJson.Call(
+	hr, _, _ := i.Vtbl.GetToJson.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -110,5 +110,5 @@ func (i *ICoreWebView2ScriptException) GetToJson() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

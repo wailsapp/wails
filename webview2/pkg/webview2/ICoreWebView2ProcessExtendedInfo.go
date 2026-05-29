@@ -32,26 +32,26 @@ func (i *ICoreWebView2ProcessExtendedInfo) GetProcessInfo() (*ICoreWebView2Proce
 
 	var processInfo *ICoreWebView2ProcessInfo
 
-	hr, _, err := i.Vtbl.GetProcessInfo.Call(
+	hr, _, _ := i.Vtbl.GetProcessInfo.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&processInfo)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return processInfo, err
+	return processInfo, nil
 }
 
 func (i *ICoreWebView2ProcessExtendedInfo) GetAssociatedFrameInfos() (*ICoreWebView2FrameInfoCollection, error) {
 
 	var frames *ICoreWebView2FrameInfoCollection
 
-	hr, _, err := i.Vtbl.GetAssociatedFrameInfos.Call(
+	hr, _, _ := i.Vtbl.GetAssociatedFrameInfos.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&frames)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return frames, err
+	return frames, nil
 }

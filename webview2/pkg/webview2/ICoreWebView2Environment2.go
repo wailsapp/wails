@@ -61,7 +61,7 @@ func (i *ICoreWebView2Environment2) CreateWebResourceRequest(uri string, Method 
 	}
 	var value *ICoreWebView2WebResourceRequest
 
-	hr, _, err := i.Vtbl.CreateWebResourceRequest.Call(
+	hr, _, _ := i.Vtbl.CreateWebResourceRequest.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 		uintptr(unsafe.Pointer(_Method)),
@@ -72,5 +72,5 @@ func (i *ICoreWebView2Environment2) CreateWebResourceRequest(uri string, Method 
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

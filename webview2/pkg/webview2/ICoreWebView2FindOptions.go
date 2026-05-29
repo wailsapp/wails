@@ -41,7 +41,7 @@ func (i *ICoreWebView2FindOptions) GetFindTerm() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetFindTerm.Call(
+	hr, _, _ := i.Vtbl.GetFindTerm.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -51,7 +51,7 @@ func (i *ICoreWebView2FindOptions) GetFindTerm() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FindOptions) PutFindTerm(value string) error {
@@ -62,21 +62,21 @@ func (i *ICoreWebView2FindOptions) PutFindTerm(value string) error {
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutFindTerm.Call(
+	hr, _, _ := i.Vtbl.PutFindTerm.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2FindOptions) GetIsCaseSensitive() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetIsCaseSensitive.Call(
+	hr, _, _ := i.Vtbl.GetIsCaseSensitive.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -85,7 +85,7 @@ func (i *ICoreWebView2FindOptions) GetIsCaseSensitive() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FindOptions) PutIsCaseSensitive(value bool) error {
@@ -96,21 +96,21 @@ func (i *ICoreWebView2FindOptions) PutIsCaseSensitive(value bool) error {
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutIsCaseSensitive.Call(
+	hr, _, _ := i.Vtbl.PutIsCaseSensitive.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2FindOptions) GetShouldHighlightAllMatches() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldHighlightAllMatches.Call(
+	hr, _, _ := i.Vtbl.GetShouldHighlightAllMatches.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -119,7 +119,7 @@ func (i *ICoreWebView2FindOptions) GetShouldHighlightAllMatches() (bool, error) 
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FindOptions) PutShouldHighlightAllMatches(value bool) error {
@@ -130,21 +130,21 @@ func (i *ICoreWebView2FindOptions) PutShouldHighlightAllMatches(value bool) erro
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutShouldHighlightAllMatches.Call(
+	hr, _, _ := i.Vtbl.PutShouldHighlightAllMatches.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2FindOptions) GetShouldMatchWord() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldMatchWord.Call(
+	hr, _, _ := i.Vtbl.GetShouldMatchWord.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -153,7 +153,7 @@ func (i *ICoreWebView2FindOptions) GetShouldMatchWord() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FindOptions) PutShouldMatchWord(value bool) error {
@@ -164,21 +164,21 @@ func (i *ICoreWebView2FindOptions) PutShouldMatchWord(value bool) error {
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutShouldMatchWord.Call(
+	hr, _, _ := i.Vtbl.PutShouldMatchWord.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2FindOptions) GetSuppressDefaultFindDialog() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetSuppressDefaultFindDialog.Call(
+	hr, _, _ := i.Vtbl.GetSuppressDefaultFindDialog.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -187,7 +187,7 @@ func (i *ICoreWebView2FindOptions) GetSuppressDefaultFindDialog() (bool, error) 
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FindOptions) PutSuppressDefaultFindDialog(value bool) error {
@@ -198,12 +198,12 @@ func (i *ICoreWebView2FindOptions) PutSuppressDefaultFindDialog(value bool) erro
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutSuppressDefaultFindDialog.Call(
+	hr, _, _ := i.Vtbl.PutSuppressDefaultFindDialog.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

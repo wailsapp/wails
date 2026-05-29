@@ -51,7 +51,7 @@ func (i *ICoreWebView2_22) AddWebResourceRequestedFilterWithRequestSourceKinds(u
 		return err
 	}
 
-	hr, _, err := i.Vtbl.AddWebResourceRequestedFilterWithRequestSourceKinds.Call(
+	hr, _, _ := i.Vtbl.AddWebResourceRequestedFilterWithRequestSourceKinds.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 		uintptr(ResourceContext),
@@ -60,7 +60,7 @@ func (i *ICoreWebView2_22) AddWebResourceRequestedFilterWithRequestSourceKinds(u
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_22) RemoveWebResourceRequestedFilterWithRequestSourceKinds(uri string, ResourceContext COREWEBVIEW2_WEB_RESOURCE_CONTEXT, requestSourceKinds COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS) error {
@@ -71,7 +71,7 @@ func (i *ICoreWebView2_22) RemoveWebResourceRequestedFilterWithRequestSourceKind
 		return err
 	}
 
-	hr, _, err := i.Vtbl.RemoveWebResourceRequestedFilterWithRequestSourceKinds.Call(
+	hr, _, _ := i.Vtbl.RemoveWebResourceRequestedFilterWithRequestSourceKinds.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 		uintptr(ResourceContext),
@@ -80,5 +80,5 @@ func (i *ICoreWebView2_22) RemoveWebResourceRequestedFilterWithRequestSourceKind
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

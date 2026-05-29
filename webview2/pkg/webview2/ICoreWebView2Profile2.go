@@ -47,7 +47,7 @@ func (i *ICoreWebView2) GetICoreWebView2Profile2() (*ICoreWebView2Profile2, erro
 func (i *ICoreWebView2Profile2) ClearBrowsingData(dataKinds COREWEBVIEW2_BROWSING_DATA_KINDS, handler *ICoreWebView2ClearBrowsingDataCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.ClearBrowsingData.Call(
+	hr, _, _ := i.Vtbl.ClearBrowsingData.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(dataKinds),
 		uintptr(unsafe.Pointer(handler)),
@@ -55,13 +55,13 @@ func (i *ICoreWebView2Profile2) ClearBrowsingData(dataKinds COREWEBVIEW2_BROWSIN
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Profile2) ClearBrowsingDataInTimeRange(dataKinds COREWEBVIEW2_BROWSING_DATA_KINDS, startTime float64, endTime float64, handler *ICoreWebView2ClearBrowsingDataCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.ClearBrowsingDataInTimeRange.Call(
+	hr, _, _ := i.Vtbl.ClearBrowsingDataInTimeRange.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(dataKinds),
 		uintptr(startTime),
@@ -71,18 +71,18 @@ func (i *ICoreWebView2Profile2) ClearBrowsingDataInTimeRange(dataKinds COREWEBVI
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Profile2) ClearBrowsingDataAll(handler *ICoreWebView2ClearBrowsingDataCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.ClearBrowsingDataAll.Call(
+	hr, _, _ := i.Vtbl.ClearBrowsingDataAll.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

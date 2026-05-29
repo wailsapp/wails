@@ -49,7 +49,7 @@ func (i *ICoreWebView2CompositionController3) DragEnter(dataObject *IDataObject,
 
 	var effect uint32
 
-	hr, _, err := i.Vtbl.DragEnter.Call(
+	hr, _, _ := i.Vtbl.DragEnter.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(dataObject)),
 		uintptr(keyState),
@@ -59,26 +59,26 @@ func (i *ICoreWebView2CompositionController3) DragEnter(dataObject *IDataObject,
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return effect, err
+	return effect, nil
 }
 
 func (i *ICoreWebView2CompositionController3) DragLeave() error {
 
 
-	hr, _, err := i.Vtbl.DragLeave.Call(
+	hr, _, _ := i.Vtbl.DragLeave.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CompositionController3) DragOver(keyState uint32, point POINT) (uint32, error) {
 
 	var effect uint32
 
-	hr, _, err := i.Vtbl.DragOver.Call(
+	hr, _, _ := i.Vtbl.DragOver.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(keyState),
 		uintptr(unsafe.Pointer(&point)),
@@ -87,14 +87,14 @@ func (i *ICoreWebView2CompositionController3) DragOver(keyState uint32, point PO
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return effect, err
+	return effect, nil
 }
 
 func (i *ICoreWebView2CompositionController3) Drop(dataObject *IDataObject, keyState uint32, point POINT) (uint32, error) {
 
 	var effect uint32
 
-	hr, _, err := i.Vtbl.Drop.Call(
+	hr, _, _ := i.Vtbl.Drop.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(dataObject)),
 		uintptr(keyState),
@@ -104,5 +104,5 @@ func (i *ICoreWebView2CompositionController3) Drop(dataObject *IDataObject, keyS
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return effect, err
+	return effect, nil
 }

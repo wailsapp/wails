@@ -47,7 +47,7 @@ func (i *ICoreWebView2Environment11) GetFailureReportFolderPath() (string, error
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetFailureReportFolderPath.Call(
+	hr, _, _ := i.Vtbl.GetFailureReportFolderPath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -57,5 +57,5 @@ func (i *ICoreWebView2Environment11) GetFailureReportFolderPath() (string, error
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

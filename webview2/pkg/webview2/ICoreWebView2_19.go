@@ -47,25 +47,25 @@ func (i *ICoreWebView2_19) GetMemoryUsageTargetLevel() (COREWEBVIEW2_MEMORY_USAG
 
 	var value COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL
 
-	hr, _, err := i.Vtbl.GetMemoryUsageTargetLevel.Call(
+	hr, _, _ := i.Vtbl.GetMemoryUsageTargetLevel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2_19) PutMemoryUsageTargetLevel(value COREWEBVIEW2_MEMORY_USAGE_TARGET_LEVEL) error {
 
 
-	hr, _, err := i.Vtbl.PutMemoryUsageTargetLevel.Call(
+	hr, _, _ := i.Vtbl.PutMemoryUsageTargetLevel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

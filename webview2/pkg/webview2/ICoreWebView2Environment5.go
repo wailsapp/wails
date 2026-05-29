@@ -47,7 +47,7 @@ func (i *ICoreWebView2Environment5) AddBrowserProcessExited(eventHandler *ICoreW
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddBrowserProcessExited.Call(
+	hr, _, _ := i.Vtbl.AddBrowserProcessExited.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2Environment5) AddBrowserProcessExited(eventHandler *ICoreW
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2Environment5) RemoveBrowserProcessExited(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveBrowserProcessExited.Call(
+	hr, _, _ := i.Vtbl.RemoveBrowserProcessExited.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

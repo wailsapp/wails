@@ -48,7 +48,7 @@ func (i *ICoreWebView2_12) AddStatusBarTextChanged(eventHandler *ICoreWebView2St
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddStatusBarTextChanged.Call(
+	hr, _, _ := i.Vtbl.AddStatusBarTextChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -56,20 +56,20 @@ func (i *ICoreWebView2_12) AddStatusBarTextChanged(eventHandler *ICoreWebView2St
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_12) RemoveStatusBarTextChanged(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveStatusBarTextChanged.Call(
+	hr, _, _ := i.Vtbl.RemoveStatusBarTextChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_12) GetStatusBarText() (string, error) {
@@ -77,7 +77,7 @@ func (i *ICoreWebView2_12) GetStatusBarText() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetStatusBarText.Call(
+	hr, _, _ := i.Vtbl.GetStatusBarText.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -87,5 +87,5 @@ func (i *ICoreWebView2_12) GetStatusBarText() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

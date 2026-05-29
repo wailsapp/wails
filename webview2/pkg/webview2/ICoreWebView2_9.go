@@ -54,7 +54,7 @@ func (i *ICoreWebView2_9) AddIsDefaultDownloadDialogOpenChanged(handler *ICoreWe
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddIsDefaultDownloadDialogOpenChanged.Call(
+	hr, _, _ := i.Vtbl.AddIsDefaultDownloadDialogOpenChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -62,27 +62,27 @@ func (i *ICoreWebView2_9) AddIsDefaultDownloadDialogOpenChanged(handler *ICoreWe
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_9) RemoveIsDefaultDownloadDialogOpenChanged(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveIsDefaultDownloadDialogOpenChanged.Call(
+	hr, _, _ := i.Vtbl.RemoveIsDefaultDownloadDialogOpenChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_9) GetIsDefaultDownloadDialogOpen() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetIsDefaultDownloadDialogOpen.Call(
+	hr, _, _ := i.Vtbl.GetIsDefaultDownloadDialogOpen.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -91,83 +91,83 @@ func (i *ICoreWebView2_9) GetIsDefaultDownloadDialogOpen() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2_9) OpenDefaultDownloadDialog() error {
 
 
-	hr, _, err := i.Vtbl.OpenDefaultDownloadDialog.Call(
+	hr, _, _ := i.Vtbl.OpenDefaultDownloadDialog.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_9) CloseDefaultDownloadDialog() error {
 
 
-	hr, _, err := i.Vtbl.CloseDefaultDownloadDialog.Call(
+	hr, _, _ := i.Vtbl.CloseDefaultDownloadDialog.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_9) GetDefaultDownloadDialogCornerAlignment() (COREWEBVIEW2_DEFAULT_DOWNLOAD_DIALOG_CORNER_ALIGNMENT, error) {
 
 	var value COREWEBVIEW2_DEFAULT_DOWNLOAD_DIALOG_CORNER_ALIGNMENT
 
-	hr, _, err := i.Vtbl.GetDefaultDownloadDialogCornerAlignment.Call(
+	hr, _, _ := i.Vtbl.GetDefaultDownloadDialogCornerAlignment.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2_9) PutDefaultDownloadDialogCornerAlignment(value COREWEBVIEW2_DEFAULT_DOWNLOAD_DIALOG_CORNER_ALIGNMENT) error {
 
 
-	hr, _, err := i.Vtbl.PutDefaultDownloadDialogCornerAlignment.Call(
+	hr, _, _ := i.Vtbl.PutDefaultDownloadDialogCornerAlignment.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_9) GetDefaultDownloadDialogMargin() (POINT, error) {
 
 	var value POINT
 
-	hr, _, err := i.Vtbl.GetDefaultDownloadDialogMargin.Call(
+	hr, _, _ := i.Vtbl.GetDefaultDownloadDialogMargin.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return POINT{}, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2_9) PutDefaultDownloadDialogMargin(value POINT) error {
 
 
-	hr, _, err := i.Vtbl.PutDefaultDownloadDialogMargin.Call(
+	hr, _, _ := i.Vtbl.PutDefaultDownloadDialogMargin.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

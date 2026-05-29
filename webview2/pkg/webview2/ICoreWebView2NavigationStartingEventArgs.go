@@ -38,7 +38,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetUri() (string, error) {
 	var _uri *uint16
 
 
-	hr, _, err := i.Vtbl.GetUri.Call(
+	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_uri)),
 	)
@@ -48,14 +48,14 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetUri() (string, error) {
 	// Get result and cleanup
 	uri := UTF16PtrToString(_uri)
 	CoTaskMemFree(unsafe.Pointer(_uri))
-	return uri, err
+	return uri, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetIsUserInitiated() (bool, error) {
 	// Create int32 to hold bool result
 	var _isUserInitiated int32
 
-	hr, _, err := i.Vtbl.GetIsUserInitiated.Call(
+	hr, _, _ := i.Vtbl.GetIsUserInitiated.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isUserInitiated)),
 	)
@@ -64,14 +64,14 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetIsUserInitiated() (bool, e
 	}
 	// Get result and cleanup
     isUserInitiated := _isUserInitiated != 0
-	return isUserInitiated, err
+	return isUserInitiated, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetIsRedirected() (bool, error) {
 	// Create int32 to hold bool result
 	var _isRedirected int32
 
-	hr, _, err := i.Vtbl.GetIsRedirected.Call(
+	hr, _, _ := i.Vtbl.GetIsRedirected.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isRedirected)),
 	)
@@ -80,28 +80,28 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetIsRedirected() (bool, erro
 	}
 	// Get result and cleanup
     isRedirected := _isRedirected != 0
-	return isRedirected, err
+	return isRedirected, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetRequestHeaders() (*ICoreWebView2HttpRequestHeaders, error) {
 
 	var requestHeaders *ICoreWebView2HttpRequestHeaders
 
-	hr, _, err := i.Vtbl.GetRequestHeaders.Call(
+	hr, _, _ := i.Vtbl.GetRequestHeaders.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&requestHeaders)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return requestHeaders, err
+	return requestHeaders, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetCancel() (bool, error) {
 	// Create int32 to hold bool result
 	var _cancel int32
 
-	hr, _, err := i.Vtbl.GetCancel.Call(
+	hr, _, _ := i.Vtbl.GetCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_cancel)),
 	)
@@ -110,7 +110,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetCancel() (bool, error) {
 	}
 	// Get result and cleanup
     cancel := _cancel != 0
-	return cancel, err
+	return cancel, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) PutCancel(cancel bool) error {
@@ -121,26 +121,26 @@ func (i *ICoreWebView2NavigationStartingEventArgs) PutCancel(cancel bool) error 
 		_cancel = 1
 	}
 
-	hr, _, err := i.Vtbl.PutCancel.Call(
+	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_cancel),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetNavigationId() (uint64, error) {
 
 	var navigationId uint64
 
-	hr, _, err := i.Vtbl.GetNavigationId.Call(
+	hr, _, _ := i.Vtbl.GetNavigationId.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&navigationId)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return navigationId, err
+	return navigationId, nil
 }

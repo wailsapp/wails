@@ -48,7 +48,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs2) GetAdditionalAllowedFrameAnc
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetAdditionalAllowedFrameAncestors.Call(
+	hr, _, _ := i.Vtbl.GetAdditionalAllowedFrameAncestors.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -58,7 +58,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs2) GetAdditionalAllowedFrameAnc
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs2) PutAdditionalAllowedFrameAncestors(value string) error {
@@ -69,12 +69,12 @@ func (i *ICoreWebView2NavigationStartingEventArgs2) PutAdditionalAllowedFrameAnc
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutAdditionalAllowedFrameAncestors.Call(
+	hr, _, _ := i.Vtbl.PutAdditionalAllowedFrameAncestors.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

@@ -47,7 +47,7 @@ func (i *ICoreWebView2_18) AddLaunchingExternalUriScheme(eventHandler *ICoreWebV
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddLaunchingExternalUriScheme.Call(
+	hr, _, _ := i.Vtbl.AddLaunchingExternalUriScheme.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2_18) AddLaunchingExternalUriScheme(eventHandler *ICoreWebV
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_18) RemoveLaunchingExternalUriScheme(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveLaunchingExternalUriScheme.Call(
+	hr, _, _ := i.Vtbl.RemoveLaunchingExternalUriScheme.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

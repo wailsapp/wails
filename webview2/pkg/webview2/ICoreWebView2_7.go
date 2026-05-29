@@ -50,7 +50,7 @@ func (i *ICoreWebView2_7) PrintToPdf(ResultFilePath string, printSettings *ICore
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PrintToPdf.Call(
+	hr, _, _ := i.Vtbl.PrintToPdf.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_ResultFilePath)),
 		uintptr(unsafe.Pointer(printSettings)),
@@ -59,5 +59,5 @@ func (i *ICoreWebView2_7) PrintToPdf(ResultFilePath string, printSettings *ICore
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

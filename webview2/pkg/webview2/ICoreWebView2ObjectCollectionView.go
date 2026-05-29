@@ -32,21 +32,21 @@ func (i *ICoreWebView2ObjectCollectionView) GetCount() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetCount.Call(
+	hr, _, _ := i.Vtbl.GetCount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ObjectCollectionView) GetValueAtIndex(index uint32) (*IUnknown, error) {
 
 	var value *IUnknown
 
-	hr, _, err := i.Vtbl.GetValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 		uintptr(unsafe.Pointer(&value)),
@@ -54,5 +54,5 @@ func (i *ICoreWebView2ObjectCollectionView) GetValueAtIndex(index uint32) (*IUnk
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

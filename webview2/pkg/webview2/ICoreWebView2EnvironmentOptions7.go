@@ -34,52 +34,52 @@ func (i *ICoreWebView2EnvironmentOptions7) GetChannelSearchKind() (COREWEBVIEW2_
 
 	var value COREWEBVIEW2_CHANNEL_SEARCH_KIND
 
-	hr, _, err := i.Vtbl.GetChannelSearchKind.Call(
+	hr, _, _ := i.Vtbl.GetChannelSearchKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions7) PutChannelSearchKind(value COREWEBVIEW2_CHANNEL_SEARCH_KIND) error {
 
 
-	hr, _, err := i.Vtbl.PutChannelSearchKind.Call(
+	hr, _, _ := i.Vtbl.PutChannelSearchKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions7) GetReleaseChannels() (COREWEBVIEW2_RELEASE_CHANNELS, error) {
 
 	var value COREWEBVIEW2_RELEASE_CHANNELS
 
-	hr, _, err := i.Vtbl.GetReleaseChannels.Call(
+	hr, _, _ := i.Vtbl.GetReleaseChannels.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions7) PutReleaseChannels(value COREWEBVIEW2_RELEASE_CHANNELS) error {
 
 
-	hr, _, err := i.Vtbl.PutReleaseChannels.Call(
+	hr, _, _ := i.Vtbl.PutReleaseChannels.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

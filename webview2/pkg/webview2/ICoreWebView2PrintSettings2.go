@@ -62,7 +62,7 @@ func (i *ICoreWebView2PrintSettings2) GetPageRanges() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetPageRanges.Call(
+	hr, _, _ := i.Vtbl.GetPageRanges.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -72,7 +72,7 @@ func (i *ICoreWebView2PrintSettings2) GetPageRanges() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutPageRanges(value string) error {
@@ -83,176 +83,176 @@ func (i *ICoreWebView2PrintSettings2) PutPageRanges(value string) error {
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutPageRanges.Call(
+	hr, _, _ := i.Vtbl.PutPageRanges.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetPagesPerSide() (int32, error) {
 
 	var value int32
 
-	hr, _, err := i.Vtbl.GetPagesPerSide.Call(
+	hr, _, _ := i.Vtbl.GetPagesPerSide.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutPagesPerSide(value int32) error {
 
 
-	hr, _, err := i.Vtbl.PutPagesPerSide.Call(
+	hr, _, _ := i.Vtbl.PutPagesPerSide.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetCopies() (int32, error) {
 
 	var value int32
 
-	hr, _, err := i.Vtbl.GetCopies.Call(
+	hr, _, _ := i.Vtbl.GetCopies.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutCopies(value int32) error {
 
 
-	hr, _, err := i.Vtbl.PutCopies.Call(
+	hr, _, _ := i.Vtbl.PutCopies.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetCollation() (COREWEBVIEW2_PRINT_COLLATION, error) {
 
 	var value COREWEBVIEW2_PRINT_COLLATION
 
-	hr, _, err := i.Vtbl.GetCollation.Call(
+	hr, _, _ := i.Vtbl.GetCollation.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutCollation(value COREWEBVIEW2_PRINT_COLLATION) error {
 
 
-	hr, _, err := i.Vtbl.PutCollation.Call(
+	hr, _, _ := i.Vtbl.PutCollation.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetColorMode() (COREWEBVIEW2_PRINT_COLOR_MODE, error) {
 
 	var value COREWEBVIEW2_PRINT_COLOR_MODE
 
-	hr, _, err := i.Vtbl.GetColorMode.Call(
+	hr, _, _ := i.Vtbl.GetColorMode.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutColorMode(value COREWEBVIEW2_PRINT_COLOR_MODE) error {
 
 
-	hr, _, err := i.Vtbl.PutColorMode.Call(
+	hr, _, _ := i.Vtbl.PutColorMode.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetDuplex() (COREWEBVIEW2_PRINT_DUPLEX, error) {
 
 	var value COREWEBVIEW2_PRINT_DUPLEX
 
-	hr, _, err := i.Vtbl.GetDuplex.Call(
+	hr, _, _ := i.Vtbl.GetDuplex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutDuplex(value COREWEBVIEW2_PRINT_DUPLEX) error {
 
 
-	hr, _, err := i.Vtbl.PutDuplex.Call(
+	hr, _, _ := i.Vtbl.PutDuplex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetMediaSize() (COREWEBVIEW2_PRINT_MEDIA_SIZE, error) {
 
 	var value COREWEBVIEW2_PRINT_MEDIA_SIZE
 
-	hr, _, err := i.Vtbl.GetMediaSize.Call(
+	hr, _, _ := i.Vtbl.GetMediaSize.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutMediaSize(value COREWEBVIEW2_PRINT_MEDIA_SIZE) error {
 
 
-	hr, _, err := i.Vtbl.PutMediaSize.Call(
+	hr, _, _ := i.Vtbl.PutMediaSize.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PrintSettings2) GetPrinterName() (string, error) {
@@ -260,7 +260,7 @@ func (i *ICoreWebView2PrintSettings2) GetPrinterName() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetPrinterName.Call(
+	hr, _, _ := i.Vtbl.GetPrinterName.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -270,7 +270,7 @@ func (i *ICoreWebView2PrintSettings2) GetPrinterName() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2PrintSettings2) PutPrinterName(value string) error {
@@ -281,12 +281,12 @@ func (i *ICoreWebView2PrintSettings2) PutPrinterName(value string) error {
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutPrinterName.Call(
+	hr, _, _ := i.Vtbl.PutPrinterName.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

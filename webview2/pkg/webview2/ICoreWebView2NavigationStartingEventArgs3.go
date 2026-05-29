@@ -46,12 +46,12 @@ func (i *ICoreWebView2NavigationStartingEventArgs3) GetNavigationKind() (COREWEB
 
 	var value COREWEBVIEW2_NAVIGATION_KIND
 
-	hr, _, err := i.Vtbl.GetNavigationKind.Call(
+	hr, _, _ := i.Vtbl.GetNavigationKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

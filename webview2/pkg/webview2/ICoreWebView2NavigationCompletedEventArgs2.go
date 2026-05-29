@@ -46,12 +46,12 @@ func (i *ICoreWebView2NavigationCompletedEventArgs2) GetHttpStatusCode() (int, e
 
 	var value int
 
-	hr, _, err := i.Vtbl.GetHttpStatusCode.Call(
+	hr, _, _ := i.Vtbl.GetHttpStatusCode.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

@@ -48,7 +48,7 @@ func (i *ICoreWebView2Notification) AddCloseRequested(eventHandler *ICoreWebView
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddCloseRequested.Call(
+	hr, _, _ := i.Vtbl.AddCloseRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -56,56 +56,56 @@ func (i *ICoreWebView2Notification) AddCloseRequested(eventHandler *ICoreWebView
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2Notification) RemoveCloseRequested(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveCloseRequested.Call(
+	hr, _, _ := i.Vtbl.RemoveCloseRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Notification) ReportShown() error {
 
 
-	hr, _, err := i.Vtbl.ReportShown.Call(
+	hr, _, _ := i.Vtbl.ReportShown.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Notification) ReportClicked() error {
 
 
-	hr, _, err := i.Vtbl.ReportClicked.Call(
+	hr, _, _ := i.Vtbl.ReportClicked.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Notification) ReportClosed() error {
 
 
-	hr, _, err := i.Vtbl.ReportClosed.Call(
+	hr, _, _ := i.Vtbl.ReportClosed.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Notification) GetBody() (string, error) {
@@ -113,7 +113,7 @@ func (i *ICoreWebView2Notification) GetBody() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetBody.Call(
+	hr, _, _ := i.Vtbl.GetBody.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -123,21 +123,21 @@ func (i *ICoreWebView2Notification) GetBody() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetDirection() (COREWEBVIEW2_TEXT_DIRECTION_KIND, error) {
 
 	var value COREWEBVIEW2_TEXT_DIRECTION_KIND
 
-	hr, _, err := i.Vtbl.GetDirection.Call(
+	hr, _, _ := i.Vtbl.GetDirection.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetLanguage() (string, error) {
@@ -145,7 +145,7 @@ func (i *ICoreWebView2Notification) GetLanguage() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetLanguage.Call(
+	hr, _, _ := i.Vtbl.GetLanguage.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -155,7 +155,7 @@ func (i *ICoreWebView2Notification) GetLanguage() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetTag() (string, error) {
@@ -163,7 +163,7 @@ func (i *ICoreWebView2Notification) GetTag() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetTag.Call(
+	hr, _, _ := i.Vtbl.GetTag.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -173,7 +173,7 @@ func (i *ICoreWebView2Notification) GetTag() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetIconUri() (string, error) {
@@ -181,7 +181,7 @@ func (i *ICoreWebView2Notification) GetIconUri() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetIconUri.Call(
+	hr, _, _ := i.Vtbl.GetIconUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -191,7 +191,7 @@ func (i *ICoreWebView2Notification) GetIconUri() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetTitle() (string, error) {
@@ -199,7 +199,7 @@ func (i *ICoreWebView2Notification) GetTitle() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetTitle.Call(
+	hr, _, _ := i.Vtbl.GetTitle.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -209,7 +209,7 @@ func (i *ICoreWebView2Notification) GetTitle() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetBadgeUri() (string, error) {
@@ -217,7 +217,7 @@ func (i *ICoreWebView2Notification) GetBadgeUri() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetBadgeUri.Call(
+	hr, _, _ := i.Vtbl.GetBadgeUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -227,7 +227,7 @@ func (i *ICoreWebView2Notification) GetBadgeUri() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetBodyImageUri() (string, error) {
@@ -235,7 +235,7 @@ func (i *ICoreWebView2Notification) GetBodyImageUri() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetBodyImageUri.Call(
+	hr, _, _ := i.Vtbl.GetBodyImageUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -245,14 +245,14 @@ func (i *ICoreWebView2Notification) GetBodyImageUri() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetShouldRenotify() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldRenotify.Call(
+	hr, _, _ := i.Vtbl.GetShouldRenotify.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -261,14 +261,14 @@ func (i *ICoreWebView2Notification) GetShouldRenotify() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetRequiresInteraction() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetRequiresInteraction.Call(
+	hr, _, _ := i.Vtbl.GetRequiresInteraction.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -277,14 +277,14 @@ func (i *ICoreWebView2Notification) GetRequiresInteraction() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetIsSilent() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetIsSilent.Call(
+	hr, _, _ := i.Vtbl.GetIsSilent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -293,21 +293,21 @@ func (i *ICoreWebView2Notification) GetIsSilent() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetTimestamp() (float64, error) {
 
 	var value float64
 
-	hr, _, err := i.Vtbl.GetTimestamp.Call(
+	hr, _, _ := i.Vtbl.GetTimestamp.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0.0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Notification) GetVibrationPattern() (uint32, *uint64, error) {
@@ -315,7 +315,7 @@ func (i *ICoreWebView2Notification) GetVibrationPattern() (uint32, *uint64, erro
 	var count uint32
 	var vibrationPattern *uint64
 
-	hr, _, err := i.Vtbl.GetVibrationPattern.Call(
+	hr, _, _ := i.Vtbl.GetVibrationPattern.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&count)),
 		uintptr(unsafe.Pointer(&vibrationPattern)),
@@ -323,5 +323,5 @@ func (i *ICoreWebView2Notification) GetVibrationPattern() (uint32, *uint64, erro
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, nil, syscall.Errno(hr)
 	}
-	return count, vibrationPattern, err
+	return count, vibrationPattern, nil
 }

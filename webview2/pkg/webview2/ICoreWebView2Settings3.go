@@ -47,7 +47,7 @@ func (i *ICoreWebView2Settings3) GetAreBrowserAcceleratorKeysEnabled() (bool, er
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetAreBrowserAcceleratorKeysEnabled.Call(
+	hr, _, _ := i.Vtbl.GetAreBrowserAcceleratorKeysEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -56,7 +56,7 @@ func (i *ICoreWebView2Settings3) GetAreBrowserAcceleratorKeysEnabled() (bool, er
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Settings3) PutAreBrowserAcceleratorKeysEnabled(value bool) error {
@@ -67,12 +67,12 @@ func (i *ICoreWebView2Settings3) PutAreBrowserAcceleratorKeysEnabled(value bool)
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutAreBrowserAcceleratorKeysEnabled.Call(
+	hr, _, _ := i.Vtbl.PutAreBrowserAcceleratorKeysEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

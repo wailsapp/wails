@@ -32,7 +32,7 @@ func (i *ICoreWebView2File) GetPath() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetPath.Call(
+	hr, _, _ := i.Vtbl.GetPath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -42,5 +42,5 @@ func (i *ICoreWebView2File) GetPath() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

@@ -32,7 +32,7 @@ func (i *ICoreWebView2EnvironmentOptions5) GetEnableTrackingPrevention() (bool, 
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetEnableTrackingPrevention.Call(
+	hr, _, _ := i.Vtbl.GetEnableTrackingPrevention.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -41,7 +41,7 @@ func (i *ICoreWebView2EnvironmentOptions5) GetEnableTrackingPrevention() (bool, 
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions5) PutEnableTrackingPrevention(value bool) error {
@@ -52,12 +52,12 @@ func (i *ICoreWebView2EnvironmentOptions5) PutEnableTrackingPrevention(value boo
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutEnableTrackingPrevention.Call(
+	hr, _, _ := i.Vtbl.PutEnableTrackingPrevention.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

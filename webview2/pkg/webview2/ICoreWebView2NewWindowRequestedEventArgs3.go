@@ -46,12 +46,12 @@ func (i *ICoreWebView2NewWindowRequestedEventArgs3) GetOriginalSourceFrameInfo()
 
 	var value *ICoreWebView2FrameInfo
 
-	hr, _, err := i.Vtbl.GetOriginalSourceFrameInfo.Call(
+	hr, _, _ := i.Vtbl.GetOriginalSourceFrameInfo.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

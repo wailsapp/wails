@@ -38,33 +38,33 @@ func (i *ICoreWebView2CompositionController) GetRootVisualTarget() (*IUnknown, e
 
 	var target *IUnknown
 
-	hr, _, err := i.Vtbl.GetRootVisualTarget.Call(
+	hr, _, _ := i.Vtbl.GetRootVisualTarget.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&target)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return target, err
+	return target, nil
 }
 
 func (i *ICoreWebView2CompositionController) PutRootVisualTarget(target *IUnknown) error {
 
 
-	hr, _, err := i.Vtbl.PutRootVisualTarget.Call(
+	hr, _, _ := i.Vtbl.PutRootVisualTarget.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(target)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CompositionController) SendMouseInput(eventKind COREWEBVIEW2_MOUSE_EVENT_KIND, virtualKeys COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS, mouseData uint32, point POINT) error {
 
 
-	hr, _, err := i.Vtbl.SendMouseInput.Call(
+	hr, _, _ := i.Vtbl.SendMouseInput.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(eventKind),
 		uintptr(virtualKeys),
@@ -74,13 +74,13 @@ func (i *ICoreWebView2CompositionController) SendMouseInput(eventKind COREWEBVIE
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CompositionController) SendPointerInput(eventKind COREWEBVIEW2_POINTER_EVENT_KIND, pointerInfo *ICoreWebView2PointerInfo) error {
 
 
-	hr, _, err := i.Vtbl.SendPointerInput.Call(
+	hr, _, _ := i.Vtbl.SendPointerInput.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(eventKind),
 		uintptr(unsafe.Pointer(pointerInfo)),
@@ -88,42 +88,42 @@ func (i *ICoreWebView2CompositionController) SendPointerInput(eventKind COREWEBV
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CompositionController) GetCursor() (HCURSOR, error) {
 
 	var cursor HCURSOR
 
-	hr, _, err := i.Vtbl.GetCursor.Call(
+	hr, _, _ := i.Vtbl.GetCursor.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&cursor)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return cursor, err
+	return cursor, nil
 }
 
 func (i *ICoreWebView2CompositionController) GetSystemCursorId() (uint32, error) {
 
 	var systemCursorId uint32
 
-	hr, _, err := i.Vtbl.GetSystemCursorId.Call(
+	hr, _, _ := i.Vtbl.GetSystemCursorId.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&systemCursorId)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return systemCursorId, err
+	return systemCursorId, nil
 }
 
 func (i *ICoreWebView2CompositionController) AddCursorChanged(eventHandler *ICoreWebView2CursorChangedEventHandler) (EventRegistrationToken, error) {
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddCursorChanged.Call(
+	hr, _, _ := i.Vtbl.AddCursorChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -131,18 +131,18 @@ func (i *ICoreWebView2CompositionController) AddCursorChanged(eventHandler *ICor
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2CompositionController) RemoveCursorChanged(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveCursorChanged.Call(
+	hr, _, _ := i.Vtbl.RemoveCursorChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

@@ -36,14 +36,14 @@ func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetErrorStatus() 
 
 	var value COREWEBVIEW2_WEB_ERROR_STATUS
 
-	hr, _, err := i.Vtbl.GetErrorStatus.Call(
+	hr, _, _ := i.Vtbl.GetErrorStatus.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetRequestUri() (string, error) {
@@ -51,7 +51,7 @@ func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetRequestUri() (
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetRequestUri.Call(
+	hr, _, _ := i.Vtbl.GetRequestUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -61,60 +61,60 @@ func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetRequestUri() (
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetServerCertificate() (*ICoreWebView2Certificate, error) {
 
 	var value *ICoreWebView2Certificate
 
-	hr, _, err := i.Vtbl.GetServerCertificate.Call(
+	hr, _, _ := i.Vtbl.GetServerCertificate.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetAction() (COREWEBVIEW2_SERVER_CERTIFICATE_ERROR_ACTION, error) {
 
 	var value COREWEBVIEW2_SERVER_CERTIFICATE_ERROR_ACTION
 
-	hr, _, err := i.Vtbl.GetAction.Call(
+	hr, _, _ := i.Vtbl.GetAction.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) PutAction(value COREWEBVIEW2_SERVER_CERTIFICATE_ERROR_ACTION) error {
 
 
-	hr, _, err := i.Vtbl.PutAction.Call(
+	hr, _, _ := i.Vtbl.PutAction.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var deferral *ICoreWebView2Deferral
 
-	hr, _, err := i.Vtbl.GetDeferral.Call(
+	hr, _, _ := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&deferral)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return deferral, err
+	return deferral, nil
 }

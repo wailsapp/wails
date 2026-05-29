@@ -36,7 +36,7 @@ func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetCancel() (bool, error) 
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetCancel.Call(
+	hr, _, _ := i.Vtbl.GetCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -45,7 +45,7 @@ func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetCancel() (bool, error) 
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScreenCaptureStartingEventArgs) PutCancel(value bool) error {
@@ -56,21 +56,21 @@ func (i *ICoreWebView2ScreenCaptureStartingEventArgs) PutCancel(value bool) erro
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutCancel.Call(
+	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetHandled() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetHandled.Call(
+	hr, _, _ := i.Vtbl.GetHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -79,7 +79,7 @@ func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetHandled() (bool, error)
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScreenCaptureStartingEventArgs) PutHandled(value bool) error {
@@ -90,40 +90,40 @@ func (i *ICoreWebView2ScreenCaptureStartingEventArgs) PutHandled(value bool) err
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutHandled.Call(
+	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetOriginalSourceFrameInfo() (*ICoreWebView2FrameInfo, error) {
 
 	var value *ICoreWebView2FrameInfo
 
-	hr, _, err := i.Vtbl.GetOriginalSourceFrameInfo.Call(
+	hr, _, _ := i.Vtbl.GetOriginalSourceFrameInfo.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ScreenCaptureStartingEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var value *ICoreWebView2Deferral
 
-	hr, _, err := i.Vtbl.GetDeferral.Call(
+	hr, _, _ := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

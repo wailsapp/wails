@@ -37,7 +37,7 @@ func (i *ICoreWebView2PermissionRequestedEventArgs) GetUri() (string, error) {
 	var _uri *uint16
 
 
-	hr, _, err := i.Vtbl.GetUri.Call(
+	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_uri)),
 	)
@@ -47,28 +47,28 @@ func (i *ICoreWebView2PermissionRequestedEventArgs) GetUri() (string, error) {
 	// Get result and cleanup
 	uri := UTF16PtrToString(_uri)
 	CoTaskMemFree(unsafe.Pointer(_uri))
-	return uri, err
+	return uri, nil
 }
 
 func (i *ICoreWebView2PermissionRequestedEventArgs) GetPermissionKind() (COREWEBVIEW2_PERMISSION_KIND, error) {
 
 	var permissionKind COREWEBVIEW2_PERMISSION_KIND
 
-	hr, _, err := i.Vtbl.GetPermissionKind.Call(
+	hr, _, _ := i.Vtbl.GetPermissionKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&permissionKind)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return permissionKind, err
+	return permissionKind, nil
 }
 
 func (i *ICoreWebView2PermissionRequestedEventArgs) GetIsUserInitiated() (bool, error) {
 	// Create int32 to hold bool result
 	var _isUserInitiated int32
 
-	hr, _, err := i.Vtbl.GetIsUserInitiated.Call(
+	hr, _, _ := i.Vtbl.GetIsUserInitiated.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isUserInitiated)),
 	)
@@ -77,46 +77,46 @@ func (i *ICoreWebView2PermissionRequestedEventArgs) GetIsUserInitiated() (bool, 
 	}
 	// Get result and cleanup
     isUserInitiated := _isUserInitiated != 0
-	return isUserInitiated, err
+	return isUserInitiated, nil
 }
 
 func (i *ICoreWebView2PermissionRequestedEventArgs) GetState() (COREWEBVIEW2_PERMISSION_STATE, error) {
 
 	var state COREWEBVIEW2_PERMISSION_STATE
 
-	hr, _, err := i.Vtbl.GetState.Call(
+	hr, _, _ := i.Vtbl.GetState.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&state)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return state, err
+	return state, nil
 }
 
 func (i *ICoreWebView2PermissionRequestedEventArgs) PutState(state COREWEBVIEW2_PERMISSION_STATE) error {
 
 
-	hr, _, err := i.Vtbl.PutState.Call(
+	hr, _, _ := i.Vtbl.PutState.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(state),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2PermissionRequestedEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var deferral *ICoreWebView2Deferral
 
-	hr, _, err := i.Vtbl.GetDeferral.Call(
+	hr, _, _ := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&deferral)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return deferral, err
+	return deferral, nil
 }

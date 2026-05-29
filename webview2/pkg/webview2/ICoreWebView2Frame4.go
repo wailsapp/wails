@@ -50,7 +50,7 @@ func (i *ICoreWebView2Frame4) PostSharedBufferToScript(sharedBuffer *ICoreWebVie
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PostSharedBufferToScript.Call(
+	hr, _, _ := i.Vtbl.PostSharedBufferToScript.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(sharedBuffer)),
 		uintptr(access),
@@ -59,5 +59,5 @@ func (i *ICoreWebView2Frame4) PostSharedBufferToScript(sharedBuffer *ICoreWebVie
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

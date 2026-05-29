@@ -38,7 +38,7 @@ func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
 	var _uri *uint16
 
 
-	hr, _, err := i.Vtbl.GetUri.Call(
+	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_uri)),
 	)
@@ -48,7 +48,7 @@ func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
 	// Get result and cleanup
 	uri := UTF16PtrToString(_uri)
 	CoTaskMemFree(unsafe.Pointer(_uri))
-	return uri, err
+	return uri, nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutUri(uri string) error {
@@ -59,14 +59,14 @@ func (i *ICoreWebView2WebResourceRequest) PutUri(uri string) error {
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutUri.Call(
+	hr, _, _ := i.Vtbl.PutUri.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
@@ -74,7 +74,7 @@ func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 	var _method *uint16
 
 
-	hr, _, err := i.Vtbl.GetMethod.Call(
+	hr, _, _ := i.Vtbl.GetMethod.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_method)),
 	)
@@ -84,7 +84,7 @@ func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 	// Get result and cleanup
 	method := UTF16PtrToString(_method)
 	CoTaskMemFree(unsafe.Pointer(_method))
-	return method, err
+	return method, nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutMethod(method string) error {
@@ -95,53 +95,53 @@ func (i *ICoreWebView2WebResourceRequest) PutMethod(method string) error {
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutMethod.Call(
+	hr, _, _ := i.Vtbl.PutMethod.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_method)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetContent() (*IStream, error) {
 
 	var content *IStream
 
-	hr, _, err := i.Vtbl.GetContent.Call(
+	hr, _, _ := i.Vtbl.GetContent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&content)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return content, err
+	return content, nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutContent(content *IStream) error {
 
 
-	hr, _, err := i.Vtbl.PutContent.Call(
+	hr, _, _ := i.Vtbl.PutContent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(content)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetHeaders() (*ICoreWebView2HttpRequestHeaders, error) {
 
 	var headers *ICoreWebView2HttpRequestHeaders
 
-	hr, _, err := i.Vtbl.GetHeaders.Call(
+	hr, _, _ := i.Vtbl.GetHeaders.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&headers)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return headers, err
+	return headers, nil
 }

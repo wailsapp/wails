@@ -49,28 +49,28 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetReason() (COREWEBVIEW2_PROCESS
 
 	var reason COREWEBVIEW2_PROCESS_FAILED_REASON
 
-	hr, _, err := i.Vtbl.GetReason.Call(
+	hr, _, _ := i.Vtbl.GetReason.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&reason)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return reason, err
+	return reason, nil
 }
 
 func (i *ICoreWebView2ProcessFailedEventArgs2) GetExitCode() (int, error) {
 
 	var exitCode int
 
-	hr, _, err := i.Vtbl.GetExitCode.Call(
+	hr, _, _ := i.Vtbl.GetExitCode.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&exitCode)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return exitCode, err
+	return exitCode, nil
 }
 
 func (i *ICoreWebView2ProcessFailedEventArgs2) GetProcessDescription() (string, error) {
@@ -78,7 +78,7 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetProcessDescription() (string, 
 	var _processDescription *uint16
 
 
-	hr, _, err := i.Vtbl.GetProcessDescription.Call(
+	hr, _, _ := i.Vtbl.GetProcessDescription.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_processDescription)),
 	)
@@ -88,19 +88,19 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetProcessDescription() (string, 
 	// Get result and cleanup
 	processDescription := UTF16PtrToString(_processDescription)
 	CoTaskMemFree(unsafe.Pointer(_processDescription))
-	return processDescription, err
+	return processDescription, nil
 }
 
 func (i *ICoreWebView2ProcessFailedEventArgs2) GetFrameInfosForFailedProcess() (*ICoreWebView2FrameInfoCollection, error) {
 
 	var frames *ICoreWebView2FrameInfoCollection
 
-	hr, _, err := i.Vtbl.GetFrameInfosForFailedProcess.Call(
+	hr, _, _ := i.Vtbl.GetFrameInfosForFailedProcess.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&frames)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return frames, err
+	return frames, nil
 }
