@@ -43,7 +43,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOrigins
 	}
 
 
-	hr, _, err := i.Vtbl.SetAllowedOrigins.Call(
+	hr, _, _ := i.Vtbl.SetAllowedOrigins.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(allowedOriginsCount),
 		uintptr(unsafe.Pointer(_allowedOrigins)),
@@ -51,5 +51,5 @@ func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOrigins
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

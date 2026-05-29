@@ -154,9 +154,16 @@ func (p *Param) processVtableCallInput() {
 	// Scalar numeric / bool inputs: use GoType (handles uppercase IDL names like UINT32,
 	// INT32, BOOL that map to Go uint32, int32, bool). For bool, setup code converts to
 	// int32 first so the local variable is already an int32 and uintptr() is correct.
+	//
+	// HWND, HANDLE, HCURSOR are uintptr aliases in golang.org/x/sys/windows — they're
+	// already handle *values*, not pointers to handles. Passing their address gives a
+	// stack-local pointer instead of the handle itself, which the receiving COM method
+	// dereferences as garbage. Match the existing defaultErrorValue() treatment of
+	// these as scalars.
 	goType := p.GoType
 	if strings.HasPrefix(goType, "int") || strings.HasPrefix(goType, "uint") ||
-		goType == "float32" || goType == "float64" || goType == "bool" {
+		goType == "float32" || goType == "float64" || goType == "bool" ||
+		goType == "HWND" || goType == "HANDLE" || goType == "HCURSOR" {
 		p.VtableCallInput = "uintptr(" + variableName + ")"
 		return
 	}

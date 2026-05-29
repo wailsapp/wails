@@ -46,7 +46,7 @@ func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	// Create int32 to hold bool result
 	var _isSuspended int32
 
-	hr, _, err := i.Vtbl.GetIsSuspended.Call(
+	hr, _, _ := i.Vtbl.GetIsSuspended.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isSuspended)),
 	)
@@ -55,5 +55,5 @@ func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	}
 	// Get result and cleanup
     isSuspended := _isSuspended != 0
-	return isSuspended, err
+	return isSuspended, nil
 }

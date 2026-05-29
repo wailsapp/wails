@@ -292,12 +292,64 @@ func (m *InterfaceMethod) GetHResultVariable() string {
 	return "_"
 }
 
+// InvokeGoInputs renders the parameter list for the C-side trampoline that
+// windows.NewCallback wraps. Strings are passed as *uint16 because
+// windows.NewCallback panics at init if any parameter is wider than a uintptr
+// (Go strings are 2-word fat pointers and slices are 3-word).
+func (m *InterfaceMethod) InvokeGoInputs() string {
+	var inputs slicer.StringSlicer
+	for _, p := range m.inputParams {
+		t := p.AsInputType()
+		if t == "string" {
+			t = "*uint16"
+		}
+		inputs.Add(p.Name + " " + t)
+	}
+	return inputs.Join(", ")
+}
+
+// InvokeConversionCode emits the Go statements that convert *uint16 trampoline
+// parameters back into Go strings before the impl call. Empty if the Invoke
+// method has no string parameters.
+func (m *InterfaceMethod) InvokeConversionCode() string {
+	var buf bytes.Buffer
+	for _, p := range m.inputParams {
+		if p.AsInputType() == "string" {
+			buf.WriteString("\t_")
+			buf.WriteString(p.Name)
+			buf.WriteString(" := UTF16PtrToString(")
+			buf.WriteString(p.Name)
+			buf.WriteString(")\n")
+		}
+	}
+	return buf.String()
+}
+
+// InvokeInputParamNames is the InputParamNames variant for the Invoke
+// trampoline — string params become `_name` (the converted Go string),
+// everything else stays as `name`.
+func (m *InterfaceMethod) InvokeInputParamNames() string {
+	var names slicer.StringSlicer
+	for _, p := range m.inputParams {
+		name := p.Name
+		if p.AsInputType() == "string" {
+			name = "_" + name
+		}
+		names.Add(name)
+	}
+	return names.Join(", ")
+}
+
 func (m *InterfaceMethod) SuccessValues() string {
+	// The third return from syscall.Call is GetLastError, which is non-nil after
+	// every call regardless of HRESULT — using it as the method's err return causes
+	// successful calls to surface stale Win32 errors from prior unrelated syscalls.
+	// The template binds the third return to `_`; the success path returns nil.
 	var successValues slicer.StringSlicer
 	for _, outputParam := range m.outputParams {
 		successValues.Add(outputParam.GetReturnVariableName())
 	}
-	successValues.Add("err")
+	successValues.Add("nil")
 	return successValues.Join(", ")
 }
 

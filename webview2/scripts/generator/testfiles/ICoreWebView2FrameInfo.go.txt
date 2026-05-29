@@ -33,7 +33,7 @@ func (i *ICoreWebView2FrameInfo) GetName() (string, error) {
 	var _name *uint16
 
 
-	hr, _, err := i.Vtbl.GetName.Call(
+	hr, _, _ := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_name)),
 	)
@@ -43,7 +43,7 @@ func (i *ICoreWebView2FrameInfo) GetName() (string, error) {
 	// Get result and cleanup
 	name := UTF16PtrToString(_name)
 	CoTaskMemFree(unsafe.Pointer(_name))
-	return name, err
+	return name, nil
 }
 
 func (i *ICoreWebView2FrameInfo) GetSource() (string, error) {
@@ -51,7 +51,7 @@ func (i *ICoreWebView2FrameInfo) GetSource() (string, error) {
 	var _source *uint16
 
 
-	hr, _, err := i.Vtbl.GetSource.Call(
+	hr, _, _ := i.Vtbl.GetSource.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_source)),
 	)
@@ -61,5 +61,5 @@ func (i *ICoreWebView2FrameInfo) GetSource() (string, error) {
 	// Get result and cleanup
 	source := UTF16PtrToString(_source)
 	CoTaskMemFree(unsafe.Pointer(_source))
-	return source, err
+	return source, nil
 }
