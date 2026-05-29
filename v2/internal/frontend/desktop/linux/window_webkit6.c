@@ -753,7 +753,8 @@ void MessageDialog(void *data)
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     messageType,
                                     buttons,
-                                    options->message, NULL);
+                                    "%s",
+                                    options->message);
     
     g_object_ref_sink(dialog);
 
