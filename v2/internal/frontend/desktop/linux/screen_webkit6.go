@@ -47,6 +47,9 @@ Screen GetNThMonitor(int monitor_num, GListModel *monitors, GtkWindow *window){
 	screen.width = geometry.width;
 	screen.scale = gdk_monitor_get_scale_factor(monitor);
 
+	g_object_unref(monitor);
+	g_object_unref(currentMonitor);
+
 	return screen;
 }
 */

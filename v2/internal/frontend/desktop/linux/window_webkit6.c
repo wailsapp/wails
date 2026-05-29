@@ -110,6 +110,9 @@ static GdkRectangle getCurrentMonitorGeometry(GtkWindow *window)
 
     // Get the geometry of the monitor
     gdk_monitor_get_geometry(monitor, &result);
+
+    g_object_unref(monitor);
+
     return result;
 }
 
@@ -122,7 +125,11 @@ static int getCurrentMonitorScaleFactor(GtkWindow *window)
         return 1;
     }
 
-    return gdk_monitor_get_scale_factor(monitor);
+    int scale = gdk_monitor_get_scale_factor(monitor);
+
+    g_object_unref(monitor);
+
+    return scale;
 }
 
 // window
