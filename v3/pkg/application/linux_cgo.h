@@ -83,6 +83,7 @@ void dispatchOnMainThread(unsigned int id);
 // ============================================================================
 
 void install_signal_handlers(void);
+void schedule_signal_handler_fix(void);
 
 // ============================================================================
 // Object data helpers
