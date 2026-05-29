@@ -34,21 +34,21 @@ func (i *ICoreWebView2ContextMenuItemCollection) GetCount() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetCount.Call(
+	hr, _, _ := i.Vtbl.GetCount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) GetValueAtIndex(index uint32) (*ICoreWebView2ContextMenuItem, error) {
 
 	var value *ICoreWebView2ContextMenuItem
 
-	hr, _, err := i.Vtbl.GetValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 		uintptr(unsafe.Pointer(&value)),
@@ -56,26 +56,26 @@ func (i *ICoreWebView2ContextMenuItemCollection) GetValueAtIndex(index uint32) (
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) RemoveValueAtIndex(index uint32) error {
 
 
-	hr, _, err := i.Vtbl.RemoveValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.RemoveValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2ContextMenuItemCollection) InsertValueAtIndex(index uint32, value *ICoreWebView2ContextMenuItem) error {
 
 
-	hr, _, err := i.Vtbl.InsertValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.InsertValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 		uintptr(unsafe.Pointer(value)),
@@ -83,5 +83,5 @@ func (i *ICoreWebView2ContextMenuItemCollection) InsertValueAtIndex(index uint32
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

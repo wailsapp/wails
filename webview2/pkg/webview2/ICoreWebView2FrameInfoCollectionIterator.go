@@ -33,7 +33,7 @@ func (i *ICoreWebView2FrameInfoCollectionIterator) GetHasCurrent() (bool, error)
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetHasCurrent.Call(
+	hr, _, _ := i.Vtbl.GetHasCurrent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -42,28 +42,28 @@ func (i *ICoreWebView2FrameInfoCollectionIterator) GetHasCurrent() (bool, error)
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FrameInfoCollectionIterator) GetCurrent() (*ICoreWebView2FrameInfo, error) {
 
 	var value *ICoreWebView2FrameInfo
 
-	hr, _, err := i.Vtbl.GetCurrent.Call(
+	hr, _, _ := i.Vtbl.GetCurrent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FrameInfoCollectionIterator) MoveNext() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.MoveNext.Call(
+	hr, _, _ := i.Vtbl.MoveNext.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -72,5 +72,5 @@ func (i *ICoreWebView2FrameInfoCollectionIterator) MoveNext() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }

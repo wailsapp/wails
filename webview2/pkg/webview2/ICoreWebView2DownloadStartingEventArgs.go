@@ -38,21 +38,21 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetDownloadOperation() (*ICoreW
 
 	var downloadOperation *ICoreWebView2DownloadOperation
 
-	hr, _, err := i.Vtbl.GetDownloadOperation.Call(
+	hr, _, _ := i.Vtbl.GetDownloadOperation.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&downloadOperation)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return downloadOperation, err
+	return downloadOperation, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) GetCancel() (bool, error) {
 	// Create int32 to hold bool result
 	var _cancel int32
 
-	hr, _, err := i.Vtbl.GetCancel.Call(
+	hr, _, _ := i.Vtbl.GetCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_cancel)),
 	)
@@ -61,7 +61,7 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetCancel() (bool, error) {
 	}
 	// Get result and cleanup
     cancel := _cancel != 0
-	return cancel, err
+	return cancel, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) PutCancel(cancel bool) error {
@@ -72,14 +72,14 @@ func (i *ICoreWebView2DownloadStartingEventArgs) PutCancel(cancel bool) error {
 		_cancel = 1
 	}
 
-	hr, _, err := i.Vtbl.PutCancel.Call(
+	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_cancel),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) GetResultFilePath() (string, error) {
@@ -87,7 +87,7 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetResultFilePath() (string, er
 	var _resultFilePath *uint16
 
 
-	hr, _, err := i.Vtbl.GetResultFilePath.Call(
+	hr, _, _ := i.Vtbl.GetResultFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_resultFilePath)),
 	)
@@ -97,7 +97,7 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetResultFilePath() (string, er
 	// Get result and cleanup
 	resultFilePath := UTF16PtrToString(_resultFilePath)
 	CoTaskMemFree(unsafe.Pointer(_resultFilePath))
-	return resultFilePath, err
+	return resultFilePath, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) PutResultFilePath(resultFilePath string) error {
@@ -108,21 +108,21 @@ func (i *ICoreWebView2DownloadStartingEventArgs) PutResultFilePath(resultFilePat
 		return err
 	}
 
-	hr, _, err := i.Vtbl.PutResultFilePath.Call(
+	hr, _, _ := i.Vtbl.PutResultFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_resultFilePath)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) GetHandled() (bool, error) {
 	// Create int32 to hold bool result
 	var _handled int32
 
-	hr, _, err := i.Vtbl.GetHandled.Call(
+	hr, _, _ := i.Vtbl.GetHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_handled)),
 	)
@@ -131,7 +131,7 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetHandled() (bool, error) {
 	}
 	// Get result and cleanup
     handled := _handled != 0
-	return handled, err
+	return handled, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) PutHandled(handled bool) error {
@@ -142,26 +142,26 @@ func (i *ICoreWebView2DownloadStartingEventArgs) PutHandled(handled bool) error 
 		_handled = 1
 	}
 
-	hr, _, err := i.Vtbl.PutHandled.Call(
+	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_handled),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) GetDeferral() (*ICoreWebView2Deferral, error) {
 
 	var deferral *ICoreWebView2Deferral
 
-	hr, _, err := i.Vtbl.GetDeferral.Call(
+	hr, _, _ := i.Vtbl.GetDeferral.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&deferral)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return deferral, err
+	return deferral, nil
 }

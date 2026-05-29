@@ -47,25 +47,25 @@ func (i *ICoreWebView2Controller2) GetDefaultBackgroundColor() (COREWEBVIEW2_COL
 
 	var value COREWEBVIEW2_COLOR
 
-	hr, _, err := i.Vtbl.GetDefaultBackgroundColor.Call(
+	hr, _, _ := i.Vtbl.GetDefaultBackgroundColor.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return COREWEBVIEW2_COLOR{}, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Controller2) PutDefaultBackgroundColor(value COREWEBVIEW2_COLOR) error {
 
 
-	hr, _, err := i.Vtbl.PutDefaultBackgroundColor.Call(
+	hr, _, _ := i.Vtbl.PutDefaultBackgroundColor.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

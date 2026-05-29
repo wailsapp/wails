@@ -47,7 +47,7 @@ func (i *ICoreWebView2_27) AddScreenCaptureStarting(eventHandler *ICoreWebView2S
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddScreenCaptureStarting.Call(
+	hr, _, _ := i.Vtbl.AddScreenCaptureStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2_27) AddScreenCaptureStarting(eventHandler *ICoreWebView2S
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_27) RemoveScreenCaptureStarting(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveScreenCaptureStarting.Call(
+	hr, _, _ := i.Vtbl.RemoveScreenCaptureStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

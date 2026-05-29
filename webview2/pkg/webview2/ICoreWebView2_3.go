@@ -49,33 +49,33 @@ func (i *ICoreWebView2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
 func (i *ICoreWebView2_3) TrySuspend(handler *ICoreWebView2TrySuspendCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.TrySuspend.Call(
+	hr, _, _ := i.Vtbl.TrySuspend.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_3) Resume() error {
 
 
-	hr, _, err := i.Vtbl.Resume.Call(
+	hr, _, _ := i.Vtbl.Resume.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	// Create int32 to hold bool result
 	var _isSuspended int32
 
-	hr, _, err := i.Vtbl.GetIsSuspended.Call(
+	hr, _, _ := i.Vtbl.GetIsSuspended.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_isSuspended)),
 	)
@@ -84,7 +84,7 @@ func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	}
 	// Get result and cleanup
     isSuspended := _isSuspended != 0
-	return isSuspended, err
+	return isSuspended, nil
 }
 
 func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, folderPath string, accessKind COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND) error {
@@ -100,7 +100,7 @@ func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, fol
 		return err
 	}
 
-	hr, _, err := i.Vtbl.SetVirtualHostNameToFolderMapping.Call(
+	hr, _, _ := i.Vtbl.SetVirtualHostNameToFolderMapping.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_hostName)),
 		uintptr(unsafe.Pointer(_folderPath)),
@@ -109,7 +109,7 @@ func (i *ICoreWebView2_3) SetVirtualHostNameToFolderMapping(hostName string, fol
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_3) ClearVirtualHostNameToFolderMapping(hostName string) error {
@@ -120,12 +120,12 @@ func (i *ICoreWebView2_3) ClearVirtualHostNameToFolderMapping(hostName string) e
 		return err
 	}
 
-	hr, _, err := i.Vtbl.ClearVirtualHostNameToFolderMapping.Call(
+	hr, _, _ := i.Vtbl.ClearVirtualHostNameToFolderMapping.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_hostName)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

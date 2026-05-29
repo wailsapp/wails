@@ -49,7 +49,7 @@ func (i *ICoreWebView2Settings4) GetIsPasswordAutosaveEnabled() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetIsPasswordAutosaveEnabled.Call(
+	hr, _, _ := i.Vtbl.GetIsPasswordAutosaveEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -58,7 +58,7 @@ func (i *ICoreWebView2Settings4) GetIsPasswordAutosaveEnabled() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Settings4) PutIsPasswordAutosaveEnabled(value bool) error {
@@ -69,21 +69,21 @@ func (i *ICoreWebView2Settings4) PutIsPasswordAutosaveEnabled(value bool) error 
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutIsPasswordAutosaveEnabled.Call(
+	hr, _, _ := i.Vtbl.PutIsPasswordAutosaveEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Settings4) GetIsGeneralAutofillEnabled() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetIsGeneralAutofillEnabled.Call(
+	hr, _, _ := i.Vtbl.GetIsGeneralAutofillEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -92,7 +92,7 @@ func (i *ICoreWebView2Settings4) GetIsGeneralAutofillEnabled() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Settings4) PutIsGeneralAutofillEnabled(value bool) error {
@@ -103,12 +103,12 @@ func (i *ICoreWebView2Settings4) PutIsGeneralAutofillEnabled(value bool) error {
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutIsGeneralAutofillEnabled.Call(
+	hr, _, _ := i.Vtbl.PutIsGeneralAutofillEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

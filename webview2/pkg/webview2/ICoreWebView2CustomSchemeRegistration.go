@@ -38,7 +38,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetSchemeName() (string, error) 
 	var _schemeName *uint16
 
 
-	hr, _, err := i.Vtbl.GetSchemeName.Call(
+	hr, _, _ := i.Vtbl.GetSchemeName.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_schemeName)),
 	)
@@ -48,14 +48,14 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetSchemeName() (string, error) 
 	// Get result and cleanup
 	schemeName := UTF16PtrToString(_schemeName)
 	CoTaskMemFree(unsafe.Pointer(_schemeName))
-	return schemeName, err
+	return schemeName, nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) GetTreatAsSecure() (bool, error) {
 	// Create int32 to hold bool result
 	var _treatAsSecure int32
 
-	hr, _, err := i.Vtbl.GetTreatAsSecure.Call(
+	hr, _, _ := i.Vtbl.GetTreatAsSecure.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_treatAsSecure)),
 	)
@@ -64,7 +64,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetTreatAsSecure() (bool, error)
 	}
 	// Get result and cleanup
     treatAsSecure := _treatAsSecure != 0
-	return treatAsSecure, err
+	return treatAsSecure, nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) PutTreatAsSecure(value bool) error {
@@ -75,14 +75,14 @@ func (i *ICoreWebView2CustomSchemeRegistration) PutTreatAsSecure(value bool) err
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutTreatAsSecure.Call(
+	hr, _, _ := i.Vtbl.PutTreatAsSecure.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) GetAllowedOrigins() (uint32, *string, error) {
@@ -90,7 +90,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetAllowedOrigins() (uint32, *st
 	var allowedOriginsCount uint32
 	var allowedOrigins *string
 
-	hr, _, err := i.Vtbl.GetAllowedOrigins.Call(
+	hr, _, _ := i.Vtbl.GetAllowedOrigins.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&allowedOriginsCount)),
 		uintptr(unsafe.Pointer(&allowedOrigins)),
@@ -98,7 +98,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetAllowedOrigins() (uint32, *st
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, nil, syscall.Errno(hr)
 	}
-	return allowedOriginsCount, allowedOrigins, err
+	return allowedOriginsCount, allowedOrigins, nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOriginsCount uint32, allowedOrigins []string) error {
@@ -117,7 +117,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOrigins
 	}
 
 
-	hr, _, err := i.Vtbl.SetAllowedOrigins.Call(
+	hr, _, _ := i.Vtbl.SetAllowedOrigins.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(allowedOriginsCount),
 		uintptr(unsafe.Pointer(_allowedOrigins)),
@@ -125,14 +125,14 @@ func (i *ICoreWebView2CustomSchemeRegistration) SetAllowedOrigins(allowedOrigins
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) GetHasAuthorityComponent() (bool, error) {
 	// Create int32 to hold bool result
 	var _hasAuthorityComponent int32
 
-	hr, _, err := i.Vtbl.GetHasAuthorityComponent.Call(
+	hr, _, _ := i.Vtbl.GetHasAuthorityComponent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_hasAuthorityComponent)),
 	)
@@ -141,7 +141,7 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetHasAuthorityComponent() (bool
 	}
 	// Get result and cleanup
     hasAuthorityComponent := _hasAuthorityComponent != 0
-	return hasAuthorityComponent, err
+	return hasAuthorityComponent, nil
 }
 
 func (i *ICoreWebView2CustomSchemeRegistration) PutHasAuthorityComponent(hasAuthorityComponent bool) error {
@@ -152,12 +152,12 @@ func (i *ICoreWebView2CustomSchemeRegistration) PutHasAuthorityComponent(hasAuth
 		_hasAuthorityComponent = 1
 	}
 
-	hr, _, err := i.Vtbl.PutHasAuthorityComponent.Call(
+	hr, _, _ := i.Vtbl.PutHasAuthorityComponent.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_hasAuthorityComponent),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

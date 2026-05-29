@@ -46,12 +46,12 @@ func (i *ICoreWebView2WebResourceRequestedEventArgs2) GetRequestedSourceKind() (
 
 	var value COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS
 
-	hr, _, err := i.Vtbl.GetRequestedSourceKind.Call(
+	hr, _, _ := i.Vtbl.GetRequestedSourceKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

@@ -33,14 +33,14 @@ func (i *ICoreWebView2FileSystemHandle) GetKind() (COREWEBVIEW2_FILE_SYSTEM_HAND
 
 	var value COREWEBVIEW2_FILE_SYSTEM_HANDLE_KIND
 
-	hr, _, err := i.Vtbl.GetKind.Call(
+	hr, _, _ := i.Vtbl.GetKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FileSystemHandle) GetPath() (string, error) {
@@ -48,7 +48,7 @@ func (i *ICoreWebView2FileSystemHandle) GetPath() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetPath.Call(
+	hr, _, _ := i.Vtbl.GetPath.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -58,19 +58,19 @@ func (i *ICoreWebView2FileSystemHandle) GetPath() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2FileSystemHandle) GetPermission() (COREWEBVIEW2_FILE_SYSTEM_HANDLE_PERMISSION, error) {
 
 	var value COREWEBVIEW2_FILE_SYSTEM_HANDLE_PERMISSION
 
-	hr, _, err := i.Vtbl.GetPermission.Call(
+	hr, _, _ := i.Vtbl.GetPermission.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

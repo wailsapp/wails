@@ -31,12 +31,12 @@ func (i *ICoreWebView2ProcessFailedEventArgs) GetProcessFailedKind() (COREWEBVIE
 
 	var value COREWEBVIEW2_PROCESS_FAILED_KIND
 
-	hr, _, err := i.Vtbl.GetProcessFailedKind.Call(
+	hr, _, _ := i.Vtbl.GetProcessFailedKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

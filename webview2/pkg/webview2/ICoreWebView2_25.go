@@ -48,7 +48,7 @@ func (i *ICoreWebView2_25) AddSaveAsUIShowing(eventHandler *ICoreWebView2SaveAsU
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddSaveAsUIShowing.Call(
+	hr, _, _ := i.Vtbl.AddSaveAsUIShowing.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -56,31 +56,31 @@ func (i *ICoreWebView2_25) AddSaveAsUIShowing(eventHandler *ICoreWebView2SaveAsU
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_25) RemoveSaveAsUIShowing(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveSaveAsUIShowing.Call(
+	hr, _, _ := i.Vtbl.RemoveSaveAsUIShowing.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2_25) ShowSaveAsUI(handler *ICoreWebView2ShowSaveAsUICompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.ShowSaveAsUI.Call(
+	hr, _, _ := i.Vtbl.ShowSaveAsUI.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

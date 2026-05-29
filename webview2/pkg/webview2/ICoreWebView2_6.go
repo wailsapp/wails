@@ -45,11 +45,11 @@ func (i *ICoreWebView2) GetICoreWebView2_6() (*ICoreWebView2_6, error) {
 func (i *ICoreWebView2_6) OpenTaskManagerWindow() error {
 
 
-	hr, _, err := i.Vtbl.OpenTaskManagerWindow.Call(
+	hr, _, _ := i.Vtbl.OpenTaskManagerWindow.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

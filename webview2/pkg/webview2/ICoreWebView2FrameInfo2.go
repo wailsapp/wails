@@ -48,40 +48,40 @@ func (i *ICoreWebView2FrameInfo2) GetParentFrameInfo() (*ICoreWebView2FrameInfo,
 
 	var frameInfo *ICoreWebView2FrameInfo
 
-	hr, _, err := i.Vtbl.GetParentFrameInfo.Call(
+	hr, _, _ := i.Vtbl.GetParentFrameInfo.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&frameInfo)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return frameInfo, err
+	return frameInfo, nil
 }
 
 func (i *ICoreWebView2FrameInfo2) GetFrameId() (uint32, error) {
 
 	var id uint32
 
-	hr, _, err := i.Vtbl.GetFrameId.Call(
+	hr, _, _ := i.Vtbl.GetFrameId.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&id)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return id, err
+	return id, nil
 }
 
 func (i *ICoreWebView2FrameInfo2) GetFrameKind() (COREWEBVIEW2_FRAME_KIND, error) {
 
 	var kind COREWEBVIEW2_FRAME_KIND
 
-	hr, _, err := i.Vtbl.GetFrameKind.Call(
+	hr, _, _ := i.Vtbl.GetFrameKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&kind)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return kind, err
+	return kind, nil
 }

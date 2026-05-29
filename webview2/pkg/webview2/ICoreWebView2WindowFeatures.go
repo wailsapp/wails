@@ -40,7 +40,7 @@ func (i *ICoreWebView2WindowFeatures) GetHasPosition() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetHasPosition.Call(
+	hr, _, _ := i.Vtbl.GetHasPosition.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -49,14 +49,14 @@ func (i *ICoreWebView2WindowFeatures) GetHasPosition() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetHasSize() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetHasSize.Call(
+	hr, _, _ := i.Vtbl.GetHasSize.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -65,70 +65,70 @@ func (i *ICoreWebView2WindowFeatures) GetHasSize() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetLeft() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetLeft.Call(
+	hr, _, _ := i.Vtbl.GetLeft.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetTop() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetTop.Call(
+	hr, _, _ := i.Vtbl.GetTop.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetHeight() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetHeight.Call(
+	hr, _, _ := i.Vtbl.GetHeight.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetWidth() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetWidth.Call(
+	hr, _, _ := i.Vtbl.GetWidth.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetShouldDisplayMenuBar() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldDisplayMenuBar.Call(
+	hr, _, _ := i.Vtbl.GetShouldDisplayMenuBar.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -137,14 +137,14 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayMenuBar() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetShouldDisplayStatus() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldDisplayStatus.Call(
+	hr, _, _ := i.Vtbl.GetShouldDisplayStatus.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -153,14 +153,14 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayStatus() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetShouldDisplayToolbar() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldDisplayToolbar.Call(
+	hr, _, _ := i.Vtbl.GetShouldDisplayToolbar.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -169,14 +169,14 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayToolbar() (bool, error) {
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WindowFeatures) GetShouldDisplayScrollBars() (bool, error) {
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetShouldDisplayScrollBars.Call(
+	hr, _, _ := i.Vtbl.GetShouldDisplayScrollBars.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -185,5 +185,5 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayScrollBars() (bool, error)
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }

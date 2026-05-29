@@ -47,7 +47,7 @@ func (i *ICoreWebView2ControllerOptions4) GetAllowHostInputProcessing() (bool, e
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetAllowHostInputProcessing.Call(
+	hr, _, _ := i.Vtbl.GetAllowHostInputProcessing.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -56,7 +56,7 @@ func (i *ICoreWebView2ControllerOptions4) GetAllowHostInputProcessing() (bool, e
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2ControllerOptions4) PutAllowHostInputProcessing(value bool) error {
@@ -67,12 +67,12 @@ func (i *ICoreWebView2ControllerOptions4) PutAllowHostInputProcessing(value bool
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutAllowHostInputProcessing.Call(
+	hr, _, _ := i.Vtbl.PutAllowHostInputProcessing.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

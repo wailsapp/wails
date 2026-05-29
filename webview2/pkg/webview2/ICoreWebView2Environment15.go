@@ -46,12 +46,12 @@ func (i *ICoreWebView2Environment15) CreateFindOptions() (*ICoreWebView2FindOpti
 
 	var value *ICoreWebView2FindOptions
 
-	hr, _, err := i.Vtbl.CreateFindOptions.Call(
+	hr, _, _ := i.Vtbl.CreateFindOptions.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

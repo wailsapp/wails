@@ -45,12 +45,12 @@ func (i *ICoreWebView2) GetICoreWebView2Environment13() (*ICoreWebView2Environme
 func (i *ICoreWebView2Environment13) GetProcessExtendedInfos(handler *ICoreWebView2GetProcessExtendedInfosCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.GetProcessExtendedInfos.Call(
+	hr, _, _ := i.Vtbl.GetProcessExtendedInfos.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

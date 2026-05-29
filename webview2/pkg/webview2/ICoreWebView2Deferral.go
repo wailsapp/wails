@@ -30,11 +30,11 @@ func (i *ICoreWebView2Deferral) Release() uint32 {
 func (i *ICoreWebView2Deferral) Complete() error {
 
 
-	hr, _, err := i.Vtbl.Complete.Call(
+	hr, _, _ := i.Vtbl.Complete.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

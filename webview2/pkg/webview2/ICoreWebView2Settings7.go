@@ -47,25 +47,25 @@ func (i *ICoreWebView2Settings7) GetHiddenPdfToolbarItems() (COREWEBVIEW2_PDF_TO
 
 	var value COREWEBVIEW2_PDF_TOOLBAR_ITEMS
 
-	hr, _, err := i.Vtbl.GetHiddenPdfToolbarItems.Call(
+	hr, _, _ := i.Vtbl.GetHiddenPdfToolbarItems.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2Settings7) PutHiddenPdfToolbarItems(value COREWEBVIEW2_PDF_TOOLBAR_ITEMS) error {
 
 
-	hr, _, err := i.Vtbl.PutHiddenPdfToolbarItems.Call(
+	hr, _, _ := i.Vtbl.PutHiddenPdfToolbarItems.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

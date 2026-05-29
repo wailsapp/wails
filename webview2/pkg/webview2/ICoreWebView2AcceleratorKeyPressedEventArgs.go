@@ -36,63 +36,63 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetKeyEventKind() (COREWEB
 
 	var keyEventKind COREWEBVIEW2_KEY_EVENT_KIND
 
-	hr, _, err := i.Vtbl.GetKeyEventKind.Call(
+	hr, _, _ := i.Vtbl.GetKeyEventKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&keyEventKind)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return keyEventKind, err
+	return keyEventKind, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetVirtualKey() (uint, error) {
 
 	var virtualKey uint
 
-	hr, _, err := i.Vtbl.GetVirtualKey.Call(
+	hr, _, _ := i.Vtbl.GetVirtualKey.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&virtualKey)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return virtualKey, err
+	return virtualKey, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetKeyEventLParam() (int, error) {
 
 	var lParam int
 
-	hr, _, err := i.Vtbl.GetKeyEventLParam.Call(
+	hr, _, _ := i.Vtbl.GetKeyEventLParam.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&lParam)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return lParam, err
+	return lParam, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetPhysicalKeyStatus() (COREWEBVIEW2_PHYSICAL_KEY_STATUS, error) {
 
 	var physicalKeyStatus COREWEBVIEW2_PHYSICAL_KEY_STATUS
 
-	hr, _, err := i.Vtbl.GetPhysicalKeyStatus.Call(
+	hr, _, _ := i.Vtbl.GetPhysicalKeyStatus.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&physicalKeyStatus)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return COREWEBVIEW2_PHYSICAL_KEY_STATUS{}, syscall.Errno(hr)
 	}
-	return physicalKeyStatus, err
+	return physicalKeyStatus, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetHandled() (bool, error) {
 	// Create int32 to hold bool result
 	var _handled int32
 
-	hr, _, err := i.Vtbl.GetHandled.Call(
+	hr, _, _ := i.Vtbl.GetHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_handled)),
 	)
@@ -101,7 +101,7 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetHandled() (bool, error)
 	}
 	// Get result and cleanup
     handled := _handled != 0
-	return handled, err
+	return handled, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) PutHandled(handled bool) error {
@@ -112,12 +112,12 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) PutHandled(handled bool) e
 		_handled = 1
 	}
 
-	hr, _, err := i.Vtbl.PutHandled.Call(
+	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_handled),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

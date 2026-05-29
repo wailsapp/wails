@@ -46,12 +46,12 @@ func (i *ICoreWebView2CompositionController2) GetAutomationProvider() (*IUnknown
 
 	var value *IUnknown
 
-	hr, _, err := i.Vtbl.GetAutomationProvider.Call(
+	hr, _, _ := i.Vtbl.GetAutomationProvider.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

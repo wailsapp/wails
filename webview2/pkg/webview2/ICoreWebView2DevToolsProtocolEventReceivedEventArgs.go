@@ -32,7 +32,7 @@ func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs) GetParameterObject
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetParameterObjectAsJson.Call(
+	hr, _, _ := i.Vtbl.GetParameterObjectAsJson.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -42,5 +42,5 @@ func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs) GetParameterObject
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

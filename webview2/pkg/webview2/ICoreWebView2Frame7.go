@@ -47,7 +47,7 @@ func (i *ICoreWebView2Frame7) AddFrameCreated(eventHandler *ICoreWebView2FrameCh
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddFrameCreated.Call(
+	hr, _, _ := i.Vtbl.AddFrameCreated.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2Frame7) AddFrameCreated(eventHandler *ICoreWebView2FrameCh
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2Frame7) RemoveFrameCreated(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveFrameCreated.Call(
+	hr, _, _ := i.Vtbl.RemoveFrameCreated.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

@@ -46,12 +46,12 @@ func (i *ICoreWebView2Profile5) GetCookieManager() (*ICoreWebView2CookieManager,
 
 	var value *ICoreWebView2CookieManager
 
-	hr, _, err := i.Vtbl.GetCookieManager.Call(
+	hr, _, _ := i.Vtbl.GetCookieManager.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

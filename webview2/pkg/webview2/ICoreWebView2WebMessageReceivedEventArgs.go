@@ -34,7 +34,7 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) GetSource() (string, error) {
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetSource.Call(
+	hr, _, _ := i.Vtbl.GetSource.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -44,7 +44,7 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) GetSource() (string, error) {
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WebMessageReceivedEventArgs) GetWebMessageAsJson() (string, error) {
@@ -52,7 +52,7 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) GetWebMessageAsJson() (string
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetWebMessageAsJson.Call(
+	hr, _, _ := i.Vtbl.GetWebMessageAsJson.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -62,7 +62,7 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) GetWebMessageAsJson() (string
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2WebMessageReceivedEventArgs) TryGetWebMessageAsString() (string, error) {
@@ -70,7 +70,7 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) TryGetWebMessageAsString() (s
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.TryGetWebMessageAsString.Call(
+	hr, _, _ := i.Vtbl.TryGetWebMessageAsString.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -80,5 +80,5 @@ func (i *ICoreWebView2WebMessageReceivedEventArgs) TryGetWebMessageAsString() (s
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

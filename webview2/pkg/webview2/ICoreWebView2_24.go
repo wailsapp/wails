@@ -47,7 +47,7 @@ func (i *ICoreWebView2_24) AddNotificationReceived(eventHandler *ICoreWebView2No
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddNotificationReceived.Call(
+	hr, _, _ := i.Vtbl.AddNotificationReceived.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2_24) AddNotificationReceived(eventHandler *ICoreWebView2No
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2_24) RemoveNotificationReceived(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveNotificationReceived.Call(
+	hr, _, _ := i.Vtbl.RemoveNotificationReceived.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

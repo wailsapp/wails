@@ -47,7 +47,7 @@ func (i *ICoreWebView2CompositionController5) AddDragStarting(eventHandler *ICor
 
 	var token EventRegistrationToken
 
-	hr, _, err := i.Vtbl.AddDragStarting.Call(
+	hr, _, _ := i.Vtbl.AddDragStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(&token)),
@@ -55,18 +55,18 @@ func (i *ICoreWebView2CompositionController5) AddDragStarting(eventHandler *ICor
 	if windows.Handle(hr) != windows.S_OK {
 		return EventRegistrationToken{}, syscall.Errno(hr)
 	}
-	return token, err
+	return token, nil
 }
 
 func (i *ICoreWebView2CompositionController5) RemoveDragStarting(token EventRegistrationToken) error {
 
 
-	hr, _, err := i.Vtbl.RemoveDragStarting.Call(
+	hr, _, _ := i.Vtbl.RemoveDragStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

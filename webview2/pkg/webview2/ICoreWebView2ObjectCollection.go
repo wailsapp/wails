@@ -46,20 +46,20 @@ func (i *ICoreWebView2) GetICoreWebView2ObjectCollection() (*ICoreWebView2Object
 func (i *ICoreWebView2ObjectCollection) RemoveValueAtIndex(index uint32) error {
 
 
-	hr, _, err := i.Vtbl.RemoveValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.RemoveValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2ObjectCollection) InsertValueAtIndex(index uint32, value *IUnknown) error {
 
 
-	hr, _, err := i.Vtbl.InsertValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.InsertValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 		uintptr(unsafe.Pointer(value)),
@@ -67,5 +67,5 @@ func (i *ICoreWebView2ObjectCollection) InsertValueAtIndex(index uint32, value *
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

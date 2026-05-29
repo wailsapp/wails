@@ -32,7 +32,7 @@ func (i *ICoreWebView2EnvironmentOptions6) GetAreBrowserExtensionsEnabled() (boo
 	// Create int32 to hold bool result
 	var _value int32
 
-	hr, _, err := i.Vtbl.GetAreBrowserExtensionsEnabled.Call(
+	hr, _, _ := i.Vtbl.GetAreBrowserExtensionsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -41,7 +41,7 @@ func (i *ICoreWebView2EnvironmentOptions6) GetAreBrowserExtensionsEnabled() (boo
 	}
 	// Get result and cleanup
     value := _value != 0
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions6) PutAreBrowserExtensionsEnabled(value bool) error {
@@ -52,12 +52,12 @@ func (i *ICoreWebView2EnvironmentOptions6) PutAreBrowserExtensionsEnabled(value 
 		_value = 1
 	}
 
-	hr, _, err := i.Vtbl.PutAreBrowserExtensionsEnabled.Call(
+	hr, _, _ := i.Vtbl.PutAreBrowserExtensionsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

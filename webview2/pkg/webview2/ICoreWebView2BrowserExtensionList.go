@@ -32,21 +32,21 @@ func (i *ICoreWebView2BrowserExtensionList) GetCount() (uint32, error) {
 
 	var value uint32
 
-	hr, _, err := i.Vtbl.GetCount.Call(
+	hr, _, _ := i.Vtbl.GetCount.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }
 
 func (i *ICoreWebView2BrowserExtensionList) GetValueAtIndex(index uint32) (*ICoreWebView2BrowserExtension, error) {
 
 	var value *ICoreWebView2BrowserExtension
 
-	hr, _, err := i.Vtbl.GetValueAtIndex.Call(
+	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(index),
 		uintptr(unsafe.Pointer(&value)),
@@ -54,5 +54,5 @@ func (i *ICoreWebView2BrowserExtensionList) GetValueAtIndex(index uint32) (*ICor
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

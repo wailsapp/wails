@@ -47,7 +47,7 @@ func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) GetSessionId() (s
 	var _value *uint16
 
 
-	hr, _, err := i.Vtbl.GetSessionId.Call(
+	hr, _, _ := i.Vtbl.GetSessionId.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&_value)),
 	)
@@ -57,5 +57,5 @@ func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) GetSessionId() (s
 	// Get result and cleanup
 	value := UTF16PtrToString(_value)
 	CoTaskMemFree(unsafe.Pointer(_value))
-	return value, err
+	return value, nil
 }

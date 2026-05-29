@@ -33,7 +33,7 @@ func (i *ICoreWebView2EnvironmentOptions4) GetCustomSchemeRegistrations() (uint3
 	var count uint32
 	var schemeRegistrations ICoreWebView2CustomSchemeRegistration
 
-	hr, _, err := i.Vtbl.GetCustomSchemeRegistrations.Call(
+	hr, _, _ := i.Vtbl.GetCustomSchemeRegistrations.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&count)),
 		uintptr(unsafe.Pointer(&schemeRegistrations)),
@@ -41,13 +41,13 @@ func (i *ICoreWebView2EnvironmentOptions4) GetCustomSchemeRegistrations() (uint3
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, ICoreWebView2CustomSchemeRegistration{}, syscall.Errno(hr)
 	}
-	return count, schemeRegistrations, err
+	return count, schemeRegistrations, nil
 }
 
 func (i *ICoreWebView2EnvironmentOptions4) SetCustomSchemeRegistrations(count uint32, schemeRegistrations **ICoreWebView2CustomSchemeRegistration) error {
 
 
-	hr, _, err := i.Vtbl.SetCustomSchemeRegistrations.Call(
+	hr, _, _ := i.Vtbl.SetCustomSchemeRegistrations.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(count),
 		uintptr(unsafe.Pointer(&schemeRegistrations)),
@@ -55,5 +55,5 @@ func (i *ICoreWebView2EnvironmentOptions4) SetCustomSchemeRegistrations(count ui
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }

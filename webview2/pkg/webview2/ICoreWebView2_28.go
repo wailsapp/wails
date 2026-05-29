@@ -46,12 +46,12 @@ func (i *ICoreWebView2_28) GetFind() (*ICoreWebView2Find, error) {
 
 	var value *ICoreWebView2Find
 
-	hr, _, err := i.Vtbl.GetFind.Call(
+	hr, _, _ := i.Vtbl.GetFind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
-	return value, err
+	return value, nil
 }

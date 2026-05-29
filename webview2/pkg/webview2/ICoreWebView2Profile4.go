@@ -51,7 +51,7 @@ func (i *ICoreWebView2Profile4) SetPermissionState(PermissionKind COREWEBVIEW2_P
 		return err
 	}
 
-	hr, _, err := i.Vtbl.SetPermissionState.Call(
+	hr, _, _ := i.Vtbl.SetPermissionState.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(PermissionKind),
 		uintptr(unsafe.Pointer(_origin)),
@@ -61,18 +61,18 @@ func (i *ICoreWebView2Profile4) SetPermissionState(PermissionKind COREWEBVIEW2_P
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
 
 func (i *ICoreWebView2Profile4) GetNonDefaultPermissionSettings(handler *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) error {
 
 
-	hr, _, err := i.Vtbl.GetNonDefaultPermissionSettings.Call(
+	hr, _, _ := i.Vtbl.GetNonDefaultPermissionSettings.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
-	return err
+	return nil
 }
