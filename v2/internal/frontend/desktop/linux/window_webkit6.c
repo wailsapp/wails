@@ -530,6 +530,10 @@ static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x,
         char* path = g_file_get_path(file);
         g_print("%s\n", path);
 
+        if(path == NULL) {
+            continue;
+        }
+
         if(strlen(paths) + strlen(path) + 2 >= limit)
         {
             g_print("path '%s' exceeds limit %d\n", path, limit);
