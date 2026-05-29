@@ -2,37 +2,29 @@ package browser
 
 import (
 	"os"
-	"path/filepath"
+	"os/exec"
 	"testing"
 )
 
-// TestOpenURL_Success calls OpenURL with a real URL.
-// On macOS this invokes `open <url>` which starts the default browser.
-// The test only asserts that Start() returns nil (process launched).
-func TestOpenURL_Success(t *testing.T) {
+// TestOpen_Success covers the happy path via a stub that runs the test binary
+// itself with no-match filter (exits 0, no side effects, cross-platform).
+func TestOpen_Success(t *testing.T) {
+	orig := openCmd
+	openCmd = func(_ string) *exec.Cmd { return exec.Command(os.Args[0], "-test.run=^$") }
+	t.Cleanup(func() { openCmd = orig })
+
 	if err := OpenURL("https://example.com"); err != nil {
-		t.Errorf("OpenURL returned unexpected error: %v", err)
+		t.Errorf("OpenURL unexpected error: %v", err)
+	}
+	if err := OpenFile("some/file"); err != nil {
+		t.Errorf("OpenFile unexpected error: %v", err)
 	}
 }
 
-// TestOpenFile_Success calls OpenFile with a path to a temp file.
-func TestOpenFile_Success(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "test.txt")
-	if err := os.WriteFile(path, []byte("hello"), 0644); err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	if err := OpenFile(path); err != nil {
-		t.Errorf("OpenFile returned unexpected error: %v", err)
-	}
-}
-
-// TestOpen_StartError exercises the cmd.Start() error path by making the
-// platform command unresolvable (empty PATH).
+// TestOpen_StartError exercises the cmd.Start() error path.
 func TestOpen_StartError(t *testing.T) {
 	t.Setenv("PATH", "/nonexistent_path_that_does_not_exist")
-	err := OpenURL("https://example.com")
-	if err == nil {
-		t.Error("open() should have returned an error with an empty PATH, but got nil")
+	if err := OpenURL("https://example.com"); err == nil {
+		t.Error("expected error with empty PATH, got nil")
 	}
 }

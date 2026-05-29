@@ -138,7 +138,9 @@ func TestHandle_NoColor_ProducesNoEscapeCodes(t *testing.T) {
 	var buf bytes.Buffer
 	h := NewHandler(&buf, &Options{Level: slog.LevelDebug, NoColor: true})
 	r := logRecord(time.Now(), slog.LevelInfo, "plain")
-	_ = h.Handle(context.Background(), r)
+	if err := h.Handle(context.Background(), r); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
 	out := buf.String()
 	if strings.Contains(out, "\033[") {
 		t.Errorf("expected no ANSI escape codes in NoColor output, got %q", out)
@@ -149,7 +151,9 @@ func TestHandle_Color_ContainsEscapeCodes(t *testing.T) {
 	var buf bytes.Buffer
 	h := NewHandler(&buf, &Options{Level: slog.LevelDebug, NoColor: false})
 	r := logRecord(time.Now(), slog.LevelInfo, "colorful")
-	_ = h.Handle(context.Background(), r)
+	if err := h.Handle(context.Background(), r); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
 	out := buf.String()
 	if !strings.Contains(out, "\033[") {
 		t.Errorf("expected ANSI escape codes in colored output, got %q", out)

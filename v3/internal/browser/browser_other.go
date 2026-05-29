@@ -4,8 +4,12 @@ package browser
 
 import "os/exec"
 
+var openCmd = func(target string) *exec.Cmd {
+	return exec.Command("xdg-open", target)
+}
+
 func open(target string) error {
-	cmd := exec.Command("xdg-open", target)
+	cmd := openCmd(target)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

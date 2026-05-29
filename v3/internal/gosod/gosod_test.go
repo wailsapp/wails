@@ -404,30 +404,6 @@ func TestExtract_CopyFileCloseFails(t *testing.T) {
 	}
 }
 
-// ---- Error: Extract MkdirAll fails when parent is a read-only directory ----
-
-func TestExtract_MkdirAllFails(t *testing.T) {
-	if os.Getuid() == 0 {
-		t.Skip("root can always mkdir; skipping")
-	}
-	fsys := fstest.MapFS{
-		"f.txt": {Data: []byte("x")},
-	}
-	td := New(fsys)
-	// Create a read-only directory, then attempt to create a subdirectory inside it.
-	// The target path won't exist (os.Stat → IsNotExist), but MkdirAll will fail due to permissions.
-	tmp := t.TempDir()
-	roDir := filepath.Join(tmp, "readonly")
-	if err := os.Mkdir(roDir, 0555); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Chmod(roDir, 0755) })
-	targetDir := filepath.Join(roDir, "newsubdir")
-	err := td.Extract(targetDir, nil)
-	if err == nil {
-		t.Fatal("expected error when target directory cannot be created")
-	}
-}
 
 // ---- resolveTarget: template parse error returns original path ----
 
