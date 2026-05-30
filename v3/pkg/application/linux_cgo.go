@@ -170,13 +170,21 @@ func appDestroy(application pointer) {
 }
 
 func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
-	// GTK4: Context menus use GtkPopoverMenu, signals handled differently
-	// TODO: Implement GTK4 context menu signal handling
+	// GTK4: GtkPopoverMenu items are wired through the "app" GAction group,
+	// which is attached to the window in windowNew. The popover's "closed"
+	// signal (used for cleanup) is connected in show_context_menu, so there
+	// is nothing to wire up here.
 }
 
 func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData) {
-	// GTK4: Use GtkPopoverMenu instead of gtk_menu_popup_at_rect
-	// TODO: Implement GTK4 context menu popup
+	// GTK4: present the GMenu model as a GtkPopoverMenu anchored to the
+	// webview at the click coordinates (which are relative to the webview).
+	C.show_context_menu(
+		(*C.GtkWidget)(w.webview),
+		(*C.GMenu)(menu),
+		C.int(data.X),
+		C.int(data.Y),
+	)
 }
 
 func (a *linuxApp) getCurrentWindowID() uint {
