@@ -116,7 +116,9 @@ Screen* getAllScreens(int* outCount) {
 	if (outCount != NULL) {
 		*outCount = (int)count;
 	}
-	CGFloat primaryHeight = primaryScreenHeight();
+	// Reuse the snapshot above instead of re-enumerating [NSScreen screens];
+	// screens[0] is the primary screen (matches isPrimary = (i == 0) below).
+	CGFloat primaryHeight = count > 0 ? [[screens objectAtIndex:0] frame].size.height : 0;
 	Screen* returnScreens = malloc(sizeof(Screen) * count);
 	for (NSUInteger i = 0; i < count; i++) {
 		returnScreens[i] = processScreen([screens objectAtIndex:i], primaryHeight);
