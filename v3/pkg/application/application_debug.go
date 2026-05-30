@@ -4,7 +4,7 @@ package application
 
 import (
 	"github.com/go-git/go-git/v5"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"path/filepath"
 	"runtime/debug"

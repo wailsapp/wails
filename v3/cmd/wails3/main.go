@@ -4,10 +4,10 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"

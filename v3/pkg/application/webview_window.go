@@ -11,16 +11,16 @@ import (
 
 	"encoding/json"
 
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Enabled means the feature should be enabled
-var Enabled = u.True
+var Enabled = optional.True
 
 // Disabled means the feature should be disabled
-var Disabled = u.False
+var Disabled = optional.False
 
 var shouldSkipHideOnFocusLost = func() bool { return false }
 
