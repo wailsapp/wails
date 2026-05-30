@@ -13,7 +13,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
