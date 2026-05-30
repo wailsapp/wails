@@ -20,6 +20,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Replace `github.com/go-git/go-git/v5` direct dependency with calls to the system `git` CLI (`internal/git` package). **Note: `git` must be installed on the system.** Graceful errors are returned when `git` is not found in `PATH`.
+
 
 ## Fixed
 <!-- Bug fixes -->
