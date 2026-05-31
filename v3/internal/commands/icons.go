@@ -20,9 +20,15 @@ import (
 	"howett.net/plist"
 )
 
-// ErrMacAssetNotSupported is returned by generateMacAsset when mac asset generation
-// is not supported on the current platform (e.g., non-macOS systems).
-var ErrMacAssetNotSupported = errors.New("mac asset generation is only supported on macOS")
+// macAssetNotSupportedError is returned by generateMacAsset when mac asset generation
+// is not supported in the current environment.
+type macAssetNotSupportedError struct {
+	message string
+}
+
+func (e *macAssetNotSupportedError) Error() string {
+	return e.message
+}
 
 type IconsOptions struct {
 	Example           bool   `description:"Generate example icon file (appicon.png) in the current directory"`
@@ -30,8 +36,8 @@ type IconsOptions struct {
 	Sizes             string `description:"The sizes to generate in .ico file (comma separated)" default:"256,128,64,48,32,16"`
 	WindowsFilename   string `description:"The output filename for the Windows icon"`
 	MacFilename       string `description:"The output filename for the Mac icon bundle"`
-	IconComposerInput string `description:"The input Icon Composer file (.icon) [requires macOS 26 or later with Xcode CLT actool 26+]"`
-	MacAssetDir       string `description:"The output directory for the Mac assets (Assets.car and icons.icns) [requires macOS 26 or later with Xcode CLT actool 26+]"`
+	IconComposerInput string `description:"The input Icon Composer file (.icon)"`
+	MacAssetDir       string `description:"The output directory for the Mac assets (Assets.car and icons.icns)"`
 }
 
 func GenerateIcons(options *IconsOptions) error {
@@ -69,13 +75,13 @@ func GenerateIcons(options *IconsOptions) error {
 		if options.MacAssetDir != "" {
 			err := generateMacAsset(options)
 			if err != nil {
-				if errors.Is(err, ErrMacAssetNotSupported) {
+				var notSupported *macAssetNotSupportedError
+				if errors.As(err, &notSupported) {
 					// No fallback: Icon Composer path requires macOS; return so callers see unsupported-platform failure
 					if options.Input == "" {
-						return fmt.Errorf("icon composer input requires macOS for mac asset generation: %w", err)
+						return err
 					}
-					// Warn but fall through to input-based generation
-					fmt.Fprintf(os.Stderr, "Warning: %s\n", err)
+					// Fallback to input-based generation will run below
 				} else {
 					return err
 				}
@@ -162,57 +168,61 @@ func generateMacIcon(iconData []byte, options *IconsOptions) error {
 func generateMacAsset(options *IconsOptions) error {
 	//Check if running on darwin (macOS), because this will only run on a mac
 	if runtime.GOOS != "darwin" {
-		return fmt.Errorf("Assets.car generation is only supported on macOS (current platform: %s): %w", runtime.GOOS, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "mac asset generation is only supported on macOS 26 or later"}
 	}
 	// Get system info, because this will only run on macOS 26 or later
 	info, err := operatingsystem.Info()
 	if err != nil {
-		return fmt.Errorf("Assets.car generation requires macOS 26 or later (failed to get system info): %w", ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "failed to determine macOS version"}
 	}
 	majorStr, _, found := strings.Cut(info.Version, ".")
 	if !found {
-		return fmt.Errorf("Assets.car generation requires macOS 26 or later (failed to parse version %q): %w", info.Version, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse macOS version %q", info.Version)}
 	}
 	major, err := strconv.Atoi(majorStr)
 	if err != nil {
-		return fmt.Errorf("Assets.car generation requires macOS 26 or later (failed to parse version %q): %w", info.Version, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse macOS version %q", info.Version)}
 	}
 	if major < 26 {
-		return fmt.Errorf("Assets.car generation requires macOS 26 or later (current version: %s): %w", info.Version, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: fmt.Sprintf("mac asset generation requires macOS 26 or later (detected macOS %s)", info.Version)}
+	}
+
+	if _, statErr := os.Stat("/usr/bin/actool"); statErr != nil {
+		return &macAssetNotSupportedError{message: "actool not found at /usr/bin/actool (install Xcode 26+)"}
 	}
 
 	cmd := exec.Command("/usr/bin/actool", "--version")
 	versionPlist, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (actool not found at /usr/bin/actool — install Xcode): %w", ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "actool 26+ is required (install Xcode 26+)"}
 	}
 
 	// Parse the plist to extract short-bundle-version
 	var plistData map[string]any
 	if _, err := plist.Unmarshal(versionPlist, &plistData); err != nil {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (failed to parse actool version output): %w", ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "failed to parse actool version output"}
 	}
 
 	// Navigate to com.apple.actool.version -> short-bundle-version
 	actoolVersion, ok := plistData["com.apple.actool.version"].(map[string]any)
 	if !ok {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (com.apple.actool.version not found in output): %w", ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "failed to read actool version from plist"}
 	}
 
 	shortVersion, ok := actoolVersion["short-bundle-version"].(string)
 	if !ok {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (short-bundle-version not found in output): %w", ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: "failed to read actool short-bundle-version from plist"}
 	}
 
 	// Parse the major version number (e.g., "26.2" -> 26)
 	actoolMajorStr, _, _ := strings.Cut(shortVersion, ".")
 	actoolMajor, err := strconv.Atoi(actoolMajorStr)
 	if err != nil {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (failed to parse actool version %q): %w", shortVersion, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: fmt.Sprintf("failed to parse actool version %q", shortVersion)}
 	}
 
 	if actoolMajor < 26 {
-		return fmt.Errorf("Assets.car generation requires actool 26 or later (current actool version: %s): %w", shortVersion, ErrMacAssetNotSupported)
+		return &macAssetNotSupportedError{message: fmt.Sprintf("mac asset generation requires actool 26 or later (detected actool %s)", shortVersion)}
 	}
 
 	// Convert paths to absolute paths (required for actool)

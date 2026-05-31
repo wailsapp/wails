@@ -16,14 +16,16 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Add debugging page and working with `runtime/trace`
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Remove some unnecessary `_ "embed"` imports tidying the code a little
 
 ## Fixed
 <!-- Bug fixes -->
--  Fix SIGSEGV when the display configuration changes (sleep/wake, monitor connect/disconnect). `ApplicationDidChangeScreenParameters` is dispatched on background goroutines and can fire repeatedly during a single reconfiguration, so `processAndCacheScreens` enumerated `[NSScreen screens]` concurrently off the main thread and crashed. Screen enumeration is now marshalled onto the main thread (which also serialises the event burst), the primary-screen height is resolved once per refresh instead of per screen, and `getAllScreens` returns its count to close a TOCTOU against the buffer size. (#5117)
+- Fix SIGSEGV when the display configuration changes (sleep/wake, monitor connect/disconnect). `ApplicationDidChangeScreenParameters` is dispatched on background goroutines and can fire repeatedly during a single reconfiguration, so `processAndCacheScreens` enumerated `[NSScreen screens]` concurrently off the main thread and crashed. Screen enumeration is now marshalled onto the main thread (which also serialises the event burst), the primary-screen height is resolved once per refresh instead of per screen, and `getAllScreens` returns its count to close a TOCTOU against the buffer size. (#5117)
+- Fix minimum width/height constraints not enforced after window unmaximise on Windows (#4593)
+- Fix mouse click-through in fullscreen mode with Frameless + Transparent window options (#4408)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
