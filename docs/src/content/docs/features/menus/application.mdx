@@ -286,12 +286,12 @@ menu.AddRole(application.HelpMenu)
 
 ### Customising Role Menus
 
-Add items to role menus:
+`Menu.AddRole(role)` returns the **receiver** menu (the top-level menu), **not** the role's submenu. To add items to the role's submenu, look up the inserted role item with `FindByRole` and call `GetSubmenu()` on it:
 
 ```go
-fileMenu := menu.AddRole(application.FileMenu)
+menu.AddRole(application.FileMenu)
 
-// Add custom items
+fileMenu := menu.FindByRole(application.FileMenu).GetSubmenu()
 fileMenu.Add("Import...").OnClick(handleImport)
 fileMenu.Add("Export...").OnClick(handleExport)
 ```
@@ -346,7 +346,7 @@ func createMenu() {
     saveMenuItem.SetEnabled(false)  // Initially disabled
     saveMenuItem.OnClick(handleSave)
     
-    app.SetMenu(menu)
+    app.Menu.Set(menu)
 }
 
 func onDocumentChanged() {
@@ -407,7 +407,7 @@ func rebuildFileMenu() {
         app.Quit()
     })
     
-    app.SetMenu(menu)
+    app.Menu.Set(menu)
 }
 ```
 
@@ -420,8 +420,9 @@ viewMenu := menu.AddSubmenu("View")
 
 // Toggle fullscreen
 viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
-    window := app.GetWindowByName("main")
-    window.SetFullscreen(!window.IsFullscreen())
+    if window, ok := app.Window.GetByName("main"); ok {
+        window.ToggleFullscreen()
+    }
 })
 
 // Zoom controls
@@ -442,7 +443,7 @@ viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *appli
 
 ```go
 menuItem.OnClick(func(ctx *application.Context) {
-    window := application.ContextWindow(ctx)
+    window := application.Get().Window.Current() // the window the menu was invoked from
     // Use window
 })
 ```
@@ -490,11 +491,8 @@ if runtime.GOOS == "darwin" {
 
 ```go
 if runtime.GOOS == "windows" {
-    fileMenu := menu.AddRole(application.FileMenu)
-    // Exit is added automatically
-    
-    helpMenu := menu.AddRole(application.HelpMenu)
-    // About is added automatically
+    menu.AddRole(application.FileMenu) // Exit is added automatically
+    menu.AddRole(application.HelpMenu) // About is added automatically
 }
 ```
 
@@ -535,7 +533,7 @@ func main() {
     app.Run()
 }
 
-func createMenu(app *application.Application) {
+func createMenu(app *application.App) {
     menu := app.NewMenu()
 
     // Platform-specific application menu (macOS only)
@@ -543,8 +541,10 @@ func createMenu(app *application.Application) {
         menu.AddRole(application.AppMenu)
     }
 
-    // File menu
-    fileMenu := menu.AddRole(application.FileMenu)
+    // File menu — AddRole returns the receiver menu, not the role submenu.
+    // To add items into the File submenu, look it up via FindByRole + GetSubmenu.
+    menu.AddRole(application.FileMenu)
+    fileMenu := menu.FindByRole(application.FileMenu).GetSubmenu()
     fileMenu.Add("Import...").SetAccelerator("CmdOrCtrl+I").OnClick(handleImport)
     fileMenu.Add("Export...").SetAccelerator("CmdOrCtrl+E").OnClick(handleExport)
 
@@ -599,8 +599,8 @@ func handleExport(ctx *application.Context) {
 }
 
 func toggleFullscreen(ctx *application.Context) {
-    window := application.ContextWindow(ctx)
-    window.SetFullscreen(!window.IsFullscreen())
+    window := application.Get().Window.Current()
+    window.ToggleFullscreen()
 }
 
 func toggleSidebar(ctx *application.Context) {
@@ -680,4 +680,4 @@ func showAbout(ctx *application.Context) {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/menu).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [menu example](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).
