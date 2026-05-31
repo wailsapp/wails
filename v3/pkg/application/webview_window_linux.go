@@ -163,20 +163,8 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 }
 
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
-	// Get current screen for window
-	_, _, monitorwidth, monitorheight, _ := w.getCurrentMonitorGeometry()
-	if monitorwidth == -1 {
-		monitorwidth = 1920
-	}
-	if monitorheight == -1 {
-		monitorheight = 1080
-	}
-	if maxWidth == 0 {
-		maxWidth = monitorwidth
-	}
-	if maxHeight == 0 {
-		maxHeight = monitorheight
-	}
+	// Setting geometry hints as opposed to hard limits based on physical size of the monitor
+	// using the monitor size as limits breaks when monitors are not scaled to 100%
 	windowSetGeometryHints(w.window, minWidth, minHeight, maxWidth, maxHeight)
 }
 
