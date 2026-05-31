@@ -35,7 +35,7 @@ app := application.New(application.Options{
 **That's it!** `Greet` is now callable from JavaScript:
 
 ```js
-import { Greet } from './bindings/main/GreetService';
+import { Greet } from './bindings/changeme/GreetService';
 
 const message = await Greet("World");
 console.log(message);  // "Hello, World!"
@@ -423,7 +423,7 @@ func (f *ServiceFactory) CreateOrderService() *OrderService {
 
 ```go
 type OrderService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
@@ -476,19 +476,19 @@ app := application.New(application.Options{
 
 ```go
 type NotificationService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewNotificationService(app *application.Application) *NotificationService {
+func NewNotificationService(app *application.App) *NotificationService {
     return &NotificationService{app: app}
 }
 
 func (n *NotificationService) Notify(message string) {
     // Use application to emit events
     n.app.Event.Emit("notification", message)
-    
-    // Or show system notification
-    n.app.ShowNotification(message)
+
+    // For native OS notifications, register the notifications service from
+    // pkg/services/notifications and call notifier.SendNotification(...).
 }
 
 // Register after app creation
@@ -794,4 +794,4 @@ func main() {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

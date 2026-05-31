@@ -1,6 +1,9 @@
 on:
   push:
-    branches: ['v3-alpha']
+    branches: ['master']
+    paths:
+      - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
 concurrency:
@@ -59,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: 'v3-alpha'
+          ref: 'master'
           token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
 
       - name: Configure git

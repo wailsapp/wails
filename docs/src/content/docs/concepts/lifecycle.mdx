@@ -273,19 +273,26 @@ This is your opportunity to intercept quit requests and optionally prevent them,
 app := application.New(application.Options{
     ShouldQuit: func() bool {
         if !hasUnsavedChanges() {
-            return true  // No unsaved changes, allow quit
+            return true // No unsaved changes, allow quit
         }
 
-        // Prompt the user
-        result, _ := application.QuestionDialog().
-            SetTitle("Unsaved Changes").
-            SetMessage("You have unsaved changes. Quit anyway?").
-            AddButton("Quit", "quit").
-            AddButton("Cancel", "cancel").
-            Show()
+        // Prompt the user — MessageDialog.Show() blocks and returns nothing.
+        // The button's OnClick callback fires for whichever button the user picks.
+        shouldQuit := false
 
-        // Only quit if user clicked "Quit"
-        return result == "quit"
+        dlg := application.Get().Dialog.Question().
+            SetTitle("Unsaved Changes").
+            SetMessage("You have unsaved changes. Quit anyway?")
+
+        quit := dlg.AddButton("Quit")
+        cancel := dlg.AddButton("Cancel")
+        dlg.SetDefaultButton(cancel)
+        dlg.SetCancelButton(cancel)
+
+        quit.OnClick(func() { shouldQuit = true })
+
+        dlg.Show()
+        return shouldQuit
     },
 })
 ```
@@ -501,25 +508,26 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-    if hasUnsavedChanges() {
-        // Show dialog
-        result, _ := application.QuestionDialog().
-            SetTitle("Unsaved Changes").
-            SetMessage("Save before closing?").
-            AddButton("Save", "save").
-            AddButton("Discard", "discard").
-            AddButton("Cancel", "cancel").
-            Show()
-
-        switch result {
-        case "save":
-            saveChanges()
-            // Allow close
-        case "cancel":
-            e.Cancel()  // Prevent close
-        }
-        // "discard" falls through and allows close
+    if !hasUnsavedChanges() {
+        return
     }
+
+    // MessageDialog.Show() returns nothing; per-button OnClick handlers fire.
+    dlg := application.Get().Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Save before closing?")
+
+    save := dlg.AddButton("Save")
+    discard := dlg.AddButton("Discard")
+    cancel := dlg.AddButton("Cancel")
+    dlg.SetDefaultButton(save)
+    dlg.SetCancelButton(cancel)
+
+    save.OnClick(func() { saveChanges() })
+    cancel.OnClick(func() { e.Cancel() }) // Prevent close
+    _ = discard                            // "Discard" falls through and allows close
+
+    dlg.Show()
 })
 ```
 
@@ -804,4 +812,4 @@ The error will be logged and the application will not start.
 
 ---
 
-**Questions about lifecycle?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions about lifecycle?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

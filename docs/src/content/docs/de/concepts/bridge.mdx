@@ -1,0 +1,391 @@
+---
+title: Go-Frontend-Bridge
+description: Tiefergehender Blick darauf, wie Wails die direkte Kommunikation zwischen Go und JavaScript ermöglicht
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Direkte Go-JavaScript-Kommunikation
+
+Wails bietet eine **direkte, im Speicher befindliche Brücke** zwischen Go und JavaScript, die eine nahtlose Kommunikation ohne HTTP-Overhead, Prozessgrenzen oder Serialisierungsengpässe ermöglicht.
+
+## Das große Bild
+
+```d2
+direction: right
+
+Frontend: "Frontend (JavaScript)" {
+  UI: "React/Vue/Vanilla" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Bindings: "Auto-Generated Bindings" {
+    shape: rectangle
+    style.fill: "#A78BFA"
+  }
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  TypeGen: "Type Generator" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Your Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Registry: "Service Registry" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend.UI -> Frontend.Bindings: "import { Method }"
+Frontend.Bindings -> Bridge.Encoder: "Call Method('arg')"
+Bridge.Encoder -> Bridge.Router: "Encode to JSON"
+Bridge.Router -> Backend.Registry: "Find service"
+Backend.Registry -> Backend.Services: "Invoke method"
+Backend.Services -> Bridge.Decoder: "Return result"
+Bridge.Decoder -> Frontend.Bindings: "Decode to JS"
+Frontend.Bindings -> Frontend.UI: "Promise resolves"
+Bridge.TypeGen -> Frontend.Bindings: "Generate types"
+```
+
+**Wichtige Erkenntnis:** Kein HTTP, kein IPC, keine Prozessgrenzen. Nur **direkte Funktionsaufrufe** mit **Typsicherheit**.
+
+## Funktionsweise: Schritt für Schritt
+
+### 1. Dienstreistrierung (Start)
+
+Wenn Ihre Anwendung startet, scannt Wails Ihre Dienste:
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) Add(a, b int) int {
+    return a + b
+}
+
+// Register service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Was Wails tut:**
+1. **Scannt die Struktur** nach exportierten Methoden
+2. **Extrahiert Typinformationen** (Parameter, Rückgabetypen)
+3. **Erstellt ein Verzeichnis**, das Methodennamen Funktionen zuordnet
+4. **Generiert TypeScript-Bindings** mit vollständigen Typdefinitionen
+
+### 2. Binding-Generierung (Build-Zeit)
+
+Wails generiert automatisch TypeScript-Bindings:
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function Add(a: number, b: number): Promise<number>
+```
+
+**Typzuordnung:**
+
+| Go-Typ | TypeScript-Typ |
+|---------|-----------------|
+| `string` | `string` |
+| `int`, `int32`, `int64` | `number` |
+| `float32`, `float64` | `number` |
+| `bool` | `boolean` |
+| `[]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `struct` | `interface` |
+| `time.Time` | `Date` |
+| `error` | Exception (geworfen) |
+
+### 3. Frontend-Aufruf (Laufzeit)
+
+Der Entwickler ruft die Go-Methode aus JavaScript heraus auf:
+
+```javascript
+import { Greet, Add } from './bindings/GreetService'
+
+// Call Go from JavaScript
+const greeting = await Greet("World")
+console.log(greeting)  // "Hello, World!"
+
+const sum = await Add(5, 3)
+console.log(sum)  // 8
+```
+
+**Was passiert:**
+1. **Binding-Funktion aufgerufen** - `Greet("World")`
+2. **Nachricht erstellt** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **An die Brücke gesendet** - Über die JavaScript-Brücke von WebView
+4. **Promise zurückgegeben** - Wartet auf Antwort
+
+### 4. Bridge-Verarbeitung (Laufzeit)
+
+Die Brücke empfängt die Nachricht und verarbeitet sie:
+
+```d2
+direction: down
+
+Receive: "Receive Message" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Parse: "Parse JSON" {
+  shape: rectangle
+}
+
+Validate: "Validate" {
+  Check: "Service exists?" {
+    shape: diamond
+  }
+  
+  CheckMethod: "Method exists?" {
+    shape: diamond
+  }
+  
+  CheckTypes: "Types correct?" {
+    shape: diamond
+  }
+}
+
+Invoke: "Invoke Go Method" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+Encode: "Encode Result" {
+  shape: rectangle
+}
+
+Send: "Send Response" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Error: "Send Error" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Receive -> Parse
+Parse -> Validate.Check
+Validate.Check -> Validate.CheckMethod: "Yes"
+Validate.Check -> Error: "No"
+Validate.CheckMethod -> Validate.CheckTypes: "Yes"
+Validate.CheckMethod -> Error: "No"
+Validate.CheckTypes -> Invoke: "Yes"
+Validate.CheckTypes -> Error: "No"
+Invoke -> Encode: "Success"
+Invoke -> Error: "Error"
+Encode -> Send
+```
+
+**Sicherheit:** Nur registrierte Dienste und exportierte Methoden sind aufrufbar.
+
+### 5. Go-Ausführung (Laufzeit)
+
+Die Go-Methode wird ausgeführt:
+
+```go
+func (g *GreetService) Greet(name string) string {
+    // This runs in Go
+    return g.prefix + name + "!"
+}
+```
+
+**Ausführungskontext:**
+- Läuft in einer **Goroutine** (nicht-blockierend)
+- Hat Zugriff auf **alle Go-Funktionen** (Dateisystem, Netzwerk, Datenbanken)
+- Kann frei **anderen Go-Code** aufrufen
+- Gibt Ergebnis oder Fehler zurück
+
+### 6. Antwort (Laufzeit)
+
+Das Ergebnis wird an JavaScript zurückgesendet:
+
+```javascript
+// Promise resolves with result
+const greeting = await Greet("World")
+// greeting = "Hello, World!"
+```
+
+**Fehlerbehandlung:**
+
+```go
+func (g *GreetService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+```javascript
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Go error:", error)  // "division by zero"
+}
+```
+
+## Leistungseigenschaften
+
+### Geschwindigkeit
+
+**Typische Aufruf-Overhead:** &lt;1ms
+
+```
+Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
+     ↓            ↓           ↓            ↓            ↓
+   &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
+```
+
+**Im Vergleich zu Alternativen:**
+- **HTTP/REST:** 5-50ms (Netzwerkstack, Serialisierung)
+- **IPC:** 1-10ms (Prozessgrenzen, Marshalling)
+- **Wails Bridge:** &lt;1ms (im Speicher, direkter Aufruf)
+
+### Speicher
+
+**Overhead pro Aufruf:** ~1KB (Nachrichtenpuffer)
+
+**Zero-Copy-Optimierung:** Große Daten (>1MB) verwenden bei Gelegenheit shared Memory.
+
+### Nebenläufigkeit
+
+**Aufrufe sind nebenläufig:**
+- Jeder Aufruf läuft in seiner eigenen Goroutine
+- Mehrere Aufrufe können gleichzeitig ausgeführt werden
+- Keine Blockierung zwischen Aufrufen
+
+```javascript
+// These run concurrently
+const [result1, result2, result3] = await Promise.all([
+    SlowOperation1(),
+    SlowOperation2(),
+    SlowOperation3(),
+])
+```
+
+## Typsystem
+
+### Unterstützte Typen
+
+#### Primitive
+
+```go
+// Go
+func Example(
+    s string,
+    i int,
+    f float64,
+    b bool,
+) (string, int, float64, bool) {
+    return s, i, f, b
+}
+```
+
+```typescript
+// TypeScript (auto-generated)
+function Example(
+    s: string,
+    i: number,
+    f: number,
+    b: boolean,
+): Promise<[string, number, number, boolean]>
+```
+
+#### Slices und Arrays
+
+```go
+// Go
+func Sum(numbers []int) int {
+    total := 0
+    for _, n := range numbers {
+        total += n
+    }
+    return total
+}
+```
+
+```typescript
+// TypeScript
+function Sum(numbers: number[]): Promise<number>
+
+// Usage
+const total = await Sum([1, 2, 3, 4, 5])  // 15
+```
+
+#### Maps
+
+```go
+// Go
+func GetConfig() map[string]interface{} {
+    return map[string]interface{}{
+        "theme": "dark",
+        "fontSize": 14,
+        "enabled": true,
+    }
+}
+```
+
+```typescript
+// TypeScript
+function GetConfig(): Promise<Record<string, any>>
+
+// Usage
+const config = await GetConfig()
+console.log(config.theme)  // "dark"
+```
+
+#### Strukturen
+
+```go
+// Go
+type User struct {
+    ID    int    `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}
+
+func GetUser(id int) (*User, error) {
+    return &User{
+        ID:    id,
+        Name:  "Alice",---
+
+**Fragen zur Brücke?** Fragen Sie im [Discord](https://discord.gg/JDdSxwjhGf) oder überprüfen Sie die [Bindungsbeispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
