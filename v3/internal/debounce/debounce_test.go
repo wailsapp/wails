@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	debounceAfter = 5 * time.Millisecond
-	waitFor       = 30 * time.Millisecond // generous wait after debounce period
+	// debounceAfter must be well above OS timer granularity (~15ms on Windows).
+	debounceAfter = 100 * time.Millisecond
+	// waitFor must exceed debounceAfter by enough margin for the callback to fire.
+	waitFor = 300 * time.Millisecond
 )
 
 // ---------------------------------------------------------------------------
@@ -42,8 +44,9 @@ func TestDebouncing_RapidCallsOnlyLastFires(t *testing.T) {
 		debounced(func() {
 			atomic.AddInt64(&count, 1)
 		})
-		// Sleep less than debounce period so each call resets the timer.
-		time.Sleep(1 * time.Millisecond)
+		// Sleep well below debounceAfter so each call resets the timer before it fires.
+		// Must be > 0 to avoid a tight loop but << debounceAfter.
+		time.Sleep(5 * time.Millisecond)
 	}
 
 	time.Sleep(waitFor)
@@ -65,7 +68,7 @@ func TestDifferentFunctions_LastWins(t *testing.T) {
 	debounced(func() {
 		atomic.AddInt64(&firstCalled, 1)
 	})
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(5 * time.Millisecond)
 	debounced(func() {
 		atomic.AddInt64(&lastCalled, 1)
 	})
