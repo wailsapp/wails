@@ -74,10 +74,30 @@ func GetDefaultTemplates() []TemplateData {
 	return defaultTemplates
 }
 
+// NormalizeBinaryName converts a project name into a valid binary/package name:
+// lowercased, with spaces replaced by dashes, and any remaining characters not
+// in [a-z0-9-] replaced by dashes, collapsing runs and trimming edges.
+func NormalizeBinaryName(name string) string {
+	name = strings.ToLower(name)
+	var b strings.Builder
+	prevDash := false
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			prevDash = false
+		} else if !prevDash {
+			b.WriteRune('-')
+			prevDash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
 type TemplateOptions struct {
 	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
 	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
 	*flags.Init
+	BinaryName      string
 	LocalModulePath string
 	UseTypescript   bool
 	WailsVersion    string
@@ -308,6 +328,7 @@ func Install(options *flags.Init) error {
 
 	templateData := TemplateOptions{
 		Init:            options,
+		BinaryName:      NormalizeBinaryName(options.ProjectName),
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
@@ -419,7 +440,7 @@ func Install(options *flags.Init) error {
 		Typescript            bool
 	}{
 		Name:                  options.ProjectName,
-		BinaryName:            strings.ToLower(strings.ReplaceAll(options.ProjectName, " ", "-")),
+		BinaryName:            NormalizeBinaryName(options.ProjectName),
 		Silent:                true,
 		ProductCompany:        options.ProductCompany,
 		ProductName:           options.ProductName,
