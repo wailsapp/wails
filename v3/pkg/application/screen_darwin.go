@@ -38,18 +38,30 @@ Screen processScreen(NSScreen* screen){
 	Screen returnScreen;
 	returnScreen.scaleFactor = screen.backingScaleFactor;
 
+	// NSScreen's native coordinate space is Y-up with (0,0) at the bottom-left
+	// of the primary screen. We normalise to Y-down with (0,0) at the top-left
+	// of the primary screen so that Bounds matches windowGetPosition /
+	// windowSetPosition and the public conventions used by Windows, GTK,
+	// Electron and the web. Screens above the primary therefore have negative
+	// Y after the flip; Bounds.Y is the screen's top edge.
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+
 	// screen bounds
 	returnScreen.height = screen.frame.size.height;
 	returnScreen.width = screen.frame.size.width;
 	returnScreen.x = screen.frame.origin.x;
-	returnScreen.y = screen.frame.origin.y;
+	returnScreen.y = primaryHeight - screen.frame.origin.y - screen.frame.size.height;
 
 	// work area
 	NSRect workArea = [screen visibleFrame];
 	returnScreen.w_height = workArea.size.height;
 	returnScreen.w_width = workArea.size.width;
 	returnScreen.w_x = workArea.origin.x;
-	returnScreen.w_y = workArea.origin.y;
+	returnScreen.w_y = primaryHeight - workArea.origin.y - workArea.size.height;
 
 
 	// adapted from https://stackoverflow.com/a/1237490/4188138

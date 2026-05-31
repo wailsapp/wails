@@ -133,7 +133,7 @@ runtime.EventsEmit(a.ctx, "event-name", data)
 ```go
 // Store app reference
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (s *MyService) UpdateTitle() {
@@ -171,7 +171,7 @@ const result = await Greet("World")
 **v3:**
 
 ```javascript
-import { Greet } from './bindings/myapp/greetservice'
+import { Greet } from './bindings/changeme/greetservice'
 
 const result = await Greet("World")
 ```
@@ -379,10 +379,10 @@ func (a *App) Greet(name string) string {
 
 ```go
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewMyService(app *application.Application) *MyService {
+func NewMyService(app *application.App) *MyService {
     return &MyService{app: app}
 }
 
@@ -440,7 +440,7 @@ wails3 generate bindings
 import { Greet } from '../wailsjs/go/main/App'
 
 // v3
-import { Greet } from './bindings/myapp/myservice'
+import { Greet } from './bindings/changeme/myservice'
 ```
 
 **Update event handling:**
@@ -510,9 +510,9 @@ selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
 **v3:**
 
 ```go
-selection, err := app.Dialog.OpenFile(application.OpenFileDialogOptions{
+selection, err := app.Dialog.OpenFileWithOptions(&application.OpenFileDialogOptions{
     Title: "Select File",
-})
+}).PromptForSingleSelection()
 ```
 
 ### Menus
@@ -585,10 +585,10 @@ Store app reference instead:
 
 ```go
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewMyService(app *application.Application) *MyService {
+func NewMyService(app *application.App) *MyService {
     return &MyService{app: app}
 }
 ```
@@ -678,7 +678,7 @@ wails3 generate bindings
 - [Documentation](/quick-start/why-wails)
 - [Discord Community](https://discord.gg/JDdSxwjhGf)
 - [GitHub Issues](https://github.com/wailsapp/wails/issues)
-- [Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+- [Examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
 
 ### Common Questions
 
@@ -718,7 +718,7 @@ A: 1-4 hours for typical applications.
   <Card title="Examples" icon="open-book">
     See complete v3 examples.
     
-    [View Examples →](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+    [View Examples →](https://github.com/wailsapp/wails/tree/master/v3/examples)
   </Card>
 </CardGrid>
 
