@@ -1,0 +1,424 @@
+---
+title: 建置系統
+description: 了解 Wails 如何建置和封裝您的應用程式
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 統一的建置系統
+
+Wails 提供**統一的建置系統**，它會編譯 Go 程式碼、封裝前端資源、將所有內容嵌入單一可執行檔，並處理平台特定的建置——只需一個指令即可完成。
+
+```bash
+wails3 build
+```
+
+**輸出：** 內含所有內容的原生可執行檔。
+
+## 建置流程概覽
+
+{/*
+TODO: 修復 D2 圖表生成或將其嵌入為圖片。
+之前的 D2 程式碼區塊在建置管線中導致了 MDX 解析錯誤。
+*/}
+
+**[建置流程圖表佔位符]**
+
+
+## 建置階段
+
+### 1. 分析階段
+
+Wails 掃描您的 Go 程式碼以了解您的服務：
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Wails 提取的內容：**
+- 服務名稱：`GreetService`
+- 方法名稱：`Greet`
+- 參數類型：`string`
+- 返回類型：`string`
+
+**用途：** 生成 TypeScript 綁定
+
+### 2. 生成階段
+
+#### TypeScript 綁定
+
+Wails 生成類型安全的綁定：
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**優點：**
+- 完整的類型安全
+- IDE 自動完成
+- 編譯時錯誤檢查
+- JSDoc 註解
+
+#### 前端建置
+
+您的前端打包工具會執行（Vite、webpack 等）：
+
+```bash
+# Vite 範例
+vite build --outDir dist
+```
+
+**發生什麼事：**
+- JavaScript/TypeScript 被編譯
+- CSS 被處理並壓縮
+- 資源被最佳化
+- 產生原始碼對應（僅開發環境）
+- 輸出到 `frontend/dist/`
+
+### 3. 編譯階段
+
+#### Go 編譯
+
+Go 程式碼會以最佳化方式編譯：
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**旗標：**
+- `-s`：移除符號表
+- `-w`：移除 DWARF 除錯資訊
+- 結果：更小的二進位檔（減少約 30%）
+
+**平台特定：**
+- Windows：嵌入圖示的 `.exe`
+- macOS：`.app` 套件結構
+- Linux：ELF 二進位檔
+
+#### 資源嵌入
+
+前端資源被嵌入到 Go 二進位檔中：
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**結果：** 單一可執行檔，所有內容都在內部。
+
+### 4. 輸出
+
+**單一原生二進位檔：**
+- Windows：`myapp.exe`（約 15MB）
+- macOS：`myapp.app`（約 15MB）
+- Linux：`myapp`（約 15MB）
+
+**無需依賴**（除了系統 WebView）。
+
+## 開發環境與生產環境
+
+<Tabs syncKey="mode">
+  <TabItem label="開發環境 (wails3 dev)" icon="seti:config">
+    **針對速度最佳化：**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **發生什麼事：**
+    1. 啟動前端開發伺服器（Vite 在 port 5173 上）
+    2. 編譯未最佳化的 Go 程式碼
+    3. 啟動應用程式並指向開發伺服器
+    4. 啟用熱重載
+    5. 包含原始碼對應
+    
+    **特性：**
+    - **快速重建**（前端變更少於 1 秒）
+    - **不嵌入資源**（從開發伺服器提供）
+    - **包含除錯符號**
+    - **啟用原始碼對應**
+    - **詳細日誌記錄**
+    
+    **檔案大小：** 較大（包含除錯符號約 50MB）
+  </TabItem>
+
+  <TabItem label="生產環境 (wails3 build)" icon="rocket">
+    **針對大小和效能最佳化：**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **發生什麼事：**
+    1. 為生產環境建置前端（已壓縮）
+    2. 以最佳化方式編譯 Go
+    3. 移除除錯符號
+    4. 嵌入資源
+    5. 建立單一二進位檔
+    
+    **特性：**
+    - **最佳化程式碼**（已壓縮、已搖樹優化）
+    - **資源已嵌入**（無外部檔案）
+    - **已移除除錯符號**
+    - **無原始碼對應**
+    - **最小化日誌記錄**
+    
+    **檔案大小：** 較小（約 15MB）
+  </TabItem>
+</Tabs>
+
+## 建置指令
+
+### 基本建置
+
+```bash
+wails3 build
+```
+
+**輸出：** `build/bin/myapp[.exe]`
+
+### 為特定平台建置
+
+```bash
+# 為 Windows 建置（從任何作業系統）
+wails3 build -platform windows/amd64
+
+# 為 macOS 建置
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# 為 Linux 建置
+wails3 build -platform linux/amd64
+```
+
+**交叉編譯：** 從任何平台為任何平台建置。
+
+### 使用選項建置
+
+```bash
+# 自訂輸出目錄
+wails3 build -o ./dist/myapp
+
+# 跳過前端建置（使用現有的）
+wails3 build -skipbindings
+
+# 乾淨建置（移除快取）
+wails3 build -clean
+
+# 詳細輸出
+wails3 build -v
+```
+
+### 建置模式
+
+```bash
+# 除錯建置（包含符號）
+wails3 build -debug
+
+# 生產建置（預設，已最佳化）
+wails3 build
+
+# 開發建置（快速，未最佳化）
+wails3 build -devbuild
+```
+
+## 建置設定
+
+### Taskfile.yml
+
+Wails 使用 [Taskfile](https://taskfile.dev/) 進行建置設定：
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: 建置應用程式
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: 為 Windows 建置
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: 為 macOS 建置（通用）
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: 為 Linux 建置
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**執行任務：**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### 建置選項檔案
+
+建立 `build/build.json` 以進行持久化設定：
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## 資源嵌入
+
+### 運作方式
+
+Wails 使用 Go 的 `embed` 套件：
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**在建置時：**
+1. 前端建置到 `frontend/dist/`
+2. `//go:embed` 指令包含檔案
+3. 檔案編譯進二進位檔
+4. 二進位檔包含所有內容
+
+**在執行時：**
+1. 應用程式啟動
+2. 資源從記憶體提供
+3. 資源無需磁碟 I/O
+4. 載入速度快
+
+### 自訂資源
+
+嵌入其他檔案：
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## 建置最佳化
+
+### 前端最佳化
+
+**Vite（預設）：**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // 移除 console.log
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // 分離供應商套件
+        },
+      },
+    },
+  },
+}
+```
+
+**結果：**
+- JavaScript 已壓縮（減少約 70%）
+- CSS 已壓縮（減少約 60%）
+- 影像已最佳化
+- 已套用搖樹優化
+
+### Go 最佳化
+
+**編譯器旗標：**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`：移除符號表（減少約 10%）
+- `-w`：移除 DWARF 除錯資訊（減少約 20%）
+
+**其他最佳化：**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`：在建置時設定變數值
+- 適用於版本號、建置日期
+
+### 二進位檔壓縮
+
+**UPX（選用）：**
+
+```bash
+# 建置後
+upx --best build/bin/myapp.exe
+```
+
+**結果：**
+- 大小減少約 50%**有關建置的問題？** 請在 [Discord](https://discord.gg/JDdSxwjhGf) 提問，或查看 [建置範例](https://github.com/wailsapp/wails/tree/master/v3/examples/build)。

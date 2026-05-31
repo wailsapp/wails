@@ -20,6 +20,8 @@ jobs:
   weekly-release:
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    env:
+      GOWORK: "off"
 
     permissions:
       contents: write
@@ -35,7 +37,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'
+        go-version: '1.25'
         cache: true
         cache-dependency-path: 'v2/go.sum'
 

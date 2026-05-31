@@ -1,0 +1,216 @@
+---
+title: Codebase Layout
+description: How the Wails v3 repository is organised and how the pieces fit together
+sidebar:
+  order: 2
+---
+
+Wails v3 lives in a **monorepo** that contains the framework runtime, CLI,
+examples, documentation, and build tool-chain.  
+This page walks through the *directory structure* that matters to anyone digging
+into the internals.
+
+## Top-Level View
+
+```
+wails/
+├── v3/               # ⬅️ Everything specific to Wails v3 lives here
+├── v2/               # Legacy v2 implementation (can be ignored for v3 work)
+├── docs/             # Astro-powered v3 docs site (this page!)
+├── website/          # Docusaurus v2 site and marketing pages (main site)
+├── scripts/          # Misc helper scripts (e.g. sponsor image generator)
+└── *.md              # Project-wide meta files (CHANGELOG, LICENSE, …)
+```
+
+From here on, we zoom into the **`v3/`** tree.
+
+## `v3/` Root
+
+```
+v3/
+├── cmd/          # Compilable commands (currently only the wails3 CLI)
+├── internal/     # Framework implementation (not public API)
+├── pkg/          # Public Go packages — the API surface
+├── tasks/        # Taskfile-based release / generation utilities
+├── wep/          # RFC-style proposals (Wails Enhancement Proposals)
+├── tests/        # Integration test harness
+├── go.mod
+└── go.sum
+```
+
+> Project templates ship under `internal/templates/` (one folder per framework
+> stack plus `base/`, `_common/`, and `ios/`). There is no `v3/templates/`
+> directory at the top level.
+
+### Mental Model
+
+1. **`pkg/`** exposes *what application developers import*  
+2. **`internal/`** contains *how the magic is implemented*  
+3. **`cmd/wails3`** drives *project lifecycle & builds*  
+
+Everything else supports those three pillars.
+
+---
+
+## `cmd/` – Commands
+
+| Path | Notes |
+|------|-------|
+| `v3/cmd/wails3` | The **CLI entrypoint**. A tiny `main.go` delegates all logic to packages in `internal/commands`. |
+| `internal/commands/*` | Sub-commands (init, dev, build, doctor, …). Each lives in its own file for easy discoverability. |
+| `internal/commands/task_wrapper.go` | Bridges between CLI flags and the Taskfile build pipeline. |
+
+The CLI owns:
+
+* **Project scaffolding** (`init`, template generation)  
+* **Dev server orchestration** (`dev`, live-reload)  
+* **Production builds & packaging** (`build`, `package`, platform wrappers)  
+* **Diagnostics** (`doctor`)  
+
+---
+
+## `internal/` – The Engine Room
+
+```
+internal/
+├── assetserver/  # Serving & embedding web assets
+├── buildinfo/    # Reproducible build metadata
+├── commands/     # CLI mechanics (see above)
+├── runtime/      # Build-tag glue + embedded JS runtime sources
+├── generator/    # Static analysis & binding generator
+├── templates/    # Project templates (frontend stacks)
+├── packager/     # nfpm wrapper used by `wails3 tool package`
+├── capabilities/ # Host OS capability probing
+├── dbus/         # Generic D-Bus helper
+├── service/      # Service-template scaffolding (`wails3 generate service`)
+└── ...           # [other helper sub-packages: flags, hash, term, …]
+```
+
+### Key Sub-Packages
+
+| Package | Responsibility | Where It Connects |
+|---------|----------------|-------------------|
+| `runtime` | Houses the small `runtime{,_darwin,_linux,_windows,_android,_dev,_prod}.go` build-tag glue plus the embedded JS runtime under `runtime/desktop/`. The actual per-OS window/clipboard/dialog/tray code lives in `pkg/application/*_{darwin,linux,windows}.go`. | Imported indirectly via `pkg/application`. |
+| `assetserver` | Dual-mode file server:<br />• Dev: serves from disk & proxies Vite (`build_dev.go`)<br />• Prod: embeds assets via `go:embed` (`build_production.go`) | Initialized by `pkg/application` during startup. |
+| `generator` | Parses Go source to build **binding metadata** which later produces TypeScript/JS stub files and event constants. Entry points: `generator.Generate` / `generator.Generator` over `collect/` + `render/`. | Triggered by `wails3 generate bindings`. |
+| `packager` | `nfpm` wrapper used to emit Linux `deb`/`rpm`/`archlinux` artifacts (driven by `myapp.DEB`/`.RPM`/`.ARCHLINUX` nfpm configs under `internal/commands/`). | Invoked by `wails3 tool package`. macOS DMG / Windows MSIX live under `internal/commands/{dmg,msix.go,webview2/}`. |
+
+Supporting utilities (eg. `s/`, `hash/`, `flags/`) keep internal concerns decoupled.
+
+---
+
+## `pkg/` – Public API
+
+```
+pkg/
+├── application/  # Core API: App, windows, menus, dialogs, events, managers
+├── events/       # Event constants (Common/Mac/Windows/Linux) + generator
+├── services/     # Optional built-in services (notifications, kvstore, …)
+├── doctor-ng/    # New-style `wails3 doctor-ng` checks
+├── errs/         # Shared error types
+├── icons/        # Default platform icons
+├── mac/          # macOS-only helpers
+└── w32/          # Windows Win32 helpers
+```
+
+> There is no `pkg/runtime/`, `pkg/options/` or `pkg/menu/` package. Window/menu
+> options live alongside `pkg/application` (e.g. `WebviewWindowOptions`, `Menu`,
+> `MenuItem`), and `assetserver/` is under `internal/`.
+
+`pkg/application` bootstraps a Wails program:
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assetsFS),
+        },
+    })
+    window := app.Window.New()
+    window.SetTitle("Hello").SetSize(1024, 768)
+    _ = app.Run()
+}
+```
+
+Under the hood it:
+
+1. Wires up the `internal/runtime` build-tag glue and per-OS code in `pkg/application/`
+2. Sets up an `internal/assetserver` instance
+3. Registers any binding-driven message processors
+4. Enters the OS main thread
+
+---
+
+## `internal/templates/` – Scaffolding Blueprints
+
+`internal/templates/` ships **base templates** (Go layout under `base/`,
+`_common/`, `ios/`) and **frontend skins** (`vanilla[-ts]`, `react[-ts]`,
+`react-swc[-ts]`, `lit[-ts]`, `preact[-ts]`, `qwik[-ts]`, `solid[-ts]`,
+`svelte[-ts]`, `sveltekit[-ts]`, `vue[-ts]`).
+
+At `wails3 init -t react`, the CLI:
+
+1. Copies `_common` Go files
+2. Merges the desired frontend pack
+3. Runs `go mod tidy` (skippable with `--skipgomodtidy`)
+
+Editing templates **does not** affect existing apps, only future `init`s. The
+public examples that previously lived under `v3/examples/` have been removed
+from the tree — refer to https://github.com/wailsapp/wails/tree/master/v3
+for canonical sample apps as they're re-published.
+
+---
+
+## `tasks/` – Release Automation
+
+Taskfiles wrap complex cross-compilation, version bumping, and changelog
+generation. They are consumed programmatically by `internal/commands/task.go`
+so the same logic powers **CLI** and **CI**.
+
+---
+
+## How the Pieces Interact
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* forms the core path from **source** to **running
+desktop app**.
+
+---
+
+## Orientation Tips
+
+| Need to understand… | Look at… |
+|---------------------|----------|
+| Platform shims | `pkg/application/*_darwin.go`, `*_linux.go`, `*_windows.go` (window, clipboard, dialogs, systray, mainthread, events_common). Linux cgo: `pkg/application/linux_cgo*.go`. |
+| Bridge protocol | `pkg/application/messageprocessor*.go` |
+| Asset workflow | `internal/assetserver/` (`build_dev.go` vs `build_production.go`) |
+| Packaging flow | `internal/commands/{appimage,msix,dot_desktop,dmg/}.go`, `internal/packager/` |
+| Template engine | `internal/templates/` (`templates.Install`, `templates.GetDefaultTemplates`) |
+| Static analysis | `internal/generator/{generate.go,collect/,render/}` |
+
+---
+
+You now have a **mental map** of the repository.  
+Use it with `ripgrep`, your IDE’s “Go to File/Symbol”, and the example apps to
+navigate deeper into any feature. Happy hacking!

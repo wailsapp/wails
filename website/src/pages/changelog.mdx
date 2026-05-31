@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed nil pointer crash in `application.Quit` when called before `Run` or after `Run` returned early [#5452](https://github.com/wailsapp/wails/issues/5452) by @c-tonneslan
+
 ## v2.12.0 - 2026-03-26
 
 ### Fixed
