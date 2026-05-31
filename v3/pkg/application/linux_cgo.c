@@ -354,6 +354,32 @@ void menu_insert_item(GMenu *menu, gint position, GMenuItem *item) {
     g_menu_insert_item(menu, position, item);
 }
 
+static void on_context_menu_closed(GtkPopover *popover, gpointer user_data) {
+    // Unparent on the next main loop iteration so the popover finishes
+    // its close animation/cleanup before being removed from the widget tree.
+    g_idle_add_once((GSourceOnceFunc)gtk_widget_unparent, GTK_WIDGET(popover));
+}
+
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y) {
+    init_app_action_group();
+
+    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu_model));
+    gtk_widget_set_parent(popover, parent);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+    // Ensure the menu actions resolve even if the parent's hierarchy does not
+    // already expose the "app" action group.
+    gtk_widget_insert_action_group(popover, "app", G_ACTION_GROUP(app_action_group));
+
+    GdkRectangle rect = { .x = x, .y = y, .width = 1, .height = 1 };
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+
+    g_signal_connect(popover, "closed", G_CALLBACK(on_context_menu_closed), NULL);
+
+    gtk_popover_popup(GTK_POPOVER(popover));
+}
+
 // ============================================================================
 // Window event controllers (GTK4 style)
 // ============================================================================

@@ -126,6 +126,7 @@ void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);
 
 // ============================================================================
 // Window event controllers (GTK4 style)
