@@ -36,8 +36,30 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		return err
 	}
 
-	// Clean the output directory if clean option is enabled
-	if options.Clean {
+	// When clean mode is active and we're writing real files, generate bindings
+	// into a dot-prefixed sibling temp directory first, then swap it into place
+	// with RemoveAll+Rename. This prevents chokidar (used by Vite) from entering
+	// a rename-event loop caused by rapid directory delete+recreate, which would
+	// otherwise cause the node process to leak memory at ~2-6 MB/s.
+	// Dot-prefixed directories are ignored by chokidar's default glob pattern,
+	// so no spurious HMR events fire during file generation.
+	generationDir := absPath
+	swapped := false
+	if options.Clean && !options.DryRun {
+		if err := os.MkdirAll(filepath.Dir(absPath), 0o777); err != nil {
+			return fmt.Errorf("failed to create bindings parent directory: %w", err)
+		}
+		tmpDir, err := os.MkdirTemp(filepath.Dir(absPath), ".bindings-tmp-")
+		if err != nil {
+			return fmt.Errorf("failed to create temp directory for bindings: %w", err)
+		}
+		generationDir = tmpDir
+		defer func() {
+			if !swapped {
+				_ = os.RemoveAll(tmpDir)
+			}
+		}()
+	} else if options.Clean {
 		if err := os.RemoveAll(absPath); err != nil {
 			return fmt.Errorf("failed to clean output directory: %w", err)
 		}
@@ -46,7 +68,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	// Initialise file creator.
 	var creator config.FileCreator
 	if !options.DryRun {
-		creator = config.DirCreator(absPath)
+		creator = config.DirCreator(generationDir)
 	}
 
 	// Start a spinner for progress messages.
@@ -94,6 +116,18 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 			// Report error.
 			return err
 		}
+	}
+
+	// Swap the temp dir into place. The -clean contract does not guarantee
+	// atomic replacement; RemoveAll+Rename matches the existing behaviour.
+	if !swapped && generationDir != absPath {
+		if err := os.RemoveAll(absPath); err != nil {
+			return fmt.Errorf("failed to remove old bindings directory %q: %w\nExisting bindings are untouched; generated output has been discarded.", absPath, err)
+		}
+		if err := os.Rename(generationDir, absPath); err != nil {
+			return fmt.Errorf("failed to install new bindings at %q: %w\nOld bindings have been removed. Re-run the command to regenerate them.", absPath, err)
+		}
+		swapped = true
 	}
 
 	return nil

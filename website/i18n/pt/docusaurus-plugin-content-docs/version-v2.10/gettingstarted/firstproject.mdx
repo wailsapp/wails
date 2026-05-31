@@ -1,0 +1,130 @@
+---
+sidebar_position: 2
+---
+
+# Criando um projeto
+
+## Geração de Projeto
+
+Agora que o CLI está instalado, você pode gerar um novo projeto usando o comando `wails init`.
+
+Escolha seu framework favorito:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+    defaultValue="Svelte"
+    values={[
+        {label: "Svelte", value: "Svelte"},
+        {label: "React", value: "React"},
+        {label: "Vue", value: "Vue"},
+        {label: "Preact", value: "Preact"},
+        {label: "Lit", value: "Lit"},
+        {label: "Vanilla", value: "Vanilla"},
+    ]}
+>
+<TabItem value="Svelte">
+    Generate a <a href={"https://svelte.dev/"}>Svelte</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t svelte
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t svelte-ts
+
+</TabItem>
+<TabItem value="React">
+    Generate a <a href={"https://reactjs.org/"}>React</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t react
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t react-ts
+
+</TabItem>
+<TabItem value="Vue">
+    Generate a <a href={"https://vuejs.org/"}>Vue</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t vue
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t vue-ts
+
+</TabItem>
+<TabItem value="Preact">
+    Generate a <a href={"https://preactjs.com/"}>Preact</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t preact
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t preact-ts
+
+</TabItem>
+<TabItem value="Lit">
+    Generate a <a href={"https://lit.dev/"}>Lit</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t lit
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t lit-ts
+
+</TabItem>
+<TabItem value="Vanilla">
+    Generate a Vanilla project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t vanilla
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t vanilla-ts
+
+</TabItem>
+</Tabs>
+```
+
+<hr />
+
+Há também [templates da comunidade](../community/templates.mdx) disponíveis que oferecem diferentes recursos e frameworks.
+
+Para ver as outras opções disponíveis, você pode executar `wails init -help`. Mais detalhes podem ser encontrados na [Referência da CLI](../reference/cli.mdx#init).
+
+## Layout do Projeto
+
+Os projetos Wails possuem o seguinte layout:
+
+```
+.
+├── build/
+│   ├── appicon.png
+│   ├── darwin/
+│   └── windows/
+├── frontend/
+├── go.mod
+├── go.sum
+├── main.go
+└── wails.json
+```
+
+### Estrutura do projeto em execução
+
+- `/main.go` - A aplicação principal
+- `/frontend/` - Arquivos do Frontend do projeto
+- `/build/` - Diretório de compilação do projeto
+- `/build/appicon.png` - O ícone da aplicação
+- `/build/darwin/` - Arquivos do projeto específicos do Mac
+- `/build/windows/` - Arquivos de projeto específicos do Windows
+- `/wails.json` - A configuração do projeto
+- `/go.mod` - O arquivo de módulos do Go
+- `/go.sum` - O arquivo de checagem dos módulos do Go
+
+O diretório `frontend` não tem nada específico para o Wails e pode ser qualquer projeto frontend de sua escolha.
+
+O diretório `build` é usado durante o processo de compilação. Esses arquivos podem ser atualizados para personalizar suas compilações. Se arquivos forem removidos do diretório de compilação, as versões padrão serão restauradas.
+
+O nome do módulo padrão em `go.mod` é "changeme". Você deveria mudar isso para algo mais apropriado.

@@ -1,0 +1,270 @@
+---
+title: 첫 번째 앱 만들기
+description: 10분 만에 작동하는 Wails 애플리케이션을 구축하세요
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+우리는 핵심 Wails 개념을 보여주는 간단한 인사말 애플리케이션을 구축할 것입니다:
+- 로직을 관리하는 Go 백엔드
+- Go 함수를 호출하는 프론트엔드
+- 타입 안전 바인딩
+- 개발 중 핫 리로드
+
+**완료 시간:** 10분
+
+:::tip[Windows 11 사용자를 위한 성능 팁]
+프로젝트를 저장하기 위해 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 사용을 고려하세요. Dev Drive는 개발자 워크로드에 최적화되어 있으며 일반 NTFS 드라이브보다 빌드 시간과 디스크 접근 속도를 최대 30%까지 크게 향상시킬 수 있습니다.
+:::
+
+## 프로젝트 생성하기
+
+<Steps>
+
+1. **프로젝트 생성**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+   이는 기본 Vanilla + Vite 템플릿(plain HTML/CSS/JS with Vite bundler)으로 새 프로젝트를 생성합니다.
+
+   :::tip[다른 템플릿]
+   선호하는 프레임워크를 위해 `-t react`, `-t vue`, 또는 `-t svelte`를 시도해 보세요.
+   사용 가능한 모든 템플릿을 보려면 `wails3 init -l`을 실행하세요.
+   :::
+
+2. **프로젝트 구조 이해하기**
+
+   ```
+   myapp/
+   ├── main.go              # 애플리케이션 진입점
+   ├── greetservice.go      # 인사 서비스
+   ├── frontend/            # UI 코드
+   │   ├── index.html       # HTML 진입점
+   │   ├── src/
+   │   │   └── main.js      # 프론트엔드 JavaScript
+   │   ├── public/
+   │   │   └── style.css    # 스타일
+   │   ├── package.json     # 프론트엔드 의존성
+   │   └── vite.config.js   # Vite 번들러 구성
+   ├── build/               # 빌드 구성
+   └── Taskfile.yml         # 빌드 작업
+   ```
+
+3. **앱 실행하기**
+
+   ```bash
+   wails3 dev
+   ```
+
+   :::note[첫 실행]
+   첫 실행은 프론트엔드 의존성 설치, 바인딩 생성 등을 수행하므로 예상보다 오래 걸릴 수 있습니다. 이후 실행은 훨씬 빠릅니다.
+   :::
+
+   앱이 인사말 인터페이스를 보여줍니다. 이름을 입력하고 "Greet"를 클릭하세요 - Go 백엔드가 입력을 처리하여 인사말을 반환합니다.
+
+</Steps>
+
+## 작동 원리
+
+이것이 작동하는 코드를 이해해 봅시다.
+
+### Go 백엔드
+
+`greetservice.go`를 엽니다:
+
+```go title="greetservice.go"
+package main
+
+import (
+	"fmt"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+**핵심 개념:**
+
+1. **서비스** - 내보낸 메서드가 있는 Go 구조체
+2. **내보낸 메서드** - `Greet`는 대문자로 시작하여 프론트엔드에서 사용 가능
+3. **간단한 로직** - 이름을 받아 인사말 반환
+4. **타입 안전** - 입력 및 출력 타입이 정의됨
+
+:::tip[서비스 및 바인딩 이해하기]
+**서비스**는 프론트엔드에 기능을 노출하는 자체 완결형 Go 모듈입니다. 이들은 애플리케이션 구성의 `Services` 필드에 등록하는 내보낸 메서드가 있는 일반 Go 구조체입니다.
+
+**바인딩**은 프론트엔드가 이러한 서비스를 호출할 수 있게 하는 자동 생성된 TypeScript/JavaScript SDK입니다. `wails3 dev` 또는 `wails3 build`를 실행할 때 Wails는 등록된 서비스를 분석하여 `frontend/bindings/`에 타입 안전 바인딩을 생성합니다.
+
+서비스를 백엔드 API로, 바인딩을 그와 통신하는 클라이언트 라이브러리로 생각하세요.
+:::
+
+### 서비스 등록하기
+
+`main.go`를 열고 서비스 등록을 찾습니다:
+
+```go title="main.go" {4-6}
+err := application.New(application.Options{
+    Name: "myapp",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    // ... other options
+})
+```
+
+이는 `GreetService`를 Wails에 등록하여 모든 내보낸 메서드를 프론트엔드에서 사용 가능하게 합니다.
+
+### 프론트엔드
+
+`frontend/src/main.js`를 엽니다:
+
+```javascript title="frontend/src/main.js"
+import {GreetService} from "../bindings/changeme";
+
+window.greet = async () => {
+    const nameElement = document.getElementById('name');
+    const resultElement = document.getElementById('result');
+
+    const name = nameElement.value;
+    if (!name) {
+        return;
+    }
+
+    try {
+        const result = await GreetService.Greet(name);
+        resultElement.innerText = result;
+    } catch (err) {
+        console.error(err);
+    }
+};
+```
+
+**핵심 개념:**
+
+1. **자동 생성 바인딩** - `GreetService`는 생성된 코드에서 가져옴
+2. **타입 안전 호출** - 메서드 이름 및 서명이 Go 코드와 일치
+3. **기본 비동기** - 모든 Go 호출은 Promise를 반환
+4. **오류 처리** - Go의 오류는 try/catch에서 포착
+
+:::note[바인딩은 어디에 있나요?]
+생성된 바인딩은 `frontend/bindings/`에 있습니다. `wails3 dev` 또는 `wails3 build`를 실행할 때 자동으로 생성됩니다.
+
+**이 파일들을 수동으로 편집하지 마세요** - 빌드할 때마다 재생성됩니다.
+:::
+
+## 앱 사용자 정의하기
+
+작동 방식을 이해하기 위해 새 기능을 추가해 봅시다.
+
+### "여러 명 인사" 기능 추가하기
+
+<Steps>
+
+1. **GreetService에 메서드 추가하기**
+
+   `greetservice.go`에 다음을 추가합니다:
+
+   ```go title="greetservice.go"
+   func (g *GreetService) GreetMany(names []string) []string {
+       greetings := make([]string, len(names))
+       for i, name := range names {
+           greetings[i] = fmt.Sprintf("Hello %s!", name)
+       }
+       return greetings
+   }
+   ```
+
+2. **앱이 자동으로 다시 빌드됨**
+
+   파일을 저장하면 `wails3 dev`가 Go 코드를 자동으로 다시 빌드하고 앱을 재시작합니다.
+
+   :::note[자동 다시 빌드]
+   Go 코드 변경은 자동 다시 빌드 및 재시작을 트리거합니다. 프론트엔드 변경은 재시작 없이 핫 리로드됩니다.
+   :::
+
+3. **프론트엔드에서 사용하기**
+
+   `frontend/src/main.js`에 다음을 추가합니다:
+
+   ```javascript title="frontend/src/main.js"
+   window.greetMany = async () => {
+       const names = ['Alice', 'Bob', 'Charlie'];
+       const greetings = await GreetService.GreetMany(names);
+       console.log(greetings);
+   };
+   ```
+
+   브라우저 콘솔을 열고 `greetMany()`를 호출하세요 - 인사말 배열을 볼 수 있습니다.
+
+</Steps>
+
+## 프로덕션 빌드하기
+
+앱을 배포할 준비가 되면:
+
+```bash
+wails3 build
+```
+
+**이 작업의 내용:**
+- 최적화된 Go 코드 컴파일
+- 프로덕션을 위한 프론트엔드 빌드 (최소화됨)
+- `build/bin/`에 네이티브 실행 파일 생성
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **출력:** `build/bin/myapp.exe`
+
+    더블클릭하여 실행합니다. 추가 의존성 필요 없음 (WebView2는 Windows의 일부입니다).
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **출력:** `build/bin/myapp.app`
+
+    Applications 폴더로 드래그하거나 더블클릭하여 실행합니다.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **출력:** `build/bin/myapp`
+
+    `./build/bin/myapp`로 실행하거나 런처를 위해 `.desktop` 파일을 생성합니다.
+  </TabItem>
+</Tabs>
+
+:::tip[크로스 플랫폼 빌드]
+다른 플랫폼을 빌드하고 싶으신가요? [크로스 플랫폼 빌드 →](/guides/build/cross-platform)를 참조하세요.
+:::
+
+## 우리가 배운 것
+
+**프로젝트 구조**
+- Go 백엔드를 위한 `main.go`
+- UI 코드를 위한 `frontend/`
+- 빌드 작업을 위한 `Taskfile.yml`
+
+**서비스**
+- 내보낸 메서드가 있는 Go 구조체 생성
+- `application.NewService()`로 등록
+- 메서드가 자동으로 프론트엔드에서 사용 가능
+
+**바인딩**
+- 자동 생성된 TypeScript 정의
+- 타입 안전 함수 호출
+- 기본 비동기 (Promise)
+
+**개발 워크플로우**
+- 핫 리로드를 위한 `wails3 dev`
+- Go 변경은 자동 다시 빌드 및 재시작
+- 프론트엔드 변경은 즉시 핫 리로드
+
+---
+
+**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에 참여하여 커뮤니티에 물어보세요.
