@@ -2,7 +2,7 @@ package util
 
 import (
 	"github.com/go-ole/go-ole"
-	"github.com/google/uuid"
+	"github.com/wailsapp/wails/v3/internal/uuid"
 )
 
 func StringToUUID(str string) *ole.GUID {
