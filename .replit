@@ -1,0 +1,8 @@
+modules = ["go-1.21", "web", "nodejs-20"]
+run = "go run v2/cmd/wails/main.go"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "go run v2/cmd/wails/main.go"]

@@ -26,6 +26,7 @@ import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
 import * as IOS from "./ios.js";
+import * as Updater from "./updater.js";
 import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
 
@@ -40,6 +41,7 @@ export {
     Screens,
     System,
     IOS,
+    Updater,
     Window,
     WML
 };
@@ -89,9 +91,14 @@ export function loadOptionalScript(url: string): Promise<void> {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
             if (response.ok) {
-                const script = document.createElement('script');
-                script.src = url;
-                document.head.appendChild(script);
+                // Verify the response is actually JavaScript and not an HTML fallback
+                // (e.g. Vite dev server returns index.html for unknown routes)
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                if (contentType.includes('javascript')) {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    document.head.appendChild(script);
+                }
             }
         })
         .catch(() => {}); // Silently ignore - script is optional

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"sort"
+	"sync"
 )
 
 // Heavily inspired by the Chromium project (Copyright 2015 The Chromium Authors)
@@ -11,6 +12,7 @@ import (
 
 type ScreenManager struct {
 	app           *App
+	mu            sync.RWMutex // guards screens and primaryScreen against concurrent display-change events
 	screens       []*Screen
 	primaryScreen *Screen
 }
@@ -23,34 +25,34 @@ func newScreenManager(app *App) *ScreenManager {
 }
 
 type Screen struct {
-	ID               string  // A unique identifier for the display
-	Name             string  // The name of the display
-	ScaleFactor      float32 // The scale factor of the display (DPI/96)
-	X                int     // The x-coordinate of the top-left corner of the rectangle
-	Y                int     // The y-coordinate of the top-left corner of the rectangle
-	Size             Size    // The size of the display
-	Bounds           Rect    // The bounds of the display
-	PhysicalBounds   Rect    // The physical bounds of the display (before scaling)
-	WorkArea         Rect    // The work area of the display
-	PhysicalWorkArea Rect    // The physical work area of the display (before scaling)
-	IsPrimary        bool    // Whether this is the primary display
-	Rotation         float32 // The rotation of the display
+	ID               string  `json:"ID"`               // A unique identifier for the display
+	Name             string  `json:"Name"`             // The name of the display
+	ScaleFactor      float32 `json:"ScaleFactor"`      // The scale factor of the display (DPI/96)
+	X                int     `json:"X"`                // The x-coordinate of the top-left corner of the rectangle
+	Y                int     `json:"Y"`                // The y-coordinate of the top-left corner of the rectangle
+	Size             Size    `json:"Size"`             // The size of the display
+	Bounds           Rect    `json:"Bounds"`           // The bounds of the display
+	PhysicalBounds   Rect    `json:"PhysicalBounds"`   // The physical bounds of the display (before scaling)
+	WorkArea         Rect    `json:"WorkArea"`         // The work area of the display
+	PhysicalWorkArea Rect    `json:"PhysicalWorkArea"` // The physical work area of the display (before scaling)
+	IsPrimary        bool    `json:"IsPrimary"`        // Whether this is the primary display
+	Rotation         float32 `json:"Rotation"`         // The rotation of the display
 }
 
 type Rect struct {
-	X      int
-	Y      int
-	Width  int
-	Height int
+	X      int `json:"X"`
+	Y      int `json:"Y"`
+	Width  int `json:"Width"`
+	Height int `json:"Height"`
 }
 
 type Point struct {
-	X int
-	Y int
+	X int `json:"X"`
+	Y int `json:"Y"`
 }
 type Size struct {
-	Width  int
-	Height int
+	Width  int `json:"Width"`
+	Height int `json:"Height"`
 }
 
 type Alignment int
@@ -370,13 +372,24 @@ func (s *Screen) physicalToDipRect(physicalRect Rect) Rect {
 // Layout screens in the virtual space with DIP calculations and cache the screens
 // for future coordinate transformation between the physical and logical (DIP) space
 func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
-	if screens == nil || len(screens) == 0 {
+	if len(screens) == 0 {
 		return errors.New("screens parameter is nil or empty")
 	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Store screens before DIP calculation so calculateScreensDipCoordinates
+	// can find the primary and mutate the slice in-place.
+	oldScreens := m.screens
+	oldPrimary := m.primaryScreen
 	m.screens = screens
 
 	err := m.calculateScreensDipCoordinates()
 	if err != nil {
+		// Restore previous state on failure so callers never see partial data.
+		m.screens = oldScreens
+		m.primaryScreen = oldPrimary
 		return err
 	}
 
@@ -384,11 +397,37 @@ func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 }
 
 func (m *ScreenManager) GetAll() []*Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.screens
 }
 
 func (m *ScreenManager) GetPrimary() *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.primaryScreen
+}
+
+// GetByID returns the screen with the given display ID, or nil if not found.
+func (m *ScreenManager) GetByID(id string) *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, screen := range m.screens {
+		if screen.ID == id {
+			return screen
+		}
+	}
+	return nil
+}
+
+// GetByIndex returns the screen at the given index in the screen list, or nil if out of range.
+func (m *ScreenManager) GetByIndex(index int) *Screen {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if index < 0 || index >= len(m.screens) {
+		return nil
+	}
+	return m.screens[index]
 }
 
 // Reference: https://source.chromium.org/chromium/chromium/src/+/main:ui/display/win/screen_win.cc;l=317
@@ -872,4 +911,12 @@ func ScreenNearestPhysicalRect(physicalRect Rect) *Screen {
 
 func ScreenNearestDipRect(dipRect Rect) *Screen {
 	return globalApplication.Screen.ScreenNearestDipRect(dipRect)
+}
+
+func GetScreenByID(id string) *Screen {
+	return globalApplication.Screen.GetByID(id)
+}
+
+func GetScreenByIndex(index int) *Screen {
+	return globalApplication.Screen.GetByIndex(index)
 }

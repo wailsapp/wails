@@ -1,5 +1,6 @@
 ---
 title: Resizem
+description: "A desktop application built with Wails"
 ---
 
 ![Resizem Screenshot](../../../../assets/showcase-images/resizem.webp)

@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -38,18 +38,30 @@ Screen processScreen(NSScreen* screen){
 	Screen returnScreen;
 	returnScreen.scaleFactor = screen.backingScaleFactor;
 
+	// NSScreen's native coordinate space is Y-up with (0,0) at the bottom-left
+	// of the primary screen. We normalise to Y-down with (0,0) at the top-left
+	// of the primary screen so that Bounds matches windowGetPosition /
+	// windowSetPosition and the public conventions used by Windows, GTK,
+	// Electron and the web. Screens above the primary therefore have negative
+	// Y after the flip; Bounds.Y is the screen's top edge.
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+
 	// screen bounds
 	returnScreen.height = screen.frame.size.height;
 	returnScreen.width = screen.frame.size.width;
 	returnScreen.x = screen.frame.origin.x;
-	returnScreen.y = screen.frame.origin.y;
+	returnScreen.y = primaryHeight - screen.frame.origin.y - screen.frame.size.height;
 
 	// work area
 	NSRect workArea = [screen visibleFrame];
 	returnScreen.w_height = workArea.size.height;
 	returnScreen.w_width = workArea.size.width;
 	returnScreen.w_x = workArea.origin.x;
-	returnScreen.w_y = workArea.origin.y;
+	returnScreen.w_y = primaryHeight - workArea.origin.y - workArea.size.height;
 
 
 	// adapted from https://stackoverflow.com/a/1237490/4188138
@@ -89,6 +101,7 @@ Screen* getAllScreens() {
 	for (int i = 0; i < screens.count; i++) {
 		NSScreen* screen = [screens objectAtIndex:i];
 		returnScreens[i] = processScreen(screen);
+		returnScreens[i].isPrimary = (i == 0);
 	}
 	return returnScreens;
 }
@@ -125,35 +138,48 @@ import "C"
 import "unsafe"
 
 func cScreenToScreen(screen C.Screen) *Screen {
+	// NSScreen.frame and visibleFrame return values in points (already DIPs).
+	// applyDPIScaling in screenmanager.go expects Physical* fields to be in
+	// device pixels and produces Bounds/WorkArea in DIPs by dividing by
+	// ScaleFactor. Pre-multiply the point values by backingScaleFactor so the
+	// division lands back on the original point values. Without this, bounds
+	// on Retina displays are halved (e.g. 1496×967 becomes 748×484).
+	sf := float64(screen.scaleFactor)
+	toPhysical := func(points C.int) int { return int(float64(points) * sf) }
 
 	return &Screen{
+		// Screen.X/Y must mirror Bounds.X/Y: shared code in screenmanager.go
+		// (areScreensTouching, calculateScreenPlacement, move) reads the
+		// top-level fields alongside Bounds and assumes they agree.
+		X: toPhysical(screen.x),
+		Y: toPhysical(screen.y),
 		Size: Size{
 			Width:  int(screen.p_width),
 			Height: int(screen.p_height),
 		},
 		Bounds: Rect{
-			X:      int(screen.x),
-			Y:      int(screen.y),
-			Height: int(screen.height),
-			Width:  int(screen.width),
+			X:      toPhysical(screen.x),
+			Y:      toPhysical(screen.y),
+			Height: toPhysical(screen.height),
+			Width:  toPhysical(screen.width),
 		},
 		PhysicalBounds: Rect{
-			X:      int(screen.x),
-			Y:      int(screen.y),
-			Height: int(screen.height),
-			Width:  int(screen.width),
+			X:      toPhysical(screen.x),
+			Y:      toPhysical(screen.y),
+			Height: toPhysical(screen.height),
+			Width:  toPhysical(screen.width),
 		},
 		WorkArea: Rect{
-			X:      int(screen.w_x),
-			Y:      int(screen.w_y),
-			Height: int(screen.w_height),
-			Width:  int(screen.w_width),
+			X:      toPhysical(screen.w_x),
+			Y:      toPhysical(screen.w_y),
+			Height: toPhysical(screen.w_height),
+			Width:  toPhysical(screen.w_width),
 		},
 		PhysicalWorkArea: Rect{
-			X:      int(screen.w_x),
-			Y:      int(screen.w_y),
-			Height: int(screen.w_height),
-			Width:  int(screen.w_width),
+			X:      toPhysical(screen.w_x),
+			Y:      toPhysical(screen.w_y),
+			Height: toPhysical(screen.w_height),
+			Width:  toPhysical(screen.w_width),
 		},
 		ScaleFactor: float32(screen.scaleFactor),
 		ID:          C.GoString(screen.id),
@@ -163,21 +189,34 @@ func cScreenToScreen(screen C.Screen) *Screen {
 	}
 }
 
-func (m *macosApp) getPrimaryScreen() (*Screen, error) {
-	cScreen := C.GetPrimaryScreen()
-	return cScreenToScreen(cScreen), nil
-}
-
-func (m *macosApp) getScreens() ([]*Screen, error) {
+func (m *macosApp) processAndCacheScreens() error {
 	cScreens := C.getAllScreens()
 	defer C.free(unsafe.Pointer(cScreens))
 	numScreens := int(C.GetNumScreens())
-	displays := make([]*Screen, numScreens)
+	screens := make([]*Screen, numScreens)
 	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
 	for i := 0; i < numScreens; i++ {
-		displays[i] = cScreenToScreen(cScreenHeaders[i])
+		screens[i] = cScreenToScreen(cScreenHeaders[i])
 	}
-	return displays, nil
+	return m.parent.Screen.LayoutScreens(screens)
+}
+
+func (m *macosApp) getPrimaryScreen() (*Screen, error) {
+	if m.parent.Screen.GetPrimary() == nil {
+		if err := m.processAndCacheScreens(); err != nil {
+			return nil, err
+		}
+	}
+	return m.parent.Screen.GetPrimary(), nil
+}
+
+func (m *macosApp) getScreens() ([]*Screen, error) {
+	if len(m.parent.Screen.GetAll()) == 0 {
+		if err := m.processAndCacheScreens(); err != nil {
+			return nil, err
+		}
+	}
+	return m.parent.Screen.GetAll(), nil
 }
 
 func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {

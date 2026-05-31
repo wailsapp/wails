@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -21,6 +21,17 @@ const (
 	ButtonDisabled ButtonState = 1
 	ButtonHidden   ButtonState = 2
 )
+
+// effectiveZoomButtonState returns the more restrictive of two ButtonState values.
+// Hidden > Disabled > Enabled, matching the integer ordering of the constants.
+// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton on
+// macOS; this helper ensures neither runtime setter can silently override the other.
+func effectiveZoomButtonState(a, b ButtonState) ButtonState {
+	if b > a {
+		return b
+	}
+	return a
+}
 
 type WindowStartPosition int
 
@@ -80,6 +91,31 @@ type WebviewWindowOptions struct {
 	// HTML is the HTML to load in the window.
 	HTML string
 
+	// AllowSimpleEventEmit gates the `wails:event:emit:<name>` postMessage
+	// shortcut for this window. When true, JavaScript running in this
+	// window can fire bare-named Wails custom events on the host bus via
+	// `window._wails.invoke("wails:event:emit:<name>")`. The shortcut
+	// exists so InitialHTML pages (loaded with no asset-server origin —
+	// the framework's built-in updater window is the canonical case) can
+	// still talk to the Go side without depending on the modern HTTP
+	// runtime that requires `fetch("/wails/runtime")` to work.
+	//
+	// SECURITY: leave this off (the default) unless you control every byte
+	// of HTML that this window will ever load. When enabled, ANY script
+	// running in the page — including content from a remote URL or any
+	// XSS sink in user-supplied content — can synthesise Wails custom
+	// events. The shortcut conveys bare names only (no payload) and
+	// cannot reach the binding/Call path, but it CAN trigger any
+	// `app.Event.On(name, ...)` handler your application code registers.
+	// If you have a handler that performs a privileged action based on
+	// the event name alone, that handler is exposed to anyone with
+	// scripting access to this window.
+	//
+	// Use [WebviewWindow.AsUpdaterWindow] in concert with
+	// updater.BYOWindow to opt in cleanly when you're writing your own
+	// updater UI; otherwise leave this false.
+	AllowSimpleEventEmit bool
+
 	// JS is the JavaScript to load in the window.
 	JS string
 
@@ -94,6 +130,12 @@ type WebviewWindowOptions struct {
 
 	// Y is the starting Y position of the window.
 	Y int
+
+	// Screen specifies the target screen for initial window placement.
+	// When set with WindowCentered, the window is centered on that screen's WorkArea.
+	// When set with WindowXY, X/Y are treated as relative to that screen's WorkArea origin.
+	// When nil, OS default behavior is used.
+	Screen *Screen
 
 	// Hidden will hide the window when it is first created.
 	Hidden bool
@@ -125,6 +167,10 @@ type WebviewWindowOptions struct {
 	MinimiseButtonState ButtonState
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
+	// FullscreenButtonState controls the fullscreen button state.
+	// On macOS this targets NSWindowZoomButton (the same green button as MaximiseButtonState);
+	// the more restrictive of the two states is applied. On other platforms this is a no-op.
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
@@ -485,6 +531,12 @@ type MacWindow struct {
 
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
+
+	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
+	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
+	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
+	DisableEscapeExitsFullscreen bool
 }
 
 type MacWindowLevel string
@@ -537,13 +589,13 @@ const (
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {
 	// TabFocusesLinks will enable tabbing to links
-	TabFocusesLinks u.Bool
+	TabFocusesLinks optional.Bool
 	// TextInteractionEnabled will enable text interaction
-	TextInteractionEnabled u.Bool
+	TextInteractionEnabled optional.Bool
 	// FullscreenEnabled will enable fullscreen
-	FullscreenEnabled u.Bool
+	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
-	AllowsBackForwardNavigationGestures u.Bool
+	AllowsBackForwardNavigationGestures optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

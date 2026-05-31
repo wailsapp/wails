@@ -1,0 +1,266 @@
+---
+title: マネージャーAPI
+description: 焦点を絞ったマネージャーインターフェースによる整理されたAPI構造
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3のマネージャーAPIは、焦点を絞ったマネージャー構造体を通じてアプリケーションの機能にアクセスするための、整理されており発見しやすい方法を提供します。この新しいAPI構造は、従来のApp APIとの完全な後方互換性を維持しつつ、関連するメソッドをグループ化しています。
+
+## 概要
+
+マネージャーAPIは、アプリケーションの機能を11の焦点を絞った領域に整理しています：
+
+- **`app.Window`** - ウィンドウの作成、管理、およびコールバック
+- **`app.ContextMenu`** - コンテキストメニューの登録と管理
+- **`app.KeyBinding`** - グローバルキーバインディングの管理
+- **`app.Browser`** - ブラウザー統合（URLとファイルのオープン）
+- **`app.Env`** - 環境情報とシステム状態
+- **`app.Dialog`** - ファイルおよびメッセージダイアログ操作
+- **`app.Event`** - カスタムイベント処理とアプリケーションイベント
+- **`app.Menu`** - アプリケーションメニューの管理
+- **`app.Screen`** - スクリーン管理と座標変換
+- **`app.Clipboard`** - クリップボードテキスト操作
+- **`app.SystemTray`** - システムトレイアイコンの作成と管理
+
+## メリット
+
+- **発見性の向上** - IDEのオートコンプリートが整理されたAPIサーフェスを表示
+- **コード組織の改善** - 関連するメソッドがグループ化される
+- **保守性の向上** - マネージャー間で関心の分離がなされる
+- **将来の拡張性** - 特定の領域に新機能を追加しやすくなる
+
+## 使用方法
+
+マネージャーAPIは、すべてのアプリケーション機能への整理されたアクセスを提供します：
+
+```go
+// イベントとカスタムイベント処理
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// ウィンドウ管理
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// ブラウザー統合
+app.Browser.OpenURL("https://wails.io")
+
+// メニュー管理
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// システムトレイ
+systray := app.SystemTray.New()
+```
+
+## マネージャーリファレンス
+
+### ウィンドウマネージャー
+
+ウィンドウの作成、取得、およびライフサイクルコールバックを管理します。
+
+```go
+// ウィンドウの作成
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// ウィンドウの検索
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// ウィンドウコールバック
+app.Window.OnCreate(func(window Window) {
+    // ウィンドウ作成の処理
+})
+```
+
+### イベントマネージャー
+
+カスタムイベントとアプリケーションイベントのリスニングを処理します。
+
+```go
+// カスタムイベント
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // イベントの処理
+})
+app.Event.Off("userAction")
+app.Event.Reset() // すべてのリスナーを削除
+
+// アプリケーションイベント
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // システムテーマ変更の処理
+})
+```
+
+### ブラウザーマネージャー
+
+URLとファイルを開くためのブラウザー統合を提供します。
+
+```go
+// デフォルトブラウザーでURLとファイルを開く
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### 環境マネージャー
+
+システム環境情報へのアクセス。
+
+```go
+// 環境情報の取得
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// システムテーマの確認
+if app.Env.IsDarkMode() {
+    // ダークモードが有効
+}
+
+// ファイルマネージャーを開く
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### ダイアログマネージャー
+
+ファイルおよびメッセージダイアログへの整理されたアクセス。
+
+```go
+// ファイルダイアログ
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// メッセージダイアログ
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### メニューマネージャー
+
+アプリケーションメニューの作成と管理。
+
+```go
+// アプリケーションメニューの作成と設定
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // メニュークリックの処理
+})
+
+app.Menu.Set(menu)
+
+// アバウトダイアログを表示
+app.Menu.ShowAbout()
+```
+
+### キーバインディングマネージャー
+
+グローバルキーバインディングの動的管理。
+
+```go
+// キーバインディングの追加
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Ctrl+Nの処理
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// キーバインディングの削除
+app.KeyBinding.Remove("ctrl+n")
+
+// すべてのバインディングの取得
+bindings := app.KeyBinding.GetAll()
+```
+
+### コンテキストメニューマネージャー
+
+高度なコンテキストメニューの管理（ライブラリ作者向け）。
+
+```go
+// コンテキストメニューの作成と登録
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// コンテキストメニューの取得
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// コンテキストメニューの削除
+app.ContextMenu.Remove("myMenu")
+```
+
+### スクリーンマネージャー
+
+マルチモニター環境向けのスクリーン管理と座標変換。
+
+```go
+// スクリーン情報の取得
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// 座標変換
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// スクリーンの検出
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### クリップボードマネージャー
+
+テキストの読み書きのためのクリップボード操作。
+
+```go
+// クリップボードにテキストを設定
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // エラー処理
+}
+
+// クリップボードからテキストを取得
+text, ok := app.Clipboard.Text()
+if !ok {
+    // エラー処理
+} else {
+    // テキストを使用
+}
+```
+
+### システムトレイマネージャー
+
+システムトレイアイコンの作成と管理。
+
+```go
+// システムトレイの作成
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// システムトレイにメニューを追加
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // クリックの処理
+})
+systray.SetMenu(menu)
+
+// 完了時にシステムトレイを破棄
+systray.Destroy()
+```

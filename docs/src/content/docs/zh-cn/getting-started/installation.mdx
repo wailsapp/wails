@@ -1,0 +1,106 @@
+---
+title: 安装
+description: 安装 Wails 并设置你的开发环境
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 支持的平台
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (可部署到 macOS 10.13+)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (其他 Linux 发行版也可能可用！)
+
+## 依赖项
+
+Wails 有一些在安装前必须安装的通用依赖项：
+
+<Tabs>
+  <TabItem label="Go (至少 1.24)" icon="seti:go">
+
+    从 [Go 下载页面](https://go.dev/dl/) 下载 Go。
+
+    请确保遵循官方的 [Go 安装说明](https://go.dev/doc/install)。你还需要确保 `PATH` 环境变量中包含 `~/go/bin` 目录的路径。重启终端并执行以下检查：
+
+    - 检查 Go 是否正确安装：`go version`
+    - 检查 `~/go/bin` 是否在 PATH 变量中
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (可选)" icon="seti:npm">
+
+    虽然 Wails 不要求必须安装 npm，但大多数内置模板都需要它。
+
+    从 [Node 下载页面](https://nodejs.org/en/download/) 下载最新的 Node 安装程序。最好使用最新版本，因为这是我们通常测试的版本。
+
+    运行 `npm --version` 进行验证。
+
+      :::note
+      如果你更喜欢使用其他包管理器而不是 npm，请随意使用。你需要更新项目的 Taskfiles 以使用它。
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## 平台特定的依赖项
+
+你还需要安装平台特定的依赖项：
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    Wails 要求安装 xcode 命令行工具。可以通过运行以下命令来完成：
+
+    ```sh
+    xcode-select --install
+    ```
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    Wails 要求安装 [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)。几乎所有的 Windows 安装都已经安装了此组件。你可以使用 `wails doctor` 命令进行检查。
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    Linux 需要标准的 `gcc` 构建工具以及 `gtk3` 和 `webkit2gtk`。安装后运行 <code>wails doctor</code> 以查看如何安装这些依赖项。如果你的发行版/包管理器不受支持，请在 Discord 上通知我们。
+
+  </TabItem>
+
+</Tabs>
+
+## 安装
+
+要使用 Go Modules 安装 Wails CLI，请运行以下命令：
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+如果你想安装最新的开发版本，请运行以下命令：
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+使用开发版本时，所有生成的项目都将使用 Go 的 [replace](https://go.dev/ref/mod#go-mod-file-replace) 指令，以确保项目使用 Wails 的开发版本。
+
+## 系统检查
+
+运行 `wails3 doctor` 将检查你是否安装了正确的依赖项。如果没有，它将告知你缺少什么，并帮助解决任何问题。
+
+## `wails3` 命令似乎丢失了？
+
+如果你的系统报告 `wails3` 命令丢失，请检查以下内容：
+
+- 确保你已正确遵循上述 `Go 安装指南`，并且 `go/bin` 目录在 `PATH` 环境变量中。
+- 关闭/重新打开当前终端以获取新的 `PATH` 变量。

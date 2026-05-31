@@ -43,13 +43,13 @@ Edit `build/darwin/Info.plist` to customize:
 The app icon is generated from assets in the `build/` directory. Use the `generate:icons` task:
 
 ```bash
-wails3 task generate:icons
+wails3 task common:generate:icons
 ```
 
 This uses `build/appicon.png` to produce `darwin/icons.icns` and `windows/icon.ico`. On macOS you can also provide `build/appicon.icon` (Icon Composer format): the task passes `-iconcomposerinput appicon.icon -macassetdir darwin`, which produces `Assets.car` and `darwin/icons.icns` from the `.icon` file (skipped on non-macOS platforms). When `Assets.car` is present, run the `update:build-assets` task so that `Info.plist` and `CFBundleIconName` are updated accordingly:
 
 ```bash
-wails3 task update:build-assets
+wails3 task common:update:build-assets
 ```
 
 To run the icon command manually from the `build/` directory:
@@ -87,14 +87,13 @@ For apps distributed outside the Mac App Store, Apple requires notarization:
 wails3 task darwin:sign:notarize
 ```
 
-First, store your credentials:
+First, store your credentials. Either run the interactive wizard (`wails3 setup signing`) or call `notarytool` directly:
 
 ```bash
-wails3 signing credentials \
+xcrun notarytool store-credentials "my-notarize-profile" \
   --apple-id "you@email.com" \
   --team-id "TEAMID" \
-  --password "app-specific-password" \
-  --profile "my-notarize-profile"
+  --password "app-specific-password"
 ```
 
 Configure in `build/darwin/Taskfile.yml`:
@@ -109,15 +108,12 @@ See [Signing Applications](/guides/build/signing) for details.
 
 ## DMG Installer
 
-Create a DMG disk image for distribution:
+There is no `wails3 task darwin:create:dmg` task in the shipped Wails 3 templates. To produce a DMG, drive a tool like `create-dmg` or `hdiutil` from your own Taskfile after running `wails3 task darwin:package` (or `darwin:package:universal`) — the `.app` bundle ends up under `bin/`.
 
 ```bash
-wails3 task darwin:create:dmg
+# After packaging the .app:
+hdiutil create -volname "MyApp" -srcfolder bin/MyApp.app -ov -format UDZO MyApp.dmg
 ```
-
-<Aside type="tip">
-Customize the DMG background and layout by editing `build/darwin/dmg/` assets.
-</Aside>
 
 ## Troubleshooting
 
@@ -132,7 +128,7 @@ xattr -cr /path/to/YourApp.app
 ### Notarization fails
 
 Common issues:
-- **Invalid credentials**: Re-run `wails3 signing credentials`
+- **Invalid credentials**: Re-run `xcrun notarytool store-credentials` (or `wails3 setup signing`)
 - **Hardened runtime required**: Ensure entitlements include `com.apple.security.cs.allow-unsigned-executable-memory` if needed
 - **Missing timestamp**: The signing process should include a timestamp automatically
 

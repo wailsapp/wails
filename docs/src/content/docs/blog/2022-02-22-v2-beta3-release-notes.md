@@ -1,6 +1,7 @@
 ---
 slug: blog/wails-v2-beta-for-linux
 title: Wails v2 Beta for Linux
+description: "Release notes and announcements for Wails"
 authors: [leaanthony]
 tags: [wails, v2]
 date: 2022-02-22
