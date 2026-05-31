@@ -10,9 +10,9 @@ import "github.com/wailsapp/wails/v3/internal/operatingsystem"
 // - Debug: indicates whether debug mode is enabled.
 // - OSInfo: information about the operating system.
 type EnvironmentInfo struct {
-	OS           string
-	Arch         string
-	Debug        bool
-	OSInfo       *operatingsystem.OS
-	PlatformInfo map[string]any
+	OS           string              `json:"OS"`
+	Arch         string              `json:"Arch"`
+	Debug        bool                `json:"Debug"`
+	OSInfo       *operatingsystem.OS `json:"OSInfo"`
+	PlatformInfo map[string]any      `json:"PlatformInfo"`
 }

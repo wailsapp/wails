@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"slices"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 )
 
 type Info struct {

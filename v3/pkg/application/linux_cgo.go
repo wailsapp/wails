@@ -25,24 +25,25 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator
-func NewCalloc() Calloc {
-	return Calloc{}
+// NewCalloc creates a new allocator. Returns a pointer so the allocation
+// pool is shared across calls without copying.
+func NewCalloc() *Calloc {
+	return &Calloc{}
 }
 
-// String creates a new C string and retains a reference to it
-func (c Calloc) String(in string) *C.char {
+// String creates a new C string and retains a reference to it.
+func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
 	c.pool = append(c.pool, unsafe.Pointer(result))
 	return result
 }
 
 // Free frees all allocated C memory
-func (c Calloc) Free() {
+func (c *Calloc) Free() {
 	for _, str := range c.pool {
 		C.free(str)
 	}
-	c.pool = []unsafe.Pointer{}
+	c.pool = nil
 }
 
 type windowPointer *C.GtkWindow
@@ -80,7 +81,10 @@ var (
 	mainThreadId        *C.GThread
 )
 
-var registerURIScheme sync.Once
+var (
+	registerURIScheme sync.Once
+	fixSignalHandlers sync.Once
+)
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -212,9 +216,9 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	// TODO: Implement GTK4 icon setting using GdkTexture
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
-	defer C.g_bytes_unref(gbytes)
+	// GTK4 removed per-window icon APIs. The application icon is determined by
+	// the .desktop file's Icon= field at the desktop-integration level.
+	// No programmatic equivalent exists for setting icons from bytes in GTK4.
 }
 
 func clipboardGet() string {
@@ -1189,6 +1193,14 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 			(*[0]byte)(C.onProcessRequest), nil, nil)
 	})
 
+	// Start the periodic signal-handler fix now that a WebView exists and JSC
+	// can actually initialise. Anchoring to first webview creation (not appNew)
+	// ensures the 5s window covers the JSC lazy-init race window.
+	fixSignalHandlers.Do(func() {
+		C.install_signal_handlers()
+		C.schedule_signal_handler_fix()
+	})
+
 	_ = networkSession
 	return pointer(webView)
 }
@@ -1270,10 +1282,13 @@ func (w *linuxWebviewWindow) windowShow() {
 		return
 	}
 	C.gtk_window_present(w.gtkWindow())
+	// Re-apply always-on-top state now that the surface exists.
+	C.window_apply_pending_always_on_top(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	// GTK4: No direct equivalent - compositor-dependent
+	// X11 only: uses _NET_WM_STATE_ABOVE. No-op on Wayland (no standard protocol).
+	C.window_set_always_on_top(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
 func (w *linuxWebviewWindow) setBorderless(borderless bool) {
@@ -1294,7 +1309,8 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 }
 
 func (w *linuxWebviewWindow) setIcon(icon pointer) {
-	// GTK4: Window icons handled differently - no gtk_window_set_icon
+	// GTK4 removed gtk_window_set_icon. Window icons are set via the
+	// application's .desktop file at the desktop-integration level.
 }
 
 func (w *linuxWebviewWindow) startDrag() error {
@@ -1487,6 +1503,9 @@ func handleLoadChanged(wv *C.WebKitWebView, event C.WebKitLoadEvent, data C.uint
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }
