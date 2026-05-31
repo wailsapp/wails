@@ -15,17 +15,18 @@ import (
 	"github.com/wailsapp/wails/v3/internal/version"
 	"gopkg.in/yaml.v3"
 
+	"errors"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 )
 
 //go:embed *
@@ -73,10 +74,30 @@ func GetDefaultTemplates() []TemplateData {
 	return defaultTemplates
 }
 
+// NormalizeBinaryName converts a project name into a valid binary/package name:
+// lowercased, with spaces replaced by dashes, and any remaining characters not
+// in [a-z0-9-] replaced by dashes, collapsing runs and trimming edges.
+func NormalizeBinaryName(name string) string {
+	name = strings.ToLower(name)
+	var b strings.Builder
+	prevDash := false
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			prevDash = false
+		} else if !prevDash {
+			b.WriteRune('-')
+			prevDash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
 type TemplateOptions struct {
 	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
 	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
 	*flags.Init
+	BinaryName      string
 	LocalModulePath string
 	UseTypescript   bool
 	WailsVersion    string
@@ -195,10 +216,13 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	// --- JSON path: legacy / backwards-compat ---
 	jsonData, jsonErr := fs.ReadFile(templateFS, prefix+"template.json")
 	if jsonErr != nil {
-		if errors.Is(yamlErr, fs.ErrNotExist) {
+		if errors.Is(yamlErr, fs.ErrNotExist) && errors.Is(jsonErr, fs.ErrNotExist) {
 			return result, fmt.Errorf("no template.yaml or template.json found in template")
 		}
-		return result, errors.Wrap(jsonErr, "error reading template.json")
+		if !errors.Is(yamlErr, fs.ErrNotExist) {
+			return result, fmt.Errorf("error reading template.yaml: %w", yamlErr)
+		}
+		return result, fmt.Errorf("error reading template.json: %w", jsonErr)
 	}
 
 	if err := json.Unmarshal(jsonData, &result); err != nil {
@@ -304,6 +328,7 @@ func Install(options *flags.Init) error {
 
 	templateData := TemplateOptions{
 		Init:            options,
+		BinaryName:      NormalizeBinaryName(options.ProjectName),
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 		WailsVersion:    version.String(),
@@ -415,6 +440,7 @@ func Install(options *flags.Init) error {
 		Typescript            bool
 	}{
 		Name:                  options.ProjectName,
+		BinaryName:            NormalizeBinaryName(options.ProjectName),
 		Silent:                true,
 		ProductCompany:        options.ProductCompany,
 		ProductName:           options.ProductName,

@@ -16,13 +16,15 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Add debugging page and working with `runtime/trace`
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix minimum width/height constraints not enforced after window unmaximise on Windows (#4593)
+- Fix mouse click-through in fullscreen mode with Frameless + Transparent window options (#4408)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
