@@ -19,7 +19,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
 )

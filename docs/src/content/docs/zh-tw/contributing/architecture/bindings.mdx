@@ -1,0 +1,156 @@
+---
+title: 綁定系統
+description: 綁定系統如何收集、處理並生成 JavaScript/TypeScript 程式碼
+sidebar:
+  order: 1
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+本指南說明 Wails 綁定系統的內部運作方式，為希望了解自動程式碼生成背後機制的開發者提供見解。
+
+## 架構概覽
+
+Wails 綁定系統由三個主要組件構成：
+
+1. **收集（Collection）**：分析 Go 程式碼，提取關於服務、模型及其他宣告的資訊
+2. **配置（Configuration）**：管理綁定生成過程的設定與選項
+3. **渲染（Rendering）**：根據收集的資訊生成 JavaScript/TypeScript 程式碼
+
+<FileTree>
+- internal/generator/
+  - collect/     # 套件分析與資訊提取
+  - config/      # 配置結構與介面
+  - render/      # JS/TS 程式碼生成
+</FileTree>
+
+## 收集流程
+
+收集流程負責分析 Go 套件並提取關於服務、模型及其他宣告的資訊。這由 `collect` 套件處理。
+
+### 主要組件
+
+- **Collector**：管理套件資訊並快取已收集的資料
+- **Package**：代表正在分析的 Go 套件，並儲存已收集的服務、模型與指令
+- **Service**：收集服務類型及其方法的資訊
+- **Model**：收集模型類型的詳細資訊，包括欄位、值與型別參數
+- **Directive**：解析並解釋 Go 原始碼中的 `//wails:` 指令
+
+### 收集流程
+
+1. Collector 掃描專案中指定的 Go 套件
+2. 識別服務類型（具有將暴露給前端的結構體方法）
+3. 對於每個服務，收集其方法的資訊
+4. 識別模型類型（作為服務方法參數或回傳值的結構體）
+5. 對於每個模型，收集其欄位與型別參數的資訊
+6. 處理程式碼中找到的任何 `//wails:` 指令
+
+## 渲染流程
+
+渲染流程負責根據收集的資訊生成 JavaScript/TypeScript 程式碼。這由 `render` 套件處理。
+
+### 主要組件
+
+- **Renderer**：協調服務、模型與索引檔案的渲染
+- **Module**：代表單一生成的 JavaScript/TypeScript 模組
+- **Templates**：用於程式碼生成的文字範本
+
+### 渲染流程
+
+1. 對於每個服務，Renderer 生成一個 JavaScript/TypeScript 檔案，其中的函式對應服務方法
+2. 對於每個模型，Renderer 生成一個 JavaScript/TypeScript 類別，對應模型結構體
+3. Renderer 生成索引檔案，重新匯出所有服務與模型
+4. Renderer 套用由 `//wails:inject` 指令指定的自訂程式碼注入
+
+## 型別對應
+
+綁定系統最重要的面向之一是 Go 型別如何對應到 JavaScript/TypeScript 型別。以下是對應的摘要：
+
+| Go 型別 | JavaScript 型別 | TypeScript 型別 |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[K]V` | `Object` | `Record<K, V>` |
+| `struct` | `Object` | 自訂類別 |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | 不支援 | 不支援 |
+| `chan` | 不支援 | 不支援 |
+
+## 指令系統
+
+綁定系統支援多個可用於自訂生成程式碼的指令。這些指令以註解形式新增至您的 Go 程式碼中。
+
+### 可用指令
+
+- `//wails:inject`：將自訂 JavaScript/TypeScript 程式碼注入生成的綁定中
+- `//wails:include`：將額外檔案包含在生成的綁定中
+- `//wails:internal`：將類型或方法標記為內部，防止其暴露給前端
+- `//wails:ignore`：在綁定生成期間完全忽略某個方法
+- `//wails:id`：指定方法的自訂 ID，覆蓋預設的雜湊 ID
+
+### 指令處理
+
+1. 在收集階段，Collector 識別並解析 Go 程式碼中的指令
+2. 指令會與對應的宣告（服務、方法、模型等）一起儲存
+3. 在渲染階段，Renderer 套用指令來自訂生成的程式碼
+
+## 進階功能
+
+### 條件式程式碼生成
+
+綁定系統支援使用兩字元條件前綴的條件式程式碼生成，適用於 `include` 和 `inject` 指令：
+
+```
+<language><style>:<content>
+```
+
+其中：
+- `<language>` 可以是：
+  - `*` - JavaScript 與 TypeScript
+  - `j` - 僅 JavaScript
+  - `t` - 僅 TypeScript
+
+- `<style>` 可以是：
+  - `*` - 類別與介面
+  - `c` - 僅類別
+  - `i` - 僅介面
+
+例如：
+```go
+//wails:inject j*:console.log("JavaScript only");
+//wails:inject t*:console.log("TypeScript only");
+```
+
+### 自訂方法 ID
+
+預設情況下，方法由雜湊 ID 識別。然而，您可以使用 `//wails:id` 指令指定自訂 ID：
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+這在重構程式碼時對於維持相容性很有用。
+
+## 效能考量
+
+綁定生成器設計為高效，但仍有幾點需要注意：
+
+1. 首次執行會較慢，因為它會建立要掃描的套件快取
+2. 後續執行會較快，因為它們使用快取的資訊
+3. 生成器會處理專案中的所有套件，對於大型專案來說可能耗時
+4. 您可以使用 `-clean` 旗標在生成前清理輸出目錄
+
+## 除錯
+
+如果您在綁定生成過程中遇到問題，可以使用 `-v` 旗標啟用除錯輸出：
+
+```bash
+wails3 generate bindings -v
+```
+
+這將提供關於收集與渲染流程的詳細資訊，有助於識別問題的來源。

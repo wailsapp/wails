@@ -36,6 +36,7 @@ type Build struct {
 	Debug                   bool   `description:"Builds the application in debug mode"`
 	Devtools                bool   `description:"Enable Devtools in productions, Already enabled in debug mode (-debug)"`
 	NSIS                    bool   `description:"Generate NSIS installer for Windows"`
+	InstallScope            string `description:"NSIS install scope: machine (default) or user"`
 	TrimPath                bool   `description:"Remove all file system paths from the resulting executable"`
 	WindowsConsole          bool   `description:"Keep the console when building for Windows"`
 	Obfuscated              bool   `description:"Code obfuscation of bound Wails methods"`
@@ -66,11 +67,11 @@ func (b *Build) Default() *Build {
 	}
 
 	result := &Build{
-		Platform:   defaultPlatform + "/" + defaultArch,
-		WebView2:   "download",
-		GarbleArgs: "-literals -tiny -seed=random",
-
-		defaultArch: defaultArch,
+		Platform:     defaultPlatform + "/" + defaultArch,
+		WebView2:     "download",
+		GarbleArgs:   "-literals -tiny -seed=random",
+		InstallScope: "machine",
+		defaultArch:  defaultArch,
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
@@ -124,6 +125,15 @@ func (b *Build) Process() error {
 			return fmt.Errorf("invalid option for flag 'webview2': %s", b.WebView2)
 		}
 		b.wv2rtstrategy = "wv2runtime." + b.WebView2
+	}
+
+	// Validate install scope
+	b.InstallScope = strings.ToLower(b.InstallScope)
+	if b.InstallScope != "" {
+		validScopes := slicer.String([]string{"machine", "user"})
+		if !validScopes.Contains(b.InstallScope) {
+			return fmt.Errorf("invalid option for flag 'installscope': %s", b.InstallScope)
+		}
 	}
 
 	return nil

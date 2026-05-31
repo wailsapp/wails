@@ -83,10 +83,10 @@ func packageApplicationForDarwin(options *Options) error {
 		return err
 	}
 	// Copy binary
-	packedBinaryPath := filepath.Join(exeDir, options.ProjectData.Name)
+	packedBinaryPath := filepath.Join(exeDir, options.ProjectData.OutputFilename)
 	err = fs.MoveFile(options.CompiledBinary, packedBinaryPath)
 	if err != nil {
-		return errors.Wrap(err, "Cannot move file: "+options.ProjectData.OutputFilename)
+		return errors.Wrap(err, "Cannot move file: "+options.CompiledBinary)
 	}
 
 	// Generate Info.plist

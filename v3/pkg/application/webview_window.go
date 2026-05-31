@@ -11,16 +11,16 @@ import (
 
 	"encoding/json"
 
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Enabled means the feature should be enabled
-var Enabled = u.True
+var Enabled = optional.True
 
 // Disabled means the feature should be disabled
-var Disabled = u.False
+var Disabled = optional.False
 
 var shouldSkipHideOnFocusLost = func() bool { return false }
 
@@ -99,6 +99,7 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		setFullscreenButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
 		cut()
@@ -284,6 +285,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Name == "" {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)
 	}
+
+	// Inject the minimal `window.wails.Events` shim into HTML-supplied
+	// pages that opted into the simple postMessage emit path. Without this
+	// they can't load /wails/runtime.js (their origin is "null") so they'd
+	// have to hand-roll a dispatch receiver and an invoke caller every
+	// time. See inline_event_shim.go.
+	options.HTML = maybeInjectInlineEventShim(options.HTML, options.AllowSimpleEventEmit)
 
 	result := &WebviewWindow{
 		id:             thisWindowID,
@@ -654,6 +662,16 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 	return w
 }
 
+func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
+	w.options.FullscreenButtonState = state
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setFullscreenButtonState(state)
+		})
+	}
+	return w
+}
+
 // Flash flashes the window's taskbar button/icon.
 // Useful to indicate that attention is required. Windows only.
 func (w *WebviewWindow) Flash(enabled bool) {
@@ -765,6 +783,29 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				w.impl.execJS(js)
 			})
 		}
+	case strings.HasPrefix(message, "wails:event:emit:"):
+		// Forward an event from a page that can't reach the modern HTTP
+		// runtime (e.g. an InitialHTML pop-up loaded with `baseURL:nil`
+		// where `window.location.origin` is "null" and fetch fails). Sent
+		// as `wails:event:emit:<event-name>`; bare names only (no payload).
+		// Enough for the updater window's user-action buttons; pages that
+		// need to send structured data should use the full runtime.
+		//
+		// Gated on WebviewWindowOptions.AllowSimpleEventEmit so a page
+		// loaded into a webview cannot synthesise host-side custom events
+		// unless its owning code explicitly opted in. See the comment on
+		// that field for the threat model.
+		if !w.options.AllowSimpleEventEmit {
+			w.Error("wails:event:emit received but AllowSimpleEventEmit is not set on this window: %v", message)
+			return
+		}
+		name := strings.TrimPrefix(message, "wails:event:emit:")
+		if name == "" {
+			w.Error("empty event name in wails:event:emit")
+			return
+		}
+		evt := &CustomEvent{Name: name, Sender: w.Name()}
+		globalApplication.Event.EmitEvent(evt)
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
@@ -1310,12 +1351,12 @@ func (w *WebviewWindow) AttachModal(modalWindow Window) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	
+
 	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
 	if !ok || modalWebviewWindow == nil {
 		return
 	}
-	
+
 	InvokeSync(func() {
 		w.impl.attachModal(modalWebviewWindow)
 	})

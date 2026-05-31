@@ -1,0 +1,424 @@
+---
+title: Système de build
+description: Comprendre comment Wails construit et package votre application
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Système de build unifié
+
+Wails propose un **système de build unifié** qui compile le code Go, regroupe les assets frontend, intègre le tout dans un exécutable unique et gère les builds spécifiques à chaque plateforme — le tout avec une seule commande.
+
+```bash
+wails3 build
+```
+
+**Sortie :** Exécutable natif avec tout intégré.
+
+## Aperçu du processus de build
+
+{/*
+TODO: Fix D2 diagram generation or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placehold du diagramme du processus de build]**
+
+
+## Phases de build
+
+### 1. Phase d'analyse
+
+Wails analyse votre code Go pour comprendre vos services :
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Ce que Wails extrait :**
+- Nom du service : `GreetService`
+- Nom de la méthode : `Greet`
+- Types des paramètres : `string`
+- Types de retour : `string`
+
+**Utilisé pour :** Générer les liaisons TypeScript
+
+### 2. Phase de génération
+
+#### Liaisons TypeScript
+
+Wails génère des liaisons typées :
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**Avantages :**
+- Sécurité des types complète
+- Autocomplétion IDE
+- Erreurs à la compilation
+- Commentaires JSDoc
+
+#### Build du frontend
+
+Votre bundler frontend s'exécute (Vite, webpack, etc.) :
+
+```bash
+# Exemple Vite
+vite build --outDir dist
+```
+
+**Ce qui se passe :**
+- JavaScript/TypeScript compilé
+- CSS traité et minifié
+- Assets optimisés
+- Maps source générées (dev uniquement)
+- Sortie vers `frontend/dist/`
+
+### 3. Phase de compilation
+
+#### Compilation Go
+
+Le code Go est compilé avec des optimisations :
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**Drapeaux :**
+- `-s` : Supprimer la table des symboles
+- `-w` : Supprimer les informations de débogage DWARF
+- Résultat : Binaire plus petit (~30% de réduction)
+
+**Spécifique à la plateforme :**
+- Windows : `.exe` avec icône intégrée
+- macOS : Structure de bundle `.app`
+- Linux : Binaire ELF
+
+#### Intégration des assets
+
+Les assets frontend sont intégrés dans le binaire Go :
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**Résultat :** Exécutable unique avec tout à l'intérieur.
+
+### 4. Sortie
+
+**Binaire natif unique :**
+- Windows : `myapp.exe` (~15MB)
+- macOS : `myapp.app` (~15MB)
+- Linux : `myapp` (~15MB)
+
+**Aucune dépendance** (sauf WebView système).
+
+## Développement vs Production
+
+<Tabs syncKey="mode">
+  <TabItem label="Développement (wails3 dev)" icon="seti:config">
+    **Optimisé pour la vitesse :**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **Ce qui se passe :**
+    1. Démarre le serveur de dev frontend (Vite sur le port 5173)
+    2. Compile Go sans optimisations
+    3. Lance l'application pointant vers le serveur de dev
+    4. Active le rechargement à chaud (hot reload)
+    5. Inclut les maps source
+    
+    **Caractéristiques :**
+    - **Rebuilds rapides** (&lt;1s pour les changements frontend)
+    - **Aucune intégration d'assets** (servis depuis le serveur de dev)
+    - **Symboles de débogage** inclus
+    - **Maps source** activées
+    - **Logs verbeux**
+    
+    **Taille du fichier :** Plus grande (~50MB avec les symboles de débogage)
+  </TabItem>
+
+  <TabItem label="Production (wails3 build)" icon="rocket">
+    **Optimisé pour la taille et les performances :**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **Ce qui se passe :**
+    1. Compile le frontend pour la production (minifié)
+    2. Compile Go avec optimisations
+    3. Supprime les symboles de débogage
+    4. Intègre les assets
+    5. Crée un binaire unique
+    
+    **Caractéristiques :**
+    - **Code optimisé** (minifié, tree-shaken)
+    - **Assets intégrés** (pas de fichiers externes)
+    - **Symboles de débogage supprimés**
+    - **Pas de maps source**
+    - **Logs minimaux**
+    
+    **Taille du fichier :** Plus petite (~15MB)
+  </TabItem>
+</Tabs>
+
+## Commandes de build
+
+### Build de base
+
+```bash
+wails3 build
+```
+
+**Sortie :** `build/bin/myapp[.exe]`
+
+### Build pour une plateforme spécifique
+
+```bash
+# Build pour Windows (depuis n'importe quel OS)
+wails3 build -platform windows/amd64
+
+# Build pour macOS
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# Build pour Linux
+wails3 build -platform linux/amd64
+```
+
+**Compilation croisée :** Build pour n'importe quelle plateforme depuis n'importe quelle plateforme.
+
+### Build avec options
+
+```bash
+# Répertoire de sortie personnalisé
+wails3 build -o ./dist/myapp
+
+# Ignorer le build frontend (utiliser l'existant)
+wails3 build -skipbindings
+
+# Build propre (supprimer le cache)
+wails3 build -clean
+
+# Sortie verbeuse
+wails3 build -v
+```
+
+### Modes de build
+
+```bash
+# Build Debug (inclut les symboles)
+wails3 build -debug
+
+# Build Production (par défaut, optimisé)
+wails3 build
+
+# Build Développement (rapide, non optimisé)
+wails3 build -devbuild
+```
+
+## Configuration de build
+
+### Taskfile.yml
+
+Wails utilise [Taskfile](https://taskfile.dev/) pour la configuration de build :
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: Build the application
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: Build for Windows
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: Build for macOS (Universal)
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: Build for Linux
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**Exécuter les tâches :**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### Fichier d'options de build
+
+Créez `build/build.json` pour une configuration persistante :
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## Intégration des assets
+
+### Comment ça marche
+
+Wails utilise le package `embed` de Go :
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**Au moment du build :**
+1. Frontend construit dans `frontend/dist/`
+2. La directive `//go:embed` inclut les fichiers
+3. Fichiers compilés dans le binaire
+4. Le binaire contient tout
+
+**Au moment de l'exécution :**
+1. L'application démarre
+2. Assets servis depuis la mémoire
+3. Pas d'I/O disque pour les assets
+4. Chargement rapide
+
+### Assets personnalisés
+
+Intégrez des fichiers supplémentaires :
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## Optimisations de build
+
+### Optimisations frontend
+
+**Vite (par défaut) :**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // Remove console.log
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // Separate vendor bundle
+        },
+      },
+    },
+  },
+}
+```
+
+**Résultats :**
+- JavaScript minifié (~70% de réduction)
+- CSS minifié (~60% de réduction)
+- Images optimisées
+- Tree-shaking appliqué
+
+### Optimisations Go
+
+**Drapeaux du compilateur :**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s` : Supprimer la table des symboles (~10% de réduction)
+- `-w` : Supprimer les informations de débogage DWARF (~20% de réduction)
+
+**Optimisations supplémentaires :**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X` : Définir les valeurs des variables au moment du build
+- Utile pour les numéros de version, dates de build
+
+### Compression du binaire
+
+**UPX (optionnel) :**
+
+```bash
+# Après le build
+upx --best build/bin/myapp.exe
+```
+
+**Résultats :**
+- Réduction de taille ~50%**Questions about building?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [build examples](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
