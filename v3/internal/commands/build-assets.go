@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 	"gopkg.in/yaml.v3"
 	"howett.net/plist"
 )
@@ -53,9 +53,15 @@ type BuildAssetsOptions struct {
 	Typescript            bool   `description:"Use typescript" default:"false"`
 }
 
+type TemplateEnrichment struct {
+	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
+	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+}
+
 // BuildConfig defines the configuration for generating build assets.
 type BuildConfig struct {
 	BuildAssetsOptions
+	TemplateEnrichment
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
 }
@@ -96,6 +102,8 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	var config BuildConfig
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	if options.ProductComments == "" {
 		options.ProductComments = fmt.Sprintf("(c) %d %s", time.Now().Year(), options.ProductCompany)
@@ -185,6 +193,7 @@ type FileAssociation struct {
 
 // UpdateConfig defines the configuration for updating build assets.
 type UpdateConfig struct {
+	TemplateEnrichment
 	UpdateBuildAssetsOptions
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
@@ -257,6 +266,9 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	}
 
 	config.UpdateBuildAssetsOptions = *options
+
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	// If directory doesn't exist, create it
 	if _, err := os.Stat(options.Dir); os.IsNotExist(err) {
@@ -387,6 +399,13 @@ func mergeBackupPlists(backups []plistBackup) error {
 			return fmt.Errorf("failed to parse backup plist %s: %w", backup.backupPath, err)
 		}
 
+		// Remove any string values that contain Go template syntax. Older
+		// project templates stored template directives directly in the plist
+		// file; the XML parser treats block-level directives as text nodes
+		// (dropping them) but captures inner <string>{{.Ext}}</string> literals
+		// as real values, which would otherwise appear as garbage in the output.
+		backupDict = sanitizePlistDict(backupDict)
+
 		// Read the newly extracted plist
 		newContent, err := os.ReadFile(backup.originalPath)
 		if err != nil {
@@ -423,5 +442,57 @@ func mergeBackupPlists(backups []plistBackup) error {
 func cleanupBackups(backups []plistBackup) {
 	for _, backup := range backups {
 		os.Remove(backup.backupPath)
+	}
+}
+
+// sanitizePlistDict recursively removes any plist entries whose string values
+// contain Go template syntax (e.g. "{{.Ext}}"). Older wails projects stored
+// the darwin Info.plist as a raw Go template; when that file is parsed as a
+// plain plist the block-level directives ({{if}}, {{range}}, {{end}}) are
+// silently dropped as XML text nodes, but inner field references inside
+// <string> elements survive as literal garbage values. Sanitizing before the
+// merge prevents those stubs from polluting the updated plist.
+func sanitizePlistDict(d map[string]any) map[string]any {
+	result := make(map[string]any, len(d))
+	for k, v := range d {
+		if sanitized, keep := sanitizePlistValue(v); keep {
+			result[k] = sanitized
+		}
+	}
+	return result
+}
+
+// sanitizePlistValue recursively sanitizes a single plist value.
+// Returns the sanitized value and a boolean indicating whether the value
+// should be kept (true) or dropped (false). Values containing Go template
+// syntax are dropped; other types are passed through unchanged.
+// Originally empty containers (empty maps and arrays) are preserved,
+// while containers that become empty due to template removal are dropped.
+func sanitizePlistValue(v any) (any, bool) {
+	switch val := v.(type) {
+	case string:
+		if strings.Contains(val, "{{") {
+			return nil, false
+		}
+		return val, true
+	case map[string]any:
+		if len(val) == 0 {
+			return val, true
+		}
+		sanitized := sanitizePlistDict(val)
+		return sanitized, len(sanitized) > 0
+	case []any:
+		if len(val) == 0 {
+			return val, true
+		}
+		var result []any
+		for _, item := range val {
+			if sanitized, keep := sanitizePlistValue(item); keep {
+				result = append(result, sanitized)
+			}
+		}
+		return result, len(result) > 0
+	default:
+		return v, true
 	}
 }

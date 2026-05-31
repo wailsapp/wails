@@ -1,0 +1,63 @@
+---
+title: Feedback
+description: Como fornecer feedback e relatar problemas para o Wails v3
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Agradecemos (e incentivamos) o seu feedback! Por favor, procure por issues ou
+discussões existentes antes de criar novas. Aqui estão as diferentes formas de contribuir:
+
+<Tabs>
+  <TabItem label="Bugs" icon="error">
+
+    Se você encontrar um bug, por favor, [abra uma issue](https://github.com/wailsapp/wails/issues/new/choose) no GitHub usando o template de relatório de bug.
+
+    - Descreva claramente o bug com um exemplo simples e reproduzível. Se a documentação não estiver clara sobre o que _deveria_ acontecer, inclua isso no relatório.
+    - Inclua a saída de `wails doctor` no relatório.
+    - Se o bug for um comportamento que não está alinhado com a documentação atual, por favor, faça também o seguinte:
+      - Atualize um exemplo existente no diretório `v3/examples` ou crie um novo exemplo que demonstre claramente o problema.
+      - Abra um [PR](https://github.com/wailsapp/wails/pulls) referenciando a issue relacionada.
+
+    :::caution
+
+    _Lembre-se_, comportamento inesperado não é necessariamente um bug — pode ser apenas que ele não faça
+    o que você espera. Use `Suggestions` para isso.
+
+    :::
+
+    Você também é bem-vindo para discutir bugs no canal [#v3](https://discord.gg/bdj28QNHmT) no Discord.
+
+  </TabItem>
+
+  <TabItem label="Correções" icon="approve-check">
+
+    Se você tem uma correção para um bug ou uma melhoria para a documentação, por favor:
+
+    - Abra um pull request no [repositório do Wails](https://github.com/wailsapp/wails) seguindo as [diretrizes de contribuição](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
+    - Referencie quaisquer issues relacionadas na descrição do PR.
+
+  </TabItem>
+
+  <TabItem label="Sugestões" icon="puzzle" id="abc">
+
+    Se você tem uma solicitação de funcionalidade ou sugestão, por favor, [inicie uma discussão](https://github.com/wailsapp/wails/discussions) no GitHub.
+
+    - Descreva claramente a funcionalidade e o problema que ela resolve.
+    - Sinta-se à vontade para também discutir ideias no canal [#v3](https://discord.gg/bdj28QNHmT) no Discord.
+
+  </TabItem>
+
+  <TabItem label="Votação positiva" icon="star">
+
+    - Demonstre apoio a issues e discussões usando a reação :thumbsup: no GitHub.
+    - Por favor, _não_ adicione apenas comentários como "+1" ou "eu também".
+    - Adicione um comentário se tiver algo significativo a contribuir, como "esse bug também afeta builds para ARM" ou "Outra abordagem seria...".
+
+  </TabItem>
+
+</Tabs>
+
+Problemas conhecidos e trabalhos em andamento podem ser encontrados [aqui](https://github.com/orgs/wailsapp/projects/6).

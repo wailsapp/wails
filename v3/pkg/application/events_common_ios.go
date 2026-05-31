@@ -15,10 +15,12 @@ func (i *iosApp) setupCommonEvents() {
         sourceEvent := sourceEvent
         targetEvent := targetEvent
         i.parent.Event.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
-            event.Id = uint(targetEvent)
             // Log the forwarding so we can see every emitted event in iOS NSLog
             iosConsoleLogf("info", " [events_common_ios.go] Forwarding iOS event %d → common %d", sourceEvent, targetEvent)
-            applicationEvents <- event
+            applicationEvents <- &ApplicationEvent{
+                Id:  uint(targetEvent),
+                ctx: event.ctx,
+            }
         })
     }
 }

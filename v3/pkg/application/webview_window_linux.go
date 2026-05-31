@@ -8,7 +8,7 @@ import (
 
 	"unsafe"
 
-	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
@@ -102,8 +102,8 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
+	_, _, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(0, 0, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -381,7 +381,7 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadFinished, func(_ *WindowEvent) {
-		InvokeAsync(func() {
+		gtkDispatch(func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
@@ -427,13 +427,16 @@ func (w *linuxWebviewWindow) print() error {
 }
 
 func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	// accelerator, err := parseAccelerator(acceleratorString)
-	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %w", err)
-	// 	return
-	// }
-	w.parent.processKeyBinding(acceleratorString)
+	if !w.parent.processKeyBinding(acceleratorString) {
+		// No registered binding: apply built-in editing command fallbacks so that
+		// standard shortcuts work even in fresh projects without an Edit menu.
+		switch acceleratorString {
+		case "Ctrl+Z":
+			w.undo()
+		case "Ctrl+Shift+Z":
+			w.redo()
+		}
+	}
 }
 
 // SetMinimiseButtonState is unsupported on Linux

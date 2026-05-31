@@ -212,11 +212,11 @@ By default, the binding generator uses hash-based IDs for method calls. You can 
 wails3 generate bindings -names
 ```
 
-This will generate code that uses method names instead of IDs:
+This will generate code that calls into the bound method by its **fully-qualified** name (`<package>.<Service>.<Method>`) and uses positional `$0`, `$1`, … parameter names:
 
 ```javascript
-export function Greet(name) {
-    let $resultPromise = $Call.ByName("Greet", name);
+export function Greet($0) {
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0);
     return $resultPromise;
 }
 ```
