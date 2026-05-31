@@ -859,6 +859,8 @@ Windows: application.WindowsWindow{
     BackdropType:                      application.Auto,
     CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
+    NonClientRegionSupport:            false,
+    WebView2CompositionHosting:         false,
 },
 ```
 
@@ -880,6 +882,15 @@ There are no `WindowsBackdropTypeMica`-style constants — use `application.Mica
 **DisableFramelessWindowDecorations** (`bool`)
 - Disable default frameless decorations (Aero shadow, rounded corners).
 
+**NonClientRegionSupport** (`bool`)
+- Enables WebView2-native `app-region: drag` / `app-region: no-drag` support for frameless custom title bars.
+- This is for simple native app dragging only. It does not provide native custom caption-button behavior or Windows 11 Snap Assist / Snap Layouts for custom maximize buttons.
+
+**WebView2CompositionHosting** (`bool`)
+- Enables Wails-managed `--wails-app-region` support for custom caption buttons with native Windows behavior, including Windows 11 Snap Assist / Snap Layouts on custom maximize buttons.
+- Experimental. This hosts WebView2 through `ICoreWebView2CompositionController` and DirectComposition instead of the default HWND-hosted controller.
+- Can be combined with `NonClientRegionSupport` when a window needs both WebView2-native `app-region` support and Wails-managed custom caption-button regions.
+
 **Example:**
 
 ```go
@@ -888,6 +899,17 @@ Windows: application.WindowsWindow{
     DisableIcon:  true,
 },
 ```
+
+**Example - Custom Windows title bar regions:**
+
+```go
+Windows: application.WindowsWindow{
+    NonClientRegionSupport:    true,
+    WebView2CompositionHosting: true,
+},
+```
+
+See [Frameless Windows](/features/windows/frameless#native-non-client-regions-on-windows) for the detailed behavior, tradeoffs, and matching CSS.
 
 ### Linux Options (per-window)
 
