@@ -19,7 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Add debugging page and working with `runtime/trace`
 
 ## Changed
-<!-- Changes in existing functionality -->
+- Remove some unnecessary `_ "embed"` imports tidying the code a little
 
 ## Fixed
 <!-- Bug fixes -->
