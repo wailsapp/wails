@@ -60,7 +60,7 @@ func GenerateBindings(options Options) (string, error) {
 	// So, use the default C compiler, not the one set for cross compiling.
 	envBuild = shell.RemoveEnv(envBuild, "CC")
 
-	stdout, stderr, err = shell.RunCommandWithEnv(envBuild, workingDirectory, options.Compiler, "build", "-buildvcs=false", "-tags", tagString, "-o", filename)
+	stdout, stderr, err = shell.RunCommandWithEnv(envBuild, workingDirectory, options.Compiler, "build", "-buildvcs=false", "-tags", tagString, "-ldflags", "-s -w", "-o", filename)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
