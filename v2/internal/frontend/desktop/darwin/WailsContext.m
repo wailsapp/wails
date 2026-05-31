@@ -124,7 +124,21 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 
 }
 
+- (void) windowDidChangeBackingProperties:(NSNotification *)notification {
+    if (!self.enableRetinaDevicePixelRatio) return;
+
+    NSNumber *oldFactor = [notification.userInfo objectForKey:NSBackingPropertyOldScaleFactorKey];
+    CGFloat newFactor = [self.mainWindow backingScaleFactor];
+    if (oldFactor && [oldFactor doubleValue] == newFactor) return;
+
+    SEL sel = NSSelectorFromString(@"_setOverrideDeviceScaleFactor:");
+    if ([self.webview respondsToSelector:sel]) {
+        [self.webview _setOverrideDeviceScaleFactor:newFactor];
+    }
+}
+
 - (void) dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self.appdelegate release];
     [self.mainWindow release];
     [self.mouseEvent release];
@@ -318,6 +332,11 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
         SEL sel = NSSelectorFromString(@"_setOverrideDeviceScaleFactor:");
         if ([self.webview respondsToSelector:sel]) {
             [self.webview _setOverrideDeviceScaleFactor:[self.mainWindow backingScaleFactor]];
+            self.enableRetinaDevicePixelRatio = YES;
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                selector:@selector(windowDidChangeBackingProperties:)
+                name:NSWindowDidChangeBackingPropertiesNotification
+                object:self.mainWindow];
         }
     }
 

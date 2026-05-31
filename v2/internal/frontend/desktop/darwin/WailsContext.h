@@ -51,6 +51,7 @@
 
 @property bool devtoolsEnabled;
 @property bool defaultContextMenuEnabled;
+@property bool enableRetinaDevicePixelRatio;
 
 @property (retain) WKUserContentController* userContentController;
 
