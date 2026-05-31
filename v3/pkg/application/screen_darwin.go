@@ -34,7 +34,22 @@ int GetNumScreens(){
 	return [[NSScreen screens] count];
 }
 
-Screen processScreen(NSScreen* screen){
+// primaryScreenHeight returns the height (in points) of the primary screen,
+// used to flip NSScreen's Y-up coordinate space to the Y-down convention.
+// Callers resolve it once and pass it into processScreen so the screen list is
+// not re-enumerated ([NSScreen screens]) once per screen.
+CGFloat primaryScreenHeight(){
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	if (primaryScreen == NULL) {
+		return 0;
+	}
+	return [primaryScreen frame].size.height;
+}
+
+Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
 	Screen returnScreen;
 	returnScreen.scaleFactor = screen.backingScaleFactor;
 
@@ -43,12 +58,8 @@ Screen processScreen(NSScreen* screen){
 	// of the primary screen so that Bounds matches windowGetPosition /
 	// windowSetPosition and the public conventions used by Windows, GTK,
 	// Electron and the web. Screens above the primary therefore have negative
-	// Y after the flip; Bounds.Y is the screen's top edge.
-	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
-	if (primaryScreen == NULL) {
-		primaryScreen = [NSScreen mainScreen];
-	}
-	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	// Y after the flip; Bounds.Y is the screen's top edge. primaryHeight is
+	// resolved once by the caller (see primaryScreenHeight).
 
 	// screen bounds
 	returnScreen.height = screen.frame.size.height;
@@ -92,15 +103,25 @@ Screen processScreen(NSScreen* screen){
 Screen GetPrimaryScreen(){
 	// Get primary screen
 	NSScreen *mainScreen = [NSScreen mainScreen];
-	return processScreen(mainScreen);
+	return processScreen(mainScreen, primaryScreenHeight());
 }
 
-Screen* getAllScreens() {
+// getAllScreens returns a malloc'd array of Screen and, via outCount, the number
+// of entries it contains. The count is captured from the same [NSScreen screens]
+// snapshot used to size the allocation, so callers must not query the screen
+// count separately (doing so races display changes and can over-read the buffer).
+Screen* getAllScreens(int* outCount) {
 	NSArray<NSScreen *> *screens = [NSScreen screens];
-	Screen* returnScreens = malloc(sizeof(Screen) * screens.count);
-	for (int i = 0; i < screens.count; i++) {
-		NSScreen* screen = [screens objectAtIndex:i];
-		returnScreens[i] = processScreen(screen);
+	NSUInteger count = screens.count;
+	if (outCount != NULL) {
+		*outCount = (int)count;
+	}
+	// Reuse the snapshot above instead of re-enumerating [NSScreen screens];
+	// screens[0] is the primary screen (matches isPrimary = (i == 0) below).
+	CGFloat primaryHeight = count > 0 ? [[screens objectAtIndex:0] frame].size.height : 0;
+	Screen* returnScreens = malloc(sizeof(Screen) * count);
+	for (NSUInteger i = 0; i < count; i++) {
+		returnScreens[i] = processScreen([screens objectAtIndex:i], primaryHeight);
 		returnScreens[i].isPrimary = (i == 0);
 	}
 	return returnScreens;
@@ -108,7 +129,7 @@ Screen* getAllScreens() {
 
 Screen getScreenForWindow(void* window){
 	NSScreen* screen = ((NSWindow*)window).screen;
-	return processScreen(screen);
+	return processScreen(screen, primaryScreenHeight());
 }
 
 // Get the screen for the system tray
@@ -124,7 +145,7 @@ Screen getScreenForSystemTray(void* nsStatusItem) {
 			break;
 		}
 	}
-	return processScreen(associatedScreen);
+	return processScreen(associatedScreen, primaryScreenHeight());
 }
 
 void* getWindowForSystray(void* nsStatusItem) {
@@ -190,13 +211,31 @@ func cScreenToScreen(screen C.Screen) *Screen {
 }
 
 func (m *macosApp) processAndCacheScreens() error {
-	cScreens := C.getAllScreens()
-	defer C.free(unsafe.Pointer(cScreens))
-	numScreens := int(C.GetNumScreens())
-	screens := make([]*Screen, numScreens)
-	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
-	for i := 0; i < numScreens; i++ {
-		screens[i] = cScreenToScreen(cScreenHeaders[i])
+	enumerate := func() []*Screen {
+		var count C.int
+		cScreens := C.getAllScreens(&count)
+		defer C.free(unsafe.Pointer(cScreens))
+		numScreens := int(count)
+		screens := make([]*Screen, numScreens)
+		cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
+		for i := 0; i < numScreens; i++ {
+			screens[i] = cScreenToScreen(cScreenHeaders[i])
+		}
+		return screens
+	}
+
+	// NSScreen and other AppKit APIs are not thread-safe and must be accessed on
+	// the main thread. Application events (including ApplicationDidChangeScreenParameters)
+	// are dispatched on background goroutines and can fire several times in quick
+	// succession during a display reconfiguration, so without marshalling this
+	// enumerates [NSScreen screens] concurrently off the main thread and crashes
+	// (SIGSEGV). Running on the main run loop also serialises the burst of events.
+	// Guard against InvokeSync deadlocking when we are already on the main thread.
+	var screens []*Screen
+	if m.isOnMainThread() {
+		screens = enumerate()
+	} else {
+		InvokeSync(func() { screens = enumerate() })
 	}
 	return m.parent.Screen.LayoutScreens(screens)
 }
