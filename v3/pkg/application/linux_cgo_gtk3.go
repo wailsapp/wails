@@ -1244,14 +1244,15 @@ func (w *linuxWebviewWindow) destroy() {
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
 	//w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	x, y, width, height, _ := w.getCurrentMonitorGeometry()
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	physicalWidth := int(float64(width) * scaleFactor)
-	physicalHeight := int(float64(height) * scaleFactor)
-	w.setMinMaxSize(0, 0, physicalWidth, physicalHeight)
-	w.setSize(physicalWidth, physicalHeight)
+	// gdk_monitor_get_geometry returns logical pixels, and
+	// gtk_window_resize / the geometry hints below also work in logical pixels,
+	// so we intentionally avoid multiply by the scale factor
+	w.setMinMaxSize(0, 0, 0, 0)
+	w.setSize(width, height)
 	C.gtk_window_fullscreen(w.gtkWindow())
 	w.setRelativePosition(0, 0)
 }
@@ -1610,13 +1611,19 @@ func getPrimaryScreen() (*Screen, error) {
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
-	size := C.GdkGeometry{
-		min_width:  C.int(minWidth),
-		min_height: C.int(minHeight),
-		max_width:  C.int(maxWidth),
-		max_height: C.int(maxHeight),
+	var size C.GdkGeometry
+	var mask C.GdkWindowHints
+	if minWidth > 0 || minHeight > 0 {
+		size.min_width = C.int(minWidth)
+		size.min_height = C.int(minHeight)
+		mask |= C.GDK_HINT_MIN_SIZE
 	}
-	C.gtk_window_set_geometry_hints((*C.GtkWindow)(window), nil, &size, C.GDK_HINT_MAX_SIZE|C.GDK_HINT_MIN_SIZE)
+	if maxWidth > 0 || maxHeight > 0 {
+		size.max_width = C.int(maxWidth)
+		size.max_height = C.int(maxHeight)
+		mask |= C.GDK_HINT_MAX_SIZE
+	}
+	C.gtk_window_set_geometry_hints((*C.GtkWindow)(window), nil, &size, mask)
 }
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
