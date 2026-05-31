@@ -142,10 +142,11 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 
-		err = SyncFrontendDistToEmbedTarget(options)
+		cleanup, err := SyncFrontendDistToEmbedTarget(options)
 		if err != nil {
 			return "", err
 		}
+		defer cleanup()
 	}
 
 	compileBinary := ""
@@ -166,10 +167,17 @@ func Build(options *Options) (string, error) {
 	return compileBinary, nil
 }
 
-func SyncFrontendDistToEmbedTarget(options *Options) error {
+// SyncFrontendDistToEmbedTarget copies the built frontend assets from the
+// custom frontend:dir/dist into the embed target directory (usually
+// frontend/dist) so the //go:embed directive finds them. It returns a cleanup
+// function that restores the embed target to just a .gitkeep placeholder after
+// the build, keeping the working tree clean. The cleanup runs even on error.
+func SyncFrontendDistToEmbedTarget(options *Options) (func(), error) {
+	noop := func() {}
+
 	projectData := options.ProjectData
 	if projectData == nil {
-		return nil
+		return noop, nil
 	}
 
 	frontendDir := projectData.GetFrontendDir()
@@ -177,46 +185,40 @@ func SyncFrontendDistToEmbedTarget(options *Options) error {
 
 	absFrontendDir, err := filepath.Abs(frontendDir)
 	if err != nil {
-		return nil
+		return noop, nil
 	}
 	absDefaultFrontendDir, err := filepath.Abs(defaultFrontendDir)
 	if err != nil {
-		return nil
+		return noop, nil
 	}
 
 	if absFrontendDir == absDefaultFrontendDir {
-		return nil
+		return noop, nil
 	}
 
 	embedDetails, err := staticanalysis.GetEmbedDetails(projectData.Path)
 	if err != nil {
-		return nil
+		return noop, nil
 	}
 
 	if len(embedDetails) == 0 {
-		return nil
+		return noop, nil
 	}
 
 	frontendDistDir := filepath.Join(frontendDir, "dist")
 	if !fs.DirExists(frontendDistDir) {
-		return nil
+		return noop, nil
 	}
 
-	embedDistDirs := []string{}
+	var syncedDirs []string
 	for _, detail := range embedDetails {
 		if filepath.Ext(detail.EmbedPath) != "" {
 			continue
 		}
-		if filepath.Base(detail.EmbedPath) == "dist" {
-			embedDistDirs = append(embedDistDirs, detail.GetFullPath())
+		if filepath.Base(detail.EmbedPath) != "dist" {
+			continue
 		}
-	}
-
-	if len(embedDistDirs) == 0 {
-		return nil
-	}
-
-	for _, embedDistDir := range embedDistDirs {
+		embedDistDir := detail.GetFullPath()
 		absEmbedDistDir, _ := filepath.Abs(embedDistDir)
 		absFrontendDistDir, _ := filepath.Abs(frontendDistDir)
 		if absEmbedDistDir == absFrontendDistDir {
@@ -224,11 +226,23 @@ func SyncFrontendDistToEmbedTarget(options *Options) error {
 		}
 		os.RemoveAll(embedDistDir)
 		if err := fs.CopyDir(frontendDistDir, embedDistDir); err != nil {
-			return fmt.Errorf("failed to copy frontend build output to embed target %s: %w", embedDistDir, err)
+			return noop, fmt.Errorf("failed to copy frontend build output to embed target %s: %w", embedDistDir, err)
+		}
+		syncedDirs = append(syncedDirs, embedDistDir)
+	}
+
+	cleanup := func() {
+		for _, dir := range syncedDirs {
+			os.RemoveAll(dir)
+			os.MkdirAll(dir, 0755)
+			gitkeep := filepath.Join(dir, ".gitkeep")
+			if _, err := os.Stat(gitkeep); os.IsNotExist(err) {
+				os.WriteFile(gitkeep, []byte{}, 0644)
+			}
 		}
 	}
 
-	return nil
+	return cleanup, nil
 }
 
 func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
