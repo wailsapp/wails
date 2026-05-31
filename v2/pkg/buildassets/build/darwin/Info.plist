@@ -8,7 +8,7 @@
         <key>CFBundleExecutable</key>
         <string>{{.OutputFilename}}</string>
         <key>CFBundleIdentifier</key>
-        <string>com.wails.{{.Name}}</string>
+        <string>com.wails.{{.Name | sanitizeIdentifier}}</string>
         <key>CFBundleVersion</key>
         <string>{{.Info.ProductVersion}}</string>
         <key>CFBundleGetInfoString</key>

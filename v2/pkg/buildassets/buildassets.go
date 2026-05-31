@@ -8,6 +8,7 @@ import (
 	iofs "io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"text/template"
 
 	"github.com/leaanthony/gosod"
@@ -15,6 +16,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/project"
 )
+
+var nonIdentifierChar = regexp.MustCompile(`[^A-Za-z0-9.-]`)
 
 //go:embed build
 var assets embed.FS
@@ -108,7 +111,13 @@ type assetData struct {
 }
 
 func resolveProjectData(content []byte, projectData *project.Project) ([]byte, error) {
-	tmpl, err := template.New("").Parse(string(content))
+	funcMap := template.FuncMap{
+		"sanitizeIdentifier": func(s string) string {
+			return nonIdentifierChar.ReplaceAllString(s, "-")
+		},
+	}
+
+	tmpl, err := template.New("").Funcs(funcMap).Parse(string(content))
 	if err != nil {
 		return nil, err
 	}
