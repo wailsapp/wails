@@ -189,6 +189,10 @@ Wails supports two Windows-specific mechanisms:
 
 ### Choosing a Mode
 
+:::caution[Experimental]
+`WebView2CompositionHosting` changes how the window hosts and interacts with WebView2 under the hood. Instead of the default HWND-hosted WebView2 controller, Wails uses composition controller hosting and forwards input explicitly. This mode may have rendering, input, focus, or WebView2 Runtime compatibility issues. Enable it only when you need native custom caption-button behavior, and test your app carefully on the Windows and WebView2 Runtime versions you support.
+:::
+
 Choose based on what you need from Windows:
 
 - Use `NonClientRegionSupport` for simple native app dragging with WebView2's `app-region: drag` and `app-region: no-drag`.
@@ -200,8 +204,6 @@ Choose based on what you need from Windows:
 That is the full scope of this mode today. It does not make custom minimize, maximize, or close buttons behave like native Windows caption buttons, and it does not enable Windows 11 Snap Assist / Snap Layouts for a custom maximize button. Use it when you need simple native app dragging without the extra machinery of `--wails-draggable`.
 
 `WebView2CompositionHosting` is for custom caption buttons with native behavior. Wails tracks DOM rectangles marked with `--wails-app-region`, maps them to Windows hit-test values such as `HTMINBUTTON`, `HTMAXBUTTON`, and `HTCLOSE`, and forwards mouse input back into the composition-hosted WebView2 surface. That is what allows a custom maximize button to participate in Windows 11 Snap Assist / Snap Layouts while keeping any visual design you choose.
-
-Be aware that this changes how the window hosts and interacts with WebView2 under the hood. Instead of the default HWND-hosted WebView2 controller, Wails uses composition controller hosting and forwards input explicitly. Treat `WebView2CompositionHosting` as an experimental mode: enable it only when you need native custom caption-button behavior, and test your app carefully on the Windows and WebView2 Runtime versions you support.
 
 Put another way: `NonClientRegionSupport` is WebView2-native CSS region support. `WebView2CompositionHosting` is Wails taking responsibility for host-owned composition and custom non-client hit testing.
 
@@ -242,7 +244,7 @@ The limitation of this mode is that it is constrained by WebView2's own non-clie
 For custom minimize, maximize, and close buttons that should behave like system caption buttons, enable composition hosting:
 
 :::caution[Experimental]
-`WebView2CompositionHosting` uses WebView2 composition controller hosting with DirectComposition. This mode is experimental and may have rendering, input, focus, or WebView2 Runtime compatibility issues. Enable it only when you need native behavior for custom caption buttons, and test the result on the Windows versions and WebView2 Runtime versions you support.
+`WebView2CompositionHosting` uses WebView2 composition controller hosting with DirectComposition. See [Choosing a Mode](#choosing-a-mode) before enabling it.
 :::
 
 ```go
