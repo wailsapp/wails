@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import wailsAppRegionVideo from "../../../assets/windows-native-non-client-regions/wails-app-region.mp4";
 
 ## Frameless Windows
 
@@ -171,6 +172,158 @@ import { Window } from '@wailsio/runtime'
 document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
 document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
 document.querySelector('.close').addEventListener('click', () => Window.Close())
+```
+
+## Native Non-Client Regions on Windows
+
+Windows can treat parts of a custom title bar as native non-client areas. This lets you draw the title bar and caption buttons with any HTML/CSS design while keeping native Windows behavior: the caption area drags the window, the maximize button can show Windows 11 Snap Assist / Snap Layouts, and the minimize, maximize, and close buttons receive native hit testing and mouse state.
+
+The video below shows a custom HTML/CSS title bar using native Windows hit testing, including Windows 11 Snap Assist / Snap Layouts on a custom maximize button.
+
+<video src={wailsAppRegionVideo} controls muted playsInline></video>
+
+<a href={wailsAppRegionVideo}>Open the video directly</a>
+
+Wails supports two Windows-specific mechanisms:
+
+- `app-region` through WebView2's native non-client region support
+- `--wails-app-region` through Wails runtime tracking for custom caption buttons
+
+### Choosing a Mode
+
+Choose based on what you need from Windows:
+
+- Use `NonClientRegionSupport` for simple native app dragging with WebView2's `app-region: drag` and `app-region: no-drag`.
+- Use `WebView2CompositionHosting` when your custom minimize, maximize, and close buttons should behave like native Windows caption buttons.
+- Enable both when the same window needs WebView2-native `app-region` support and Wails-managed custom caption-button regions.
+
+`NonClientRegionSupport` is the lightweight native alternative to Wails' `--wails-draggable` tracking. You mark draggable and non-draggable areas with CSS, WebView2 decides which pixels belong to the caption, and Wails asks WebView2 for the native region when hit testing.
+
+That is the full scope of this mode today. It does not make custom minimize, maximize, or close buttons behave like native Windows caption buttons, and it does not enable Windows 11 Snap Assist / Snap Layouts for a custom maximize button. Use it when you need simple native app dragging without the extra machinery of `--wails-draggable`.
+
+`WebView2CompositionHosting` is for custom caption buttons with native behavior. Wails tracks DOM rectangles marked with `--wails-app-region`, maps them to Windows hit-test values such as `HTMINBUTTON`, `HTMAXBUTTON`, and `HTCLOSE`, and forwards mouse input back into the composition-hosted WebView2 surface. That is what allows a custom maximize button to participate in Windows 11 Snap Assist / Snap Layouts while keeping any visual design you choose.
+
+Be aware that this changes how the window hosts and interacts with WebView2 under the hood. Instead of the default HWND-hosted WebView2 controller, Wails uses composition controller hosting and forwards input explicitly. Treat `WebView2CompositionHosting` as an experimental mode: enable it only when you need native custom caption-button behavior, and test your app carefully on the Windows and WebView2 Runtime versions you support.
+
+Put another way: `NonClientRegionSupport` is WebView2-native CSS region support. `WebView2CompositionHosting` is Wails taking responsibility for host-owned composition and custom non-client hit testing.
+
+### WebView2 app-region
+
+Enable WebView2's native non-client region support for the window:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Windows: application.WindowsWindow{
+        NonClientRegionSupport: true,
+    },
+})
+```
+
+Then mark draggable areas with the CSS `app-region` property:
+
+```css
+.titlebar {
+    app-region: drag;
+}
+
+.titlebar button,
+.titlebar input,
+.titlebar select,
+.titlebar textarea {
+    app-region: no-drag;
+}
+```
+
+Use this when you only need native caption dragging and your title bar controls are handled with normal frontend clicks.
+
+The limitation of this mode is that it is constrained by WebView2's own non-client region support. In current WebView2 releases, that means drag and no-drag regions only. It is not intended to model fully custom frontend caption buttons with distinct native minimize, maximize, and close roles.
+
+### Custom Caption Buttons with Native Behavior
+
+For custom minimize, maximize, and close buttons that should behave like system caption buttons, enable composition hosting:
+
+:::caution[Experimental]
+`WebView2CompositionHosting` uses WebView2 composition controller hosting with DirectComposition. This mode is experimental and may have rendering, input, focus, or WebView2 Runtime compatibility issues. Enable it only when you need native behavior for custom caption buttons, and test the result on the Windows versions and WebView2 Runtime versions you support.
+:::
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Windows: application.WindowsWindow{
+        WebView2CompositionHosting: true,
+    },
+})
+```
+
+Then mark each frontend region with `--wails-app-region`:
+
+```html
+<div class="titlebar">
+    <div class="title">My Application</div>
+    <div class="window-controls">
+        <button class="window-button minimize" aria-label="Minimize"></button>
+        <button class="window-button maximize" aria-label="Maximize"></button>
+        <button class="window-button close" aria-label="Close"></button>
+    </div>
+</div>
+```
+
+```css
+.titlebar {
+    --wails-app-region: caption;
+    height: 40px;
+}
+
+.window-controls {
+    display: flex;
+    height: 100%;
+}
+
+.window-button {
+    width: 46px;
+    border: 0;
+    background: transparent;
+}
+
+.window-button.minimize {
+    --wails-app-region: minimize;
+}
+
+.window-button.maximize {
+    --wails-app-region: maximize;
+}
+
+.window-button.close {
+    --wails-app-region: close;
+}
+```
+
+Supported `--wails-app-region` values:
+
+- `caption` - draggable caption area
+- `minimize` - native minimize button hit target
+- `maximize` - native maximize button hit target, including Windows 11 Snap Assist / Snap Layouts hover behavior
+- `close` - native close button hit target
+
+The Wails runtime observes DOM, style, size, scroll, and viewport changes, then sends region snapshots to the native window. Region geometry is measured in CSS pixels and converted to physical pixels for Windows hit testing.
+
+The visual design remains entirely yours. The regions only tell Windows what each rectangle means; the button shape, icon, color, spacing, hover styling, and layout still come from your frontend.
+
+For compatibility with earlier builds of this feature, Wails also accepts the legacy `--wails-non-client-region` property. New code should use `--wails-app-region`.
+
+### Combining Both
+
+You can enable both options when you want WebView2 `app-region` support and Wails-managed caption button regions in the same window:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Windows: application.WindowsWindow{
+        NonClientRegionSupport:    true,
+        WebView2CompositionHosting: true,
+    },
+})
 ```
 
 ## System Buttons
