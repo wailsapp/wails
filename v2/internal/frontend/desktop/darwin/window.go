@@ -48,6 +48,14 @@ func bool2CboolPtr(value bool) *C.bool {
 	return &v
 }
 
+// shouldEnableRetinaDevicePixelRatio reports whether the developer has explicitly
+// opted in to the Retina devicePixelRatio override. It is disabled unless the Mac
+// options are present and the flag is set, since the underlying SPI is private and
+// could cause Mac App Store rejection if active by default.
+func shouldEnableRetinaDevicePixelRatio(frontendOptions *options.App) bool {
+	return frontendOptions.Mac != nil && frontendOptions.Mac.EnableRetinaDevicePixelRatio
+}
+
 func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
 	c := NewCalloc()
 	defer c.Free()
@@ -61,10 +69,11 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	devtoolsEnabled := bool2Cint(devtools)
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
 	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
+	enableRetinaDevicePixelRatio := bool2Cint(shouldEnableRetinaDevicePixelRatio(frontendOptions))
 
 	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent, contentProtection C.int
-	var disableEscapeExitsFullscreen, enableRetinaDevicePixelRatio C.int
+	var disableEscapeExitsFullscreen C.int
 	var appearance, title *C.char
 	var preferences C.struct_Preferences
 
@@ -124,7 +133,6 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
 		contentProtection = bool2Cint(mac.ContentProtection)
 		disableEscapeExitsFullscreen = bool2Cint(mac.DisableEscapeExitsFullscreen)
-		enableRetinaDevicePixelRatio = bool2Cint(mac.EnableRetinaDevicePixelRatio)
 
 		appearance = c.String(string(mac.Appearance))
 	}
