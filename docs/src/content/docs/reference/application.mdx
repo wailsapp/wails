@@ -1,0 +1,507 @@
+---
+title: Application API
+description: Complete reference for the Application API
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Overview
+
+The `Application` is the core of your Wails app. It manages windows, services, events, and provides access to all platform features.
+
+## Creating an Application
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## Core Methods
+
+### Run()
+
+Starts the application event loop.
+
+```go
+func (a *App) Run() error
+```
+
+**Example:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Returns:** Error if startup fails
+
+### Quit()
+
+Gracefully shuts down the application.
+
+```go
+func (a *App) Quit()
+```
+
+**Example:**
+
+```go
+// In a menu handler
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+Returns the application configuration.
+
+```go
+func (a *App) Config() Options
+```
+
+**Example:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## Window Management
+
+### app.Window.New()
+
+Creates a new webview window with default options.
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### app.Window.NewWithOptions()
+
+Creates a new webview window with custom options.
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**Example:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+Gets a window by its name. Returns the window and whether it was found.
+
+```go
+func (wm *WindowManager) GetByName(name string) (Window, bool)
+```
+
+**Example:**
+
+```go
+if window, ok := app.Window.GetByName("main"); ok {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+Returns all application windows.
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**Example:**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## Managers
+
+The Application provides access to various managers through properties:
+
+```go
+app.Window       // Window management
+app.Menu         // Menu management
+app.Dialog       // Dialog management
+app.Event        // Event management
+app.Clipboard    // Clipboard operations
+app.Screen       // Screen information
+app.SystemTray   // System tray
+app.Browser      // Browser operations
+app.Env          // Environment variables
+app.ContextMenu  // Context-menu management
+app.KeyBinding   // Global keyboard shortcuts
+app.Logger       // *slog.Logger
+```
+
+### Example Usage
+
+```go
+// Create window
+window := app.Window.New()
+
+// Show dialog
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// Copy to clipboard
+app.Clipboard.SetText("Copied text")
+
+// Get screens
+screens := app.Screen.GetAll()
+```
+
+## Service Management
+
+### RegisterService()
+
+Registers a service with the application.
+
+```go
+func (a *App) RegisterService(service Service)
+```
+
+`RegisterService` returns nothing; service initialisation errors surface via `ServiceStartup` failures during `app.Run()`.
+
+**Example:**
+
+```go
+type MyService struct {
+    app *application.App
+}
+
+func NewMyService(app *application.App) *MyService {
+    return &MyService{app: app}
+}
+
+// Register after app creation
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## Event Management
+
+### app.Event.Emit()
+
+Emits a custom event. Returns `true` if a hook cancelled the emit.
+
+```go
+func (em *EventManager) Emit(name string, data ...any) bool
+```
+
+**Example:**
+
+```go
+// Emit event with data
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+Listens for custom events. Returns an unsubscribe `func()`.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**Example:**
+
+```go
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### app.Event.OnApplicationEvent()
+
+Listens for application lifecycle events. The `eventType` parameter is `events.ApplicationEventType` (from the `events` package).
+
+```go
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
+```
+
+**Example:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for app-started
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    fmt.Println("Application started")
+})
+
+// Application shutdown is NOT an event constant; register cleanup via:
+app.OnShutdown(func() {
+    fmt.Println("Application shutting down")
+})
+```
+
+## Dialog Methods
+
+Dialogs are accessed through the `app.Dialog` manager. See [Dialogs API](/reference/dialogs/) for complete reference.
+
+### Message Dialogs
+
+```go
+// Information dialog
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+
+// Error dialog
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
+    Show()
+
+// Warning dialog
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### Question Dialogs
+
+Question dialogs use button callbacks to handle user responses:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // Handle yes
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // Handle no
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
+```
+
+### File Dialogs
+
+```go
+// Open file dialog
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+
+// Save file dialog
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
+
+// Folder selection (use OpenFile with directory options)
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## Logger
+
+The application provides a structured logger:
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**Example:**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## Raw Message Handling
+
+For applications that need direct, low-level control over frontend-to-backend communication, Wails provides the `RawMessageHandler` option. This bypasses the standard binding system.
+
+:::note
+Raw messages should only be used as a last resort. The standard binding system is highly optimized and sufficient for almost all applications. Only use raw messages if you have profiled your application and confirmed that bindings are a bottleneck.
+:::
+
+### RawMessageHandler
+
+`RawMessageHandler` is a field on `application.Options`, not a method. The runtime invokes it for every raw message sent from the frontend via `System.invoke()`.
+
+```go
+type Options struct {
+    // ... other fields ...
+    RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
+}
+```
+
+`OriginInfo` carries `Origin`, `TopOrigin`, and `IsMainFrame` (platforms populate different subsets — see the [Raw Messages Guide](/guides/raw-messages) for the per-platform matrix).
+
+**Example:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+        // Handle the raw message
+        fmt.Printf("Received from %s (%s): %s\n", window.Name(), originInfo.Origin, message)
+
+        // You can respond using events
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+
+For more details, see the [Raw Messages Guide](/guides/raw-messages).
+
+## Platform-Specific Options
+
+### Windows Options
+
+Configure Windows-specific behavior at the application level:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 browser flags (apply to ALL windows)
+        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**Browser Flags:**
+- `EnabledFeatures` - WebView2 feature flags to enable
+- `DisabledFeatures` - WebView2 feature flags to disable
+- `AdditionalBrowserArgs` - Chromium command-line arguments
+
+See [Window Options - Application-Level Windows Options](/features/windows/options#application-level-windows-options) for detailed documentation.
+
+### Mac Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Linux Options
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+## Complete Application Example
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```
+

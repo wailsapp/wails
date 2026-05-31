@@ -1,0 +1,8 @@
+# This is the plugin definition file for the "{{.Name}}" plugin.
+Name: "{{.Name}}"
+Description: "{{.Description}}"
+Author: "{{.Author}}"
+Version: "{{.Version}}"
+Website: "{{.Website}}"
+Repository: "{{.Repository}}"
+License: "{{.License}}"

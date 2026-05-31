@@ -1,0 +1,216 @@
+---
+title: Testing & Continuous Integration
+description: How Wails v3 ensures quality with unit tests, integration suites, race detection, and GitHub Actions CI.
+sidebar:
+  order: 9
+---
+
+Robust desktop frameworks demand rock-solid testing.
+Wails v3 employs a **layered strategy**:
+
+| Layer | Goal | Tooling |
+|-------|------|---------|
+| Unit tests | Fast feedback for isolated functions | `go test ./...` |
+| Generator / CLI tests | Validate `wails3 generate bindings` and the CLI plumbing | `task test:generator`, `task test:cli` |
+| Template tests | Make sure every shipped template still builds | `task test:templates` |
+| Race detection | Catch data races in the runtime & bridge | `go test -race ./...` |
+| CI matrix | Cross-OS confidence on every PR | GitHub Actions |
+
+This document explains **where tests live**, **how to run them**, and **what
+the Taskfile orchestrates**.
+
+> The race guidance referenced by older drafts as `pkg/application/RACE.md`
+> lives in `v3/TESTING.md` today.
+
+---
+
+## 1. Directory Conventions
+
+```
+v3/
+├── internal/.../_test.go     # Unit tests for internal packages
+├── pkg/.../_test.go          # Public API tests
+├── tasks/events/generate.go  # Code generator for event constants (NOT a test harness)
+├── tests/                    # Top-level integration test harness
+└── TESTING.md                # Race / Cgo testing guidance
+```
+
+Guidelines:
+
+* **Keep unit tests next to code** (`foo.go` ↔ `foo_test.go`).
+* Use the **black-box style** for `pkg/` packages (`package application_test`)
+  where it improves API hygiene.
+* Shared fixtures live where they're used (there is no central `internal/testutil/`
+  package in this tree — wire helpers per package instead).
+
+---
+
+## 2. Unit Tests
+
+### Writing Tests
+
+```go
+func TestEventConstants(t *testing.T) {
+    assert.NotEmpty(t, events.Common.WindowFocus)
+}
+```
+
+Recommendations:
+
+* Use [`stretchr/testify`](https://github.com/stretchr/testify) — already in
+  `go.mod`.
+* Follow **table-driven** style for branches.
+* Stub platform quirks behind build tags (`foo_windows_test.go`,
+  `foo_darwin_test.go`, …) when needed.
+
+### Running Locally
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Or via Taskfile (real targets — there is no `task test` shortcut):
+
+```
+task test:cli            # CLI plumbing tests
+task test:generator      # bindings generator round-trip tests
+task test:templates      # build every shipped template
+task test:infrastructure # supporting helpers
+task test:examples       # exercise the example matrix (downloads as needed)
+task test:all            # everything above
+task sanity              # quick smoke check (also: sanity:gtk4)
+task precommit           # what you should run before pushing
+```
+
+---
+
+## 3. Integration Tests
+
+`v3/tests/` hosts the cross-package integration harness. The Taskfile
+`test:example:*` and `test:examples:*` targets drive build-and-launch checks
+across darwin / windows / linux (including Docker-based GTK3 / GTK4 matrices on
+Linux).
+
+> The `v3/examples/` directory referenced by older docs has been removed from
+> this working tree; the public examples live in the upstream repository's
+> `v3/examples/` folder on GitHub.
+
+Run the host-platform smoke suite with:
+
+```
+task test:examples       # host
+task test:examples:all   # full matrix (slow)
+```
+
+---
+
+## 4. Race Detection
+
+Data races are fatal in GUI runtimes.
+
+### Race Guide
+
+See `v3/TESTING.md` for:
+
+* Known benign races and suppression rationale
+* How to interpret stack-traces crossing Cgo boundaries (Linux GTK + WebKit2GTK)
+
+### Local Race Suite
+
+```
+go test -race ./...
+```
+
+> `wails3 dev` has no `-race` flag — its CLI flags are `--config`, `--port`,
+> and `-s` (enable HTTPS). To exercise the runtime under the race detector,
+> build a test app with `go build -race` and run it directly.
+
+---
+
+## 5. GitHub Actions Workflows
+
+Real workflow files under `.github/workflows/` (verified against the tree):
+
+| File | Purpose |
+|------|---------|
+| `build-and-test-v3.yml` | Main v3 build + test matrix. Uses `actions/setup-go@v5` with `go-version: 1.25`. Runs `task runtime:check`, `task runtime:test`, `task runtime:build`, `task test:examples` (and `BUILD_TAGS=gtk4 task test:examples` for the GTK4 path), `task generator:test:check`, `task install`, then `wails3 build` as a smoke check. Linux jobs install `libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk` and run the test suite under `dbus-run-session -- xvfb-run`. |
+| `cross-compile-test-v3.yml` | Cross-compile sanity checks |
+| `auto-changelog-v3.yml`, `changelog-v3.yml` | Changelog automation |
+| `nightly-release-v3.yml` | Nightly v3 release artefacts |
+| `bump-webview2-v3.yml`, `release-webview2.yml` | WebView2 dependency / release management |
+| `build-cross-image.yml` | Builds the cross-compiler container image |
+| `publish-npm.yml` | Publishes the embedded `@wailsio/runtime` JS runtime to npm |
+| `pr-master.yml` | PR-side checks against the `master` branch |
+| `semgrep.yml` | Semgrep static analysis |
+| `stale-issues.yml`, `issue-labeler.yml`, `file-labeler.yml`, `claude.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Repo-housekeeping / v2-side flows |
+
+There is **no** `qodana.yaml` and **no** `runtime.yml` in this tree — older
+drafts of this page named both, but only `semgrep.yml` covers static analysis
+and the runtime JS package is published through `publish-npm.yml`.
+
+The CI steps mirror the Taskfile targets above (`task test:cli`,
+`task test:generator`, `task test:templates`, `task test:examples`, …) so you
+can reproduce CI locally one-to-one. The smoke `wails3 build` step in
+`build-and-test-v3.yml` is invoked with **no extra flags** — there is no
+`-skip-package` flag on `wails3 build`.
+
+---
+
+## 6. Local CI Parity
+
+There is no single `task ci` umbrella target. Reproduce CI by chaining the
+real targets:
+
+```
+task precommit
+task test:cli
+task test:generator
+task test:templates
+task test:examples
+```
+
+---
+
+## 7. Troubleshooting Failing Tests
+
+| Symptom | Likely Cause | Fix |
+|---------|--------------|-----|
+| **Race in `webview_window_darwin.go`** | Mutating window state off the main thread | Marshal through `application.InvokeAsync` / `Invoke` so the call runs on the main thread |
+| **Linux test hangs in headless CI** | GTK needs a display | Run under `xvfb-run`, e.g. `xvfb-run task test:examples:linux` |
+| **Template build fails** | Frontend lockfile out of date | Re-run `wails3 init` against a clean directory to refresh the template |
+| **Coverpkg errors** | Integration test importing `main` | Switch to build tag `//go:build integration` and gate the import |
+
+---
+
+## 8. Adding New Tests
+
+1. **Unit** — create `*_test.go`, run `go test ./...`
+2. **Generator / CLI** — extend the cases under `internal/generator/testcases/`
+   or `internal/commands/*_test.go` and re-run `task test:generator` /
+   `task test:cli`
+3. **Templates / examples** — make sure the shipped templates still build with
+   `task test:templates`
+
+---
+
+## 9. Key File Map
+
+| What | Path |
+|------|------|
+| Generator round-trip test | `internal/generator/generate_test.go` |
+| Build-assets test | `internal/commands/build-assets_test.go` |
+| Race / Cgo guide | `v3/TESTING.md` |
+| Taskfile test targets | `v3/Taskfile.yaml` |
+| Event-constants generator | `v3/tasks/events/generate.go` |
+| CI workflow | `.github/workflows/build-and-test-v3.yml` (Go 1.25 via `actions/setup-go@v5`) |
+| Static analysis | `.github/workflows/semgrep.yml` |
+| Runtime npm publish | `.github/workflows/publish-npm.yml` |
+
+---
+
+Quality isn't an afterthought in Wails v3.
+With unit tests, generator/template suites, race detection, and a
+cross-platform CI matrix you can contribute confidently, knowing your changes
+run green on every OS we support.
+Happy testing!

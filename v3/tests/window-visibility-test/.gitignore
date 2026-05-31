@@ -1,0 +1,19 @@
+# Compiled binary
+window-visibility-test
+window-visibility-test.exe
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work

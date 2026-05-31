@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(233, 69, 96, 0.2); color: #e94560; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary {
+            background: #60a5fa;
+        }
+        button.danger {
+            background: #e94560;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-box {
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric-box .label {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .metric-box .value {
+            color: #4ade80;
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .metric-box .unit {
+            color: #888;
+            font-size: 0.75rem;
+        }
+        .timeline {
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            height: 150px;
+            overflow-x: auto;
+        }
+        .timeline-bar {
+            position: absolute;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .timeline-label {
+            position: absolute;
+            font-size: 0.7rem;
+            color: #aaa;
+            bottom: 5px;
+        }
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .marks-table th, .marks-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .marks-table th {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        .marks-table td { color: #ddd; }
+        .marks-table tr:hover { background: rgba(255,255,255,0.05); }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            background: #0a0a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px 15px;
+            color: #eee;
+            font-family: monospace;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #0a0a1a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            transition: width 0.1s;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Performance API Demo</h1>
+        <p class="description">
+            The Performance API provides access to performance-related information,
+            enabling precise timing measurements, user timing marks, and performance metrics.
+        </p>
+
+        <div class="status success" id="status">
+            Performance API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Page Load Timing</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Key performance metrics from page navigation:</p>
+            <div class="metrics-grid" id="loadMetrics">
+                <div class="metric-box">
+                    <div class="label">DOM Content Loaded</div>
+                    <div class="value" id="domContentLoaded">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Page Load Time</div>
+                    <div class="value" id="loadTime">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">DNS Lookup</div>
+                    <div class="value" id="dnsTime">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Time to First Byte</div>
+                    <div class="value" id="ttfb">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+            </div>
+            <button onclick="refreshLoadMetrics()">Refresh Metrics</button>
+        </div>
+
+        <div class="card">
+            <h2>Performance Marks & Measures</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Create custom timing marks and measure durations:</p>
+            <div class="controls">
+                <input type="text" id="markName" placeholder="Mark name" value="my-mark">
+                <button onclick="createMark()">Create Mark</button>
+                <button class="secondary" onclick="createMeasure()">Measure Since Last Mark</button>
+                <button class="danger" onclick="clearMarks()">Clear All</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="marks-table" id="marksTable">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Start Time</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marksBody">
+                        <tr><td colspan="4" style="color: #888;">No marks or measures yet</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Simulated Task Performance</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Run simulated tasks and measure their performance:</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="controls">
+                <button onclick="runTask('light')">Light Task (10ms)</button>
+                <button onclick="runTask('medium')">Medium Task (100ms)</button>
+                <button onclick="runTask('heavy')">Heavy Task (500ms)</button>
+                <button class="secondary" onclick="runMultipleTasks()">Run All Tasks</button>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="label">Last Task Duration</div>
+                    <div class="value" id="lastTaskDuration">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Total Tasks Run</div>
+                    <div class="value" id="totalTasks">0</div>
+                    <div class="unit">tasks</div>
+                </div>
+                <div class="metric-box">
+                    <div class="label">Average Duration</div>
+                    <div class="value" id="avgDuration">--</div>
+                    <div class="unit">milliseconds</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Navigation Timeline</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Visual timeline of page load phases:</p>
+            <div class="timeline" id="timeline">
+                <div style="color: #888; padding: 60px 0; text-align: center;">Loading timeline...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Resource Timing</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Performance entries for loaded resources:</p>
+            <div class="output" id="resourceOutput">Loading resource timing data...</div>
+            <button onclick="refreshResources()" style="margin-top: 15px;">Refresh Resources</button>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Performance events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+        let taskCount = 0;
+        let totalDuration = 0;
+        let lastMarkName = null;
+
+        function checkSupport() {
+            const supported = 'performance' in window && 'mark' in performance;
+            const statusEl = document.getElementById('status');
+            const supportedEl = document.getElementById('supported');
+
+            if (supported) {
+                supportedEl.textContent = 'Available';
+                statusEl.classList.remove('error');
+                statusEl.classList.add('success');
+            } else {
+                supportedEl.textContent = 'Not available';
+                statusEl.classList.remove('success');
+                statusEl.classList.add('error');
+            }
+            return supported;
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 20) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function refreshLoadMetrics() {
+            const timing = performance.timing || {};
+            const nav = performance.getEntriesByType('navigation')[0] || {};
+
+            // DOM Content Loaded
+            const domContentLoaded = nav.domContentLoadedEventEnd ||
+                (timing.domContentLoadedEventEnd - timing.navigationStart);
+            document.getElementById('domContentLoaded').textContent =
+                domContentLoaded ? Math.round(domContentLoaded) : 'N/A';
+
+            // Load Time
+            const loadTime = nav.loadEventEnd ||
+                (timing.loadEventEnd - timing.navigationStart);
+            document.getElementById('loadTime').textContent =
+                loadTime ? Math.round(loadTime) : 'N/A';
+
+            // DNS Lookup
+            const dnsTime = nav.domainLookupEnd - nav.domainLookupStart ||
+                (timing.domainLookupEnd - timing.domainLookupStart);
+            document.getElementById('dnsTime').textContent =
+                dnsTime >= 0 ? Math.round(dnsTime) : 'N/A';
+
+            // Time to First Byte
+            const ttfb = nav.responseStart - nav.requestStart ||
+                (timing.responseStart - timing.requestStart);
+            document.getElementById('ttfb').textContent =
+                ttfb >= 0 ? Math.round(ttfb) : 'N/A';
+
+            log('Load metrics refreshed');
+        }
+
+        function createMark() {
+            const name = document.getElementById('markName').value || 'mark-' + Date.now();
+            performance.mark(name);
+            lastMarkName = name;
+            log(`Mark created: "${name}" at ${performance.now().toFixed(2)}ms`);
+            updateMarksTable();
+        }
+
+        function createMeasure() {
+            if (!lastMarkName) {
+                log('Error: Create a mark first');
+                return;
+            }
+            const measureName = 'measure-' + Date.now();
+            try {
+                performance.measure(measureName, lastMarkName);
+                const measure = performance.getEntriesByName(measureName)[0];
+                log(`Measure created: "${measureName}" - ${measure.duration.toFixed(2)}ms`);
+                updateMarksTable();
+            } catch (e) {
+                log('Error creating measure: ' + e.message);
+            }
+        }
+
+        function clearMarks() {
+            performance.clearMarks();
+            performance.clearMeasures();
+            lastMarkName = null;
+            log('All marks and measures cleared');
+            updateMarksTable();
+        }
+
+        function updateMarksTable() {
+            const marks = performance.getEntriesByType('mark');
+            const measures = performance.getEntriesByType('measure');
+            const tbody = document.getElementById('marksBody');
+
+            if (marks.length === 0 && measures.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="color: #888;">No marks or measures yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            [...marks, ...measures]
+                .sort((a, b) => b.startTime - a.startTime)
+                .slice(0, 10)
+                .forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="color: ${entry.entryType === 'mark' ? '#4ade80' : '#60a5fa'}">${entry.entryType}</td>
+                        <td>${entry.name}</td>
+                        <td>${entry.startTime.toFixed(2)}ms</td>
+                        <td>${entry.duration ? entry.duration.toFixed(2) + 'ms' : '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+        }
+
+        function simulateWork(duration) {
+            return new Promise(resolve => {
+                const start = performance.now();
+                const update = () => {
+                    const elapsed = performance.now() - start;
+                    const progress = Math.min(100, (elapsed / duration) * 100);
+                    document.getElementById('progressFill').style.width = progress + '%';
+
+                    if (elapsed < duration) {
+                        requestAnimationFrame(update);
+                    } else {
+                        resolve();
+                    }
+                };
+                update();
+            });
+        }
+
+        async function runTask(type) {
+            const durations = { light: 10, medium: 100, heavy: 500 };
+            const duration = durations[type];
+            const taskName = `task-${type}-${Date.now()}`;
+
+            performance.mark(taskName + '-start');
+            log(`Starting ${type} task...`);
+
+            await simulateWork(duration);
+
+            performance.mark(taskName + '-end');
+            performance.measure(taskName, taskName + '-start', taskName + '-end');
+
+            const measure = performance.getEntriesByName(taskName)[0];
+            const actualDuration = measure.duration;
+
+            taskCount++;
+            totalDuration += actualDuration;
+
+            document.getElementById('lastTaskDuration').textContent = actualDuration.toFixed(2);
+            document.getElementById('totalTasks').textContent = taskCount;
+            document.getElementById('avgDuration').textContent = (totalDuration / taskCount).toFixed(2);
+
+            log(`${type.charAt(0).toUpperCase() + type.slice(1)} task completed: ${actualDuration.toFixed(2)}ms`);
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        async function runMultipleTasks() {
+            await runTask('light');
+            await runTask('medium');
+            await runTask('heavy');
+            log('All tasks completed');
+        }
+
+        function drawTimeline() {
+            const nav = performance.getEntriesByType('navigation')[0];
+            if (!nav) {
+                document.getElementById('timeline').innerHTML =
+                    '<div style="color: #888; padding: 60px 0; text-align: center;">Navigation timing not available</div>';
+                return;
+            }
+
+            const timeline = document.getElementById('timeline');
+            const total = nav.loadEventEnd || nav.domComplete || 1;
+            const width = timeline.clientWidth - 40;
+
+            const phases = [
+                { name: 'DNS', start: nav.domainLookupStart, end: nav.domainLookupEnd, color: '#60a5fa', row: 0 },
+                { name: 'Connect', start: nav.connectStart, end: nav.connectEnd, color: '#a855f7', row: 0 },
+                { name: 'Request', start: nav.requestStart, end: nav.responseStart, color: '#fbbf24', row: 1 },
+                { name: 'Response', start: nav.responseStart, end: nav.responseEnd, color: '#4ade80', row: 1 },
+                { name: 'DOM Processing', start: nav.domInteractive, end: nav.domComplete, color: '#f87171', row: 2 },
+                { name: 'Load Event', start: nav.loadEventStart, end: nav.loadEventEnd, color: '#22d3d1', row: 2 }
+            ];
+
+            timeline.innerHTML = '';
+
+            phases.forEach(phase => {
+                if (phase.start && phase.end && phase.end > phase.start) {
+                    const left = 20 + (phase.start / total) * width;
+                    const barWidth = Math.max(50, ((phase.end - phase.start) / total) * width);
+                    const top = 15 + phase.row * 40;
+
+                    const bar = document.createElement('div');
+                    bar.className = 'timeline-bar';
+                    bar.style.cssText = `
+                        left: ${left}px;
+                        width: ${barWidth}px;
+                        top: ${top}px;
+                        background: ${phase.color};
+                        color: #1a1a2e;
+                    `;
+                    bar.textContent = `${phase.name} (${(phase.end - phase.start).toFixed(0)}ms)`;
+                    timeline.appendChild(bar);
+                }
+            });
+
+            // Add time labels
+            [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
+                const label = document.createElement('div');
+                label.className = 'timeline-label';
+                label.style.left = (20 + pct * width) + 'px';
+                label.textContent = Math.round(pct * total) + 'ms';
+                timeline.appendChild(label);
+            });
+        }
+
+        function refreshResources() {
+            const resources = performance.getEntriesByType('resource');
+            const output = document.getElementById('resourceOutput');
+
+            if (resources.length === 0) {
+                output.textContent = 'No resource entries found';
+                return;
+            }
+
+            const summary = resources.slice(0, 10).map(r => {
+                const name = r.name.split('/').pop().substring(0, 30);
+                return `${r.initiatorType.padEnd(10)} | ${name.padEnd(30)} | ${r.duration.toFixed(0)}ms`;
+            });
+
+            output.textContent = `Found ${resources.length} resources:\n\n` +
+                'Type       | Name                           | Duration\n' +
+                '-'.repeat(55) + '\n' +
+                summary.join('\n');
+
+            log(`Resource timing refreshed: ${resources.length} entries`);
+        }
+
+        // Initialize
+        if (checkSupport()) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    refreshLoadMetrics();
+                    drawTimeline();
+                    refreshResources();
+                    log('Performance API demo initialized');
+                }, 100);
+            });
+        }
+    </script>
+</body>
+</html>
