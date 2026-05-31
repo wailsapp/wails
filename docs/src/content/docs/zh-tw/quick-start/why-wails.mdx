@@ -1,0 +1,132 @@
+---
+title: 為什麼選擇 Wails？
+description: 了解為什麼 Wails 是您的桌面應用程式的最佳選擇
+sidebar:
+  order: 1
+---
+
+Wails 結合了 **Go 語言的效能與簡潔性** 以及 **現代 Web UI 的靈活性**，讓您能夠使用熟悉的工具，構建美觀且原生的桌面應用程式。
+
+## 用戶可感知的效能
+
+**Wails 應用程式：**
+- **~15MB 的二進位檔案**（對比 Electron 的 150MB）
+- **~10MB 的基礎記憶體佔用**（對比 Electron 的 100MB+）
+- **&lt;0.5 秒的啟動時間**（對比 Electron 的 2-3 秒）
+- **原生渲染**：使用作業系統提供的 WebView
+
+用戶會覺得您的應用程式快速、輕量且專業。
+
+## 開發者體驗
+
+**一次編寫，到處運行：**
+- 單一 Go 程式碼庫，支援 Windows、macOS 和 Linux
+- 可使用任何 Web 框架（React、Vue、Svelte、原生 JS）
+- 開發期間支援熱重載（Hot reload）
+- 從 Go 程式碼自動生成 TypeScript 綁定
+
+以更少的維護程式碼，更快地發布產品。
+
+## 生產環境就緒的功能
+
+**您所需的一切：**
+- 具有獨立生命週期的多視窗支援
+- 原生選單（應用程式選單、右鍵選單、系統匣）
+- 具有平台原生 UI 的檔案對話框
+- 系統整合（通知、剪貼簿、鍵盤快捷鍵）
+- 所有平台的程式碼簽署與封裝
+
+構建專業的應用程式，而非原型。
+
+## 更快的開發速度
+
+- **單一程式碼庫，三個平台** - 一次編寫，為 Windows、macOS 和 Linux 構建
+- **運用現有技能** - Go 用於後端，HTML/CSS/JS 用於 UI
+- **即時回饋** - 開發期間熱重載，編譯時間僅需數秒
+- **小巧的二進位檔案** - 15MB 的應用程式意味著更快的構建、下載和迭代速度
+
+## 何時選擇 Wails
+
+**Wails 非常適合：**
+
+- **商業應用程式**（CRM、庫存管理、儀表板、管理工具）
+- **開發者工具**（資料庫客戶端、API 測試器、部署工具）
+- **生產力應用程式**（筆記、任務管理器、時間追蹤器）
+- **創意工具**（圖像編輯器、視頻處理器、設計實用程序）
+- **內部工具**（公司專屬應用程式、自動化工具）
+
+## 真實世界的成功案例
+
+:::tip[生產環境中的應用程式]
+Wails 驅動著成千上萬用戶使用的真實應用程式：
+- 具有複雜 UI 的**資料庫管理工具**
+- 處理即時數據的**金融儀表板**
+- 具有原生效能的**視頻編輯工具**
+- 工程團隊使用的**開發實用程序**
+
+[查看展示區 →](/community/showcase)
+:::
+
+## Wails 如何運作
+
+與捆綁整個瀏覽器及 Node.js 運行時的 Electron 不同，Wails 採取了根本不同的方法：您的 Go 程式碼編譯為原生二進位檔案，而您的 UI 在作業系統內建的 WebView 中運行。這種架構提供了小巧的二進位檔案、快速的啟動速度和低記憶體佔用，使 Wails 應用程式感覺如同原生應用。
+
+### 架構
+
+Wails 應用程式由兩個主要部分組成，它們之間進行無縫通信：負責業務邏輯和系統操作的 Go 後端，以及用於用戶界面的基於 Web 的前端。作業系統提供的 WebView 渲染您的 UI，無需捆綁瀏覽器，而綁定層則提供 Go 和 JavaScript 之間類型安全的通信。
+
+<div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
+<div style="max-width: 600px;">
+
+```d2
+direction: down
+
+Application: {
+Go: "Go Backend" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+WebView: "Native WebView" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+
+    Frontend: "Your UI\n(React/Vue/etc)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+
+}
+Go <-> WebView: "Bindings & Events"
+}
+
+
+
+```
+
+</div>
+</div>
+
+這種簡單的架構允許 JavaScript 程式碼直接調用 Go 函數（通過自動生成的綁定），同時 Go 也可以向前端發送事件和數據。兩層之間通過高效的記憶體橋接進行通信，延遲低於一毫秒。
+
+**Wails 實現效能的方式：**
+1. **無捆綁運行時** - 使用 Go 編譯的二進位檔案
+2. **原生 WebView** - 作業系統提供的渲染引擎
+3. **直接 Go ↔ JS 橋接** - 記憶體內通信，無網絡開銷
+4. **編譯後的二進位檔案** - 即時啟動，無需 JIT 編譯
+
+## 下一步
+
+現在您已經了解了 Wails 提供的功能，讓我們為您設置環境：
+
+1. **安裝 Wails** - 在 5 分鐘內設置開發環境  
+   [安裝指南 →](/zh-tw/getting-started/installation)
+
+2. **構建您的第一個應用程式** - 創建一個可用的應用程式並了解基本概念  
+   [第一個應用程式教程 →](/quick-start/first-app)
+
+3. **探索功能** - 發現 Wails 能為您的應用程式做什麼  
+   [功能概覽 →](/zh-tw/quick-start/next-steps)
+
+---
+
+**還有疑問嗎？** 加入我們的 [Discord 社群](https://discord.gg/JDdSxwjhGf)，直接向團隊提問。

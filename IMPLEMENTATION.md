@@ -4,11 +4,27 @@
 
 This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wails v3 on Linux.
 
-**Goal**: Provide GTK4/WebKitGTK 6.0 support as an EXPERIMENTAL opt-in via `-tags gtk4`, while maintaining GTK3/WebKit2GTK 4.1 as the stable default.
+**Current goal (post-flip, 2026-05-16)**: GTK4 + WebKitGTK 6.0 is the **default** Linux stack for v3.0.0 GA. GTK3 + WebKit2GTK 4.1 is a legacy opt-in via `-tags gtk3` for one v3 cycle and is scheduled for removal in v3.1.
+
+**Original goal (2026-02-04, superseded by Decision 1.1)**: Provide GTK4/WebKitGTK 6.0 support as an EXPERIMENTAL opt-in via `-tags gtk4`, while maintaining GTK3/WebKit2GTK 4.1 as the stable default.
 
 ## Architecture Decisions
 
-### Decision 1: GTK3 as Default, GTK4 Opt-In (2026-02-04)
+### Decision 1.1: GTK4 as Default, GTK3 Opt-In (2026-05-16) — supersedes Decision 1
+
+**Context**: GTK4 + WebKitGTK 6.0 has matured through the v3 alpha cycle (alpha.74 → alpha.92). For v3.0.0 GA, shipping with the modern stack as default-of-least-resistance — rather than as an experimental opt-in — is required so distros and packagers do not need to learn a Wails-specific build tag to get a working build.
+
+**Decision**: GTK4 + WebKitGTK 6.0 is the default. GTK3 + WebKit2GTK 4.1 is opt-in via `-tags gtk3`. The legacy path stays through the v3.0.x line and is removed in v3.1.
+
+**Rationale**:
+- Removes a discovery hurdle for new users on modern distros (Ubuntu 24.04+, Fedora 40+, Arch, NixOS unstable) — `go build` Just Works
+- Aligns with where the broader GTK ecosystem is moving — GTK3 EOL is on the horizon
+- Distros still on WebKit2GTK 4.1 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x) get a clearly-named opt-in until those LTSes age out
+- The `-tags gtk3` escape hatch lets us defer the breaking change of dropping GTK3 entirely to v3.1
+
+**Implementation (issue #5459)**: Build-tag flip + file renames. Files previously named `*_linux_gtk4.go` become the bare `*_linux.go` defaults with constraint `!gtk3`; files previously named `*_linux.go` become `*_linux_gtk3.go` with constraint `gtk3`. The `gtk4` build tag is retired in favor of `gtk3` as the toggle. Legacy `wails3 doctor` package-manager polarity inverted (gtk4/webkitgtk-6.0 required, gtk3/webkit2gtk-4.1 optional legacy). `doctor-ng` already had the correct polarity.
+
+### Decision 1: GTK3 as Default, GTK4 Opt-In (2026-02-04) — SUPERSEDED by Decision 1.1
 **Context**: Need to support modern Linux distributions with GTK4 while maintaining stability for existing apps.
 
 **Decision**: GTK3 remains the stable default (no build tag required). GTK4 is available as experimental via `-tags gtk4`.
@@ -19,9 +35,10 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 - Allows gradual migration and feedback collection
 - Protects existing apps from unexpected breakage
 
-**Build Tags**:
-- Default (no tag): `//go:build linux && cgo && !gtk4 && !android`
-- Experimental GTK4: `//go:build linux && cgo && gtk4 && !android`
+**Build Tags** (post-Decision 1.1, post-#5463 review fixes):
+- Default (no tag): `//go:build linux && cgo && !gtk3 && !android && !server`
+- Legacy GTK3 opt-in: `//go:build linux && cgo && gtk3 && !android && !server`
+- Server mode (`-tags server`) excludes both paths so no GTK/cgo code is linked.
 
 ### Decision 2: pkg-config Libraries (2026-01-04)
 **GTK4/WebKitGTK 6.0**:
@@ -99,7 +116,7 @@ All 7 package managers updated to check GTK4/WebKitGTK 6.0 as primary, GTK3 as o
 - `v3/internal/doctor/packagemanager/eopkg.go` ✅
 - `v3/internal/doctor/packagemanager/nixpkgs.go` ✅
 
-Package key naming convention: `gtk3`, `webkit2gtk-4.1` (primary/default), `gtk4`, `webkitgtk-6.0` (experimental, optional)
+Package key naming convention (post-#5463 default flip): `gtk4`, `webkitgtk-6.0` (primary/default), `gtk3 (legacy)`, `webkit2gtk (legacy)` (optional, removed in v3.1)
 
 #### 2.2 Capabilities Detection
 Files created/updated:
@@ -355,41 +372,53 @@ TODO:
 
 ## Files Reference
 
-### GTK3 (Default) Files
+Post-#5463 default flip — GTK4 is the default; GTK3 is opt-in via `-tags gtk3` and scheduled for removal in v3.1.
+
+### GTK4 (Default) Files — built when no tag is set
 ```
 v3/pkg/application/
-  linux_cgo.go              # Main CGO (!gtk4 tag - default)
-  application_linux.go       # App lifecycle (!gtk4 tag - default)
+  linux_cgo.go               # Main CGO (!gtk3 tag - default)
+  linux_cgo.c                # cgo C source (!gtk3 tag - default)
+  linux_cgo.h                # cgo C header (!gtk3 tag - default)
+  application_linux.go       # App lifecycle (!gtk3 tag - default)
+  gtkdispatch_linux.go       # GTK main-thread dispatch (!gtk3 tag - default)
+  menu_linux.go              # Menu processing (!gtk3 tag - default)
+  menuitem_linux.go          # Menu item handling (!gtk3 tag - default)
 
 v3/internal/assetserver/webview/
-  webkit2.go                 # WebKit2GTK helpers (!gtk4 tag - default)
-  request_linux.go           # Request handling (!gtk4 tag - default)
-  responsewriter_linux.go    # Response writing (!gtk4 tag - default)
+  webkit_linux.go            # WebKitGTK 6.0 helpers (!gtk3 tag - default)
+  request_linux.go           # Request handling (!gtk3 tag - default)
+  responsewriter_linux.go    # Response writing (!gtk3 tag - default)
 
 v3/internal/capabilities/
-  capabilities_linux_gtk3.go # GTK3 capabilities (!gtk4 tag - default)
+  capabilities_linux.go      # GTK4 capabilities (!gtk3 tag - default)
 
 v3/internal/operatingsystem/
-  webkit_linux.go           # WebKit version info (!gtk4 tag - default)
+  webkit_linux.go            # WebKit version info (!gtk3 tag - default)
 ```
 
-### GTK4 (Experimental) Files
+### GTK3 (Legacy) Files — built only with `-tags gtk3`
 ```
 v3/pkg/application/
-  linux_cgo_gtk4.go          # Main CGO (gtk4 tag - experimental)
-  application_linux_gtk4.go   # App lifecycle (gtk4 tag - experimental)
+  linux_cgo_gtk3.go          # Main CGO (gtk3 tag - legacy)
+  application_linux_gtk3.go  # App lifecycle (gtk3 tag - legacy)
+  gtkdispatch_linux_gtk3.go  # GTK main-thread dispatch (gtk3 tag - legacy)
+  menu_linux_gtk3.go         # Menu processing (gtk3 tag - legacy)
+  menuitem_linux_gtk3.go     # Menu item handling (gtk3 tag - legacy)
 
 v3/internal/assetserver/webview/
-  webkit6.go                 # WebKitGTK 6.0 helpers (gtk4 tag - experimental)
-  request_linux_gtk4.go      # Request handling (gtk4 tag - experimental)
-  responsewriter_linux_gtk4.go # Response writing (gtk4 tag - experimental)
+  webkit_linux_gtk3.go       # WebKit2GTK 4.1 helpers (gtk3 tag - legacy)
+  request_linux_gtk3.go      # Request handling (gtk3 tag - legacy)
+  responsewriter_linux_gtk3.go # Response writing (gtk3 tag - legacy)
 
 v3/internal/capabilities/
-  capabilities_linux.go      # GTK4 capabilities (gtk4 tag - experimental)
+  capabilities_linux_gtk3.go # GTK3 capabilities (gtk3 tag - legacy)
 
 v3/internal/operatingsystem/
-  webkit_linux_gtk4.go       # WebKit version info (gtk4 tag - experimental)
+  webkit_linux_gtk3.go       # WebKit version info (gtk3 tag - legacy)
 ```
+
+> **Historical note:** The Phase tracker blocks earlier in this document (Phases 1–4) reference the pre-flip filenames (`*_linux_gtk4.go`, `webkit6.go`, etc.) as a record of work done at the time. Those references are historical and have not been retconned; new work should reference the post-flip layout above.
 
 ### Shared Files (no GTK-specific code)
 ```

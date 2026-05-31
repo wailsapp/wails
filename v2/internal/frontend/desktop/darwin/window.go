@@ -112,6 +112,10 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			if mac.Preferences.FullscreenEnabled.IsSet() {
 				preferences.fullscreenEnabled = bool2CboolPtr(mac.Preferences.FullscreenEnabled.Get())
 			}
+
+			if mac.Preferences.ApplicationNameForUserAgent != "" {
+				preferences.applicationNameForUserAgent = c.String(mac.Preferences.ApplicationNameForUserAgent)
+			}
 		}
 
 		zoomable = bool2Cint(!frontendOptions.Mac.DisableZoom)

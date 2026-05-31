@@ -129,6 +129,8 @@ var (
 	gdkScreenIsComposited        func(pointer) int
 	gdkWindowGetState            func(pointer) int
 	gdkWindowGetDisplay          func(pointer) pointer
+	gdkEventGetKeyval            func(pointer, pointer) bool // gdk_event_get_keyval (GTK ≥ 3.20)
+	gdkEventGetState             func(pointer, pointer) bool // gdk_event_get_state  (GTK ≥ 3.0)
 
 	// gtk functions
 	gtkApplicationNew               func(string, uint) pointer
@@ -300,6 +302,8 @@ func init() {
 	purego.RegisterLibFunc(&gdkScreenIsComposited, gtk, "gdk_screen_is_composited")
 	purego.RegisterLibFunc(&gdkWindowGetDisplay, gtk, "gdk_window_get_display")
 	purego.RegisterLibFunc(&gdkWindowGetState, gtk, "gdk_window_get_state")
+	purego.RegisterLibFunc(&gdkEventGetKeyval, gtk, "gdk_event_get_keyval")
+	purego.RegisterLibFunc(&gdkEventGetState, gtk, "gdk_event_get_state")
 
 	// GTK3
 	purego.RegisterLibFunc(&gtkApplicationNew, gtk, "gtk_application_new")
@@ -1054,6 +1058,63 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 		defer C.free(unsafe.Pointer(event))
 		C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, onButtonEvent, unsafe.Pointer(&id))
 	*/
+
+	// Wire key-press-event on the webview so that keyboard shortcuts (including
+	// Ctrl+Z undo / Ctrl+Shift+Z redo) are dispatched via windowKeyEvents →
+	// handleKeyEvent, mirroring the CGO path (linux_cgo.go onKeyPressEvent).
+	//
+	// GDK modifier bitmasks (stable since GDK 2.0):
+	const (
+		gdkShiftMask    = uint32(1 << 0)
+		gdkControlMask  = uint32(1 << 2)
+		gdkMod1Mask     = uint32(1 << 3)  // Alt
+		gdkSuperMask    = uint32(1 << 26) // Super/Win
+		gdkModifierMask = uint32(0x5c001fff)
+	)
+	keyPressCallback := purego.NewCallback(func(widget, event pointer, wid uintptr) uintptr {
+		// Read state and keyval via stable GDK API (GTK ≥ 3.0 / ≥ 3.20).
+		var state uint32
+		if !gdkEventGetState(event, pointer(unsafe.Pointer(&state))) {
+			return 0
+		}
+		var keyval uint32
+		if !gdkEventGetKeyval(event, pointer(unsafe.Pointer(&keyval))) {
+			return 0
+		}
+
+		modifiers := state & gdkModifierMask
+		var acc accelerator
+		if modifiers&gdkShiftMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, ShiftKey)
+		}
+		if modifiers&gdkControlMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, ControlKey)
+		}
+		if modifiers&gdkMod1Mask != 0 {
+			acc.Modifiers = append(acc.Modifiers, OptionOrAltKey)
+		}
+		if modifiers&gdkSuperMask != 0 {
+			acc.Modifiers = append(acc.Modifiers, SuperKey)
+		}
+		keyString, ok := VirtualKeyCodes[uint(keyval)]
+		if !ok {
+			return 0
+		}
+		acc.Key = keyString
+		accelStr := acc.String()
+
+		windowKeyEvents <- &windowKeyEvent{
+			windowId:          uint(wid),
+			acceleratorString: accelStr,
+		}
+		// Return 1 to consume Ctrl+Z/Ctrl+Shift+Z so webkit2gtk's unreliable
+		// native undo handler for <input> elements does not also fire.
+		if accelStr == "Ctrl+Z" || accelStr == "Ctrl+Shift+Z" {
+			return 1
+		}
+		return 0
+	})
+	gSignalConnectData(webview, "key-press-event", keyPressCallback, pointer(uintptr(windowId)), false, 0)
 }
 
 func windowOpenDevTools(webview pointer) {
@@ -1298,6 +1359,14 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 
 func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
+}
+
+func (w *linuxWebviewWindow) undo() {
+	windowExecJS(w.webview, "document.execCommand('undo')")
+}
+
+func (w *linuxWebviewWindow) redo() {
+	windowExecJS(w.webview, "document.execCommand('redo')")
 }
 
 // linuxWebviewWindow show/hide methods for purego implementation

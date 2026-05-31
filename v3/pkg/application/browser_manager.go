@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 )
 
 // BrowserManager manages browser-related operations

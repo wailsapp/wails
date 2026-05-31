@@ -1,0 +1,424 @@
+---
+title: Система сборки
+description: Понимание того, как Wails собирает и упаковывает ваше приложение
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Единая система сборки
+
+Wails предоставляет **единую систему сборки**, которая компилирует код Go, упаковывает ресурсы фронтенда, внедряет всё в один исполняемый файл и обрабатывает специфичные для платформы сборки — всё одной командой.
+
+```bash
+wails3 build
+```
+
+**Результат:** Нативный исполняемый файл со всем встроенным содержимым.
+
+## Обзор процесса сборки
+
+{/*
+TODO: Fix D2 diagram generation or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Заглушка для диаграммы процесса сборки]**
+
+
+## Фазы сборки
+
+### 1. Фаза анализа
+
+Wails сканирует ваш код Go, чтобы понять ваши сервисы:
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Что извлекает Wails:**
+- Имя сервиса: `GreetService`
+- Имя метода: `Greet`
+- Типы параметров: `string`
+- Типы возвращаемых значений: `string`
+
+**Используется для:** Генерации привязок TypeScript
+
+### 2. Фаза генерации
+
+#### Привязки TypeScript
+
+Wails генерирует типобезопасные привязки:
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**Преимущества:**
+- Полная типобезопасность
+- Автодополнение в IDE
+- Ошибки на этапе компиляции
+- Комментарии JSDoc
+
+#### Сборка фронтенда
+
+Запускается ваш сборщик фронтенда (Vite, webpack и т.д.):
+
+```bash
+# Пример для Vite
+vite build --outDir dist
+```
+
+**Что происходит:**
+- JavaScript/TypeScript компилируется
+- CSS обрабатывается и минифицируется
+- Ресурсы оптимизируются
+- Генерируются карты исходного кода (только для разработки)
+- Вывод в `frontend/dist/`
+
+### 3. Фаза компиляции
+
+#### Компиляция Go
+
+Код Go компилируется с оптимизациями:
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**Флаги:**
+- `-s`: Удалить таблицу символов
+- `-w`: Удалить информацию отладки DWARF
+- Результат: Меньший размер бинарного файла (~30% уменьшение)
+
+**Специфично для платформ:**
+- Windows: `.exe` со встроенной иконкой
+- macOS: Структура пакета `.app`
+- Linux: ELF бинарный файл
+
+#### Внедрение ресурсов
+
+Ресурсы фронтенда внедряются в бинарный файл Go:
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**Результат:** Один исполняемый файл со всем содержимым внутри.
+
+### 4. Вывод
+
+**Один нативный бинарный файл:**
+- Windows: `myapp.exe` (~15MB)
+- macOS: `myapp.app` (~15MB)
+- Linux: `myapp` (~15MB)
+
+**Нет зависимостей** (кроме системного WebView).
+
+## Разработка против Продакшена
+
+<Tabs syncKey="mode">
+  <TabItem label="Разработка (wails3 dev)" icon="seti:config">
+    **Оптимизировано для скорости:**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **Что происходит:**
+    1. Запускается сервер разработки фронтенда (Vite на порту 5173)
+    2. Компилируется Go без оптимизаций
+    3. Запускается приложение, указывающее на сервер разработки
+    4. Включается hot reload
+    5. Включаются карты исходного кода
+    
+    **Характеристики:**
+    - **Быстрая пересборка** (&lt;1s для изменений во фронтенде)
+    - **Нет внедрения ресурсов** (обслуживаются с сервера разработки)
+    - **Включены отладочные символы**
+    - **Включены карты исходного кода**
+    - **Подробное логирование**
+    
+    **Размер файла:** Больше (~50MB с отладочными символами)
+  </TabItem>
+
+  <TabItem label="Продакшен (wails3 build)" icon="rocket">
+    **Оптимизировано для размера и производительности:**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **Что происходит:**
+    1. Собирается фронтенд для продакшена (минифицированный)
+    2. Компилируется Go с оптимизациями
+    3. Удаляются отладочные символы
+    4. Внедряются ресурсы
+    5. Создаётся один бинарный файл
+    
+    **Характеристики:**
+    - **Оптимизированный код** (минифицированный, tree-shaken)
+    - **Ресурсы внедрены** (нет внешних файлов)
+    - **Отладочные символы удалены**
+    - **Нет карт исходного кода**
+    - **Минимальное логирование**
+    
+    **Размер файла:** Меньше (~15MB)
+  </TabItem>
+</Tabs>
+
+## Команды сборки
+
+### Базовая сборка
+
+```bash
+wails3 build
+```
+
+**Результат:** `build/bin/myapp[.exe]`
+
+### Сборка для конкретной платформы
+
+```bash
+# Сборка для Windows (с любой ОС)
+wails3 build -platform windows/amd64
+
+# Сборка для macOS
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# Сборка для Linux
+wails3 build -platform linux/amd64
+```
+
+**Кросс-компиляция:** Сборка для любой платформы с любой платформы.
+
+### Сборка с опциями
+
+```bash
+# Пользовательская директория вывода
+wails3 build -o ./dist/myapp
+
+# Пропустить сборку фронтенда (использовать существующую)
+wails3 build -skipbindings
+
+# Чистая сборка (удалить кэш)
+wails3 build -clean
+
+# Подробный вывод
+wails3 build -v
+```
+
+### Режимы сборки
+
+```bash
+# Сборка для отладки (включает символы)
+wails3 build -debug
+
+# Сборка для продакшена (по умолчанию, оптимизированная)
+wails3 build
+
+# Сборка для разработки (быстрая, неоптимизированная)
+wails3 build -devbuild
+```
+
+## Конфигурация сборки
+
+### Taskfile.yml
+
+Wails использует [Taskfile](https://taskfile.dev/) для конфигурации сборки:
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: Build the application
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: Build for Windows
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: Build for macOS (Universal)
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: Build for Linux
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**Запуск задач:**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### Файл опций сборки
+
+Создайте `build/build.json` для постоянной конфигурации:
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## Внедрение ресурсов
+
+### Как это работает
+
+Wails использует пакет `embed` Go:
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**На этапе сборки:**
+1. Фронтенд собирается в `frontend/dist/`
+2. Директива `//go:embed` включает файлы
+3. Файлы компилируются в бинарный файл
+4. Бинарный файл содержит всё содержимое
+
+**На этапе выполнения:**
+1. Приложение запускается
+2. Ресурсы обслуживаются из памяти
+3. Нет дискового ввода-вывода для ресурсов
+4. Быстрая загрузка
+
+### Пользовательские ресурсы
+
+Внедрите дополнительные файлы:
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## Оптимизации сборки
+
+### Оптимизации фронтенда
+
+**Vite (по умолчанию):**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // Remove console.log
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // Separate vendor bundle
+        },
+      },
+    },
+  },
+}
+```
+
+**Результаты:**
+- JavaScript минифицирован (~70% уменьшение)
+- CSS минифицирован (~60% уменьшение)
+- Изображения оптимизированы
+- Применён tree-shaking
+
+### Оптимизации Go
+
+**Флаги компилятора:**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`: Удалить таблицу символов (~10% уменьшение)
+- `-w`: Удалить информацию отладки DWARF (~20% уменьшение)
+
+**Дополнительные оптимизации:**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`: Установить значения переменных на этапе сборки
+- Полезно для номеров версий, дат сборки
+
+### Сжатие бинарного файла
+
+**UPX (опционально):**
+
+```bash
+# После сборки
+upx --best build/bin/myapp.exe
+```
+
+**Результаты:**
+- ~50% уменьшение размера**Вопросы о сборке?** Задавайте в [Discord](https://discord.gg/JDdSxwjhGf) или проверяйте [примеры сборки](https://github.com/wailsapp/wails/tree/master/v3/examples/build).
