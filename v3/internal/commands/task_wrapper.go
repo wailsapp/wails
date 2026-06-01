@@ -28,6 +28,9 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 	if buildFlags.GarbleArgs != "" {
 		otherArgs = append(otherArgs, "GARBLE_ARGS="+buildFlags.GarbleArgs)
 	}
+	if buildFlags.Zig {
+		otherArgs = append(otherArgs, "USE_ZIG=true")
+	}
 	return wrapTask("build", otherArgs)
 }
 

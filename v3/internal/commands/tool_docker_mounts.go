@@ -32,6 +32,21 @@ func ToolHasCC(_ *HasCCOptions) error {
 	return nil
 }
 
+// ToolHasZig checks if the Zig compiler is available in PATH.
+// Outputs "true" or "false" for use in Taskfile sh: variables.
+// Zig can be used as a drop-in C/C++ cross-compiler for CGO builds
+// via CC="zig cc -target ..." and CXX="zig c++ -target ...".
+func ToolHasZig(_ *HasCCOptions) error {
+	DisableFooter = true
+	_, err := exec.LookPath("zig")
+	if err == nil {
+		fmt.Print("true")
+	} else {
+		fmt.Print("false")
+	}
+	return nil
+}
+
 // ToolDockerMounts outputs Docker volume mount flags for cross-compilation.
 // It generates mounts for the Go module cache and any local replace directives
 // in go.mod. This is a cross-platform replacement for the bash pipeline that
