@@ -1,1 +1,2 @@
 {"id":"int-f4a67c41","kind":"field_change","created_at":"2026-06-01T09:34:36.6432606Z","actor":"andrew","issue_id":"wails-webview2gtk6-iuc","extra":{"field":"status","new_value":"in_progress","old_value":"open"}}
+{"id":"int-600c40fe","kind":"field_change","created_at":"2026-06-01T10:05:02.9065776Z","actor":"andrew","issue_id":"wails-webview2gtk6-iuc","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Done: added --zig flag to wails3 build"}}
