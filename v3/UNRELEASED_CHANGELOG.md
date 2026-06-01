@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix WebKit UI freeze on Linux when idle (e.g. with the inspector open) by no longer forcing `SA_ONSTACK` on `SIGUSR1`, which broke JavaScriptCore's GC thread synchronisation (#5527)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
