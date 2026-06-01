@@ -97,3 +97,8 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 /v3/testiosapp/
 go.work
 go.work.sum
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

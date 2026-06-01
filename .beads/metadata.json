@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "wails",
+  "project_id": "4b77930f-f62f-47c9-a61d-4af6763c3f34"
+}
