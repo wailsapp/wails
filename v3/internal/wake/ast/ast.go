@@ -1,18 +1,22 @@
 package ast
 
 type Taskfile struct {
-	Version    string
-	Includes   map[string]*Include
-	Vars       map[string]*Var
-	Tasks      map[string]*Task
-	Shopt      []string
-	Silent     bool
-	Location   string
-	Dotenv     []string
-	Output     string
-	Run        string
-	Requires   *Requires
-	Interval   string
+	Version  string
+	Includes map[string]*Include
+	Vars     map[string]*Var
+	Tasks    map[string]*Task
+	// Env is the Taskfile-level `env:` block: environment variables that are
+	// added to every task's subprocess environment, overridden by task-local
+	// `env:` on per-task collisions. Empty when the Taskfile declares no env.
+	Env      map[string]string
+	Shopt    []string
+	Silent   bool
+	Location string
+	Dotenv   []string
+	Output   string
+	Run      string
+	Requires *Requires
+	Interval string
 }
 
 type Requires struct {

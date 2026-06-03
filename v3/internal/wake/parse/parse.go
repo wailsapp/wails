@@ -45,6 +45,11 @@ func Parse(path string) (*ast.Taskfile, error) {
 			if err != nil {
 				return nil, err
 			}
+		case "env":
+			tf.Env, err = parseEnv(val)
+			if err != nil {
+				return nil, err
+			}
 		case "tasks":
 			tf.Tasks, err = parseTasks(val)
 			if err != nil {

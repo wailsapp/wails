@@ -294,6 +294,13 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	}
 
 	var env = os.Environ()
+	// Taskfile-level env first; per-task env follows and wins on collisions
+	// (matches the upstream task semantics, and matches the order any sane
+	// reader of the Taskfile expects).
+	for k, v := range e.Taskfile.Env {
+		expanded := parse.ExpandTemplates(v, mergedVars)
+		env = append(env, k+"="+expanded)
+	}
 	for k, v := range task.Env {
 		expanded := parse.ExpandTemplates(v, mergedVars)
 		env = append(env, k+"="+expanded)
