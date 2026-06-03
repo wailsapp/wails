@@ -177,12 +177,17 @@ replace foo => C:\vendor\lib
 	}
 }
 
-func TestToolHasCC(t *testing.T) {
-	out, err := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
+func TestToolHas(t *testing.T) {
+	out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "cc"}) })
 	if err != nil {
-		t.Fatalf("ToolHasCC returned error: %v", err)
+		t.Fatalf("ToolHas returned error: %v", err)
 	}
 	if out != "true" && out != "false" {
 		t.Errorf("expected exactly \"true\" or \"false\", got %q", out)
+	}
+
+	err = ToolHas(&HasOptions{Tool: "unknown"})
+	if err == nil {
+		t.Error("expected error for unknown tool")
 	}
 }

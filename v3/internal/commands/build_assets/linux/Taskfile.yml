@@ -36,7 +36,7 @@ tasks:
       TARGET_ARCH: '{{.ARCH | default ARCH}}'
       # Check if a C compiler is available (gcc or clang) — cross-platform via wails3 tool
       HAS_CC:
-        sh: 'wails3 tool has-cc'
+        sh: 'wails3 tool has cc'
 
   build:native:
     summary: Builds the application natively on Linux

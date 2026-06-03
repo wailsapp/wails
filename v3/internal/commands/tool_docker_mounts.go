@@ -14,20 +14,27 @@ import (
 // DockerMountsOptions holds options for the docker-mounts command.
 type DockerMountsOptions struct{}
 
-// HasCCOptions holds options for the has-cc command.
-type HasCCOptions struct{}
+// HasOptions holds options for the has command.
+type HasOptions struct {
+	Tool string `pos:"1" name:"tool" description:"Tool to check for (e.g. cc)"`
+}
 
-// ToolHasCC checks if a C compiler (gcc or clang) is available in PATH.
-// Outputs "true" or "false" for use in Taskfile sh: variables, replacing the
-// bash-only `command -v gcc` pattern which fails on Windows.
-func ToolHasCC(_ *HasCCOptions) error {
+// ToolHas checks if a given tool or capability is available.
+// Outputs "true" or "false" for use in Taskfile sh: variables.
+// Supported tools: cc (gcc or clang).
+func ToolHas(opts *HasOptions) error {
 	DisableFooter = true
-	_, gccErr := exec.LookPath("gcc")
-	_, clangErr := exec.LookPath("clang")
-	if gccErr == nil || clangErr == nil {
-		fmt.Print("true")
-	} else {
-		fmt.Print("false")
+	switch opts.Tool {
+	case "cc":
+		_, gccErr := exec.LookPath("gcc")
+		_, clangErr := exec.LookPath("clang")
+		if gccErr == nil || clangErr == nil {
+			fmt.Print("true")
+		} else {
+			fmt.Print("false")
+		}
+	default:
+		return fmt.Errorf("unknown tool %q (supported: cc)", opts.Tool)
 	}
 	return nil
 }
