@@ -1,7 +1,7 @@
-// Package pulse renders a wake build to a terminal as the "Pulse" TUI:
-// a scrolling log of completed steps above a pinned live region that shows
-// progress, in-flight steps, and recent throughput. It is a pure-stdlib
-// alternative to report/termui, written without third-party styling libraries.
+// Package pulse renders a wake build to a terminal as the "Pulse" TUI: a
+// pre-painted skeleton of one row per planned step that updates each row
+// in place as steps progress, plus a pinned progress strip and throughput
+// sparkline beneath. Written without third-party styling libraries.
 package pulse
 
 import (

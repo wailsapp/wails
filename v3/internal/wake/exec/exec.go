@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/report"
@@ -19,25 +20,42 @@ import (
 )
 
 type Executor struct {
-	Taskfile   *ast.Taskfile
-	Dir        string
-	Level      report.Verbosity
-	Reporter   report.Reporter
-	MaxWorkers int
-	Cache      *TaskCache
-	executed   map[string]bool
-	reported   map[string]bool
-	depRuns    map[string]bool
-	mu         sync.Mutex
+	Taskfile        *ast.Taskfile
+	Dir             string
+	Level           report.Verbosity
+	Reporter        report.Reporter
+	MaxWorkers      int
+	Cache           *TaskCache
+	// Parallel toggles the in-task dep-fanout. When true, each task's
+	// `deps:` are executed concurrently (matching Taskfile semantics);
+	// when false, sequentially.
+	Parallel        bool
+	// Force, when true, makes every task re-run regardless of cache state.
+	// Wired up from WAKE_FORCE=true (or a `wails3 build --clean` flag) at
+	// the wake.Execute boundary. Bypasses both the Taskfile-declared cache
+	// check (sources/generates/status) and the implicit native-Go cache.
+	Force           bool
+	executed        map[string]bool
+	reported        map[string]bool
+	depRuns         map[string]bool
+	failureReported atomic.Bool
+	mu              sync.Mutex
 }
 
-// beginStep opens a reported step for task unless it has no real commands or was
-// already reported. Returning false means the caller should not emit step
-// output: this is the single chokepoint that bounds the [k/N] counter at k <= N,
-// even when a cache-pruned subtree and a real execution path reach the same task.
-func (e *Executor) beginStep(task *ast.Task, label string) bool {
+// FailureReported reports whether the executor has rendered at least one
+// StepFailed panel during this run. wake.go uses it to decide whether to
+// surface the top-level error itself — when nothing has been rendered, the
+// user gets no diagnostic unless wake echoes the error message.
+func (e *Executor) FailureReported() bool { return e.failureReported.Load() }
+
+// beginStep opens a reported step for task unless it has no real commands or
+// was already reported. Returns the StepID (0 if no step was opened) so the
+// caller can thread it through paired step-scoped methods. This is the single
+// chokepoint that bounds the [k/N] counter at k <= N even when a cache-pruned
+// subtree and a real execution path reach the same task.
+func (e *Executor) beginStep(task *ast.Task, label string) report.StepID {
 	if !hasRealCmds(task) {
-		return false
+		return 0
 	}
 	e.mu.Lock()
 	if e.reported == nil {
@@ -45,18 +63,17 @@ func (e *Executor) beginStep(task *ast.Task, label string) bool {
 	}
 	if e.reported[task.Name] {
 		e.mu.Unlock()
-		return false
+		return 0
 	}
 	e.reported[task.Name] = true
 	e.mu.Unlock()
-	e.rep().StepStart(task.Name, label)
-	return true
+	return e.rep().StepStart(task.Name, label)
 }
 
 // reportStep emits a complete, instantaneous step (cache hit, skip).
 func (e *Executor) reportStep(task *ast.Task, label string, status report.Status) {
-	if e.beginStep(task, label) {
-		e.rep().StepEnd(status, 0)
+	if id := e.beginStep(task, label); id != 0 {
+		e.rep().StepEnd(id, status, 0)
 	}
 }
 
@@ -115,7 +132,7 @@ func (e *Executor) ExecuteWithVars(ctx context.Context, target string, extraVars
 		}
 	}
 
-	if e.Cache != nil && e.Cache.ShouldSkip(task, e.Dir) {
+	if !e.Force && e.Cache != nil && e.Cache.ShouldSkip(task, e.Dir) {
 		e.log("task %q up-to-date (cache hit)", task.Name)
 		e.reportPrunedCached(task)
 		e.mu.Lock()
@@ -191,7 +208,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return err
 	}
 
-	if isUpToDate(task, e.Dir) {
+	if !e.Force && isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
 		e.reportPrunedCached(task)
 		return nil
@@ -203,10 +220,20 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		e.depRuns = make(map[string]bool)
 	}
 
+	// Taskfile semantics: deps run in parallel before cmds. In serial mode
+	// (Parallel=false) we fall back to a sequential walk; otherwise we spawn
+	// one goroutine per dep and wait for all. Each goroutine bottoms out in
+	// e.ExecuteWithVars, which is mutex-safe; runaway concurrency from very
+	// wide dep fans is bounded by the OS scheduler — we don't add a per-task
+	// worker pool because the outer call chain is usually shallow.
+	type depPlan struct {
+		name string
+		vars map[string]*ast.Var
+	}
+	var plans []depPlan
 	for _, dep := range task.Deps {
 		expandedDep := parse.ExpandTemplates(dep.Task, mergedVars)
 		resolvedDep := e.resolveTaskName(expandedDep, task.Name)
-
 		resolvedDepVars := e.resolveDepVars(dep.Vars, mergedVars)
 
 		if e.Level >= report.Debug {
@@ -226,7 +253,6 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		if method == "" {
 			method = "all"
 		}
-
 		switch method {
 		case "once":
 			if e.depRuns[resolvedDep] {
@@ -237,8 +263,33 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 			continue
 		}
 
-		if err := e.ExecuteWithVars(ctx, resolvedDep, resolvedDepVars); err != nil {
-			return err
+		plans = append(plans, depPlan{name: resolvedDep, vars: resolvedDepVars})
+	}
+
+	if !e.Parallel || len(plans) <= 1 {
+		for _, p := range plans {
+			if err := e.ExecuteWithVars(ctx, p.name, p.vars); err != nil {
+				return err
+			}
+		}
+	} else {
+		var wg sync.WaitGroup
+		errCh := make(chan error, len(plans))
+		for _, p := range plans {
+			wg.Add(1)
+			go func(p depPlan) {
+				defer wg.Done()
+				if err := e.ExecuteWithVars(ctx, p.name, p.vars); err != nil {
+					errCh <- err
+				}
+			}(p)
+		}
+		wg.Wait()
+		close(errCh)
+		for err := range errCh {
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -265,7 +316,7 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	// subprocess when nothing has changed. Only applies to single-command
 	// tasks that opt out of explicit caching.
 	var goRecord func()
-	if e.Cache != nil && len(task.Cmds) == 1 &&
+	if !e.Force && e.Cache != nil && len(task.Cmds) == 1 &&
 		len(task.Sources) == 0 && len(task.Generates) == 0 && len(task.Status) == 0 {
 		goDir := dir
 		if goDir == "" {
@@ -292,29 +343,36 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	// as the steps of the tasks they dispatch to. This keeps the [k/N] counter
 	// aligned with the visible per-command work and avoids nested steps.
 	// A "step" is a task that runs at least one real command; pure wrappers
-	// (only dep/task-ref cmds) emit no step of their own. step reports whether
-	// this run should be displayed (false if already reported via a cache-pruned
-	// path). Commands run regardless; only display is gated.
-	step := e.beginStep(task, label)
+	// (only dep/task-ref cmds) emit no step of their own. stepID is non-zero
+	// when this run should be displayed (zero if already reported via a
+	// cache-pruned path). Commands run regardless; only display is gated.
+	stepID := e.beginStep(task, label)
 	var cw *captureWriter
 	var start time.Time
 	if hasRealCmds(task) {
-		cw = newCaptureWriter(e.rep(), e.Level >= report.Verbose)
+		cw = newCaptureWriter(e.rep(), stepID, e.Level >= report.Verbose)
 		start = time.Now()
 	}
 
 	for _, cmd := range task.Cmds {
-		if err := e.runCmd(ctx, cmd, dir, env, mergedVars, cw); err != nil {
+		if err := e.runCmd(ctx, cmd, dir, env, mergedVars, stepID, cw); err != nil {
 			if !cmd.IgnoreError {
 				if cw != nil {
 					cw.flush()
 				}
-				// A failure always surfaces, even if the step was previously
-				// reported (e.g. cached) and so would otherwise be silent.
-				if !step {
-					e.rep().StepStart(task.Name, label)
+				// Only render a failure panel for a real shell command. A
+				// task-ref cmd (cmd.Cmd == "") simply propagates the error
+				// from a sub-task that has already rendered its own panel —
+				// rendering a second one here would duplicate the message and,
+				// because the parent task usually has no captureWriter, would
+				// crash trying to attach captured output that doesn't exist.
+				if cmd.Cmd != "" {
+					if stepID == 0 {
+						stepID = e.rep().StepStart(task.Name, label)
+					}
+					e.rep().StepFailed(stepID, e.failure(task, cmd, mergedVars, cw, err))
+					e.failureReported.Store(true)
 				}
-				e.rep().StepFailed(e.failure(task, cmd, mergedVars, cw, err))
 				return err
 			}
 		}
@@ -324,50 +382,109 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		goRecord()
 	}
 
-	if step {
+	if stepID != 0 {
 		cw.flush()
-		e.rep().StepEnd(report.StatusOK, time.Since(start))
-		e.reportArtifacts(task, dir)
+		e.rep().StepEnd(stepID, report.StatusOK, time.Since(start))
 	}
 
 	return nil
 }
 
-// reportArtifacts walks the task's `generates:` patterns, resolves each glob
-// against the task's working directory, and registers each resulting file as
-// a build artifact with the reporter. Stat failures are ignored (the file
-// may have been intentionally cleaned up before reporting) — only files we
-// can confirm exist are surfaced.
-func (e *Executor) reportArtifacts(task *ast.Task, dir string) {
-	if len(task.Generates) == 0 {
+// reportGoBuildArtifact extracts a `go build ... -o <path>` output from the
+// expanded command string and registers the resulting file as a build
+// artifact. We deliberately do NOT walk task `generates:` patterns: those
+// produce intermediate outputs (icons, bindings) that aren't what the user
+// asks for at the end of `wails3 build` — they want the binary. Catching
+// go-build's `-o` argument hits exactly that.
+//
+// Called after a real-cmd execution succeeds. dir is the task's resolved
+// working directory; the -o value is rooted there if relative.
+func (e *Executor) reportGoBuildArtifact(expandedCmd, dir string) {
+	if !strings.HasPrefix(strings.TrimLeft(expandedCmd, " \t"), "go build") {
 		return
 	}
-	for _, pattern := range task.Generates {
-		full := pattern
-		if !filepath.IsAbs(full) {
-			full = filepath.Join(dir, pattern)
+	out := extractGoBuildOutput(expandedCmd)
+	if out == "" {
+		return
+	}
+	full := out
+	if !filepath.IsAbs(full) {
+		base := dir
+		if base == "" {
+			base = e.Dir
 		}
-		matches, err := filepath.Glob(full)
-		if err != nil {
-			continue
+		full = filepath.Join(base, out)
+	}
+	info, err := os.Stat(full)
+	if err != nil || info.IsDir() {
+		return
+	}
+	display := full
+	if rel, err := filepath.Rel(e.Dir, full); err == nil && !strings.HasPrefix(rel, "..") {
+		display = rel
+	}
+	e.rep().Artifact(report.Artifact{
+		Path: display,
+		Size: info.Size(),
+		Kind: "binary",
+	})
+}
+
+// extractGoBuildOutput scans a `go build ...` command line for the value
+// passed to -o (either `-o X` or `-o=X`). Quotes around X are stripped.
+// Returns "" if no -o flag is present.
+func extractGoBuildOutput(cmd string) string {
+	// shellSplit lives in cmds/ but the algorithm is small; we re-implement
+	// the minimal quote-aware split here to avoid a cycle.
+	tokens := splitArgsQuoted(cmd)
+	for i := 0; i < len(tokens); i++ {
+		t := tokens[i]
+		if t == "-o" && i+1 < len(tokens) {
+			return tokens[i+1]
 		}
-		for _, m := range matches {
-			info, err := os.Stat(m)
-			if err != nil || info.IsDir() {
-				continue
-			}
-			// Keep the displayed path relative to the wake root when we can
-			// — full absolute paths in the summary are noise.
-			display := m
-			if rel, err := filepath.Rel(e.Dir, m); err == nil && !strings.HasPrefix(rel, "..") {
-				display = rel
-			}
-			e.rep().Artifact(report.Artifact{
-				Path: display,
-				Size: info.Size(),
-			})
+		if strings.HasPrefix(t, "-o=") {
+			return strings.TrimPrefix(t, "-o=")
 		}
 	}
+	return ""
+}
+
+func splitArgsQuoted(s string) []string {
+	var (
+		out    []string
+		cur    strings.Builder
+		inS    bool
+		inD    bool
+		active bool
+	)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch {
+		case c == '\\' && !inS && i+1 < len(s):
+			cur.WriteByte(s[i+1])
+			i++
+			active = true
+		case c == '\'' && !inD:
+			inS = !inS
+			active = true
+		case c == '"' && !inS:
+			inD = !inD
+			active = true
+		case (c == ' ' || c == '\t') && !inS && !inD:
+			if active {
+				out = append(out, cur.String())
+				cur.Reset()
+				active = false
+			}
+		default:
+			cur.WriteByte(c)
+			active = true
+		}
+	}
+	if active {
+		out = append(out, cur.String())
+	}
+	return out
 }
 
 // hasRealCmds reports whether task runs any shell/native command (as opposed to
@@ -436,7 +553,7 @@ func (e *Executor) resolveTaskName(name, contextTask string) string {
 	return name
 }
 
-func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var, cw *captureWriter) error {
+func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var, stepID report.StepID, cw *captureWriter) error {
 	if cmd.For != nil {
 		return e.runForLoop(ctx, cmd, dir, env, vars)
 	}
@@ -447,7 +564,14 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 		if subTask == nil {
 			return fmt.Errorf("wake: sub-task %q not found", expandedTask)
 		}
-		return e.runTask(ctx, subTask, cmd.Vars)
+		// cmd-level vars (the `vars:` block on a `task:` cmd ref) need to
+		// be resolved in the *calling* task's scope before being passed to
+		// the sub-task. Without this, templates like
+		// `SCRIPT: '{{if eq .DEV "true"}}...{{end}}'` reach the sub-task
+		// unresolved and end up rendering empty there — same path as the
+		// existing resolveDepVars treatment for `task.Deps` vars.
+		resolvedVars := e.resolveDepVars(cmd.Vars, vars)
+		return e.runTask(ctx, subTask, resolvedVars)
 	}
 	if cmd.Cmd == "" {
 		return nil
@@ -458,12 +582,13 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 	}
 
 	expandedCmd := parse.ExpandTemplates(cmd.Cmd, vars)
-	e.rep().StepCommand(expandedCmd)
+	e.rep().StepCommand(stepID, expandedCmd)
 
 	executor := cmds.Route(expandedCmd, cmds.RouteOptions{
 		Dir: dir,
 		Env: env,
 	})
+	defer e.reportGoBuildArtifact(expandedCmd, dir)
 
 	// Output is captured (shown only on failure) and streamed live when verbose;
 	// the writer also intercepts wire events from subprocess producers and routes
@@ -536,7 +661,21 @@ func (e *Executor) mergeVars(task *ast.Task, depVars map[string]*ast.Var) map[st
 		}
 	}
 
+	// Task-local vars layer on top of depVars, but with a twist: if a task
+	// var's template references the same name (the "passthrough" pattern
+	// `SCRIPT: "{{.SCRIPT}}"`), evaluate it against the *current* merged map
+	// so it picks up the inherited depVars value instead of overwriting it
+	// with an immediately-self-referential empty. Without this, every
+	// Taskfile that declares accepted vars via passthrough silently loses
+	// them at the next task boundary.
 	for k, v := range task.Vars {
+		if v != nil && v.Value == "" && strings.Contains(v.Static, "{{."+k) {
+			expanded := parse.ExpandTemplates(v.Static, merged)
+			if !strings.Contains(expanded, "{{") {
+				merged[k] = &ast.Var{Static: v.Static, Value: expanded}
+				continue
+			}
+		}
 		merged[k] = v
 	}
 

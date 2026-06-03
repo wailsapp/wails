@@ -20,13 +20,14 @@ import (
 // locking is needed here.
 type captureWriter struct {
 	rep     report.Reporter
+	stepID  report.StepID
 	stream  bool
 	buf     bytes.Buffer
 	partial bytes.Buffer
 }
 
-func newCaptureWriter(rep report.Reporter, stream bool) *captureWriter {
-	return &captureWriter{rep: rep, stream: stream}
+func newCaptureWriter(rep report.Reporter, stepID report.StepID, stream bool) *captureWriter {
+	return &captureWriter{rep: rep, stepID: stepID, stream: stream}
 }
 
 func (w *captureWriter) Write(p []byte) (int, error) {
@@ -49,13 +50,13 @@ func (w *captureWriter) Write(p []byte) (int, error) {
 
 func (w *captureWriter) handleLine(line string) {
 	if ev, ok := report.Decode(line); ok {
-		report.Route(w.rep, ev)
+		report.Route(w.rep, w.stepID, ev)
 		return
 	}
 	w.buf.WriteString(line)
 	w.buf.WriteByte('\n')
 	if w.stream {
-		w.rep.StepOutput(line)
+		w.rep.StepOutput(w.stepID, line)
 	}
 }
 
@@ -67,4 +68,12 @@ func (w *captureWriter) flush() {
 	}
 }
 
-func (w *captureWriter) output() string { return w.buf.String() }
+// output returns the captured stdout+stderr. nil-safe so a caller that
+// hasn't allocated a captureWriter (e.g. a meta-task with no real commands)
+// can still ask for it without crashing.
+func (w *captureWriter) output() string {
+	if w == nil {
+		return ""
+	}
+	return w.buf.String()
+}

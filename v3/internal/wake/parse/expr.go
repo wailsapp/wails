@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 	"text/template"
 
@@ -22,6 +23,13 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 	s = defaultBareVarRegex.ReplaceAllString(s, "${1}.${2}${3}")
 
 	funcMap := template.FuncMap{
+		// Platform identifiers. Taskfile syntax uses these as both variables
+		// (`{{OS}}` → "darwin") and function calls in expressions
+		// (`{{if eq OS "darwin"}}...`). The bareVarRegex above rewrites the
+		// variable form to `{{.OS}}`; registering them as functions covers
+		// the expression form so platform-conditional task names parse.
+		"OS":   func() string { return runtime.GOOS },
+		"ARCH": func() string { return runtime.GOARCH },
 		"default": func(def, val interface{}) interface{} {
 			if val == nil || val == "" {
 				return def
@@ -69,7 +77,11 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 		"contains":   func(substr, s string) bool { return strings.Contains(s, substr) },
 	}
 
-	tmplData := make(map[string]interface{})
+	// map[string]string (not interface{}) so missingkey=zero produces an
+	// empty string for unknown keys instead of the nil-renders-as-"<no value>"
+	// surprise. Every wake var value is a string, so the concrete type is
+	// also more honest.
+	tmplData := make(map[string]string)
 	for name, vr := range vars {
 		val := vr.Value
 		if val == "" || strings.Contains(val, "{{") {
@@ -82,7 +94,11 @@ func ExpandTemplates(s string, vars map[string]*ast.Var) string {
 		tmplData[name] = val
 	}
 
-	tmpl, err := template.New("wake").Funcs(funcMap).Parse(s)
+	// missingkey=zero so an unresolved {{.X}} renders as an empty string
+	// instead of the literal text "<no value>". This matches Taskfile
+	// semantics, and lets the `default` function fire correctly for the
+	// common `{{.X | default "y"}}` pattern even when X is undefined.
+	tmpl, err := template.New("wake").Option("missingkey=zero").Funcs(funcMap).Parse(s)
 	if err != nil {
 		return s
 	}

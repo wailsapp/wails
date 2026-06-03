@@ -58,8 +58,6 @@ func (r *Reporter) renderSummaryLocked(dur time.Duration, ok bool) {
 	fmt.Fprintf(r.w, "  %s\n", rule)
 	fmt.Fprintln(r.w)
 	r.writeVerdictLocked(dur, ok)
-	fmt.Fprintln(r.w)
-	r.writeCountsLocked()
 
 	if len(r.completed) > 0 {
 		fmt.Fprintln(r.w)
@@ -301,22 +299,36 @@ func (r *Reporter) writeVerdictLocked(dur time.Duration, ok bool) {
 		factor := float64(cpu) / float64(dur)
 		speedup = "  " + r.s.faint(fmt.Sprintf("%s cpu · %.1f× speedup", fmtDur(cpu), factor))
 	}
+
+	var headline, durTail string
 	if ok {
-		fmt.Fprintf(r.w, "  %s  %s    %s%s\n",
+		headline = fmt.Sprintf("  %s  %s",
 			r.s.fg(Success, GlyphOK),
-			r.s.bold(r.s.fg(Success, "build succeeded")),
-			r.s.faint(fmtDur(dur)),
-			speedup)
-		return
+			r.s.bold(r.s.fg(Success, "build succeeded")))
+		durTail = "    " + r.s.faint(fmtDur(dur)) + speedup
+	} else {
+		headline = fmt.Sprintf("  %s  %s",
+			r.s.fg(Failure, GlyphFail),
+			r.s.bold(r.s.fg(Failure, "build failed")))
+		durTail = "    " + r.s.faint("after "+fmtDur(dur)) + speedup
 	}
-	fmt.Fprintf(r.w, "  %s  %s    %s%s\n",
-		r.s.fg(Failure, GlyphFail),
-		r.s.bold(r.s.fg(Failure, "build failed")),
-		r.s.faint("after "+fmtDur(dur)),
-		speedup)
+
+	// Counts ride at the right edge of the verdict line — saves a whole
+	// vertical row that an isolated counts line would have eaten.
+	counts := r.renderCountsInline()
+	left := headline + durTail
+	cols, _ := r.termWidthLocked()
+	gap := cols - visibleWidth(left) - visibleWidth(counts)
+	if gap < 2 {
+		gap = 2
+	}
+	fmt.Fprintf(r.w, "%s%s%s\n", left, strings.Repeat(" ", gap), counts)
 }
 
-func (r *Reporter) writeCountsLocked() {
+// renderCountsInline formats "N ran · N cached · N skipped · N failed" for
+// the right-side trailing of the verdict line. Zero-count entries are
+// hidden; "ran" always shows (zero ran is itself informative).
+func (r *Reporter) renderCountsInline() string {
 	var ran, cached, skipped, failed int
 	for _, c := range r.completed {
 		switch c.status {
@@ -330,9 +342,6 @@ func (r *Reporter) writeCountsLocked() {
 			ran++
 		}
 	}
-	// Hide zero-count entries to keep the row sparse — a noisy "0 cached"
-	// adds nothing. Always keep "ran" so the headline number is present even
-	// when it's 0 (which itself is informative).
 	parts := []string{r.s.fg(Success, fmt.Sprintf("%d ran", ran))}
 	if cached > 0 {
 		parts = append(parts, r.s.fg(Cached, fmt.Sprintf("%d cached", cached)))
@@ -344,7 +353,7 @@ func (r *Reporter) writeCountsLocked() {
 		parts = append(parts, r.s.fg(Failure, fmt.Sprintf("%d failed", failed)))
 	}
 	sep := "  " + r.s.fg(Dim, GlyphBullet) + "  "
-	fmt.Fprintf(r.w, "  %s\n", strings.Join(parts, sep))
+	return strings.Join(parts, sep)
 }
 
 // writeSlowestLocked renders the per-step duration bar chart, sorted by

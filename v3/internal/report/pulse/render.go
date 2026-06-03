@@ -79,18 +79,28 @@ func (r *Reporter) buildPinnedLocked() []string {
 // around the currently-active rows.
 func (r *Reporter) buildSkeletonLocked() []string {
 	cols, _ := r.termWidthLocked()
+	lines := r.buildSkeletonRowsLocked()
+	lines = append(lines, "")
+	lines = append(lines, r.renderProgressLine(cols))
+	if len(r.throughput) >= 4 {
+		lines = append(lines, r.renderThroughputLine(cols))
+	}
+	return lines
+}
+
+// buildSkeletonRowsLocked returns just the per-step rows (no trailing
+// progress strip). Used at BuildEnd in skeleton mode where the step rows
+// already carry the final status of every step and a 100% progress bar
+// would be visual chrome.
+func (r *Reporter) buildSkeletonRowsLocked() []string {
+	cols, _ := r.termWidthLocked()
 	spin := r.spinnerLocked()
-	lines := make([]string, 0, len(r.slots)+2)
+	lines := make([]string, 0, len(r.slots))
 	for _, slot := range r.slots {
 		if slot == nil {
 			continue
 		}
 		lines = append(lines, r.renderSlotLine(spin, slot, cols))
-	}
-	lines = append(lines, "")
-	lines = append(lines, r.renderProgressLine(cols))
-	if len(r.throughput) >= 4 {
-		lines = append(lines, r.renderThroughputLine(cols))
 	}
 	return lines
 }

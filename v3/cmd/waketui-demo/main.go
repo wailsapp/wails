@@ -251,18 +251,18 @@ type scriptStep struct {
 
 // runOne drives one step through the serial Reporter interface.
 func runOne(r *pulse.Reporter, s scriptStep, speed float64) {
-	r.StepStart(s.name, s.label)
+	id := r.StepStart(s.name, s.label)
 	if s.status == report.StatusCached || s.status == report.StatusSkipped {
 		time.Sleep(sleep(40, speed))
-		r.StepEnd(s.status, 0)
+		r.StepEnd(id, s.status, 0)
 		return
 	}
-	emitInfos(r, s.infos, s.dur, speed, 0)
+	emitInfos(r, id, s.infos, s.dur, speed, 0)
 	if s.status == report.StatusFailed && s.failure != nil {
-		r.StepFailed(*s.failure)
+		r.StepFailed(id, *s.failure)
 		return
 	}
-	r.StepEnd(s.status, time.Duration(s.dur)*time.Millisecond)
+	r.StepEnd(id, s.status, time.Duration(s.dur)*time.Millisecond)
 }
 
 // runOneParallel drives one step through the parallel Reporter extension.
@@ -281,14 +281,14 @@ func runOneParallel(r *pulse.Reporter, s scriptStep, speed float64) {
 	r.ParallelStepEnd(id, s.status, time.Duration(s.dur)*time.Millisecond)
 }
 
-func emitInfos(r *pulse.Reporter, infos []string, totalMs int, speed float64, jitter int) {
+func emitInfos(r *pulse.Reporter, id pulse.StepID, infos []string, totalMs int, speed float64, jitter int) {
 	if len(infos) == 0 {
 		time.Sleep(sleep(totalMs, speed))
 		return
 	}
 	step := totalMs / len(infos)
 	for _, msg := range infos {
-		r.StepInfo(msg)
+		r.StepInfo(id, msg)
 		time.Sleep(sleep(step+jitter, speed))
 	}
 }

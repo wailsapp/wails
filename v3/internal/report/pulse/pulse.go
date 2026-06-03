@@ -53,9 +53,8 @@ type Reporter struct {
 	// in-flight steps. nil entries are tombstones from finished steps left in
 	// place to preserve render order until the next paint. Used in scrollback
 	// mode only — in skeleton mode the slots[] list owns step state.
-	active   []*activeStep
-	nextID   StepID
-	serialID StepID // ID assigned to the implicit serial step
+	active []*activeStep
+	nextID StepID
 
 	// skeleton mode: pre-allocated slots, one per planned step. nextSlot is
 	// the index of the next slot to be claimed by a StepStart. Active and
@@ -86,9 +85,8 @@ type Reporter struct {
 	stop   chan struct{}
 }
 
-// StepID identifies an in-flight step under the parallel API. Zero is reserved
-// for "no step".
-type StepID uint64
+// StepID is re-exported from the report package.
+type StepID = report.StepID
 
 // Artifact is re-exported from the report package so call sites that
 // reference *pulse.Reporter need only one import.
@@ -237,87 +235,9 @@ func (r *Reporter) printHeaderLocked() {
 	}
 }
 
-// StepStart announces a step. Serial path.
-func (r *Reporter) StepStart(name, label string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.idx++
-	r.serialID = r.allocIDLocked()
-	if r.skeleton {
-		r.claimSlotLocked(r.serialID, name, label)
-	} else {
-		r.active = append(r.active, &activeStep{
-			id:        r.serialID,
-			name:      name,
-			label:     label,
-			startedAt: time.Now(),
-		})
-	}
-	r.repaintLocked()
-}
-
-// StepInfo attaches a detail line to the in-flight step.
-func (r *Reporter) StepInfo(msg string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	msg = strings.TrimSpace(msg)
-	if r.skeleton {
-		if slot := r.findSlotLocked(r.serialID); slot != nil {
-			slot.detail = msg
-			r.repaintLocked()
-		}
-		return
-	}
-	if as := r.findLocked(r.serialID); as != nil {
-		as.detail = msg
-		r.repaintLocked()
-	}
-}
-
-// StepCommand prints the command above the pinned region (Verbose only).
-func (r *Reporter) StepCommand(cmd string) {
-	if r.level < report.Verbose {
-		return
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	line := fmt.Sprintf("      %s %s",
-		r.s.fg(Dim, "$"),
-		r.s.fg(Subtle, cmd))
-	r.region.promote([]string{line}, r.region.lines)
-}
-
-// StepOutput prints one captured output line above the pinned region (Verbose).
-func (r *Reporter) StepOutput(line string) {
-	if r.level < report.Verbose {
-		return
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	out := "      " + strings.TrimRight(line, "\n")
-	r.region.promote([]string{out}, r.region.lines)
-}
-
-// StepEnd closes the in-flight serial step.
-func (r *Reporter) StepEnd(status report.Status, dur time.Duration) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.finishLocked(r.serialID, status, dur, nil)
-	r.serialID = 0
-}
-
-// StepFailed closes the in-flight serial step with a failure.
-func (r *Reporter) StepFailed(f report.Failure) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.finishLocked(r.serialID, report.StatusFailed, time.Since(r.buildStart), &f)
-	r.serialID = 0
-}
-
-// ParallelStepStart announces a new step under a worker, returning the StepID
-// that subsequent ParallelStep* calls must reference. Use from a worker
-// goroutine when concurrent steps are in flight.
-func (r *Reporter) ParallelStepStart(name, label string) StepID {
+// StepStart announces a step. Returns the StepID the caller threads through
+// step-scoped methods.
+func (r *Reporter) StepStart(name, label string) StepID {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.idx++
@@ -336,8 +256,8 @@ func (r *Reporter) ParallelStepStart(name, label string) StepID {
 	return id
 }
 
-// ParallelStepInfo attaches a detail line to the named step.
-func (r *Reporter) ParallelStepInfo(id StepID, msg string) {
+// StepInfo attaches a detail line to the named step.
+func (r *Reporter) StepInfo(id StepID, msg string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	msg = strings.TrimSpace(msg)
@@ -354,18 +274,57 @@ func (r *Reporter) ParallelStepInfo(id StepID, msg string) {
 	}
 }
 
-// ParallelStepEnd closes the named step with a status and duration.
-func (r *Reporter) ParallelStepEnd(id StepID, status report.Status, dur time.Duration) {
+// StepCommand prints the command above the pinned region (Verbose only).
+func (r *Reporter) StepCommand(id StepID, cmd string) {
+	if r.level < report.Verbose {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	line := fmt.Sprintf("      %s %s",
+		r.s.fg(Dim, "$"),
+		r.s.fg(Subtle, cmd))
+	r.region.promote([]string{line}, r.region.lines)
+}
+
+// StepOutput prints one captured output line above the pinned region (Verbose).
+func (r *Reporter) StepOutput(id StepID, line string) {
+	if r.level < report.Verbose {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := "      " + strings.TrimRight(line, "\n")
+	r.region.promote([]string{out}, r.region.lines)
+}
+
+// StepEnd closes the named step.
+func (r *Reporter) StepEnd(id StepID, status report.Status, dur time.Duration) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.finishLocked(id, status, dur, nil)
 }
 
-// ParallelStepFailed closes the named step with a failure.
-func (r *Reporter) ParallelStepFailed(id StepID, f report.Failure) {
+// StepFailed closes the named step with a failure.
+func (r *Reporter) StepFailed(id StepID, f report.Failure) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.finishLocked(id, report.StatusFailed, time.Since(r.buildStart), &f)
+}
+
+// ParallelStepStart, ParallelStepInfo, ParallelStepEnd, ParallelStepFailed
+// were earlier concrete-type aliases of the now-id-returning interface
+// methods; with StepStart returning a StepID directly, callers use the
+// standard interface for both serial and parallel flows.
+func (r *Reporter) ParallelStepStart(name, label string) StepID {
+	return r.StepStart(name, label)
+}
+func (r *Reporter) ParallelStepInfo(id StepID, msg string) { r.StepInfo(id, msg) }
+func (r *Reporter) ParallelStepEnd(id StepID, status report.Status, dur time.Duration) {
+	r.StepEnd(id, status, dur)
+}
+func (r *Reporter) ParallelStepFailed(id StepID, f report.Failure) {
+	r.StepFailed(id, f)
 }
 
 // Artifact registers one build output for display in the end-of-build
@@ -557,10 +516,12 @@ func (r *Reporter) BuildEnd(dur time.Duration, ok bool) {
 	defer r.mu.Unlock()
 	r.stopTickerLocked()
 	if r.skeleton {
-		// Final paint with all slots in their settled status (no spinners,
-		// no detail strings), then detach the region without erasing so the
-		// settled skeleton becomes scrollback. The summary writes below it.
-		r.region.paint(r.buildPinnedLocked())
+		// Final paint with all slots in their settled status. We pin only
+		// the step rows themselves — the progress strip is dropped because
+		// at this point every slot already shows its outcome, so the
+		// "100% — Xms" line is redundant chrome. Detach without erasing so
+		// the settled skeleton flows into scrollback.
+		r.region.paint(r.buildSkeletonRowsLocked())
 		r.region.detach()
 		fmt.Fprintln(r.w)
 	} else {

@@ -12,12 +12,12 @@ type recordingReporter struct {
 	outputs []string
 }
 
-func (r *recordingReporter) StepInfo(msg string)   { r.infos = append(r.infos, msg) }
-func (r *recordingReporter) StepOutput(line string) { r.outputs = append(r.outputs, line) }
+func (r *recordingReporter) StepInfo(_ report.StepID, msg string)    { r.infos = append(r.infos, msg) }
+func (r *recordingReporter) StepOutput(_ report.StepID, line string) { r.outputs = append(r.outputs, line) }
 
 func TestCaptureWriterStripsWireEventsAndCaptures(t *testing.T) {
 	rep := &recordingReporter{}
-	cw := newCaptureWriter(rep, true) // stream=true so StepOutput fires
+	cw := newCaptureWriter(rep, 1, true) // stream=true so StepOutput fires
 
 	ev := report.Encode(report.Event{Kind: report.KindStatus, Msg: "working"})
 	// Two ordinary lines around a wire event, written in fragments to exercise
@@ -40,7 +40,7 @@ func TestCaptureWriterStripsWireEventsAndCaptures(t *testing.T) {
 
 func TestCaptureWriterFlushesTrailingLine(t *testing.T) {
 	rep := &recordingReporter{}
-	cw := newCaptureWriter(rep, false)
+	cw := newCaptureWriter(rep, 1, false)
 	_, _ = cw.Write([]byte("no newline here"))
 	if cw.output() != "" {
 		t.Fatalf("partial line should not be captured before flush: %q", cw.output())

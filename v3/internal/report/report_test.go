@@ -55,12 +55,12 @@ type capture struct {
 	infos []string
 }
 
-func (c *capture) StepInfo(msg string) { c.infos = append(c.infos, msg) }
+func (c *capture) StepInfo(_ StepID, msg string) { c.infos = append(c.infos, msg) }
 
 func TestRouteSendsEventToStepInfo(t *testing.T) {
 	c := &capture{}
-	Route(c, Event{Kind: KindStatus, Msg: "phase 1"})
-	Route(c, Event{Kind: KindError, Msg: "oops"})
+	Route(c, 1, Event{Kind: KindStatus, Msg: "phase 1"})
+	Route(c, 1, Event{Kind: KindError, Msg: "oops"})
 	if len(c.infos) != 2 || c.infos[0] != "phase 1" || c.infos[1] != "oops" {
 		t.Fatalf("Route did not forward events: %v", c.infos)
 	}
@@ -70,12 +70,12 @@ func TestRouteSendsEventToStepInfo(t *testing.T) {
 func TestNopIsReporter(t *testing.T) {
 	var r Reporter = Nop{}
 	r.BuildStart("build", "t", 1)
-	r.StepStart("t", "")
-	r.StepInfo("x")
-	r.StepCommand("c")
-	r.StepOutput("o")
-	r.StepEnd(StatusOK, time.Second)
-	r.StepFailed(Failure{})
+	id := r.StepStart("t", "")
+	r.StepInfo(id, "x")
+	r.StepCommand(id, "c")
+	r.StepOutput(id, "o")
+	r.StepEnd(id, StatusOK, time.Second)
+	r.StepFailed(id, Failure{})
 	r.BuildEnd(time.Second, true)
 	if r.Level() != Normal {
 		t.Fatalf("Nop level = %v", r.Level())

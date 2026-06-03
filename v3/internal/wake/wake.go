@@ -12,7 +12,6 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
-	"github.com/wailsapp/wails/v3/internal/report/termui"
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/exec"
 	"github.com/wailsapp/wails/v3/internal/wake/fallback"
@@ -32,6 +31,7 @@ type ExecuteOptions struct {
 	Verbose  bool // show commands + live subprocess output
 	Debug    bool // show resolver internals (implies verbose detail)
 	Parallel bool
+	Force    bool // ignore all task and Go caches; run every task from scratch
 }
 
 // verbosity collapses the boolean options into a single level. Debug wins, then
@@ -117,16 +117,7 @@ func Execute(name string, opts ExecuteOptions) error {
 	}
 
 	level := opts.verbosity()
-	// Renderer selection: WAKE_TUI=pulse opts into the Pulse renderer
-	// (skeleton mode, heartbeat spinner, gradient rules, artifact panel).
-	// Anything else keeps the long-standing termui renderer as the safe
-	// default. See internal/report/pulse/DESIGN.md for the visual rationale.
-	var rep report.Reporter
-	if os.Getenv("WAKE_TUI") == "pulse" {
-		rep = pulse.New(os.Stdout, level)
-	} else {
-		rep = termui.New(os.Stdout, level)
-	}
+	rep := pulse.New(os.Stdout, level)
 
 	// Make the reporter reachable by in-process producers for the duration of
 	// the build. Subprocess producers reach it over the wire protocol instead
@@ -140,6 +131,8 @@ func Execute(name string, opts ExecuteOptions) error {
 		Level:    level,
 		Reporter: rep,
 		Cache:    cache,
+		Force:    opts.Force,
+		Parallel: opts.Parallel,
 	}
 
 	rep.BuildStart(opts.Verb, name, countSteps(tf, name))
@@ -155,6 +148,19 @@ func Execute(name string, opts ExecuteOptions) error {
 		runErr = executeParallel(ctx, ex, name, dag)
 	} else {
 		runErr = ex.Execute(ctx, name)
+	}
+
+	// If the build errored but nothing rendered a per-step failure panel
+	// (e.g. an early task-resolution error, a precondition that aborted
+	// before any step ran), surface the underlying message to the reporter
+	// as a synthetic step failure so the user actually sees *why*. Without
+	// this, the build collapses to a bare "build failed after 0ms" verdict.
+	if runErr != nil && !ex.FailureReported() {
+		id := rep.StepStart(name, "")
+		rep.StepFailed(id, report.Failure{
+			Task: name,
+			Err:  runErr,
+		})
 	}
 
 	rep.BuildEnd(time.Since(start), runErr == nil)
@@ -248,6 +254,14 @@ func resolveVars(tf *ast.Taskfile) error {
 	if err := parse.ResolveVars(tf.Vars); err != nil {
 		return err
 	}
+	// After settling the simple cases (shell, ref, plain static), evaluate
+	// any root vars whose Static is a template — e.g.
+	// `{{.PACKAGE_MANAGER | default "npm"}}`. Doing this only at the root
+	// level is deliberate: task-local templates frequently reference root
+	// vars and must wait for mergeVars at execution time, where the full
+	// scope is available.
+	parse.ExpandVarTemplates(tf.Vars)
+
 	for _, task := range tf.Tasks {
 		if err := parse.ResolveVars(task.Vars); err != nil {
 			return err

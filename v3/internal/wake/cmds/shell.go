@@ -78,7 +78,16 @@ func Route(cmdStr string, opts RouteOptions) Executor {
 
 	for _, r := range routes {
 		if r.pattern.MatchString(cmdStr) {
-			args := strings.Fields(cmdStr)
+			// Tokenise with shell-aware quoting so args like
+			// `-ldflags="-w -s"` stay as a single token instead of being
+			// split on the embedded space (the bug strings.Fields would
+			// create). If quoting is unbalanced or otherwise too exotic to
+			// parse, fall back to running through `sh -c` rather than risk
+			// a wrong tokenisation.
+			args := shellSplit(cmdStr)
+			if args == nil {
+				return &ShellCmd{Cmd: cmdStr, Dir: opts.Dir, Env: opts.Env}
+			}
 			ex := r.build(args, opts)
 			if ex != nil {
 				return ex
@@ -87,6 +96,54 @@ func Route(cmdStr string, opts RouteOptions) Executor {
 	}
 
 	return &ShellCmd{Cmd: cmdStr, Dir: opts.Dir, Env: opts.Env}
+}
+
+// shellSplit tokenises a shell-style command line into argv-style tokens,
+// respecting single- and double-quoted regions and `\` escapes. The quotes
+// themselves are stripped. Adjacent quoted/unquoted fragments concatenate
+// into one token (e.g. `-ldflags="-w -s"` → `-ldflags=-w -s` as ONE arg).
+//
+// Returns nil for unbalanced quoting; callers should fall back to `sh -c`
+// in that case rather than risk mis-parsing the user's command.
+func shellSplit(s string) []string {
+	var (
+		out    []string
+		cur    strings.Builder
+		inS    bool // inside single quote
+		inD    bool // inside double quote
+		active bool // current token has at least one (possibly empty-quoted) char
+	)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch {
+		case c == '\\' && !inS && i+1 < len(s):
+			cur.WriteByte(s[i+1])
+			i++
+			active = true
+		case c == '\'' && !inD:
+			inS = !inS
+			active = true
+		case c == '"' && !inS:
+			inD = !inD
+			active = true
+		case (c == ' ' || c == '\t') && !inS && !inD:
+			if active {
+				out = append(out, cur.String())
+				cur.Reset()
+				active = false
+			}
+		default:
+			cur.WriteByte(c)
+			active = true
+		}
+	}
+	if inS || inD {
+		return nil
+	}
+	if active {
+		out = append(out, cur.String())
+	}
+	return out
 }
 
 func buildGoBuild(args []string, opts RouteOptions) Executor {

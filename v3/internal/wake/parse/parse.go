@@ -554,3 +554,35 @@ func resolveVar(name string, vars map[string]*ast.Var, done, visiting map[string
 	done[name] = true
 	return nil
 }
+
+// ExpandVarTemplates does a fixed-point pass over vars, evaluating any var
+// whose Static is a template against the *same* var map. Used for vars at a
+// scope where every reference is in-scope — typically the top-level Taskfile
+// vars after [ResolveVars] has settled the static/shell/ref ones. Task-level
+// vars must NOT go through this: a task-local template often references
+// root-level vars that aren't yet in scope, and committing a half-expanded
+// result here would freeze the wrong value before mergeVars at execution
+// time can finish the job.
+//
+// Iterates up to 10 times for chained defaults like
+// `OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'` where one var's
+// resolved Value feeds the next.
+func ExpandVarTemplates(vars map[string]*ast.Var) {
+	for iter := 0; iter < 10; iter++ {
+		changed := false
+		for _, vr := range vars {
+			if vr.Value != "" || !strings.Contains(vr.Static, "{{") {
+				continue
+			}
+			expanded := ExpandTemplates(vr.Static, vars)
+			if strings.Contains(expanded, "{{") {
+				continue // template still references something unresolved
+			}
+			vr.Value = expanded
+			changed = true
+		}
+		if !changed {
+			break
+		}
+	}
+}

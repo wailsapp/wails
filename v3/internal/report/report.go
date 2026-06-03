@@ -5,7 +5,7 @@
 //
 //   - The executor (and anything orchestrating a build) drives a [Reporter]
 //     through the build lifecycle.
-//   - A renderer (see report/termui) implements [Reporter] to draw the build.
+//   - A renderer (see report/pulse) implements [Reporter] to draw the build.
 //   - A producer (e.g. the bindings generator, which runs as a child process)
 //     pushes live feedback into the active build UI via [Emit] — over a small
 //     wire protocol when it is a subprocess, or directly when in-process.
@@ -72,34 +72,42 @@ type Artifact struct {
 	Kind string
 }
 
+// StepID identifies a step. It is returned by [Reporter.StepStart] and
+// passed back to every step-scoped method (Info/Command/Output/End/Failed),
+// so the renderer can address the correct row even when several steps are
+// in flight concurrently. A zero ID is reserved for "no step" and is a
+// no-op in every method that accepts it.
+type StepID uint64
+
 // Reporter receives the lifecycle of a build. Implementations render it.
 //
-// For serial execution there is exactly one in-flight step at a time, bracketed
-// by StepStart .. (StepEnd | StepFailed). StepInfo/StepCommand/StepOutput refer
-// to the in-flight step. A nil-safe no-op is available as [Nop].
+// Multiple steps may be in flight simultaneously under parallel execution:
+// each call to StepStart returns a fresh StepID that the caller threads
+// through StepInfo / StepCommand / StepOutput / StepEnd / StepFailed for
+// that specific step. A nil-safe no-op is available as [Nop].
 type Reporter interface {
 	// BuildStart begins a build. verb is the command the user ran (e.g. "build",
 	// may be empty); target is the resolved task name the DAG says has totalSteps
 	// tasks.
 	BuildStart(verb, target string, totalSteps int)
-	// StepStart announces a task is starting. label is the human label (may be empty).
-	StepStart(name, label string)
-	// StepInfo is a sub-line attributed to the in-flight step, typically pushed
+	// StepStart announces a task is starting and returns the StepID that
+	// subsequent step-scoped methods must reference.
+	StepStart(name, label string) StepID
+	// StepInfo is a sub-line attributed to the given step, typically pushed
 	// by a producer such as the code generator ("generated 12 bindings").
-	StepInfo(msg string)
+	StepInfo(id StepID, msg string)
 	// StepCommand reports the command a step is about to run (shown when Verbose).
-	StepCommand(cmd string)
+	StepCommand(id StepID, cmd string)
 	// StepOutput is one line of live subprocess output (shown when Verbose).
-	StepOutput(line string)
-	// StepEnd closes the in-flight step with its outcome and duration.
-	StepEnd(status Status, dur time.Duration)
-	// StepFailed closes the in-flight step with a failure to render.
-	StepFailed(f Failure)
+	StepOutput(id StepID, line string)
+	// StepEnd closes the step with its outcome and duration.
+	StepEnd(id StepID, status Status, dur time.Duration)
+	// StepFailed closes the step with a failure to render.
+	StepFailed(id StepID, f Failure)
 	// BuildEnd closes the build.
 	BuildEnd(dur time.Duration, ok bool)
 	// Artifact registers a build output (binary, bundle, archive, etc.) for
-	// display in the end-of-build summary. The executor calls this for each
-	// `generates:` pattern that resolves to a real file after a task succeeds.
+	// display in the end-of-build summary.
 	Artifact(a Artifact)
 	// Debug renders one diagnostic line (only shown at Debug verbosity).
 	Debug(line DebugLine)
@@ -124,17 +132,17 @@ type DebugField struct{ Key, Val string }
 // by any Executor that has no reporter wired in.
 type Nop struct{}
 
-func (Nop) BuildStart(string, string, int) {}
-func (Nop) StepStart(string, string)       {}
-func (Nop) StepInfo(string)                {}
-func (Nop) StepCommand(string)             {}
-func (Nop) StepOutput(string)              {}
-func (Nop) StepEnd(Status, time.Duration)  {}
-func (Nop) StepFailed(Failure)             {}
-func (Nop) BuildEnd(time.Duration, bool)   {}
-func (Nop) Artifact(Artifact)              {}
-func (Nop) Debug(DebugLine)                {}
-func (Nop) Level() Verbosity               { return Normal }
+func (Nop) BuildStart(string, string, int)        {}
+func (Nop) StepStart(string, string) StepID       { return 0 }
+func (Nop) StepInfo(StepID, string)               {}
+func (Nop) StepCommand(StepID, string)            {}
+func (Nop) StepOutput(StepID, string)             {}
+func (Nop) StepEnd(StepID, Status, time.Duration) {}
+func (Nop) StepFailed(StepID, Failure)            {}
+func (Nop) BuildEnd(time.Duration, bool)          {}
+func (Nop) Artifact(Artifact)                     {}
+func (Nop) Debug(DebugLine)                       {}
+func (Nop) Level() Verbosity                      { return Normal }
 
 // active is the reporter for the current in-process build. Producers that run
 // in-process (not as a subprocess) reach the UI through it.
@@ -210,10 +218,10 @@ func Emit(w io.Writer, ev Event) {
 	}
 }
 
-// Route applies a decoded producer event to the in-flight step of r.
-func Route(r Reporter, ev Event) {
+// Route applies a decoded producer event to the named step of r.
+func Route(r Reporter, id StepID, ev Event) {
 	switch ev.Kind {
 	case KindError, KindWarn, KindInfo, KindStatus:
-		r.StepInfo(ev.Msg)
+		r.StepInfo(id, ev.Msg)
 	}
 }

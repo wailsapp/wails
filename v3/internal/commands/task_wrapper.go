@@ -122,7 +122,14 @@ func runWakeTask(verb, taskName, goos, goarch string, cliVars []string) error {
 		Verbose:  os.Getenv("WAKE_VERBOSE") != "",
 		Silent:   os.Getenv("WAKE_SILENT") != "",
 		Debug:    os.Getenv("WAKE_DEBUG") != "",
-		Parallel: os.Getenv("WAKE_PARALLEL") != "",
+		// Parallel execution is the default. Set WAKE_SERIAL=true to opt out
+		// (useful when debugging task ordering or when stdout interleaving
+		// from sibling steps would muddle a specific investigation).
+		Parallel: os.Getenv("WAKE_SERIAL") == "",
+		// WAKE_FORCE=true skips every cache lookup, both the Taskfile
+		// sources/generates/status check and the implicit native-Go cache.
+		// Use when you want a true "clean" build without rm -rf .wake/.
+		Force: os.Getenv("WAKE_FORCE") != "",
 	}
 
 	return wake.Execute(taskName, opts)
