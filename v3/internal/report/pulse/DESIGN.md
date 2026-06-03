@@ -319,22 +319,21 @@ These were considered and deliberately deferred:
 | `pulse/pulse.go`            | ~330  | `Reporter` implementation, serial + parallel API   |
 | `pulse/render.go`           | ~140  | Per-line renderers, layout math                    |
 | `pulse/summary.go`          | ~195  | Verdict + counts + slowest + failure panels        |
-| `cmd/waketui-demo/main.go`  | ~240  | Scripted-build demo driver (6 scenarios)           |
-| **Total**                   | **~1440** | Pure-stdlib + `golang.org/x/term`              |
+| **Total**                   | **~1200** | Pure-stdlib + `golang.org/x/term`              |
 
 ## How to inspect the design
 
+The fastest way is to run a real wake build with the pulse renderer on a
+generated project:
+
 ```bash
-go run ./cmd/waketui-demo serial          # one worker, mixed outcomes
-go run ./cmd/waketui-demo parallel        # four workers
-go run ./cmd/waketui-demo fail            # one failure with output panel
-go run ./cmd/waketui-demo multifail       # three failures, aggregation banner
-go run ./cmd/waketui-demo verbose         # parallel + streamed commands/output
-go run ./cmd/waketui-demo debug           # DAG/dep/var trace lines
-
-# Slow it down to inspect frames:
-go run ./cmd/waketui-demo parallel -speed=2.0
-
-# Force the non-TTY fallback even from a real terminal:
-go run ./cmd/waketui-demo serial 2>&1 | cat
+wails3 init -n demo -t vanilla && cd demo
+WAILS_USE_WAKE=true wails3 build       # cold build — full pulse run
+WAILS_USE_WAKE=true wails3 build       # warm — most steps cached, fast verdict
+WAILS_USE_WAKE=true WAKE_FORCE=true wails3 build   # forced clean — every step runs
+WAILS_USE_WAKE=true WAKE_DEBUG=true wails3 build   # adds resolver internals
 ```
+
+Failure-panel rendering can be exercised by introducing a transient
+syntax error into a Go file (the build's `build:native` step fails and
+the panel surfaces the error with OSC 8 file:line links).
