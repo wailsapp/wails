@@ -99,6 +99,7 @@ func main() {
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
 	tool.NewSubCommandFunction("has", "Check if a tool or capability is available (e.g. wails3 tool has cc)", commands.ToolHas)
+	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has cc' instead", commands.ToolHasCC)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")

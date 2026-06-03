@@ -19,6 +19,14 @@ type HasOptions struct {
 	Tool string `pos:"1" name:"tool" description:"Tool to check for (e.g. cc)"`
 }
 
+// HasCCOptions holds options for the deprecated has-cc command.
+type HasCCOptions struct{}
+
+// ToolHasCC is a deprecated alias for `wails3 tool has cc`.
+func ToolHasCC(_ *HasCCOptions) error {
+	return ToolHas(&HasOptions{Tool: "cc"})
+}
+
 // ToolHas checks if a given tool or capability is available.
 // Outputs "true" or "false" for use in Taskfile sh: variables.
 // "cc" checks for gcc or clang; any other name is looked up directly in PATH.
