@@ -4,6 +4,7 @@ import (
 	"io"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -271,7 +272,12 @@ func parseGoTestArgs(args []string) GoTestOptions {
 			}
 		case "-count":
 			if i+1 < len(args) {
-				opts.Count = int(args[i+1][0] - '0')
+				// Parse the full integer, not just the first character.
+				// The previous implementation read args[i+1][0]-'0', so
+				// `-count 10` became 1, `-count 100` became 1, etc.
+				if n, err := strconv.Atoi(args[i+1]); err == nil {
+					opts.Count = n
+				}
 				i += 2
 				continue
 			}

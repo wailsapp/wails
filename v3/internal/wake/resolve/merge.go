@@ -51,6 +51,20 @@ func MergeTask(base, override *ast.Task) *ast.Task {
 	if override.Label != "" {
 		result.Label = override.Label
 	}
+	// Boolean fields use OR semantics: if either base or override has the
+	// flag set, the merged task carries it. This is a deliberate trade-off,
+	// not a bug: ast.Task models these as plain bool (not *bool), so the
+	// parser cannot tell "unset" apart from "explicitly false" — an
+	// override file declaring `silent: false` is indistinguishable from one
+	// that omits the field entirely. OR-merging means the more conservative
+	// behaviour wins ("silent if anyone in the chain wants it silent"),
+	// which is the safer default for a redefinition layered over a base.
+	//
+	// If we later want overrides to be able to flip a base's true back to
+	// false, this needs to become *bool with a parse-time presence check;
+	// none of the wake-routed code paths currently read these fields, so
+	// the limitation is undocumented user-visible behaviour rather than a
+	// runtime issue.
 	result.Silent = override.Silent || base.Silent
 	result.Internal = override.Internal || base.Internal
 	result.Interactive = override.Interactive || base.Interactive

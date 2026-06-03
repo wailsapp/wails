@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"os/exec"
+	"strconv"
 )
 
 type GoBuildOptions struct {
@@ -141,7 +142,7 @@ func (g *GoTestCmd) Run() error {
 		args = append(args, "-tags", joinTags(g.Opts.Tags))
 	}
 	if g.Opts.Count > 0 {
-		args = append(args, "-count", string(rune('0'+g.Opts.Count)))
+		args = append(args, "-count", strconv.Itoa(g.Opts.Count))
 	}
 	if g.Opts.Run != "" {
 		args = append(args, "-run", g.Opts.Run)
@@ -264,11 +265,18 @@ func GoFmt() *GoFmtCmd {
 }
 
 func (g *GoFmtCmd) Run() error {
-	args := []string{"fmt"}
+	// `go fmt` doesn't accept `-w` — that flag lives on the underlying
+	// `gofmt` binary that `go fmt` shells out to. When the caller wants
+	// `-w`-style "rewrite in place" we therefore invoke `gofmt` directly.
 	if g.Write {
-		args = append(args, "-w")
+		args := append([]string{"-w"}, g.Paths...)
+		c := exec.Command("gofmt", args...)
+		c.Dir = g.Dir
+		c.Env = g.Env
+		g.apply(c)
+		return c.Run()
 	}
-	args = append(args, g.Paths...)
+	args := append([]string{"fmt"}, g.Paths...)
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env

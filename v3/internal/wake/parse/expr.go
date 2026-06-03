@@ -2,7 +2,6 @@ package parse
 
 import (
 	"fmt"
-	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
@@ -116,7 +115,7 @@ func ResolveVarShell(vr *ast.Var) error {
 		return nil
 	}
 
-	cmd := exec.Command("sh", "-c", vr.Shell)
+	cmd := shellCommand(vr.Shell)
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("wake: var shell command %q failed: %w", vr.Shell, err)

@@ -2,6 +2,7 @@ package override
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
@@ -26,7 +27,7 @@ func LoadLocal(dir string) ([]*ast.Taskfile, error) {
 	var result []*ast.Taskfile
 	for _, exts := range layers {
 		for _, name := range exts {
-			path := dir + "/" + name
+			path := filepath.Join(dir, name)
 			if _, err := os.Stat(path); err != nil {
 				continue
 			}
