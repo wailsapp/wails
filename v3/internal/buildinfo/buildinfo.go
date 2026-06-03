@@ -22,7 +22,7 @@ type Info struct {
 	// even though the Wails source tree is nowhere on their machine.
 	// The downstream effect was a malformed `replace github.com/wailsapp/wails/v3
 	// => /v3` directive in scaffolded projects, breaking `wails3 init`
-	// outright (see #XXXX).
+	// outright.
 	//
 	// `debug.LocalModulePath` is set by the debug package's init() only
 	// when `.git` is found at a path resolved relative to the live
