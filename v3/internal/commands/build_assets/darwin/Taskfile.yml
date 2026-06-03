@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 includes:
   common: ../Taskfile.yml
@@ -16,18 +16,17 @@ tasks:
   build:
     summary: Builds the application
     cmds:
-      # Priority: Zig (if --zig flag on macOS) > Native (macOS) > Docker
-      - task: '{{if and (eq OS "darwin") (eq .USE_ZIG "true")}}build:zig{{else if eq OS "darwin"}}build:native{{else}}build:docker{{end}}'
+      - task: '{{if eq OS "darwin"}}build:native{{else}}build:docker{{end}}'
         vars:
-          ARCH: "{{.ARCH}}"
-          DEV: "{{.DEV}}"
-          OUTPUT: "{{.OUTPUT}}"
-          EXTRA_TAGS: "{{.EXTRA_TAGS}}"
-          OBFUSCATED: "{{.OBFUSCATED}}"
-          GARBLE_ARGS: "{{.GARBLE_ARGS}}"
+          ARCH: '{{.ARCH}}'
+          DEV: '{{.DEV}}'
+          OUTPUT: '{{.OUTPUT}}'
+          EXTRA_TAGS: '{{.EXTRA_TAGS}}'
+          OBFUSCATED: '{{.OBFUSCATED}}'
+          GARBLE_ARGS: '{{.GARBLE_ARGS}}'
     vars:
-      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
-      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
 
   build:native:
     summary: Builds the application natively on macOS
@@ -50,47 +49,14 @@ tasks:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
     vars:
       BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
-      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
-      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: darwin
       CGO_ENABLED: 1
-      GOARCH: "{{.ARCH | default ARCH}}"
+      GOARCH: '{{.ARCH | default ARCH}}'
       CGO_CFLAGS: "-mmacosx-version-min=12.0"
       CGO_LDFLAGS: "-mmacosx-version-min=12.0"
-      MACOSX_DEPLOYMENT_TARGET: "12.0"
-
-  build:zig:
-    summary: Builds natively on macOS using Zig as C/C++ compiler
-    internal: true
-    deps:
-      - task: common:go:mod:tidy
-      - task: common:build:frontend
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
-          OBFUSCATED:
-            ref: .OBFUSCATED
-          DEV:
-            ref: .DEV
-      - task: common:generate:icons
-    preconditions:
-      - sh: command -v zig >/dev/null 2>&1
-        msg: "Zig compiler not found. Install from https://ziglang.org/download or your package manager."
-      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
-        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
-    cmds:
-      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
-    vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
-      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
-      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
-    env:
-      GOOS: darwin
-      CGO_ENABLED: 1
-      GOARCH: "{{.ARCH | default ARCH}}"
-      CC: '{{if eq .ARCH "arm64"}}zig cc -target aarch64-macos{{else}}zig cc -target x86_64-macos{{end}}'
-      CXX: '{{if eq .ARCH "arm64"}}zig c++ -target aarch64-macos{{else}}zig c++ -target x86_64-macos{{end}}'
       MACOSX_DEPLOYMENT_TARGET: "12.0"
 
   build:docker:
@@ -117,12 +83,12 @@ tasks:
       - mv "bin/{{.APP_NAME}}-darwin-{{.DOCKER_ARCH}}" "{{.OUTPUT}}"
     vars:
       DOCKER_ARCH: '{{if eq .ARCH "arm64"}}arm64{{else if eq .ARCH "amd64"}}amd64{{else}}arm64{{end}}'
-      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
-      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
       # Generate Docker volume mounts: Go module cache + go.mod replace directives
       # Uses wails3 tool docker-mounts for cross-platform compatibility (Windows/Linux/macOS)
       DOCKER_MOUNTS:
-        sh: "wails3 tool docker-mounts"
+        sh: 'wails3 tool docker-mounts'
 
   build:universal:
     summary: Builds darwin universal binary (arm64 + amd64)
@@ -165,6 +131,7 @@ tasks:
       - task: build:universal
     cmds:
       - task: create:app:bundle
+
 
   create:app:bundle:
     summary: Creates an `.app` bundle
