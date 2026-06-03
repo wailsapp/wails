@@ -22,7 +22,7 @@ func TestGet(t *testing.T) {
 // emitting a stray `replace ... => /v3` in the scaffolded go.mod.
 //
 // These tests pin the new semantics in place: Development tracks
-// debug.LocalModulePath, and nothing else.
+// wdebug.LocalModulePath, and nothing else.
 func TestDevelopmentFalseWhenNoLocalSource(t *testing.T) {
 	saved := wdebug.LocalModulePath
 	t.Cleanup(func() { wdebug.LocalModulePath = saved })
