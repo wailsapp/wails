@@ -52,8 +52,16 @@ func wrapTask(action string, otherArgs []string) error {
 	// and print after the task finishes.
 	if f, err := os.CreateTemp("", "wails-build-warnings-*"); err == nil {
 		f.Close()
+		prev, hadPrev := os.LookupEnv(buildwarnings.EnvVar)
 		os.Setenv(buildwarnings.EnvVar, f.Name())
-		defer buildwarnings.FlushAndPrint()
+		defer func() {
+			buildwarnings.FlushAndPrint()
+			if hadPrev {
+				os.Setenv(buildwarnings.EnvVar, prev)
+			} else {
+				os.Unsetenv(buildwarnings.EnvVar)
+			}
+		}()
 	}
 
 	goos := os.Getenv("GOOS")
