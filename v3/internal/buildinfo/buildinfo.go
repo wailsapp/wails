@@ -24,7 +24,7 @@ type Info struct {
 	// => /v3` directive in scaffolded projects, breaking `wails3 init`
 	// outright.
 	//
-	// `debug.LocalModulePath` is set by the debug package's init() only
+	// [wdebug.LocalModulePath] is set by the debug package's init() only
 	// when `.git` is found at a path resolved relative to the live
 	// source file location — i.e. only when the dev's checkout is
 	// actually there to be replaced into. That's exactly the precondition
