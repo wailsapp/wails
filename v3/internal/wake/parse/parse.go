@@ -316,13 +316,33 @@ func parseCmds(node *yaml.Node) ([]*ast.Cmd, error) {
 
 func parseFor(node *yaml.Node) (*ast.ForLoop, error) {
 	fl := &ast.ForLoop{}
-	if node.Kind == yaml.MappingNode {
+	switch node.Kind {
+	case yaml.ScalarNode:
+		// `for: someVar` — the loop iterates the value of `someVar`,
+		// space-split at execution time. The variable name lands in
+		// ForLoop.Var; runForLoop knows how to expand it.
+		fl.Var = node.Value
+	case yaml.SequenceNode:
+		// `for: [a, b, c]` — inline item list.
+		for _, it := range node.Content {
+			fl.Items = append(fl.Items, it.Value)
+		}
+	case yaml.MappingNode:
+		// `for: { var: …, task: …, vars: … }` — the explicit mapping form.
+		// Also accepts a nested `items:` list inside the mapping; previously
+		// this was silently dropped.
 		for i := 0; i < len(node.Content); i += 2 {
 			k := node.Content[i].Value
 			v := node.Content[i+1]
 			switch k {
 			case "var":
 				fl.Var = v.Value
+			case "items":
+				if v.Kind == yaml.SequenceNode {
+					for _, it := range v.Content {
+						fl.Items = append(fl.Items, it.Value)
+					}
+				}
 			case "task":
 				fl.Task = v.Value
 			case "vars":
@@ -541,7 +561,12 @@ func resolveVar(name string, vars map[string]*ast.Var, done, visiting map[string
 	}
 
 	if vr.Shell != "" && vr.Value == "" {
-		vr.Value = vr.Shell
+		// Intentionally leave Value empty here — ResolveAllVarShells (called
+		// separately from wake.go) detects unresolved shell vars by
+		// Shell != "" && Value == "" and executes the command. Setting
+		// Value = Shell here would short-circuit that detection and the
+		// raw command string would propagate into templates instead of
+		// the command's stdout.
 	} else if vr.Ref != "" {
 		refName := strings.TrimPrefix(vr.Ref, ".")
 		if err := resolveVar(refName, vars, done, visiting); err != nil {

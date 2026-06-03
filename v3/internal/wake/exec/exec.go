@@ -17,6 +17,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/cmds"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
+	wakeplatform "github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 type Executor struct {
@@ -216,9 +217,15 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 
 	mergedVars := e.mergeVars(task, depVars)
 
+	// depRuns is shared across goroutines once the parallel dep fanout is
+	// in flight, so take e.mu for both the lazy-init and every read/write.
+	// The previous code mutated it without locks and could panic on Go's
+	// "concurrent map read and map write" detector under Parallel=true.
+	e.mu.Lock()
 	if e.depRuns == nil {
 		e.depRuns = make(map[string]bool)
 	}
+	e.mu.Unlock()
 
 	// Taskfile semantics: deps run in parallel before cmds. In serial mode
 	// (Parallel=false) we fall back to a sequential walk; otherwise we spawn
@@ -255,10 +262,15 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		}
 		switch method {
 		case "once":
-			if e.depRuns[resolvedDep] {
+			e.mu.Lock()
+			already := e.depRuns[resolvedDep]
+			if !already {
+				e.depRuns[resolvedDep] = true
+			}
+			e.mu.Unlock()
+			if already {
 				continue
 			}
-			e.depRuns[resolvedDep] = true
 		case "none":
 			continue
 		}
@@ -311,8 +323,12 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	env = append(env, "WAKE_REPORT=1")
 
 	dir := parse.ExpandTemplates(task.Dir, mergedVars)
-	if dir != "" && !strings.HasPrefix(dir, "/") {
-		dir = e.Dir + "/" + dir
+	if dir != "" && !filepath.IsAbs(dir) {
+		// filepath.IsAbs handles `C:\…` on Windows; the previous
+		// `strings.HasPrefix("/")` check misclassified Windows absolute
+		// paths as relative and prefixed them with e.Dir, producing nonsense
+		// like `C:\proj\C:\foo` for the task's working directory.
+		dir = filepath.Join(e.Dir, dir)
 	}
 
 	label := parse.ExpandTemplates(task.Label, mergedVars)
@@ -595,7 +611,6 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 		Dir: dir,
 		Env: env,
 	})
-	defer e.reportGoBuildArtifact(expandedCmd, dir)
 
 	// Output is captured (shown only on failure) and streamed live when verbose;
 	// the writer also intercepts wire events from subprocess producers and routes
@@ -606,7 +621,16 @@ func (e *Executor) runCmd(ctx context.Context, cmd *ast.Cmd, dir string, env []s
 		}
 	}
 
-	return executor.Run()
+	err := executor.Run()
+	if err == nil {
+		// Only surface a `go build -o <path>` output as an Artifact when the
+		// command actually succeeded. The previous `defer` ran on every code
+		// path, which could promote a stale binary left over from a prior
+		// successful build into the summary's Output panel as if this run
+		// had produced it.
+		e.reportGoBuildArtifact(expandedCmd, dir)
+	}
+	return err
 }
 
 func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env []string, vars map[string]*ast.Var) error {
@@ -646,7 +670,14 @@ func (e *Executor) runForLoop(ctx context.Context, cmd *ast.Cmd, dir string, env
 			if subTask == nil {
 				return fmt.Errorf("wake: for-loop task %q not found", expandedTask)
 			}
-			if err := e.runTask(ctx, subTask, fl.Vars); err != nil {
+			// Resolve fl.Vars (the per-cmd `vars:` block on the for-loop
+			// task ref) against loopVars first, so any template that
+			// references {{.ITEM}} is expanded to the current loop item
+			// before the sub-task receives it. The previous code passed
+			// fl.Vars through unresolved, so per-item templates never
+			// saw the current item and rendered empty.
+			resolved := e.resolveDepVars(fl.Vars, loopVars)
+			if err := e.runTask(ctx, subTask, resolved); err != nil {
 				return err
 			}
 		}
@@ -768,7 +799,15 @@ func matchesPlatform(platforms []string) bool {
 	if len(platforms) == 0 {
 		return true
 	}
+	// `GOOS` env is only reliably set during cross-compilation. At normal
+	// build/run time it is usually unset, and `os.Getenv` would return ""
+	// — making *every* platform-gated task skip silently. Fall back to
+	// the runtime OS via the platform package so wake's behaviour matches
+	// upstream task and the obvious user expectation.
 	goos := os.Getenv("GOOS")
+	if goos == "" {
+		goos = wakeplatform.OS()
+	}
 	for _, p := range platforms {
 		if p == goos {
 			return true

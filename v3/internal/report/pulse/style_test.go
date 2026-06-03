@@ -14,15 +14,26 @@ func TestVisibleWidth(t *testing.T) {
 	}{
 		{"", 0},
 		{"hello", 5},
-		{"hi\x1b[31m world\x1b[0m", 8},                          // "hi world" = 8 visible cells
-		{"\x1b]8;;file:///x\x1b\\click\x1b]8;;\x1b\\", 5},        // OSC 8 hyperlink wraps "click"
-		{"━━━━━╾─", 7},                                          // block chars
+		{"hi\x1b[31m world\x1b[0m", 8},                                   // "hi world" = 8 visible cells
+		{"\x1b]8;;file:///x\x1b\\click\x1b]8;;\x1b\\", 5},                // OSC 8 hyperlink wraps "click"
+		{"\x1b]8;;file:///C:\\path\\to.go\x1b\\click\x1b]8;;\x1b\\", 5}, // URI with `\` characters: regression
+		{"━━━━━╾─", 7},                                                   // block chars
 		{strings.Repeat("a", 100), 100},
 	}
 	for _, c := range cases {
 		if got := visibleWidth(c.in); got != c.want {
 			t.Errorf("visibleWidth(%q) = %d, want %d", c.in, got, c.want)
 		}
+	}
+}
+
+// Truncating across an OSC 8 wrapper must not eat the wrapper or the
+// terminating sequence. Regression for the OSC state machine.
+func TestTruncatePreservesOSC8Wrapper(t *testing.T) {
+	link := "\x1b]8;;file:///x.go\x1b\\click here\x1b]8;;\x1b\\"
+	got := truncate(link, 6)
+	if !strings.Contains(got, "\x1b]8;;file:///x.go\x1b\\") {
+		t.Errorf("truncate dropped the OSC 8 opener: %q", got)
 	}
 }
 

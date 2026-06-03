@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 var bareVarRegex = regexp.MustCompile(`\{\{(\s*)([A-Z_][A-Z0-9_]*)(\s*)\}\}`)
@@ -115,7 +116,7 @@ func ResolveVarShell(vr *ast.Var) error {
 		return nil
 	}
 
-	cmd := shellCommand(vr.Shell)
+	cmd := platform.ShellCommand(vr.Shell)
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("wake: var shell command %q failed: %w", vr.Shell, err)

@@ -29,7 +29,13 @@ func LoadLocal(dir string) ([]*ast.Taskfile, error) {
 		for _, name := range exts {
 			path := filepath.Join(dir, name)
 			if _, err := os.Stat(path); err != nil {
-				continue
+				if os.IsNotExist(err) {
+					continue
+				}
+				// Non-missing-file errors (permission, I/O) shouldn't be
+				// silently swallowed — a denied override file is more
+				// likely a misconfiguration than an intentional skip.
+				return nil, err
 			}
 			ov, err := parse.Parse(path)
 			if err != nil {

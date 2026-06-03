@@ -348,7 +348,12 @@ func filterTaskNamespaces(tf *ast.Taskfile, target string) {
 		}
 
 		if strings.Contains(name, ":") {
-			parts := strings.SplitN(name, ":", 2)
+			// SplitN(..., 2) capped at 2 elements, so the previous
+			// `len(parts) >= 3` nested-namespace branch was dead code.
+			// Use the full Split here so a nested platform prefix like
+			// `darwin:linux:foo` (rare but possible after an aggressive
+			// include merge) is also filtered out on a darwin build.
+			parts := strings.Split(name, ":")
 			taskPrefix := parts[0]
 			if platformPrefixes[taskPrefix] && taskPrefix != prefix {
 				delete(tf.Tasks, name)

@@ -305,11 +305,15 @@ func (r *Reporter) StepEnd(id StepID, status report.Status, dur time.Duration) {
 	r.finishLocked(id, status, dur, nil)
 }
 
-// StepFailed closes the named step with a failure.
+// StepFailed closes the named step with a failure. Passing `0` for the
+// duration lets finishLocked derive it from the step's own startedAt; the
+// previous `time.Since(r.buildStart)` form measured the wrong interval —
+// a step that started 200 ms in and ran for 50 ms would otherwise report
+// a duration of 250 ms in the summary.
 func (r *Reporter) StepFailed(id StepID, f report.Failure) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.finishLocked(id, report.StatusFailed, time.Since(r.buildStart), &f)
+	r.finishLocked(id, report.StatusFailed, 0, &f)
 }
 
 // ParallelStepStart, ParallelStepInfo, ParallelStepEnd, ParallelStepFailed

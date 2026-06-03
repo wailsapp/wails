@@ -3,11 +3,11 @@ package exec
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 type runCache struct {
@@ -24,7 +24,7 @@ func checkPreconditions(task *ast.Task) error {
 		if pc.Sh == "" {
 			continue
 		}
-		c := exec.Command("sh", "-c", pc.Sh)
+		c := platform.ShellCommand(pc.Sh)
 		if err := c.Run(); err != nil {
 			msg := pc.Msg
 			if msg == "" {
@@ -43,7 +43,7 @@ func isUpToDate(task *ast.Task, baseDir string) bool {
 
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
-			c := exec.Command("sh", "-c", cmd)
+			c := platform.ShellCommand(cmd)
 			if err := c.Run(); err != nil {
 				return false
 			}

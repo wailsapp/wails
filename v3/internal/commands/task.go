@@ -19,9 +19,18 @@ import (
 // dispatched to wake. wake doesn't model the introspection flags (list,
 // dry-run, summary, watch) — those bypass wake and fall through to the
 // embedded task runtime below.
+//
+// `--dir` / `--taskfile` also bypass wake: they reshape where the Taskfile
+// is loaded from, and the wake fast path currently always loads from the
+// process cwd. Routing those through wake would silently run the task from
+// the wrong directory or ignore the user's chosen entrypoint, so let the
+// embedded runtime keep its semantics for that case.
 func wakeRoutableInvocation(o *RunTaskOptions) bool {
 	if o.List || o.ListAll || o.ListJSON || o.Status || o.Watch ||
 		o.Dry || o.Summary {
+		return false
+	}
+	if o.Dir != "" || o.EntryPoint != "" {
 		return false
 	}
 	return true

@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 const cacheDirName = ".wake"
@@ -22,8 +23,12 @@ type TaskCacheEntry struct {
 	LastRun time.Time `json:"last_run"`
 }
 
+// TaskCache is shared across parallel workers: ShouldSkip / ShouldSkipGoCmd
+// read Entries while RecordTask / RecordGoCmd write to it, and Save serialises
+// the whole map. All access goes through mu.
 type TaskCache struct {
-	Dir     string                     `json:"-"`
+	mu      sync.RWMutex
+	Dir     string                    `json:"-"`
 	Entries map[string]TaskCacheEntry `json:"entries"`
 }
 
@@ -50,17 +55,18 @@ func LoadTaskCache(baseDir string) (*TaskCache, error) {
 }
 
 func (tc *TaskCache) Save() error {
+	tc.mu.RLock()
 	dir := filepath.Join(tc.Dir, cacheDirName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		tc.mu.RUnlock()
 		return fmt.Errorf("wake: create cache dir: %w", err)
 	}
-
 	path := filepath.Join(dir, cacheFileName)
 	data, err := json.MarshalIndent(tc, "", "  ")
+	tc.mu.RUnlock()
 	if err != nil {
 		return fmt.Errorf("wake: marshal cache: %w", err)
 	}
-
 	return os.WriteFile(path, data, 0644)
 }
 
@@ -118,7 +124,10 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
-			c := exec.Command("sh", "-c", cmd)
+			// platform.ShellCommand picks `sh -c` on Unix and `cmd /C` on
+			// Windows. The previous unconditional `sh -c` here broke status-
+			// based skipping on stock Windows installs.
+			c := platform.ShellCommand(cmd)
 			if err := c.Run(); err != nil {
 				return false
 			}
@@ -137,7 +146,9 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
+	tc.mu.RLock()
 	entry, ok := tc.Entries[task.Name]
+	tc.mu.RUnlock()
 	if !ok {
 		return false
 	}
@@ -191,9 +202,14 @@ func applyExcludes(files []string, baseDir string, excludes []string) []string {
 		if err != nil {
 			rel = file
 		}
+		// Taskfile glob patterns are slash-separated. On Windows
+		// filepath.Rel produces backslash paths, which then fail to
+		// match a slash-based pattern. Normalise both sides to slashes
+		// before matching so exclude rules behave the same on every OS.
+		rel = filepath.ToSlash(rel)
 		excluded := false
 		for _, ex := range excludes {
-			if matchesGlob(rel, ex) {
+			if matchesGlob(rel, filepath.ToSlash(ex)) {
 				excluded = true
 				break
 			}
@@ -245,10 +261,12 @@ func (tc *TaskCache) RecordTask(task *ast.Task, baseDir string) error {
 		return err
 	}
 
+	tc.mu.Lock()
 	tc.Entries[task.Name] = TaskCacheEntry{
 		Hash:    hash,
 		LastRun: time.Now(),
 	}
+	tc.mu.Unlock()
 
 	return tc.Save()
 }

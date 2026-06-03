@@ -65,11 +65,17 @@ func (e *Executor) goCmdInputs(kind goCmdKind, task *ast.Task, expandedCmd, dir 
 }
 
 // parseOutputFlag extracts the value of the `-o` flag from a `go build` line.
+// Both `-o <path>` and `-o=<path>` are accepted; the previous implementation
+// only handled the two-token form, so `go build -o=bin/app` slipped through
+// with output="" and the cache could skip without the binary existing.
 func parseOutputFlag(cmd string) string {
 	f := strings.Fields(cmd)
 	for i := 0; i < len(f); i++ {
 		if f[i] == "-o" && i+1 < len(f) {
 			return f[i+1]
+		}
+		if strings.HasPrefix(f[i], "-o=") {
+			return strings.TrimPrefix(f[i], "-o=")
 		}
 	}
 	return ""
@@ -142,7 +148,9 @@ func goCmdHash(expandedCmd string) string {
 // skipped: the command (flags) is unchanged, the expected output still exists,
 // and no input file has been modified since the last successful run.
 func (tc *TaskCache) ShouldSkipGoCmd(name, expandedCmd string, sources []string, output string) bool {
+	tc.mu.RLock()
 	entry, ok := tc.Entries[name+goCacheSuffix]
+	tc.mu.RUnlock()
 	if !ok {
 		return false
 	}
@@ -172,10 +180,12 @@ func (tc *TaskCache) ShouldSkipGoCmd(name, expandedCmd string, sources []string,
 // RecordGoCmd stores the implicit cache entry for a native Go command after a
 // successful run.
 func (tc *TaskCache) RecordGoCmd(name, expandedCmd string) error {
+	tc.mu.Lock()
 	tc.Entries[name+goCacheSuffix] = TaskCacheEntry{
 		Hash:    goCmdHash(expandedCmd),
 		LastRun: time.Now(),
 	}
+	tc.mu.Unlock()
 	return tc.Save()
 }
 

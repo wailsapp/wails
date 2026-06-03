@@ -145,14 +145,70 @@ func padLeft(s string, width int) string {
 	return strings.Repeat(" ", width-v) + s
 }
 
-// truncate returns s truncated to at most width visible cells, with an
-// ellipsis at the end if anything was removed. SGR escapes pass through; we
-// don't try to split inside one (the wake reporter never builds nested-style
-// strings, so a simple state machine is enough).
+// escState walks an ANSI/OSC-bearing string and reports for each rune
+// whether it should count as a visible cell or be ignored as part of an
+// escape sequence. Shared by truncate and visibleWidth so the two stay
+// consistent — they used to drift apart.
 //
-// A trailing reset (\x1b[0m) is appended only if the input actually contained
-// any SGR — so a plain-text caller (e.g. the failure-panel body in NO_COLOR
-// mode) doesn't have stray "\x1b[0m" bytes appear in its output.
+// Terminator handling for OSC sequences is precise: BEL (0x07) ends an
+// OSC, and an ESC followed by `\` (the so-called "string terminator")
+// also ends it. The previous implementation collapsed those into "any
+// `\` ends an OSC", which truncated hyperlink-wrapped text at the first
+// backslash inside the URI.
+type escState struct {
+	inEsc bool // last rune was ESC (CSI/OSC opener)
+	inOsc bool // inside an OSC sequence (ESC ] … ST)
+	inSt  bool // inside an OSC string terminator (ESC waiting for \)
+}
+
+// step advances the state and returns whether r should be counted as
+// visible. r is always written through to the output regardless; the
+// caller decides what to do with the visibility flag.
+func (e *escState) step(r rune) (visible bool) {
+	if e.inOsc {
+		switch {
+		case r == '\x07': // BEL ends OSC immediately
+			e.inOsc = false
+		case e.inSt && r == '\\': // ESC \ ends OSC
+			e.inOsc = false
+			e.inSt = false
+		case r == '\x1b': // ESC: maybe the ST starts here
+			e.inSt = true
+		default:
+			e.inSt = false
+		}
+		return false
+	}
+	if e.inEsc {
+		// ESC ] starts an OSC; otherwise treat as a CSI/SGR-shaped escape
+		// that ends on the first byte in [0x40, 0x7e] (other than `[`,
+		// which is the CSI parameter introducer).
+		if r == ']' {
+			e.inOsc = true
+			e.inEsc = false
+			return false
+		}
+		if r >= 0x40 && r <= 0x7e && r != '[' {
+			e.inEsc = false
+		}
+		return false
+	}
+	if r == '\x1b' {
+		e.inEsc = true
+		return false
+	}
+	return true
+}
+
+// truncate returns s truncated to at most width visible cells, with an
+// ellipsis at the end if anything was removed. SGR escapes and OSC 8
+// hyperlink wrappers pass through unmodified — they don't count toward
+// width because they don't occupy cells on screen.
+//
+// A trailing reset (\x1b[0m) is appended only if the input actually
+// contained any SGR — so a plain-text caller (e.g. the failure-panel
+// body in NO_COLOR mode) doesn't have stray "\x1b[0m" bytes appear in
+// its output.
 func truncate(s string, width int) string {
 	if width <= 0 {
 		return ""
@@ -162,22 +218,17 @@ func truncate(s string, width int) string {
 	}
 	var (
 		b       strings.Builder
-		inEsc   bool
+		st      escState
 		hadSGR  bool
 		visible int
 	)
 	for _, r := range s {
-		if r == '\x1b' {
-			inEsc = true
-			hadSGR = true
-			b.WriteRune(r)
-			continue
-		}
-		if inEsc {
-			b.WriteRune(r)
-			if (r >= 0x40 && r <= 0x7e) && r != '[' {
-				inEsc = false
+		isVis := st.step(r)
+		if !isVis {
+			if r == '\x1b' {
+				hadSGR = true
 			}
+			b.WriteRune(r)
 			continue
 		}
 		if visible+1 > width-1 { // reserve 1 cell for the ellipsis
@@ -193,40 +244,18 @@ func truncate(s string, width int) string {
 	return b.String()
 }
 
-// visibleWidth returns the number of visible cells s would occupy, skipping
-// SGR escapes and OSC 8 hyperlink sequences. It does *not* honour East Asian
-// wide characters — wake task names are ASCII in practice.
+// visibleWidth returns the number of visible cells s would occupy,
+// skipping SGR escapes and OSC 8 hyperlink sequences. East Asian wide
+// characters are not honoured — wake task names are ASCII in practice.
 func visibleWidth(s string) int {
 	var (
-		n     int
-		inEsc bool
-		inOsc bool
+		n  int
+		st escState
 	)
 	for _, r := range s {
-		if inOsc {
-			if r == '\x07' || r == '\\' { // BEL or ESC \
-				inOsc = false
-			}
-			continue
+		if st.step(r) {
+			n++
 		}
-		if r == '\x1b' {
-			inEsc = true
-			continue
-		}
-		if inEsc {
-			// OSC sequences start ESC ].
-			if r == ']' {
-				inOsc = true
-				inEsc = false
-				continue
-			}
-			// CSI/other sequences end at the final byte (0x40-0x7e).
-			if r >= 0x40 && r <= 0x7e && r != '[' {
-				inEsc = false
-			}
-			continue
-		}
-		n++
 	}
 	return n
 }
