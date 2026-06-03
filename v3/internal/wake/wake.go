@@ -119,6 +119,18 @@ func Execute(name string, opts ExecuteOptions) error {
 	level := opts.verbosity()
 	rep := pulse.New(os.Stdout, level)
 
+	// Print a single-line experimental notice once per wake invocation, unless
+	// the user has explicitly silenced wake output. Wake is gated behind
+	// WAILS_USE_WAKE=true and the default build path remains the Task runtime;
+	// the notice exists so users running the opt-in path always know they're
+	// on the experimental track and can correlate any anomalies they hit.
+	// Suppress it under WAKE_SILENT (which already implies a non-interactive
+	// or scripted invocation) and during cache-hit dry-runs / DAG previews.
+	if !opts.Silent && os.Getenv("WAKE_NOTICE") != "off" {
+		fmt.Fprintln(os.Stderr,
+			"  wake (experimental) · set WAILS_USE_WAKE= to disable · WAKE_NOTICE=off to hide this notice")
+	}
+
 	// Make the reporter reachable by in-process producers for the duration of
 	// the build. Subprocess producers reach it over the wire protocol instead
 	// (see internal/report and the executor's output capture).

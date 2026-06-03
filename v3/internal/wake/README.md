@@ -1,5 +1,12 @@
 # Wake
 
+> ⚠️ **Experimental.** Wake is opt-in behind `WAILS_USE_WAKE=true` and is
+> not the default runtime. The default `wails3 build / package / sign /
+> task` path is unchanged and runs on the embedded Task runtime as
+> before. The API and feature coverage may change between releases. See
+> [Enabling Wake](#enabling-wake) for what the env var actually toggles
+> and what falls back automatically.
+
 Wake is a Go-native build runner embedded in the Wails v3 CLI. It executes
 `Taskfile.yml` files directly, replacing the external [Task](https://taskfile.dev)
 (`task`) binary for the build/package/sign commands.
