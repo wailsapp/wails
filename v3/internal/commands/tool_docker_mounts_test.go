@@ -178,16 +178,13 @@ replace foo => C:\vendor\lib
 }
 
 func TestToolHas(t *testing.T) {
-	out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "cc"}) })
-	if err != nil {
-		t.Fatalf("ToolHas returned error: %v", err)
-	}
-	if out != "true" && out != "false" {
-		t.Errorf("expected exactly \"true\" or \"false\", got %q", out)
-	}
-
-	err = ToolHas(&HasOptions{Tool: "unknown"})
-	if err == nil {
-		t.Error("expected error for unknown tool")
+	for _, tool := range []string{"cc", "git", "nonexistent-tool-xyz"} {
+		out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: tool}) })
+		if err != nil {
+			t.Fatalf("ToolHas(%q) returned error: %v", tool, err)
+		}
+		if out != "true" && out != "false" {
+			t.Errorf("ToolHas(%q): expected \"true\" or \"false\", got %q", tool, out)
+		}
 	}
 }

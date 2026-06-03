@@ -21,7 +21,7 @@ type HasOptions struct {
 
 // ToolHas checks if a given tool or capability is available.
 // Outputs "true" or "false" for use in Taskfile sh: variables.
-// Supported tools: cc (gcc or clang).
+// "cc" checks for gcc or clang; any other name is looked up directly in PATH.
 func ToolHas(opts *HasOptions) error {
 	DisableFooter = true
 	switch opts.Tool {
@@ -34,7 +34,12 @@ func ToolHas(opts *HasOptions) error {
 			fmt.Print("false")
 		}
 	default:
-		return fmt.Errorf("unknown tool %q (supported: cc)", opts.Tool)
+		_, err := exec.LookPath(opts.Tool)
+		if err == nil {
+			fmt.Print("true")
+		} else {
+			fmt.Print("false")
+		}
 	}
 	return nil
 }
