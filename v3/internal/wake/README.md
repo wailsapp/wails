@@ -11,14 +11,50 @@ Taskfiles do not change.
 
 ## Enabling Wake
 
+Wake is **gated entirely behind the `WAILS_USE_WAKE=true` environment
+variable**. With the variable unset (or set to anything other than `true`),
+every wails3 command — `wails3 build`, `wails3 package`, `wails3 sign`,
+`wails3 task <name>` — uses the embedded Task runtime exactly as before. The
+default user path is unchanged.
+
 ```bash
+# default: Task runtime, no wake involvement
+wails3 build
+
+# opt in: wake drives build / package / sign / `task <name>`
 WAILS_USE_WAKE=true wails3 build
+WAILS_USE_WAKE=true wails3 package
+WAILS_USE_WAKE=true wails3 task <some-task-name>
 ```
 
-When `WAILS_USE_WAKE` is unset (or set to anything other than `true`), the CLI
-uses the embedded `task` runtime instead. Wake also **falls back** to `task`
-automatically if a Taskfile uses a feature Wake does not support (see below), so
-enabling it is safe.
+What the gate covers:
+
+- `commands.wrapTask` (used by `wails3 build / package / sign`) routes through
+  `wake.Execute` only when `useWake()` is true.
+- `commands.RunTask` (used by `wails3 task <name>`) does the same — `wails3
+  task` is consistent with the other verbs.
+- `wails3 dev` is **not** affected by this flag yet; the dev watcher still
+  uses its own pipeline.
+
+If wake encounters a Taskfile feature it does not implement (`dotenv:`,
+`requires:`, `interval:`, `run:` modes other than `always`, `short:`,
+`defer:`, `output:` modes other than `interleaved`), it **transparently
+falls back to the embedded Task runtime** for the whole run. No external
+`task` binary is required — the Task runtime is compiled into wails3.
+Enabling wake is therefore always safe: at worst you get the same behaviour
+you'd get without the flag.
+
+### Environment variables wake responds to
+
+| Variable           | Effect (only when `WAILS_USE_WAKE=true`)             |
+| ------------------ | ---------------------------------------------------- |
+| `WAILS_USE_WAKE`   | `true` enables every wake-routable wails3 verb       |
+| `WAILS_NO_OVERRIDES` | `true` skips `Taskfile.local.*` / `.override.*`    |
+| `WAKE_VERBOSE`     | Stream subprocess stdout/stderr live instead of capturing |
+| `WAKE_SILENT`      | Suppress task output                                 |
+| `WAKE_SERIAL`      | `true` disables parallel `deps:` fanout (parallel is the default) |
+| `WAKE_FORCE`       | `true` bypasses every cache (task + go-cache) for a clean rebuild |
+| `WAKE_DEBUG`       | Log resolver internals (DAG, deps, var refs, exec)   |
 
 ## How Wake differs from Taskfile
 
