@@ -33,7 +33,7 @@ func ToolHasCC(_ *HasCCOptions) error {
 // Outputs "true" or "false" for use in Taskfile sh: variables.
 func ToolHas(opts *HasOptions) error {
 	DisableFooter = true
-	if strings.TrimSpace(opts.Tool) == "" {
+	if opts == nil || strings.TrimSpace(opts.Tool) == "" {
 		return fmt.Errorf("missing argument: specify a tool name (e.g. wails3 tool has gcc|clang)")
 	}
 	for _, name := range strings.Split(opts.Tool, "|") {
