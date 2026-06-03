@@ -213,26 +213,37 @@ func TestToolHas(t *testing.T) {
 		}
 	}
 
-	// Deprecated alias must produce the same output as the explicit form.
-	out1, _ := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
-	out2, _ := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "gcc|clang"}) })
-	if out1 != out2 {
-		t.Errorf("ToolHasCC output %q differs from ToolHas(gcc|clang) output %q", out1, out2)
+	// Deprecated alias: put a gcc stub in the same temp dir so the result is
+	// deterministic regardless of what the host has installed.
+	createNamedStub(t, dir, "gcc")
+	out1, err1 := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
+	out2, err2 := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "gcc|clang"}) })
+	if err1 != nil || err2 != nil {
+		t.Errorf("ToolHasCC/ToolHas errors: %v / %v", err1, err2)
+	}
+	if out1 != "true" || out2 != "true" {
+		t.Errorf("expected \"true\" with gcc stub in PATH, got ToolHasCC=%q ToolHas=%q", out1, out2)
 	}
 }
 
-// createStubExecutable writes a minimal executable file in dir and returns its
-// base name (without extension). LookPath only checks existence and the
+// createStubExecutable writes a minimal executable named "wails-test-stub" in
+// dir and returns its base name. LookPath only checks existence and the
 // executable bit, so content is irrelevant.
 func createStubExecutable(t *testing.T, dir string) string {
 	t.Helper()
-	name := "wails-test-stub"
+	return createNamedStub(t, dir, "wails-test-stub")
+}
+
+// createNamedStub writes a minimal executable with the given name in dir and
+// returns the base name (without any platform extension).
+func createNamedStub(t *testing.T, dir, name string) string {
+	t.Helper()
 	filename := filepath.Join(dir, name)
 	if runtime.GOOS == "windows" {
 		filename += ".exe"
 	}
 	if err := os.WriteFile(filename, []byte{}, 0755); err != nil {
-		t.Fatalf("creating stub executable: %v", err)
+		t.Fatalf("creating stub executable %q: %v", name, err)
 	}
 	return name
 }
