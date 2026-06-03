@@ -178,13 +178,28 @@ replace foo => C:\vendor\lib
 }
 
 func TestToolHas(t *testing.T) {
-	for _, tool := range []string{"cc", "git", "nonexistent-tool-xyz"} {
-		out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: tool}) })
-		if err != nil {
-			t.Fatalf("ToolHas(%q) returned error: %v", tool, err)
-		}
-		if out != "true" && out != "false" {
-			t.Errorf("ToolHas(%q): expected \"true\" or \"false\", got %q", tool, out)
-		}
+	// Single tool known to be absent.
+	out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "nonexistent-tool-xyz"}) })
+	if err != nil {
+		t.Fatalf("ToolHas returned error: %v", err)
+	}
+	if out != "false" {
+		t.Errorf("expected \"false\" for nonexistent tool, got %q", out)
+	}
+
+	// Pipe-separated: second alternative exists so result must be "true".
+	out, err = captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "nonexistent-tool-xyz|go"}) })
+	if err != nil {
+		t.Fatalf("ToolHas returned error: %v", err)
+	}
+	if out != "true" {
+		t.Errorf("expected \"true\" when one alternative exists, got %q", out)
+	}
+
+	// Deprecated alias produces the same output as has gcc|clang.
+	out1, _ := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
+	out2, _ := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "gcc|clang"}) })
+	if out1 != out2 {
+		t.Errorf("ToolHasCC output %q differs from ToolHas(gcc|clang) output %q", out1, out2)
 	}
 }

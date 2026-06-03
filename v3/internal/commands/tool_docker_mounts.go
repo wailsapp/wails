@@ -16,39 +16,28 @@ type DockerMountsOptions struct{}
 
 // HasOptions holds options for the has command.
 type HasOptions struct {
-	Tool string `pos:"1" name:"tool" description:"Tool to check for (e.g. cc)"`
+	Tool string `pos:"1" name:"tool" description:"Tool(s) to check for in PATH. Use | to check for any of multiple tools (e.g. gcc|clang)"`
 }
 
 // HasCCOptions holds options for the deprecated has-cc command.
 type HasCCOptions struct{}
 
-// ToolHasCC is a deprecated alias for `wails3 tool has cc`.
+// ToolHasCC is a deprecated alias for `wails3 tool has gcc|clang`.
 func ToolHasCC(_ *HasCCOptions) error {
-	return ToolHas(&HasOptions{Tool: "cc"})
+	return ToolHas(&HasOptions{Tool: "gcc|clang"})
 }
 
-// ToolHas checks if a given tool or capability is available.
+// ToolHas checks if a given tool (or any of several pipe-separated tools) is available in PATH.
 // Outputs "true" or "false" for use in Taskfile sh: variables.
-// "cc" checks for gcc or clang; any other name is looked up directly in PATH.
 func ToolHas(opts *HasOptions) error {
 	DisableFooter = true
-	switch opts.Tool {
-	case "cc":
-		_, gccErr := exec.LookPath("gcc")
-		_, clangErr := exec.LookPath("clang")
-		if gccErr == nil || clangErr == nil {
+	for _, name := range strings.Split(opts.Tool, "|") {
+		if _, err := exec.LookPath(strings.TrimSpace(name)); err == nil {
 			fmt.Print("true")
-		} else {
-			fmt.Print("false")
-		}
-	default:
-		_, err := exec.LookPath(opts.Tool)
-		if err == nil {
-			fmt.Print("true")
-		} else {
-			fmt.Print("false")
+			return nil
 		}
 	}
+	fmt.Print("false")
 	return nil
 }
 
