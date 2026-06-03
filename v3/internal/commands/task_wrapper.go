@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
@@ -45,6 +46,15 @@ func wrapTask(action string, otherArgs []string) error {
 	// Match the banner other wails3 commands print; the footer is restored by
 	// leaving DisableFooter at its default so printFooter runs on exit.
 	term.Header(title(action))
+
+	// Create a per-invocation warnings file so subprocess commands (e.g.
+	// wails3 tool has-cc) can append deprecation notices that we collect
+	// and print after the task finishes.
+	if f, err := os.CreateTemp("", "wails-build-warnings-*"); err == nil {
+		f.Close()
+		os.Setenv(buildwarnings.EnvVar, f.Name())
+		defer buildwarnings.FlushAndPrint()
+	}
 
 	goos := os.Getenv("GOOS")
 	if goos == "" {

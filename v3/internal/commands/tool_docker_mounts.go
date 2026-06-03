@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"golang.org/x/mod/modfile"
 )
 
@@ -24,6 +25,7 @@ type HasCCOptions struct{}
 
 // ToolHasCC is a deprecated alias for `wails3 tool has gcc|clang`.
 func ToolHasCC(_ *HasCCOptions) error {
+	buildwarnings.Add("tool has-cc", "wails3 tool has-cc is deprecated; update your Taskfile to use: wails3 tool has gcc|clang")
 	return ToolHas(&HasOptions{Tool: "gcc|clang"})
 }
 
