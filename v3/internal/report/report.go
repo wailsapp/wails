@@ -54,6 +54,24 @@ type Failure struct {
 	Err      error  // the underlying error
 }
 
+// Artifact is one build output the executor wants surfaced in the summary
+// (binary, bundle, archive, etc.). The wake executor builds these from the
+// `generates:` declarations of Taskfile tasks and registers them via
+// [Reporter.Artifact] when the task succeeds.
+//
+// Size is the file's size in bytes; renderers format it human-readably. If
+// Size is 0 the renderer may stat Path itself; pass a non-zero value to skip
+// the stat (useful in tests and dry-runs where the artifact may not yet exist
+// on disk by the time the renderer needs it).
+//
+// Kind is an optional one-word label ("binary", "bundle", "archive", "icon")
+// shown next to the path; empty Kind hides the label.
+type Artifact struct {
+	Path string
+	Size int64
+	Kind string
+}
+
 // Reporter receives the lifecycle of a build. Implementations render it.
 //
 // For serial execution there is exactly one in-flight step at a time, bracketed
@@ -79,6 +97,10 @@ type Reporter interface {
 	StepFailed(f Failure)
 	// BuildEnd closes the build.
 	BuildEnd(dur time.Duration, ok bool)
+	// Artifact registers a build output (binary, bundle, archive, etc.) for
+	// display in the end-of-build summary. The executor calls this for each
+	// `generates:` pattern that resolves to a real file after a task succeeds.
+	Artifact(a Artifact)
 	// Debug renders one diagnostic line (only shown at Debug verbosity).
 	Debug(line DebugLine)
 	// Level reports the reporter's verbosity so callers can skip expensive work.
@@ -110,6 +132,7 @@ func (Nop) StepOutput(string)              {}
 func (Nop) StepEnd(Status, time.Duration)  {}
 func (Nop) StepFailed(Failure)             {}
 func (Nop) BuildEnd(time.Duration, bool)   {}
+func (Nop) Artifact(Artifact)              {}
 func (Nop) Debug(DebugLine)                {}
 func (Nop) Level() Verbosity               { return Normal }
 

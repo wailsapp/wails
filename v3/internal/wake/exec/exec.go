@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	osexec "os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -326,9 +327,47 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	if step {
 		cw.flush()
 		e.rep().StepEnd(report.StatusOK, time.Since(start))
+		e.reportArtifacts(task, dir)
 	}
 
 	return nil
+}
+
+// reportArtifacts walks the task's `generates:` patterns, resolves each glob
+// against the task's working directory, and registers each resulting file as
+// a build artifact with the reporter. Stat failures are ignored (the file
+// may have been intentionally cleaned up before reporting) — only files we
+// can confirm exist are surfaced.
+func (e *Executor) reportArtifacts(task *ast.Task, dir string) {
+	if len(task.Generates) == 0 {
+		return
+	}
+	for _, pattern := range task.Generates {
+		full := pattern
+		if !filepath.IsAbs(full) {
+			full = filepath.Join(dir, pattern)
+		}
+		matches, err := filepath.Glob(full)
+		if err != nil {
+			continue
+		}
+		for _, m := range matches {
+			info, err := os.Stat(m)
+			if err != nil || info.IsDir() {
+				continue
+			}
+			// Keep the displayed path relative to the wake root when we can
+			// — full absolute paths in the summary are noise.
+			display := m
+			if rel, err := filepath.Rel(e.Dir, m); err == nil && !strings.HasPrefix(rel, "..") {
+				display = rel
+			}
+			e.rep().Artifact(report.Artifact{
+				Path: display,
+				Size: info.Size(),
+			})
+		}
+	}
 }
 
 // hasRealCmds reports whether task runs any shell/native command (as opposed to

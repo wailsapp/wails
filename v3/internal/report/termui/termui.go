@@ -293,6 +293,45 @@ func (r *Reporter) BuildEnd(dur time.Duration, ok bool) {
 	fmt.Fprintf(r.w, "\n%s\n\n", head)
 }
 
+// Artifact appends one output line after the build summary. termui's
+// rendering is deliberately plain — pulse provides the rich version.
+func (r *Reporter) Artifact(a report.Artifact) {
+	if a.Path == "" {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.level == report.Silent {
+		return
+	}
+	size := ""
+	if a.Size > 0 {
+		size = "  " + r.st.dim.Render(humanSize(a.Size))
+	}
+	kind := ""
+	if a.Kind != "" {
+		kind = "  " + r.st.dim.Render(a.Kind)
+	}
+	fmt.Fprintf(r.w, "  %s %s%s%s\n", r.st.dim.Render("·"), a.Path, kind, size)
+}
+
+func humanSize(n int64) string {
+	const unit = 1024
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+	div, exp := int64(unit), 0
+	for n2 := n / unit; n2 >= unit; n2 /= unit {
+		div *= unit
+		exp++
+	}
+	units := []string{"KiB", "MiB", "GiB", "TiB", "PiB"}
+	if exp >= len(units) {
+		exp = len(units) - 1
+	}
+	return fmt.Sprintf("%.1f %s", float64(n)/float64(div), units[exp])
+}
+
 func (r *Reporter) Debug(d report.DebugLine) {
 	if r.level < report.Debug {
 		return

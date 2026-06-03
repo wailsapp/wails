@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/report/pulse"
 	"github.com/wailsapp/wails/v3/internal/report/termui"
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/exec"
@@ -116,7 +117,16 @@ func Execute(name string, opts ExecuteOptions) error {
 	}
 
 	level := opts.verbosity()
-	rep := termui.New(os.Stdout, level)
+	// Renderer selection: WAKE_TUI=pulse opts into the Pulse renderer
+	// (skeleton mode, heartbeat spinner, gradient rules, artifact panel).
+	// Anything else keeps the long-standing termui renderer as the safe
+	// default. See internal/report/pulse/DESIGN.md for the visual rationale.
+	var rep report.Reporter
+	if os.Getenv("WAKE_TUI") == "pulse" {
+		rep = pulse.New(os.Stdout, level)
+	} else {
+		rep = termui.New(os.Stdout, level)
+	}
 
 	// Make the reporter reachable by in-process producers for the duration of
 	// the build. Subprocess producers reach it over the wire protocol instead
