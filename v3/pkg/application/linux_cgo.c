@@ -349,6 +349,13 @@ gboolean get_action_state(const char *action_name) {
     return FALSE;
 }
 
+void menu_clear(GMenu *menu) {
+    gint count = g_menu_model_get_n_items(G_MENU_MODEL(menu));
+    for (gint i = count - 1; i >= 0; i--) {
+        g_menu_remove(menu, i);
+    }
+}
+
 void menu_remove_item(GMenu *menu, gint position) {
     g_menu_remove(menu, position);
 }

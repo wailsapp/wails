@@ -36,10 +36,10 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 
 	impl := menu.impl.(*linuxMenu)
 	if impl.processed {
-		// Menu already processed, skip re-processing to avoid duplicates
-		return
+		menuClear(menu)
+	} else {
+		impl.processed = true
 	}
-	impl.processed = true
 
 	var currentRadioGroup uint = 0
 	var checkedRadioId uint = 0

@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix GTK4 Linux menus so `Menu.Update()` rebuilds already processed menus instead of becoming a no-op (#5464)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
