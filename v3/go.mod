@@ -57,7 +57,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/konoui/go-qsort v0.1.0 // indirect
-	github.com/lmittmann/tint v1.0.3 // indirect
+	github.com/lmittmann/tint v1.1.3 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
@@ -126,7 +126,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
+	github.com/muesli/termenv v0.16.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
