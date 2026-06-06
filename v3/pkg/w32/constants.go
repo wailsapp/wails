@@ -397,6 +397,12 @@ const (
 	WS_EX_NOACTIVATE          = 0x08000000
 )
 
+// SetLayeredWindowAttributes flags
+const (
+	LWA_COLORKEY = 0x00000001
+	LWA_ALPHA    = 0x00000002
+)
+
 // Window message constants
 const (
 	WM_APP                    = 32768

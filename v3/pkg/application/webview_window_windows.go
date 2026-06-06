@@ -13,15 +13,15 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/bep/debounce"
-	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/debounce"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 
-	"github.com/wailsapp/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -76,8 +76,17 @@ type windowsWebviewWindow struct {
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
 
+	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
+	// Gate the dark-menubar force-repaint on a state transition so it does not fire
+	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
+	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
+	lastSizeWParam uintptr
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
+
+	// Modal window tracking
+	parentHWND w32.HWND // Parent window HWND when this window is a modal
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -233,6 +242,37 @@ func (w *windowsWebviewWindow) startDrag() error {
 	return nil
 }
 
+func (w *windowsWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+
+	// Get the modal window's Windows implementation
+	modalWindowsImpl, ok := modalWindow.impl.(*windowsWebviewWindow)
+	if !ok {
+		return
+	}
+
+	parentHWND := w.hwnd
+	modalHWND := modalWindowsImpl.hwnd
+
+	// Set parent-child relationship using GWLP_HWNDPARENT
+	// This ensures the modal stays above parent and moves with it
+	w32.SetWindowLongPtr(modalHWND, w32.GWLP_HWNDPARENT, uintptr(parentHWND))
+
+	// Track the parent HWND in the modal window for cleanup
+	modalWindowsImpl.parentHWND = parentHWND
+
+	// Disable the parent window to block interaction (Microsoft's recommended approach)
+	// This follows Windows modal dialog best practices
+	w32.EnableWindow(parentHWND, false)
+
+	// Ensure modal window is shown and brought to front
+	w32.ShowWindow(modalHWND, w32.SW_SHOW)
+	w32.SetForegroundWindow(modalHWND)
+	w32.BringWindowToTop(modalHWND)
+}
+
 func (w *windowsWebviewWindow) nativeWindow() unsafe.Pointer {
 	return unsafe.Pointer(w.hwnd)
 }
@@ -316,22 +356,26 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) ||
-			w.parent.options.IgnoreMouseEvents {
-			// Always if transparent and frameless
+		if w.parent.options.IgnoreMouseEvents {
+			// WS_EX_TRANSPARENT makes WM_NCHITTEST return HTTRANSPARENT, so the window
+			// passes mouse input through to whatever is behind it. Only apply it when
+			// the caller explicitly opts in via IgnoreMouseEvents — applying it to every
+			// frameless + transparent window causes clicks to fall through to the desktop
+			// in any area the child WebView2 HWND does not currently cover (issue #4871).
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
 		} else {
-			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			// Transparent/translucent composition via DirectComposition.
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	// WS_EX_TOOLWINDOW hides the window from the taskbar without blocking keyboard focus.
+	// WS_EX_NOACTIVATE (previously used here) prevents the window from being activated,
+	// which blocks keyboard focus and causes click-through issues after Win+D or Alt+Tab.
 	if options.Windows.HiddenOnTaskbar {
-		//exStyle |= w32.WS_EX_TOOLWINDOW
-		exStyle |= w32.WS_EX_NOACTIVATE
+		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -517,7 +561,14 @@ func (w *windowsWebviewWindow) run() {
 		w.setWindowMask(options.Windows.WindowMask)
 	}
 
-	if options.InitialPosition == WindowCentered {
+	if options.Screen != nil {
+		if options.InitialPosition == WindowCentered {
+			w.centerOnScreen(options.Screen)
+		} else {
+			workArea := options.Screen.WorkArea
+			w.setPosition(workArea.X+options.X, workArea.Y+options.Y)
+		}
+	} else if options.InitialPosition == WindowCentered {
 		w.center()
 	} else {
 		w.setPosition(options.X, options.Y)
@@ -658,6 +709,13 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
 	)
 	w.ignoreDPIChangeResizing = previousFlag
+
+	// For WS_EX_LAYERED windows (frameless+transparent or IgnoreMouseEvents), the hit-test
+	// region is not updated by SetWindowPos alone. Calling SetLayeredWindowAttributes refreshes
+	// the layered region so that the full new window area responds to mouse events.
+	if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+		w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+	}
 }
 
 // Get window dip bounds
@@ -704,6 +762,14 @@ func (w *windowsWebviewWindow) setPosition(x int, y int) {
 	w.setBounds(bounds)
 }
 
+func (w *windowsWebviewWindow) centerOnScreen(screen *Screen) {
+	workArea := screen.WorkArea
+	width, height := w.size()
+	x := workArea.X + (workArea.Width-width)/2
+	y := workArea.Y + (workArea.Height-height)/2
+	w.setPosition(x, y)
+}
+
 // Get window position relative to the screen WorkArea on which it is
 func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	screen, _ := w.getScreen()
@@ -725,6 +791,12 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	// Re-enable parent window if this was a modal window
+	if w.parentHWND != 0 {
+		w32.EnableWindow(w.parentHWND, true)
+		w.parentHWND = 0
+	}
+
 	w.parent.markAsDestroyed()
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
@@ -776,6 +848,9 @@ func (w *windowsWebviewWindow) getZoom() float64 {
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 	w.chromium.PutZoomFactor(zoom)
 }
 
@@ -809,7 +884,9 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -819,7 +896,30 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
+	w.enforceMinSizeConstraints()
+}
+
+func (w *windowsWebviewWindow) enforceMinSizeConstraints() {
+	options := w.parent.options
+	if options.MinWidth <= 0 && options.MinHeight <= 0 {
+		return
+	}
+	b := w.bounds()
+	changed := false
+	if options.MinWidth > 0 && b.Width < options.MinWidth {
+		b.Width = options.MinWidth
+		changed = true
+	}
+	if options.MinHeight > 0 && b.Height < options.MinHeight {
+		b.Height = options.MinHeight
+		changed = true
+	}
+	if changed {
+		w.setBounds(b)
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -853,7 +953,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
@@ -866,7 +966,9 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
@@ -936,6 +1038,14 @@ func (w *windowsWebviewWindow) focus() {
 	}
 	if w.isMinimised() {
 		w.unminimise()
+	}
+
+	// Guard against calling Focus when the WebView2 controller is not yet
+	// initialized or has already been torn down (e.g. during dev hot-reload).
+	// go-webview2's Focus() calls os.Exit(1) on any MoveFocus error, so we
+	// must not call it when the controller is in a nil/invalid state.
+	if w.chromium.GetController() == nil {
+		return
 	}
 
 	w.focusingChromium = true
@@ -1388,6 +1498,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		return code
 	}
 
+	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
+		return w32.HTCLIENT
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1420,6 +1534,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 		defer func() {
+			// Re-enable parent window if this was a modal window
+			if w.parentHWND != 0 {
+				w32.EnableWindow(w.parentHWND, true)
+				w.parentHWND = 0
+			}
+
 			windowsApp := globalApplication.impl.(*windowsApp)
 			windowsApp.unregisterWindow(w)
 
@@ -1517,10 +1637,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
-			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
-				// Invalidate the entire window to force complete redraw
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
@@ -1528,10 +1646,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
+			// Repaint the dark menubar only when leaving a maximized/snapped state.
+			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
+			// previous state avoids per-frame invalidations and the associated flicker.
+			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
+			// (Win+Left) bypasses those messages entirely.
+			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
+			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+		w.lastSizeWParam = wparam
 
 		doResize := func() {
 			// Get the new size from lparam
@@ -1610,6 +1737,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
 				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
+			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+			}
 		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
@@ -2386,6 +2517,10 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	case ButtonHidden:
 		w.setStyle(false, w32.WS_SYSMENU)
 	}
+}
+
+func (w *windowsWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Windows has no dedicated fullscreen button in the standard title bar; no-op.
 }
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {

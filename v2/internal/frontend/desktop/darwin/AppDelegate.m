@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "AppDelegate.h"
+#import "CustomProtocol.h"
 #import "message.h"
 
 @implementation AppDelegate
@@ -17,6 +18,17 @@
    const char* utf8FileName = filename.UTF8String;
    HandleOpenFile((char*)utf8FileName);
    return YES;
+}
+
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> * _Nullable))restorationHandler {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        if (url) {
+            HandleOpenURL((char*)[[url absoluteString] UTF8String]);
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {

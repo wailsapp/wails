@@ -166,11 +166,11 @@ Use the `--wails-draggable` CSS property:
 **JavaScript for buttons:**
 
 ```javascript
-import { WindowMinimise, WindowMaximise, WindowClose } from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
-document.querySelector('.minimize').addEventListener('click', WindowMinimise)
-document.querySelector('.maximize').addEventListener('click', WindowMaximise)
-document.querySelector('.close').addEventListener('click', WindowClose)
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
 ## System Buttons
@@ -214,15 +214,11 @@ document.querySelector('.close').addEventListener('click', Close)
 **Or use runtime methods:**
 
 ```javascript
-import { 
-    WindowMinimise, 
-    WindowMaximise, 
-    WindowClose 
-} from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
-document.querySelector('.minimize').addEventListener('click', WindowMinimise)
-document.querySelector('.maximize').addEventListener('click', WindowMaximise)
-document.querySelector('.close').addEventListener('click', WindowClose)
+document.querySelector('.minimize').addEventListener('click', () => Window.Minimise())
+document.querySelector('.maximize').addEventListener('click', () => Window.Maximise())
+document.querySelector('.close').addEventListener('click', () => Window.Close())
 ```
 
 ### Toggle Maximise State
@@ -230,22 +226,22 @@ document.querySelector('.close').addEventListener('click', WindowClose)
 Track maximise state for button icon:
 
 ```javascript
-import { WindowIsMaximised, WindowMaximise, WindowUnMaximise } from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
 async function toggleMaximise() {
-    const isMaximised = await WindowIsMaximised()
-    
+    const isMaximised = await Window.IsMaximised()
+
     if (isMaximised) {
-        await WindowUnMaximise()
+        await Window.Restore()
     } else {
-        await WindowMaximise()
+        await Window.Maximise()
     }
-    
+
     updateMaximiseButton()
 }
 
 async function updateMaximiseButton() {
-    const isMaximised = await WindowIsMaximised()
+    const isMaximised = await Window.IsMaximised()
     const button = document.querySelector('.maximize')
     button.textContent = isMaximised ? '❐' : '□'
 }
@@ -338,7 +334,7 @@ body {
     ```go
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Windows: application.WindowsOptions{
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })
@@ -352,7 +348,7 @@ body {
     
     **Disable decorations:**
     ```go
-    Windows: application.WindowsOptions{
+    Windows: application.WindowsWindow{
         DisableFramelessWindowDecorations: true,
     },
     ```
@@ -373,30 +369,33 @@ body {
     ```go
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
     })
     ```
-    
+
     **Features:**
     - Native fullscreen support
     - Traffic light buttons (optional)
     - Vibrancy effects
     - Transparent title bar
-    
-    **Hide traffic lights:**
+
+    **Hide the title bar entirely** (use the preset variants exported from the `application` package — there is no `TitleBarStyle` field or `MacTitleBarStyleHidden` constant):
     ```go
-    Mac: application.MacOptions{
-        TitleBarStyle: application.MacTitleBarStyleHidden,
+    Mac: application.MacWindow{
+        TitleBar: application.MacTitleBarHidden,
     },
     ```
-    
+    Other presets include `MacTitleBarDefault`, `MacTitleBarHiddenInset`, and `MacTitleBarHiddenInsetUnified`.
+
     **Invisible title bar:**
     Allows dragging whilst hiding the title bar. This only takes effect when the window is frameless or uses `AppearsTransparent`:
     ```go
-    Mac: application.MacOptions{
+    Mac: application.MacWindow{
         InvisibleTitleBarHeight: 40,
     },
     ```
@@ -600,6 +599,9 @@ var assets embed.FS
 func main() {
     app := application.New(application.Options{
         Name: "Frameless App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
     })
 
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -609,17 +611,15 @@ func main() {
         MinWidth:  800,
         MinHeight: 600,
         Frameless: true,
-        
-        Assets: application.AssetOptions{
-            Handler: application.AssetFileServerFS(assets),
+
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
-        
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
-        },
-        
-        Windows: application.WindowsOptions{
+
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })
@@ -737,41 +737,35 @@ body {
 **JavaScript:**
 
 ```javascript
-import { 
-    WindowMinimise, 
-    WindowMaximise,
-    WindowUnMaximise,
-    WindowIsMaximised,
-    WindowClose 
-} from '@wailsio/runtime'
+import { Window } from '@wailsio/runtime'
 
 // Minimise button
 document.querySelector('.minimize').addEventListener('click', () => {
-    WindowMinimise()
+    Window.Minimise()
 })
 
 // Maximise/restore button
 const maximiseBtn = document.querySelector('.maximize')
 maximiseBtn.addEventListener('click', async () => {
-    const isMaximised = await WindowIsMaximised()
-    
+    const isMaximised = await Window.IsMaximised()
+
     if (isMaximised) {
-        await WindowUnMaximise()
+        await Window.Restore()
     } else {
-        await WindowMaximise()
+        await Window.Maximise()
     }
-    
+
     updateMaximiseButton()
 })
 
 // Close button
 document.querySelector('.close').addEventListener('click', () => {
-    WindowClose()
+    Window.Close()
 })
 
 // Update maximise button icon
 async function updateMaximiseButton() {
-    const isMaximised = await WindowIsMaximised()
+    const isMaximised = await Window.IsMaximised()
     maximiseBtn.textContent = isMaximised ? '❐' : '□'
     maximiseBtn.title = isMaximised ? 'Restore' : 'Maximise'
 }
@@ -867,4 +861,4 @@ body {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [frameless example](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/frameless).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [frameless example](https://github.com/wailsapp/wails/tree/master/v3/examples/frameless).

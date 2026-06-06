@@ -12,6 +12,9 @@ import { nanoid } from "./nanoid.js";
 
 const runtimeURL = window.location.origin + "/wails/runtime";
 
+// Stay under WebView2's ~2MB request body buffering limit in WebResourceRequested.
+const CHUNK_THRESHOLD = 512 * 1024;
+
 // Re-export nanoid for custom transport implementations
 export { nanoid };
 
@@ -124,11 +127,13 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         headers["x-wails-window-name"] = windowName;
     }
 
-    let response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
+    const bodyStr = JSON.stringify(body);
+    let response: Response;
+    if (bodyStr.length > CHUNK_THRESHOLD) {
+        response = await sendChunked(url, headers, bodyStr);
+    } else {
+        response = await fetch(url, { method: 'POST', headers, body: bodyStr });
+    }
     if (!response.ok) {
         throw new Error(await response.text());
     }
@@ -138,4 +143,43 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
     } else {
         return response.text();
     }
+}
+
+// sendChunked splits a large serialised request body into CHUNK_THRESHOLD-sized
+// byte chunks and sends them serially.  Encoding to UTF-8 bytes before slicing
+// prevents corruption of non-BMP characters (surrogate pairs) that would occur
+// when splitting at JavaScript string indices.  The Go transport assembles the
+// raw bytes before processing.  Only the final chunk's response carries the RPC result.
+async function sendChunked(url: URL, headers: Record<string, string>, bodyStr: string): Promise<Response> {
+    const chunkId = nanoid();
+    const bodyBytes = new TextEncoder().encode(bodyStr);
+    const totalChunks = Math.ceil(bodyBytes.length / CHUNK_THRESHOLD);
+
+    for (let i = 0; i < totalChunks - 1; i++) {
+        const chunk = bodyBytes.subarray(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD);
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                ...headers,
+                'x-wails-chunk-id': chunkId,
+                'x-wails-chunk-index': String(i),
+                'x-wails-chunk-total': String(totalChunks),
+            },
+            body: chunk,
+        });
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
+    }
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'x-wails-chunk-id': chunkId,
+            'x-wails-chunk-index': String(totalChunks - 1),
+            'x-wails-chunk-total': String(totalChunks),
+        },
+        body: bodyBytes.subarray((totalChunks - 1) * CHUNK_THRESHOLD),
+    });
 }
