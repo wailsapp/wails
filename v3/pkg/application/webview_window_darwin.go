@@ -251,9 +251,11 @@ void windowSetCollectionBehavior(void* nsWindow, int behavior) {
 // Set NSWindow tabbing mode (macOS 10.12+)
 void windowSetTabbingMode(void* nsWindow, int mode) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
 	if (@available(macOS 10.12, *)) {
 		[window setTabbingMode:mode];
 	}
+#endif
 }
 
 // Load URL in NSWindow
@@ -1306,6 +1308,10 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 }
 
 func (w *macosWebviewWindow) setTabbingMode(mode MacWindowTabbingMode) {
+	if mode == MacWindowTabbingModeDefault {
+		mode = MacWindowTabbingModeDisallowed
+	}
+
 	// Our iota values are offset by 1 from NSWindowTabbingMode:
 	//   MacWindowTabbingModeAutomatic(1) -> NSWindowTabbingModeAutomatic(0)
 	//   MacWindowTabbingModePreferred(2) -> NSWindowTabbingModePreferred(1)
