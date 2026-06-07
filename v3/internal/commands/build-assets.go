@@ -2,7 +2,7 @@ package commands
 
 import (
 	"embed"
-	_ "embed"
+
 	"fmt"
 	"io/fs"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 	"gopkg.in/yaml.v3"
 	"howett.net/plist"
 )
