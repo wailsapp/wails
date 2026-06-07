@@ -19,12 +19,17 @@ struct WebviewPreferences {
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
     bool *AllowsBackForwardNavigationGestures;
+    bool *AllowsMagnification;
+    bool *AllowsAirPlayForMediaPlayback;
+    bool *JavaScriptCanOpenWindowsAutomatically;
+    double *MinimumFontSize;
+    bool *EnableAutoplayWithoutUserAction;
 };
 
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
@@ -82,8 +87,24 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
      }
 #endif
 
+	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
+		config.allowsAirPlayForMediaPlayback = *preferences.AllowsAirPlayForMediaPlayback;
+	}
+	if (preferences.EnableAutoplayWithoutUserAction != NULL && *preferences.EnableAutoplayWithoutUserAction) {
+		config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+	}
+	if (preferences.JavaScriptCanOpenWindowsAutomatically != NULL) {
+		config.preferences.javaScriptCanOpenWindowsAutomatically = *preferences.JavaScriptCanOpenWindowsAutomatically;
+	}
+	if (preferences.MinimumFontSize != NULL) {
+		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
+	}
 	config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
+	if (applicationNameForUserAgent != NULL && strlen(applicationNameForUserAgent) > 0) {
+		config.applicationNameForUserAgent = [NSString stringWithUTF8String:applicationNameForUserAgent];
+	} else {
+		config.applicationNameForUserAgent = @"wails.io";
+	}
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
@@ -102,10 +123,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    // Set allowsBackForwardNavigationGestures if specified
     if (preferences.AllowsBackForwardNavigationGestures != NULL) {
         webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
     }
+	if (preferences.AllowsMagnification != NULL) {
+		webView.allowsMagnification = *preferences.AllowsMagnification;
+	}
 
 	[view addSubview:webView];
 
@@ -1342,6 +1365,22 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
 		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
 	}
+	if wvprefs.AllowsMagnification.IsSet() {
+		result.AllowsMagnification = bool2CboolPtr(wvprefs.AllowsMagnification.Get())
+	}
+	if wvprefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		result.AllowsAirPlayForMediaPlayback = bool2CboolPtr(wvprefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+	if wvprefs.JavaScriptCanOpenWindowsAutomatically.IsSet() {
+		result.JavaScriptCanOpenWindowsAutomatically = bool2CboolPtr(wvprefs.JavaScriptCanOpenWindowsAutomatically.Get())
+	}
+	if wvprefs.MinimumFontSize.IsSet() {
+		v := C.double(wvprefs.MinimumFontSize.Get())
+		result.MinimumFontSize = &v
+	}
+	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
+		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
+	}
 
 	return result
 }
@@ -1354,6 +1393,8 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
+		appName := C.CString(macOptions.WebviewPreferences.ApplicationNameForUserAgent)
+		defer C.free(unsafe.Pointer(appName))
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
@@ -1361,6 +1402,7 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.Frameless),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
+			appName,
 		)
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
