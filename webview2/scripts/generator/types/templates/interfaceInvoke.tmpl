@@ -3,15 +3,15 @@ func {{.Name}}IUnknownQueryInterface(this *{{.Declaration.Name}}, refiid, object
 }
 
 func {{.Declaration.Name}}IUnknownAddRef(this *{{.Declaration.Name}}) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func {{.Declaration.Name}}IUnknownRelease(this *{{.Declaration.Name}}) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
-func {{.Declaration.Name}}Invoke(this *{{.Declaration.Name}}, {{.InvokeMethod.GoInputs}}) uintptr {
-	return this.impl.{{.InvokeMethod.GoMethodName}}({{.InvokeMethod.InputParamNames}})
+func {{.Declaration.Name}}Invoke(this *{{.Declaration.Name}}, {{.InvokeMethod.InvokeGoInputs}}) uintptr {
+{{.InvokeMethod.InvokeConversionCode}}	return this.impl.{{.InvokeMethod.GoMethodName}}({{.InvokeMethod.InvokeInputParamNames}})
 }
 
 type {{.Declaration.Name}}Impl interface {

@@ -1,39 +1,45 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2BasicAuthenticationRequestedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetUri       ComProc
+	GetUri ComProc
 	GetChallenge ComProc
-	GetResponse  ComProc
-	GetCancel    ComProc
-	PutCancel    ComProc
-	GetDeferral  ComProc
+	GetResponse ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2BasicAuthenticationRequestedEventArgs struct {
 	Vtbl *ICoreWebView2BasicAuthenticationRequestedEventArgsVtbl
 }
 
-func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -48,9 +54,10 @@ func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) GetChallenge() (str
 	// Create *uint16 to hold result
 	var _challenge *uint16
 
+
 	hr, _, _ := i.Vtbl.GetChallenge.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_challenge)),
+		uintptr(unsafe.Pointer(&_challenge)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -87,15 +94,21 @@ func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) GetCancel() (bool, 
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	cancel := _cancel != 0
+    cancel := _cancel != 0
 	return cancel, nil
 }
 
 func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) PutCancel(cancel bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _cancel int32
+	if cancel {
+		_cancel = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&cancel)),
+		uintptr(_cancel),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

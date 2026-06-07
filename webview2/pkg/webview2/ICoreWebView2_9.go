@@ -1,46 +1,54 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_9Vtbl struct {
 	IUnknownVtbl
-	AddIsDefaultDownloadDialogOpenChanged    ComProc
+	AddIsDefaultDownloadDialogOpenChanged ComProc
 	RemoveIsDefaultDownloadDialogOpenChanged ComProc
-	GetIsDefaultDownloadDialogOpen           ComProc
-	OpenDefaultDownloadDialog                ComProc
-	CloseDefaultDownloadDialog               ComProc
-	GetDefaultDownloadDialogCornerAlignment  ComProc
-	PutDefaultDownloadDialogCornerAlignment  ComProc
-	GetDefaultDownloadDialogMargin           ComProc
-	PutDefaultDownloadDialogMargin           ComProc
+	GetIsDefaultDownloadDialogOpen ComProc
+	OpenDefaultDownloadDialog ComProc
+	CloseDefaultDownloadDialog ComProc
+	GetDefaultDownloadDialogCornerAlignment ComProc
+	PutDefaultDownloadDialogCornerAlignment ComProc
+	GetDefaultDownloadDialogMargin ComProc
+	PutDefaultDownloadDialogMargin ComProc
 }
 
 type ICoreWebView2_9 struct {
 	Vtbl *ICoreWebView2_9Vtbl
 }
 
-func (i *ICoreWebView2_9) AddRef() uintptr {
+func (i *ICoreWebView2_9) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_9() *ICoreWebView2_9 {
+func (i *ICoreWebView2_9) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_9() (*ICoreWebView2_9, error) {
 	var result *ICoreWebView2_9
 
 	iidICoreWebView2_9 := NewGUID("{4d7b2eab-9fdc-468d-b998-a9260b5ed651}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_9)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_9) AddIsDefaultDownloadDialogOpenChanged(handler *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) (EventRegistrationToken, error) {
 
@@ -58,6 +66,7 @@ func (i *ICoreWebView2_9) AddIsDefaultDownloadDialogOpenChanged(handler *ICoreWe
 }
 
 func (i *ICoreWebView2_9) RemoveIsDefaultDownloadDialogOpenChanged(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveIsDefaultDownloadDialogOpenChanged.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -81,11 +90,12 @@ func (i *ICoreWebView2_9) GetIsDefaultDownloadDialogOpen() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2_9) OpenDefaultDownloadDialog() error {
+
 
 	hr, _, _ := i.Vtbl.OpenDefaultDownloadDialog.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -97,6 +107,7 @@ func (i *ICoreWebView2_9) OpenDefaultDownloadDialog() error {
 }
 
 func (i *ICoreWebView2_9) CloseDefaultDownloadDialog() error {
+
 
 	hr, _, _ := i.Vtbl.CloseDefaultDownloadDialog.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -123,6 +134,7 @@ func (i *ICoreWebView2_9) GetDefaultDownloadDialogCornerAlignment() (COREWEBVIEW
 
 func (i *ICoreWebView2_9) PutDefaultDownloadDialogCornerAlignment(value COREWEBVIEW2_DEFAULT_DOWNLOAD_DIALOG_CORNER_ALIGNMENT) error {
 
+
 	hr, _, _ := i.Vtbl.PutDefaultDownloadDialogCornerAlignment.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(value),
@@ -148,6 +160,7 @@ func (i *ICoreWebView2_9) GetDefaultDownloadDialogMargin() (POINT, error) {
 }
 
 func (i *ICoreWebView2_9) PutDefaultDownloadDialogMargin(value POINT) error {
+
 
 	hr, _, _ := i.Vtbl.PutDefaultDownloadDialogMargin.Call(
 		uintptr(unsafe.Pointer(i)),

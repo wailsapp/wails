@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FocusChangedEventHandler struct {
 	impl ICoreWebView2FocusChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FocusChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FocusChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FocusChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FocusChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FocusChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FocusChangedEventHandlerIUnknownQueryInterface(this *ICoreWebV
 }
 
 func ICoreWebView2FocusChangedEventHandlerIUnknownAddRef(this *ICoreWebView2FocusChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FocusChangedEventHandlerIUnknownRelease(this *ICoreWebView2FocusChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FocusChangedEventHandlerInvoke(this *ICoreWebView2FocusChangedEventHandler, sender *ICoreWebView2Controller, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FocusChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FocusChangedEventHandlerFn = ICoreWebView2FocusChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FocusChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FocusChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FocusChangedEventHandlerIUnknownRelease),

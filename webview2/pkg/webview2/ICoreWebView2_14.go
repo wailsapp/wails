@@ -1,40 +1,48 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_14Vtbl struct {
 	IUnknownVtbl
-	AddServerCertificateErrorDetected    ComProc
+	AddServerCertificateErrorDetected ComProc
 	RemoveServerCertificateErrorDetected ComProc
-	ClearServerCertificateErrorActions   ComProc
+	ClearServerCertificateErrorActions ComProc
 }
 
 type ICoreWebView2_14 struct {
 	Vtbl *ICoreWebView2_14Vtbl
 }
 
-func (i *ICoreWebView2_14) AddRef() uintptr {
+func (i *ICoreWebView2_14) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_14() *ICoreWebView2_14 {
+func (i *ICoreWebView2_14) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_14() (*ICoreWebView2_14, error) {
 	var result *ICoreWebView2_14
 
 	iidICoreWebView2_14 := NewGUID("{6daa4f10-4a90-4753-8898-77c5df534165}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_14)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_14) AddServerCertificateErrorDetected(eventHandler *ICoreWebView2ServerCertificateErrorDetectedEventHandler) (EventRegistrationToken, error) {
 
@@ -53,6 +61,7 @@ func (i *ICoreWebView2_14) AddServerCertificateErrorDetected(eventHandler *ICore
 
 func (i *ICoreWebView2_14) RemoveServerCertificateErrorDetected(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveServerCertificateErrorDetected.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -64,6 +73,7 @@ func (i *ICoreWebView2_14) RemoveServerCertificateErrorDetected(token EventRegis
 }
 
 func (i *ICoreWebView2_14) ClearServerCertificateErrorActions(handler *ICoreWebView2ClearServerCertificateErrorActionsCompletedHandler) error {
+
 
 	hr, _, _ := i.Vtbl.ClearServerCertificateErrorActions.Call(
 		uintptr(unsafe.Pointer(i)),

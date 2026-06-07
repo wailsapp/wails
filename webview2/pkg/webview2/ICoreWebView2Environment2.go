@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Environment2Vtbl struct {
@@ -17,22 +16,31 @@ type ICoreWebView2Environment2 struct {
 	Vtbl *ICoreWebView2Environment2Vtbl
 }
 
-func (i *ICoreWebView2Environment2) AddRef() uintptr {
+func (i *ICoreWebView2Environment2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Environment2() *ICoreWebView2Environment2 {
+func (i *ICoreWebView2Environment2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2Environment2() (*ICoreWebView2Environment2, error) {
 	var result *ICoreWebView2Environment2
 
 	iidICoreWebView2Environment2 := NewGUID("{41f3632b-5ef4-404f-ad82-2d606c5a9a21}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Environment2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Environment2) CreateWebResourceRequest(uri string, Method string, postData *IStream, Headers string) (*ICoreWebView2WebResourceRequest, error) {
 

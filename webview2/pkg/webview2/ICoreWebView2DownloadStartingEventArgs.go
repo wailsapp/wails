@@ -1,33 +1,38 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2DownloadStartingEventArgsVtbl struct {
 	IUnknownVtbl
 	GetDownloadOperation ComProc
-	GetCancel            ComProc
-	PutCancel            ComProc
-	GetResultFilePath    ComProc
-	PutResultFilePath    ComProc
-	GetHandled           ComProc
-	PutHandled           ComProc
-	GetDeferral          ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetResultFilePath ComProc
+	PutResultFilePath ComProc
+	GetHandled ComProc
+	PutHandled ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2DownloadStartingEventArgs struct {
 	Vtbl *ICoreWebView2DownloadStartingEventArgsVtbl
 }
 
-func (i *ICoreWebView2DownloadStartingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2DownloadStartingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2DownloadStartingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2DownloadStartingEventArgs) GetDownloadOperation() (*ICoreWebView2DownloadOperation, error) {
 
@@ -55,15 +60,21 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetCancel() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	cancel := _cancel != 0
+    cancel := _cancel != 0
 	return cancel, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) PutCancel(cancel bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _cancel int32
+	if cancel {
+		_cancel = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&cancel)),
+		uintptr(_cancel),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -75,9 +86,10 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetResultFilePath() (string, er
 	// Create *uint16 to hold result
 	var _resultFilePath *uint16
 
+
 	hr, _, _ := i.Vtbl.GetResultFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_resultFilePath)),
+		uintptr(unsafe.Pointer(&_resultFilePath)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -118,15 +130,21 @@ func (i *ICoreWebView2DownloadStartingEventArgs) GetHandled() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	handled := _handled != 0
+    handled := _handled != 0
 	return handled, nil
 }
 
 func (i *ICoreWebView2DownloadStartingEventArgs) PutHandled(handled bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _handled int32
+	if handled {
+		_handled = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&handled)),
+		uintptr(_handled),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

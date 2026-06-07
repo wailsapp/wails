@@ -1,40 +1,46 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2NavigationStartingEventArgsVtbl struct {
 	IUnknownVtbl
-	GetUri             ComProc
+	GetUri ComProc
 	GetIsUserInitiated ComProc
-	GetIsRedirected    ComProc
-	GetRequestHeaders  ComProc
-	GetCancel          ComProc
-	PutCancel          ComProc
-	GetNavigationId    ComProc
+	GetIsRedirected ComProc
+	GetRequestHeaders ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetNavigationId ComProc
 }
 
 type ICoreWebView2NavigationStartingEventArgs struct {
 	Vtbl *ICoreWebView2NavigationStartingEventArgsVtbl
 }
 
-func (i *ICoreWebView2NavigationStartingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2NavigationStartingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2NavigationStartingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2NavigationStartingEventArgs) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _uri *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_uri)),
+		uintptr(unsafe.Pointer(&_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -57,7 +63,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetIsUserInitiated() (bool, e
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isUserInitiated := _isUserInitiated != 0
+    isUserInitiated := _isUserInitiated != 0
 	return isUserInitiated, nil
 }
 
@@ -73,7 +79,7 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetIsRedirected() (bool, erro
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isRedirected := _isRedirected != 0
+    isRedirected := _isRedirected != 0
 	return isRedirected, nil
 }
 
@@ -103,15 +109,21 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetCancel() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	cancel := _cancel != 0
+    cancel := _cancel != 0
 	return cancel, nil
 }
 
 func (i *ICoreWebView2NavigationStartingEventArgs) PutCancel(cancel bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _cancel int32
+	if cancel {
+		_cancel = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&cancel)),
+		uintptr(_cancel),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

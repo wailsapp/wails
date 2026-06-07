@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_23Vtbl struct {
@@ -17,22 +16,31 @@ type ICoreWebView2_23 struct {
 	Vtbl *ICoreWebView2_23Vtbl
 }
 
-func (i *ICoreWebView2_23) AddRef() uintptr {
+func (i *ICoreWebView2_23) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_23() *ICoreWebView2_23 {
+func (i *ICoreWebView2_23) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_23() (*ICoreWebView2_23, error) {
 	var result *ICoreWebView2_23
 
 	iidICoreWebView2_23 := NewGUID("{508f0db5-90c4-5872-90a7-267a91377502}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_23)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_23) PostWebMessageAsJsonWithAdditionalObjects(webMessageAsJson string, additionalObjects *ICoreWebView2ObjectCollectionView) error {
 

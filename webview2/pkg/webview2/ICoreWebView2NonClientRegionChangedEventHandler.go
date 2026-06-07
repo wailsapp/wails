@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NonClientRegionChangedEventHandler struct {
 	impl ICoreWebView2NonClientRegionChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2NonClientRegionChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NonClientRegionChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NonClientRegionChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NonClientRegionChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2NonClientRegionChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NonClientRegionChangedEventHandlerIUnknownQueryInterface(this 
 }
 
 func ICoreWebView2NonClientRegionChangedEventHandlerIUnknownAddRef(this *ICoreWebView2NonClientRegionChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NonClientRegionChangedEventHandlerIUnknownRelease(this *ICoreWebView2NonClientRegionChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NonClientRegionChangedEventHandlerInvoke(this *ICoreWebView2NonClientRegionChangedEventHandler, sender *ICoreWebView2CompositionController, args *ICoreWebView2NonClientRegionChangedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NonClientRegionChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2NonClientRegionChangedEventHandlerFn = ICoreWebView2NonClientRegionChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NonClientRegionChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NonClientRegionChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NonClientRegionChangedEventHandlerIUnknownRelease),

@@ -1,17 +1,16 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ControllerOptionsVtbl struct {
 	IUnknownVtbl
-	GetProfileName            ComProc
-	PutProfileName            ComProc
+	GetProfileName ComProc
+	PutProfileName ComProc
 	GetIsInPrivateModeEnabled ComProc
 	PutIsInPrivateModeEnabled ComProc
 }
@@ -20,18 +19,25 @@ type ICoreWebView2ControllerOptions struct {
 	Vtbl *ICoreWebView2ControllerOptionsVtbl
 }
 
-func (i *ICoreWebView2ControllerOptions) AddRef() uintptr {
+func (i *ICoreWebView2ControllerOptions) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ControllerOptions) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ControllerOptions) GetProfileName() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetProfileName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -72,15 +78,21 @@ func (i *ICoreWebView2ControllerOptions) GetIsInPrivateModeEnabled() (bool, erro
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2ControllerOptions) PutIsInPrivateModeEnabled(value bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutIsInPrivateModeEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NotificationCloseRequestedEventHandler struct {
 	impl ICoreWebView2NotificationCloseRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2NotificationCloseRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NotificationCloseRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NotificationCloseRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2NotificationCloseRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownQueryInterface(t
 }
 
 func ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2NotificationCloseRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownRelease(this *ICoreWebView2NotificationCloseRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NotificationCloseRequestedEventHandlerInvoke(this *ICoreWebView2NotificationCloseRequestedEventHandler, sender *ICoreWebView2Notification, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NotificationCloseRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2NotificationCloseRequestedEventHandlerFn = ICoreWebView2NotificationCloseRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NotificationCloseRequestedEventHandlerIUnknownRelease),

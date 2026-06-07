@@ -1,44 +1,52 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_8Vtbl struct {
 	IUnknownVtbl
-	AddIsMutedChanged                   ComProc
-	RemoveIsMutedChanged                ComProc
-	GetIsMuted                          ComProc
-	PutIsMuted                          ComProc
-	AddIsDocumentPlayingAudioChanged    ComProc
+	AddIsMutedChanged ComProc
+	RemoveIsMutedChanged ComProc
+	GetIsMuted ComProc
+	PutIsMuted ComProc
+	AddIsDocumentPlayingAudioChanged ComProc
 	RemoveIsDocumentPlayingAudioChanged ComProc
-	GetIsDocumentPlayingAudio           ComProc
+	GetIsDocumentPlayingAudio ComProc
 }
 
 type ICoreWebView2_8 struct {
 	Vtbl *ICoreWebView2_8Vtbl
 }
 
-func (i *ICoreWebView2_8) AddRef() uintptr {
+func (i *ICoreWebView2_8) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_8() *ICoreWebView2_8 {
+func (i *ICoreWebView2_8) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_8() (*ICoreWebView2_8, error) {
 	var result *ICoreWebView2_8
 
 	iidICoreWebView2_8 := NewGUID("{E9632730-6E1E-43AB-B7B8-7B2C9E62E094}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_8)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_8) AddIsMutedChanged(eventHandler *ICoreWebView2IsMutedChangedEventHandler) (EventRegistrationToken, error) {
 
@@ -56,6 +64,7 @@ func (i *ICoreWebView2_8) AddIsMutedChanged(eventHandler *ICoreWebView2IsMutedCh
 }
 
 func (i *ICoreWebView2_8) RemoveIsMutedChanged(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveIsMutedChanged.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -79,15 +88,21 @@ func (i *ICoreWebView2_8) GetIsMuted() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2_8) PutIsMuted(value bool) error {
 
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
+	if value {
+		_value = 1
+	}
+
 	hr, _, _ := i.Vtbl.PutIsMuted.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -112,6 +127,7 @@ func (i *ICoreWebView2_8) AddIsDocumentPlayingAudioChanged(eventHandler *ICoreWe
 
 func (i *ICoreWebView2_8) RemoveIsDocumentPlayingAudioChanged(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveIsDocumentPlayingAudioChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -134,6 +150,6 @@ func (i *ICoreWebView2_8) GetIsDocumentPlayingAudio() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }

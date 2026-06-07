@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentOptions4Vtbl struct {
@@ -18,10 +17,16 @@ type ICoreWebView2EnvironmentOptions4 struct {
 	Vtbl *ICoreWebView2EnvironmentOptions4Vtbl
 }
 
-func (i *ICoreWebView2EnvironmentOptions4) AddRef() uintptr {
+func (i *ICoreWebView2EnvironmentOptions4) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2EnvironmentOptions4) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2EnvironmentOptions4) GetCustomSchemeRegistrations() (uint32, ICoreWebView2CustomSchemeRegistration, error) {
 
@@ -41,9 +46,10 @@ func (i *ICoreWebView2EnvironmentOptions4) GetCustomSchemeRegistrations() (uint3
 
 func (i *ICoreWebView2EnvironmentOptions4) SetCustomSchemeRegistrations(count uint32, schemeRegistrations **ICoreWebView2CustomSchemeRegistration) error {
 
+
 	hr, _, _ := i.Vtbl.SetCustomSchemeRegistrations.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&count)),
+		uintptr(count),
 		uintptr(unsafe.Pointer(&schemeRegistrations)),
 	)
 	if windows.Handle(hr) != windows.S_OK {

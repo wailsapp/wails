@@ -1,41 +1,49 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_15Vtbl struct {
 	IUnknownVtbl
-	AddFaviconChanged    ComProc
+	AddFaviconChanged ComProc
 	RemoveFaviconChanged ComProc
-	GetFaviconUri        ComProc
-	GetFavicon           ComProc
+	GetFaviconUri ComProc
+	GetFavicon ComProc
 }
 
 type ICoreWebView2_15 struct {
 	Vtbl *ICoreWebView2_15Vtbl
 }
 
-func (i *ICoreWebView2_15) AddRef() uintptr {
+func (i *ICoreWebView2_15) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_15() *ICoreWebView2_15 {
+func (i *ICoreWebView2_15) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_15() (*ICoreWebView2_15, error) {
 	var result *ICoreWebView2_15
 
 	iidICoreWebView2_15 := NewGUID("{517B2D1D-7DAE-4A66-A4F4-10352FFB9518}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_15)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_15) AddFaviconChanged(eventHandler *ICoreWebView2FaviconChangedEventHandler) (EventRegistrationToken, error) {
 
@@ -54,6 +62,7 @@ func (i *ICoreWebView2_15) AddFaviconChanged(eventHandler *ICoreWebView2FaviconC
 
 func (i *ICoreWebView2_15) RemoveFaviconChanged(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveFaviconChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -68,9 +77,10 @@ func (i *ICoreWebView2_15) GetFaviconUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetFaviconUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -82,6 +92,7 @@ func (i *ICoreWebView2_15) GetFaviconUri() (string, error) {
 }
 
 func (i *ICoreWebView2_15) GetFavicon(format COREWEBVIEW2_FAVICON_IMAGE_FORMAT, completedHandler *ICoreWebView2GetFaviconCompletedHandler) error {
+
 
 	hr, _, _ := i.Vtbl.GetFavicon.Call(
 		uintptr(unsafe.Pointer(i)),

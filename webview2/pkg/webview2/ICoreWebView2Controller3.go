@@ -1,45 +1,53 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Controller3Vtbl struct {
 	IUnknownVtbl
-	GetRasterizationScale              ComProc
-	PutRasterizationScale              ComProc
+	GetRasterizationScale ComProc
+	PutRasterizationScale ComProc
 	GetShouldDetectMonitorScaleChanges ComProc
 	PutShouldDetectMonitorScaleChanges ComProc
-	AddRasterizationScaleChanged       ComProc
-	RemoveRasterizationScaleChanged    ComProc
-	GetBoundsMode                      ComProc
-	PutBoundsMode                      ComProc
+	AddRasterizationScaleChanged ComProc
+	RemoveRasterizationScaleChanged ComProc
+	GetBoundsMode ComProc
+	PutBoundsMode ComProc
 }
 
 type ICoreWebView2Controller3 struct {
 	Vtbl *ICoreWebView2Controller3Vtbl
 }
 
-func (i *ICoreWebView2Controller3) AddRef() uintptr {
+func (i *ICoreWebView2Controller3) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Controller3() *ICoreWebView2Controller3 {
+func (i *ICoreWebView2Controller3) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2Controller3() (*ICoreWebView2Controller3, error) {
 	var result *ICoreWebView2Controller3
 
 	iidICoreWebView2Controller3 := NewGUID("{f9614724-5d2b-41dc-aef7-73d62b51543b}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Controller3)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 
@@ -57,9 +65,10 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
 
+
 	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scale)),
+		uintptr(scale),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -79,21 +88,21 @@ func (i *ICoreWebView2Controller3) GetShouldDetectMonitorScaleChanges() (bool, e
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2Controller3) PutShouldDetectMonitorScaleChanges(value bool) error {
-	var intValue uintptr
+
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		intValue = 1
-	} else {
-		intValue = 0
+		_value = 1
 	}
 
 	hr, _, _ := i.Vtbl.PutShouldDetectMonitorScaleChanges.Call(
 		uintptr(unsafe.Pointer(i)),
-		intValue,
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -117,6 +126,7 @@ func (i *ICoreWebView2Controller3) AddRasterizationScaleChanged(eventHandler *IC
 }
 
 func (i *ICoreWebView2Controller3) RemoveRasterizationScaleChanged(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveRasterizationScaleChanged.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -143,6 +153,7 @@ func (i *ICoreWebView2Controller3) GetBoundsMode() (COREWEBVIEW2_BOUNDS_MODE, er
 }
 
 func (i *ICoreWebView2Controller3) PutBoundsMode(boundsMode COREWEBVIEW2_BOUNDS_MODE) error {
+
 
 	hr, _, _ := i.Vtbl.PutBoundsMode.Call(
 		uintptr(unsafe.Pointer(i)),

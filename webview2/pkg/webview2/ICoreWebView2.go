@@ -1,83 +1,88 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Vtbl struct {
 	IUnknownVtbl
-	GetSettings                            ComProc
-	GetSource                              ComProc
-	Navigate                               ComProc
-	NavigateToString                       ComProc
-	AddNavigationStarting                  ComProc
-	RemoveNavigationStarting               ComProc
-	AddContentLoading                      ComProc
-	RemoveContentLoading                   ComProc
-	AddSourceChanged                       ComProc
-	RemoveSourceChanged                    ComProc
-	AddHistoryChanged                      ComProc
-	RemoveHistoryChanged                   ComProc
-	AddNavigationCompleted                 ComProc
-	RemoveNavigationCompleted              ComProc
-	AddFrameNavigationStarting             ComProc
-	RemoveFrameNavigationStarting          ComProc
-	AddFrameNavigationCompleted            ComProc
-	RemoveFrameNavigationCompleted         ComProc
-	AddScriptDialogOpening                 ComProc
-	RemoveScriptDialogOpening              ComProc
-	AddPermissionRequested                 ComProc
-	RemovePermissionRequested              ComProc
-	AddProcessFailed                       ComProc
-	RemoveProcessFailed                    ComProc
-	AddScriptToExecuteOnDocumentCreated    ComProc
+	GetSettings ComProc
+	GetSource ComProc
+	Navigate ComProc
+	NavigateToString ComProc
+	AddNavigationStarting ComProc
+	RemoveNavigationStarting ComProc
+	AddContentLoading ComProc
+	RemoveContentLoading ComProc
+	AddSourceChanged ComProc
+	RemoveSourceChanged ComProc
+	AddHistoryChanged ComProc
+	RemoveHistoryChanged ComProc
+	AddNavigationCompleted ComProc
+	RemoveNavigationCompleted ComProc
+	AddFrameNavigationStarting ComProc
+	RemoveFrameNavigationStarting ComProc
+	AddFrameNavigationCompleted ComProc
+	RemoveFrameNavigationCompleted ComProc
+	AddScriptDialogOpening ComProc
+	RemoveScriptDialogOpening ComProc
+	AddPermissionRequested ComProc
+	RemovePermissionRequested ComProc
+	AddProcessFailed ComProc
+	RemoveProcessFailed ComProc
+	AddScriptToExecuteOnDocumentCreated ComProc
 	RemoveScriptToExecuteOnDocumentCreated ComProc
-	ExecuteScript                          ComProc
-	CapturePreview                         ComProc
-	Reload                                 ComProc
-	PostWebMessageAsJson                   ComProc
-	PostWebMessageAsString                 ComProc
-	AddWebMessageReceived                  ComProc
-	RemoveWebMessageReceived               ComProc
-	CallDevToolsProtocolMethod             ComProc
-	GetBrowserProcessId                    ComProc
-	GetCanGoBack                           ComProc
-	GetCanGoForward                        ComProc
-	GoBack                                 ComProc
-	GoForward                              ComProc
-	GetDevToolsProtocolEventReceiver       ComProc
-	Stop                                   ComProc
-	AddNewWindowRequested                  ComProc
-	RemoveNewWindowRequested               ComProc
-	AddDocumentTitleChanged                ComProc
-	RemoveDocumentTitleChanged             ComProc
-	GetDocumentTitle                       ComProc
-	AddHostObjectToScript                  ComProc
-	RemoveHostObjectFromScript             ComProc
-	OpenDevToolsWindow                     ComProc
-	AddContainsFullScreenElementChanged    ComProc
+	ExecuteScript ComProc
+	CapturePreview ComProc
+	Reload ComProc
+	PostWebMessageAsJson ComProc
+	PostWebMessageAsString ComProc
+	AddWebMessageReceived ComProc
+	RemoveWebMessageReceived ComProc
+	CallDevToolsProtocolMethod ComProc
+	GetBrowserProcessId ComProc
+	GetCanGoBack ComProc
+	GetCanGoForward ComProc
+	GoBack ComProc
+	GoForward ComProc
+	GetDevToolsProtocolEventReceiver ComProc
+	Stop ComProc
+	AddNewWindowRequested ComProc
+	RemoveNewWindowRequested ComProc
+	AddDocumentTitleChanged ComProc
+	RemoveDocumentTitleChanged ComProc
+	GetDocumentTitle ComProc
+	AddHostObjectToScript ComProc
+	RemoveHostObjectFromScript ComProc
+	OpenDevToolsWindow ComProc
+	AddContainsFullScreenElementChanged ComProc
 	RemoveContainsFullScreenElementChanged ComProc
-	GetContainsFullScreenElement           ComProc
-	AddWebResourceRequested                ComProc
-	RemoveWebResourceRequested             ComProc
-	AddWebResourceRequestedFilter          ComProc
-	RemoveWebResourceRequestedFilter       ComProc
-	AddWindowCloseRequested                ComProc
-	RemoveWindowCloseRequested             ComProc
+	GetContainsFullScreenElement ComProc
+	AddWebResourceRequested ComProc
+	RemoveWebResourceRequested ComProc
+	AddWebResourceRequestedFilter ComProc
+	RemoveWebResourceRequestedFilter ComProc
+	AddWindowCloseRequested ComProc
+	RemoveWindowCloseRequested ComProc
 }
 
 type ICoreWebView2 struct {
 	Vtbl *ICoreWebView2Vtbl
 }
 
-func (i *ICoreWebView2) AddRef() uintptr {
+func (i *ICoreWebView2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2) GetSettings() (*ICoreWebView2Settings, error) {
 
@@ -97,9 +102,10 @@ func (i *ICoreWebView2) GetSource() (string, error) {
 	// Create *uint16 to hold result
 	var _uri *uint16
 
+
 	hr, _, _ := i.Vtbl.GetSource.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_uri)),
+		uintptr(unsafe.Pointer(&_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -163,6 +169,7 @@ func (i *ICoreWebView2) AddNavigationStarting(eventHandler *ICoreWebView2Navigat
 
 func (i *ICoreWebView2) RemoveNavigationStarting(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveNavigationStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -189,6 +196,7 @@ func (i *ICoreWebView2) AddContentLoading(eventHandler *ICoreWebView2ContentLoad
 }
 
 func (i *ICoreWebView2) RemoveContentLoading(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveContentLoading.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -217,6 +225,7 @@ func (i *ICoreWebView2) AddSourceChanged(eventHandler *ICoreWebView2SourceChange
 
 func (i *ICoreWebView2) RemoveSourceChanged(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveSourceChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -243,6 +252,7 @@ func (i *ICoreWebView2) AddHistoryChanged(eventHandler *ICoreWebView2HistoryChan
 }
 
 func (i *ICoreWebView2) RemoveHistoryChanged(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveHistoryChanged.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -271,6 +281,7 @@ func (i *ICoreWebView2) AddNavigationCompleted(eventHandler *ICoreWebView2Naviga
 
 func (i *ICoreWebView2) RemoveNavigationCompleted(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -297,6 +308,7 @@ func (i *ICoreWebView2) AddFrameNavigationStarting(eventHandler *ICoreWebView2Na
 }
 
 func (i *ICoreWebView2) RemoveFrameNavigationStarting(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveFrameNavigationStarting.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -325,6 +337,7 @@ func (i *ICoreWebView2) AddFrameNavigationCompleted(eventHandler *ICoreWebView2N
 
 func (i *ICoreWebView2) RemoveFrameNavigationCompleted(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveFrameNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -351,6 +364,7 @@ func (i *ICoreWebView2) AddScriptDialogOpening(eventHandler *ICoreWebView2Script
 }
 
 func (i *ICoreWebView2) RemoveScriptDialogOpening(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveScriptDialogOpening.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -379,6 +393,7 @@ func (i *ICoreWebView2) AddPermissionRequested(eventHandler *ICoreWebView2Permis
 
 func (i *ICoreWebView2) RemovePermissionRequested(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemovePermissionRequested.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -405,6 +420,7 @@ func (i *ICoreWebView2) AddProcessFailed(eventHandler *ICoreWebView2ProcessFaile
 }
 
 func (i *ICoreWebView2) RemoveProcessFailed(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveProcessFailed.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -474,6 +490,7 @@ func (i *ICoreWebView2) ExecuteScript(javaScript string, handler *ICoreWebView2E
 
 func (i *ICoreWebView2) CapturePreview(imageFormat COREWEBVIEW2_CAPTURE_PREVIEW_IMAGE_FORMAT, imageStream *IStream, handler *ICoreWebView2CapturePreviewCompletedHandler) error {
 
+
 	hr, _, _ := i.Vtbl.CapturePreview.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(imageFormat),
@@ -487,6 +504,7 @@ func (i *ICoreWebView2) CapturePreview(imageFormat COREWEBVIEW2_CAPTURE_PREVIEW_
 }
 
 func (i *ICoreWebView2) Reload() error {
+
 
 	hr, _, _ := i.Vtbl.Reload.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -550,6 +568,7 @@ func (i *ICoreWebView2) AddWebMessageReceived(handler *ICoreWebView2WebMessageRe
 
 func (i *ICoreWebView2) RemoveWebMessageReceived(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveWebMessageReceived.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -611,7 +630,7 @@ func (i *ICoreWebView2) GetCanGoBack() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	canGoBack := _canGoBack != 0
+    canGoBack := _canGoBack != 0
 	return canGoBack, nil
 }
 
@@ -627,11 +646,12 @@ func (i *ICoreWebView2) GetCanGoForward() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	canGoForward := _canGoForward != 0
+    canGoForward := _canGoForward != 0
 	return canGoForward, nil
 }
 
 func (i *ICoreWebView2) GoBack() error {
+
 
 	hr, _, _ := i.Vtbl.GoBack.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -643,6 +663,7 @@ func (i *ICoreWebView2) GoBack() error {
 }
 
 func (i *ICoreWebView2) GoForward() error {
+
 
 	hr, _, _ := i.Vtbl.GoForward.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -675,6 +696,7 @@ func (i *ICoreWebView2) GetDevToolsProtocolEventReceiver(eventName string) (*ICo
 
 func (i *ICoreWebView2) Stop() error {
 
+
 	hr, _, _ := i.Vtbl.Stop.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
@@ -700,6 +722,7 @@ func (i *ICoreWebView2) AddNewWindowRequested(eventHandler *ICoreWebView2NewWind
 }
 
 func (i *ICoreWebView2) RemoveNewWindowRequested(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveNewWindowRequested.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -728,6 +751,7 @@ func (i *ICoreWebView2) AddDocumentTitleChanged(eventHandler *ICoreWebView2Docum
 
 func (i *ICoreWebView2) RemoveDocumentTitleChanged(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveDocumentTitleChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -742,9 +766,10 @@ func (i *ICoreWebView2) GetDocumentTitle() (string, error) {
 	// Create *uint16 to hold result
 	var _title *uint16
 
+
 	hr, _, _ := i.Vtbl.GetDocumentTitle.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_title)),
+		uintptr(unsafe.Pointer(&_title)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -794,6 +819,7 @@ func (i *ICoreWebView2) RemoveHostObjectFromScript(name string) error {
 
 func (i *ICoreWebView2) OpenDevToolsWindow() error {
 
+
 	hr, _, _ := i.Vtbl.OpenDevToolsWindow.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
@@ -820,6 +846,7 @@ func (i *ICoreWebView2) AddContainsFullScreenElementChanged(eventHandler *ICoreW
 
 func (i *ICoreWebView2) RemoveContainsFullScreenElementChanged(token EventRegistrationToken) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveContainsFullScreenElementChanged.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&token)),
@@ -842,7 +869,7 @@ func (i *ICoreWebView2) GetContainsFullScreenElement() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	containsFullScreenElement := _containsFullScreenElement != 0
+    containsFullScreenElement := _containsFullScreenElement != 0
 	return containsFullScreenElement, nil
 }
 
@@ -862,6 +889,7 @@ func (i *ICoreWebView2) AddWebResourceRequested(eventHandler *ICoreWebView2WebRe
 }
 
 func (i *ICoreWebView2) RemoveWebResourceRequested(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveWebResourceRequested.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -927,6 +955,7 @@ func (i *ICoreWebView2) AddWindowCloseRequested(eventHandler *ICoreWebView2Windo
 }
 
 func (i *ICoreWebView2) RemoveWindowCloseRequested(token EventRegistrationToken) error {
+
 
 	hr, _, _ := i.Vtbl.RemoveWindowCloseRequested.Call(
 		uintptr(unsafe.Pointer(i)),
