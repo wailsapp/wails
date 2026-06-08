@@ -100,7 +100,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
 	}
 	config.suppressesIncrementalRendering = true;
-	if (applicationNameForUserAgent != NULL && strlen(applicationNameForUserAgent) > 0) {
+	if (applicationNameForUserAgent != NULL && applicationNameForUserAgent[0] != '\0') {
 		config.applicationNameForUserAgent = [NSString stringWithUTF8String:applicationNameForUserAgent];
 	} else {
 		config.applicationNameForUserAgent = @"wails.io";
@@ -1393,8 +1393,11 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
-		appName := C.CString(macOptions.WebviewPreferences.ApplicationNameForUserAgent)
-		defer C.free(unsafe.Pointer(appName))
+		var appName *C.char
+		if s := macOptions.WebviewPreferences.ApplicationNameForUserAgent; s != "" {
+			appName = C.CString(s)
+			defer C.free(unsafe.Pointer(appName))
+		}
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
