@@ -7,8 +7,8 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
-	github.com/atterpac/dado v0.0.0-00010101000000-000000000000
-	github.com/atterpac/refresh v0.8.6
+	github.com/atterpac/dado v0.2.3
+	github.com/atterpac/refresh v1.1.0
 	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
@@ -34,14 +34,13 @@ require (
 	github.com/leaanthony/gosod v1.0.4
 	github.com/leaanthony/u v1.1.1
 	github.com/leaanthony/winicon v1.0.0
-	github.com/lmittmann/tint v1.1.2
+	github.com/lmittmann/tint v1.1.3
 	github.com/matryer/is v1.4.1
 	github.com/mattn/go-colorable v0.1.14
 	github.com/mattn/go-isatty v0.0.20
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.82
-	github.com/rivo/tview v0.42.0
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
@@ -174,5 +173,3 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	mvdan.cc/sh/v3 v3.12.0 // indirect
 )
-
-replace github.com/atterpac/dado => ../../dado
