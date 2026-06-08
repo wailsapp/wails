@@ -6,13 +6,16 @@ require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
+	github.com/atterpac/dado v0.0.0-00010101000000-000000000000
 	github.com/atterpac/refresh v1.0.0
+	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/coder/websocket v1.8.14
 	github.com/ebitengine/purego v0.9.1
+	github.com/gdamore/tcell/v2 v2.13.10
 	github.com/go-git/go-git/v5 v5.19.1
 	github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e
 	github.com/go-ole/go-ole v1.3.0
@@ -29,6 +32,8 @@ require (
 	github.com/mattn/go-colorable v0.1.14
 	github.com/mattn/go-isatty v0.0.20
 	github.com/pterm/pterm v0.12.82
+	github.com/rivo/tview v0.42.0
+	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
@@ -55,6 +60,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.4.0 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
+	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/konoui/go-qsort v0.1.0 // indirect
 	github.com/lmittmann/tint v1.1.3 // indirect
@@ -149,7 +155,7 @@ require (
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260112195511-716be5621a96
-	golang.org/x/image v0.40.0
+	golang.org/x/image v0.41.0
 	golang.org/x/mod v0.35.0
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
@@ -162,3 +168,5 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	mvdan.cc/sh/v3 v3.12.0 // indirect
 )
+
+replace github.com/atterpac/dado => ../../dado
