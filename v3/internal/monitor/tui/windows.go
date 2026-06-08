@@ -39,9 +39,12 @@ func newWindowsView(m *Model) *windowsView {
 
 	v.detail = components.NewLabel("").SetDynamicColors(true).SetScrollable(true)
 
+	tablePanel := components.NewPanel().SetTitle("Windows").SetContent(v.table).SetFocused(true)
+	detailPanel := components.NewPanel().SetTitle("Activity").SetContent(v.detail)
+
 	v.split = components.NewSplit()
 	v.split.SetDirection(components.SplitHorizontal).SetRatio(0.4).
-		SetLeft(v.table).SetRight(v.detail)
+		SetLeft(tablePanel).SetRight(detailPanel)
 
 	v.table.SetSelectionChangedFunc(func(row, col int) { v.showDetail(row) })
 
@@ -64,7 +67,7 @@ func newWindowsView(m *Model) *windowsView {
 			}
 			return true
 		}
-		return false
+		return vimTableNav(v.table, ev)
 	})
 	return v
 }

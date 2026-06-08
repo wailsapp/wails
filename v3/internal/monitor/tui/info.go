@@ -20,7 +20,8 @@ func newInfoView(m *Model) *infoView {
 	v := &infoView{m: m}
 	v.label = components.NewLabel("").SetDynamicColors(true).SetScrollable(true)
 
-	v.ComponentBase = components.NewComponentBase(v.label).
+	v.ComponentBase = components.NewComponentBase(
+		components.NewPanel().SetTitle("App Info").SetContent(v.label).SetFocused(true)).
 		SetName("Info").
 		AddHint("r", "Refresh").
 		AddHint("q", "Back").

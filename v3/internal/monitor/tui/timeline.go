@@ -79,9 +79,12 @@ func newTimelineView(m *Model) *timelineView {
 		AddItem(v.detail, 0, 2, false).
 		AddItem(v.callTable, 0, 3, false)
 
+	graphsPanel := components.NewPanel().SetTitle("Resources").SetContent(v.graphsFlex).SetFocused(true)
+	activityPanel := components.NewPanel().SetTitle("Activity").SetContent(v.rightFlex)
+
 	v.outer = core.NewFlex().SetDirection(core.Row).
-		AddItem(v.graphsFlex, 0, 3, true).
-		AddItem(v.rightFlex, 0, 2, false)
+		AddItem(graphsPanel, 0, 3, true).
+		AddItem(activityPanel, 0, 2, false)
 
 	v.ComponentBase = components.NewComponentBase(v.outer).
 		SetName("Timeline").
