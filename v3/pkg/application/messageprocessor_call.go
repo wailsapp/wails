@@ -3,9 +3,11 @@ package application
 import (
 	"context"
 	"errors"
+	"time"
 
 	"encoding/json"
 
+	"github.com/wailsapp/wails/v3/pkg/application/monitor"
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -32,6 +34,15 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 	if cancel != nil {
 		cancel()
 		m.Debug("Binding call cancelled:", "id", *callID)
+		if monitor.Enabled() {
+			monitor.Emit(monitor.Trace{
+				Kind:       "cancel",
+				Dir:        "in",
+				CallID:     *callID,
+				Object:     CallBinding,
+				ObjectName: "call",
+			})
+		}
 	}
 	return unit, nil
 }
@@ -116,7 +127,61 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			ctx = context.WithValue(ctx, WindowKey, window)
 		}
 
+		// IPC monitor tap: emit the inbound call. Arg capture is guarded so it
+		// costs nothing when the monitor is disabled.
+		var monMethod, monWindow string
+		if monitor.Enabled() {
+			monMethod = boundMethod.FQN
+			if monMethod == "" {
+				monMethod = boundMethod.Name
+			}
+			if window != nil {
+				monWindow = window.Name()
+			}
+			args, _ := json.Marshal(options.Args)
+			monitor.Emit(monitor.Trace{
+				Kind:       "call",
+				Dir:        "in",
+				CallID:     *callID,
+				Object:     CallBinding,
+				ObjectName: "call",
+				Method:     monMethod,
+				Window:     monWindow,
+				Args:       json.RawMessage(args),
+			})
+		}
+
+		monStart := time.Now()
 		result, err = boundMethod.Call(ctx, options.Args)
+		if monitor.Enabled() {
+			durMS := float64(time.Since(monStart).Microseconds()) / 1000.0
+			if err != nil {
+				monitor.Emit(monitor.Trace{
+					Kind:       "error",
+					Dir:        "in",
+					CallID:     *callID,
+					Object:     CallBinding,
+					ObjectName: "call",
+					Method:     monMethod,
+					Window:     monWindow,
+					DurationMS: durMS,
+					Error:      &monitor.TraceError{Message: err.Error()},
+				})
+			} else {
+				res, _ := json.Marshal(result)
+				monitor.Emit(monitor.Trace{
+					Kind:       "result",
+					Dir:        "in",
+					CallID:     *callID,
+					Object:     CallBinding,
+					ObjectName: "call",
+					Method:     monMethod,
+					Window:     monWindow,
+					DurationMS: durMS,
+					Result:     json.RawMessage(res),
+				})
+			}
+		}
 		if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 			switch cerr.Kind {
 			case ReferenceError, TypeError:

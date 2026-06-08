@@ -9,6 +9,7 @@ import (
 
 	"encoding/json"
 
+	"github.com/wailsapp/wails/v3/pkg/application/monitor"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -155,6 +156,21 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 				}
 			}
 		}
+	}
+
+	// IPC monitor tap: outbound (Go->JS) event, captured at the central emit
+	// chokepoint before fan-out to listeners and windows.
+	if monitor.Enabled() {
+		args, _ := json.Marshal(thisEvent.Data)
+		monitor.Emit(monitor.Trace{
+			Kind:       "event",
+			Dir:        "out",
+			Object:     eventsRequest,
+			ObjectName: "Events",
+			Method:     thisEvent.Name,
+			Window:     thisEvent.Sender,
+			Args:       json.RawMessage(args),
+		})
 	}
 
 	go func() {
