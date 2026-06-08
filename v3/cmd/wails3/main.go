@@ -51,7 +51,6 @@ func main() {
 	})
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
 	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
-	app.NewSubCommandFunction("monitor", "Attach a live IPC monitor TUI to a running dev app", commands.Monitor)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
