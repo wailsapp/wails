@@ -573,6 +573,11 @@ func (a *App) Run() error {
 
 	a.impl = newPlatformApp(a)
 
+	// Start the in-process IPC monitor (dev-only + opt-in). No-op unless
+	// explicitly enabled via env vars (WAILS_MONITOR / WAILS_MONITOR_SOCK).
+	a.startMonitor()
+	defer a.stopMonitor()
+
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
 

@@ -3,6 +3,7 @@ package application
 import (
 	"encoding/json"
 
+	"github.com/wailsapp/wails/v3/pkg/application/monitor"
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -41,6 +42,24 @@ func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Windo
 		if window != nil {
 			event.Sender = window.Name()
 		}
+
+		// IPC monitor tap: inbound (JS->Go) event.
+		if monitor.Enabled() {
+			var monWindow string
+			if window != nil {
+				monWindow = window.Name()
+			}
+			monitor.Emit(monitor.Trace{
+				Kind:       "event",
+				Dir:        "in",
+				Object:     eventsRequest,
+				ObjectName: "Events",
+				Method:     event.Name,
+				Window:     monWindow,
+				Args:       json.RawMessage(options.Data),
+			})
+		}
+
 		globalApplication.Event.EmitEvent(&event)
 
 		return event.IsCancelled(), nil
