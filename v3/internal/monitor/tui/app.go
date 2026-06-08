@@ -35,6 +35,7 @@ import (
 	"github.com/atterpac/dado/layout"
 	"github.com/atterpac/dado/nav"
 	"github.com/atterpac/dado/theme"
+	"github.com/atterpac/refresh/engine"
 
 	monitor "github.com/wailsapp/wails/v3/internal/monitor"
 )
@@ -89,13 +90,18 @@ type Model struct {
 	toasts    *components.ToastManager
 	actions   *input.ActionRegistry
 
-	live     *liveView
-	events   *eventsView
-	stats    *statsView
-	windows  *windowsView
-	bindings *bindingsView
-	info     *infoView
-	timeline *timelineView
+	processes *processesView
+	live      *liveView
+	events    *eventsView
+	stats     *statsView
+	windows   *windowsView
+	bindings  *bindingsView
+	info      *infoView
+	timeline  *timelineView
+
+	// dev-mode engine integration (set by RunDev).
+	eng   *engine.Engine
+	store *ProcStore
 
 	client   *monitor.Client
 	target   monitor.DiscoveryEntry
@@ -131,10 +137,14 @@ type Model struct {
 	calls, errs, events_, pending, mutedHits int
 }
 
-// Run attaches to the given app instance and runs the TUI until quit.
-func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
+// RunDev runs the TUI for `wails3 dev -tui`. The processes view is the home
+// screen, fed by the refresh engine SDK. As soon as the running app exposes its
+// IPC monitor socket, the TUI attaches and the bindings / events / calls views
+// come alive; it reattaches across reloads (each restart is a new PID/socket).
+func RunDev(ctx context.Context, eng *engine.Engine, store *ProcStore) error {
 	m := &Model{
-		target:    target,
+		eng:       eng,
+		store:     store,
 		byCall:    map[string]*record{},
 		methodAgg: map[string]*methodStat{},
 		muted:     map[string]bool{},
@@ -146,14 +156,101 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 	m.buildApp()
 	m.setup()
 
+	// Engine output / lifecycle changes refresh the processes view + status.
+	store.OnLog = func() {
+		theme.QueueUpdateDraw(func() {
+			if m.processes != nil {
+				m.processes.refreshLog()
+			}
+		})
+	}
+	store.OnEvent = func(ev engine.ProcessEvent) {
+		theme.QueueUpdateDraw(func() {
+			if m.processes != nil {
+				m.processes.rebuild()
+			}
+			if ev.Info.State == engine.StateFailed && ev.Err != nil {
+				m.toasts.Error(ev.Info.Name + ": " + ev.Err.Error())
+			}
+		})
+	}
+
 	streamCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	client, err := monitor.Connect(streamCtx, target.Sock)
-	if err != nil {
-		return fmt.Errorf("failed to attach to %s: %w", target.Sock, err)
+	go m.discoverLoop(streamCtx)
+
+	return m.app.Run()
+}
+
+// discoverLoop watches for the dev app's IPC monitor socket and attaches when it
+// appears, reattaching after each reload.
+//
+// It cannot match on the engine's Primary PID: refresh launches the primary via
+// `/bin/sh -c <cmd>`, so the engine records the SHELL's PID while the app writes
+// its discovery file with its own (child) PID. Instead it ignores any discovery
+// entries that already existed when the TUI started (unrelated apps) and attaches
+// to the newest entry that appears afterward — in dev that is the app we just
+// launched, and on reload the restarted app's socket is new again (the old one's
+// process dies and is pruned by monitor.List).
+func (m *Model) discoverLoop(ctx context.Context) {
+	// Baseline: sockets present before we launched anything.
+	baseline := map[string]bool{}
+	if entries, err := monitor.List(); err == nil {
+		for _, e := range entries {
+			baseline[e.Sock] = true
+		}
 	}
+
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			m.mu.Lock()
+			connected := m.connected
+			m.mu.Unlock()
+			if connected {
+				continue
+			}
+			entries, err := monitor.List()
+			if err != nil {
+				continue
+			}
+			var best *monitor.DiscoveryEntry
+			for i := range entries {
+				if baseline[entries[i].Sock] {
+					continue // pre-existing / unrelated app
+				}
+				if best == nil || entries[i].StartedAt.After(best.StartedAt) {
+					best = &entries[i]
+				}
+			}
+			if best != nil {
+				m.attach(ctx, *best)
+			}
+		}
+	}
+}
+
+// attach connects to a discovered app's monitor socket and starts the trace /
+// snapshot / sample stream goroutines. On disconnect it clears the connected
+// flag so discoverLoop reattaches after the next reload.
+func (m *Model) attach(ctx context.Context, target monitor.DiscoveryEntry) {
+	client, err := monitor.Connect(ctx, target.Sock)
+	if err != nil {
+		return
+	}
+	m.mu.Lock()
 	m.client = client
+	m.target = target
 	m.connected = true
+	m.mu.Unlock()
+	theme.QueueUpdateDraw(func() {
+		m.updateStatus()
+		m.toasts.Success("Attached to " + target.Name)
+	})
 
 	go func() {
 		for {
@@ -161,14 +258,16 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 			case t, ok := <-client.Traces():
 				if !ok {
 					theme.QueueUpdateDraw(func() {
+						m.mu.Lock()
 						m.connected = false
+						m.mu.Unlock()
 						m.updateStatus()
 						m.toasts.Warning("Disconnected from app")
 					})
 					return
 				}
 				theme.QueueUpdateDraw(func() { m.apply(t) })
-			case <-streamCtx.Done():
+			case <-ctx.Done():
 				return
 			}
 		}
@@ -181,7 +280,7 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 					return
 				}
 				theme.QueueUpdateDraw(func() { m.applySnapshot(snap) })
-			case <-streamCtx.Done():
+			case <-ctx.Done():
 				return
 			}
 		}
@@ -194,7 +293,7 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 					return
 				}
 				theme.QueueUpdateDraw(func() { m.applySample(s) })
-			case <-streamCtx.Done():
+			case <-ctx.Done():
 				return
 			}
 		}
@@ -202,7 +301,9 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 	go func() {
 		if e := <-client.Errors(); e != nil {
 			theme.QueueUpdateDraw(func() {
+				m.mu.Lock()
 				m.connected = false
+				m.mu.Unlock()
 				m.updateStatus()
 				m.toasts.Error("stream error: " + e.Error())
 			})
@@ -211,8 +312,6 @@ func Run(ctx context.Context, target monitor.DiscoveryEntry) error {
 
 	// Pull an initial snapshot for the dashboard views.
 	_ = client.Describe()
-
-	return m.app.Run()
 }
 
 // buildApp constructs the shell (status bar, menu, toasts) — qry style.
@@ -251,6 +350,7 @@ func (m *Model) buildApp() {
 func (m *Model) setup() {
 	m.actions = input.NewActionRegistry().
 		AddSimple("help", '?', "Help", m.showHelp).
+		AddSimple("calls", 'l', "Live calls view", m.showLive).
 		AddSimple("events", 'E', "Events view", m.showEvents).
 		AddSimple("stats", 's', "Stats view", m.toggleStats).
 		AddSimple("windows", 'w', "Windows", m.showWindows).
@@ -308,7 +408,21 @@ func (m *Model) setup() {
 		return event
 	})
 
+	// Live is created eagerly (the trace-ingest path mutates it unconditionally)
+	// but the processes view is the home screen for dev mode.
 	m.live = newLiveView(m)
+	m.processes = newProcessesView(m)
+	m.app.Pages().Push(m.processes)
+}
+
+// showLive opens (or toggles) the binding-call Live view. It is no longer the
+// home screen, so it is reachable via the `l` action.
+func (m *Model) showLive() {
+	if m.app.Pages().Current() == m.live && m.app.Pages().CanPop() {
+		m.app.Pages().Pop()
+		return
+	}
+	m.live.rebuild()
 	m.app.Pages().Push(m.live)
 }
 
@@ -545,8 +659,22 @@ func (m *Model) updateStatus() {
 	m.mu.Unlock()
 
 	m.statusBar.ClearSections()
-	m.statusBar.SetConnectionStatus(connected, m.target.Name)
-	m.statusBar.AddSection(layout.StatusSection{Text: fmt.Sprintf("pid %d", m.target.PID), Color: theme.FgDim()})
+	if connected {
+		m.statusBar.SetConnectionStatus(true, m.target.Name)
+		m.statusBar.AddSection(layout.StatusSection{Text: fmt.Sprintf("pid %d", m.target.PID), Color: theme.FgDim()})
+	} else {
+		m.statusBar.SetConnectionStatus(false, "")
+		m.statusBar.AddSection(layout.StatusSection{Text: "monitor: waiting…", Color: theme.FgDim()})
+	}
+
+	// Engine (refresh) pause state, when running under `dev -tui`.
+	if m.eng != nil {
+		if m.eng.Paused() {
+			m.statusBar.AddSection(layout.StatusSection{Text: "⏸ engine paused", Color: theme.Warning()})
+		} else {
+			m.statusBar.AddSection(layout.StatusSection{Text: "▶ engine", Color: theme.Success()})
+		}
+	}
 	if paused {
 		m.statusBar.AddSection(layout.StatusSection{Text: "❚❚ paused", Color: theme.Warning()})
 	} else {
