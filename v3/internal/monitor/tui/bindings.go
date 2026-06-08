@@ -40,9 +40,12 @@ func newBindingsView(m *Model) *bindingsView {
 		AddItem(v.detail, 4, 0, false).
 		AddItem(v.body, 0, 1, false)
 
+	tablePanel := components.NewPanel().SetTitle("Bindings").SetContent(v.table).SetFocused(true)
+	detailPanel := components.NewPanel().SetTitle("Detail").SetContent(detailPane)
+
 	v.split = components.NewSplit()
 	v.split.SetDirection(components.SplitHorizontal).SetRatio(0.5).
-		SetLeft(v.table).SetRight(detailPane)
+		SetLeft(tablePanel).SetRight(detailPanel)
 
 	v.table.SetSelectionChangedFunc(func(row, col int) { v.showDetail(row) })
 
@@ -58,7 +61,7 @@ func newBindingsView(m *Model) *bindingsView {
 			v.m.toasts.Info("Refreshing…")
 			return true
 		}
-		return false
+		return vimTableNav(v.table, ev)
 	})
 	return v
 }

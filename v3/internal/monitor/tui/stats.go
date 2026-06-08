@@ -3,6 +3,8 @@ package tui
 import (
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
+
 	"github.com/atterpac/dado/components"
 )
 
@@ -21,13 +23,17 @@ func newStatsView(m *Model) *statsView {
 	v.table.SetHeaders("METHOD", "CALLS", "ERRORS", "AVG", "ERR%")
 	v.table.ConfigureEmpty("∅", "No data yet", "Stats appear as binding calls are made")
 
-	v.ComponentBase = components.NewComponentBase(v.table).
+	v.ComponentBase = components.NewComponentBase(
+		components.NewPanel().SetTitle("Stats").SetContent(v.table).SetFocused(true)).
 		SetName("Stats").
 		AddHint("j/k", "Move").
 		AddHint("s", "Back").
 		AddHint("c", "Clear").
 		AddHint("q", "Back").
 		SetOnStart(v.rebuild)
+	v.ComponentBase.SetInputHandler(func(ev *tcell.EventKey) bool {
+		return vimTableNav(v.table, ev)
+	})
 	return v
 }
 

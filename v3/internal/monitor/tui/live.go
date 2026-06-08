@@ -38,9 +38,12 @@ func newLiveView(m *Model) *liveView {
 		AddItem(v.detail, 6, 0, false).
 		AddItem(v.body, 0, 1, false)
 
+	tablePanel := components.NewPanel().SetTitle("Calls").SetContent(v.table).SetFocused(true)
+	detailPanel := components.NewPanel().SetTitle("Detail").SetContent(detailPane)
+
 	v.split = components.NewSplit()
 	v.split.SetDirection(components.SplitHorizontal).SetRatio(0.55).
-		SetLeft(v.table).SetRight(detailPane)
+		SetLeft(tablePanel).SetRight(detailPanel)
 
 	v.table.SetSelectionChangedFunc(func(row, col int) { v.showDetailForRow(row) })
 
@@ -89,7 +92,7 @@ func (v *liveView) handleKey(ev *tcell.EventKey) bool {
 		v.m.updateStatus()
 		return true
 	}
-	return false // delegate to table for j/k
+	return vimTableNav(v.table, ev)
 }
 
 // isScrollUpKey reports whether the event moves the selection toward older rows.
