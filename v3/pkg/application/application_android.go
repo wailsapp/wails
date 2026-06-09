@@ -139,6 +139,7 @@ static void executeJavaScriptOnBridge(const char* js) {
 import "C"
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -169,6 +170,10 @@ var (
 	// App ready signal
 	appReady     = make(chan struct{})
 	appReadyOnce sync.Once
+
+	// Global message processor for handling runtime calls via JNI bridge
+	globalMessageProc     *MessageProcessor
+	globalMessageProcLock sync.RWMutex
 )
 
 func init() {
@@ -220,6 +225,11 @@ func (a *App) platformRun() {
 	globalAppLock.Lock()
 	globalApp = a
 	globalAppLock.Unlock()
+
+	// Initialize the global message processor for Android JNI calls
+	globalMessageProcLock.Lock()
+	globalMessageProc = NewMessageProcessor(a.Logger)
+	globalMessageProcLock.Unlock()
 
 	// Signal that the app is ready to serve requests
 	signalAppReady()
@@ -622,15 +632,71 @@ func serveAssetForAndroid(app *App, path string) ([]byte, error) {
 }
 
 func handleMessageForAndroid(app *App, message string) string {
-	// Parse the message
-	var msg map[string]interface{}
-	if err := json.Unmarshal([]byte(message), &msg); err != nil {
+	// Some messages are plain strings (e.g. "wails:runtime:ready"), not JSON.
+	// The JS bridge sends: typeof m==='string' ? m : JSON.stringify(m)
+	if len(message) == 0 || message[0] != '{' {
+		androidLogf("debug", "🤖 [handleMessageForAndroid] Non-JSON message: %s", message)
+
+		if message == "wails:runtime:ready" {
+			windows := app.Window.GetAll()
+			for _, win := range windows {
+				if ww, ok := win.(*WebviewWindow); ok {
+					ww.pendingJSMutex.Lock()
+					ww.runtimeLoaded = true
+					pending := ww.pendingJS
+					ww.pendingJS = nil
+					ww.pendingJSMutex.Unlock()
+					for _, js := range pending {
+						executeJavaScript(js)
+					}
+				}
+			}
+		}
+
+		return `{"success":true}`
+	}
+
+	var req RuntimeRequest
+	if err := json.Unmarshal([]byte(message), &req); err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Failed to parse: %v", err)
 		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
 	}
 
-	// TODO: Route to appropriate handler based on message type
-	// For now, return success
-	return `{"success":true}`
+	// Fill in a window ID if none was provided (Android typically has one window)
+	if req.WebviewWindowID == 0 && req.WebviewWindowName == "" {
+		windows := app.Window.GetAll()
+		if len(windows) > 0 {
+			req.WebviewWindowID = uint32(windows[0].ID())
+		}
+	}
+
+	globalMessageProcLock.RLock()
+	messageProc := globalMessageProc
+	globalMessageProcLock.RUnlock()
+
+	if messageProc == nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] MessageProcessor not initialized")
+		return `{"error":"MessageProcessor not initialized"}`
+	}
+
+	androidLogf("debug", "🤖 [handleMessageForAndroid] Calling HandleRuntimeCallWithIDs: object=%d method=%d windowID=%d", req.Object, req.Method, req.WebviewWindowID)
+	ctx := context.Background()
+	result, err := messageProc.HandleRuntimeCallWithIDs(ctx, &req)
+	if err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Error: %v", err)
+		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	}
+
+	if result == nil {
+		return `{"success":true}`
+	}
+
+	resp, err := json.Marshal(result)
+	if err != nil {
+		androidLogf("error", "🤖 [handleMessageForAndroid] Marshal error: %v", err)
+		return fmt.Sprintf(`{"error":"%s"}`, err.Error())
+	}
+	return string(resp)
 }
 
 func getMimeTypeForPath(path string) string {

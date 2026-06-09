@@ -157,9 +157,11 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 		}
 	}()
 
-	if _, err := io.Copy(buf, r.Body); err != nil {
-		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
-		return
+	if r.Body != nil {
+		if _, err := io.Copy(buf, r.Body); err != nil {
+			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
+			return
+		}
 	}
 
 	t.processBody(rw, r, buf.Bytes())

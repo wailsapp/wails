@@ -64,7 +64,25 @@ export {
     clientId,
 } from "./runtime.js";
 
-import { clientId } from "./runtime.js";
+import { clientId, setTransport } from "./runtime.js";
+
+// On Android, route runtime calls through the JNI bridge instead of HTTP fetch
+// because Android's shouldInterceptRequest cannot access POST bodies.
+if ((window as any).wails?.invoke) {
+    setTransport({
+        call: async (objectID: number, method: number, windowName: string, args: any) => {
+            const body: any = { object: objectID, method };
+            if (args !== null && args !== undefined) {
+                body.args = args;
+            }
+            const responseStr = (window as any).wails.invoke(JSON.stringify(body));
+            if (typeof responseStr === "string" && responseStr.length > 0) {
+                try { return JSON.parse(responseStr); } catch { return responseStr; }
+            }
+            return responseStr;
+        }
+    });
+}
 
 // Notify backend
 window._wails.invoke = System.invoke;
