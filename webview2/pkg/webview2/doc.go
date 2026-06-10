@@ -12,8 +12,11 @@
 //	go run ./cmd/webview2gen verify   # CI will fail otherwise
 //
 // Capability-aware feature gating lives in capabilities.go; consumers
-// should call SupportsInterface or HasCapability before invoking methods
-// that are only present on newer WebView2 runtime versions.
+// should call SupportsInterface before invoking methods that are only
+// present on newer WebView2 runtime versions, passing the browser version
+// reported by GetAvailableCoreWebView2BrowserVersionString.
 package webview2
 
-//go:generate go run ../../scripts/cmd/webview2gen full
+// The generator lives in its own module and expects to run from inside
+// webview2/scripts (where the IDL cache sits), hence go run -C.
+//go:generate go run -C ../../scripts ./cmd/webview2gen full --source test.md

@@ -175,14 +175,71 @@ func runGenerate(args []string) error {
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
+
+	// Incremental write: only touch files whose content actually changed, so
+	// repeated runs are cheap, file mtimes stay stable for build caching, and
+	// the diff after an SDK bump contains exactly the real changes.
+	written, unchanged := 0, 0
+	expected := map[string]bool{}
 	for _, f := range files {
+		expected[f.FileName] = true
 		path := filepath.Join(*out, f.FileName)
-		if err := os.WriteFile(path, normalizeNewlines(f.Content.Bytes()), 0o644); err != nil {
+		content := normalizeNewlines(f.Content.Bytes())
+		if old, err := os.ReadFile(path); err == nil && bytes.Equal(normalizeNewlines(old), content) {
+			unchanged++
+			continue
+		}
+		if err := os.WriteFile(path, content, 0o644); err != nil {
 			return fmt.Errorf("write %s: %w", path, err)
 		}
+		written++
 	}
-	fmt.Fprintf(os.Stderr, "generated %d files in %s from SDK %s\n", len(files), *out, v)
+
+	// Remove generated files the current IDL no longer produces, applying the
+	// same exclusions as verify (separately-emitted and hand-written files).
+	stale, err := staleGeneratedFiles(*out, expected)
+	if err != nil {
+		return err
+	}
+	for _, name := range stale {
+		path := filepath.Join(*out, name)
+		if err := os.Remove(path); err != nil {
+			return fmt.Errorf("remove stale %s: %w", path, err)
+		}
+		fmt.Fprintf(os.Stderr, "removed stale file: %s\n", path)
+	}
+
+	fmt.Fprintf(os.Stderr, "generated %d files in %s from SDK %s (%d written, %d unchanged, %d removed)\n",
+		len(files), *out, v, written, unchanged, len(stale))
 	return nil
+}
+
+// generatedFileExclusions are .go files in the output directory that the
+// `generate` subcommand does not produce and must never delete or flag:
+// capabilities.go comes from the `capabilities` subcommand, doc.go is the
+// only hand-written file in the package, and *_test.go files are managed by
+// the `tests` emission. Shared by generate (stale removal) and verify.
+func isExcludedGeneratedFile(name string) bool {
+	return name == "capabilities.go" || name == "doc.go" || strings.HasSuffix(name, "_test.go")
+}
+
+func staleGeneratedFiles(dir string, expected map[string]bool) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("read output dir: %w", err)
+	}
+	var stale []string
+	for _, e := range entries {
+		name := e.Name()
+		if !strings.HasSuffix(name, ".go") || isExcludedGeneratedFile(name) {
+			continue
+		}
+		if !expected[name] {
+			stale = append(stale, name)
+		}
+	}
+	sort.Strings(stale)
+	return stale, nil
 }
 
 // normalizeNewlines collapses CRLF to LF. text/template preserves whatever
@@ -298,7 +355,7 @@ func runTest(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	testArgs := []string{"test", "./generator/...", "./internal/..."}
+	testArgs := []string{"test", "./..."}
 	if *verbose {
 		testArgs = append(testArgs, "-v")
 	}
@@ -349,25 +406,12 @@ func runVerify(args []string) error {
 	}
 
 	// Look for committed files that the generator no longer produces.
-	// capabilities.go is emitted separately and shouldn't be flagged.
-	entries, err := os.ReadDir(*out)
+	stale, err := staleGeneratedFiles(*out, expected)
 	if err != nil {
-		return fmt.Errorf("read output dir: %w", err)
+		return err
 	}
-	for _, e := range entries {
-		name := e.Name()
-		if !strings.HasSuffix(name, ".go") {
-			continue
-		}
-		// capabilities.go is emitted by the `capabilities` subcommand;
-		// doc.go is the only hand-written file in the package. Neither
-		// is produced by `generate` so they must be excluded here.
-		if name == "capabilities.go" || name == "doc.go" || strings.HasSuffix(name, "_test.go") {
-			continue
-		}
-		if !expected[name] {
-			diffs = append(diffs, fmt.Sprintf("unexpected committed file: %s", filepath.Join(*out, name)))
-		}
+	for _, name := range stale {
+		diffs = append(diffs, fmt.Sprintf("unexpected committed file: %s", filepath.Join(*out, name)))
 	}
 
 	if len(diffs) > 0 {
@@ -381,18 +425,37 @@ func runVerify(args []string) error {
 	return nil
 }
 
+// runFull chains download → generate → capabilities → verify. Each step has
+// its own flag set, so full parses a shared superset once and forwards only
+// the flags each step understands — passing raw args through verbatim breaks
+// any step that doesn't define one of them.
 func runFull(args []string) error {
+	fs := flag.NewFlagSet("full", flag.ContinueOnError)
+	version := fs.String("version", "", "SDK version to download/generate (default: latest cached)")
+	dir := fs.String("dir", IDLDir, "IDL cache directory")
+	out := fs.String("out", OutputDir, "output directory for generated bindings")
+	source := fs.String("source", "", "release-notes markdown file for capabilities (default: fetch from MicrosoftDocs)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	common := []string{"-version", *version, "-dir", *dir}
+	capArgs := append([]string{"-out", *out}, common...)
+	if *source != "" {
+		capArgs = append(capArgs, "-source", *source)
+	}
 	for _, step := range []struct {
 		name string
 		fn   func([]string) error
+		args []string
 	}{
-		{"download", runDownload},
-		{"generate", runGenerate},
-		{"capabilities", runCapabilities},
-		{"verify", runVerify},
+		{"download", runDownload, common},
+		{"generate", runGenerate, append([]string{"-out", *out}, common...)},
+		{"capabilities", runCapabilities, capArgs},
+		{"verify", runVerify, append([]string{"-out", *out}, common...)},
 	} {
 		fmt.Fprintf(os.Stderr, "==> %s\n", step.name)
-		if err := step.fn(args); err != nil {
+		if err := step.fn(step.args); err != nil {
 			return fmt.Errorf("%s: %w", step.name, err)
 		}
 	}
