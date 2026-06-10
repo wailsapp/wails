@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/png" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Wails Mobile Kitchen Sink</title>
+</head>
+<body>
+<div id="app">
+    <header class="app-header">
+        <img src="/wails.png" class="logo" alt="Wails"/>
+        <div>
+            <h1>Kitchen Sink</h1>
+            <p class="subtitle">Platform: <span id="platform" class="badge">…</span></p>
+        </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="bindings">Bindings</button>
+        <button class="tab" data-tab="events">Events</button>
+        <button class="tab" data-tab="dialogs">Dialogs</button>
+        <button class="tab" data-tab="system">System</button>
+        <button class="tab" data-tab="native">Native</button>
+    </nav>
+
+    <main>
+        <!-- Bindings: JS -> Go calls -->
+        <section class="pane active" id="pane-bindings">
+            <h2>Service bindings</h2>
+            <p class="hint">Call Go methods from JS and get typed results back.</p>
+            <div class="row">
+                <input id="greetName" placeholder="Your name" autocomplete="off"/>
+                <button class="btn primary" id="btnGreet">Greet</button>
+            </div>
+            <div class="row">
+                <input id="addA" type="number" value="2" inputmode="numeric"/>
+                <span class="op">+</span>
+                <input id="addB" type="number" value="3" inputmode="numeric"/>
+                <button class="btn" id="btnAdd">Add</button>
+            </div>
+            <div class="row">
+                <input id="divA" type="number" value="10" inputmode="decimal"/>
+                <span class="op">÷</span>
+                <input id="divB" type="number" value="0" inputmode="decimal"/>
+                <button class="btn" id="btnDivide">Divide</button>
+            </div>
+            <pre id="bindingsOut" class="output">Results appear here…</pre>
+        </section>
+
+        <!-- Events: Go <-> JS -->
+        <section class="pane" id="pane-events">
+            <h2>Events</h2>
+            <p class="hint">Go emits a <code>time</code> event every second (Go → JS).</p>
+            <div class="clock" id="clock">waiting for first tick…</div>
+            <p class="hint">Send a <code>ping</code> to Go; it replies with <code>pong</code> (JS → Go → JS).</p>
+            <button class="btn primary" id="btnPing">Send ping</button>
+            <pre id="eventsOut" class="output">No pong yet…</pre>
+        </section>
+
+        <!-- Dialogs -->
+        <section class="pane" id="pane-dialogs">
+            <h2>Native dialogs</h2>
+            <p class="hint">Backed by UIAlertController (iOS) / AlertDialog (Android).</p>
+            <div class="grid">
+                <button class="btn" id="btnInfo">Info</button>
+                <button class="btn" id="btnWarning">Warning</button>
+                <button class="btn" id="btnError">Error</button>
+                <button class="btn primary" id="btnQuestion">Question</button>
+            </div>
+            <pre id="dialogsOut" class="output">Dialog results appear here…</pre>
+        </section>
+
+        <!-- System: clipboard, screens, device info -->
+        <section class="pane" id="pane-system">
+            <h2>Clipboard</h2>
+            <div class="row">
+                <input id="clipText" value="wails ❤️ mobile"/>
+                <button class="btn" id="btnClipSet">Copy</button>
+                <button class="btn" id="btnClipGet">Paste</button>
+            </div>
+            <pre id="clipOut" class="output">Clipboard value appears here…</pre>
+
+            <h2>Screen</h2>
+            <button class="btn" id="btnScreens">Get screen metrics</button>
+            <pre id="screensOut" class="output">Screen metrics appear here…</pre>
+
+            <h2>Device</h2>
+            <button class="btn" id="btnDevice">Get device info</button>
+            <pre id="deviceOut" class="output">Device info appears here…</pre>
+        </section>
+
+        <!-- Native: platform-specific -->
+        <section class="pane" id="pane-native">
+            <h2>Platform features</h2>
+            <p class="hint" id="nativeHint">…</p>
+
+            <!-- iOS-only -->
+            <div class="platform-only" data-platform="ios">
+                <div class="grid">
+                    <button class="btn" data-haptic="light">Haptic: light</button>
+                    <button class="btn" data-haptic="medium">Haptic: medium</button>
+                    <button class="btn" data-haptic="heavy">Haptic: heavy</button>
+                </div>
+                <label class="switch"><input type="checkbox" id="iosScroll" checked/> Scroll enabled</label>
+                <label class="switch"><input type="checkbox" id="iosBounce" checked/> Bounce enabled</label>
+            </div>
+
+            <!-- Android-only -->
+            <div class="platform-only" data-platform="android">
+                <div class="grid">
+                    <button class="btn" id="btnVibrate">Vibrate</button>
+                    <button class="btn primary" id="btnToast">Show toast</button>
+                </div>
+            </div>
+
+            <!-- Desktop -->
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">Native mobile features are available when running on iOS or Android.</p>
+            </div>
+            <pre id="nativeOut" class="output"></pre>
+        </section>
+    </main>
+
+    <footer class="app-footer">Built with Wails v3</footer>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
+</html>
