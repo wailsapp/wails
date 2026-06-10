@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+- Fix compile errors in the experimental purego Linux assetserver backend: leftover cgo code, `RegisterLibFunc` calls registering into the wrong function variables, soup symbols resolved through the wrong library handle, and a stale `Finish()` signature that no longer satisfied the `ResponseWriter` interface (#5550)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
