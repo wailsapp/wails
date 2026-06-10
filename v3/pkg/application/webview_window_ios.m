@@ -29,12 +29,10 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     return self;
 }
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
-    NSURL *url = urlSchemeTask.request.URL;
-    NSLog(@"[WailsSchemeHandler] start task: %@", url.absoluteString);
     ServeAssetRequest(self.windowID, (__bridge void*)urlSchemeTask);
 }
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
-    NSLog(@"[WailsSchemeHandler] stop task");
+    WailsVLog(@"[WailsSchemeHandler] stop task");
 }
 @end
 // MARK: - WailsMessageHandler
@@ -141,9 +139,10 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         @try { [self.webView setValue:@(inspectorOn) forKey:@"inspectable"]; } @catch (__unused NSException *e) {}
     }
     [self.view addSubview:self.webView];
-    // Initial load triggers our scheme handler
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"wails://localhost/"]];
-    [self.webView loadRequest:request];
+    // NOTE: no initial loadRequest here. The Go side performs the single
+    // initial navigation (iosWebviewWindow.run -> setURL); a hardcoded load
+    // here caused the page to load twice and lose the runtime-ready
+    // handshake in the overlap.
     // Flush any pending console logs now that a webview exists
     dispatch_async(dispatch_get_main_queue(), ^{
         if (pendingConsoleJS.count > 0) {
@@ -155,7 +154,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     });
     // Enable native tabs if globally enabled
     BOOL tabsEnabled = ios_native_tabs_is_enabled();
-    NSLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
+    WailsVLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
     if (tabsEnabled) {
         [self enableNativeTabs:YES];
     }
@@ -181,7 +180,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
 }
 - (void)enableNativeTabs:(BOOL)enabled {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
+        WailsVLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
         if (enabled) {
             if (!self.tabBar) {
                 UITabBar *tb = [[UITabBar alloc] init];
@@ -206,7 +205,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                         id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
                         if (!err && [obj isKindOfClass:[NSArray class]]) {
                             NSArray *arr = (NSArray*)obj;
-                            NSLog(@"[WailsViewController] Building tab items from JSON, count=%lu", (unsigned long)arr.count);
+                            WailsVLog(@"[WailsViewController] Building tab items from JSON, count=%lu", (unsigned long)arr.count);
                             items = [NSMutableArray arrayWithCapacity:arr.count];
                             NSInteger tag = 0;
                             for (id entry in arr) {
@@ -229,13 +228,13 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                         }
                     }
                     else {
-                        NSLog(@"[WailsViewController] NativeTabsItems JSON string is empty");
+                        WailsVLog(@"[WailsViewController] NativeTabsItems JSON string is empty");
                     }
                 }
                 if (items != nil && items.count > 0) {
                     tb.items = items;
                     tb.selectedItem = items.firstObject;
-                    NSLog(@"[WailsViewController] TabBar created with %lu item(s) from config", (unsigned long)items.count);
+                    WailsVLog(@"[WailsViewController] TabBar created with %lu item(s) from config", (unsigned long)items.count);
                 } else {
                     // Default 3 items
                     UITabBarItem *item0 = [[UITabBarItem alloc] initWithTitle:@"Bindings" image:nil tag:0];
@@ -243,23 +242,23 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                     UITabBarItem *item2 = [[UITabBarItem alloc] initWithTitle:@"JS Runtime" image:nil tag:2];
                     tb.items = @[item0, item1, item2];
                     tb.selectedItem = item0;
-                    NSLog(@"[WailsViewController] TabBar created with default items (3)" );
+                    WailsVLog(@"[WailsViewController] TabBar created with default items (3)" );
                 }
                 self.tabBar = tb;
                 [self.view addSubview:self.tabBar];
-                NSLog(@"[WailsViewController] TabBar added as subview");
+                WailsVLog(@"[WailsViewController] TabBar added as subview");
             }
             self.tabBar.hidden = NO;
-            NSLog(@"[WailsViewController] TabBar set hidden=NO");
+            WailsVLog(@"[WailsViewController] TabBar set hidden=NO");
         } else {
             if (self.tabBar) {
                 self.tabBar.hidden = YES;
-                NSLog(@"[WailsViewController] TabBar set hidden=YES");
+                WailsVLog(@"[WailsViewController] TabBar set hidden=YES");
             }
         }
         [self.view setNeedsLayout];
         [self.view layoutIfNeeded];
-        NSLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
+        WailsVLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
     });
 }
 - (void)selectNativeTabIndex:(NSInteger)index {
@@ -325,8 +324,7 @@ unsigned int ios_create_webview(void) {
         if (!appDelegate.viewControllers) appDelegate.viewControllers = [NSMutableArray array];
         [appDelegate.viewControllers addObject:vc];
         appDelegate.window.rootViewController = vc;
-        [vc loadView];
-        [vc viewDidLoad];
+        [vc loadViewIfNeeded];
     });
     return windowID;
 }
@@ -423,8 +421,6 @@ void ios_console_log(const char* level, const char* message) {
         for (WailsViewController *vc in appDelegate.viewControllers) {
             [vc.webView evaluateJavaScript:js completionHandler:nil];
         }
-        // Helpful native debug: number of inspectors/webviews
-        NSLog(@"[ios_console_log] Delivered log to %lu webview(s)", (unsigned long)count);
     });
 }
 // Set background color (applies to VC view, WKWebView, and app window)

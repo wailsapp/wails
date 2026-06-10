@@ -1,3 +1,5 @@
+//go:build darwin && !ios
+
 #import "notifications_darwin.h"
 #include <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>

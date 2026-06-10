@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -x objective-c -fobjc-arc
-#cgo LDFLAGS: -framework Foundation -framework UIKit -framework WebKit
+#cgo LDFLAGS: -framework Foundation -framework UIKit -framework WebKit -framework UniformTypeIdentifiers
 
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +17,7 @@ import "C"
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 	"unsafe"
 
@@ -35,47 +36,60 @@ func iosConsoleLogf(level string, format string, a ...interface{}) {
 	C.ios_console_log(clevel, cmsg)
 }
 
-func init() {
-	iosConsoleLogf("info", "🔵 [application_ios.go] START init()")
-	// For iOS, we need to handle signals differently
-	// Disable signal handling to avoid conflicts with iOS
-	// DO NOT call runtime.LockOSThread() - it causes signal handling issues on iOS!
-	iosConsoleLogf("info", "🔵 [application_ios.go] Skipping runtime.LockOSThread() on iOS")
-
-	// Disable all signal handling on iOS
-	// iOS apps run in a sandboxed environment where signal handling is restricted
-	iosConsoleLogf("info", "🔵 [application_ios.go] END init()")
+// iosDebugLogf is for the framework's internal diagnostics. It compiles to a
+// no-op in production builds (see ios_logging_production.go).
+func iosDebugLogf(format string, a ...interface{}) {
+	if iosVerboseLogging {
+		iosConsoleLogf("debug", format, a...)
+	}
 }
 
 //export init_go
 func init_go() {
-	iosConsoleLogf("info", "🔵 [application_ios.go] init_go() called from iOS")
-	// This is called from the iOS main function
-	// to initialize the Go runtime
+	// Called from the iOS main function to initialize the Go runtime.
+}
+
+// iosLaunched is closed when UIApplicationDelegate's
+// didFinishLaunchingWithOptions fires, signalling that UIKit is ready.
+var (
+	iosLaunched     = make(chan struct{})
+	iosLaunchedOnce sync.Once
+)
+
+//export iosApplicationDidLaunch
+func iosApplicationDidLaunch() {
+	iosLaunchedOnce.Do(func() {
+		close(iosLaunched)
+	})
 }
 
 func (a *App) platformRun() {
-	iosConsoleLogf("info", "🔵 [application_ios.go] START platformRun()")
+	iosDebugLogf("[application_ios.go] platformRun: initialising")
 
-	iosConsoleLogf("info", "🔵 [application_ios.go] platformRun called, initializing...")
+	// Propagate the logging verbosity to the native layer.
+	C.ios_set_verbose_logging(C.bool(iosVerboseLogging))
 
-	// Initialize what we need for the Go side
-	iosConsoleLogf("info", "🔵 [application_ios.go] About to call C.ios_app_init()")
 	C.ios_app_init()
-	iosConsoleLogf("info", "🔵 [application_ios.go] C.ios_app_init() returned")
 
-	// Wait a bit for the UI to be ready (UIApplicationMain is running in main thread)
-	// The app delegate's didFinishLaunchingWithOptions will be called
-	iosConsoleLogf("info", "🔵 [application_ios.go] Waiting for UI to be ready...")
-	time.Sleep(2 * time.Second) // Give the app delegate time to initialize
+	// Wait until the UIApplication delegate has finished launching.
+	// UIApplicationMain runs on the main thread (started from main.m); the
+	// delegate signals readiness via iosApplicationDidLaunch. The timeout is a
+	// safety net only - it should never be hit in practice.
+	select {
+	case <-iosLaunched:
+		iosDebugLogf("[application_ios.go] UIKit launch signal received")
+	case <-time.After(10 * time.Second):
+		iosConsoleLogf("warn", "[application_ios.go] Timed out waiting for UIKit launch signal; continuing")
+	}
 
-	// The WebView will be created when the window runs (via app.Window.NewWithOptions in main.go)
-	iosConsoleLogf("info", "🔵 [application_ios.go] WebView creation will be handled by window manager")
+	// Emit the launch event from here rather than the delegate: by this point
+	// setupCommonEvents has registered its listeners, so the event (and its
+	// Common.ApplicationStarted mapping) cannot be dropped by startup races.
+	applicationEvents <- newApplicationEvent(events.IOS.ApplicationDidFinishLaunching)
 
-	// UIApplicationMain is running in the main thread (called from main.m)
-	// We just need to keep the Go runtime alive
-	iosConsoleLogf("info", "🔵 [application_ios.go] Blocking to keep Go runtime alive...")
-	select {} // Block forever
+	// The WebView is created when the window runs (app.Window.NewWithOptions).
+	// UIApplicationMain owns the main thread; keep the Go runtime alive here.
+	select {}
 }
 
 func (a *App) platformQuit() {
@@ -95,11 +109,10 @@ func LogInfo(source *C.char, message *C.char) {
 	goSource := C.GoString(source)
 	goMessage := C.GoString(message)
 
-	// Add iOS marker for HTML logger
-	iosConsoleLogf("info", "[iOS-%s] %s", goSource, goMessage)
-
 	if globalApplication != nil && globalApplication.Logger != nil {
 		globalApplication.info("iOS log", "source", goSource, "message", goMessage)
+	} else {
+		iosDebugLogf("[iOS-%s] %s", goSource, goMessage)
 	}
 }
 
@@ -115,8 +128,6 @@ type iosApp struct {
 // native tabs (marshaling items to JSON when enabled). The function invokes
 // platform bindings to apply these settings and returns the configured *iosApp.
 func newPlatformApp(app *App) *iosApp {
-	iosConsoleLogf("info", "🔵 [application_ios.go] START newPlatformApp()")
-	// iOS initialization
 	result := &iosApp{
 		parent: app,
 	}
@@ -127,7 +138,6 @@ func newPlatformApp(app *App) *iosApp {
 		disable = app.options.IOS.DisableInputAccessoryView
 	}
 	C.ios_set_disable_input_accessory(C.bool(disable))
-	iosConsoleLogf("info", "🔵 [application_ios.go] Input accessory view %s", map[bool]string{true: "DISABLED", false: "ENABLED"}[disable])
 
 	// Scrolling / Bounce / Indicators (defaults enabled; using Disable* flags)
 	C.ios_set_disable_scroll(C.bool(app.options.IOS.DisableScroll))
@@ -182,28 +192,22 @@ func newPlatformApp(app *App) *iosApp {
 		C.ios_native_tabs_set_enabled(C.bool(true))
 	}
 
-	iosConsoleLogf("info", "🔵 [application_ios.go] END newPlatformApp() - iosApp created")
 	return result
 }
 
 func (a *iosApp) run() error {
-	iosConsoleLogf("info", "🔵 [application_ios.go] START iosApp.run()")
-
-	// Initialize and create the WebView
-	// UIApplicationMain is already running in the main thread (from main.m)
+	// UIApplicationMain is already running in the main thread (from main.m).
 	// Wire common events (e.g. map ApplicationDidFinishLaunching → Common.ApplicationStarted)
 	a.setupCommonEvents()
-	iosConsoleLogf("info", "🔵 [application_ios.go] About to call parent.platformRun()")
 	a.parent.platformRun()
 
 	// platformRun blocks forever with select{}
 	// If we get here, something went wrong
-	iosConsoleLogf("error", "🔵 [application_ios.go] ERROR: platformRun() returned unexpectedly")
+	iosConsoleLogf("error", "[application_ios.go] ERROR: platformRun() returned unexpectedly")
 	return nil
 }
 
 func (a *iosApp) destroy() {
-	iosConsoleLogf("info", "🔵 [application_ios.go] iosApp.destroy() called")
 	// Cleanup iOS resources
 }
 
@@ -241,8 +245,8 @@ func (a *iosApp) isDarkMode() bool {
 
 // isOnMainThread is implemented in mainthread_ios.go
 
-func (a *iosApp) on(_ uint) {
-	// iOS event handling
+func (a *iosApp) on(eventID uint) {
+	registerIOSListener(eventID)
 }
 
 func (a *iosApp) setApplicationMenu(_ *Menu) {
@@ -290,40 +294,35 @@ func (a *App) ExecuteJavaScript(windowID uint, js string) {
 	C.ios_execute_javascript(C.uint(windowID), cjs)
 }
 
+// iosRuntimeReadyWindows tracks windows for which a synthetic
+// "wails:runtime:ready" has been injected (see ServeAssetRequest).
+var iosRuntimeReadyWindows sync.Map
+
 // ServeAssetRequest handles requests from the WebView
 //
 //export ServeAssetRequest
 func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
-	iosConsoleLogf("info", "[iOS-ServeAssetRequest] 🔵 Called with windowID=%d", windowID)
-
 	// Route the request through the webviewRequests channel to use the asset server
 	go func() {
-		iosConsoleLogf("info", "[iOS-ServeAssetRequest] 🔵 Inside goroutine")
-
 		// Use the webview package's NewRequest to wrap the task pointer
 		req := webview.NewRequest(urlSchemeTask)
 		url, _ := req.URL()
 
-		// Log every single request with clear markers
-		iosConsoleLogf("info", "===============================================")
-		iosConsoleLogf("info", "[iOS-REQUEST] 🌐 RECEIVED REQUEST FOR: %s", url)
-		iosConsoleLogf("info", "===============================================")
+		iosDebugLogf("[iOS-request] %s (window %d)", url, windowID)
 
-		// Special CSS logging with big markers
-		if strings.Contains(url, ".css") || strings.Contains(url, "style") {
-			iosConsoleLogf("warn", "🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨")
-			iosConsoleLogf("warn", "[iOS-CSS] CSS FILE REQUESTED: %s", url)
-			iosConsoleLogf("warn", "🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨")
-		}
-
-		// Log images separately
-		if strings.Contains(url, ".png") || strings.Contains(url, ".jpg") || strings.Contains(url, ".svg") {
-			iosConsoleLogf("info", "[iOS-IMAGE] 🇼 %s", url)
-		}
-
-		// Log JS files
-		if strings.Contains(url, ".js") {
-			iosConsoleLogf("info", "[iOS-JS] ⚙️ %s", url)
+		// The JavaScript runtime announces itself with a
+		// "wails:runtime:ready" postMessage, but a message posted during the
+		// initial page load can be dropped by WebKit before the bridge is
+		// fully up. A call to /wails/runtime proves the runtime is mounted,
+		// so treat the first one as an implicit ready signal. processMessage
+		// handles duplicate ready messages gracefully.
+		if strings.Contains(url, "/wails/runtime") {
+			if _, alreadyReady := iosRuntimeReadyWindows.LoadOrStore(uint(windowID), true); !alreadyReady {
+				windowMessageBuffer <- &windowMessage{
+					windowId: uint(windowID),
+					message:  "wails:runtime:ready",
+				}
+			}
 		}
 
 		// Try to resolve the window name from the window ID so the AssetServer
@@ -332,12 +331,7 @@ func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
 		if globalApplication != nil {
 			if window, ok := globalApplication.Window.GetByID(uint(windowID)); ok && window != nil {
 				winName = window.Name()
-			} else {
-				iosConsoleLogf("warn", "[iOS-ServeAssetRequest] 🟠 Could not resolve window name for id=%d", windowID)
 			}
-		}
-		if winName != "" {
-			iosConsoleLogf("info", "[iOS-ServeAssetRequest] ✅ Resolved window name: %s (id=%d)", winName, windowID)
 		}
 
 		request := &webViewAssetRequest{
@@ -347,9 +341,7 @@ func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
 		}
 
 		// Send through the channel to be handled by the asset server
-		iosConsoleLogf("info", "[iOS-ServeAssetRequest] 🔵 Sending to webviewRequests channel")
 		webviewRequests <- request
-		iosConsoleLogf("info", "[iOS-ServeAssetRequest] 🔵 Request sent to channel successfully")
 	}()
 }
 
@@ -358,69 +350,27 @@ func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
 //export HandleJSMessage
 func HandleJSMessage(windowID C.uint, message *C.char) {
 	msg := C.GoString(message)
-
-	// Try to parse as JSON first
-	var msgData map[string]interface{}
-	if err := json.Unmarshal([]byte(msg), &msgData); err == nil && msgData != nil {
-		if name, ok := msgData["name"].(string); ok && name != "" {
-			// Special handling for asset debug messages
-			if name == "asset-debug" {
-				if data, ok := msgData["data"].(map[string]interface{}); ok {
-					iosConsoleLogf("info", "🔍 CLIENT ASSET DEBUG: %s %s - %s (status: %v)",
-						data["type"], data["name"], data["src"], data["status"])
-					if contentType, ok := data["contentType"].(map[string]interface{}); ok {
-						iosConsoleLogf("info", "🔍 CLIENT CONTENT-TYPE: %s = %v", data["name"], contentType)
-					}
-					if code, ok := data["code"].(map[string]interface{}); ok {
-						iosConsoleLogf("info", "🔍 CLIENT HTTP CODE: %s = %v", data["name"], code)
-					}
-					if errorMsg, ok := data["error"].(map[string]interface{}); ok {
-						iosConsoleLogf("error", "🔍 CLIENT ERROR: %s = %v", data["name"], errorMsg)
-					}
-				}
-				return // Don't send asset-debug messages to the main event system
-			}
-
-			if globalApplication != nil {
-				globalApplication.info("HandleJSMessage received from client", "name", name)
-			}
-			windowMessageBuffer <- &windowMessage{
-				windowId: uint(windowID),
-				message:  name,
-			}
-			return
-		}
-		// Fallback for structured payloads without a "name" field
-		if name, ok := msgData["message"].(string); ok && name != "" {
-			if globalApplication != nil {
-				globalApplication.info("HandleJSMessage received raw message field from client", "name", name)
-			}
-			windowMessageBuffer <- &windowMessage{
-				windowId: uint(windowID),
-				message:  name,
-			}
-			return
-		}
-	} else {
-		if globalApplication != nil {
-			globalApplication.error("[HandleJSMessage] Failed to parse JSON: %v", err)
-		}
-		iosConsoleLogf("warn", "🔍 RAW JS MESSAGE (unparsed JSON): %s", msg)
-	}
-
-	// If not JSON or JSON without name/message, treat the entire payload as a string event
-	if msg != "" {
-		if globalApplication != nil {
-			globalApplication.info("HandleJSMessage received raw message from client", "message", msg)
-		}
-		windowMessageBuffer <- &windowMessage{
-			windowId: uint(windowID),
-			message:  msg,
-		}
+	if msg == "" {
 		return
 	}
 
-	iosConsoleLogf("warn", "[HandleJSMessage] Ignored empty JS message")
+	iosDebugLogf("[iOS-message] window %d: %s", windowID, msg)
+
+	// Structured payloads carry the message in a "name" or "message" field;
+	// plain strings (e.g. "wails:runtime:ready") are forwarded as-is.
+	var msgData map[string]interface{}
+	if err := json.Unmarshal([]byte(msg), &msgData); err == nil && msgData != nil {
+		if name, ok := msgData["name"].(string); ok && name != "" {
+			msg = name
+		} else if name, ok := msgData["message"].(string); ok && name != "" {
+			msg = name
+		}
+	}
+
+	windowMessageBuffer <- &windowMessage{
+		windowId: uint(windowID),
+		message:  msg,
+	}
 }
 
 // Note: applicationEvents and windowEvents are already defined in events.go
@@ -433,30 +383,42 @@ type iosWindowEvent struct {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
-	iosConsoleLogf("info", "🔵 [application_ios.go] processApplicationEvent called with eventID: %d", eventID)
+	iosDebugLogf("[application_ios.go] application event: %d", eventID)
 
 	// Create and send the application event
 	event := newApplicationEvent(events.ApplicationEventType(eventID))
 
 	// Send to the applicationEvents channel for processing
 	applicationEvents <- event
-
-	iosConsoleLogf("info", "🔵 [application_ios.go] Application event sent to channel: %d", eventID)
 }
 
 //export processWindowEvent
 func processWindowEvent(windowID C.uint, eventID C.uint) {
-	// For now, just log the event
-	iosConsoleLogf("info", "iOS: Window event received - Window: %d, Event: %d", windowID, eventID)
+	iosDebugLogf("[application_ios.go] window event: window %d, event %d", windowID, eventID)
 	windowEvents <- &windowEvent{
 		WindowID: uint(windowID),
 		EventID:  uint(eventID),
 	}
 }
 
+// iosEventListeners records which native event IDs have at least one Go-side
+// listener. Registration happens via iosApp.on / iosWebviewWindow.on, which
+// the cross-platform layer invokes whenever a listener is added. Listeners
+// are never unregistered natively (same behaviour as macOS).
+var (
+	iosEventListeners     = make(map[uint]bool)
+	iosEventListenersLock sync.RWMutex
+)
+
+func registerIOSListener(eventID uint) {
+	iosEventListenersLock.Lock()
+	defer iosEventListenersLock.Unlock()
+	iosEventListeners[eventID] = true
+}
+
 //export hasListeners
 func hasListeners(eventID C.uint) C.bool {
-	// For now, return true to enable all events
-	// TODO: Check actual listener registration
-	return C.bool(true)
+	iosEventListenersLock.RLock()
+	defer iosEventListenersLock.RUnlock()
+	return C.bool(iosEventListeners[uint(eventID)])
 }
