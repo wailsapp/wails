@@ -12,7 +12,31 @@ permissions:
   contents: write
 
 jobs:
+  # The module is windows-only: 'go test ./...' must run on a windows
+  # runner, where the generated marshalling tests actually execute.
+  test:
+    runs-on: windows-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache-dependency-path: webview2/go.sum
+
+      - name: Build and test webview2
+        working-directory: webview2
+        shell: bash
+        run: |
+          go build ./...
+          go test ./...
+
   release:
+    needs: test
     runs-on: ubuntu-latest
     env:
       GOWORK: "off"
@@ -55,12 +79,9 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Releasing webview2 at version: $VERSION"
 
-      - name: Build and test webview2
+      - name: Cross-compile webview2 for Windows
         working-directory: webview2
-        run: |
-          echo "Building webview2..."
-          go build ./...
-          go test ./...
+        run: GOOS=windows go build ./...
 
       - name: Create and push tag
         run: |

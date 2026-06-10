@@ -62,6 +62,7 @@ func main() {
 		"generate":     runGenerate,
 		"capabilities": runCapabilities,
 		"changelog":    runChangelog,
+		"latest":       runLatest,
 		"test":         runTest,
 		"verify":       runVerify,
 		"full":         runFull,
@@ -93,6 +94,7 @@ COMMANDS
   generate      Generate pkg/webview2 from a cached IDL.
   capabilities  Emit pkg/webview2/capabilities.go from SDK release notes.
   changelog     Prepend a CHANGELOG.md entry diffing two cached SDK IDLs.
+  latest        Print the newest stable SDK version (notes or local cache).
   test          Run `+"`"+`go test ./...`+"`"+` for the generator + internal pkgs.
   verify        Regenerate and fail if the working tree differs.
   full          download → generate → capabilities → verify.
@@ -265,6 +267,7 @@ func normalizeNewlines(b []byte) []byte {
 func runCapabilities(args []string) error {
 	fs := flag.NewFlagSet("capabilities", flag.ContinueOnError)
 	source := fs.String("source", "", "release-notes markdown file (default: fetch from MicrosoftDocs)")
+	saveSource := fs.String("save-source", "", "write the fetched release notes to this path (keeps the verify snapshot in sync)")
 	version := fs.String("version", "", "SDK version of the cached IDL providing the interface inventory (default: latest cached)")
 	dir := fs.String("dir", IDLDir, "IDL cache directory")
 	out := fs.String("out", OutputDir, "output directory for capabilities.go")
@@ -285,6 +288,12 @@ func runCapabilities(args []string) error {
 		if err != nil {
 			return fmt.Errorf("fetch release notes: %w", err)
 		}
+	}
+	if *saveSource != "" {
+		if err := os.WriteFile(*saveSource, md, 0o644); err != nil {
+			return fmt.Errorf("save source: %w", err)
+		}
+		fmt.Fprintf(os.Stderr, "wrote release-notes snapshot to %s\n", *saveSource)
 	}
 
 	releases, err := notes.Parse(md)
@@ -350,6 +359,54 @@ func runCapabilities(args []string) error {
 		fmt.Fprintf(os.Stderr, "wrote %s\n", *jsonOut)
 	}
 	return nil
+}
+
+// -----------------------------------------------------------------------
+// latest
+// -----------------------------------------------------------------------
+
+// runLatest prints the newest stable SDK version. With --cached it consults
+// the local IDL cache; otherwise it scrapes the release notes. The update
+// workflow compares the two to decide whether a regeneration PR is needed.
+func runLatest(args []string) error {
+	fs := flag.NewFlagSet("latest", flag.ContinueOnError)
+	cached := fs.Bool("cached", false, "print the newest cached IDL version instead of scraping the notes")
+	dir := fs.String("dir", IDLDir, "IDL cache directory")
+	source := fs.String("source", "", "release-notes markdown file (default: fetch from MicrosoftDocs)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	if *cached {
+		v, err := resolveVersion(idl.NewStore(*dir), "")
+		if err != nil {
+			return err
+		}
+		fmt.Println(v)
+		return nil
+	}
+
+	var md []byte
+	var err error
+	if *source != "" {
+		md, err = os.ReadFile(*source)
+	} else {
+		md, err = notes.Fetch()
+	}
+	if err != nil {
+		return fmt.Errorf("fetch release notes: %w", err)
+	}
+	releases, err := notes.Parse(md)
+	if err != nil {
+		return fmt.Errorf("parse release notes: %w", err)
+	}
+	for _, r := range releases { // newest-first
+		if !notes.IsPrerelease(r.SDKVersion) {
+			fmt.Println(r.SDKVersion)
+			return nil
+		}
+	}
+	return errors.New("no stable release found in the notes")
 }
 
 // -----------------------------------------------------------------------

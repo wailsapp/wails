@@ -40,6 +40,45 @@ jobs:
             exit 1
           fi
 
-      - name: Cross-compile generated bindings for Windows
+      - name: Cross-compile generated bindings + tests for Windows
         working-directory: webview2
-        run: GOOS=windows go vet ./pkg/webview2/
+        run: |
+          GOOS=windows GOARCH=amd64 go vet ./pkg/webview2/
+          GOOS=windows GOARCH=arm64 go vet ./pkg/webview2/
+          GOOS=windows GOARCH=386 go vet ./pkg/webview2/
+
+  test-windows:
+    runs-on: windows-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: webview2/scripts/go.sum
+
+      - name: Generator tests
+        working-directory: webview2/scripts
+        shell: bash
+        run: go test -race ./...
+
+      - name: Module + generated binding tests (amd64)
+        working-directory: webview2
+        shell: bash
+        run: |
+          go build ./...
+          go test ./...
+
+      # Windows runs 32-bit binaries natively, so the 386 marshalling
+      # branches (two-word doubles/tokens, four-word RECTs) are executed
+      # for real here, not just compiled.
+      - name: Generated binding tests (386)
+        working-directory: webview2
+        shell: bash
+        env:
+          GOARCH: "386"
+        run: go test ./pkg/webview2/

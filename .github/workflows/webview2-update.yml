@@ -1,0 +1,125 @@
+name: Update webview2 bindings
+
+# Checks for a new WebView2 SDK release, regenerates pkg/webview2 (bindings,
+# generated tests, capability table), records the change in the package
+# changelog, runs the full test suite on Windows, and opens a PR against
+# master with the result. Generation is incremental, so the PR diff contains
+# exactly the real changes.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1' # weekly, Monday 05:17 UTC
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SDK version to update to (default: newest stable from the release notes)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: windows-latest
+    env:
+      GOWORK: "off"
+    defaults:
+      run:
+        shell: bash
+        working-directory: webview2/scripts
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: webview2/scripts/go.sum
+
+      - name: Determine versions
+        id: versions
+        run: |
+          OLD=$(go run ./cmd/webview2gen latest --cached)
+          NEW="${{ inputs.version }}"
+          if [ -z "$NEW" ]; then
+            NEW=$(go run ./cmd/webview2gen latest)
+          fi
+          echo "old=$OLD" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+          if [ "$OLD" = "$NEW" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already on SDK $OLD — nothing to do."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "SDK update available: $OLD → $NEW"
+          fi
+
+      - name: Download new IDL
+        if: steps.versions.outputs.changed == 'true'
+        run: go run ./cmd/webview2gen download --version "${{ steps.versions.outputs.new }}"
+
+      - name: Record changelog entry
+        if: steps.versions.outputs.changed == 'true'
+        run: go run ./cmd/webview2gen changelog --from "${{ steps.versions.outputs.old }}" --to "${{ steps.versions.outputs.new }}"
+
+      - name: Regenerate bindings and tests
+        if: steps.versions.outputs.changed == 'true'
+        run: go run ./cmd/webview2gen generate --version "${{ steps.versions.outputs.new }}"
+
+      - name: Regenerate capability table (and refresh the notes snapshot)
+        if: steps.versions.outputs.changed == 'true'
+        run: go run ./cmd/webview2gen capabilities --save-source test.md --version "${{ steps.versions.outputs.new }}"
+
+      - name: Verify regeneration is clean
+        if: steps.versions.outputs.changed == 'true'
+        run: go run ./cmd/webview2gen verify --version "${{ steps.versions.outputs.new }}"
+
+      - name: Generator tests
+        if: steps.versions.outputs.changed == 'true'
+        run: go test ./...
+
+      - name: Generated binding tests (amd64)
+        if: steps.versions.outputs.changed == 'true'
+        working-directory: webview2
+        run: go test ./...
+
+      - name: Generated binding tests (386)
+        if: steps.versions.outputs.changed == 'true'
+        working-directory: webview2
+        env:
+          GOARCH: "386"
+        run: go test ./pkg/webview2/
+
+      - name: Extract changelog entry for the PR body
+        if: steps.versions.outputs.changed == 'true'
+        working-directory: webview2
+        run: |
+          awk '/^## /{n++} n==1' CHANGELOG.md > "$RUNNER_TEMP/pr-body.md"
+          cat "$RUNNER_TEMP/pr-body.md"
+
+      - name: Open pull request
+        if: steps.versions.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          base: master
+          branch: webview2/sdk-${{ steps.versions.outputs.new }}
+          title: "chore(webview2): update bindings to WebView2 SDK ${{ steps.versions.outputs.new }}"
+          commit-message: |
+            chore(webview2): regenerate bindings for WebView2 SDK ${{ steps.versions.outputs.new }}
+
+            Automated update from SDK ${{ steps.versions.outputs.old }} to
+            ${{ steps.versions.outputs.new }}: bindings, generated tests and the
+            capability table were regenerated with 'webview2gen full'; the diff
+            was verified clean and the full test suite passed on windows
+            (amd64 + 386). See webview2/CHANGELOG.md for the API delta.
+          body-path: ${{ runner.temp }}/pr-body.md
+          add-paths: |
+            webview2/**
+          labels: webview2
+          delete-branch: true
