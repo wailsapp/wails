@@ -235,6 +235,17 @@ export const Types = Object.freeze({
 		WebViewDidFailNavigation: "ios:WebViewDidFailNavigation",
 		WebViewDecidePolicyForNavigationAction: "ios:WebViewDecidePolicyForNavigationAction",
 	}),
+	Android: Object.freeze({
+		ActivityCreated: "android:ActivityCreated",
+		ActivityStarted: "android:ActivityStarted",
+		ActivityResumed: "android:ActivityResumed",
+		ActivityPaused: "android:ActivityPaused",
+		ActivityStopped: "android:ActivityStopped",
+		ActivityDestroyed: "android:ActivityDestroyed",
+		ApplicationLowMemory: "android:ApplicationLowMemory",
+		WebViewPageStarted: "android:WebViewPageStarted",
+		WebViewPageFinished: "android:WebViewPageFinished",
+	}),
 	Common: Object.freeze({
 		ApplicationOpenedWithFile: "common:ApplicationOpenedWithFile",
 		ApplicationStarted: "common:ApplicationStarted",

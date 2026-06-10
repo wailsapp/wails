@@ -241,3 +241,12 @@ ios:WebViewDidStartNavigation
 ios:WebViewDidFinishNavigation
 ios:WebViewDidFailNavigation
 ios:WebViewDecidePolicyForNavigationAction!
+android:ActivityCreated
+android:ActivityStarted
+android:ActivityResumed
+android:ActivityPaused
+android:ActivityStopped
+android:ActivityDestroyed
+android:ApplicationLowMemory
+android:WebViewPageStarted
+android:WebViewPageFinished

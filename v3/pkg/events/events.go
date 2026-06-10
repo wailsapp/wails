@@ -539,6 +539,34 @@ func newIOSEvents() iosEvents {
 	}
 }
 
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+	ActivityCreated      ApplicationEventType
+	ActivityStarted      ApplicationEventType
+	ActivityResumed      ApplicationEventType
+	ActivityPaused       ApplicationEventType
+	ActivityStopped      ApplicationEventType
+	ActivityDestroyed    ApplicationEventType
+	ApplicationLowMemory ApplicationEventType
+	WebViewPageStarted   WindowEventType
+	WebViewPageFinished  WindowEventType
+}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated:      1267,
+		ActivityStarted:      1268,
+		ActivityResumed:      1269,
+		ActivityPaused:       1270,
+		ActivityStopped:      1271,
+		ActivityDestroyed:    1272,
+		ApplicationLowMemory: 1273,
+		WebViewPageStarted:   1274,
+		WebViewPageFinished:  1275,
+	}
+}
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
@@ -787,4 +815,13 @@ var eventToJS = map[uint]string{
 	1264: "ios:WebViewDidFinishNavigation",
 	1265: "ios:WebViewDidFailNavigation",
 	1266: "ios:WebViewDecidePolicyForNavigationAction",
+	1267: "android:ActivityCreated",
+	1268: "android:ActivityStarted",
+	1269: "android:ActivityResumed",
+	1270: "android:ActivityPaused",
+	1271: "android:ActivityStopped",
+	1272: "android:ActivityDestroyed",
+	1273: "android:ApplicationLowMemory",
+	1274: "android:WebViewPageStarted",
+	1275: "android:WebViewPageFinished",
 }

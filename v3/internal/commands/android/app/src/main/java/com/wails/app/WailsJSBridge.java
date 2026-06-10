@@ -14,6 +14,7 @@ import com.wails.app.BuildConfig;
  */
 public class WailsJSBridge {
     private static final String TAG = "WailsJSBridge";
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
     private final WailsBridge bridge;
     private final WebView webView;
@@ -32,7 +33,7 @@ public class WailsJSBridge {
      */
     @JavascriptInterface
     public String invoke(String message) {
-        Log.d(TAG, "Invoke called: " + message);
+        if (DEBUG) Log.d(TAG, "Invoke called: " + message);
         return bridge.handleMessage(message);
     }
 
@@ -46,7 +47,7 @@ public class WailsJSBridge {
      */
     @JavascriptInterface
     public void invokeAsync(final String callbackId, final String message) {
-        Log.d(TAG, "InvokeAsync called: " + message);
+        if (DEBUG) Log.d(TAG, "InvokeAsync called: " + message);
 
         // Handle in background thread to not block JavaScript
         new Thread(() -> {

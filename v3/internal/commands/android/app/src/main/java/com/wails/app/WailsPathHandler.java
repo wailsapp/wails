@@ -20,6 +20,7 @@ import java.util.Map;
  */
 public class WailsPathHandler implements WebViewAssetLoader.PathHandler {
     private static final String TAG = "WailsPathHandler";
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
     private final WailsBridge bridge;
 
@@ -30,7 +31,7 @@ public class WailsPathHandler implements WebViewAssetLoader.PathHandler {
     @Nullable
     @Override
     public WebResourceResponse handle(@NonNull String path) {
-        Log.d(TAG, "Handling path: " + path);
+        if (DEBUG) Log.d(TAG, "Handling path: " + path);
 
         // Normalize path
         if (path.isEmpty() || path.equals("/")) {
@@ -47,7 +48,7 @@ public class WailsPathHandler implements WebViewAssetLoader.PathHandler {
 
         // Determine MIME type
         String mimeType = bridge.getAssetMimeType(path);
-        Log.d(TAG, "Serving " + path + " with type " + mimeType + " (" + data.length + " bytes)");
+        if (DEBUG) Log.d(TAG, "Serving " + path + " with type " + mimeType + " (" + data.length + " bytes)");
 
         // Create response
         InputStream inputStream = new ByteArrayInputStream(data);

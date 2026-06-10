@@ -1,47 +1,69 @@
 package com.wails.app;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Rect;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowInsets;
 import android.webkit.WebView;
+import android.widget.Toast;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import androidx.appcompat.app.AlertDialog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
- * WailsBridge manages the connection between the Java/Android side and the Go native library.
- * It handles:
+ * WailsBridge manages the connection between the Java/Android side and the Go
+ * native library. It handles:
  * - Loading and initializing the native Go library
  * - Serving asset requests from Go
  * - Passing messages between JavaScript and Go
- * - Managing callbacks for async operations
+ * - Native facilities the Go side calls via JNI (dialogs, clipboard,
+ *   screen/device info, toasts, vibration, main-thread dispatch)
  */
 public class WailsBridge {
     private static final String TAG = "WailsBridge";
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
     static {
         // Load the native Go library
         System.loadLibrary("wails");
     }
 
-    private final Context context;
-    private final AtomicInteger callbackIdGenerator = new AtomicInteger(0);
-    private final ConcurrentHashMap<Integer, AssetCallback> pendingAssetCallbacks = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, MessageCallback> pendingMessageCallbacks = new ConcurrentHashMap<>();
+    private final Activity activity;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
     private static native void nativeShutdown();
+    private static native void nativeOnStart();
     private static native void nativeOnResume();
     private static native void nativeOnPause();
+    private static native void nativeOnStop();
+    private static native void nativeOnLowMemory();
     private static native void nativeOnPageFinished(String url);
     private static native byte[] nativeServeAsset(String path, String method, String headers);
     private static native String nativeHandleMessage(String message);
     private static native String nativeGetAssetMimeType(String path);
+    private static native void nativeDialogCallback(int callbackID, int buttonIndex);
+    private static native void nativeFilePickerResult(int callbackID, String path);
+    private static native void nativeFilePickerDone(int callbackID);
+    private static native void nativeMainThreadCallback(int callbackID);
 
-    public WailsBridge(Context context) {
-        this.context = context;
+    public WailsBridge(Activity activity) {
+        this.activity = activity;
     }
 
     /**
@@ -51,12 +73,10 @@ public class WailsBridge {
         if (initialized) {
             return;
         }
-
-        Log.i(TAG, "Initializing Wails bridge...");
         try {
             nativeInit(this);
             initialized = true;
-            Log.i(TAG, "Wails bridge initialized successfully");
+            Log.i(TAG, "Wails bridge initialized");
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize Wails bridge", e);
         }
@@ -69,8 +89,6 @@ public class WailsBridge {
         if (!initialized) {
             return;
         }
-
-        Log.i(TAG, "Shutting down Wails bridge...");
         try {
             nativeShutdown();
             initialized = false;
@@ -80,37 +98,51 @@ public class WailsBridge {
     }
 
     /**
-     * Called when the activity resumes
+     * The WebView used for JavaScript execution. Must be set before the page
+     * loads.
      */
+    public void setWebView(WebView webView) {
+        this.webView = webView;
+    }
+
+    // Lifecycle forwarding
+
+    public void onStart() {
+        if (initialized) nativeOnStart();
+    }
+
     public void onResume() {
-        if (initialized) {
-            nativeOnResume();
-        }
+        if (initialized) nativeOnResume();
+    }
+
+    public void onPause() {
+        if (initialized) nativeOnPause();
+    }
+
+    public void onStop() {
+        if (initialized) nativeOnStop();
+    }
+
+    public void onLowMemory() {
+        if (initialized) nativeOnLowMemory();
     }
 
     /**
-     * Called when the activity pauses
+     * Notify Go that the page finished loading.
      */
-    public void onPause() {
-        if (initialized) {
-            nativeOnPause();
-        }
+    public void onPageFinished(String url) {
+        if (initialized) nativeOnPageFinished(url);
     }
 
     /**
      * Serve an asset from the Go asset server
-     * @param path The URL path requested
-     * @param method The HTTP method
-     * @param headers The request headers as JSON
-     * @return The asset data, or null if not found
      */
     public byte[] serveAsset(String path, String method, String headers) {
         if (!initialized) {
             Log.w(TAG, "Bridge not initialized, cannot serve asset: " + path);
             return null;
         }
-
-        Log.d(TAG, "Serving asset: " + path);
+        if (DEBUG) Log.d(TAG, "Serving asset: " + path);
         try {
             return nativeServeAsset(path, method, headers);
         } catch (Exception e) {
@@ -121,35 +153,28 @@ public class WailsBridge {
 
     /**
      * Get the MIME type for an asset
-     * @param path The asset path
-     * @return The MIME type string
      */
     public String getAssetMimeType(String path) {
         if (!initialized) {
             return "application/octet-stream";
         }
-
         try {
             String mimeType = nativeGetAssetMimeType(path);
             return mimeType != null ? mimeType : "application/octet-stream";
         } catch (Exception e) {
-            Log.e(TAG, "Error getting MIME type for: " + path, e);
             return "application/octet-stream";
         }
     }
 
     /**
      * Handle a message from JavaScript
-     * @param message The message from JavaScript (JSON)
-     * @return The response to send back to JavaScript (JSON)
      */
     public String handleMessage(String message) {
         if (!initialized) {
             Log.w(TAG, "Bridge not initialized, cannot handle message");
             return "{\"error\":\"Bridge not initialized\"}";
         }
-
-        Log.d(TAG, "Handling message from JS: " + message);
+        if (DEBUG) Log.d(TAG, "Message from JS: " + message);
         try {
             return nativeHandleMessage(message);
         } catch (Exception e) {
@@ -159,56 +184,267 @@ public class WailsBridge {
     }
 
     /**
-     * Inject the Wails runtime JavaScript into the WebView.
-     * Called when the page finishes loading.
-     * @param webView The WebView to inject into
-     * @param url The URL that finished loading
+     * Execute JavaScript in the WebView. Called from Go via JNI (any thread).
      */
-    public void injectRuntime(WebView webView, String url) {
-        this.webView = webView;
-        // Notify Go side that page has finished loading so it can inject the runtime
-        Log.d(TAG, "Page finished loading: " + url + ", notifying Go side");
-        if (initialized) {
-            nativeOnPageFinished(url);
+    public void executeJavaScript(final String js) {
+        final WebView view = webView;
+        if (view == null) {
+            Log.w(TAG, "executeJavaScript: no WebView attached");
+            return;
+        }
+        mainHandler.post(() -> view.evaluateJavascript(js, null));
+    }
+
+    // Facilities called from Go via JNI
+
+    /**
+     * Screen metrics as JSON: hardware pixels, density and system bar insets.
+     */
+    public String getScreenInfoJson() {
+        try {
+            JSONObject result = new JSONObject();
+
+            int insetTop = 0, insetBottom = 0, insetLeft = 0, insetRight = 0;
+            int widthPx, heightPx;
+            float density;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.view.WindowMetrics wm = activity.getWindowManager().getCurrentWindowMetrics();
+                Rect bounds = wm.getBounds();
+                widthPx = bounds.width();
+                heightPx = bounds.height();
+                density = activity.getResources().getDisplayMetrics().density;
+                android.graphics.Insets insets = wm.getWindowInsets()
+                        .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+                insetTop = insets.top;
+                insetBottom = insets.bottom;
+                insetLeft = insets.left;
+                insetRight = insets.right;
+            } else {
+                DisplayMetrics metrics = new DisplayMetrics();
+                activity.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+                widthPx = metrics.widthPixels;
+                heightPx = metrics.heightPixels;
+                density = metrics.density;
+            }
+
+            result.put("widthPx", widthPx);
+            result.put("heightPx", heightPx);
+            result.put("density", density);
+            result.put("insetTop", insetTop);
+            result.put("insetBottom", insetBottom);
+            result.put("insetLeft", insetLeft);
+            result.put("insetRight", insetRight);
+            return result.toString();
+        } catch (Exception e) {
+            Log.e(TAG, "getScreenInfoJson failed", e);
+            return "";
         }
     }
 
     /**
-     * Execute JavaScript in the WebView (called from Go side)
-     * @param js The JavaScript code to execute
+     * Device information as JSON.
      */
-    public void executeJavaScript(String js) {
-        if (webView != null) {
-            webView.post(() -> webView.evaluateJavascript(js, null));
+    public String getDeviceInfoJson() {
+        try {
+            JSONObject result = new JSONObject();
+            result.put("manufacturer", Build.MANUFACTURER);
+            result.put("brand", Build.BRAND);
+            result.put("model", Build.MODEL);
+            result.put("device", Build.DEVICE);
+            result.put("version", Build.VERSION.RELEASE);
+            result.put("sdkInt", Build.VERSION.SDK_INT);
+            return result.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public boolean isDarkMode() {
+        int mode = activity.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        return mode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    public boolean isMainThread() {
+        return Looper.myLooper() == Looper.getMainLooper();
+    }
+
+    /**
+     * Post a Go callback onto the Android main thread.
+     */
+    public void runOnMainThread(final int callbackID) {
+        mainHandler.post(() -> nativeMainThreadCallback(callbackID));
+    }
+
+    // Clipboard (note: reads on Android 10+ require input focus)
+
+    public void setClipboardText(String text) {
+        try {
+            ClipboardManager cm = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("wails", text));
+        } catch (Exception e) {
+            Log.e(TAG, "setClipboardText failed", e);
+        }
+    }
+
+    public String getClipboardText() {
+        try {
+            ClipboardManager cm = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = cm.getPrimaryClip();
+            if (clip != null && clip.getItemCount() > 0) {
+                CharSequence text = clip.getItemAt(0).coerceToText(activity);
+                return text != null ? text.toString() : "";
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getClipboardText failed", e);
+        }
+        return "";
+    }
+
+    public void showToast(final String message) {
+        mainHandler.post(() -> Toast.makeText(activity, message, Toast.LENGTH_SHORT).show());
+    }
+
+    public void vibrate(int durationMs) {
+        try {
+            Vibrator vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator == null || !vibrator.hasVibrator()) {
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(durationMs);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "vibrate failed", e);
         }
     }
 
     /**
-     * Called from Go when an event needs to be emitted to JavaScript
-     * @param eventName The event name
-     * @param eventData The event data (JSON)
+     * Show a message dialog. optionsJson:
+     * {"title": "...", "message": "...",
+     *  "buttons": [{"label": "...", "isCancel": bool, "isDefault": bool}]}
+     * Calls nativeDialogCallback with the index of the pressed button in the
+     * original buttons array, or -1 when dismissed without a matching button.
      */
-    public void emitEvent(String eventName, String eventData) {
-        String js = String.format("window.wails && window.wails._emit('%s', %s);",
-                escapeJsString(eventName), eventData);
-        executeJavaScript(js);
+    public void showMessageDialog(final int callbackID, final String optionsJson) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject options = new JSONObject(optionsJson);
+                String title = options.optString("title", "");
+                String message = options.optString("message", "");
+                JSONArray buttons = options.optJSONArray("buttons");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(title);
+                builder.setMessage(message);
+
+                int count = buttons != null ? buttons.length() : 0;
+                int cancelIndex = -1;
+                for (int i = 0; i < count; i++) {
+                    if (buttons.getJSONObject(i).optBoolean("isCancel", false)) {
+                        cancelIndex = i;
+                        break;
+                    }
+                }
+                final int dismissIndex = cancelIndex;
+                builder.setOnCancelListener(d -> nativeDialogCallback(callbackID, dismissIndex));
+
+                if (count == 0) {
+                    builder.setPositiveButton(android.R.string.ok,
+                            (d, w) -> nativeDialogCallback(callbackID, -1));
+                } else if (count <= 3) {
+                    // Map buttons to AlertDialog slots: the default (or last)
+                    // button is positive, the cancel button negative, any
+                    // remaining button neutral.
+                    int positive = -1;
+                    for (int i = 0; i < count; i++) {
+                        if (buttons.getJSONObject(i).optBoolean("isDefault", false)) {
+                            positive = i;
+                            break;
+                        }
+                    }
+                    if (positive == -1) {
+                        positive = count - 1;
+                        if (positive == cancelIndex && count > 1) {
+                            positive = count - 2;
+                        }
+                    }
+                    int negative = cancelIndex;
+                    if (negative == -1) {
+                        for (int i = count - 1; i >= 0; i--) {
+                            if (i != positive) {
+                                negative = i;
+                                break;
+                            }
+                        }
+                    }
+                    int neutral = -1;
+                    for (int i = 0; i < count; i++) {
+                        if (i != positive && i != negative) {
+                            neutral = i;
+                            break;
+                        }
+                    }
+
+                    final int positiveIdx = positive, negativeIdx = negative, neutralIdx = neutral;
+                    builder.setPositiveButton(buttons.getJSONObject(positive).optString("label", "OK"),
+                            (d, w) -> nativeDialogCallback(callbackID, positiveIdx));
+                    if (negative != -1) {
+                        builder.setNegativeButton(buttons.getJSONObject(negative).optString("label", "Cancel"),
+                                (d, w) -> nativeDialogCallback(callbackID, negativeIdx));
+                    }
+                    if (neutral != -1) {
+                        builder.setNeutralButton(buttons.getJSONObject(neutral).optString("label", ""),
+                                (d, w) -> nativeDialogCallback(callbackID, neutralIdx));
+                    }
+                } else {
+                    // More than three buttons: show as a list
+                    String[] labels = new String[count];
+                    for (int i = 0; i < count; i++) {
+                        labels[i] = buttons.getJSONObject(i).optString("label", "");
+                    }
+                    builder.setItems(labels, (d, which) -> nativeDialogCallback(callbackID, which));
+                }
+
+                builder.show();
+            } catch (Exception e) {
+                Log.e(TAG, "showMessageDialog failed", e);
+                nativeDialogCallback(callbackID, -1);
+            }
+        });
     }
 
-    private String escapeJsString(String str) {
-        return str.replace("\\", "\\\\")
-                .replace("'", "\\'")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r");
+    /**
+     * Show the system document picker. optionsJson: {"multiple": bool}.
+     * Results flow back through filePickerResult/filePickerDone.
+     */
+    public void showFilePicker(final int callbackID, final String optionsJson) {
+        boolean multiple = false;
+        try {
+            multiple = new JSONObject(optionsJson).optBoolean("multiple", false);
+        } catch (Exception ignored) {
+        }
+        final boolean allowMultiple = multiple;
+        mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).launchFilePicker(callbackID, allowMultiple);
+            } else {
+                Log.e(TAG, "showFilePicker: activity is not a MainActivity");
+                nativeFilePickerDone(callbackID);
+            }
+        });
     }
 
-    // Callback interfaces
-    public interface AssetCallback {
-        void onAssetReady(byte[] data, String mimeType);
-        void onAssetError(String error);
+    /** Forward a picked file path to Go (package-private, used by MainActivity). */
+    void filePickerResult(int callbackID, String path) {
+        nativeFilePickerResult(callbackID, path);
     }
 
-    public interface MessageCallback {
-        void onResponse(String response);
-        void onError(String error);
+    /** Signal the end of a file picking session (package-private). */
+    void filePickerDone(int callbackID) {
+        nativeFilePickerDone(callbackID);
     }
 }
