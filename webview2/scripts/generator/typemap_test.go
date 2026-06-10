@@ -126,6 +126,11 @@ func TestTypePattern_InUINT64(t *testing.T) {
 	))
 	assert.Contains(t, body, "SetSize(size uint64) error")
 	assert.Contains(t, body, "uintptr(size)")
+	// 386 splits 8-byte integers into two stack words, low word first.
+	assert.Contains(t, body, "case archIs386:")
+	assert.Contains(t, body, "uintptr(uint32(uint64(size)))")
+	assert.Contains(t, body, "uintptr(uint32(uint64(size)>>32))")
+	assert.NotContains(t, body, "case archIsARM64:")
 }
 
 // ── Pattern 9: [in] INT32 ────────────────────────────────────────────────────
@@ -195,7 +200,94 @@ func TestTypePattern_InDouble(t *testing.T) {
 		`HRESULT SetZoom([in] double factor);`,
 	))
 	assert.Contains(t, body, "SetZoom(factor float64) error")
-	assert.Contains(t, body, "uintptr(factor)")
+	// The IEEE-754 bit pattern must be passed, never a truncating integer
+	// conversion: uintptr(factor) would turn 1.5 into 1.
+	assert.NotContains(t, body, "uintptr(factor)")
+	assert.Contains(t, body, "uintptr(math.Float64bits(factor))")
+	// On 386 a double occupies two 4-byte stack slots, low word first.
+	assert.Contains(t, body, "case archIs386:")
+	assert.Contains(t, body, "uintptr(uint32(math.Float64bits(factor)))")
+	assert.Contains(t, body, "uintptr(uint32(math.Float64bits(factor)>>32))")
+	// amd64 and arm64 encode doubles identically — no arm64-only branch.
+	assert.NotContains(t, body, "case archIsARM64:")
+	assert.Contains(t, body, `"math"`)
+}
+
+// ── Pattern 14b: [in] EventRegistrationToken (by value) ──────────────────────
+
+func TestTypePattern_InEventRegistrationToken(t *testing.T) {
+	body := generatedBody(t, wrapIDL(
+		`HRESULT remove_NavigationStarting([in] EventRegistrationToken token);`,
+	))
+	assert.Contains(t, body, "RemoveNavigationStarting(token EventRegistrationToken) error")
+	// Win64 passes 8-byte aggregates by value in a register — never by address.
+	assert.NotContains(t, body, "uintptr(unsafe.Pointer(&token))")
+	assert.Contains(t, body, "uintptr(*(*uint64)(unsafe.Pointer(&token)))")
+	// 386 pushes the two 4-byte halves as separate stack words.
+	assert.Contains(t, body, "uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0])")
+	assert.Contains(t, body, "uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1])")
+	assert.NotContains(t, body, "case archIsARM64:")
+}
+
+// ── Pattern 14c: [in] 4-byte struct by value (COREWEBVIEW2_COLOR) ────────────
+
+func TestTypePattern_InSmallStructByValue(t *testing.T) {
+	idl := []byte(`[uuid(26d34152-879f-4065-bea2-3daa2cfadfb8), version(1.0)]
+library WebView2 {
+typedef struct COREWEBVIEW2_COLOR {
+	BYTE A;
+	BYTE R;
+	BYTE G;
+	BYTE B;
+} COREWEBVIEW2_COLOR;
+[uuid(aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa), object, pointer_default(unique)]
+interface ITest : IUnknown {
+HRESULT put_DefaultBackgroundColor([in] COREWEBVIEW2_COLOR value);
+}
+}`)
+	files, err := ParseIDL(idl)
+	require.NoError(t, err)
+	var body string
+	for _, f := range files {
+		if f.FileName == "ITest.go" {
+			body = f.Content.String()
+		}
+	}
+	require.NotEmpty(t, body)
+	// A 4-byte struct is a single register/stack word on every architecture,
+	// packed by value — never passed by address.
+	assert.NotContains(t, body, "uintptr(unsafe.Pointer(&value))")
+	assert.Contains(t, body, "uintptr(*(*uint32)(unsafe.Pointer(&value)))")
+	// Same encoding everywhere — no arch switch needed.
+	assert.NotContains(t, body, "case archIs386:")
+}
+
+// ── Pattern 14d: [in] POINT (8-byte struct by value) ─────────────────────────
+
+func TestTypePattern_InPointByValue(t *testing.T) {
+	body := generatedBody(t, wrapIDL(
+		`HRESULT DragEnter([in] POINT point);`,
+	))
+	assert.NotContains(t, body, "uintptr(unsafe.Pointer(&point))")
+	assert.Contains(t, body, "uintptr(*(*uint64)(unsafe.Pointer(&point)))")
+	assert.Contains(t, body, "case archIs386:")
+	assert.NotContains(t, body, "case archIsARM64:")
+}
+
+// ── Pattern 14e: [in] RECT (16-byte struct by value) ─────────────────────────
+
+func TestTypePattern_InRectByValue(t *testing.T) {
+	body := generatedBody(t, wrapIDL(
+		`[propput] HRESULT Bounds([in] RECT bounds);`,
+	))
+	// amd64 passes >8-byte aggregates via pointer to the (already private) copy.
+	assert.Contains(t, body, "uintptr(unsafe.Pointer(&bounds))")
+	// arm64 packs 9-16 byte composites into a register pair.
+	assert.Contains(t, body, "case archIsARM64:")
+	assert.Contains(t, body, "(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[0]")
+	assert.Contains(t, body, "(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[1]")
+	// 386 pushes four 4-byte stack words.
+	assert.Contains(t, body, "uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[3])")
 }
 
 // ── Pattern 15: [in] IInterface* ─────────────────────────────────────────────

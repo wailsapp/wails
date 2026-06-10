@@ -2,9 +2,11 @@ package types
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/leaanthony/slicer"
 	"io"
 	"log"
+	"slices"
 	"strings"
 	"text/template"
 )
@@ -182,12 +184,10 @@ func (m *InterfaceMethod) Process(decl *InterfaceDeclaration) error {
 	if m.Prop != nil {
 		m.ProcessedName = string(*m.Prop) + m.ProcessedName
 	}
-	m.processParams()
-
-	return nil
+	return m.processParams()
 }
 
-func (m *InterfaceMethod) processParams() {
+func (m *InterfaceMethod) processParams() error {
 	for _, param := range m.Params {
 		param.Process(m)
 		if param.IsOutputParam() {
@@ -197,23 +197,31 @@ func (m *InterfaceMethod) processParams() {
 		}
 	}
 
-	m.processInputParams()
-	m.processOutputParams()
+	if err := m.processInputParams(); err != nil {
+		return fmt.Errorf("%s.%s: %w", m.decl.Name, m.ProcessedName, err)
+	}
+	if err := m.processOutputParams(); err != nil {
+		return fmt.Errorf("%s.%s: %w", m.decl.Name, m.ProcessedName, err)
+	}
+	return nil
 }
 
-func (m *InterfaceMethod) processInputParams() {
+func (m *InterfaceMethod) processInputParams() error {
 	var inputs slicer.StringSlicer
 	var inputParamNames slicer.StringSlicer
 	for _, param := range m.inputParams {
 		inputs.Add(param.Name + " " + param.AsInputType())
 		inputParamNames.Add(param.Name)
-		param.processSetup()
+		if err := param.processSetup(); err != nil {
+			return err
+		}
 	}
 	m.GoInputs = inputs.Join(", ")
 	m.InputParamNames = inputParamNames.Join(", ")
+	return nil
 }
 
-func (m *InterfaceMethod) processOutputParams() {
+func (m *InterfaceMethod) processOutputParams() error {
 	var outputs slicer.StringSlicer
 	var outputParamNames slicer.StringSlicer
 	var outputParamTypes slicer.StringSlicer
@@ -221,7 +229,9 @@ func (m *InterfaceMethod) processOutputParams() {
 		outputs.Add(param.Name + " " + param.GoType)
 		outputParamNames.Add(param.Name)
 		outputParamTypes.Add(param.GoType)
-		param.processSetup()
+		if err := param.processSetup(); err != nil {
+			return err
+		}
 	}
 	// Add the mandatory error
 	outputs.Add("err error")
@@ -234,6 +244,7 @@ func (m *InterfaceMethod) processOutputParams() {
 	if outputParamTypes.Length() > 1 {
 		m.GoReturnTypes = "(" + m.GoReturnTypes + ")"
 	}
+	return nil
 }
 
 func (m *InterfaceMethod) SetupCode() string {
@@ -252,12 +263,56 @@ func (m *InterfaceMethod) CleanupCode() string {
 	return buffer.String()
 }
 
-func (m *InterfaceMethod) VtableCallInputs() string {
+// NeedsArchSplit reports whether any parameter marshals differently across
+// architectures (8-byte values on 386, 16-byte aggregates everywhere), which
+// requires emitting one vtable call per architecture group.
+func (m *InterfaceMethod) NeedsArchSplit() bool {
+	for _, p := range m.Params {
+		if !slices.Equal(p.callWordsAMD64, p.callWordsARM64) ||
+			!slices.Equal(p.callWordsAMD64, p.callWords386) {
+			return true
+		}
+	}
+	return false
+}
+
+// NeedsARM64Variant reports whether arm64 marshalling differs from amd64
+// (only true for 9-16 byte aggregates, which arm64 passes in a register pair
+// where amd64 passes a pointer to a copy). When false, the arm64 case is
+// folded into the default branch of the generated switch.
+func (m *InterfaceMethod) NeedsARM64Variant() bool {
+	for _, p := range m.Params {
+		if !slices.Equal(p.callWordsAMD64, p.callWordsARM64) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *InterfaceMethod) joinCallWords(indent string, words func(*Param) []string) string {
 	var buffer bytes.Buffer
 	for _, input := range m.Params {
-		buffer.WriteString("\t\t" + input.VtableCallInput + ",\n")
+		for _, word := range words(input) {
+			buffer.WriteString(indent + word + ",\n")
+		}
 	}
 	return buffer.String()
+}
+
+func (m *InterfaceMethod) VtableCallInputs() string {
+	return m.joinCallWords("\t\t", func(p *Param) []string { return p.callWordsAMD64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputsAMD64() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWordsAMD64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputsARM64() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWordsARM64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputs386() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWords386 })
 }
 
 func (m *InterfaceMethod) ReturnsHRESULT() bool {

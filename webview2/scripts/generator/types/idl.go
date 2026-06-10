@@ -54,10 +54,26 @@ type Library struct {
 	forewardInterfaceDeclarations slicer.StringSlicer
 	enums                         slicer.StringSlicer
 	packageName                   string
+	// structSizes maps IDL typedef struct names to their byte size so by-value
+	// parameter marshalling can pick the right argument encoding.
+	structSizes map[string]int
 }
 
 func (l *Library) Process() error {
 	l.packageName = strings.ToLower(l.Name)
+	// Pre-register struct sizes so by-value struct parameters resolve
+	// regardless of declaration order.
+	l.structSizes = map[string]int{}
+	for _, declaration := range l.Declarations {
+		if declaration.Struct == nil {
+			continue
+		}
+		size, err := declaration.Struct.sizeOf()
+		if err != nil {
+			return err
+		}
+		l.structSizes[declaration.Struct.Name] = size
+	}
 	for _, declaration := range l.Declarations {
 		err := declaration.Process(l)
 		if err != nil {

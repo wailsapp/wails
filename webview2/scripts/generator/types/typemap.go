@@ -112,8 +112,8 @@ var TypePatterns = []IDLTypePattern{
 	{
 		IDL:       "[in] double param",
 		GoType:    "float64",
-		VtableArg: "uintptr(param)",
-		Notes:     "Scalar passed by value.",
+		VtableArg: "uintptr(math.Float64bits(param))",
+		Notes:     "IEEE-754 bit pattern, never uintptr(param) which truncates. Two stack words on 386.",
 	},
 
 	// ── COM interface pointers ───────────────────────────────────────────────
@@ -136,6 +136,30 @@ var TypePatterns = []IDLTypePattern{
 		GoType:    "EventRegistrationToken",
 		VtableArg: "uintptr(unsafe.Pointer(&param))",
 		Notes:     "outputDefaultSetup.tmpl declares var param EventRegistrationToken.",
+	},
+	{
+		IDL:       "[in] EventRegistrationToken param",
+		GoType:    "EventRegistrationToken",
+		VtableArg: "uintptr(*(*uint64)(unsafe.Pointer(&param)))",
+		Notes:     "Win64 passes 8-byte aggregates by value in a register, never by address. Two stack words on 386.",
+	},
+	{
+		IDL:       "[in] COREWEBVIEW2_COLOR param",
+		GoType:    "COREWEBVIEW2_COLOR",
+		VtableArg: "uintptr(*(*uint32)(unsafe.Pointer(&param)))",
+		Notes:     "4-byte struct packed by value into a single word on every architecture.",
+	},
+	{
+		IDL:       "[in] POINT param",
+		GoType:    "POINT",
+		VtableArg: "uintptr(*(*uint64)(unsafe.Pointer(&param)))",
+		Notes:     "8-byte struct by value in a register. Two stack words on 386.",
+	},
+	{
+		IDL:       "[in] RECT param",
+		GoType:    "RECT",
+		VtableArg: "uintptr(unsafe.Pointer(&param))",
+		Notes:     "16-byte struct: pointer-to-copy on amd64, register pair on arm64, four stack words on 386.",
 	},
 }
 
