@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2ControllerOptions4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ControllerOptions3Vtbl
 	GetAllowHostInputProcessing ComProc
 	PutAllowHostInputProcessing ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2ControllerOptions4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2ControllerOptions4() (*ICoreWebView2ControllerOptions4, error) {
+// GetICoreWebView2ControllerOptions4 queries the object for its ICoreWebView2ControllerOptions4 interface. The receiver
+// is the root of ICoreWebView2ControllerOptions4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ControllerOptions) GetICoreWebView2ControllerOptions4() (*ICoreWebView2ControllerOptions4, error) {
 	var result *ICoreWebView2ControllerOptions4
 
 	iidICoreWebView2ControllerOptions4 := NewGUID("{21eb052f-ad39-555e-824a-c87b091d4d36}")

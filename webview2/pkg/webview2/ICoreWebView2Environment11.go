@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Environment11Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment10Vtbl
 	GetFailureReportFolderPath ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Environment11) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Environment11() (*ICoreWebView2Environment11, error) {
+// GetICoreWebView2Environment11 queries the object for its ICoreWebView2Environment11 interface. The receiver
+// is the root of ICoreWebView2Environment11's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Environment) GetICoreWebView2Environment11() (*ICoreWebView2Environment11, error) {
 	var result *ICoreWebView2Environment11
 
 	iidICoreWebView2Environment11 := NewGUID("{f0913dc6-a0ec-42ef-9805-91dff3a2966a}")

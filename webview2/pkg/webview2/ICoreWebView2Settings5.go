@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings4Vtbl
 	GetIsPinchZoomEnabled ComProc
 	PutIsPinchZoomEnabled ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings5) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings5() (*ICoreWebView2Settings5, error) {
+// GetICoreWebView2Settings5 queries the object for its ICoreWebView2Settings5 interface. The receiver
+// is the root of ICoreWebView2Settings5's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings5() (*ICoreWebView2Settings5, error) {
 	var result *ICoreWebView2Settings5
 
 	iidICoreWebView2Settings5 := NewGUID("{183e7052-1d03-43a0-ab99-98e043b66b39}")

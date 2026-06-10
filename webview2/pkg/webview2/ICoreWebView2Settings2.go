@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2SettingsVtbl
 	GetUserAgent ComProc
 	PutUserAgent ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings2() (*ICoreWebView2Settings2, error) {
+// GetICoreWebView2Settings2 queries the object for its ICoreWebView2Settings2 interface. The receiver
+// is the root of ICoreWebView2Settings2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings2() (*ICoreWebView2Settings2, error) {
 	var result *ICoreWebView2Settings2
 
 	iidICoreWebView2Settings2 := NewGUID("{ee9a0f68-f46c-4e32-ac23-ef8cac224d2a}")

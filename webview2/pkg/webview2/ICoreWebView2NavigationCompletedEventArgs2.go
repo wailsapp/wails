@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2NavigationCompletedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NavigationCompletedEventArgsVtbl
 	GetHttpStatusCode ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2NavigationCompletedEventArgs2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2NavigationCompletedEventArgs2() (*ICoreWebView2NavigationCompletedEventArgs2, error) {
+// GetICoreWebView2NavigationCompletedEventArgs2 queries the object for its ICoreWebView2NavigationCompletedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2NavigationCompletedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2NavigationCompletedEventArgs) GetICoreWebView2NavigationCompletedEventArgs2() (*ICoreWebView2NavigationCompletedEventArgs2, error) {
 	var result *ICoreWebView2NavigationCompletedEventArgs2
 
 	iidICoreWebView2NavigationCompletedEventArgs2 := NewGUID("{fdf8b738-ee1e-4db2-a329-8d7d7b74d792}")

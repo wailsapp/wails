@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Environment6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment5Vtbl
 	CreatePrintSettings ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Environment6) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Environment6() (*ICoreWebView2Environment6, error) {
+// GetICoreWebView2Environment6 queries the object for its ICoreWebView2Environment6 interface. The receiver
+// is the root of ICoreWebView2Environment6's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Environment) GetICoreWebView2Environment6() (*ICoreWebView2Environment6, error) {
 	var result *ICoreWebView2Environment6
 
 	iidICoreWebView2Environment6 := NewGUID("{e59ee362-acbd-4857-9a8e-d3644d9459a9}")

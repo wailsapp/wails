@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2WebResourceRequestedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2WebResourceRequestedEventArgsVtbl
 	GetRequestedSourceKind ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2WebResourceRequestedEventArgs2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2WebResourceRequestedEventArgs2() (*ICoreWebView2WebResourceRequestedEventArgs2, error) {
+// GetICoreWebView2WebResourceRequestedEventArgs2 queries the object for its ICoreWebView2WebResourceRequestedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2WebResourceRequestedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2WebResourceRequestedEventArgs) GetICoreWebView2WebResourceRequestedEventArgs2() (*ICoreWebView2WebResourceRequestedEventArgs2, error) {
 	var result *ICoreWebView2WebResourceRequestedEventArgs2
 
 	iidICoreWebView2WebResourceRequestedEventArgs2 := NewGUID("{9c562c24-b219-4d7f-92f6-b187fbbadd56}")

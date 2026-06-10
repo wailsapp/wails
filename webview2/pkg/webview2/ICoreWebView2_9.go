@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2_9Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_8Vtbl
 	AddIsDefaultDownloadDialogOpenChanged ComProc
 	RemoveIsDefaultDownloadDialogOpenChanged ComProc
 	GetIsDefaultDownloadDialogOpen ComProc
@@ -35,6 +35,9 @@ func (i *ICoreWebView2_9) Release() uint32 {
 }
 
 
+// GetICoreWebView2_9 queries the object for its ICoreWebView2_9 interface. The receiver
+// is the root of ICoreWebView2_9's inheritance chain — the object that actually
+// implements it.
 func (i *ICoreWebView2) GetICoreWebView2_9() (*ICoreWebView2_9, error) {
 	var result *ICoreWebView2_9
 

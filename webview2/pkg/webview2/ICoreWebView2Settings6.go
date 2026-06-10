@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings5Vtbl
 	GetIsSwipeNavigationEnabled ComProc
 	PutIsSwipeNavigationEnabled ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings6) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings6() (*ICoreWebView2Settings6, error) {
+// GetICoreWebView2Settings6 queries the object for its ICoreWebView2Settings6 interface. The receiver
+// is the root of ICoreWebView2Settings6's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings6() (*ICoreWebView2Settings6, error) {
 	var result *ICoreWebView2Settings6
 
 	iidICoreWebView2Settings6 := NewGUID("{11cb3acd-9bc8-43b8-83bf-f40753714f87}")

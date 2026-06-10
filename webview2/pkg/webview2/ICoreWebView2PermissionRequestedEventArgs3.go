@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2PermissionRequestedEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2PermissionRequestedEventArgs2Vtbl
 	GetSavesInProfile ComProc
 	PutSavesInProfile ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2PermissionRequestedEventArgs3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2PermissionRequestedEventArgs3() (*ICoreWebView2PermissionRequestedEventArgs3, error) {
+// GetICoreWebView2PermissionRequestedEventArgs3 queries the object for its ICoreWebView2PermissionRequestedEventArgs3 interface. The receiver
+// is the root of ICoreWebView2PermissionRequestedEventArgs3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2PermissionRequestedEventArgs) GetICoreWebView2PermissionRequestedEventArgs3() (*ICoreWebView2PermissionRequestedEventArgs3, error) {
 	var result *ICoreWebView2PermissionRequestedEventArgs3
 
 	iidICoreWebView2PermissionRequestedEventArgs3 := NewGUID("{e61670bc-3dce-4177-86d2-c629ae3cb6ac}")

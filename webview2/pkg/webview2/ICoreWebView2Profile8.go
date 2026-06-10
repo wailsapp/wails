@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Profile8Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile7Vtbl
 	Delete ComProc
 	AddDeleted ComProc
 	RemoveDeleted ComProc
@@ -29,7 +29,10 @@ func (i *ICoreWebView2Profile8) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Profile8() (*ICoreWebView2Profile8, error) {
+// GetICoreWebView2Profile8 queries the object for its ICoreWebView2Profile8 interface. The receiver
+// is the root of ICoreWebView2Profile8's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile8() (*ICoreWebView2Profile8, error) {
 	var result *ICoreWebView2Profile8
 
 	iidICoreWebView2Profile8 := NewGUID("{fbf70c2f-eb1f-4383-85a0-163e92044011}")

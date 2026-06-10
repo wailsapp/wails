@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Controller4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Controller3Vtbl
 	GetAllowExternalDrop ComProc
 	PutAllowExternalDrop ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Controller4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Controller4() (*ICoreWebView2Controller4, error) {
+// GetICoreWebView2Controller4 queries the object for its ICoreWebView2Controller4 interface. The receiver
+// is the root of ICoreWebView2Controller4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Controller) GetICoreWebView2Controller4() (*ICoreWebView2Controller4, error) {
 	var result *ICoreWebView2Controller4
 
 	iidICoreWebView2Controller4 := NewGUID("{97d418d5-a426-4e49-a151-e1a10f327d9e}")

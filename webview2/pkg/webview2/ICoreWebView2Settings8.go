@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings8Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings7Vtbl
 	GetIsReputationCheckingRequired ComProc
 	PutIsReputationCheckingRequired ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings8) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings8() (*ICoreWebView2Settings8, error) {
+// GetICoreWebView2Settings8 queries the object for its ICoreWebView2Settings8 interface. The receiver
+// is the root of ICoreWebView2Settings8's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings8() (*ICoreWebView2Settings8, error) {
 	var result *ICoreWebView2Settings8
 
 	iidICoreWebView2Settings8 := NewGUID("{9e6b0e8f-86ad-4e81-8147-a9b5edb68650}")

@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2AcceleratorKeyPressedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 	GetIsBrowserAcceleratorKeyEnabled ComProc
 	PutIsBrowserAcceleratorKeyEnabled ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2AcceleratorKeyPressedEventArgs2() (*ICoreWebView2AcceleratorKeyPressedEventArgs2, error) {
+// GetICoreWebView2AcceleratorKeyPressedEventArgs2 queries the object for its ICoreWebView2AcceleratorKeyPressedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2AcceleratorKeyPressedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetICoreWebView2AcceleratorKeyPressedEventArgs2() (*ICoreWebView2AcceleratorKeyPressedEventArgs2, error) {
 	var result *ICoreWebView2AcceleratorKeyPressedEventArgs2
 
 	iidICoreWebView2AcceleratorKeyPressedEventArgs2 := NewGUID("{03b2c8c8-7799-4e34-bd66-ed26aa85f2bf}")

@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2ProcessFailedEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ProcessFailedEventArgs2Vtbl
 	GetFailureSourceModulePath ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2ProcessFailedEventArgs3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2ProcessFailedEventArgs3() (*ICoreWebView2ProcessFailedEventArgs3, error) {
+// GetICoreWebView2ProcessFailedEventArgs3 queries the object for its ICoreWebView2ProcessFailedEventArgs3 interface. The receiver
+// is the root of ICoreWebView2ProcessFailedEventArgs3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ProcessFailedEventArgs) GetICoreWebView2ProcessFailedEventArgs3() (*ICoreWebView2ProcessFailedEventArgs3, error) {
 	var result *ICoreWebView2ProcessFailedEventArgs3
 
 	iidICoreWebView2ProcessFailedEventArgs3 := NewGUID("{ab667428-094d-5fd1-b480-8b4c0fdbdf2f}")

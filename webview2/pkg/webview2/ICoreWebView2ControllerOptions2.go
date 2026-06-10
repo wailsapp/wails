@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2ControllerOptions2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ControllerOptionsVtbl
 	GetScriptLocale ComProc
 	PutScriptLocale ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2ControllerOptions2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2ControllerOptions2() (*ICoreWebView2ControllerOptions2, error) {
+// GetICoreWebView2ControllerOptions2 queries the object for its ICoreWebView2ControllerOptions2 interface. The receiver
+// is the root of ICoreWebView2ControllerOptions2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ControllerOptions) GetICoreWebView2ControllerOptions2() (*ICoreWebView2ControllerOptions2, error) {
 	var result *ICoreWebView2ControllerOptions2
 
 	iidICoreWebView2ControllerOptions2 := NewGUID("{06c991d8-9e7e-11ed-a8fc-0242ac120002}")

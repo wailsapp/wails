@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Environment15Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment14Vtbl
 	CreateFindOptions ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Environment15) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Environment15() (*ICoreWebView2Environment15, error) {
+// GetICoreWebView2Environment15 queries the object for its ICoreWebView2Environment15 interface. The receiver
+// is the root of ICoreWebView2Environment15's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Environment) GetICoreWebView2Environment15() (*ICoreWebView2Environment15, error) {
 	var result *ICoreWebView2Environment15
 
 	iidICoreWebView2Environment15 := NewGUID("{2ac5ebfb-e654-5961-a667-7971885c7b27}")

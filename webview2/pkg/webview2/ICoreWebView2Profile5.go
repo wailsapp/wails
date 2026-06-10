@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Profile5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile4Vtbl
 	GetCookieManager ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Profile5) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Profile5() (*ICoreWebView2Profile5, error) {
+// GetICoreWebView2Profile5 queries the object for its ICoreWebView2Profile5 interface. The receiver
+// is the root of ICoreWebView2Profile5's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile5() (*ICoreWebView2Profile5, error) {
 	var result *ICoreWebView2Profile5
 
 	iidICoreWebView2Profile5 := NewGUID("{2ee5b76e-6e80-4df2-bcd3-d4ec3340a01b}")

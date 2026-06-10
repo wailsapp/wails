@@ -362,3 +362,53 @@ func TestResolveGoType(t *testing.T) {
 		})
 	}
 }
+
+// ── Vtbl inheritance and QI helper receivers ─────────────────────────────────
+
+func TestInterfaceInheritance(t *testing.T) {
+	idl := []byte(`[uuid(26d34152-879f-4065-bea2-3daa2cfadfb8), version(1.0)]
+library WebView2 {
+[uuid(aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa), object, pointer_default(unique)]
+interface ICoreWebView2Settings : IUnknown {
+[propget] HRESULT IsScriptEnabled([out, retval] BOOL* isScriptEnabled);
+}
+[uuid(bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb), object, pointer_default(unique)]
+interface ICoreWebView2Settings2 : ICoreWebView2Settings {
+[propget] HRESULT UserAgent([out, retval] LPWSTR* userAgent);
+}
+[uuid(cccccccc-cccc-cccc-cccc-cccccccccccc), object, pointer_default(unique)]
+interface ICoreWebView2Settings3 : ICoreWebView2Settings2 {
+[propget] HRESULT AreDevToolsEnabled([out, retval] BOOL* enabled);
+}
+}`)
+	files, err := ParseIDL(idl)
+	require.NoError(t, err)
+	bodies := map[string]string{}
+	for _, f := range files {
+		bodies[f.FileName] = f.Content.String()
+	}
+
+	// COM vtbls are flat: the derived table embeds the full base table, not
+	// just IUnknownVtbl — otherwise every method lands on the wrong slot.
+	assert.Contains(t, bodies["ICoreWebView2Settings2.go"], "type ICoreWebView2Settings2Vtbl struct {\n\tICoreWebView2SettingsVtbl\n")
+	assert.Contains(t, bodies["ICoreWebView2Settings3.go"], "type ICoreWebView2Settings3Vtbl struct {\n\tICoreWebView2Settings2Vtbl\n")
+	assert.Contains(t, bodies["ICoreWebView2Settings.go"], "type ICoreWebView2SettingsVtbl struct {\n\tIUnknownVtbl\n")
+
+	// QI helpers must run against the chain root (the object that implements
+	// the interface), never ICoreWebView2 unconditionally.
+	assert.Contains(t, bodies["ICoreWebView2Settings2.go"], "func (i *ICoreWebView2Settings) GetICoreWebView2Settings2()")
+	assert.Contains(t, bodies["ICoreWebView2Settings3.go"], "func (i *ICoreWebView2Settings) GetICoreWebView2Settings3()")
+	assert.NotContains(t, bodies["ICoreWebView2Settings3.go"], "func (i *ICoreWebView2) Get")
+}
+
+func TestInterfaceWithUndeclaredBaseFails(t *testing.T) {
+	idl := []byte(`[uuid(26d34152-879f-4065-bea2-3daa2cfadfb8), version(1.0)]
+library WebView2 {
+[uuid(aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa), object, pointer_default(unique)]
+interface ICoreWebView2Mystery2 : ICoreWebView2Mystery {
+HRESULT Get([out, retval] BOOL* value);
+}
+}`)
+	_, err := ParseIDL(idl)
+	require.Error(t, err, "deriving from an undeclared base must fail loudly — the vtbl layout would be wrong")
+}

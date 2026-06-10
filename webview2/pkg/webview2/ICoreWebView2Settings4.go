@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings3Vtbl
 	GetIsPasswordAutosaveEnabled ComProc
 	PutIsPasswordAutosaveEnabled ComProc
 	GetIsGeneralAutofillEnabled ComProc
@@ -30,7 +30,10 @@ func (i *ICoreWebView2Settings4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings4() (*ICoreWebView2Settings4, error) {
+// GetICoreWebView2Settings4 queries the object for its ICoreWebView2Settings4 interface. The receiver
+// is the root of ICoreWebView2Settings4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings4() (*ICoreWebView2Settings4, error) {
 	var result *ICoreWebView2Settings4
 
 	iidICoreWebView2Settings4 := NewGUID("{cb56846c-4168-4d53-b04f-03b6d6796ff2}")

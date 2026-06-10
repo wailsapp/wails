@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2ObjectCollectionVtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ObjectCollectionViewVtbl
 	RemoveValueAtIndex ComProc
 	InsertValueAtIndex ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2ObjectCollection) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2ObjectCollection() (*ICoreWebView2ObjectCollection, error) {
+// GetICoreWebView2ObjectCollection queries the object for its ICoreWebView2ObjectCollection interface. The receiver
+// is the root of ICoreWebView2ObjectCollection's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ObjectCollectionView) GetICoreWebView2ObjectCollection() (*ICoreWebView2ObjectCollection, error) {
 	var result *ICoreWebView2ObjectCollection
 
 	iidICoreWebView2ObjectCollection := NewGUID("{5cfec11c-25bd-4e8d-9e1a-7acdaeeec047}")

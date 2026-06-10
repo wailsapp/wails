@@ -27,21 +27,6 @@ func (i *ICoreWebView2_3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2_3() (*ICoreWebView2_3, error) {
-	var result *ICoreWebView2_3
-
-	iidICoreWebView2_3 := NewGUID("{A0D6DF20-3B92-416D-AA0C-437A9C727857}")
-	hr, _, _ := i.Vtbl.QueryInterface.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(iidICoreWebView2_3)),
-		uintptr(unsafe.Pointer(&result)))
-	if windows.Handle(hr) != windows.S_OK {
-		return nil, syscall.Errno(hr)
-	}
-	return result, nil
-}
-
-
 func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
 	// Create int32 to hold bool result
 	var _isSuspended int32

@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Profile4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile3Vtbl
 	SetPermissionState ComProc
 	GetNonDefaultPermissionSettings ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Profile4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Profile4() (*ICoreWebView2Profile4, error) {
+// GetICoreWebView2Profile4 queries the object for its ICoreWebView2Profile4 interface. The receiver
+// is the root of ICoreWebView2Profile4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile4() (*ICoreWebView2Profile4, error) {
 	var result *ICoreWebView2Profile4
 
 	iidICoreWebView2Profile4 := NewGUID("{8f4ae680-192e-4ec8-833a-21cfadaef628}")

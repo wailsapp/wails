@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Environment5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment4Vtbl
 	AddBrowserProcessExited ComProc
 	RemoveBrowserProcessExited ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Environment5) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Environment5() (*ICoreWebView2Environment5, error) {
+// GetICoreWebView2Environment5 queries the object for its ICoreWebView2Environment5 interface. The receiver
+// is the root of ICoreWebView2Environment5's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Environment) GetICoreWebView2Environment5() (*ICoreWebView2Environment5, error) {
 	var result *ICoreWebView2Environment5
 
 	iidICoreWebView2Environment5 := NewGUID("{319e423d-e0d7-4b8d-9254-ae9475de9b17}")

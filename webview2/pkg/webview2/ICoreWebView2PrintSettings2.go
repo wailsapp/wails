@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2PrintSettings2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2PrintSettingsVtbl
 	GetPageRanges ComProc
 	PutPageRanges ComProc
 	GetPagesPerSide ComProc
@@ -42,7 +42,10 @@ func (i *ICoreWebView2PrintSettings2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2PrintSettings2() (*ICoreWebView2PrintSettings2, error) {
+// GetICoreWebView2PrintSettings2 queries the object for its ICoreWebView2PrintSettings2 interface. The receiver
+// is the root of ICoreWebView2PrintSettings2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2PrintSettings) GetICoreWebView2PrintSettings2() (*ICoreWebView2PrintSettings2, error) {
 	var result *ICoreWebView2PrintSettings2
 
 	iidICoreWebView2PrintSettings2 := NewGUID("{CA7F0E1F-3484-41D1-8C1A-65CD44A63F8D}")

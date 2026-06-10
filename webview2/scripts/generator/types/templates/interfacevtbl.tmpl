@@ -11,7 +11,7 @@ import (
 {{- end}}
 
 type {{.Name}}Vtbl struct {
-	IUnknownVtbl
+	{{.BaseVtbl}}
 	{{- range .Methods}}
 	{{.ProcessedName}} ComProc
 	{{- end}}
@@ -35,7 +35,10 @@ func (i *{{.Name}}) Release() uint32 {
 }
 
 {{if .BaseClass }}
-func (i *ICoreWebView2) Get{{.Name}}() (*{{.Name}}, error) {
+// Get{{.Name}} queries the object for its {{.Name}} interface. The receiver
+// is the root of {{.Name}}'s inheritance chain — the object that actually
+// implements it.
+func (i *{{.QIReceiver}}) Get{{.Name}}() (*{{.Name}}, error) {
 	var result *{{.Name}}
 
 	iid{{.Name}} := NewGUID({{.Header.AsString}})

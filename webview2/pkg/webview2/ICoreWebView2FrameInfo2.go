@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2FrameInfo2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2FrameInfoVtbl
 	GetParentFrameInfo ComProc
 	GetFrameId ComProc
 	GetFrameKind ComProc
@@ -29,7 +29,10 @@ func (i *ICoreWebView2FrameInfo2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2FrameInfo2() (*ICoreWebView2FrameInfo2, error) {
+// GetICoreWebView2FrameInfo2 queries the object for its ICoreWebView2FrameInfo2 interface. The receiver
+// is the root of ICoreWebView2FrameInfo2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2FrameInfo) GetICoreWebView2FrameInfo2() (*ICoreWebView2FrameInfo2, error) {
 	var result *ICoreWebView2FrameInfo2
 
 	iidICoreWebView2FrameInfo2 := NewGUID("{56f85cfa-72c4-11ee-b962-0242ac120002}")

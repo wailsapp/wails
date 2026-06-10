@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2NavigationStartingEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NavigationStartingEventArgsVtbl
 	GetAdditionalAllowedFrameAncestors ComProc
 	PutAdditionalAllowedFrameAncestors ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2NavigationStartingEventArgs2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2NavigationStartingEventArgs2() (*ICoreWebView2NavigationStartingEventArgs2, error) {
+// GetICoreWebView2NavigationStartingEventArgs2 queries the object for its ICoreWebView2NavigationStartingEventArgs2 interface. The receiver
+// is the root of ICoreWebView2NavigationStartingEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2NavigationStartingEventArgs) GetICoreWebView2NavigationStartingEventArgs2() (*ICoreWebView2NavigationStartingEventArgs2, error) {
 	var result *ICoreWebView2NavigationStartingEventArgs2
 
 	iidICoreWebView2NavigationStartingEventArgs2 := NewGUID("{9086be93-91aa-472d-a7e0-579f2ba006ad}")

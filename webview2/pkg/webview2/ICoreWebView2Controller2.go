@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Controller2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ControllerVtbl
 	GetDefaultBackgroundColor ComProc
 	PutDefaultBackgroundColor ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Controller2) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Controller2() (*ICoreWebView2Controller2, error) {
+// GetICoreWebView2Controller2 queries the object for its ICoreWebView2Controller2 interface. The receiver
+// is the root of ICoreWebView2Controller2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Controller) GetICoreWebView2Controller2() (*ICoreWebView2Controller2, error) {
 	var result *ICoreWebView2Controller2
 
 	iidICoreWebView2Controller2 := NewGUID("{c979903e-d4ca-4228-92eb-47ee3fa96eab}")

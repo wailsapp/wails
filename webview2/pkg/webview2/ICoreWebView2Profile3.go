@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Profile3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile2Vtbl
 	GetPreferredTrackingPreventionLevel ComProc
 	PutPreferredTrackingPreventionLevel ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Profile3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Profile3() (*ICoreWebView2Profile3, error) {
+// GetICoreWebView2Profile3 queries the object for its ICoreWebView2Profile3 interface. The receiver
+// is the root of ICoreWebView2Profile3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile3() (*ICoreWebView2Profile3, error) {
 	var result *ICoreWebView2Profile3
 
 	iidICoreWebView2Profile3 := NewGUID("{b188e659-5685-4e05-bdba-fc640e0f1992}")

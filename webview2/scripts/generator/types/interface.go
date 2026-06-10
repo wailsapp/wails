@@ -73,18 +73,40 @@ func (d *InterfaceDeclaration) generateVtbl(packageName string, w io.Writer) err
 		HasInvokeMethod bool
 		Includes        []string
 		BaseClass       string
+		BaseVtbl        string
+		QIReceiver      string
 		Header          *InterfaceHeader
 	}{
 		PackageName:     packageName,
 		BaseClass:       d.BaseClass,
+		BaseVtbl:        "IUnknownVtbl",
 		Header:          d.Header,
 		Name:            d.Name,
 		Methods:         d.Methods,
 		HasInvokeMethod: d.HasInvokeMethod(),
 		Includes:        d.includes.AsSlice(),
 	}
+	library := d.decl.library
 	if d.BaseClass == "IUnknown" {
 		data.BaseClass = ""
+	} else {
+		// COM vtbls are flat: a derived interface's table starts with every
+		// slot of its base. Embedding the base's vtbl struct (recursively
+		// down to IUnknownVtbl) reproduces that layout; embedding only
+		// IUnknownVtbl would shift every method onto the wrong slot.
+		if _, ok := library.interfaceBases[d.BaseClass]; !ok {
+			return fmt.Errorf("interface %s derives from %s which is not declared in the IDL", d.Name, d.BaseClass)
+		}
+		data.BaseVtbl = d.BaseClass + "Vtbl"
+		// QueryInterface helpers must run against the object that actually
+		// implements the interface: the root of the inheritance chain (e.g.
+		// ICoreWebView2Controller for ICoreWebView2Controller2), not
+		// ICoreWebView2 unconditionally.
+		root, err := library.chainRoot(d.Name)
+		if err != nil {
+			return err
+		}
+		data.QIReceiver = root
 	}
 	mustTemplate("Interface Vtbl", "interfacevtbl.tmpl", &data, w)
 	return nil

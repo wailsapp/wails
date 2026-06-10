@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2CompositionController3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionController2Vtbl
 	DragEnter ComProc
 	DragLeave ComProc
 	DragOver ComProc
@@ -30,7 +30,10 @@ func (i *ICoreWebView2CompositionController3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2CompositionController3() (*ICoreWebView2CompositionController3, error) {
+// GetICoreWebView2CompositionController3 queries the object for its ICoreWebView2CompositionController3 interface. The receiver
+// is the root of ICoreWebView2CompositionController3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2CompositionController) GetICoreWebView2CompositionController3() (*ICoreWebView2CompositionController3, error) {
 	var result *ICoreWebView2CompositionController3
 
 	iidICoreWebView2CompositionController3 := NewGUID("{9570570e-4d76-4361-9ee1-f04d0dbdfb1e}")

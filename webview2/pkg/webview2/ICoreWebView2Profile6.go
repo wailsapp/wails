@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Profile6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile5Vtbl
 	GetIsPasswordAutosaveEnabled ComProc
 	PutIsPasswordAutosaveEnabled ComProc
 	GetIsGeneralAutofillEnabled ComProc
@@ -30,7 +30,10 @@ func (i *ICoreWebView2Profile6) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Profile6() (*ICoreWebView2Profile6, error) {
+// GetICoreWebView2Profile6 queries the object for its ICoreWebView2Profile6 interface. The receiver
+// is the root of ICoreWebView2Profile6's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile6() (*ICoreWebView2Profile6, error) {
 	var result *ICoreWebView2Profile6
 
 	iidICoreWebView2Profile6 := NewGUID("{BD82FA6A-1D65-4C33-B2B4-0393020CC61B}")

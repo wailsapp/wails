@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2CompositionController4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionController3Vtbl
 	GetNonClientRegionAtPoint ComProc
 	QueryNonClientRegion ComProc
 	AddNonClientRegionChanged ComProc
@@ -30,7 +30,10 @@ func (i *ICoreWebView2CompositionController4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2CompositionController4() (*ICoreWebView2CompositionController4, error) {
+// GetICoreWebView2CompositionController4 queries the object for its ICoreWebView2CompositionController4 interface. The receiver
+// is the root of ICoreWebView2CompositionController4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2CompositionController) GetICoreWebView2CompositionController4() (*ICoreWebView2CompositionController4, error) {
 	var result *ICoreWebView2CompositionController4
 
 	iidICoreWebView2CompositionController4 := NewGUID("{7C367B9B-3D2B-450F-9E58-D61A20F486AA}")

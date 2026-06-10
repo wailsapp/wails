@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Environment7Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment6Vtbl
 	GetUserDataFolder ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Environment7) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Environment7() (*ICoreWebView2Environment7, error) {
+// GetICoreWebView2Environment7 queries the object for its ICoreWebView2Environment7 interface. The receiver
+// is the root of ICoreWebView2Environment7's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Environment) GetICoreWebView2Environment7() (*ICoreWebView2Environment7, error) {
 	var result *ICoreWebView2Environment7
 
 	iidICoreWebView2Environment7 := NewGUID("{43c22296-3bbd-43a4-9c00-5c0df6dd29a2}")

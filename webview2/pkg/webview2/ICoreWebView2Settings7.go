@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings7Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings6Vtbl
 	GetHiddenPdfToolbarItems ComProc
 	PutHiddenPdfToolbarItems ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings7) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings7() (*ICoreWebView2Settings7, error) {
+// GetICoreWebView2Settings7 queries the object for its ICoreWebView2Settings7 interface. The receiver
+// is the root of ICoreWebView2Settings7's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings7() (*ICoreWebView2Settings7, error) {
 	var result *ICoreWebView2Settings7
 
 	iidICoreWebView2Settings7 := NewGUID("{488dc902-35ef-42d2-bc7d-94b65c4bc49c}")

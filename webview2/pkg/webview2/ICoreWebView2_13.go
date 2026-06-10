@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2_13Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_12Vtbl
 	GetProfile ComProc
 }
 
@@ -27,6 +27,9 @@ func (i *ICoreWebView2_13) Release() uint32 {
 }
 
 
+// GetICoreWebView2_13 queries the object for its ICoreWebView2_13 interface. The receiver
+// is the root of ICoreWebView2_13's inheritance chain — the object that actually
+// implements it.
 func (i *ICoreWebView2) GetICoreWebView2_13() (*ICoreWebView2_13, error) {
 	var result *ICoreWebView2_13
 

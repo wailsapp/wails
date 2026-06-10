@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2CompositionController5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionController4Vtbl
 	AddDragStarting ComProc
 	RemoveDragStarting ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2CompositionController5) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2CompositionController5() (*ICoreWebView2CompositionController5, error) {
+// GetICoreWebView2CompositionController5 queries the object for its ICoreWebView2CompositionController5 interface. The receiver
+// is the root of ICoreWebView2CompositionController5's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2CompositionController) GetICoreWebView2CompositionController5() (*ICoreWebView2CompositionController5, error) {
 	var result *ICoreWebView2CompositionController5
 
 	iidICoreWebView2CompositionController5 := NewGUID("{8d0f82eb-7c33-5a4c-9108-84ca28ccc3b4}")

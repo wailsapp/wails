@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Controller3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Controller2Vtbl
 	GetRasterizationScale ComProc
 	PutRasterizationScale ComProc
 	GetShouldDetectMonitorScaleChanges ComProc
@@ -35,7 +35,10 @@ func (i *ICoreWebView2Controller3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Controller3() (*ICoreWebView2Controller3, error) {
+// GetICoreWebView2Controller3 queries the object for its ICoreWebView2Controller3 interface. The receiver
+// is the root of ICoreWebView2Controller3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Controller) GetICoreWebView2Controller3() (*ICoreWebView2Controller3, error) {
 	var result *ICoreWebView2Controller3
 
 	iidICoreWebView2Controller3 := NewGUID("{f9614724-5d2b-41dc-aef7-73d62b51543b}")

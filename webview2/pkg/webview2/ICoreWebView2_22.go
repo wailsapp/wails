@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2_22Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_21Vtbl
 	AddWebResourceRequestedFilterWithRequestSourceKinds ComProc
 	RemoveWebResourceRequestedFilterWithRequestSourceKinds ComProc
 }
@@ -28,6 +28,9 @@ func (i *ICoreWebView2_22) Release() uint32 {
 }
 
 
+// GetICoreWebView2_22 queries the object for its ICoreWebView2_22 interface. The receiver
+// is the root of ICoreWebView2_22's inheritance chain — the object that actually
+// implements it.
 func (i *ICoreWebView2) GetICoreWebView2_22() (*ICoreWebView2_22, error) {
 	var result *ICoreWebView2_22
 

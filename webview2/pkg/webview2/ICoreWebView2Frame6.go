@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Frame6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Frame5Vtbl
 	AddScreenCaptureStarting ComProc
 	RemoveScreenCaptureStarting ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Frame6) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Frame6() (*ICoreWebView2Frame6, error) {
+// GetICoreWebView2Frame6 queries the object for its ICoreWebView2Frame6 interface. The receiver
+// is the root of ICoreWebView2Frame6's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Frame) GetICoreWebView2Frame6() (*ICoreWebView2Frame6, error) {
 	var result *ICoreWebView2Frame6
 
 	iidICoreWebView2Frame6 := NewGUID("{0de611fd-31e9-5ddc-9d71-95eda26eff32}")

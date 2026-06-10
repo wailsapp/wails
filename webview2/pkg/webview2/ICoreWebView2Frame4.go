@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Frame4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Frame3Vtbl
 	PostSharedBufferToScript ComProc
 }
 
@@ -27,7 +27,10 @@ func (i *ICoreWebView2Frame4) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Frame4() (*ICoreWebView2Frame4, error) {
+// GetICoreWebView2Frame4 queries the object for its ICoreWebView2Frame4 interface. The receiver
+// is the root of ICoreWebView2Frame4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Frame) GetICoreWebView2Frame4() (*ICoreWebView2Frame4, error) {
 	var result *ICoreWebView2Frame4
 
 	iidICoreWebView2Frame4 := NewGUID("{188782dc-92aa-4732-ab3c-fcc59f6f68b9}")

@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2_14Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_13Vtbl
 	AddServerCertificateErrorDetected ComProc
 	RemoveServerCertificateErrorDetected ComProc
 	ClearServerCertificateErrorActions ComProc
@@ -29,6 +29,9 @@ func (i *ICoreWebView2_14) Release() uint32 {
 }
 
 
+// GetICoreWebView2_14 queries the object for its ICoreWebView2_14 interface. The receiver
+// is the root of ICoreWebView2_14's inheritance chain — the object that actually
+// implements it.
 func (i *ICoreWebView2) GetICoreWebView2_14() (*ICoreWebView2_14, error) {
 	var result *ICoreWebView2_14
 

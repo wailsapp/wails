@@ -8,7 +8,7 @@ import (
 )
 
 type ICoreWebView2Settings3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings2Vtbl
 	GetAreBrowserAcceleratorKeysEnabled ComProc
 	PutAreBrowserAcceleratorKeysEnabled ComProc
 }
@@ -28,7 +28,10 @@ func (i *ICoreWebView2Settings3) Release() uint32 {
 }
 
 
-func (i *ICoreWebView2) GetICoreWebView2Settings3() (*ICoreWebView2Settings3, error) {
+// GetICoreWebView2Settings3 queries the object for its ICoreWebView2Settings3 interface. The receiver
+// is the root of ICoreWebView2Settings3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings3() (*ICoreWebView2Settings3, error) {
 	var result *ICoreWebView2Settings3
 
 	iidICoreWebView2Settings3 := NewGUID("{fdb5ab74-af33-4854-84f0-0a631deb5eba}")
