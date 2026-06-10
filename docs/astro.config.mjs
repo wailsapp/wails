@@ -309,13 +309,14 @@ export default defineConfig({
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
+                { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
               ],
             },
             {
               label: "Distribution",
               collapsed: true,
               items: [
-                { label: "Auto-Updates", link: "/guides/distribution/auto-updates" },
+                { label: "In-App Updater", link: "/guides/updater" },
                 { label: "File Associations", link: "/guides/distribution/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
                 { label: "Single Instance", link: "/guides/distribution/single-instance" },

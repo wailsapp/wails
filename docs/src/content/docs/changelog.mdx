@@ -31,6 +31,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.98 - 2026-06-03
+
+## Fixed
+- Fix WebKit UI freeze on Linux when idle (e.g. with the inspector open) by no longer forcing `SA_ONSTACK` on `SIGUSR1`, which broke JavaScriptCore's GC thread synchronisation (#5527)
+
+## v3.0.0-alpha.97 - 2026-05-31
+
+## Added
+- Add debugging page and working with `runtime/trace`
+
+## Changed
+- Remove some unnecessary `_ "embed"` imports tidying the code a little
+
+## Fixed
+- Fix minimum width/height constraints not enforced after window unmaximise on Windows (#4593)
+- Fix mouse click-through in fullscreen mode with Frameless + Transparent window options (#4408)
+
+## v3.0.0-alpha.96 - 2026-05-25
+
+## Added
+- Add Garble obfuscation support ([#4563](https://github.com/wailsapp/wails/issues/4563)): stable binding method IDs, build/Taskfile plumbing (`build --obfuscated --garbleargs`, `generate bindings -obfuscated`), and JSON struct tags on every runtime-facing payload (`EnvironmentInfo`, `OSInfo`, `Screen`, `Rect`, `Point`, `Size`, `Capabilities`) so the wire format survives Garble's exported-field renaming.
+
+## v3.0.0-alpha.95 - 2026-05-20
+
+## Added
+- Added missing project structure page
+
+## Changed
+- Docs: Change to a couple of diagrams on architecture page to use sequence diagram for cleaner display
+- Docs: Include note about installing D2 as a prerequisite for running
+
+## Fixed
+- Fix `wails3 generate appimage` on the GTK4 default: the bundler now detects the GTK stack from the binary before searching for runtime files, so it picks `libwebkitgtkinjectedbundle.so` (under `webkitgtk-6.0/`) for GTK4 builds and `libwebkit2gtkinjectedbundle.so` (under `webkit2gtk-4.1/`) for `-tags gtk3` builds. The `.relr.dyn` probe also checks `libgtk-4.so.1` so stripping is correctly disabled on modern toolchains regardless of stack. (#5475)
+- Fix `wails3 generate appimage` failing when invoked with a relative `-builddir`: the bundler now resolves `-binary`, `-icon`, `-desktopfile`, `-builddir` and `-outputdir` to absolute paths up-front so the mid-flow `s.CD` doesn't break the AppRun download goroutine or the post-copy `ldd` probe.
+- Fix `wails3 generate appimage` failing to move the final AppImage to `-outputdir` when the desktop `Name=` field doesn't match the binary basename: the bundler now forces linuxdeploy's appimage plugin (via the `OUTPUT` env var) to write the AppImage to `<binary>-<arch>.AppImage` instead of the name derived from the desktop file.
+- Fix `events.Common.ApplicationStarted`, `Common.ThemeChanged`, `Common.SystemWillSleep` and `Common.SystemDidWake` not firing on Linux after the GTK4 + WebKitGTK 6.0 stack was promoted to the default in alpha.93. The new default `application_linux.go` `run()` wasn't calling `setupCommonEvents()` (which forwards `Linux.*` events to their `Common.*` counterparts) or `monitorPowerEvents()`. The DBus power-monitor helper is now shared between the GTK3 and GTK4 build paths via `application_linux_dbus.go`. (#5474)
+
+## v3.0.0-alpha.94 - 2026-05-19
+
+## Fixed
+- Fix `events.Common.ApplicationStarted`, `Common.ThemeChanged`, `Common.SystemWillSleep` and `Common.SystemDidWake` not firing on Linux after the GTK4 + WebKitGTK 6.0 stack was promoted to the default in alpha.93. The new default `application_linux.go` `run()` wasn't calling `setupCommonEvents()` (which forwards `Linux.*` events to their `Common.*` counterparts) or `monitorPowerEvents()`. The DBus power-monitor helper is now shared between the GTK3 and GTK4 build paths via `application_linux_dbus.go`. (#5474)
+
+## v3.0.0-alpha.93 - 2026-05-17
+
+## Added
+- Add `XDG_SESSION_TYPE` to `wails3 doctor` output on Linux by @leaanthony
+
+## Fixed
+- Fix window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) by @leaanthony
+- Fix GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) by @leaanthony
+- Fix "not enough memory" error when initializing drag and drop on Windows (#4701) by @overlordtm
+- Fix race condition in mainthread callback store using incorrect RLock for map deletion (Linux, macOS, iOS) (#4424) by @leaanthony
+- Fixed variable handling when passing command-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
+- Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
+- Fix a cluster of pre-existing bugs in the legacy GTK3 build path (`-tags gtk3`) surfaced by CodeRabbit on #5463: file-association launches no longer skip startup handlers; `getTheme` is bounds- and type-safe; `appName` no longer frees GLib-owned memory; `clipboardGet` no longer leaks the `gchar*` returned by GTK; `Calloc` now uses pointer receivers (and `NewCalloc` returns `*Calloc`) so the pool actually tracks allocations; `zoomOut` uses the reciprocal of `zoomInFactor` instead of a negative multiplier that clamped to 1.0; `execJS` reuses the preallocated empty world-name instead of leaking a `C.CString("")` per call; a development `fmt.Println` was removed from `menuItem.setAccelerator`. Resolves #5465.
+- Fix the same `Calloc` value-receiver leak in the default GTK4 build path (`linux_cgo.go`): pointer receivers + `NewCalloc() *Calloc` so per-window `c.String(...)` allocations are actually tracked and freed.
+
 ## v3.0.0-alpha.92 - 2026-05-15
 
 ## Added

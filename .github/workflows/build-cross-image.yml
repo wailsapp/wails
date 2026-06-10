@@ -146,7 +146,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.26'
           cache: false
 
       - name: Set up Node.js
@@ -157,7 +157,7 @@ jobs:
       - name: Install Linux dev dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev
 
       - name: Install wails3 CLI
         run: |
@@ -244,7 +244,7 @@ jobs:
 
           NEEDED=$(readelf -d test-wails-app | grep NEEDED)
           MISSING=""
-          for lib in libwebkit2gtk-4.1.so libgtk-3.so libglib-2.0.so libc.so; do
+          for lib in libwebkitgtk-6.0.so libgtk-4.so libglib-2.0.so libc.so; do
             if echo "$NEEDED" | grep -q "$lib"; then
               echo "✅ $lib"
             else

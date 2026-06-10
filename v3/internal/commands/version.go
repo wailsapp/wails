@@ -1,7 +1,6 @@
 package commands
 
 import (
-	_ "embed"
 	"github.com/wailsapp/wails/v3/internal/version"
 )
 

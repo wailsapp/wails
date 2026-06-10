@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -21,6 +21,17 @@ const (
 	ButtonDisabled ButtonState = 1
 	ButtonHidden   ButtonState = 2
 )
+
+// effectiveZoomButtonState returns the more restrictive of two ButtonState values.
+// Hidden > Disabled > Enabled, matching the integer ordering of the constants.
+// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton on
+// macOS; this helper ensures neither runtime setter can silently override the other.
+func effectiveZoomButtonState(a, b ButtonState) ButtonState {
+	if b > a {
+		return b
+	}
+	return a
+}
 
 type WindowStartPosition int
 
@@ -79,6 +90,31 @@ type WebviewWindowOptions struct {
 
 	// HTML is the HTML to load in the window.
 	HTML string
+
+	// AllowSimpleEventEmit gates the `wails:event:emit:<name>` postMessage
+	// shortcut for this window. When true, JavaScript running in this
+	// window can fire bare-named Wails custom events on the host bus via
+	// `window._wails.invoke("wails:event:emit:<name>")`. The shortcut
+	// exists so InitialHTML pages (loaded with no asset-server origin —
+	// the framework's built-in updater window is the canonical case) can
+	// still talk to the Go side without depending on the modern HTTP
+	// runtime that requires `fetch("/wails/runtime")` to work.
+	//
+	// SECURITY: leave this off (the default) unless you control every byte
+	// of HTML that this window will ever load. When enabled, ANY script
+	// running in the page — including content from a remote URL or any
+	// XSS sink in user-supplied content — can synthesise Wails custom
+	// events. The shortcut conveys bare names only (no payload) and
+	// cannot reach the binding/Call path, but it CAN trigger any
+	// `app.Event.On(name, ...)` handler your application code registers.
+	// If you have a handler that performs a privileged action based on
+	// the event name alone, that handler is exposed to anyone with
+	// scripting access to this window.
+	//
+	// Use [WebviewWindow.AsUpdaterWindow] in concert with
+	// updater.BYOWindow to opt in cleanly when you're writing your own
+	// updater UI; otherwise leave this false.
+	AllowSimpleEventEmit bool
 
 	// JS is the JavaScript to load in the window.
 	JS string
@@ -553,13 +589,27 @@ const (
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {
 	// TabFocusesLinks will enable tabbing to links
-	TabFocusesLinks u.Bool
+	TabFocusesLinks optional.Bool
 	// TextInteractionEnabled will enable text interaction
-	TextInteractionEnabled u.Bool
+	TextInteractionEnabled optional.Bool
 	// FullscreenEnabled will enable fullscreen
-	FullscreenEnabled u.Bool
+	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
-	AllowsBackForwardNavigationGestures u.Bool
+	AllowsBackForwardNavigationGestures optional.Bool
+	// AllowsMagnification enables pinch-to-zoom on the webview
+	AllowsMagnification optional.Bool
+	// AllowsAirPlayForMediaPlayback enables AirPlay media playback
+	AllowsAirPlayForMediaPlayback optional.Bool
+	// JavaScriptCanOpenWindowsAutomatically allows JS to open windows without a user gesture
+	JavaScriptCanOpenWindowsAutomatically optional.Bool
+	// MinimumFontSize sets the minimum font size in points
+	MinimumFontSize optional.Var[float64]
+	// ApplicationNameForUserAgent overrides the application name portion of the user agent string.
+	// Leave empty to use the default "wails.io" suffix.
+	ApplicationNameForUserAgent string
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

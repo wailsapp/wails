@@ -11,16 +11,16 @@ import (
 
 	"encoding/json"
 
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Enabled means the feature should be enabled
-var Enabled = u.True
+var Enabled = optional.True
 
 // Disabled means the feature should be disabled
-var Disabled = u.False
+var Disabled = optional.False
 
 var shouldSkipHideOnFocusLost = func() bool { return false }
 
@@ -176,6 +176,12 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	savedMinWidth    int
+	savedMinHeight   int
+	savedMaxWidth    int
+	savedMaxHeight   int
+	constraintsSaved bool
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -285,6 +291,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Name == "" {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)
 	}
+
+	// Inject the minimal `window.wails.Events` shim into HTML-supplied
+	// pages that opted into the simple postMessage emit path. Without this
+	// they can't load /wails/runtime.js (their origin is "null") so they'd
+	// have to hand-roll a dispatch receiver and an invoke caller every
+	// time. See inline_event_shim.go.
+	options.HTML = maybeInjectInlineEventShim(options.HTML, options.AllowSimpleEventEmit)
 
 	result := &WebviewWindow{
 		id:             thisWindowID,
@@ -776,6 +789,29 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				w.impl.execJS(js)
 			})
 		}
+	case strings.HasPrefix(message, "wails:event:emit:"):
+		// Forward an event from a page that can't reach the modern HTTP
+		// runtime (e.g. an InitialHTML pop-up loaded with `baseURL:nil`
+		// where `window.location.origin` is "null" and fetch fails). Sent
+		// as `wails:event:emit:<event-name>`; bare names only (no payload).
+		// Enough for the updater window's user-action buttons; pages that
+		// need to send structured data should use the full runtime.
+		//
+		// Gated on WebviewWindowOptions.AllowSimpleEventEmit so a page
+		// loaded into a webview cannot synthesise host-side custom events
+		// unless its owning code explicitly opted in. See the comment on
+		// that field for the threat model.
+		if !w.options.AllowSimpleEventEmit {
+			w.Error("wails:event:emit received but AllowSimpleEventEmit is not set on this window: %v", message)
+			return
+		}
+		name := strings.TrimPrefix(message, "wails:event:emit:")
+		if name == "" {
+			w.Error("empty event name in wails:event:emit")
+			return
+		}
+		evt := &CustomEvent{Name: name, Sender: w.Name()}
+		globalApplication.Event.EmitEvent(evt)
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
@@ -1200,6 +1236,13 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
+		if !w.constraintsSaved {
+			w.savedMinWidth = w.options.MinWidth
+			w.savedMinHeight = w.options.MinHeight
+			w.savedMaxWidth = w.options.MaxWidth
+			w.savedMaxHeight = w.options.MaxHeight
+			w.constraintsSaved = true
+		}
 		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
@@ -1214,11 +1257,18 @@ func (w *WebviewWindow) EnableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
-			w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
+		minW, minH := w.options.MinWidth, w.options.MinHeight
+		maxW, maxH := w.options.MaxWidth, w.options.MaxHeight
+		if w.constraintsSaved {
+			minW, minH = w.savedMinWidth, w.savedMinHeight
+			maxW, maxH = w.savedMaxWidth, w.savedMaxHeight
+			w.constraintsSaved = false
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
-			w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+		if minW > 0 && minH > 0 {
+			w.SetMinSize(minW, minH)
+		}
+		if maxW > 0 && maxH > 0 {
+			w.SetMaxSize(maxW, maxH)
 		}
 	})
 }

@@ -145,14 +145,16 @@ For more details, see README.md and QUICKSTART.md.
 
 ## Implementation Tracking (IMPLEMENTATION.md)
 
-**IMPORTANT**: The `IMPLEMENTATION.md` file at the repository root is a **persistent tracking document** for the WebKitGTK 6.0 / GTK4 implementation work. It is NOT an ephemeral planning document.
+**IMPORTANT**: The `IMPLEMENTATION.md` file at the repository root is a **persistent tracking document** for the GTK4 / WebKitGTK 6.0 / GTK3-legacy implementation work. It is NOT an ephemeral planning document.
+
+As of 2026-05-16 (issue #5459), GTK4 + WebKitGTK 6.0 is the **default** Linux stack; GTK3 + WebKit2GTK 4.1 is a legacy opt-in (`-tags gtk3`) for one v3 cycle and is scheduled for removal in v3.1. The default-flip rationale is recorded in `IMPLEMENTATION.md` Decision 1.1.
 
 ### Requirements
 
-1. **Update with EVERY commit** that touches GTK4/WebKitGTK 6.0 related code
+1. **Update with EVERY commit** that touches GTK4/WebKitGTK 6.0 or legacy GTK3 code
 2. **Track all architectural decisions** with context, decision, and rationale
 3. **Maintain progress status** for each implementation phase
-4. **Document API differences** between GTK3 and GTK4
+4. **Document API differences** between the GTK4 default and GTK3 legacy paths
 5. **Keep file references** accurate and up-to-date
 
 ### What to Update
