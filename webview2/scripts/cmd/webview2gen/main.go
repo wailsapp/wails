@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"updater/generator"
 	"updater/internal/capabilities"
@@ -60,6 +61,7 @@ func main() {
 		"download":     runDownload,
 		"generate":     runGenerate,
 		"capabilities": runCapabilities,
+		"changelog":    runChangelog,
 		"test":         runTest,
 		"verify":       runVerify,
 		"full":         runFull,
@@ -90,6 +92,7 @@ COMMANDS
   download      Fetch an SDK IDL into the local cache.
   generate      Generate pkg/webview2 from a cached IDL.
   capabilities  Emit pkg/webview2/capabilities.go from SDK release notes.
+  changelog     Prepend a CHANGELOG.md entry diffing two cached SDK IDLs.
   test          Run `+"`"+`go test ./...`+"`"+` for the generator + internal pkgs.
   verify        Regenerate and fail if the working tree differs.
   full          download → generate → capabilities → verify.
@@ -347,6 +350,157 @@ func runCapabilities(args []string) error {
 		fmt.Fprintf(os.Stderr, "wrote %s\n", *jsonOut)
 	}
 	return nil
+}
+
+// -----------------------------------------------------------------------
+// changelog
+// -----------------------------------------------------------------------
+
+// runChangelog diffs two cached SDK IDLs and prepends a human-readable entry
+// to the package changelog: interfaces added/removed and methods added to
+// existing interfaces. The automated update workflow runs this between
+// download and generate so every regeneration documents itself.
+func runChangelog(args []string) error {
+	fs := flag.NewFlagSet("changelog", flag.ContinueOnError)
+	from := fs.String("from", "", "previous SDK version (cached IDL)")
+	to := fs.String("to", "", "new SDK version (default: latest cached)")
+	dir := fs.String("dir", IDLDir, "IDL cache directory")
+	out := fs.String("out", "../CHANGELOG.md", "changelog file to prepend the entry to")
+	date := fs.String("date", "", "entry date (YYYY-MM-DD, default: today)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *from == "" {
+		return errors.New("changelog: -from <version> is required")
+	}
+
+	store := idl.NewStore(*dir)
+	toVersion, err := resolveVersion(store, *to)
+	if err != nil {
+		return err
+	}
+	if *from == toVersion {
+		fmt.Fprintf(os.Stderr, "changelog: %s == %s, nothing to record\n", *from, toVersion)
+		return nil
+	}
+	oldBytes, err := store.Read(*from)
+	if err != nil {
+		return fmt.Errorf("read IDL %s: %w", *from, err)
+	}
+	newBytes, err := store.Read(toVersion)
+	if err != nil {
+		return fmt.Errorf("read IDL %s: %w", toVersion, err)
+	}
+	oldMethods, err := generator.InterfaceMethods(oldBytes)
+	if err != nil {
+		return fmt.Errorf("parse IDL %s: %w", *from, err)
+	}
+	newMethods, err := generator.InterfaceMethods(newBytes)
+	if err != nil {
+		return fmt.Errorf("parse IDL %s: %w", toVersion, err)
+	}
+
+	entry := changelogEntry(*from, toVersion, *date, oldMethods, newMethods)
+	if err := prependChangelog(*out, entry); err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "changelog: recorded %s → %s in %s\n", *from, toVersion, *out)
+	return nil
+}
+
+func changelogEntry(from, to, date string, oldMethods, newMethods map[string][]string) string {
+	if date == "" {
+		date = time.Now().UTC().Format("2006-01-02")
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "## SDK %s (%s)\n\n", to, date)
+	fmt.Fprintf(&b, "Regenerated bindings from WebView2 SDK %s (previously %s).\n", to, from)
+
+	var added, removed []string
+	for name := range newMethods {
+		if _, ok := oldMethods[name]; !ok {
+			added = append(added, name)
+		}
+	}
+	for name := range oldMethods {
+		if _, ok := newMethods[name]; !ok {
+			removed = append(removed, name)
+		}
+	}
+	sort.Strings(added)
+	sort.Strings(removed)
+
+	type grown struct {
+		name    string
+		methods []string
+	}
+	var grew []grown
+	for name, methods := range newMethods {
+		old, ok := oldMethods[name]
+		if !ok {
+			continue
+		}
+		oldSet := map[string]bool{}
+		for _, m := range old {
+			oldSet[m] = true
+		}
+		var newOnes []string
+		for _, m := range methods {
+			if !oldSet[m] {
+				newOnes = append(newOnes, m)
+			}
+		}
+		if len(newOnes) > 0 {
+			sort.Strings(newOnes)
+			grew = append(grew, grown{name, newOnes})
+		}
+	}
+	sort.Slice(grew, func(i, j int) bool { return grew[i].name < grew[j].name })
+
+	if len(added) > 0 {
+		fmt.Fprintf(&b, "\n### Added interfaces (%d)\n\n", len(added))
+		for _, name := range added {
+			fmt.Fprintf(&b, "- `%s`\n", name)
+		}
+	}
+	if len(grew) > 0 {
+		fmt.Fprintf(&b, "\n### New methods on existing interfaces\n\n")
+		for _, g := range grew {
+			fmt.Fprintf(&b, "- `%s`: %s\n", g.name, strings.Join(g.methods, ", "))
+		}
+	}
+	if len(removed) > 0 {
+		fmt.Fprintf(&b, "\n### Removed interfaces (%d)\n\n", len(removed))
+		for _, name := range removed {
+			fmt.Fprintf(&b, "- `%s`\n", name)
+		}
+	}
+	if len(added) == 0 && len(grew) == 0 && len(removed) == 0 {
+		b.WriteString("\nNo interface or method changes — documentation/metadata update only.\n")
+	}
+	return b.String()
+}
+
+// prependChangelog inserts the entry directly under the "# Changelog" header,
+// creating the file if needed.
+func prependChangelog(path, entry string) error {
+	const header = "# Changelog\n"
+	existing, err := os.ReadFile(path)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("read %s: %w", path, err)
+		}
+		existing = []byte(header)
+	}
+	content := string(existing)
+	idx := strings.Index(content, header)
+	if idx < 0 {
+		content = header + "\n" + entry + "\n" + content
+	} else {
+		insertAt := idx + len(header)
+		content = content[:insertAt] + "\n" + entry + content[insertAt:]
+	}
+	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 // -----------------------------------------------------------------------

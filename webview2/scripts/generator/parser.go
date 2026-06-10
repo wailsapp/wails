@@ -83,3 +83,27 @@ func InterfaceNames(idlData []byte) ([]string, error) {
 	}
 	return names, nil
 }
+
+// InterfaceMethods parses the IDL and returns each declared interface's own
+// method names (inherited methods excluded), used to diff SDK versions for
+// changelog entries.
+func InterfaceMethods(idlData []byte) (map[string][]string, error) {
+	idl, err := Parser.ParseBytes("", idlData)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string][]string{}
+	for _, lib := range idl.Libraries {
+		for _, d := range lib.Declarations {
+			if d.Interface == nil {
+				continue
+			}
+			var methods []string
+			for _, m := range d.Interface.Methods {
+				methods = append(methods, string(m.Name))
+			}
+			out[d.Interface.Name] = methods
+		}
+	}
+	return out, nil
+}

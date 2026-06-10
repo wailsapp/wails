@@ -79,23 +79,32 @@ we do not need a preprocessor that resolves `import "objidl.idl"` etc.
 If a future SDK switches to multi-file IDL, `internal/idl` is where the
 inliner will live.
 
-### Capabilities from release notes
+### Capabilities from release notes + IDL inventory
 
-The mapping "ICoreWebView2_N → minimum SDK version" comes from scraping
-the Markdown release notes (`MicrosoftDocs/edge-developer`). The IDL
-itself does not record which SDK introduced which interface; the release
-notes do (as the bullet "Added the `ICoreWebView2_N` interface" under a
-versioned heading).
+Each entry in `InterfaceSupportTable` pairs the SDK release that
+introduced an interface with that release's *minimum WebView2 Runtime
+version* — the value `SupportsInterface` compares against, because what a
+running app can query is the installed runtime's browser version, not an
+SDK version. Both values come from scraping the Markdown release notes
+(`MicrosoftDocs/edge-developer`): the IDL itself records neither.
 
 The scrape is regex-based and walks the notes oldest-first so the
-earliest mention wins. When Microsoft changes the notes format we will
-see test failures and update the regex; the table is committed at
-`pkg/webview2/capabilities.go` so a broken scrape can be fixed without
-forcing every consumer to wait.
+earliest stable mention wins. Coverage is made total by construction: the
+`capabilities` command parses the current IDL for the full interface
+inventory; interfaces the notes never mention but that exist in the
+oldest cached IDL predate the release-notes archive and become baseline
+(always-supported) entries, and anything absent from both fails
+generation loudly. A generated test additionally asserts every generated
+interface has a table entry.
+
+When Microsoft changes the notes format we will see test failures (and
+generation failures from the inventory check) and update the regex; the
+table is committed at `pkg/webview2/capabilities.go` so a broken scrape
+can be fixed without forcing every consumer to wait.
 
 **Trade-off.** A maintenance burden (every few months Microsoft may
 restructure the notes). Mitigated by the test suite covering the parser
-against the cached `test.md` snapshot.
+against the cached `test.md` snapshot, plus the loud inventory check.
 
 ### `pkg/edge/` is kept, not deleted
 

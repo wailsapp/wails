@@ -28,17 +28,26 @@ go run ./cmd/webview2gen download --version 1.0.2903.40
 # Parse the cached IDL and emit pkg/webview2/*.go.
 go run ./cmd/webview2gen generate
 
-# Build pkg/webview2/capabilities.go from the SDK release notes.
+# Build pkg/webview2/capabilities.go from the SDK release notes and the
+# IDL interface inventory (every generated interface gets an entry).
 go run ./cmd/webview2gen capabilities          # fetches notes from GitHub
 go run ./cmd/webview2gen capabilities --source test.md   # use a local copy
 
-# Regenerate everything and fail if the working tree differs from the
-# committed output — wire this into CI so hand-edits cannot land.
+# Record an SDK bump in webview2/CHANGELOG.md (added/removed interfaces,
+# new methods), diffing two cached IDLs.
+go run ./cmd/webview2gen changelog --from 1.0.2903.40 --to 1.0.3967.48
+
+# Regenerate everything (bindings AND the generated *_gen_test.go suite)
+# and fail if the working tree differs from the committed output — wired
+# into CI so hand-edits cannot land.
 go run ./cmd/webview2gen verify
 
 # Run download → generate → capabilities → verify in sequence.
-go run ./cmd/webview2gen full
+go run ./cmd/webview2gen full --source test.md
 ```
+
+`generate` is incremental: only files whose content changed are rewritten,
+and generated files the IDL no longer produces are removed.
 
 Run `go generate ./...` from `webview2/` to invoke `full` via the
 `//go:generate` directive in `pkg/webview2/doc.go`.
@@ -68,25 +77,20 @@ runtime := webview2runtime.GetAvailableCoreWebView2BrowserVersionString() // e.g
 ok, required, err := webview2.SupportsInterface(runtime, "ICoreWebView2_22")
 if err != nil { ... }
 if !ok {
-    log.Printf("feature disabled — needs WebView2 SDK %s, runtime reports %s", required, runtime)
+    log.Printf("feature disabled — needs WebView2 Runtime %s, installed %s", required, runtime)
     return
 }
 // safe to call ICoreWebView2_22 methods
 ```
 
-For a higher-level gate, declare a `Capability` once and check it everywhere:
-
-```go
-var screenCapture = webview2.Capability{
-    Name:        "screen-capture",
-    Description: "ScreenCaptureStarting event support",
-    Interface:   "ICoreWebView2_22",
-}
-if ok, _ := webview2.HasCapability(runtime, screenCapture); ok { ... }
-```
-
-`AllCapabilities` enumerates every interface as a named gate, suitable for
-boot-time logging or diagnostics.
+The comparison is runtime-version against runtime-version: every entry in
+`InterfaceSupportTable` carries the SDK release that introduced the
+interface *and* that release's minimum WebView2 Runtime version, scraped
+from the release notes. Interfaces that predate the release-notes archive
+are baseline entries (always supported). The table covers every generated
+interface — completeness is enforced at generation time and by a generated
+test, so `SupportsInterface` never errors for an interface this package
+defines.
 
 ## Bugs fixed by the v2 generator
 
@@ -98,21 +102,35 @@ boot-time logging or diagnostics.
 | 4 | Minor | `QueryInterface` swallowed `HRESULT`, returning `nil` on failure | Returns `(*T, error)`; non-zero HRESULTs are surfaced. |
 | 5 | Minor | `VARIANT` was a `uintptr` (8 bytes) instead of the 16-byte Windows struct | `type VARIANT struct { VT uint16; … Val [8]byte }`. |
 | 6 | Minor | `AddRef/Release` returned `uintptr` instead of the COM `ULONG` (uint32) | Both return `uint32`; callback wrappers cast to `uintptr` at the syscall boundary. |
+| 7 | Critical | Derived interface vtbls embedded only `IUnknownVtbl`, dropping every inherited slot — all 89 derived interfaces dispatched methods to the wrong vtbl entry | Vtbls embed their base interface's vtbl recursively, reproducing the flat COM layout. |
+| 8 | Critical | `[in] double` emitted `uintptr(v)`, truncating `1.5` to `1` (12 methods incl. `PutZoomFactor`) | IEEE-754 bits via `math.Float64bits`; two stack words on 386. |
+| 9 | Critical | 8-byte by-value aggregates (`EventRegistrationToken` in all 65 `Remove*` methods, `POINT`) passed by address — event handlers never unregistered | Passed by value per the Win64 ABI, with arm64/386 encodings. |
+| 10 | Critical | All `Get<Interface>()` QI helpers were emitted on `*ICoreWebView2` — controller/settings/environment upgrades were unobtainable | Helpers target the root of each interface's inheritance chain. |
+| 11 | Moderate | `COREWEBVIEW2_COLOR`/`RECT` by-value structs passed by address (wrong on every arch / on arm64+386 respectively); `VARIANT` declared 16 bytes instead of the 24-byte win64 layout | Size-driven by-value packing; `VARIANT.Val [2]uintptr`. |
+| 12 | Moderate | `[out] LPWSTR**` surfaced as `*string`, `[in/out] T**`/`T***` arrays mismarshalled | Proper `[]string` / `[]*T` array marshalling with CoTaskMem ownership. |
 
 ## Testing
 
 ```sh
 cd webview2/scripts
-go test ./...                   # generator + internal pkgs (Linux-fine)
-GOOS=windows go vet ../pkg/...  # cross-vet the generated bindings
+go test ./...                   # generator + internal pkgs (any OS)
+cd ..
+GOOS=windows go vet ./pkg/webview2/   # cross-compile bindings AND generated tests
+go test ./pkg/webview2/               # on Windows: run the generated suite
 ```
 
-CI must gate on `webview2gen verify` and `go test ./...`. The generator
-contains regression tests for each of the 17 typed IDL patterns and for
-all six known bug classes.
+The generator emits a behavioural test suite next to the bindings: every
+generated method gets a round-trip test against a fake recording vtbl (see
+`pkg/webview2/comtest_support_test.go` for the harness), plus generated
+vtbl-layout, struct-size, QueryInterface and Invoke-dispatch tests. The
+suite runs on the Windows CI job; other platforms cross-compile it via
+`go vet`.
 
-Windows VM integration tests (COM smoke, property getters, event handlers)
-are tracked separately on WAI-297 — they require an actual WebView2 runtime.
+CI gates on `webview2gen verify` (bindings, tests and capabilities all
+match a fresh regeneration) and the test suites above.
+
+Windows VM integration tests against a real WebView2 runtime (COM smoke,
+event handlers end-to-end) are tracked separately on WAI-297.
 
 ## See also
 
