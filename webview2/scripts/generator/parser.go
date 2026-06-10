@@ -44,6 +44,27 @@ func ParseIDL(idlData []byte) ([]*types.GeneratedFile, error) {
 	return generatedFiles, nil
 }
 
+// ParseIDLWithTests is ParseIDL plus the generated test files (per-interface
+// marshalling tests and the package-wide ABI test file).
+func ParseIDLWithTests(idlData []byte) ([]*types.GeneratedFile, error) {
+	idl, err := Parser.ParseBytes("", idlData)
+	if err != nil {
+		return nil, err
+	}
+	if err := idl.Process(); err != nil {
+		return nil, err
+	}
+	files, err := idl.Generate()
+	if err != nil {
+		return nil, err
+	}
+	tests, err := idl.GenerateTests()
+	if err != nil {
+		return nil, err
+	}
+	return append(files, tests...), nil
+}
+
 // InterfaceNames parses the IDL and returns the names of all fully declared
 // interfaces (forward references excluded), in declaration order. This is
 // the inventory the capability table must cover.

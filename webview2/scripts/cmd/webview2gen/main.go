@@ -167,7 +167,7 @@ func runGenerate(args []string) error {
 		return fmt.Errorf("read IDL %s: %w", v, err)
 	}
 
-	files, err := generator.ParseIDL(idlBytes)
+	files, err := generator.ParseIDLWithTests(idlBytes)
 	if err != nil {
 		return fmt.Errorf("parse IDL: %w", err)
 	}
@@ -214,12 +214,16 @@ func runGenerate(args []string) error {
 	return nil
 }
 
-// generatedFileExclusions are .go files in the output directory that the
+// isExcludedGeneratedFile reports .go files in the output directory that the
 // `generate` subcommand does not produce and must never delete or flag:
-// capabilities.go comes from the `capabilities` subcommand, doc.go is the
-// only hand-written file in the package, and *_test.go files are managed by
-// the `tests` emission. Shared by generate (stale removal) and verify.
+// capabilities.go comes from the `capabilities` subcommand, doc.go and
+// hand-written *_test.go support files belong to the package. Generated
+// *_gen_test.go files ARE produced by generate, so they stay in scope for
+// verification and stale removal. Shared by generate and verify.
 func isExcludedGeneratedFile(name string) bool {
+	if strings.HasSuffix(name, "_gen_test.go") {
+		return false
+	}
 	return name == "capabilities.go" || name == "doc.go" || strings.HasSuffix(name, "_test.go")
 }
 
@@ -384,7 +388,7 @@ func runVerify(args []string) error {
 		return fmt.Errorf("read IDL %s: %w", v, err)
 	}
 
-	files, err := generator.ParseIDL(idlBytes)
+	files, err := generator.ParseIDLWithTests(idlBytes)
 	if err != nil {
 		return fmt.Errorf("parse IDL: %w", err)
 	}
