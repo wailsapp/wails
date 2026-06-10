@@ -107,15 +107,25 @@ Screen GetPrimaryScreen(){
 	return processScreen(mainScreen);
 }
 
-Screen* getAllScreens() {
+// getAllScreens returns a malloc'd array of Screen and, via outCount, the
+// number of entries it contains. The count comes from the same
+// [NSScreen screens] snapshot used to size the allocation; callers must not
+// query the screen count separately — a display change between the two calls
+// would over-read the buffer (freeing garbage id/name pointers) or leak the
+// strdup'd strings in unvisited tail entries.
+Screen* getAllScreens(int* outCount) {
 	// The explicit pool releases the autoreleased objects created during
 	// enumeration as soon as it ends: without it they leak when this is
 	// called from a Go goroutine thread that has no ambient pool. Only the
 	// strdup'd strings in the returned structs survive the pool.
 	@autoreleasepool {
 		NSArray<NSScreen *> *screens = [NSScreen screens];
-		Screen* returnScreens = malloc(sizeof(Screen) * screens.count);
-		for (int i = 0; i < screens.count; i++) {
+		NSUInteger count = screens.count;
+		if (outCount != NULL) {
+			*outCount = (int)count;
+		}
+		Screen* returnScreens = malloc(sizeof(Screen) * count);
+		for (NSUInteger i = 0; i < count; i++) {
 			NSScreen* screen = [screens objectAtIndex:i];
 			returnScreens[i] = processScreen(screen);
 			returnScreens[i].isPrimary = (i == 0);
@@ -221,9 +231,10 @@ func cScreenToScreen(screen C.Screen) *Screen {
 // tests can exercise the C string ownership handover without cgo, which is
 // unavailable in test files.
 func allScreens() []*Screen {
-	cScreens := C.getAllScreens()
+	var count C.int
+	cScreens := C.getAllScreens(&count)
 	defer C.free(unsafe.Pointer(cScreens))
-	numScreens := int(C.GetNumScreens())
+	numScreens := int(count)
 	screens := make([]*Screen, numScreens)
 	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
 	for i := 0; i < numScreens; i++ {
