@@ -7,6 +7,19 @@ package webview
 
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
+
+static gboolean unref_request_on_main(gpointer data) {
+	g_object_unref(data);
+	return G_SOURCE_REMOVE;
+}
+
+// releaseRequestOnMainThread schedules the WebKitURISchemeRequest unref on the
+// GTK main context. Close() runs on the assetserver goroutine, and dropping
+// what may be the last reference finalizes a WebKit GObject — only safe on the
+// UI thread (see #5557).
+static void releaseRequestOnMainThread(WebKitURISchemeRequest *request) {
+	g_main_context_invoke(NULL, unref_request_on_main, request);
+}
 */
 import "C"
 
@@ -76,6 +89,6 @@ func (r *request) Close() error {
 		err = r.body.Close()
 	}
 	r.Response().Finish()
-	C.g_object_unref(C.gpointer(r.req))
+	C.releaseRequestOnMainThread(r.req)
 	return err
 }
