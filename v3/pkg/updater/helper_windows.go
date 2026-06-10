@@ -3,6 +3,7 @@
 package updater
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +21,11 @@ const processQueryLimitedInformation = 0x1000
 // stillActive is the exit code Windows returns from GetExitCodeProcess while
 // the process is still running. (Defined in MSDN as STILL_ACTIVE = 259.)
 const stillActive = 259
+
+// errNotSameDevice is the Windows error code returned by os.Rename when src
+// and dst reside on different volumes (ERROR_NOT_SAME_DEVICE = 17 / 0x11).
+// Defined locally to avoid a dependency on golang.org/x/sys/windows.
+const errNotSameDevice = syscall.Errno(17)
 
 // platformIsAlive reports whether pid names a running process. On Windows
 // the previous os.Process.Signal(nil) probe always returned an error
@@ -44,21 +50,27 @@ func platformIsAlive(pid int) bool {
 	return code == stillActive
 }
 
-// renameOrCopy attempts to move a file via os.Rename. If it fails (which
-// commonly happens on Windows when moving files across different volume/drive
-// boundaries, throwing ERROR_NOT_SAME_DEVICE), it seamlessly falls back to a
-// secure copy-and-delete strategy.
+// renameOrCopy attempts to move a file via os.Rename. If it fails specifically
+// because src and dst are on different volumes (ERROR_NOT_SAME_DEVICE / errno 17),
+// it transparently falls back to a secure copy-and-delete strategy.
+//
+// All other os.Rename errors (permission denied, target locked, etc.) are
+// returned as-is so the caller sees the real failure reason.
 func renameOrCopy(src, dst string) error {
-	if err := os.Rename(src, dst); err == nil {
+	err := os.Rename(src, dst)
+	if err == nil {
 		return nil
 	}
 
-	// Fallback for cross-volume moves.
+	var linkErr *os.LinkError
+	if !errors.As(err, &linkErr) || !errors.Is(linkErr.Err, errNotSameDevice) {
+		return err
+	}
+
 	if err := copyFileExec(src, dst); err != nil {
 		return fmt.Errorf("cross-volume copy %s -> %s: %w", src, dst, err)
 	}
 
-	// Best-effort cleanup of the source temporary file.
 	_ = os.Remove(src)
 	return nil
 }
