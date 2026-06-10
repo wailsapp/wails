@@ -43,6 +43,7 @@ type BuildAssetsOptions struct {
 	ProductComments       string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	CFBundleIconName      string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion         string `description:"Minimum iOS version for the generated Info.plist" default:"15.0"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
 	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
 	ExecutablePath        string `description:"Path to executable for MSIX package"`
@@ -79,6 +80,7 @@ type UpdateBuildAssetsOptions struct {
 	ProductComments    string `description:"Comments to add to the generated files"              default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	CFBundleIconName   string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion      string `description:"Minimum iOS version for the generated Info.plist"     default:"15.0"`
 	Config             string `description:"The path to the config file"`
 	Silent             bool   `description:"Suppress output to console"`
 }
