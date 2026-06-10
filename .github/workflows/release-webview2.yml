@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., v1.0.24). Leave empty to auto-increment.'
+        description: 'Version to release (e.g., v2.1.1 for a patch). Leave empty to auto-bump the minor (v2.X.0).'
         required: false
         type: string
 
@@ -57,22 +57,27 @@ jobs:
       - name: Determine next version
         id: version
         run: |
+          # The module lives at github.com/wailsapp/wails/webview2/v2 and
+          # follows a v2.X.0 strategy: every routine release (SDK
+          # regeneration, features) bumps MINOR, leaving the patch position
+          # free for targeted fixes to an already-released minor. Patch
+          # releases are cut by passing an explicit version input.
           if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
+            case "$VERSION" in
+              v2.*) ;;
+              *) echo "::error::version must be v2.X.Y (module path is .../webview2/v2)"; exit 1 ;;
+            esac
           else
-            # Auto-increment patch from last webview2/v* tag
-            LAST_TAG=$(git tag -l "webview2/v*" | sort -V | tail -n 1)
+            LAST_TAG=$(git tag -l "webview2/v2.*" | sort -V | tail -n 1)
             if [ -z "$LAST_TAG" ]; then
-              VERSION="v1.0.24"
+              VERSION="v2.0.0"
             else
-              # Extract version number without webview2/ prefix
               LAST_VERSION=${LAST_TAG#webview2/}
-              # Increment patch version
               MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
               MINOR=$(echo $LAST_VERSION | cut -d. -f2)
-              PATCH=$(echo $LAST_VERSION | cut -d. -f3)
-              PATCH=$((PATCH + 1))
-              VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+              MINOR=$((MINOR + 1))
+              VERSION="${MAJOR}.${MINOR}.0"
             fi
           fi
 
@@ -99,6 +104,9 @@ jobs:
           release_name: webview2 ${{ steps.version.outputs.version }}
           body: |
             Release of webview2 ${{ steps.version.outputs.version }}
+
+            Module path: `github.com/wailsapp/wails/webview2/v2`
+            See [webview2/CHANGELOG.md](https://github.com/wailsapp/wails/blob/master/webview2/CHANGELOG.md) for the API delta.
           draft: false
           prerelease: false
           latest: false

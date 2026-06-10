@@ -3,6 +3,19 @@
 Generated Go bindings for the Microsoft Edge WebView2 SDK and the tooling
 that produces them. This module is consumed by Wails on Windows.
 
+## Versioning
+
+The module path is `github.com/wailsapp/wails/webview2/v2` (tags
+`webview2/v2.X.Y`). Releases follow a **v2.X.0** strategy: every routine
+release — SDK regenerations from the update workflow, new tooling — bumps
+the minor version, leaving the patch position free for targeted fixes to an
+already-released minor. The release workflow auto-bumps the minor; pass an
+explicit version to cut a patch.
+
+`v1.x` tags (un-suffixed `github.com/wailsapp/wails/webview2`) predate the
+generator overhaul and remain resolvable for existing consumers; all new
+work lands on `/v2` only.
+
 ## Package layout
 
 | Path | Purpose |
@@ -70,7 +83,7 @@ interface the runtime doesn't know about crashes the process. To gate
 features safely:
 
 ```go
-import "github.com/wailsapp/wails/webview2/pkg/webview2"
+import "github.com/wailsapp/wails/webview2/v2/pkg/webview2"
 
 runtime := webview2runtime.GetAvailableCoreWebView2BrowserVersionString() // e.g. "121.0.2277.83"
 

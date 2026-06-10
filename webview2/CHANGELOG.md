@@ -4,10 +4,13 @@ All notable changes to the `github.com/wailsapp/wails/webview2` module.
 Entries for SDK regenerations are produced by `webview2gen changelog`;
 release engineering notes are added by hand.
 
-## SDK 1.0.3967.48 — generator overhaul (2026-06-10)
+## v2.0.0 — SDK 1.0.3967.48, generator overhaul (2026-06-10)
 
 Complete rework of the IDL→Go generator and full regeneration of
-`pkg/webview2`. **This is a breaking release of the generated package.**
+`pkg/webview2`. **Breaking release**: the module moves to the
+`github.com/wailsapp/wails/webview2/v2` path (tags `webview2/v2.X.Y`,
+minor-bump-per-release strategy). The un-suffixed v1 path stays frozen at
+its last tag for existing consumers.
 
 ### Fixed — calling convention / ABI
 

@@ -1,4 +1,4 @@
-module github.com/wailsapp/wails/webview2
+module github.com/wailsapp/wails/webview2/v2
 
 go 1.24.0
 
