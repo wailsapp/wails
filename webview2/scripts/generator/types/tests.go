@@ -134,9 +134,15 @@ func methodInputArg(p *Param, idx int, imports map[string]bool) (*inputArg, erro
 	case goType == "string":
 		v := fmt.Sprintf("%q", "wv2-in-"+n)
 		a.callExpr = v
-		a.pre = []string{"recCaptureUTF16(1 + len(want))"}
+		// The capture is keyed by the argument's word index, which is only
+		// known while `want` is being built — keep it in a local so the
+		// post-call lookup uses the same key.
+		a.pre = []string{
+			fmt.Sprintf("capIdx%d := 1 + len(want)", idx),
+			fmt.Sprintf("recCaptureUTF16(capIdx%d)", idx),
+		}
 		a.want = []string{"anyw()"}
-		a.post = []string{fmt.Sprintf("if got := recCapturedString(%d); got != %s {\n\t\tt.Errorf(\"string arg %%d marshalled as %%q, want %s\", %d, got)\n\t}", idx, v, "wv2-in-"+n, idx)}
+		a.post = []string{fmt.Sprintf("if got := recCapturedString(capIdx%d); got != %s {\n\t\tt.Errorf(\"string arg %%d marshalled as %%q, want %s\", %d, got)\n\t}", idx, v, "wv2-in-"+n, idx)}
 	case goType == "[]string":
 		// Empty slice marshals to a nil pointer — the simplest stable check.
 		a.callExpr = "nil"

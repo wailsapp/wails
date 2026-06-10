@@ -29,7 +29,8 @@ func TestICoreWebView2PrintSettings2_GetPageRanges(t *testing.T) {
 func TestICoreWebView2PrintSettings2_PutPageRanges(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2PrintSettings2{Vtbl: &ICoreWebView2PrintSettings2Vtbl{}}
 	obj.Vtbl.PutPageRanges = recProc(1 + len(want))
@@ -38,7 +39,7 @@ func TestICoreWebView2PrintSettings2_PutPageRanges(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -243,7 +244,8 @@ func TestICoreWebView2PrintSettings2_GetPrinterName(t *testing.T) {
 func TestICoreWebView2PrintSettings2_PutPrinterName(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2PrintSettings2{Vtbl: &ICoreWebView2PrintSettings2Vtbl{}}
 	obj.Vtbl.PutPrinterName = recProc(1 + len(want))
@@ -252,7 +254,7 @@ func TestICoreWebView2PrintSettings2_PutPrinterName(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

@@ -29,7 +29,8 @@ func TestICoreWebView2EnvironmentOptions_GetAdditionalBrowserArguments(t *testin
 func TestICoreWebView2EnvironmentOptions_PutAdditionalBrowserArguments(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2EnvironmentOptions{Vtbl: &ICoreWebView2EnvironmentOptionsVtbl{}}
 	obj.Vtbl.PutAdditionalBrowserArguments = recProc(1 + len(want))
@@ -38,7 +39,7 @@ func TestICoreWebView2EnvironmentOptions_PutAdditionalBrowserArguments(t *testin
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -63,7 +64,8 @@ func TestICoreWebView2EnvironmentOptions_GetLanguage(t *testing.T) {
 func TestICoreWebView2EnvironmentOptions_PutLanguage(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2EnvironmentOptions{Vtbl: &ICoreWebView2EnvironmentOptionsVtbl{}}
 	obj.Vtbl.PutLanguage = recProc(1 + len(want))
@@ -72,7 +74,7 @@ func TestICoreWebView2EnvironmentOptions_PutLanguage(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -97,7 +99,8 @@ func TestICoreWebView2EnvironmentOptions_GetTargetCompatibleBrowserVersion(t *te
 func TestICoreWebView2EnvironmentOptions_PutTargetCompatibleBrowserVersion(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2EnvironmentOptions{Vtbl: &ICoreWebView2EnvironmentOptionsVtbl{}}
 	obj.Vtbl.PutTargetCompatibleBrowserVersion = recProc(1 + len(want))
@@ -106,7 +109,7 @@ func TestICoreWebView2EnvironmentOptions_PutTargetCompatibleBrowserVersion(t *te
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

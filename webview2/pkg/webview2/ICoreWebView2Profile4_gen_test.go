@@ -14,7 +14,8 @@ func TestICoreWebView2Profile4_SetPermissionState(t *testing.T) {
 	in3 := &ICoreWebView2SetPermissionStateCompletedHandler{}
 	want := []wordExpect{}
 	want = append(want, xw(3))
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
 	want = append(want, xw(5))
 	want = append(want, ptrw(unsafe.Pointer(in3)))
@@ -25,7 +26,7 @@ func TestICoreWebView2Profile4_SetPermissionState(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
 }

@@ -63,7 +63,8 @@ func TestICoreWebView2Frame_AddHostObjectToScriptWithOrigins(t *testing.T) {
 	recReset()
 	in1 := &VARIANT{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	want = append(want, xw(42))
@@ -75,7 +76,7 @@ func TestICoreWebView2Frame_AddHostObjectToScriptWithOrigins(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -83,7 +84,8 @@ func TestICoreWebView2Frame_AddHostObjectToScriptWithOrigins(t *testing.T) {
 func TestICoreWebView2Frame_RemoveHostObjectFromScript(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2Frame{Vtbl: &ICoreWebView2FrameVtbl{}}
 	obj.Vtbl.RemoveHostObjectFromScript = recProc(1 + len(want))
@@ -92,7 +94,7 @@ func TestICoreWebView2Frame_RemoveHostObjectFromScript(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

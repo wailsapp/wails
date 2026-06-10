@@ -30,9 +30,11 @@ func TestICoreWebView2Environment_CreateWebResourceResponse(t *testing.T) {
 	want := []wordExpect{}
 	want = append(want, ptrw(unsafe.Pointer(in0)))
 	want = append(want, xw(41))
-	recCaptureUTF16(1 + len(want))
+	capIdx2 := 1 + len(want)
+	recCaptureUTF16(capIdx2)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx3 := 1 + len(want)
+	recCaptureUTF16(capIdx3)
 	want = append(want, anyw())
 	recWritePtr(1+len(want), fakeTargetPtr())
 	want = append(want, anyw())
@@ -43,10 +45,10 @@ func TestICoreWebView2Environment_CreateWebResourceResponse(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(2); got != "wv2-in-2" {
+	if got := recCapturedString(capIdx2); got != "wv2-in-2" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-2", 2, got)
 	}
-	if got := recCapturedString(3); got != "wv2-in-3" {
+	if got := recCapturedString(capIdx3); got != "wv2-in-3" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-3", 3, got)
 	}
 	if unsafe.Pointer(got0) != fakeTargetPtr() {

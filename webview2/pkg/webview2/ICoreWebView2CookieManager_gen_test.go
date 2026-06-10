@@ -12,13 +12,17 @@ import (
 func TestICoreWebView2CookieManager_CreateCookie(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx2 := 1 + len(want)
+	recCaptureUTF16(capIdx2)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx3 := 1 + len(want)
+	recCaptureUTF16(capIdx3)
 	want = append(want, anyw())
 	recWritePtr(1+len(want), fakeTargetPtr())
 	want = append(want, anyw())
@@ -29,16 +33,16 @@ func TestICoreWebView2CookieManager_CreateCookie(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
-	if got := recCapturedString(2); got != "wv2-in-2" {
+	if got := recCapturedString(capIdx2); got != "wv2-in-2" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-2", 2, got)
 	}
-	if got := recCapturedString(3); got != "wv2-in-3" {
+	if got := recCapturedString(capIdx3); got != "wv2-in-3" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-3", 3, got)
 	}
 	if unsafe.Pointer(got0) != fakeTargetPtr() {
@@ -69,7 +73,8 @@ func TestICoreWebView2CookieManager_GetCookies(t *testing.T) {
 	recReset()
 	in1 := &ICoreWebView2GetCookiesCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	obj := &ICoreWebView2CookieManager{Vtbl: &ICoreWebView2CookieManagerVtbl{}}
@@ -79,7 +84,7 @@ func TestICoreWebView2CookieManager_GetCookies(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -115,9 +120,11 @@ func TestICoreWebView2CookieManager_DeleteCookie(t *testing.T) {
 func TestICoreWebView2CookieManager_DeleteCookies(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
 	obj := &ICoreWebView2CookieManager{Vtbl: &ICoreWebView2CookieManagerVtbl{}}
 	obj.Vtbl.DeleteCookies = recProc(1 + len(want))
@@ -126,10 +133,10 @@ func TestICoreWebView2CookieManager_DeleteCookies(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
 }
@@ -137,11 +144,14 @@ func TestICoreWebView2CookieManager_DeleteCookies(t *testing.T) {
 func TestICoreWebView2CookieManager_DeleteCookiesWithDomainAndPath(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx2 := 1 + len(want)
+	recCaptureUTF16(capIdx2)
 	want = append(want, anyw())
 	obj := &ICoreWebView2CookieManager{Vtbl: &ICoreWebView2CookieManagerVtbl{}}
 	obj.Vtbl.DeleteCookiesWithDomainAndPath = recProc(1 + len(want))
@@ -150,13 +160,13 @@ func TestICoreWebView2CookieManager_DeleteCookiesWithDomainAndPath(t *testing.T)
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
-	if got := recCapturedString(2); got != "wv2-in-2" {
+	if got := recCapturedString(capIdx2); got != "wv2-in-2" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-2", 2, got)
 	}
 }

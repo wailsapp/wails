@@ -15,7 +15,8 @@ func TestICoreWebView2_17_PostSharedBufferToScript(t *testing.T) {
 	want := []wordExpect{}
 	want = append(want, ptrw(unsafe.Pointer(in0)))
 	want = append(want, xw(4))
-	recCaptureUTF16(1 + len(want))
+	capIdx2 := 1 + len(want)
+	recCaptureUTF16(capIdx2)
 	want = append(want, anyw())
 	obj := &ICoreWebView2_17{Vtbl: &ICoreWebView2_17Vtbl{}}
 	obj.Vtbl.PostSharedBufferToScript = recProc(1 + len(want))
@@ -24,7 +25,7 @@ func TestICoreWebView2_17_PostSharedBufferToScript(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(2); got != "wv2-in-2" {
+	if got := recCapturedString(capIdx2); got != "wv2-in-2" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-2", 2, got)
 	}
 }

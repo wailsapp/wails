@@ -46,7 +46,8 @@ func TestICoreWebView2_GetSource(t *testing.T) {
 func TestICoreWebView2_Navigate(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.Navigate = recProc(1 + len(want))
@@ -55,7 +56,7 @@ func TestICoreWebView2_Navigate(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -63,7 +64,8 @@ func TestICoreWebView2_Navigate(t *testing.T) {
 func TestICoreWebView2_NavigateToString(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.NavigateToString = recProc(1 + len(want))
@@ -72,7 +74,7 @@ func TestICoreWebView2_NavigateToString(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -411,7 +413,8 @@ func TestICoreWebView2_AddScriptToExecuteOnDocumentCreated(t *testing.T) {
 	recReset()
 	in1 := &ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -421,7 +424,7 @@ func TestICoreWebView2_AddScriptToExecuteOnDocumentCreated(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -429,7 +432,8 @@ func TestICoreWebView2_AddScriptToExecuteOnDocumentCreated(t *testing.T) {
 func TestICoreWebView2_RemoveScriptToExecuteOnDocumentCreated(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.RemoveScriptToExecuteOnDocumentCreated = recProc(1 + len(want))
@@ -438,7 +442,7 @@ func TestICoreWebView2_RemoveScriptToExecuteOnDocumentCreated(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -447,7 +451,8 @@ func TestICoreWebView2_ExecuteScript(t *testing.T) {
 	recReset()
 	in1 := &ICoreWebView2ExecuteScriptCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -457,7 +462,7 @@ func TestICoreWebView2_ExecuteScript(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -494,7 +499,8 @@ func TestICoreWebView2_Reload(t *testing.T) {
 func TestICoreWebView2_PostWebMessageAsJson(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.PostWebMessageAsJson = recProc(1 + len(want))
@@ -503,7 +509,7 @@ func TestICoreWebView2_PostWebMessageAsJson(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -511,7 +517,8 @@ func TestICoreWebView2_PostWebMessageAsJson(t *testing.T) {
 func TestICoreWebView2_PostWebMessageAsString(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.PostWebMessageAsString = recProc(1 + len(want))
@@ -520,7 +527,7 @@ func TestICoreWebView2_PostWebMessageAsString(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -562,9 +569,11 @@ func TestICoreWebView2_CallDevToolsProtocolMethod(t *testing.T) {
 	recReset()
 	in2 := &ICoreWebView2CallDevToolsProtocolMethodCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in2)))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -574,10 +583,10 @@ func TestICoreWebView2_CallDevToolsProtocolMethod(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
 }
@@ -660,7 +669,8 @@ func TestICoreWebView2_GoForward(t *testing.T) {
 func TestICoreWebView2_GetDevToolsProtocolEventReceiver(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	recWritePtr(1+len(want), fakeTargetPtr())
 	want = append(want, anyw())
@@ -671,7 +681,7 @@ func TestICoreWebView2_GetDevToolsProtocolEventReceiver(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 	if unsafe.Pointer(got0) != fakeTargetPtr() {
@@ -778,7 +788,8 @@ func TestICoreWebView2_AddHostObjectToScript(t *testing.T) {
 	recReset()
 	in1 := &VARIANT{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -788,7 +799,7 @@ func TestICoreWebView2_AddHostObjectToScript(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -796,7 +807,8 @@ func TestICoreWebView2_AddHostObjectToScript(t *testing.T) {
 func TestICoreWebView2_RemoveHostObjectFromScript(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
 	obj.Vtbl.RemoveHostObjectFromScript = recProc(1 + len(want))
@@ -805,7 +817,7 @@ func TestICoreWebView2_RemoveHostObjectFromScript(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -908,7 +920,8 @@ func TestICoreWebView2_RemoveWebResourceRequested(t *testing.T) {
 func TestICoreWebView2_AddWebResourceRequestedFilter(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, xw(4))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -918,7 +931,7 @@ func TestICoreWebView2_AddWebResourceRequestedFilter(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -926,7 +939,8 @@ func TestICoreWebView2_AddWebResourceRequestedFilter(t *testing.T) {
 func TestICoreWebView2_RemoveWebResourceRequestedFilter(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, xw(4))
 	obj := &ICoreWebView2{Vtbl: &ICoreWebView2Vtbl{}}
@@ -936,7 +950,7 @@ func TestICoreWebView2_RemoveWebResourceRequestedFilter(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

@@ -13,11 +13,14 @@ func TestICoreWebView2_11_CallDevToolsProtocolMethodForSession(t *testing.T) {
 	recReset()
 	in3 := &ICoreWebView2CallDevToolsProtocolMethodCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx2 := 1 + len(want)
+	recCaptureUTF16(capIdx2)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in3)))
 	obj := &ICoreWebView2_11{Vtbl: &ICoreWebView2_11Vtbl{}}
@@ -27,13 +30,13 @@ func TestICoreWebView2_11_CallDevToolsProtocolMethodForSession(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
-	if got := recCapturedString(2); got != "wv2-in-2" {
+	if got := recCapturedString(capIdx2); got != "wv2-in-2" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-2", 2, got)
 	}
 }

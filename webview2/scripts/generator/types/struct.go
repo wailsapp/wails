@@ -77,5 +77,12 @@ type StructField struct {
 }
 
 func (s *StructField) Process() {
+	// C BOOL is a 4-byte int; Go bool is 1 byte. Struct fields must keep the
+	// C memory layout (COREWEBVIEW2_PHYSICAL_KEY_STATUS is 24 bytes, not 12),
+	// so BOOL fields map to int32 (nonzero = true).
+	if s.Type == "BOOL" {
+		s.GoType = "int32"
+		return
+	}
 	s.GoType = IdlTypeToGoType(s.Type)
 }

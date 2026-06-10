@@ -14,7 +14,8 @@ func TestICoreWebView2_7_PrintToPdf(t *testing.T) {
 	in1 := &ICoreWebView2PrintSettings{}
 	in2 := &ICoreWebView2PrintToPdfCompletedHandler{}
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	want = append(want, ptrw(unsafe.Pointer(in1)))
 	want = append(want, ptrw(unsafe.Pointer(in2)))
@@ -25,7 +26,7 @@ func TestICoreWebView2_7_PrintToPdf(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

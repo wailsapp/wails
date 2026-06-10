@@ -47,7 +47,8 @@ func TestICoreWebView2Cookie_GetValue(t *testing.T) {
 func TestICoreWebView2Cookie_PutValue(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2Cookie{Vtbl: &ICoreWebView2CookieVtbl{}}
 	obj.Vtbl.PutValue = recProc(1 + len(want))
@@ -56,7 +57,7 @@ func TestICoreWebView2Cookie_PutValue(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

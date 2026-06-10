@@ -12,7 +12,8 @@ import (
 func TestICoreWebView2HttpRequestHeaders_GetHeader(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	recWriteUTF16(1+len(want), "wv2-out-0")
 	want = append(want, anyw())
@@ -23,7 +24,7 @@ func TestICoreWebView2HttpRequestHeaders_GetHeader(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 	if got0 != "wv2-out-0" {
@@ -34,7 +35,8 @@ func TestICoreWebView2HttpRequestHeaders_GetHeader(t *testing.T) {
 func TestICoreWebView2HttpRequestHeaders_GetHeaders(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	recWritePtr(1+len(want), fakeTargetPtr())
 	want = append(want, anyw())
@@ -45,7 +47,7 @@ func TestICoreWebView2HttpRequestHeaders_GetHeaders(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 	if unsafe.Pointer(got0) != fakeTargetPtr() {
@@ -56,7 +58,8 @@ func TestICoreWebView2HttpRequestHeaders_GetHeaders(t *testing.T) {
 func TestICoreWebView2HttpRequestHeaders_Contains(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	recWrite32(1+len(want), 1)
 	want = append(want, anyw())
@@ -67,7 +70,7 @@ func TestICoreWebView2HttpRequestHeaders_Contains(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 	if got0 != true {
@@ -78,9 +81,11 @@ func TestICoreWebView2HttpRequestHeaders_Contains(t *testing.T) {
 func TestICoreWebView2HttpRequestHeaders_SetHeader(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
-	recCaptureUTF16(1 + len(want))
+	capIdx1 := 1 + len(want)
+	recCaptureUTF16(capIdx1)
 	want = append(want, anyw())
 	obj := &ICoreWebView2HttpRequestHeaders{Vtbl: &ICoreWebView2HttpRequestHeadersVtbl{}}
 	obj.Vtbl.SetHeader = recProc(1 + len(want))
@@ -89,10 +94,10 @@ func TestICoreWebView2HttpRequestHeaders_SetHeader(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
-	if got := recCapturedString(1); got != "wv2-in-1" {
+	if got := recCapturedString(capIdx1); got != "wv2-in-1" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-1", 1, got)
 	}
 }
@@ -100,7 +105,8 @@ func TestICoreWebView2HttpRequestHeaders_SetHeader(t *testing.T) {
 func TestICoreWebView2HttpRequestHeaders_RemoveHeader(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2HttpRequestHeaders{Vtbl: &ICoreWebView2HttpRequestHeadersVtbl{}}
 	obj.Vtbl.RemoveHeader = recProc(1 + len(want))
@@ -109,7 +115,7 @@ func TestICoreWebView2HttpRequestHeaders_RemoveHeader(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }

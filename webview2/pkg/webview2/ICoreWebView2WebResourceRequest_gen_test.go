@@ -29,7 +29,8 @@ func TestICoreWebView2WebResourceRequest_GetUri(t *testing.T) {
 func TestICoreWebView2WebResourceRequest_PutUri(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2WebResourceRequest{Vtbl: &ICoreWebView2WebResourceRequestVtbl{}}
 	obj.Vtbl.PutUri = recProc(1 + len(want))
@@ -38,7 +39,7 @@ func TestICoreWebView2WebResourceRequest_PutUri(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
@@ -63,7 +64,8 @@ func TestICoreWebView2WebResourceRequest_GetMethod(t *testing.T) {
 func TestICoreWebView2WebResourceRequest_PutMethod(t *testing.T) {
 	recReset()
 	want := []wordExpect{}
-	recCaptureUTF16(1 + len(want))
+	capIdx0 := 1 + len(want)
+	recCaptureUTF16(capIdx0)
 	want = append(want, anyw())
 	obj := &ICoreWebView2WebResourceRequest{Vtbl: &ICoreWebView2WebResourceRequestVtbl{}}
 	obj.Vtbl.PutMethod = recProc(1 + len(want))
@@ -72,7 +74,7 @@ func TestICoreWebView2WebResourceRequest_PutMethod(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, unsafe.Pointer(obj), want)
-	if got := recCapturedString(0); got != "wv2-in-0" {
+	if got := recCapturedString(capIdx0); got != "wv2-in-0" {
 		t.Errorf("string arg %d marshalled as %q, want wv2-in-0", 0, got)
 	}
 }
