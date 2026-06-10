@@ -71,6 +71,13 @@ func (p *Param) Process(decl *InterfaceMethod) {
 	if p.IsOutputParam() && p.isTriplePointer() {
 		p.GoType = "[]*" + IdlTypeToGoType(p.Type)
 	}
+	// [out] LPWSTR** — COM allocates an array of UTF-16 strings and writes
+	// its address back; surface it as []string (each string decoded and
+	// freed, then the array freed).
+	if p.IsOutputParam() && p.isDoublePointer() &&
+		(p.Type == "LPCWSTR" || p.Type == "LPWSTR") {
+		p.GoType = "[]string"
+	}
 	p.OutputGoType = p.GoType
 	if p.IsOutputParam() && strings.HasPrefix(p.OutputGoType, "**") {
 		p.OutputGoType = p.GoType[1:]
@@ -396,6 +403,11 @@ func (p *Param) processSetupOutputs() {
 		p.LocalName = "_" + p.Name
 		p.setupTemplate = "outputInterfaceArraySetup.tmpl"
 		p.cleanupTemplate = "outputInterfaceArrayCleanup.tmpl"
+	case p.GoType == "[]string":
+		// [out] LPWSTR** — COM-allocated string array decoded and freed
+		p.LocalName = "_" + p.Name
+		p.setupTemplate = "outputStringArraySetup.tmpl"
+		p.cleanupTemplate = "outputStringArrayCleanup.tmpl"
 	default:
 		p.setupTemplate = "outputDefaultSetup.tmpl"
 	}

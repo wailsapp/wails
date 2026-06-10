@@ -85,18 +85,29 @@ func (i *ICoreWebView2CustomSchemeRegistration) PutTreatAsSecure(value bool) err
 	return nil
 }
 
-func (i *ICoreWebView2CustomSchemeRegistration) GetAllowedOrigins() (uint32, *string, error) {
+func (i *ICoreWebView2CustomSchemeRegistration) GetAllowedOrigins() (uint32, []string, error) {
 
 	var allowedOriginsCount uint32
-	var allowedOrigins *string
+	// COM writes the address of a CoTaskMem-allocated array of LPWSTR
+	var _allowedOrigins **uint16
 
 	hr, _, _ := i.Vtbl.GetAllowedOrigins.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&allowedOriginsCount)),
-		uintptr(unsafe.Pointer(&allowedOrigins)),
+		uintptr(unsafe.Pointer(&_allowedOrigins)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, nil, syscall.Errno(hr)
+	}
+	// Decode the COM-allocated array of UTF-16 strings, freeing each string
+	// and then the array itself.
+	allowedOrigins := make([]string, allowedOriginsCount)
+	if _allowedOrigins != nil {
+		for _i, _p := range unsafe.Slice(_allowedOrigins, allowedOriginsCount) {
+			allowedOrigins[_i] = UTF16PtrToString(_p)
+			CoTaskMemFree(unsafe.Pointer(_p))
+		}
+		CoTaskMemFree(unsafe.Pointer(_allowedOrigins))
 	}
 	return allowedOriginsCount, allowedOrigins, nil
 }

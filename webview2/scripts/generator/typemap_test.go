@@ -91,9 +91,17 @@ func TestTypePattern_OutLPWSTRDoubleStar(t *testing.T) {
 	body := generatedBody(t, wrapIDL(
 		`HRESULT GetOrigins([out] UINT32* count, [out] LPWSTR** origins);`,
 	))
-	// The outer pointer is stripped; the Go type is *string.
-	assert.Contains(t, body, "origins *string")
-	assert.Contains(t, body, "uintptr(unsafe.Pointer(&origins))")
+	// A COM-allocated string array: surfaced as []string, never as *string
+	// (a Go *string written by COM would be a native pointer masquerading as
+	// a string header).
+	assert.Contains(t, body, "(uint32, []string, error)")
+	assert.Contains(t, body, "var _origins **uint16")
+	assert.Contains(t, body, "uintptr(unsafe.Pointer(&_origins))")
+	assert.Contains(t, body, "origins := make([]string, count)")
+	assert.Contains(t, body, "UTF16PtrToString(_p)")
+	// Both each string and the array itself are CoTaskMem-freed.
+	assert.Contains(t, body, "CoTaskMemFree(unsafe.Pointer(_p))")
+	assert.Contains(t, body, "CoTaskMemFree(unsafe.Pointer(_origins))")
 }
 
 // ── Pattern 6: [in] UINT32 ───────────────────────────────────────────────────
