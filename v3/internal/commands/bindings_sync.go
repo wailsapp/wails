@@ -20,23 +20,34 @@ import (
 // directory (#3976), and leaves unchanged files untouched so the dev server
 // only reloads what actually changed.
 func syncDirs(src, dst string) error {
-	// Fast path: no destination, move the whole tree at once.
-	if _, err := os.Lstat(dst); errors.Is(err, fs.ErrNotExist) {
+	info, err := os.Lstat(dst)
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		// Fast path: no destination, move the whole tree at once.
 		if renameErr := withRetry(func() error { return os.Rename(src, dst) }); renameErr == nil {
 			return nil
 		}
 		// Fall through to the per-file sync, which recreates dst below.
-	} else if err != nil {
+	case err != nil:
 		return err
+	case !info.IsDir():
+		// The destination exists but is not a directory: clear it, then
+		// move the tree into place.
+		if err := withRetry(func() error { return os.RemoveAll(dst) }); err != nil {
+			return err
+		}
+		if renameErr := withRetry(func() error { return os.Rename(src, dst) }); renameErr == nil {
+			return nil
+		}
 	}
 
-	if err := os.MkdirAll(dst, 0o777); err != nil {
+	if err := os.MkdirAll(dst, 0o755); err != nil {
 		return err
 	}
 
 	// Copy phase: bring every entry of src into dst, skipping identical files.
 	keep := make(map[string]bool)
-	err := filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -55,7 +66,7 @@ func syncDirs(src, dst string) error {
 					return err
 				}
 			}
-			return os.MkdirAll(target, 0o777)
+			return os.MkdirAll(target, 0o755)
 		}
 		if sameFileContent(path, target) {
 			return nil
@@ -94,7 +105,7 @@ func syncDirs(src, dst string) error {
 		}
 	}
 
-	return os.RemoveAll(src)
+	return withRetry(func() error { return os.RemoveAll(src) })
 }
 
 // replaceFile moves src over dst, clearing dst first if it is not a regular
@@ -105,7 +116,16 @@ func replaceFile(src, dst string) error {
 			return err
 		}
 	}
-	return withRetry(func() error { return os.Rename(src, dst) })
+	err := withRetry(func() error { return os.Rename(src, dst) })
+	if err == nil {
+		return nil
+	}
+	// os.Rename replaces existing files on Windows (MOVEFILE_REPLACE_EXISTING),
+	// but not when dst has the read-only attribute set. Clear dst and retry.
+	if removeErr := withRetry(func() error { return os.Remove(dst) }); removeErr == nil {
+		err = withRetry(func() error { return os.Rename(src, dst) })
+	}
+	return err
 }
 
 // sameFileContent reports whether a and b are regular files with equal

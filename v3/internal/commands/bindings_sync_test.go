@@ -145,6 +145,25 @@ func TestSyncDirsTypeMismatch(t *testing.T) {
 	})
 }
 
+func TestSyncDirsDestinationIsFile(t *testing.T) {
+	root := t.TempDir()
+	src := filepath.Join(root, ".bindings-tmp-1")
+	dst := filepath.Join(root, "bindings")
+	files := map[string]string{"a.ts": "a"}
+	writeFiles(t, src, files)
+	if err := os.WriteFile(dst, []byte("not a directory"), 0o666); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := syncDirs(src, dst); err != nil {
+		t.Fatal(err)
+	}
+	checkTree(t, dst, files)
+	if _, err := os.Lstat(src); !os.IsNotExist(err) {
+		t.Errorf("source directory should be gone, got err=%v", err)
+	}
+}
+
 func TestSyncDirsIdenticalContent(t *testing.T) {
 	root := t.TempDir()
 	src := filepath.Join(root, ".bindings-tmp-1")

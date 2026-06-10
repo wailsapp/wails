@@ -49,7 +49,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	generationDir := absPath
 	swapped := false
 	if options.Clean && !options.DryRun {
-		if err := os.MkdirAll(filepath.Dir(absPath), 0o777); err != nil {
+		if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
 			return fmt.Errorf("failed to create bindings parent directory: %w", err)
 		}
 		tmpDir, err := os.MkdirTemp(filepath.Dir(absPath), ".bindings-tmp-")
