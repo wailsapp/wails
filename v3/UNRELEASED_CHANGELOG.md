@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `RelativePosition()` and `SetRelativePosition()` using different coordinate spaces on macOS: Get returned the absolute X (and omitted the screen's Y origin), so `SetRelativePosition(RelativePosition())` moved the window on any non-primary screen. Both axes are now screen-relative and mirror each other exactly (#5408)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
