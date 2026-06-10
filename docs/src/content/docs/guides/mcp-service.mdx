@@ -1,0 +1,108 @@
+---
+title: LLM Control (MCP)
+description: Let LLM agents test and control your app via the Model Context Protocol
+sidebar:
+  order: 11
+---
+
+Wails v3 ships with an optional [Model Context Protocol](https://modelcontextprotocol.io)
+(MCP) service that lets LLM agents — Claude Code, IDE assistants, or any MCP
+client — inspect, test and drive a **running** Wails application.
+
+An agent connected to your app can:
+
+- list and control windows (size, position, focus, fullscreen, devtools, …)
+- inspect the DOM (`dom_html`, `dom_query`, `screenshot_dom`)
+- evaluate JavaScript inside any window
+- simulate user input — mouse moves, clicks, drags and scrolls are rendered
+  with an **animated cursor** inside the window so you can watch the agent work
+- type and press keys with realistic per-character events (works with React
+  style controlled inputs)
+- call bound Go service methods and emit/await application events
+
+## Enabling the service
+
+Register the service in your application — it is safe to leave registered in
+all builds because it compiles to a no-op stub unless the `mcp` build tag is
+present:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/services/mcp"
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(mcp.New(), application.ServiceOptions{
+            // Optional but recommended: a same-origin callback route used to
+            // return JavaScript results reliably.
+            Route: "/wails-mcp",
+        }),
+    },
+})
+```
+
+Then build or run with the tag. The easiest way is the `WAILS_MCP` environment
+variable, which the Wails CLI converts into the build tag for you:
+
+```shell
+WAILS_MCP=1 wails3 dev
+WAILS_MCP=1 wails3 build
+# equivalent to:
+wails3 build -tags mcp
+```
+
+On startup the application logs the endpoint:
+
+```
+INFO MCP server started. Connect MCP clients using the streamable HTTP transport. url=http://127.0.0.1:9099/mcp
+```
+
+## Connecting a client
+
+The server speaks the MCP streamable HTTP transport. For Claude Code:
+
+```shell
+claude mcp add --transport http my-app http://127.0.0.1:9099/mcp
+```
+
+Then ask the agent to exercise your app:
+
+> Click the "Save" button, then verify a `document:saved` event is emitted and
+> the status bar shows "Saved".
+
+## Configuration
+
+```go
+mcp.NewWithConfig(mcp.Config{
+    Host:        "127.0.0.1",        // default; keep localhost unless you know better
+    Port:        9099,               // default; -1 picks a free port
+    EvalTimeout: 30 * time.Second,   // how long tools wait for the page
+    HideCursor:  false,              // disable the animated cursor overlay
+})
+```
+
+The `WAILS_MCP_PORT` environment variable overrides the port at runtime.
+
+## Available tools
+
+| Tool | Purpose |
+|------|---------|
+| `app_info`, `windows_list` | Application and window inventory |
+| `window_control` | Focus, resize, move, fullscreen, reload, devtools, … |
+| `js_eval` | Run JavaScript in a window and return its result |
+| `dom_html`, `dom_query`, `screenshot_dom` | Inspect page structure |
+| `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Animated mouse input |
+| `keyboard_type`, `keyboard_press` | Keyboard input with realistic events |
+| `call_bound_method` | Call bound Go methods through the runtime |
+| `emit_event`, `wait_for_event` | Work with Wails application events |
+
+## Security notes
+
+- The server binds to `127.0.0.1` by default and rejects non-local browser
+  origins. Anything that can reach the port can fully control your
+  application — do not expose it beyond localhost in untrusted environments.
+- The service is intended for development and testing. Avoid shipping
+  production builds with the `mcp` tag; the default build (without the tag)
+  contains none of the server code.
+
+A complete playground application lives at
+[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/mcp).

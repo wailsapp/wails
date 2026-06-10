@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add MCP service (`v3/pkg/services/mcp`): a built-in Model Context Protocol server that lets LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. Enabled with the `mcp` build tag, which `wails3 build`/`wails3 dev` add automatically when the `WAILS_MCP` environment variable is set
 
 ## Changed
 <!-- Changes in existing functionality -->
