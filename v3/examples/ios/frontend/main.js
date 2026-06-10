@@ -113,27 +113,3 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// TEMP WORKTREE PROBE: auto-verify bridge, events, clipboard, dialogs
-window.addEventListener('DOMContentLoaded', () => {
-    const h1 = document.querySelector('h1');
-    let ticks = 0;
-    Events.On('time', () => {
-        ticks++;
-        h1.innerText = 'EVENTS OK: ' + ticks + ' ticks';
-    });
-    GreetService.Greet('worktree').then(async (r) => {
-        let out = 'BRIDGE OK: ' + r;
-        try {
-            const Clipboard = Runtime.Clipboard;
-            await Clipboard.SetText('ios-clipboard-roundtrip');
-            const txt = await Clipboard.Text();
-            out += ' | CLIPBOARD ' + (txt === 'ios-clipboard-roundtrip' ? 'OK' : 'BAD:' + txt);
-        } catch (e) { out += ' | CLIPBOARD ERR ' + (e?.message || e); }
-        resultElement.innerText = out;
-        setTimeout(() => {
-            try {
-                Runtime.Dialogs.Info({ Title: 'Dialog OK', Message: 'UIAlertController works', Buttons: [{Label: 'Nice'}] });
-            } catch (e) { resultElement.innerText += ' | DIALOG ERR ' + (e?.message || e); }
-        }, 3000);
-    }).catch((e) => { resultElement.innerText = 'BRIDGE FAIL: ' + (e?.message || e); });
-});

@@ -90,11 +90,12 @@ func generateIOSAppIconsFromReader(r io.Reader, appIconsetDir string) error {
 // iosBuildYAML is a permissive schema used to populate iOS project config from build/config.yml.
 type iosBuildYAML struct {
 	IOS struct {
-		BundleID    string `yaml:"bundleID"`
-		DisplayName string `yaml:"displayName"`
-		Version     string `yaml:"version"`
-		Company     string `yaml:"company"`
-		Comments    string `yaml:"comments"`
+		BundleID      string `yaml:"bundleID"`
+		DisplayName   string `yaml:"displayName"`
+		Version       string `yaml:"version"`
+		Company       string `yaml:"company"`
+		Comments      string `yaml:"comments"`
+		MinIOSVersion string `yaml:"minIOSVersion"`
 	} `yaml:"ios"`
 	Info struct {
 		ProductName       string `yaml:"productName"`
