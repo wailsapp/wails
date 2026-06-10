@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix intermittent fatal crash on macOS when reading screen information after a display change: the screen id and name stored pointers to autoreleased `UTF8String` buffers that could be freed before Go copied them (use-after-free). The strings are now `strdup`'d and freed after conversion, and screen enumeration runs in an explicit autorelease pool so it no longer leaks when called from Go goroutines (#5556)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
