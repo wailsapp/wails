@@ -2,6 +2,7 @@
 
 package webview2
 import (
+	"math"
 	"unsafe"
 	"syscall"
 	"golang.org/x/sys/windows"
@@ -60,14 +61,29 @@ func (i *ICoreWebView2Profile2) ClearBrowsingData(dataKinds COREWEBVIEW2_BROWSIN
 
 func (i *ICoreWebView2Profile2) ClearBrowsingDataInTimeRange(dataKinds COREWEBVIEW2_BROWSING_DATA_KINDS, startTime float64, endTime float64, handler *ICoreWebView2ClearBrowsingDataCompletedHandler) error {
 
-
-	hr, _, _ := i.Vtbl.ClearBrowsingDataInTimeRange.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(dataKinds),
-		uintptr(startTime),
-		uintptr(endTime),
-		uintptr(unsafe.Pointer(handler)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.ClearBrowsingDataInTimeRange.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(dataKinds),
+			uintptr(uint32(math.Float64bits(startTime))),
+			uintptr(uint32(math.Float64bits(startTime)>>32)),
+			uintptr(uint32(math.Float64bits(endTime))),
+			uintptr(uint32(math.Float64bits(endTime)>>32)),
+			uintptr(unsafe.Pointer(handler)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.ClearBrowsingDataInTimeRange.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(dataKinds),
+			uintptr(math.Float64bits(startTime)),
+			uintptr(math.Float64bits(endTime)),
+			uintptr(unsafe.Pointer(handler)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

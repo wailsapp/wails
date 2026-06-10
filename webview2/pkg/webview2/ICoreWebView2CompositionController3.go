@@ -48,14 +48,28 @@ func (i *ICoreWebView2) GetICoreWebView2CompositionController3() (*ICoreWebView2
 func (i *ICoreWebView2CompositionController3) DragEnter(dataObject *IDataObject, keyState uint32, point POINT) (uint32, error) {
 
 	var effect uint32
-
-	hr, _, _ := i.Vtbl.DragEnter.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(dataObject)),
-		uintptr(keyState),
-		uintptr(unsafe.Pointer(&point)),
-		uintptr(unsafe.Pointer(&effect)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.DragEnter.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(dataObject)),
+			uintptr(keyState),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[1]),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.DragEnter.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(dataObject)),
+			uintptr(keyState),
+			uintptr(*(*uint64)(unsafe.Pointer(&point))),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
@@ -77,13 +91,26 @@ func (i *ICoreWebView2CompositionController3) DragLeave() error {
 func (i *ICoreWebView2CompositionController3) DragOver(keyState uint32, point POINT) (uint32, error) {
 
 	var effect uint32
-
-	hr, _, _ := i.Vtbl.DragOver.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(keyState),
-		uintptr(unsafe.Pointer(&point)),
-		uintptr(unsafe.Pointer(&effect)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.DragOver.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(keyState),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[1]),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.DragOver.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(keyState),
+			uintptr(*(*uint64)(unsafe.Pointer(&point))),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
@@ -93,14 +120,28 @@ func (i *ICoreWebView2CompositionController3) DragOver(keyState uint32, point PO
 func (i *ICoreWebView2CompositionController3) Drop(dataObject *IDataObject, keyState uint32, point POINT) (uint32, error) {
 
 	var effect uint32
-
-	hr, _, _ := i.Vtbl.Drop.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(dataObject)),
-		uintptr(keyState),
-		uintptr(unsafe.Pointer(&point)),
-		uintptr(unsafe.Pointer(&effect)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.Drop.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(dataObject)),
+			uintptr(keyState),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[1]),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.Drop.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(dataObject)),
+			uintptr(keyState),
+			uintptr(*(*uint64)(unsafe.Pointer(&point))),
+			uintptr(unsafe.Pointer(&effect)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}

@@ -3,6 +3,7 @@
 package webview2
 import (
 	"unsafe"
+	"math"
 	"syscall"
 	"golang.org/x/sys/windows"
 )
@@ -65,11 +66,22 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(scale),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutRasterizationScale.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(scale))),
+			uintptr(uint32(math.Float64bits(scale)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutRasterizationScale.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(scale)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -127,11 +139,22 @@ func (i *ICoreWebView2Controller3) AddRasterizationScaleChanged(eventHandler *IC
 
 func (i *ICoreWebView2Controller3) RemoveRasterizationScaleChanged(token EventRegistrationToken) error {
 
-
-	hr, _, _ := i.Vtbl.RemoveRasterizationScaleChanged.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveRasterizationScaleChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveRasterizationScaleChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

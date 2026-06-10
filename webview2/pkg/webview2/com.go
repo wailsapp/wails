@@ -4,9 +4,20 @@ package webview2
 
 import (
 	"golang.org/x/sys/windows"
+	"runtime"
 	"syscall"
 	"unsafe"
 	"io"
+)
+
+// Compile-time architecture constants used by generated bindings to select
+// the correct argument encoding for by-value aggregates and 8-byte scalars:
+// one register word on win64, a register pair for 9-16 byte composites on
+// arm64, and 4-byte stack words on 386. runtime.GOARCH is a constant, so the
+// compiler eliminates the dead branches.
+const (
+	archIs386   = runtime.GOARCH == "386"
+	archIsARM64 = runtime.GOARCH == "arm64"
 )
 
 // ComProc stores a COM procedure.
@@ -72,14 +83,15 @@ type HMENU uintptr
 type HMODULE uintptr
 type HWND uintptr
 
-// VARIANT is a 16-byte Windows VARIANT type matching the Windows ABI.
-// The Val field is a union; callers must interpret it based on VT.
+// VARIANT matches the Windows VARIANT ABI: 24 bytes on 64-bit (the BRECORD
+// union arm is two pointers), 16 bytes on 32-bit. Val is a union; callers
+// must interpret it based on VT.
 type VARIANT struct {
 	VT        uint16
 	Reserved1 uint16
 	Reserved2 uint16
 	Reserved3 uint16
-	Val       [8]byte
+	Val       [2]uintptr
 }
 
 type IDataObject struct {

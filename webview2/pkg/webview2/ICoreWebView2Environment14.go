@@ -86,14 +86,19 @@ func (i *ICoreWebView2Environment14) CreateWebFileSystemDirectoryHandle(path str
 	return value, nil
 }
 
-func (i *ICoreWebView2Environment14) CreateObjectCollection(length uint32, items **IUnknown) (*ICoreWebView2ObjectCollection, error) {
+func (i *ICoreWebView2Environment14) CreateObjectCollection(length uint32, items []*IUnknown) (*ICoreWebView2ObjectCollection, error) {
+	// Convert []*IUnknown 'items' to a pointer to its first element (T**)
+	var _items **IUnknown
+	if len(items) > 0 {
+		_items = &items[0]
+	}
 
 	var objectCollection *ICoreWebView2ObjectCollection
 
 	hr, _, _ := i.Vtbl.CreateObjectCollection.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(length),
-		uintptr(unsafe.Pointer(&items)),
+		uintptr(unsafe.Pointer(_items)),
 		uintptr(unsafe.Pointer(&objectCollection)),
 	)
 	if windows.Handle(hr) != windows.S_OK {

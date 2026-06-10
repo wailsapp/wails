@@ -3,6 +3,7 @@
 package webview2
 import (
 	"unsafe"
+	"math"
 	"syscall"
 	"golang.org/x/sys/windows"
 )
@@ -146,11 +147,22 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutExpires.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(expires),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutExpires.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(expires))),
+			uintptr(uint32(math.Float64bits(expires)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutExpires.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(expires)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

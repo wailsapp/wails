@@ -62,7 +62,7 @@ func (i *ICoreWebView2ControllerOptions3) PutDefaultBackgroundColor(value COREWE
 
 	hr, _, _ := i.Vtbl.PutDefaultBackgroundColor.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(*(*uint32)(unsafe.Pointer(&value))),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

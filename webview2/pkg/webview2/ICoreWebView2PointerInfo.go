@@ -206,11 +206,30 @@ func (i *ICoreWebView2PointerInfo) GetPointerDeviceRect() (RECT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutPointerDeviceRect(pointerDeviceRect RECT) error {
 
-
-	hr, _, _ := i.Vtbl.PutPointerDeviceRect.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&pointerDeviceRect)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPointerDeviceRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&pointerDeviceRect)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&pointerDeviceRect)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&pointerDeviceRect)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&pointerDeviceRect)))[3]),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.PutPointerDeviceRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&pointerDeviceRect)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&pointerDeviceRect)))[1],
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPointerDeviceRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&pointerDeviceRect)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -233,11 +252,30 @@ func (i *ICoreWebView2PointerInfo) GetDisplayRect() (RECT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutDisplayRect(displayRect RECT) error {
 
-
-	hr, _, _ := i.Vtbl.PutDisplayRect.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&displayRect)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutDisplayRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&displayRect)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&displayRect)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&displayRect)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&displayRect)))[3]),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.PutDisplayRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&displayRect)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&displayRect)))[1],
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutDisplayRect.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&displayRect)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -260,11 +298,22 @@ func (i *ICoreWebView2PointerInfo) GetPixelLocation() (POINT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutPixelLocation(pixelLocation POINT) error {
 
-
-	hr, _, _ := i.Vtbl.PutPixelLocation.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&pixelLocation)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPixelLocation.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&pixelLocation)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&pixelLocation)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPixelLocation.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&pixelLocation))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -287,11 +336,22 @@ func (i *ICoreWebView2PointerInfo) GetHimetricLocation() (POINT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutHimetricLocation(himetricLocation POINT) error {
 
-
-	hr, _, _ := i.Vtbl.PutHimetricLocation.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&himetricLocation)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutHimetricLocation.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&himetricLocation)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&himetricLocation)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutHimetricLocation.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&himetricLocation))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -314,11 +374,22 @@ func (i *ICoreWebView2PointerInfo) GetPixelLocationRaw() (POINT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutPixelLocationRaw(pixelLocationRaw POINT) error {
 
-
-	hr, _, _ := i.Vtbl.PutPixelLocationRaw.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&pixelLocationRaw)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPixelLocationRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&pixelLocationRaw)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&pixelLocationRaw)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPixelLocationRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&pixelLocationRaw))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -341,11 +412,22 @@ func (i *ICoreWebView2PointerInfo) GetHimetricLocationRaw() (POINT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutHimetricLocationRaw(himetricLocationRaw POINT) error {
 
-
-	hr, _, _ := i.Vtbl.PutHimetricLocationRaw.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&himetricLocationRaw)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutHimetricLocationRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&himetricLocationRaw)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&himetricLocationRaw)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutHimetricLocationRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&himetricLocationRaw))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -476,11 +558,22 @@ func (i *ICoreWebView2PointerInfo) GetPerformanceCount() (uint64, error) {
 
 func (i *ICoreWebView2PointerInfo) PutPerformanceCount(performanceCount uint64) error {
 
-
-	hr, _, _ := i.Vtbl.PutPerformanceCount.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(performanceCount),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPerformanceCount.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(uint64(performanceCount))),
+			uintptr(uint32(uint64(performanceCount)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPerformanceCount.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(performanceCount),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -746,11 +839,30 @@ func (i *ICoreWebView2PointerInfo) GetTouchContact() (RECT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutTouchContact(touchContact RECT) error {
 
-
-	hr, _, _ := i.Vtbl.PutTouchContact.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&touchContact)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutTouchContact.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContact)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContact)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContact)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContact)))[3]),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.PutTouchContact.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&touchContact)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&touchContact)))[1],
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutTouchContact.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&touchContact)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -773,11 +885,30 @@ func (i *ICoreWebView2PointerInfo) GetTouchContactRaw() (RECT, error) {
 
 func (i *ICoreWebView2PointerInfo) PutTouchContactRaw(touchContactRaw RECT) error {
 
-
-	hr, _, _ := i.Vtbl.PutTouchContactRaw.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&touchContactRaw)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutTouchContactRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContactRaw)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContactRaw)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContactRaw)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&touchContactRaw)))[3]),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.PutTouchContactRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&touchContactRaw)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&touchContactRaw)))[1],
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutTouchContactRaw.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&touchContactRaw)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

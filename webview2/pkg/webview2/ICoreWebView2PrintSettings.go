@@ -3,6 +3,7 @@
 package webview2
 import (
 	"unsafe"
+	"math"
 	"syscall"
 	"golang.org/x/sys/windows"
 )
@@ -95,11 +96,22 @@ func (i *ICoreWebView2PrintSettings) GetScaleFactor() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutScaleFactor(scaleFactor float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutScaleFactor.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(scaleFactor),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutScaleFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(scaleFactor))),
+			uintptr(uint32(math.Float64bits(scaleFactor)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutScaleFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(scaleFactor)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -122,11 +134,22 @@ func (i *ICoreWebView2PrintSettings) GetPageWidth() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutPageWidth(pageWidth float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutPageWidth.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(pageWidth),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPageWidth.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(pageWidth))),
+			uintptr(uint32(math.Float64bits(pageWidth)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPageWidth.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(pageWidth)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -149,11 +172,22 @@ func (i *ICoreWebView2PrintSettings) GetPageHeight() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutPageHeight(pageHeight float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutPageHeight.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(pageHeight),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutPageHeight.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(pageHeight))),
+			uintptr(uint32(math.Float64bits(pageHeight)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutPageHeight.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(pageHeight)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -176,11 +210,22 @@ func (i *ICoreWebView2PrintSettings) GetMarginTop() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutMarginTop(marginTop float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutMarginTop.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(marginTop),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutMarginTop.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(marginTop))),
+			uintptr(uint32(math.Float64bits(marginTop)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutMarginTop.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(marginTop)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -203,11 +248,22 @@ func (i *ICoreWebView2PrintSettings) GetMarginBottom() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutMarginBottom(marginBottom float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutMarginBottom.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(marginBottom),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutMarginBottom.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(marginBottom))),
+			uintptr(uint32(math.Float64bits(marginBottom)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutMarginBottom.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(marginBottom)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -230,11 +286,22 @@ func (i *ICoreWebView2PrintSettings) GetMarginLeft() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutMarginLeft(marginLeft float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutMarginLeft.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(marginLeft),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutMarginLeft.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(marginLeft))),
+			uintptr(uint32(math.Float64bits(marginLeft)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutMarginLeft.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(marginLeft)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -257,11 +324,22 @@ func (i *ICoreWebView2PrintSettings) GetMarginRight() (float64, error) {
 
 func (i *ICoreWebView2PrintSettings) PutMarginRight(marginRight float64) error {
 
-
-	hr, _, _ := i.Vtbl.PutMarginRight.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(marginRight),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutMarginRight.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(marginRight))),
+			uintptr(uint32(math.Float64bits(marginRight)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutMarginRight.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(marginRight)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

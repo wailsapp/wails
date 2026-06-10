@@ -48,12 +48,24 @@ func (i *ICoreWebView2) GetICoreWebView2CompositionController4() (*ICoreWebView2
 func (i *ICoreWebView2CompositionController4) GetNonClientRegionAtPoint(point POINT) (COREWEBVIEW2_NON_CLIENT_REGION_KIND, error) {
 
 	var value COREWEBVIEW2_NON_CLIENT_REGION_KIND
-
-	hr, _, _ := i.Vtbl.GetNonClientRegionAtPoint.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&point)),
-		uintptr(unsafe.Pointer(&value)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.GetNonClientRegionAtPoint.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[1]),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.GetNonClientRegionAtPoint.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&point))),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
@@ -92,11 +104,22 @@ func (i *ICoreWebView2CompositionController4) AddNonClientRegionChanged(eventHan
 
 func (i *ICoreWebView2CompositionController4) RemoveNonClientRegionChanged(token EventRegistrationToken) error {
 
-
-	hr, _, _ := i.Vtbl.RemoveNonClientRegionChanged.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveNonClientRegionChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveNonClientRegionChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

@@ -45,12 +45,24 @@ func (i *ICoreWebView2) GetICoreWebView2Environment12() (*ICoreWebView2Environme
 func (i *ICoreWebView2Environment12) CreateSharedBuffer(Size uint64) (*ICoreWebView2SharedBuffer, error) {
 
 	var value *ICoreWebView2SharedBuffer
-
-	hr, _, _ := i.Vtbl.CreateSharedBuffer.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(Size),
-		uintptr(unsafe.Pointer(&value)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.CreateSharedBuffer.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(uint64(Size))),
+			uintptr(uint32(uint64(Size)>>32)),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.CreateSharedBuffer.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(Size),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return nil, syscall.Errno(hr)
 	}
