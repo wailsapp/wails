@@ -24,6 +24,14 @@ After processing, the content will be moved to the main changelog and this file 
 - iOS: configurable minimum iOS version (`ios.minIOSVersion` in build/config.yml)
 - iOS: `wails3 doctor` reports Xcode and iOS SDK availability on macOS
 - iOS: documentation (IOS.md and a docs-site guide)
+- Android: native message dialogs (AlertDialog) and open file/files dialogs (Storage Access Framework, imported as cache copies); open-directory and save dialogs return an explicit error
+- Android: clipboard support via ClipboardManager
+- Android: real screen metrics via WindowMetrics/DisplayMetrics (dp, pixels, scale, system-bar work area)
+- Android: haptics (`Android.Haptics.Vibrate`), device info (`Android.Device.Info`) and toast (`Android.Toast.Show`) runtime methods
+- Android: typed lifecycle events (`events.Android.*`, generated from events.txt) with `ActivityCreated` mapped to `Common.ApplicationStarted`
+- Android: build pipeline produces installable debug and release APKs (`android:run`, `android:package`, `android:package:fat`); release signing via the debug keystore by default or a real keystore through `ANDROID_KEYSTORE_*` env vars
+- Android: `wails3 doctor` reports the Android SDK, NDK and JDK
+- Android: documentation (ANDROID.md and a docs-site guide)
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -36,6 +44,11 @@ After processing, the content will be moved to the main changelog and this file 
 - iOS: fixed a C-string leak on every Go→JS JavaScript execution
 - iOS: `hasListeners` now reflects real listener registration
 - iOS: framework debug logging is compiled out of production builds
+- Android: `GOOS=android` compiles again — defined `events.Android`, removed the out-of-bounds `events_android.go` listener array, added the mobile method-name stub, and stopped desktop-Linux files (`linux_cgo.*`, `events_linux.*`, `environment_linux.go`) leaking into Android builds
+- Android: JS→Go bindings now work — the WebView cannot deliver `fetch()` POST bodies to `shouldInterceptRequest`, so runtime calls route through a JavascriptInterface transport (`nativeHandleRuntimeCall`) instead of crashing on a nil request body
+- Android: `Screens.*` runtime calls return real data — the ScreenManager is now populated at startup (it was never wired, so `GetAll` returned nil)
+- Android: framework debug logging is compiled out of production builds and routes through logcat under the `Wails` tag in debug builds
+- Android: real `hasListeners` registry, JNI reference/exception handling, and a single-load page lifecycle (no double navigation)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

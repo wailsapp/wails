@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@wailsio/runtime": "file:../../../internal/runtime/desktop/@wailsio/runtime"
+    "@wailsio/runtime": "latest"
   },
   "devDependencies": {
     "vite": "^5.0.0"
