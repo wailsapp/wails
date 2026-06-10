@@ -47,13 +47,13 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
-
+    
     <key>NSHumanReadableCopyright</key>
     <string>(c) 2025, My Company</string>
-
-
+    
+    
     <key>CFBundleGetInfoString</key>
     <string>Some Product Comments</string>
-
+    
 </dict>
 </plist>

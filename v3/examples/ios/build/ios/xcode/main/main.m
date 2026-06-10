@@ -1,3 +1,4 @@
+//go:build ios
 // Minimal bootstrap: delegate comes from Go archive (WailsAppDelegate)
 #import <UIKit/UIKit.h>
 #include <stdio.h>

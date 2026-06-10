@@ -157,6 +157,9 @@ func loadIOSProjectConfig(configPath string, cfg *iOSProjectConfig) error {
 	if in.Info.Description != "" {
 		cfg.ProductDescription = in.Info.Description
 	}
+	if in.IOS.MinIOSVersion != "" {
+		cfg.MinIOSVersion = in.IOS.MinIOSVersion
+	}
 	// BinaryName remains default unless we later add config support
 	return nil
 }
@@ -171,6 +174,7 @@ type iOSProjectConfig struct {
 	ProductComments   string
 	ProductCopyright  string
 	ProductDescription string
+	MinIOSVersion     string
 }
 
 // IOSXcodeGen generates an Xcode project skeleton for the current app.
@@ -204,6 +208,7 @@ func IOSXcodeGen(options *IOSXcodeGenOptions) error {
 		ProductComments:   "",
 		ProductCopyright:  "",
 		ProductDescription: "",
+		MinIOSVersion:     "15.0",
 	}
 	if err := loadIOSProjectConfig(options.Config, &cfg); err != nil {
 		return fmt.Errorf("parse config: %w", err)

@@ -1,5 +1,5 @@
 {
   "Replace": {
-    "/Users/leaanthony/test/wails/v3/examples/ios/main_ios.gen.go": "/Users/leaanthony/test/wails/v3/examples/ios/build/ios/xcode/gen/main_ios.gen.go"
+    "/Users/admin/projects/wake/wails-v3/.claude/worktrees/ios-gaps/v3/examples/ios/main_ios.gen.go": "/Users/admin/projects/wake/wails-v3/.claude/worktrees/ios-gaps/v3/examples/ios/build/ios/xcode/gen/main_ios.gen.go"
   }
 }
