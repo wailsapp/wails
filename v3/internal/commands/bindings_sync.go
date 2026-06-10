@@ -133,12 +133,11 @@ func sameFileContent(a, b string) bool {
 func withRetry(op func() error) error {
 	var err error
 	delay := 8 * time.Millisecond
-	for attempt := 0; attempt < 6; attempt++ {
-		if err = op(); err == nil || runtime.GOOS != "windows" {
+	for attempt := 0; ; attempt++ {
+		if err = op(); err == nil || runtime.GOOS != "windows" || attempt == 5 {
 			return err
 		}
 		time.Sleep(delay)
 		delay *= 2
 	}
-	return err
 }
