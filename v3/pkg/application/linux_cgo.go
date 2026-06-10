@@ -1459,6 +1459,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1500,6 +1501,20 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 //export handleFocusLeave
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
+	return C.gboolean(0)
+}
+
+//export handlePermissionRequest
+func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Grant camera/microphone
+	// access to match the other platforms: Windows grants all permissions by
+	// default and macOS defers to the OS-level prompt. Returning FALSE for
+	// everything else keeps WebKit's default handling (deny).
+	if C.is_user_media_permission_request(request) != 0 {
+		C.webkit_permission_request_allow(request)
+		return C.gboolean(1)
+	}
 	return C.gboolean(0)
 }
 

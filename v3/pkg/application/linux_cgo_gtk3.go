@@ -81,6 +81,7 @@ extern gboolean handleConfigureEvent(GtkWidget*, GdkEventConfigure*, uintptr_t);
 extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
+extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
@@ -100,6 +101,11 @@ static void signal_connect(void *widget, char *event, void *cb, void* data) {
 
 static WebKitWebView* webkit_web_view(GtkWidget *webview) {
 	return WEBKIT_WEB_VIEW(webview);
+}
+
+// Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
+static int is_user_media_permission_request(WebKitPermissionRequest *request) {
+	return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
 }
 
 static void* new_message_dialog(GtkWindow *parent, const gchar *msg, int dialogType, bool hasButtons) {
@@ -1754,6 +1760,20 @@ func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) 
 	return C.gboolean(0)
 }
 
+//export handlePermissionRequest
+func handlePermissionRequest(webview *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Grant camera/microphone
+	// access to match the other platforms: Windows grants all permissions by
+	// default and macOS defers to the OS-level prompt. Returning FALSE for
+	// everything else keeps WebKit's default handling (deny).
+	if C.is_user_media_permission_request(request) != 0 {
+		C.webkit_permission_request_allow(request)
+		return C.gboolean(1)
+	}
+	return C.gboolean(0)
+}
+
 //export handleLoadChanged
 func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
@@ -1783,6 +1803,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), C.handleConfigureEvent, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())

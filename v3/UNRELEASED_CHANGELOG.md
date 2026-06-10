@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `getUserMedia` always failing with `NotAllowedError` on Linux: WebKitGTK denies permission requests nobody handles, and the `permission-request` signal was not connected. Camera/microphone requests are now granted, matching the Windows WebView2 default; all other permission kinds keep WebKit's default handling (#5552)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
