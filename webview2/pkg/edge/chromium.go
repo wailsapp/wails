@@ -539,6 +539,16 @@ func (e *Chromium) GetController() *ICoreWebView2Controller {
 	return e.controller
 }
 
+// IsReady reports whether the WebView2 controller has been fully initialised.
+// e.controller is assigned partway through CreateCoreWebView2ControllerCompleted,
+// before the controller's COM setup has finished, so a non-nil controller is
+// not sufficient to safely call into it: COM calls made in that window fail
+// with E_INVALIDARG ("The parameter is incorrect"). The inited flag is set
+// only after setup completes. Safe to call from any goroutine.
+func (e *Chromium) IsReady() bool {
+	return atomic.LoadUintptr(&e.inited) != 0
+}
+
 func boolToInt(input bool) int {
 	if input {
 		return 1
@@ -570,6 +580,15 @@ func (e *Chromium) NotifyParentWindowPositionChanged() error {
 }
 
 func (e *Chromium) Focus() {
+	// The WndProc can dispatch WM_SETFOCUS re-entrantly while the controller
+	// is still being configured in CreateCoreWebView2ControllerCompleted
+	// (issue #5446). Callers' GetController() != nil checks cannot exclude
+	// that window, so guard here: dropping a focus request during startup is
+	// harmless, calling MoveFocus on a partially-initialised controller is
+	// fatal (errorCallback exits the process).
+	if !e.IsReady() {
+		return
+	}
 	err := e.controller.MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC)
 	if err != nil {
 		e.errorCallback(err)
