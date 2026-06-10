@@ -165,12 +165,14 @@ public class MainActivity extends AppCompatActivity {
      * WailsBridge on the main thread.
      */
     public void launchFilePicker(int callbackID, boolean multiple) {
-        if (pendingFilePickerCallbackID != -1) {
-            // Only one picker can be in flight
-            bridge.filePickerDone(callbackID);
-            return;
+        synchronized (this) {
+            if (pendingFilePickerCallbackID != -1) {
+                // Only one picker can be in flight
+                bridge.filePickerDone(callbackID);
+                return;
+            }
+            pendingFilePickerCallbackID = callbackID;
         }
-        pendingFilePickerCallbackID = callbackID;
 
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);

@@ -10,10 +10,14 @@ vars:
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
+  # SDK location: $ANDROID_HOME / $ANDROID_SDK_ROOT, else the per-OS default
+  # (macOS: ~/Library/Android/sdk, Linux/other: ~/Android/Sdk)
+  SDK_ROOT:
+    sh: 'echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}"'
   ADB:
-    sh: 'command -v adb || echo "${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"'
+    sh: 'command -v adb || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/platform-tools/adb"'
   EMULATOR:
-    sh: 'command -v emulator || echo "${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator"'
+    sh: 'command -v emulator || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/emulator/emulator"'
 
 tasks:
   install:deps:
@@ -56,7 +60,7 @@ tasks:
         # Locate the NDK: $ANDROID_NDK_HOME, or the newest installed NDK
         NDK_ROOT="$ANDROID_NDK_HOME"
         if [ -z "$NDK_ROOT" ]; then
-          SDK_ROOT="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+          SDK_ROOT="{{.SDK_ROOT}}"
           NDK_ROOT=$(ls -d "$SDK_ROOT"/ndk/* 2>/dev/null | sort -V | tail -1)
         fi
         if [ -z "$NDK_ROOT" ] || [ ! -d "$NDK_ROOT" ]; then

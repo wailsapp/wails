@@ -412,6 +412,7 @@ void ios_show_message_dialog(const char* ctitle, const char* cmessage, const cha
 
 @interface WailsDocumentPickerDelegate : NSObject <UIDocumentPickerDelegate>
 @property (nonatomic, assign) unsigned int callbackID;
+@property (nonatomic, assign) BOOL opensInPlace;
 @end
 
 // Keep delegates alive until the picker completes
@@ -420,9 +421,13 @@ static NSMutableDictionary<NSNumber*, WailsDocumentPickerDelegate*> *g_pickerDel
 @implementation WailsDocumentPickerDelegate
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls {
     for (NSURL *url in urls) {
-        // Directories are opened in place and need security-scoped access for
-        // the lifetime of the app's use. Imported files are sandbox copies.
-        [url startAccessingSecurityScopedResource];
+        // Files are imported with asCopy:YES, so they are sandbox copies that
+        // need no security-scoped access. Only directories are opened in place
+        // and require it; that access is held for the app session (bookmark
+        // persistence is not implemented).
+        if (self.opensInPlace) {
+            [url startAccessingSecurityScopedResource];
+        }
         iosOpenFileCallback(self.callbackID, (char *)[url.path UTF8String]);
     }
     iosOpenFileCallbackEnd(self.callbackID);
@@ -448,6 +453,7 @@ void ios_show_document_picker(unsigned int callbackID, bool directories, bool mu
         picker.allowsMultipleSelection = multiple ? YES : NO;
         WailsDocumentPickerDelegate *delegate = [[WailsDocumentPickerDelegate alloc] init];
         delegate.callbackID = callbackID;
+        delegate.opensInPlace = directories ? YES : NO;
         if (!g_pickerDelegates) {
             g_pickerDelegates = [NSMutableDictionary dictionary];
         }

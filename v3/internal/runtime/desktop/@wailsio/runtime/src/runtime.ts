@@ -226,13 +226,19 @@ if (androidBridge) {
             return new Promise((resolve, reject) => {
                 const id = nanoid();
                 pending.set(id, { resolve, reject });
-                androidBridge.invokeAsync(id, JSON.stringify({
-                    object: objectID,
-                    method: method,
-                    windowName: windowName,
-                    args: args ?? null,
-                    clientId: clientId,
-                }));
+                try {
+                    androidBridge.invokeAsync(id, JSON.stringify({
+                        object: objectID,
+                        method: method,
+                        windowName: windowName,
+                        args: args ?? null,
+                        clientId: clientId,
+                    }));
+                } catch (e) {
+                    // Don't leak the pending entry if dispatch throws synchronously
+                    pending.delete(id);
+                    reject(e);
+                }
             });
         },
     };

@@ -2,7 +2,10 @@
 
 package application
 
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 // androidWebviewWindow implements the webviewWindowImpl interface for Android
 type androidWebviewWindow struct {
@@ -39,8 +42,11 @@ func (w *androidWebviewWindow) fullscreen() {}
 
 func (w *androidWebviewWindow) getScreen() (*Screen, error) {
 	screens, err := getScreens()
-	if err != nil || len(screens) == 0 {
+	if err != nil {
 		return nil, err
+	}
+	if len(screens) == 0 {
+		return nil, fmt.Errorf("no screens available")
 	}
 	return screens[0], nil
 }

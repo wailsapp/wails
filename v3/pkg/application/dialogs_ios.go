@@ -126,6 +126,9 @@ func (d *iosOpenFileDialog) show() (chan string, error) {
 
 //export iosOpenFileCallback
 func iosOpenFileCallback(callbackID C.uint, cpath *C.char) {
+	if cpath == nil {
+		return
+	}
 	path := C.GoString(cpath)
 	iosFileDialogsLock.Lock()
 	channel, ok := iosFileResponses[uint(callbackID)]

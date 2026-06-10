@@ -292,7 +292,10 @@ public class WailsBridge {
      * Post a Go callback onto the Android main thread.
      */
     public void runOnMainThread(final int callbackID) {
-        mainHandler.post(() -> nativeMainThreadCallback(callbackID));
+        // Guard against the callback firing after shutdown() tore down the Go side
+        mainHandler.post(() -> {
+            if (initialized) nativeMainThreadCallback(callbackID);
+        });
     }
 
     // Clipboard (note: reads on Android 10+ require input focus)
@@ -368,11 +371,11 @@ public class WailsBridge {
                     }
                 }
                 final int dismissIndex = cancelIndex;
-                builder.setOnCancelListener(d -> nativeDialogCallback(callbackID, dismissIndex));
+                builder.setOnCancelListener(d -> dialogCallback(callbackID, dismissIndex));
 
                 if (count == 0) {
                     builder.setPositiveButton(android.R.string.ok,
-                            (d, w) -> nativeDialogCallback(callbackID, -1));
+                            (d, w) -> dialogCallback(callbackID, -1));
                 } else if (count <= 3) {
                     // Map buttons to AlertDialog slots: the default (or last)
                     // button is positive, the cancel button negative, any
@@ -409,14 +412,14 @@ public class WailsBridge {
 
                     final int positiveIdx = positive, negativeIdx = negative, neutralIdx = neutral;
                     builder.setPositiveButton(buttons.getJSONObject(positive).optString("label", "OK"),
-                            (d, w) -> nativeDialogCallback(callbackID, positiveIdx));
+                            (d, w) -> dialogCallback(callbackID, positiveIdx));
                     if (negative != -1) {
                         builder.setNegativeButton(buttons.getJSONObject(negative).optString("label", "Cancel"),
-                                (d, w) -> nativeDialogCallback(callbackID, negativeIdx));
+                                (d, w) -> dialogCallback(callbackID, negativeIdx));
                     }
                     if (neutral != -1) {
                         builder.setNeutralButton(buttons.getJSONObject(neutral).optString("label", ""),
-                                (d, w) -> nativeDialogCallback(callbackID, neutralIdx));
+                                (d, w) -> dialogCallback(callbackID, neutralIdx));
                     }
                 } else {
                     // More than three buttons: show as a list
@@ -424,13 +427,13 @@ public class WailsBridge {
                     for (int i = 0; i < count; i++) {
                         labels[i] = buttons.getJSONObject(i).optString("label", "");
                     }
-                    builder.setItems(labels, (d, which) -> nativeDialogCallback(callbackID, which));
+                    builder.setItems(labels, (d, which) -> dialogCallback(callbackID, which));
                 }
 
                 builder.show();
             } catch (Exception e) {
                 Log.e(TAG, "showMessageDialog failed", e);
-                nativeDialogCallback(callbackID, -1);
+                dialogCallback(callbackID, -1);
             }
         });
     }
@@ -458,11 +461,17 @@ public class WailsBridge {
 
     /** Forward a picked file path to Go (package-private, used by MainActivity). */
     void filePickerResult(int callbackID, String path) {
-        nativeFilePickerResult(callbackID, path);
+        // The picker completes on a background thread that may outlive shutdown()
+        if (initialized) nativeFilePickerResult(callbackID, path);
     }
 
     /** Signal the end of a file picking session (package-private). */
     void filePickerDone(int callbackID) {
-        nativeFilePickerDone(callbackID);
+        if (initialized) nativeFilePickerDone(callbackID);
+    }
+
+    /** Dialog button callback that no-ops once the Go side is gone. */
+    private void dialogCallback(int callbackID, int buttonIndex) {
+        if (initialized) nativeDialogCallback(callbackID, buttonIndex);
     }
 }

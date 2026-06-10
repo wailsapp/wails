@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -49,13 +50,18 @@ func androidSDKRoot() string {
 		}
 	}
 	if home, err := os.UserHomeDir(); err == nil {
-		def := filepath.Join(home, "Library", "Android", "sdk")
-		if _, err := os.Stat(def); err == nil {
-			return def
+		// Conventional per-OS install locations
+		candidates := []string{
+			filepath.Join(home, "Library", "Android", "sdk"), // macOS
+			filepath.Join(home, "Android", "Sdk"),            // Linux
 		}
-		def = filepath.Join(home, "Android", "Sdk")
-		if _, err := os.Stat(def); err == nil {
-			return def
+		if localAppData := os.Getenv("LOCALAPPDATA"); localAppData != "" {
+			candidates = append(candidates, filepath.Join(localAppData, "Android", "Sdk")) // Windows
+		}
+		for _, def := range candidates {
+			if _, err := os.Stat(def); err == nil {
+				return def
+			}
 		}
 	}
 	return ""
@@ -71,8 +77,12 @@ func checkAndroid(result map[string]string) {
 	}
 	result["*Android SDK"] = sdk
 
-	// adb (platform-tools)
-	adb := filepath.Join(sdk, "platform-tools", "adb")
+	// adb (platform-tools); the binary is adb.exe on Windows
+	adbName := "adb"
+	if runtime.GOOS == "windows" {
+		adbName = "adb.exe"
+	}
+	adb := filepath.Join(sdk, "platform-tools", adbName)
 	if _, err := os.Stat(adb); err == nil {
 		result["*Android platform-tools"] = "Installed"
 	} else if _, err := exec.LookPath("adb"); err == nil {
