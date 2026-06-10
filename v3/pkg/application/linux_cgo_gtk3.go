@@ -222,9 +222,12 @@ static void install_signal_handlers() {
 	#if defined(SIGSEGV)
 		fix_signal(SIGSEGV);
 	#endif
-	#if defined(SIGUSR1)
-		fix_signal(SIGUSR1);
-	#endif
+	// NOTE: Do NOT add SA_ONSTACK to SIGUSR1. WebKit's JavaScriptCore uses
+	// SIGUSR1 to suspend/resume threads for conservative GC stack scanning.
+	// Once JSC installs its own SIGUSR1 handler it owns the signal (Go no
+	// longer handles it), and forcing SA_ONSTACK makes that handler run on
+	// Go's alternate signal stack, breaking GC thread synchronisation and
+	// freezing WebKit during idle collection. See issue #5527.
 	#if defined(SIGXCPU)
 		fix_signal(SIGXCPU);
 	#endif
@@ -1523,6 +1526,7 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
@@ -1628,8 +1632,7 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
-	// TODO: Deal with transparency for the titlebar if possible when !frameless
-	//       Perhaps we just make it undecorated and add a menu bar inside?
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
 // TODO: confirm this is working properly

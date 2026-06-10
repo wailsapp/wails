@@ -31,6 +31,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.99 - 2026-06-10
+
+## Fixed
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+
+## v3.0.0-alpha.98 - 2026-06-03
+
+## Fixed
+- Fix WebKit UI freeze on Linux when idle (e.g. with the inspector open) by no longer forcing `SA_ONSTACK` on `SIGUSR1`, which broke JavaScriptCore's GC thread synchronisation (#5527)
+
+## v3.0.0-alpha.97 - 2026-05-31
+
+## Added
+- Add debugging page and working with `runtime/trace`
+
+## Changed
+- Remove some unnecessary `_ "embed"` imports tidying the code a little
+
+## Fixed
+- Fix minimum width/height constraints not enforced after window unmaximise on Windows (#4593)
+- Fix mouse click-through in fullscreen mode with Frameless + Transparent window options (#4408)
+
 ## v3.0.0-alpha.96 - 2026-05-25
 
 ## Added

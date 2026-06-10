@@ -849,6 +849,38 @@ Mac: application.MacWindow{
 },
 ```
 
+**WebviewPreferences** (`MacWebviewPreferences`)
+
+Fine-grained control over the underlying `WKWebView` configuration. All fields are optional — unset fields leave the WebKit default unchanged.
+
+```go
+Mac: application.MacWindow{
+    WebviewPreferences: application.MacWebviewPreferences{
+        TabFocusesLinks:                       optional.True,
+        TextInteractionEnabled:                optional.True,
+        FullscreenEnabled:                     optional.False,
+        AllowsBackForwardNavigationGestures:   optional.False,
+        AllowsMagnification:                   optional.True,
+        AllowsAirPlayForMediaPlayback:         optional.True,
+        JavaScriptCanOpenWindowsAutomatically: optional.False,
+        MinimumFontSize:                       optional.NewVar(12.0),
+        ApplicationNameForUserAgent:           "MyApp",
+        EnableAutoplayWithoutUserAction:       optional.True,
+    },
+},
+```
+
+- `TabFocusesLinks` — When `true`, pressing Tab moves focus to links and form controls (default: `false`)
+- `TextInteractionEnabled` — When `true`, users can select and interact with text in the webview (default: `true`)
+- `FullscreenEnabled` — When `true`, web content can enter fullscreen via the HTML Fullscreen API (default: `false`). Requires macOS 12.3+.
+- `AllowsBackForwardNavigationGestures` — When `true`, horizontal swipe gestures trigger back/forward navigation (default: `false`)
+- `AllowsMagnification` — When `true`, pinch-to-zoom is enabled on the webview (default: `false`)
+- `AllowsAirPlayForMediaPlayback` — When `true`, media can be streamed to AirPlay devices (default: `true`)
+- `JavaScriptCanOpenWindowsAutomatically` — When `true`, JavaScript can open new windows without a user gesture (default: `false`)
+- `MinimumFontSize` — Minimum font size in points. Use `optional.NewVar(12.0)` to set. Unset leaves WebKit default.
+- `ApplicationNameForUserAgent` — Overrides the application-name suffix in the WebKit user-agent string. Useful when sites reject the default `"wails.io"` identifier (e.g. YouTube embeds). Leave empty to keep the default.
+- `EnableAutoplayWithoutUserAction` — When `true`, audio and video can autoplay without a user gesture. Maps to `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (default: `false`)
+
 ### Windows Options (per-window)
 
 The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions` (that's the *application*-level struct).
