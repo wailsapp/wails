@@ -39,10 +39,11 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	}
 
 	// When clean mode is active and we're writing real files, generate bindings
-	// into a dot-prefixed sibling temp directory first, then swap it into place
-	// with RemoveAll+Rename. This prevents chokidar (used by Vite) from entering
-	// a rename-event loop caused by rapid directory delete+recreate, which would
-	// otherwise cause the node process to leak memory at ~2-6 MB/s.
+	// into a dot-prefixed sibling temp directory first, then sync the result
+	// into the output directory file by file. This prevents chokidar (used by
+	// Vite) from entering a rename-event loop caused by rapid directory
+	// delete+recreate, which would otherwise cause the node process to leak
+	// memory at ~2-6 MB/s.
 	// Dot-prefixed directories are ignored by chokidar's default glob pattern,
 	// so no spurious HMR events fire during file generation.
 	generationDir := absPath
@@ -132,14 +133,13 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		}
 	}
 
-	// Swap the temp dir into place. The -clean contract does not guarantee
-	// atomic replacement; RemoveAll+Rename matches the existing behaviour.
+	// Sync the generated output into place. Files are updated individually
+	// rather than swapping the whole directory: on Windows, deleting or
+	// renaming over the output directory fails with "Access is denied" while
+	// a file watcher (e.g. Vite's dev server) holds it open (#5515).
 	if !swapped && generationDir != absPath {
-		if err := os.RemoveAll(absPath); err != nil {
-			return fmt.Errorf("failed to remove old bindings directory %q: %w\nExisting bindings are untouched; generated output has been discarded.", absPath, err)
-		}
-		if err := os.Rename(generationDir, absPath); err != nil {
-			return fmt.Errorf("failed to install new bindings at %q: %w\nOld bindings have been removed. Re-run the command to regenerate them.", absPath, err)
+		if err := syncDirs(generationDir, absPath); err != nil {
+			return fmt.Errorf("failed to install new bindings at %q: %w\nThe bindings directory may be partially updated. Re-run the command to retry.", absPath, err)
 		}
 		swapped = true
 	}
