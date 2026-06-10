@@ -178,15 +178,26 @@ var (
 // prerelease (e.g. "1.0.1305-prerelease").
 func IsPrerelease(sdkVersion string) bool { return prereleaseRE.MatchString(sdkVersion) }
 
-// InterfaceMinimumVersions walks the parsed releases and returns the
-// earliest stable SDK version that explicitly added each
-// ICoreWebView2 interface. Prerelease versions are skipped — they
-// frequently announce an interface and then re-announce it in the
-// stable release that follows, and "stable" is what consumers gate on.
+// Support pairs the stable SDK release that introduced an interface with
+// that release's minimum WebView2 Runtime version. The runtime version is
+// what capability gates must compare against — the version reported by
+// GetAvailableCoreWebView2BrowserVersionString is a browser version
+// (e.g. "121.0.2277.83"), not an SDK version.
+type Support struct {
+	SDKVersion     string
+	RuntimeVersion string
+}
+
+// InterfaceSupport walks the parsed releases and returns, for each
+// ICoreWebView2 interface, the earliest stable SDK release that explicitly
+// added it together with that release's minimum runtime version. Prerelease
+// versions are skipped — they frequently announce an interface and then
+// re-announce it in the stable release that follows, and "stable" is what
+// consumers gate on.
 //
 // Releases are walked oldest-first so the first stable mention wins.
-func InterfaceMinimumVersions(releases []Release) map[string]string {
-	out := make(map[string]string)
+func InterfaceSupport(releases []Release) map[string]Support {
+	out := make(map[string]Support)
 	// releases are newest-first; walk in reverse so the oldest wins.
 	for i := len(releases) - 1; i >= 0; i-- {
 		r := releases[i]
@@ -197,10 +208,22 @@ func InterfaceMinimumVersions(releases []Release) map[string]string {
 			for _, m := range interfaceLinkRE.FindAllStringSubmatch(note, -1) {
 				name := m[1]
 				if _, seen := out[name]; !seen {
-					out[name] = r.SDKVersion
+					out[name] = Support{
+						SDKVersion:     r.SDKVersion,
+						RuntimeVersion: r.RuntimeVersion,
+					}
 				}
 			}
 		}
+	}
+	return out
+}
+
+// InterfaceMinimumVersions returns just the SDK side of InterfaceSupport.
+func InterfaceMinimumVersions(releases []Release) map[string]string {
+	out := make(map[string]string)
+	for name, s := range InterfaceSupport(releases) {
+		out[name] = s.SDKVersion
 	}
 	return out
 }

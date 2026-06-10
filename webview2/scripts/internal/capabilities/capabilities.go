@@ -1,6 +1,16 @@
 // Package capabilities emits pkg/webview2/capabilities.go, the runtime
 // capability-detection surface that Wails uses to decide whether a feature
 // is available on the installed WebView2 runtime.
+//
+// The gate compares like with like: the installed runtime reports a browser
+// version (e.g. "121.0.2277.83") and every table entry carries the minimum
+// runtime version stated in the SDK release notes — never an SDK version,
+// which lives in a different numbering universe (1.0.x) and would make any
+// comparison vacuously true.
+//
+// Coverage is total by construction: Build receives the full interface
+// inventory of the IDL being generated and fails loudly for any interface it
+// cannot date, instead of silently omitting it from the table.
 package capabilities
 
 import (
@@ -11,13 +21,27 @@ import (
 	"text/template"
 
 	"updater/internal/idlversion"
+	"updater/internal/notes"
 )
 
-// Mapping is the raw interface→minimum-SDK-version table.
-type Mapping map[string]string
+// Entry describes when an interface became available.
+type Entry struct {
+	// SDKVersion is the stable SDK release that introduced the interface.
+	// Empty means the interface predates the release-notes archive.
+	SDKVersion string
 
-// Sorted returns the mapping keys sorted by minimum version (oldest first)
-// and then alphabetically to keep output stable.
+	// RuntimeVersion is the minimum WebView2 Runtime (browser) version that
+	// release requires. Empty means no minimum is known — the interface is
+	// assumed available on any runtime the loader accepts.
+	RuntimeVersion string
+}
+
+// Mapping is the interface→support table.
+type Mapping map[string]Entry
+
+// Sorted returns the mapping keys sorted by introducing SDK version (oldest
+// first, baseline entries before everything) and then alphabetically to keep
+// output stable.
 func (m Mapping) Sorted() []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -25,21 +49,66 @@ func (m Mapping) Sorted() []string {
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		ki, kj := keys[i], keys[j]
-		c, err := idlversion.Compare(m[ki], m[kj])
-		if err == nil && c != 0 {
-			return c < 0
+		vi, vj := m[ki].SDKVersion, m[kj].SDKVersion
+		switch {
+		case vi == "" && vj != "":
+			return true
+		case vi != "" && vj == "":
+			return false
+		case vi != vj:
+			c, err := idlversion.Compare(vi, vj)
+			if err == nil && c != 0 {
+				return c < 0
+			}
 		}
 		return ki < kj
 	})
 	return keys
 }
 
-// Capability is a named feature gate. The emitter currently derives one
-// Capability per interface; future versions can hand-extend this list.
-type Capability struct {
-	Name        string
-	Description string
-	Interface   string // The ICoreWebView2_N interface that provides this capability.
+// Build merges the release-notes support table with the interface inventory
+// of the IDL being generated.
+//
+//   - Interfaces named in the release notes get that release's SDK and
+//     minimum runtime version.
+//   - Interfaces absent from the notes but present in oldestInventory (the
+//     oldest cached IDL) predate the release-notes archive and are emitted
+//     as baseline entries (always supported).
+//   - Interfaces absent from both indicate a release-notes parser gap and
+//     fail the build — a silent omission here would make the gate lie.
+//
+// Interfaces named in the notes but missing from the inventory (COM interop
+// interfaces that live outside the IDL) are kept: extra entries are harmless
+// and callers may gate on them.
+func Build(support map[string]notes.Support, inventory, oldestInventory []string) (Mapping, error) {
+	oldest := make(map[string]bool, len(oldestInventory))
+	for _, n := range oldestInventory {
+		oldest[n] = true
+	}
+	m := make(Mapping, len(inventory))
+	var unknown []string
+	for _, name := range inventory {
+		if s, ok := support[name]; ok {
+			m[name] = Entry{SDKVersion: s.SDKVersion, RuntimeVersion: s.RuntimeVersion}
+			continue
+		}
+		if oldest[name] {
+			m[name] = Entry{}
+			continue
+		}
+		unknown = append(unknown, name)
+	}
+	if len(unknown) > 0 {
+		sort.Strings(unknown)
+		return nil, fmt.Errorf("%d interface(s) in the current IDL are absent from both the release notes and the oldest cached IDL — release-notes parser gap?\n  %s",
+			len(unknown), strings.Join(unknown, "\n  "))
+	}
+	for name, s := range support {
+		if _, ok := m[name]; !ok {
+			m[name] = Entry{SDKVersion: s.SDKVersion, RuntimeVersion: s.RuntimeVersion}
+		}
+	}
+	return m, nil
 }
 
 const fileHeader = `//go:build windows
@@ -56,52 +125,52 @@ import (
 	"strings"
 )
 
-// InterfaceMinimumVersion maps an ICoreWebView2_N interface name to the
-// minimum WebView2 SDK version that introduced it. Use SupportsInterface
-// to compare against a runtime version.
-var InterfaceMinimumVersion = map[string]string{
-{{range .Keys}}	"{{.}}": "{{index $.Map .}}",
+// InterfaceSupport describes when an ICoreWebView2* interface became
+// available.
+type InterfaceSupport struct {
+	// SDKVersion is the stable WebView2 SDK release that introduced the
+	// interface. Empty means the interface predates the SDK release-notes
+	// archive and has been available in every runtime this package supports.
+	SDKVersion string
+
+	// MinRuntimeVersion is the minimum WebView2 Runtime (browser) version
+	// required, in the four-part form reported by
+	// GetAvailableCoreWebView2BrowserVersionString (e.g. "121.0.2277.83").
+	// Empty means no minimum is known; the interface is assumed available.
+	MinRuntimeVersion string
+}
+
+// InterfaceSupportTable maps every interface generated in this package
+// (plus interop interfaces named in the SDK release notes) to its support
+// data. Completeness over the generated inventory is enforced at
+// generation time.
+var InterfaceSupportTable = map[string]InterfaceSupport{
+{{range .Keys}}	"{{.}}": {SDKVersion: "{{(index $.Map .).SDKVersion}}", MinRuntimeVersion: "{{(index $.Map .).RuntimeVersion}}"},
 {{end}}}
 
-// SupportsInterface reports whether the given runtime version is at least
-// the SDK version that introduced iface. Returns the required version when
-// the answer is false, or an empty string otherwise. Returns an error if
-// iface is unknown or runtimeVersion fails to parse.
+// SupportsInterface reports whether the installed WebView2 Runtime supports
+// iface. runtimeVersion is the browser version reported by
+// GetAvailableCoreWebView2BrowserVersionString (e.g. "121.0.2277.83");
+// channel suffixes like " beta" are ignored. When the answer is false, the
+// second return value carries the minimum runtime version required. An
+// unknown interface name or an unparseable version is an error.
 func SupportsInterface(runtimeVersion, iface string) (bool, string, error) {
-	required, ok := InterfaceMinimumVersion[iface]
+	entry, ok := InterfaceSupportTable[iface]
 	if !ok {
 		return false, "", fmt.Errorf("unknown interface %q", iface)
 	}
-	c, err := compareVersions(runtimeVersion, required)
+	if entry.MinRuntimeVersion == "" {
+		return true, "", nil
+	}
+	c, err := compareVersions(runtimeVersion, entry.MinRuntimeVersion)
 	if err != nil {
-		return false, required, err
+		return false, entry.MinRuntimeVersion, err
 	}
 	if c < 0 {
-		return false, required, nil
+		return false, entry.MinRuntimeVersion, nil
 	}
 	return true, "", nil
 }
-
-// HasCapability is the high-level feature gate. Each Capability is wired
-// to a specific interface; the runtime is checked against that interface's
-// minimum version.
-func HasCapability(runtimeVersion string, cap Capability) (bool, error) {
-	supported, _, err := SupportsInterface(runtimeVersion, cap.Interface)
-	return supported, err
-}
-
-// Capability identifies a Wails-relevant feature gate. The set is generated
-// from the interface inventory; consumers may hand-add named subsets.
-type Capability struct {
-	Name        string
-	Description string
-	Interface   string
-}
-
-// AllCapabilities lists every known interface as a Capability.
-var AllCapabilities = []Capability{
-{{range .Capabilities}}	{Name: "{{.Name}}", Description: "{{.Description}}", Interface: "{{.Interface}}"},
-{{end}}}
 
 func compareVersions(a, b string) (int, error) {
 	pa, err := parseVersion(a)
@@ -144,25 +213,11 @@ func parseVersion(s string) ([4]int, error) {
 }
 `
 
-// Emit renders the capabilities.go file content. capabilities is optional:
-// if nil, one capability is created per interface in mapping using the
-// interface name as the capability name.
-func Emit(mapping Mapping, capabilities []Capability) ([]byte, error) {
+// Emit renders the capabilities.go file content.
+func Emit(mapping Mapping) ([]byte, error) {
 	if len(mapping) == 0 {
 		return nil, fmt.Errorf("mapping is empty — nothing to emit")
 	}
-	keys := mapping.Sorted()
-	if capabilities == nil {
-		capabilities = make([]Capability, 0, len(keys))
-		for _, k := range keys {
-			capabilities = append(capabilities, Capability{
-				Name:        k,
-				Description: "Requires interface " + k,
-				Interface:   k,
-			})
-		}
-	}
-
 	tpl, err := template.New("capabilities").Parse(fileTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("parse template: %w", err)
@@ -171,10 +226,9 @@ func Emit(mapping Mapping, capabilities []Capability) ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteString(fileHeader)
 	err = tpl.Execute(&buf, struct {
-		Keys         []string
-		Map          Mapping
-		Capabilities []Capability
-	}{Keys: keys, Map: mapping, Capabilities: capabilities})
+		Keys []string
+		Map  Mapping
+	}{Keys: mapping.Sorted(), Map: mapping})
 	if err != nil {
 		return nil, fmt.Errorf("execute template: %w", err)
 	}
@@ -188,13 +242,13 @@ func EmitJSON(mapping Mapping) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("{\n")
 	for i, k := range keys {
-		buf.WriteString(fmt.Sprintf("  %q: %q", k, mapping[k]))
+		e := mapping[k]
+		buf.WriteString(fmt.Sprintf("  %q: {\"sdk\": %q, \"runtime\": %q}", k, e.SDKVersion, e.RuntimeVersion))
 		if i < len(keys)-1 {
 			buf.WriteString(",")
 		}
 		buf.WriteString("\n")
 	}
 	buf.WriteString("}\n")
-	_ = strings.TrimSpace
 	return buf.Bytes()
 }

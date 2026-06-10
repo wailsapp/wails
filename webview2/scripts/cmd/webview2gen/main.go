@@ -201,6 +201,8 @@ func normalizeNewlines(b []byte) []byte {
 func runCapabilities(args []string) error {
 	fs := flag.NewFlagSet("capabilities", flag.ContinueOnError)
 	source := fs.String("source", "", "release-notes markdown file (default: fetch from MicrosoftDocs)")
+	version := fs.String("version", "", "SDK version of the cached IDL providing the interface inventory (default: latest cached)")
+	dir := fs.String("dir", IDLDir, "IDL cache directory")
 	out := fs.String("out", OutputDir, "output directory for capabilities.go")
 	jsonOut := fs.String("json", "", "also write the interface→version map as JSON at this path (empty = skip)")
 	if err := fs.Parse(args); err != nil {
@@ -225,12 +227,46 @@ func runCapabilities(args []string) error {
 	if err != nil {
 		return fmt.Errorf("parse release notes: %w", err)
 	}
-	mapping := capabilities.Mapping(notes.InterfaceMinimumVersions(releases))
-	if len(mapping) == 0 {
+	support := notes.InterfaceSupport(releases)
+	if len(support) == 0 {
 		return errors.New("no interfaces extracted from release notes — check parser")
 	}
 
-	emitted, err := capabilities.Emit(mapping, nil)
+	// The capability table must cover every interface the generator emits.
+	// The current IDL provides the inventory; the oldest cached IDL vouches
+	// for interfaces that predate the release-notes archive.
+	store := idl.NewStore(*dir)
+	v, err := resolveVersion(store, *version)
+	if err != nil {
+		return err
+	}
+	idlBytes, err := store.Read(v)
+	if err != nil {
+		return fmt.Errorf("read IDL %s: %w", v, err)
+	}
+	inventory, err := generator.InterfaceNames(idlBytes)
+	if err != nil {
+		return fmt.Errorf("parse IDL %s: %w", v, err)
+	}
+	oldestVersion, err := oldestCachedVersion(store)
+	if err != nil {
+		return err
+	}
+	oldestBytes, err := store.Read(oldestVersion)
+	if err != nil {
+		return fmt.Errorf("read IDL %s: %w", oldestVersion, err)
+	}
+	oldestInventory, err := generator.InterfaceNames(oldestBytes)
+	if err != nil {
+		return fmt.Errorf("parse IDL %s: %w", oldestVersion, err)
+	}
+
+	mapping, err := capabilities.Build(support, inventory, oldestInventory)
+	if err != nil {
+		return err
+	}
+
+	emitted, err := capabilities.Emit(mapping)
 	if err != nil {
 		return fmt.Errorf("emit: %w", err)
 	}
@@ -366,6 +402,21 @@ func runFull(args []string) error {
 // -----------------------------------------------------------------------
 // helpers
 // -----------------------------------------------------------------------
+
+func oldestCachedVersion(store *idl.Store) (string, error) {
+	cached, err := store.List()
+	if err != nil {
+		return "", fmt.Errorf("list cache: %w", err)
+	}
+	if len(cached) == 0 {
+		return "", errors.New("no IDL cached")
+	}
+	sort.Slice(cached, func(i, j int) bool {
+		c, _ := idlversion.Compare(cached[i], cached[j])
+		return c < 0
+	})
+	return cached[0], nil
+}
 
 func resolveVersion(store *idl.Store, want string) (string, error) {
 	if want != "" {

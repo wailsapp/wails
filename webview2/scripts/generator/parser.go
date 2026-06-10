@@ -43,3 +43,22 @@ func ParseIDL(idlData []byte) ([]*types.GeneratedFile, error) {
 	}
 	return generatedFiles, nil
 }
+
+// InterfaceNames parses the IDL and returns the names of all fully declared
+// interfaces (forward references excluded), in declaration order. This is
+// the inventory the capability table must cover.
+func InterfaceNames(idlData []byte) ([]string, error) {
+	idl, err := Parser.ParseBytes("", idlData)
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, lib := range idl.Libraries {
+		for _, d := range lib.Declarations {
+			if d.Interface != nil {
+				names = append(names, d.Interface.Name)
+			}
+		}
+	}
+	return names, nil
+}

@@ -152,6 +152,31 @@ This release requires WebView2 Runtime version 100.0.0.1 or higher.
 	if err := os.WriteFile(src, []byte(notes), 0o644); err != nil {
 		t.Fatal(err)
 	}
+
+	// The capabilities command needs an IDL inventory: every interface in the
+	// current IDL must end up in the table. ICoreWebView2Old is absent from
+	// the notes, so it must be emitted as a baseline (always supported) entry
+	// vouched for by the oldest cached IDL (here: the same file).
+	idl := `[uuid(26d34152-879f-4065-bea2-3daa2cfadfb8), version(1.0)]
+library WebView2 {
+[uuid(aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa), object, pointer_default(unique)]
+interface ICoreWebView2Foo : IUnknown {
+  HRESULT Get([out, retval] BOOL* value);
+}
+[uuid(bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb), object, pointer_default(unique)]
+interface ICoreWebView2_5 : IUnknown {
+  HRESULT Get([out, retval] BOOL* value);
+}
+[uuid(cccccccc-cccc-cccc-cccc-cccccccccccc), object, pointer_default(unique)]
+interface ICoreWebView2Old : IUnknown {
+  HRESULT Get([out, retval] BOOL* value);
+}
+}
+`
+	if err := os.WriteFile(filepath.Join(wd, "WebView2.1.0.500.1.idl"), []byte(idl), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
 	out := filepath.Join(wd, "pkg")
 	_, stderr, code := run(t, bin, wd, "capabilities", "-source", src, "-out", out)
 	if code != 0 {
@@ -163,10 +188,11 @@ This release requires WebView2 Runtime version 100.0.0.1 or higher.
 	}
 	s := string(got)
 	for _, want := range []string{
-		`"ICoreWebView2Foo": "1.0.500.1"`,
-		`"ICoreWebView2_5": "1.0.500.1"`,
+		`"ICoreWebView2Foo": {SDKVersion: "1.0.500.1", MinRuntimeVersion: "100.0.0.1"}`,
+		`"ICoreWebView2_5": {SDKVersion: "1.0.500.1", MinRuntimeVersion: "100.0.0.1"}`,
+		`"ICoreWebView2Old": {SDKVersion: "", MinRuntimeVersion: ""}`,
 		"SupportsInterface",
-		"HasCapability",
+		"InterfaceSupportTable",
 	} {
 		if !strings.Contains(s, want) {
 			t.Errorf("capabilities.go missing %q", want)
