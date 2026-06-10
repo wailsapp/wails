@@ -49,6 +49,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Android: `Screens.*` runtime calls return real data — the ScreenManager is now populated at startup (it was never wired, so `GetAll` returned nil)
 - Android: framework debug logging is compiled out of production builds and routes through logcat under the `Wails` tag in debug builds
 - Android: real `hasListeners` registry, JNI reference/exception handling, and a single-load page lifecycle (no double navigation)
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
