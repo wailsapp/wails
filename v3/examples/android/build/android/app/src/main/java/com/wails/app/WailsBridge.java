@@ -56,6 +56,7 @@ public class WailsBridge {
     private static native void nativeOnPageFinished(String url);
     private static native byte[] nativeServeAsset(String path, String method, String headers);
     private static native String nativeHandleMessage(String message);
+    private static native String nativeHandleRuntimeCall(String payload);
     private static native String nativeGetAssetMimeType(String path);
     private static native void nativeDialogCallback(int callbackID, int buttonIndex);
     private static native void nativeFilePickerResult(int callbackID, String path);
@@ -180,6 +181,23 @@ public class WailsBridge {
         } catch (Exception e) {
             Log.e(TAG, "Error handling message", e);
             return "{\"error\":\"" + e.getMessage() + "\"}";
+        }
+    }
+
+    /**
+     * Handle a runtime call from JavaScript (the Android transport).
+     * The payload and response are JSON strings.
+     */
+    public String handleRuntimeCall(String payload) {
+        if (!initialized) {
+            return "{\"ok\":false,\"error\":\"Bridge not initialized\"}";
+        }
+        if (DEBUG) Log.d(TAG, "Runtime call: " + payload);
+        try {
+            return nativeHandleRuntimeCall(payload);
+        } catch (Exception e) {
+            Log.e(TAG, "Error in runtime call", e);
+            return "{\"ok\":false,\"error\":\"" + e.getMessage() + "\"}";
         }
     }
 

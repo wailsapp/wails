@@ -141,15 +141,29 @@ func (a *androidApp) showAboutDialog(_ string, _ string, _ []byte) {
 }
 
 func (a *androidApp) getPrimaryScreen() (*Screen, error) {
-	screens, err := getScreens()
-	if err != nil || len(screens) == 0 {
-		return nil, err
+	if a.parent.Screen.GetPrimary() == nil {
+		screens, err := getScreens()
+		if err != nil {
+			return nil, err
+		}
+		if err := a.parent.Screen.LayoutScreens(screens); err != nil {
+			return nil, err
+		}
 	}
-	return screens[0], nil
+	return a.parent.Screen.GetPrimary(), nil
 }
 
 func (a *androidApp) getScreens() ([]*Screen, error) {
-	return getScreens()
+	if len(a.parent.Screen.GetAll()) == 0 {
+		screens, err := getScreens()
+		if err != nil {
+			return nil, err
+		}
+		if err := a.parent.Screen.LayoutScreens(screens); err != nil {
+			return nil, err
+		}
+	}
+	return a.parent.Screen.GetAll(), nil
 }
 
 func (a *App) logPlatformInfo() {

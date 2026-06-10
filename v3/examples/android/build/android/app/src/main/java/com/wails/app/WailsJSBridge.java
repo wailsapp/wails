@@ -46,13 +46,13 @@ public class WailsJSBridge {
      * @param message The message to send (JSON string)
      */
     @JavascriptInterface
-    public void invokeAsync(final String callbackId, final String message) {
-        if (DEBUG) Log.d(TAG, "InvokeAsync called: " + message);
+    public void invokeAsync(final String callbackId, final String payload) {
+        if (DEBUG) Log.d(TAG, "InvokeAsync called: " + payload);
 
         // Handle in background thread to not block JavaScript
         new Thread(() -> {
             try {
-                String response = bridge.handleMessage(message);
+                String response = bridge.handleRuntimeCall(payload);
                 sendCallback(callbackId, response, null);
             } catch (Exception e) {
                 Log.e(TAG, "Error in async invoke", e);
@@ -118,15 +118,15 @@ public class WailsJSBridge {
         final String js;
         if (error != null) {
             js = String.format(
-                    "window.wails && window.wails._callback('%s', null, '%s');",
+                    "window._wailsAndroidCallback && window._wailsAndroidCallback('%s', null, '%s');",
                     escapeJsString(callbackId),
                     escapeJsString(error)
             );
         } else {
             js = String.format(
-                    "window.wails && window.wails._callback('%s', %s, null);",
+                    "window._wailsAndroidCallback && window._wailsAndroidCallback('%s', '%s', null);",
                     escapeJsString(callbackId),
-                    result != null ? result : "null"
+                    escapeJsString(result != null ? result : "")
             );
         }
 

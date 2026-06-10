@@ -246,6 +246,7 @@ static void executeJavaScriptOnBridge(const char* js) {
 import "C"
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -400,6 +401,14 @@ func (a *App) platformRun() {
 	// Unblock asset serving
 	signalAppReady()
 
+	// Populate the ScreenManager so Screens.* runtime calls return data
+	// (desktop platforms do this from their event loop; Android has none).
+	if screens, err := getScreens(); err == nil && len(screens) > 0 {
+		if err := a.Screen.LayoutScreens(screens); err != nil {
+			androidDebugLogf("[application_android.go] LayoutScreens failed: %v", err)
+		}
+	}
+
 	// Emit the typed launch event from here rather than from nativeInit: by
 	// this point setupCommonEvents has registered its listeners, so the event
 	// (and its Common.ApplicationStarted mapping) cannot be dropped by
@@ -488,15 +497,29 @@ func (a *androidApp) showAboutDialog(title string, message string, _ []byte) {
 }
 
 func (a *androidApp) getPrimaryScreen() (*Screen, error) {
-	screens, err := getScreens()
-	if err != nil || len(screens) == 0 {
-		return nil, err
+	if a.parent.Screen.GetPrimary() == nil {
+		if err := a.cacheScreens(); err != nil {
+			return nil, err
+		}
 	}
-	return screens[0], nil
+	return a.parent.Screen.GetPrimary(), nil
 }
 
 func (a *androidApp) getScreens() ([]*Screen, error) {
-	return getScreens()
+	if len(a.parent.Screen.GetAll()) == 0 {
+		if err := a.cacheScreens(); err != nil {
+			return nil, err
+		}
+	}
+	return a.parent.Screen.GetAll(), nil
+}
+
+func (a *androidApp) cacheScreens() error {
+	screens, err := getScreens()
+	if err != nil {
+		return err
+	}
+	return a.parent.Screen.LayoutScreens(screens)
 }
 
 func (a *App) logPlatformInfo() {
@@ -692,6 +715,28 @@ func Java_com_wails_app_WailsBridge_nativeHandleMessage(env *C.JNIEnv, obj C.job
 	return C.createJString(env, cresp)
 }
 
+//export Java_com_wails_app_WailsBridge_nativeHandleRuntimeCall
+func Java_com_wails_app_WailsBridge_nativeHandleRuntimeCall(env *C.JNIEnv, obj C.jobject, jpayload C.jstring) C.jstring {
+	cPayload := C.jstringToC(env, jpayload)
+	goPayload := C.GoString(cPayload)
+	C.releaseJString(env, jpayload, cPayload)
+
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+
+	var response string
+	if app == nil {
+		response = `{"ok":false,"error":"App not initialized"}`
+	} else {
+		response = handleRuntimeCallForAndroid(app, goPayload)
+	}
+
+	cresp := C.CString(response)
+	defer C.free(unsafe.Pointer(cresp))
+	return C.createJString(env, cresp)
+}
+
 //export Java_com_wails_app_WailsBridge_nativeGetAssetMimeType
 func Java_com_wails_app_WailsBridge_nativeGetAssetMimeType(env *C.JNIEnv, obj C.jobject, jpath C.jstring) C.jstring {
 	cPath := C.jstringToC(env, jpath)
@@ -758,6 +803,9 @@ func serveAssetForAndroid(app *App, method string, path string) ([]byte, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	// http.NewRequest leaves Body nil for client requests, but handlers
+	// reached via ServeHTTP expect the server guarantee of a non-nil Body
+	req.Body = http.NoBody
 
 	// Runtime calls need the window ID and name headers so the
 	// MessageProcessor can route the call to the right window.
@@ -811,6 +859,74 @@ func serveAssetForAndroid(app *App, method string, path string) ([]byte, error) 
 	}
 
 	return body, nil
+}
+
+// The Android transport: the WebView cannot deliver fetch() POST bodies to
+// shouldInterceptRequest, so the JavaScript runtime routes runtime calls
+// through the JavascriptInterface bridge to nativeHandleRuntimeCall.
+
+var (
+	androidMessageProcessor     *MessageProcessor
+	androidMessageProcessorOnce sync.Once
+)
+
+func androidProcessor(app *App) *MessageProcessor {
+	androidMessageProcessorOnce.Do(func() {
+		androidMessageProcessor = NewMessageProcessor(app.Logger)
+	})
+	return androidMessageProcessor
+}
+
+type androidRuntimeCallPayload struct {
+	Object     *int            `json:"object"`
+	Method     *int            `json:"method"`
+	WindowName string          `json:"windowName"`
+	Args       json.RawMessage `json:"args"`
+	ClientID   string          `json:"clientId"`
+}
+
+// handleRuntimeCallForAndroid processes a runtime call payload from the
+// JavaScript Android transport and returns a response envelope:
+// {"ok":true,"data":...} / {"ok":true,"text":"..."} / {"ok":false,"error":"..."}.
+func handleRuntimeCallForAndroid(app *App, payload string) string {
+	fail := func(msg string) string {
+		b, _ := json.Marshal(map[string]any{"ok": false, "error": msg})
+		return string(b)
+	}
+
+	var call androidRuntimeCallPayload
+	if err := json.Unmarshal([]byte(payload), &call); err != nil {
+		return fail("unable to parse runtime call: " + err.Error())
+	}
+	if call.Object == nil {
+		return fail("missing object value")
+	}
+	if call.Method == nil {
+		return fail("missing method value")
+	}
+
+	resp, err := androidProcessor(app).HandleRuntimeCallWithIDs(context.Background(), &RuntimeRequest{
+		Object:            *call.Object,
+		Method:            *call.Method,
+		Args:              &Args{call.Args},
+		WebviewWindowName: call.WindowName,
+		ClientID:          call.ClientID,
+	})
+	if err != nil {
+		return fail(err.Error())
+	}
+
+	var envelope map[string]any
+	if text, ok := resp.(string); ok {
+		envelope = map[string]any{"ok": true, "text": text}
+	} else {
+		envelope = map[string]any{"ok": true, "data": resp}
+	}
+	b, err := json.Marshal(envelope)
+	if err != nil {
+		return fail("unable to marshal response: " + err.Error())
+	}
+	return string(b)
 }
 
 // handleMessageForAndroid routes a message from JavaScript into the standard

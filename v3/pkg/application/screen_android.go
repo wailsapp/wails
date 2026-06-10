@@ -42,6 +42,19 @@ func getScreens() ([]*Screen, error) {
 	width := dp(info.WidthPx)
 	height := dp(info.HeightPx)
 
+	// Physical (pixel) rects. The ScreenManager derives the dp Size/Bounds/
+	// WorkArea from these via applyDPIScaling when LayoutScreens is called,
+	// so PhysicalWorkArea must be populated for WorkArea to be non-zero.
+	physicalBounds := Rect{X: 0, Y: 0, Width: info.WidthPx, Height: info.HeightPx}
+	physicalWorkArea := Rect{
+		X:      info.InsetLeft,
+		Y:      info.InsetTop,
+		Width:  info.WidthPx - info.InsetLeft - info.InsetRight,
+		Height: info.HeightPx - info.InsetTop - info.InsetBottom,
+	}
+
+	// dp equivalents for callers that read the screen directly (e.g. window
+	// sizing) without going through the manager.
 	workArea := Rect{
 		X:      dp(info.InsetLeft),
 		Y:      dp(info.InsetTop),
@@ -51,18 +64,15 @@ func getScreens() ([]*Screen, error) {
 
 	return []*Screen{
 		{
-			ID:          "main",
-			Name:        "Main Display",
-			IsPrimary:   true,
-			ScaleFactor: float32(scale),
-			Size:        Size{Width: width, Height: height},
-			Bounds:      Rect{X: 0, Y: 0, Width: width, Height: height},
-			PhysicalBounds: Rect{
-				X: 0, Y: 0,
-				Width:  info.WidthPx,
-				Height: info.HeightPx,
-			},
-			WorkArea: workArea,
+			ID:               "main",
+			Name:             "Main Display",
+			IsPrimary:        true,
+			ScaleFactor:      float32(scale),
+			Size:             Size{Width: width, Height: height},
+			Bounds:           Rect{X: 0, Y: 0, Width: width, Height: height},
+			PhysicalBounds:   physicalBounds,
+			WorkArea:         workArea,
+			PhysicalWorkArea: physicalWorkArea,
 		},
 	}, nil
 }
@@ -71,16 +81,15 @@ func fallbackScreens() []*Screen {
 	// Sensible defaults (dp) when the bridge isn't available yet
 	return []*Screen{
 		{
-			ID:          "main",
-			Name:        "Main Display",
-			IsPrimary:   true,
-			ScaleFactor: 2.75,
-			Size:        Size{Width: 393, Height: 873},
-			Bounds:      Rect{X: 0, Y: 0, Width: 393, Height: 873},
-			PhysicalBounds: Rect{
-				X: 0, Y: 0, Width: 1080, Height: 2400,
-			},
-			WorkArea: Rect{X: 0, Y: 24, Width: 393, Height: 825},
+			ID:               "main",
+			Name:             "Main Display",
+			IsPrimary:        true,
+			ScaleFactor:      2.75,
+			Size:             Size{Width: 393, Height: 873},
+			Bounds:           Rect{X: 0, Y: 0, Width: 393, Height: 873},
+			PhysicalBounds:   Rect{X: 0, Y: 0, Width: 1080, Height: 2400},
+			WorkArea:         Rect{X: 0, Y: 24, Width: 393, Height: 825},
+			PhysicalWorkArea: Rect{X: 0, Y: 66, Width: 1080, Height: 2268},
 		},
 	}
 }
