@@ -485,7 +485,7 @@ func newWindowsEvents() windowsEvents {
 	}
 }
 
-var iOS = newIOSEvents()
+var IOS = newIOSEvents()
 
 type iosEvents struct {
 	ApplicationDidBecomeActive             ApplicationEventType
