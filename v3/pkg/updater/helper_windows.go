@@ -4,6 +4,7 @@ package updater
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -43,6 +44,62 @@ func platformIsAlive(pid int) bool {
 	return code == stillActive
 }
 
+// renameOrCopy attempts to move a file via os.Rename. If it fails (which
+// commonly happens on Windows when moving files across different volume/drive
+// boundaries, throwing ERROR_NOT_SAME_DEVICE), it seamlessly falls back to a
+// secure copy-and-delete strategy.
+func renameOrCopy(src, dst string) error {
+	if err := os.Rename(src, dst); err == nil {
+		return nil
+	}
+
+	// Fallback for cross-volume moves.
+	if err := copyFileExec(src, dst); err != nil {
+		return fmt.Errorf("cross-volume copy %s -> %s: %w", src, dst, err)
+	}
+
+	// Best-effort cleanup of the source temporary file.
+	_ = os.Remove(src)
+	return nil
+}
+
+// copyFileExec duplicates the executable from src to dst. It preserves the
+// original file mode, flushes data to the storage device, and ensures that
+// any partially written destination file is deleted if an error occurs.
+func copyFileExec(src, dst string) (err error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	info, err := in.Stat()
+	if err != nil {
+		return err
+	}
+
+	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode())
+	if err != nil {
+		return err
+	}
+
+	// Deferred cleanup to handle failures gracefully. If an error occurs during
+	// copying or syncing, the partial file at dst will be removed.
+	defer func() {
+		_ = out.Close()
+		if err != nil {
+			_ = os.Remove(dst)
+		}
+	}()
+
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+
+	// Ensure all dirty pages are flushed to disk before heading back.
+	return out.Sync()
+}
+
 // replaceTarget puts the file at newPath into target's slot. On Windows the
 // kernel keeps an executable's image file held for some time after the
 // process that ran it exits — long enough that os.Remove(target) fails with
@@ -62,16 +119,20 @@ func replaceTarget(target, newPath string) error {
 		// Sweep any .old files leftover from prior updates — by now the
 		// kernel has released them.
 		sweepRenameAsides(target)
-		return os.Rename(newPath, target)
+		return renameOrCopy(newPath, target)
 	}
+
 	aside := fmt.Sprintf("%s.old.%d", target, time.Now().UnixNano())
 	if err := os.Rename(target, aside); err != nil {
-		return fmt.Errorf("rename-aside %s → %s: %w", target, aside, err)
+		return fmt.Errorf("rename-aside %s -> %s: %w", target, aside, err)
 	}
-	if err := os.Rename(newPath, target); err != nil {
-		_ = os.Rename(aside, target) // put the original back; avoid half-state
+
+	if err := renameOrCopy(newPath, target); err != nil {
+		// Revert the original file back to its target slot to prevent half-states.
+		_ = os.Rename(aside, target)
 		return err
 	}
+
 	// The just-created aside is probably still mapped by the kernel; this
 	// remove will fail. Sweep grabs older asides whose owning processes are
 	// long gone.
