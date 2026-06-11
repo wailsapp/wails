@@ -93,11 +93,15 @@ function dispatchWailsEvent(event: any) {
         wailsEvent.sender = event.sender;
     }
 
-    listeners = listeners.filter(listener => !listener.dispatch(wailsEvent));
-    if (listeners.length === 0) {
-        eventListeners.delete(event.name);
-    } else {
-        eventListeners.set(event.name, listeners);
+    // Dispatch to a snapshot and remove expired listeners individually.
+    // Writing the snapshot back into the map wholesale would undo any
+    // subscription change made inside a handler: listeners that
+    // unsubscribed themselves were resurrected and listeners registered
+    // during dispatch were dropped (#4393).
+    for (const listener of listeners.slice()) {
+        if (listener.dispatch(wailsEvent)) {
+            listenerOff(listener);
+        }
     }
 }
 

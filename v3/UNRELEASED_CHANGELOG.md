@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix event listeners unsubscribed inside an event handler being resurrected (and listeners registered inside a handler being dropped): the dispatcher no longer writes its pre-dispatch snapshot back into the listener map (#4393)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
