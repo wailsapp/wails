@@ -281,7 +281,13 @@ func (e *Chromium) Eval(script string) {
 
 	err := e.webview.ExecuteScript(script, nil)
 	if err != nil && !errors.Is(err, windows.ERROR_IO_PENDING) {
-		e.errorCallback(err)
+		// ExecuteScript fails transiently while the browser process is busy
+		// reconfiguring — e.g. RESOURCE_NOT_IN_CORRECT_STATE during a DPI
+		// transition when the window is dragged between mixed-DPI monitors
+		// (wailsapp/wails#5544). Script execution is fire-and-forget; a
+		// dropped script during a transition is recoverable, killing the
+		// process (errorCallback) is not.
+		log.Printf("[WebView2] Eval failed: %v", err)
 	}
 }
 
