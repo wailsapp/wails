@@ -611,6 +611,20 @@ type MacWebviewPreferences struct {
 	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
 	AllowsBackForwardNavigationGestures optional.Bool
+	// AllowsMagnification enables pinch-to-zoom on the webview
+	AllowsMagnification optional.Bool
+	// AllowsAirPlayForMediaPlayback enables AirPlay media playback
+	AllowsAirPlayForMediaPlayback optional.Bool
+	// JavaScriptCanOpenWindowsAutomatically allows JS to open windows without a user gesture
+	JavaScriptCanOpenWindowsAutomatically optional.Bool
+	// MinimumFontSize sets the minimum font size in points
+	MinimumFontSize optional.Var[float64]
+	// ApplicationNameForUserAgent overrides the application name portion of the user agent string.
+	// Leave empty to use the default "wails.io" suffix.
+	ApplicationNameForUserAgent string
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar
