@@ -10,7 +10,11 @@ The electron alternative for Go
 
 import { nanoid } from "./nanoid.js";
 
-const runtimeURL = window.location.origin + "/wails/runtime";
+// Resolved lazily: window does not exist when the module is imported during
+// server-side rendering (#4679), and nothing can call the runtime there.
+function runtimeURL(): string {
+    return window.location.origin + "/wails/runtime";
+}
 
 // Stay under WebView2's ~2MB request body buffering limit in WebResourceRequested.
 const CHUNK_THRESHOLD = 512 * 1024;
@@ -109,7 +113,7 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
     }
 
     // Default HTTP fetch transport
-    let url = new URL(runtimeURL);
+    let url = new URL(runtimeURL());
 
     let body: { object: number; method: number, args?: any } = {
       object: objectID,

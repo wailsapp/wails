@@ -9,7 +9,11 @@ The electron alternative for Go
 */
 
 // Setup
-window._wails = window._wails || {};
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    window._wails = window._wails || {};
+}
 
 import "./contextmenu.js";
 import "./drag.js";
@@ -67,18 +71,24 @@ export {
 import { clientId } from "./runtime.js";
 
 // Notify backend
-window._wails.invoke = System.invoke;
-window._wails.clientId = clientId;
+if (hasDOM) {
+    window._wails.invoke = System.invoke;
+    window._wails.clientId = clientId;
+}
 
 // Register platform handlers (internal API)
 // Note: Window is the thisWindow instance (default export from window.ts)
 // Binding ensures 'this' correctly refers to the current window instance
-window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+if (hasDOM) {
+    window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+}
 
 // Linux-specific drag handlers (GTK intercepts DOM drag events)
-window._wails.handleDragEnter = handleDragEnter;
-window._wails.handleDragLeave = handleDragLeave;
-window._wails.handleDragOver = handleDragOver;
+if (hasDOM) {
+    window._wails.handleDragEnter = handleDragEnter;
+    window._wails.handleDragLeave = handleDragLeave;
+    window._wails.handleDragOver = handleDragOver;
+}
 
 System.invoke("wails:runtime:ready");
 
@@ -105,4 +115,6 @@ export function loadOptionalScript(url: string): Promise<void> {
 }
 
 // Load custom.js if available (used by server mode for WebSocket events, etc.)
-loadOptionalScript('/wails/custom.js');
+if (hasDOM) {
+    loadOptionalScript('/wails/custom.js');
+}
