@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix all window animations (minimise/restore/maximise, Aero snap) disappearing on Windows after calling `SetFrameless(true)`: the runtime call switched the window to a bare `WS_POPUP` style instead of keeping `WS_OVERLAPPEDWINDOW` with the frame trimmed via `WM_NCCALCSIZE` like creation-time frameless windows (#5541)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -1257,12 +1257,19 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
-	// Remove or add the frame
-	if b {
-		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_POPUP)
-	} else {
-		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
-	}
+	// Keep the full overlapped-window style in both states and let the
+	// WM_NCCALCSIZE handler — keyed on options.Frameless, which the caller
+	// has already updated — trim the frame, exactly like Frameless: true at
+	// window creation. The previous implementation switched frameless
+	// windows to a bare WS_POPUP style, which silently loses the styles DWM
+	// animations are keyed on: minimise/restore/maximise transitions, Aero
+	// snap and the resize borders all stopped working after
+	// SetFrameless(true), unlike creation-time frameless windows (#5541).
+	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
+	// Re-apply the resizable setting, since WS_OVERLAPPEDWINDOW includes
+	// WS_THICKFRAME unconditionally.
+	w.setStyle(!w.parent.options.DisableResize, w32.WS_THICKFRAME)
+	// Inform the application of the frame change to trigger WM_NCCALCSIZE.
 	w32.SetWindowPos(
 		w.hwnd,
 		0,
