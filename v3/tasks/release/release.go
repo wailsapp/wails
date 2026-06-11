@@ -588,12 +588,9 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to determine repository slug: %w", err)
 	}
 
-	token := strings.TrimSpace(os.Getenv("WAILS_REPO_TOKEN"))
-	if token == "" {
-		token = strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
-	}
-	if token == "" {
-		return errors.New("WAILS_REPO_TOKEN (or GITHUB_TOKEN) must be set to push and create releases")
+	token, err := selectAPIToken(repoSlug)
+	if err != nil {
+		return err
 	}
 
 	if err := git.push(opts.branch, repoSlug, token); err != nil {
@@ -620,6 +617,80 @@ func runRelease(opts releaseOptions) error {
 	writeGitHubOutput("release_outcome", "success")
 	fmt.Println("🎉 Release completed successfully.")
 	return nil
+}
+
+// selectAPIToken picks the token used for git pushes and the GitHub REST
+// API, validating it against the API BEFORE anything is pushed. Discovering
+// a dead token after the version bump and tag have been pushed leaves a
+// half-released state (a tag with no GitHub release and a reset changelog),
+// which is exactly what happened when WAILS_REPO_TOKEN expired: git
+// operations still succeeded via the checkout step's persisted credentials,
+// then the release API call failed with 401.
+//
+// If WAILS_REPO_TOKEN fails validation and a different GITHUB_TOKEN is
+// available (the workflow passes github.token), it is used as a fallback so
+// the nightly release still ships — with a warning, since github.token
+// cannot trigger downstream workflows.
+func selectAPIToken(repoSlug string) (string, error) {
+	primary := strings.TrimSpace(os.Getenv("WAILS_REPO_TOKEN"))
+	fallback := strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
+	if primary == "" {
+		primary, fallback = fallback, ""
+	}
+	if primary == "" {
+		return "", errors.New("WAILS_REPO_TOKEN (or GITHUB_TOKEN) must be set to push and create releases")
+	}
+
+	err := validateToken(primary, repoSlug)
+	if err == nil {
+		return primary, nil
+	}
+	if fallback != "" && fallback != primary {
+		fmt.Printf("⚠️  WAILS_REPO_TOKEN failed API validation (%v) — falling back to GITHUB_TOKEN. The token is likely expired and should be rotated.\n", err)
+		if fbErr := validateToken(fallback, repoSlug); fbErr == nil {
+			return fallback, nil
+		} else {
+			return "", fmt.Errorf("WAILS_REPO_TOKEN failed validation (%v) and GITHUB_TOKEN fallback also failed: %w", err, fbErr)
+		}
+	}
+	return "", fmt.Errorf("token failed API validation before any push (nothing was released): %w", err)
+}
+
+// validateToken performs a cheap authenticated read against the repository
+// to prove the token is alive. An expired fine-grained PAT answers 401
+// "Requires authentication" here, the same way the release-creation call
+// would fail later.
+func validateToken(token, repoSlug string) error {
+	apiBase := strings.TrimSpace(os.Getenv("GITHUB_API_URL"))
+	if apiBase == "" {
+		apiBase = githubDefaultAPI
+	}
+	apiBase = strings.TrimSuffix(apiBase, "/")
+
+	endpoint := fmt.Sprintf("%s/repos/%s", apiBase, repoSlug)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create token validation request: %w", err)
+	}
+	setGitHubHeaders(req, token)
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to call GitHub API for token validation: %w", err)
+	}
+	defer resp.Body.Close()
+
+	switch {
+	case resp.StatusCode == http.StatusOK:
+		return nil
+	case resp.StatusCode == http.StatusUnauthorized:
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("GitHub API rejected the token (HTTP 401: %s) — expired or revoked?", strings.TrimSpace(string(body)))
+	default:
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("token validation returned HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	}
 }
 
 func applyChangelogUpdates(newVersion, changelogContent string) error {
