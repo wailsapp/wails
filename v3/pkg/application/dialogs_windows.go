@@ -31,6 +31,9 @@ type windowsDialog struct {
 }
 
 func (m *windowsDialog) show() {
+	if len(m.dialog.Buttons) > 0 && showTaskDialog(m.dialog) {
+		return
+	}
 
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
@@ -47,7 +50,6 @@ func (m *windowsDialog) show() {
 	}
 
 	if m.UseAppIcon || m.dialog.Icon != nil {
-		// 3 is the application icon
 		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
 		if err != nil {
 			globalApplication.handleFatalError(err)
@@ -58,13 +60,11 @@ func (m *windowsDialog) show() {
 			globalApplication.handleFatalError(err)
 		}
 	}
-	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"
 	if int(button) < len(responses) {
 		result = responses[button]
 	}
-	// Check if there's a callback for the button pressed
 	for _, buttonInDialog := range m.dialog.Buttons {
 		if buttonInDialog.Label == result {
 			if buttonInDialog.Callback != nil {
