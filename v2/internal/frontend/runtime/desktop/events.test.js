@@ -130,3 +130,28 @@ describe('EventsOffAll', () => {
     expect(window.WailsInvoke.calls).toStrictEqual([['EXa'], ['EXb'], ['EXc']]);
   })
 })
+
+describe('notifyListeners during dispatch (#4393)', () => {
+  it('keeps a listener removed via EventsOff inside its own callback', () => {
+    const cb = vi.fn(() => { EventsOff('selfoff') })
+    EventsOn('selfoff', cb)
+    EventsOn('selfoff', vi.fn()) // second listener: triggers the write-back path
+
+    EventsNotify(JSON.stringify({name: 'selfoff', data: {}}))
+    EventsNotify(JSON.stringify({name: 'selfoff', data: {}}))
+
+    expect(cb).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a canceller-removed listener removed when invoked mid-dispatch', () => {
+    let cancel
+    const cb = vi.fn(() => { cancel() })
+    cancel = EventsOn('cancelmid', cb)
+    EventsOn('cancelmid', vi.fn())
+
+    EventsNotify(JSON.stringify({name: 'cancelmid', data: {}}))
+    EventsNotify(JSON.stringify({name: 'cancelmid', data: {}}))
+
+    expect(cb).toHaveBeenCalledTimes(1)
+  })
+})

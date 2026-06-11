@@ -90,33 +90,36 @@ function notifyListeners(eventData) {
     // Get the event name
     let eventName = eventData.name;
 
-    // Keep a list of listener indexes to destroy
-    const newEventListenerList = eventListeners[eventName]?.slice() || [];
+    // Dispatch to a snapshot: callbacks may add or remove listeners while
+    // we iterate.
+    const snapshot = eventListeners[eventName]?.slice() || [];
 
-    // Check if we have any listeners for this event
-    if (newEventListenerList.length) {
+    for (let count = snapshot.length - 1; count >= 0; count -= 1) {
 
-        // Iterate listeners
-        for (let count = newEventListenerList.length - 1; count >= 0; count -= 1) {
+        // Get next listener
+        const listener = snapshot[count];
 
-            // Get next listener
-            const listener = newEventListenerList[count];
+        let data = eventData.data;
 
-            let data = eventData.data;
-
-            // Do the callback
-            const destroy = listener.Callback(data);
-            if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
+        // Do the callback
+        const destroy = listener.Callback(data);
+        if (destroy) {
+            // Remove the expired listener from the live list, not the
+            // snapshot: writing the snapshot back (the old behaviour)
+            // undid any subscription change made inside a callback —
+            // listeners removed via EventsOff during dispatch were
+            // resurrected and listeners added during dispatch were
+            // dropped (#4393).
+            const current = eventListeners[eventName];
+            if (current) {
+                const index = current.indexOf(listener);
+                if (index !== -1) {
+                    current.splice(index, 1);
+                }
+                if (current.length === 0) {
+                    removeListener(eventName);
+                }
             }
-        }
-
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
-        } else {
-            eventListeners[eventName] = newEventListenerList;
         }
     }
 }
