@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix file drag-and-drop being rejected on macOS in any window area gained by resizing: the drag overlay's autoresizing mask was set on the content view instead of the overlay itself, freezing the drop-acceptance region at the window's creation size (#3743)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
