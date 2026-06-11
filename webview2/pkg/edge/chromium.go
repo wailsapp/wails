@@ -591,7 +591,12 @@ func (e *Chromium) Focus() {
 	}
 	err := e.controller.MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC)
 	if err != nil {
-		e.errorCallback(err)
+		// MoveFocus can legitimately fail after initialisation too — e.g.
+		// E_INVALIDARG when the window is hidden or minimised to the tray
+		// (wailsapp/wails#4158 reproduces this on tray-click restore). A
+		// failed focus request is never worth killing the process, which is
+		// what errorCallback does; log it instead.
+		log.Printf("[WebView2] Focus failed: %v", err)
 	}
 }
 
