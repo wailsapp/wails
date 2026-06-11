@@ -199,6 +199,16 @@ func (a *iosApp) run() error {
 	// UIApplicationMain is already running in the main thread (from main.m).
 	// Wire common events (e.g. map ApplicationDidFinishLaunching → Common.ApplicationStarted)
 	a.setupCommonEvents()
+
+	// Populate the ScreenManager so Screens.* runtime calls return data
+	// (desktop platforms do this from their event loop; iOS has none).
+	// getScreens() always yields at least a fallback screen, so this is safe.
+	if screens, err := getScreens(); err == nil && len(screens) > 0 {
+		if err := a.parent.Screen.LayoutScreens(screens); err != nil {
+			iosConsoleLogf("error", "[application_ios.go] LayoutScreens failed: %v", err)
+		}
+	}
+
 	a.parent.platformRun()
 
 	// platformRun blocks forever with select{}
