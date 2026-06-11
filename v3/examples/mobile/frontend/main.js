@@ -122,22 +122,69 @@ $("btnClipGet").addEventListener("click", async () => {
 });
 
 // ---- Screens ------------------------------------------------------------
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// Render screens as labelled key/value cards rather than raw JSON, so the
+// metrics read cleanly and fit without needing a scrollable section.
+function renderScreens(screens) {
+    const out = $("screensOut");
+    if (!Array.isArray(screens) || screens.length === 0) {
+        out.innerHTML = '<p class="hint">No screens reported.</p>';
+        return;
+    }
+    const dim = (r) => (r ? `${r.Width} × ${r.Height}` : "—");
+    out.innerHTML = screens.map((s, i) => {
+        const rows = [
+            ["Name", s.Name || s.ID || `Screen ${i + 1}`],
+            ["Scale", `${s.ScaleFactor}×`],
+            ["Size", `${dim(s.Size)} pt`],
+            ["Physical", `${dim(s.PhysicalBounds)} px`],
+            ["Work area", `${dim(s.WorkArea)} pt`],
+            ["Primary", s.IsPrimary ? "Yes" : "No"],
+        ];
+        const body = rows.map(([k, v]) =>
+            `<div class="metric-row"><span class="metric-key">${esc(k)}</span>` +
+            `<span class="metric-val">${esc(v)}</span></div>`).join("");
+        return `<div class="metric-card">${body}</div>`;
+    }).join("");
+}
+
 $("btnScreens").addEventListener("click", async () => {
     try {
-        show("screensOut", await Screens.GetAll());
+        renderScreens(await Screens.GetAll());
     } catch (e) {
-        show("screensOut", "Error: " + (e?.message ?? e));
+        $("screensOut").innerHTML = `<p class="hint">Error: ${esc(e?.message ?? e)}</p>`;
     }
 });
 
 // ---- Device info --------------------------------------------------------
+// Render an object as labelled rows (camelCase keys → Title Case, booleans →
+// Yes/No), matching the screen metrics card instead of dumping JSON.
+function renderKeyVals(target, obj) {
+    if (!obj || typeof obj !== "object") {
+        target.innerHTML = '<p class="hint">No data.</p>';
+        return;
+    }
+    const pretty = (k) => k.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/^./, (c) => c.toUpperCase());
+    const fmt = (v) =>
+        typeof v === "boolean" ? (v ? "Yes" : "No")
+            : v !== null && typeof v === "object" ? JSON.stringify(v)
+                : String(v);
+    const rows = Object.entries(obj).map(([k, v]) =>
+        `<div class="metric-row"><span class="metric-key">${esc(pretty(k))}</span>` +
+        `<span class="metric-val">${esc(fmt(v))}</span></div>`).join("");
+    target.innerHTML = `<div class="metric-card">${rows}</div>`;
+}
+
 $("btnDevice").addEventListener("click", async () => {
     try {
-        if (platform === "ios") show("deviceOut", await IOS.Device.Info());
-        else if (platform === "android") show("deviceOut", await Android.Device.Info());
-        else show("deviceOut", "Device info is only available on iOS and Android.");
+        if (platform === "ios") renderKeyVals($("deviceOut"), await IOS.Device.Info());
+        else if (platform === "android") renderKeyVals($("deviceOut"), await Android.Device.Info());
+        else $("deviceOut").innerHTML = '<p class="hint">Device info is only available on iOS and Android.</p>';
     } catch (e) {
-        show("deviceOut", "Error: " + (e?.message ?? e));
+        $("deviceOut").innerHTML = `<p class="hint">Error: ${esc(e?.message ?? e)}</p>`;
     }
 });
 

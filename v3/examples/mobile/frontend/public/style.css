@@ -23,7 +23,8 @@ html, body {
 #app {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
@@ -32,8 +33,10 @@ html, body {
     align-items: center;
     gap: 14px;
     padding: 18px 18px 12px;
+    flex-shrink: 0;
 }
-.app-header .logo { width: 44px; height: 44px; }
+/* Fix the height and let the width follow so the logo keeps its 320×253 ratio. */
+.app-header .logo { height: 40px; width: auto; }
 .app-header h1 { margin: 0; font-size: 22px; }
 .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .badge {
@@ -50,6 +53,7 @@ html, body {
     display: flex;
     gap: 5px;
     padding: 0 12px 10px;
+    flex-shrink: 0;
 }
 .tab {
     flex: 1 1 0;
@@ -67,7 +71,13 @@ html, body {
 }
 .tab.active { background: var(--accent); color: #fff; }
 
-main { flex: 1; padding: 4px 16px 24px; }
+main {
+    flex: 1;
+    min-height: 0;            /* allow the flex child to shrink so it can scroll */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 16px 24px;
+}
 
 .pane { display: none; animation: fade 0.18s ease; }
 .pane.active { display: block; }
@@ -157,9 +167,30 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
     font-variant-numeric: tabular-nums;
 }
 
+.metrics-out { margin: 12px 0 0; }
+.metric-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2px 14px;
+    margin-bottom: 10px;
+}
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-2);
+    font-size: 14px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-key { color: var(--muted); }
+.metric-val { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
 .app-footer {
     text-align: center;
     color: var(--muted);
     font-size: 12px;
     padding: 14px;
+    flex-shrink: 0;
 }
