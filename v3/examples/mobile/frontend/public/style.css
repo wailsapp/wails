@@ -108,6 +108,11 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
 
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
 
+/* Bindings pane: give the Greet / Add / Divide buttons a uniform width so the
+   button column lines up and the input area to their left spans identically —
+   the single Greet input and the Add/Divide input pair share the same edges. */
+#pane-bindings .row .btn { flex: 0 0 92px; }
+
 .switch {
     display: flex;
     align-items: center;
