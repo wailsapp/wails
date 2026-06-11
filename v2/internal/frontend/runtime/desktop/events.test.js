@@ -83,7 +83,7 @@ describe('EventsEmit', () => {
   it('should emit an event', () => {
     EventsEmit('a', 'one', 'two', 'three')
     expect(window.WailsInvoke).toBeCalledTimes(1);
-    const calledWith = window.WailsInvoke.calls[0][0];
+    const calledWith = window.WailsInvoke.mock.calls[0][0];
     expect(calledWith.slice(0, 2)).toBe('EE')
     expect(JSON.parse(calledWith.slice(2))).toStrictEqual({data: ["one", "two", "three"], name: "a"})
   })
@@ -113,7 +113,7 @@ describe('EventsOff', () => {
     expect(eventListeners['b']).toBeUndefined()
     expect(eventListeners['c']).not.toBeUndefined()
     expect(window.WailsInvoke).toBeCalledTimes(2);
-    expect(window.WailsInvoke.calls).toStrictEqual([['EXa'], ['EXb']]);
+    expect(window.WailsInvoke.mock.calls).toStrictEqual([['EXa'], ['EXb']]);
   })
 })
 
@@ -127,6 +127,6 @@ describe('EventsOffAll', () => {
     EventsOffAll()
     expect(eventListeners).toStrictEqual({})
     expect(window.WailsInvoke).toBeCalledTimes(3);
-    expect(window.WailsInvoke.calls).toStrictEqual([['EXa'], ['EXb'], ['EXc']]);
+    expect(window.WailsInvoke.mock.calls).toStrictEqual([['EXa'], ['EXb'], ['EXc']]);
   })
 })
