@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix intermittent `Could not resolve "./bindings/<pkg>"` failures during `darwin:build:universal`: the per-arch builds run as parallel deps and each regenerated the bindings (with `-clean` deleting the directory) while the other's bundler was reading it. Shared tasks (`build:frontend`, `generate:bindings`, `generate:icons`, `install:frontend:deps`, `go:mod:tidy`) are now `run: once`, which also halves frontend work in universal builds. Existing projects: run `wails3 update build-assets` (#4637)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

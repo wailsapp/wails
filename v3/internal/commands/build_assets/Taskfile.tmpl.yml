@@ -4,11 +4,15 @@ tasks:
   go:mod:tidy:
     summary: Runs `go mod tidy`
     internal: true
+    # Universal/multi-arch builds invoke this concurrently from parallel deps;
+    # two `go mod tidy` processes racing on go.mod can corrupt it (#4637).
+    run: once
     cmds:
       - go mod tidy
 
   install:frontend:deps:
     summary: Install frontend dependencies
+    run: once
     cmds:
       - task: install:frontend:deps:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
 
@@ -68,6 +72,12 @@ tasks:
   build:frontend:
     label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}})
     summary: Build the frontend project
+    # darwin:build:universal runs its per-arch builds as parallel deps, each of
+    # which depends on this task. Without run:once the two executions race:
+    # one regenerates frontend/bindings (-clean deletes it first) while the
+    # other's bundler is reading it, failing intermittently with
+    # 'Could not resolve "./bindings/<pkg>"' (#4637).
+    run: once
     dir: frontend
     sources:
       - "**/*"
@@ -166,6 +176,7 @@ tasks:
   generate:bindings:
     label: generate:bindings (BUILD_FLAGS={{.Opn}}.BUILD_FLAGS{{.Cls}})
     summary: Generates bindings for the frontend
+    run: once
     deps:
       - task: go:mod:tidy
     sources:
@@ -182,6 +193,7 @@ tasks:
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
+    run: once
     dir: build
     sources:
       - "appicon.png"
