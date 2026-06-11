@@ -1734,7 +1734,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
-		if !w.ignoreDPIChangeResizing {
+		// While minimised the window is parked at (-32000,-32000); a DPI
+		// change in that state delivers a suggested rect scaled for whatever
+		// monitor the parked position maps to. Applying it resizes the
+		// window's restore bookkeeping (e.g. a maximised 1920x1080 window
+		// restored at 3072x1728 after crossing a 200%→125% boundary while
+		// minimised, #5544). Skip the resize; a fresh WM_DPICHANGED with a
+		// correct rect arrives if the DPI really differs on restore.
+		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
