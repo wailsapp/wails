@@ -1642,6 +1642,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
+				// While minimised the window is parked at (-32000,-32000),
+				// which on mixed-DPI systems can re-associate it with another
+				// monitor's DPI. Nothing corrects WebView2's rasterization
+				// scale on restore, so window.devicePixelRatio keeps the
+				// wrong monitor's value until a manual resize (#5544).
+				w.resyncWebviewRasterizationScale()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1742,6 +1748,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
+		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds
+		// mode), so the rasterization scale must follow DPI changes manually.
+		w.resyncWebviewRasterizationScale()
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
 
@@ -1864,6 +1873,33 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	}
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+}
+
+// resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
+// WebView2 controller. Wails runs WebView2 in raw-pixels bounds mode with
+// ShouldDetectMonitorScaleChanges disabled, so keeping the rasterization
+// scale in step with the window's DPI is the application's responsibility.
+// It is a no-op when the controller is unavailable or already in sync.
+func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() {
+	controller := w.chromium.GetController()
+	if controller == nil {
+		return
+	}
+	controller3 := controller.GetICoreWebView2Controller3()
+	if controller3 == nil {
+		return
+	}
+	dpiX, _ := w.DPI()
+	if dpiX == 0 {
+		return
+	}
+	scale := float64(dpiX) / 96.0
+	if current, err := controller3.GetRasterizationScale(); err == nil && current == scale {
+		return
+	}
+	if err := controller3.PutRasterizationScale(scale); err != nil {
+		globalApplication.error("failed to update WebView2 rasterization scale: %s", err)
+	}
 }
 
 func (w *windowsWebviewWindow) DPI() (w32.UINT, w32.UINT) {

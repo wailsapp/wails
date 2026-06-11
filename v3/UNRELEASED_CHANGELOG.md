@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `window.devicePixelRatio` keeping the wrong monitor's value after minimise/restore on mixed-DPI Windows systems: WebView2 runs with monitor-scale auto-detection disabled, so the rasterization scale is now re-asserted on restore-from-minimise and on `WM_DPICHANGED` (#5544)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
