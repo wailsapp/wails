@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -55,16 +56,36 @@ func main() {
 	// arrive in Go as common: application events (mapped from the per-platform
 	// ios:/android: events), with their payload on the event context. They are
 	// Go-only, so the app forwards them to the frontend as custom events here.
+	// forward re-emits a Go application event to the frontend as a "sys:*"
+	// custom event, skipping consecutive duplicates — the OS re-fires the theme
+	// and network callbacks repeatedly with the same value (e.g. one dark-mode
+	// toggle yields several ThemeChanged events).
 	forward := func(jsName string) func(*application.ApplicationEvent) {
+		var (
+			mu   sync.Mutex
+			last string
+		)
 		return func(e *application.ApplicationEvent) {
 			data := e.Context().Data()
+			key, _ := json.Marshal(data)
+			mu.Lock()
+			dup := string(key) == last
+			last = string(key)
+			mu.Unlock()
+			if dup {
+				return
+			}
 			app.Logger.Info("system event", "event", jsName, "data", data)
 			app.Event.Emit(jsName, data)
 		}
 	}
 	app.Event.OnApplicationEvent(events.Common.NetworkChanged, forward("sys:network"))
 	app.Event.OnApplicationEvent(events.Common.ThemeChanged, forward("sys:theme"))
-	app.Event.OnApplicationEvent(events.Common.LowMemory, forward("sys:memory"))
+	// Low memory is a pulse, not a state, so it is not de-duplicated.
+	app.Event.OnApplicationEvent(events.Common.LowMemory, func(e *application.ApplicationEvent) {
+		app.Logger.Info("system event", "event", "sys:memory")
+		app.Event.Emit("sys:memory", map[string]any{})
+	})
 	app.Event.OnApplicationEvent(events.Common.ScreenLocked, func(e *application.ApplicationEvent) {
 		app.Event.Emit("sys:lock", map[string]any{"locked": true})
 	})
