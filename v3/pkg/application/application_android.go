@@ -573,6 +573,29 @@ func emitAndroidApplicationEvent(event events.ApplicationEventType) {
 	applicationEvents <- newApplicationEvent(event)
 }
 
+// emitMobileSystemEvent emits a custom "system:*" event to JS from a
+// native-triggered callback (battery/network/lock/theme/lifecycle). jsonStr
+// (which may be empty) is decoded into the event payload; if it is not valid
+// JSON it is passed through as a plain string.
+func emitMobileSystemEvent(name, jsonStr string) {
+	if name == "" {
+		return
+	}
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+	if app == nil {
+		return
+	}
+	var data any
+	if jsonStr != "" {
+		if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
+			data = jsonStr
+		}
+	}
+	app.Event.Emit(name, data)
+}
+
 // JNI Export Functions - Called from Java
 
 //export Java_com_wails_app_WailsBridge_nativeInit
@@ -625,6 +648,23 @@ func Java_com_wails_app_WailsBridge_nativeOnStop(env *C.JNIEnv, obj C.jobject) {
 //export Java_com_wails_app_WailsBridge_nativeOnLowMemory
 func Java_com_wails_app_WailsBridge_nativeOnLowMemory(env *C.JNIEnv, obj C.jobject) {
 	emitAndroidApplicationEvent(events.Android.ApplicationLowMemory)
+}
+
+// Java_com_wails_app_WailsBridge_nativeEmitSystemEvent is the funnel the
+// Android system-event receivers (battery, network, lock, theme, lifecycle)
+// call to deliver a "system:*" custom event to JS.
+//
+//export Java_com_wails_app_WailsBridge_nativeEmitSystemEvent
+func Java_com_wails_app_WailsBridge_nativeEmitSystemEvent(env *C.JNIEnv, obj C.jobject, jname C.jstring, jjson C.jstring) {
+	cName := C.jstringToC(env, jname)
+	name := C.GoString(cName)
+	C.releaseJString(env, jname, cName)
+
+	cJSON := C.jstringToC(env, jjson)
+	jsonStr := C.GoString(cJSON)
+	C.releaseJString(env, jjson, cJSON)
+
+	emitMobileSystemEvent(name, jsonStr)
 }
 
 //export Java_com_wails_app_WailsBridge_nativeOnPageFinished

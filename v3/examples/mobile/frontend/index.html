@@ -57,6 +57,13 @@
             <p class="hint">Send a <code>ping</code> to Go; it replies with <code>pong</code> (JS → Go → JS).</p>
             <button class="btn primary" id="btnPing">Send ping</button>
             <pre id="eventsOut" class="output">No pong yet…</pre>
+
+            <h2>System events</h2>
+            <p class="hint">Live native signals (Go → JS) for battery, network, theme,
+                lock and app state. Try toggling charging, airplane mode, dark mode,
+                or backgrounding the app.</p>
+            <div id="sysState" class="metrics-out"><p class="hint">Waiting for system events…</p></div>
+            <div id="sysLog" class="event-log"></div>
         </section>
 
         <!-- Dialogs -->

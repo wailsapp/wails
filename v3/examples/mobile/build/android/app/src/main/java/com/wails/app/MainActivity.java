@@ -1,10 +1,20 @@
 package com.wails.app;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
@@ -16,6 +26,8 @@ import android.webkit.WebViewClient;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.webkit.WebViewAssetLoader;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +55,15 @@ public class MainActivity extends AppCompatActivity {
     // The Go-side dialog ID of the in-flight file picker (-1 when idle)
     private int pendingFilePickerCallbackID = -1;
 
+    // System-event sources (battery/power, screen lock, network). Registered in
+    // onCreate, torn down in onDestroy. Each forwards a "system:*" event to JS
+    // via the bridge.
+    private BroadcastReceiver batteryReceiver;
+    private BroadcastReceiver screenReceiver;
+    private BroadcastReceiver powerSaveReceiver;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up WebView
         setupWebView();
+
+        // Start the system-event sources (battery, lock, network).
+        registerSystemEventReceivers();
 
         // Load the application
         loadApplication();
@@ -146,6 +170,9 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 if (DEBUG) Log.d(TAG, "Page loaded: " + url);
                 bridge.onPageFinished(url);
+                // Now that JS listeners are mounted, push a snapshot of the
+                // current battery / network / theme so the UI starts populated.
+                emitSystemSnapshot();
             }
         });
 
@@ -273,6 +300,222 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // ---- System events ---------------------------------------------------
+    // Battery/power, screen lock and network connectivity are surfaced to JS as
+    // "system:*" events. The OS broadcasts used here (ACTION_BATTERY_CHANGED,
+    // SCREEN_OFF, USER_PRESENT, POWER_SAVE_MODE_CHANGED) are protected system
+    // broadcasts, so dynamic registration needs no RECEIVER_* export flag.
+
+    private void registerSystemEventReceivers() {
+        // Battery + charging state (sticky broadcast: the current value is
+        // delivered to the receiver immediately on registration).
+        batteryReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                emitBattery(intent);
+            }
+        };
+        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+
+        // Low-power (battery saver) mode toggles → re-emit battery with the flag.
+        powerSaveReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                emitBattery(registerSticky(Intent.ACTION_BATTERY_CHANGED));
+            }
+        };
+        registerReceiver(powerSaveReceiver,
+                new IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
+
+        // Screen lock / unlock. SCREEN_OFF ≈ locked; USER_PRESENT = unlocked.
+        screenReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                    emitLock(true);
+                } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
+                    emitLock(false);
+                }
+            }
+        };
+        IntentFilter screenFilter = new IntentFilter();
+        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        screenFilter.addAction(Intent.ACTION_USER_PRESENT);
+        registerReceiver(screenReceiver, screenFilter);
+
+        // Network connectivity / transport type / cellular signal strength.
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override public void onAvailable(Network network) { emitNetwork(network); }
+                @Override public void onLost(Network network) { emitNetworkDisconnected(); }
+                @Override public void onCapabilitiesChanged(Network network, NetworkCapabilities caps) {
+                    emitNetwork(network);
+                }
+            };
+            try {
+                connectivityManager.registerDefaultNetworkCallback(networkCallback);
+            } catch (Exception e) {
+                Log.e(TAG, "registerDefaultNetworkCallback failed", e);
+            }
+        }
+    }
+
+    private void unregisterSystemEventReceivers() {
+        safeUnregister(batteryReceiver);
+        batteryReceiver = null;
+        safeUnregister(powerSaveReceiver);
+        powerSaveReceiver = null;
+        safeUnregister(screenReceiver);
+        screenReceiver = null;
+        if (connectivityManager != null && networkCallback != null) {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+            } catch (Exception ignored) {
+            }
+            networkCallback = null;
+        }
+    }
+
+    private void safeUnregister(BroadcastReceiver r) {
+        if (r != null) {
+            try {
+                unregisterReceiver(r);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    /** Read the current sticky value for an action without a standing receiver. */
+    @Nullable
+    private Intent registerSticky(String action) {
+        return registerReceiver(null, new IntentFilter(action));
+    }
+
+    /** Push current battery / network / theme so a freshly-loaded UI is populated. */
+    private void emitSystemSnapshot() {
+        emitBattery(registerSticky(Intent.ACTION_BATTERY_CHANGED));
+        if (connectivityManager != null) {
+            Network active = connectivityManager.getActiveNetwork();
+            if (active != null) {
+                emitNetwork(active);
+            } else {
+                emitNetworkDisconnected();
+            }
+        }
+        emitTheme();
+    }
+
+    private void emitBattery(@Nullable Intent batteryStatus) {
+        try {
+            float level = -1f;
+            String state = "unknown";
+            if (batteryStatus != null) {
+                int lvl = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                if (lvl >= 0 && scale > 0) {
+                    level = lvl / (float) scale;
+                }
+                switch (batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
+                    case BatteryManager.BATTERY_STATUS_CHARGING: state = "charging"; break;
+                    case BatteryManager.BATTERY_STATUS_FULL: state = "full"; break;
+                    case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                    case BatteryManager.BATTERY_STATUS_NOT_CHARGING: state = "unplugged"; break;
+                    default: state = "unknown"; break;
+                }
+            }
+            boolean lowPower = false;
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                lowPower = pm.isPowerSaveMode();
+            }
+            JSONObject o = new JSONObject();
+            o.put("level", (double) level);
+            o.put("state", state);
+            o.put("lowPowerMode", lowPower);
+            if (bridge != null) bridge.emitSystemEvent("system:battery", o.toString());
+        } catch (Exception e) {
+            Log.e(TAG, "emitBattery failed", e);
+        }
+    }
+
+    private void emitNetwork(@Nullable Network network) {
+        try {
+            boolean connected = false;
+            String type = "none";
+            boolean metered = false;
+            Integer signal = null;
+            if (connectivityManager != null && network != null) {
+                NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(network);
+                if (caps != null) {
+                    connected = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        type = "wifi";
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        type = "cellular";
+                    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                        type = "wired";
+                    } else {
+                        type = "other";
+                    }
+                    metered = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        int s = caps.getSignalStrength();
+                        if (s != Integer.MIN_VALUE) {
+                            signal = s; // dBm; closer to 0 is a stronger signal
+                        }
+                    }
+                }
+            }
+            JSONObject o = new JSONObject();
+            o.put("connected", connected);
+            o.put("type", type);
+            o.put("metered", metered);
+            if (signal != null) {
+                o.put("signal", (int) signal);
+            }
+            if (bridge != null) bridge.emitSystemEvent("system:network", o.toString());
+        } catch (Exception e) {
+            Log.e(TAG, "emitNetwork failed", e);
+        }
+    }
+
+    private void emitNetworkDisconnected() {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("connected", false);
+            o.put("type", "none");
+            o.put("metered", false);
+            if (bridge != null) bridge.emitSystemEvent("system:network", o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void emitLock(boolean locked) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("locked", locked);
+            if (bridge != null) bridge.emitSystemEvent("system:lock", o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void emitTheme() {
+        try {
+            int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            JSONObject o = new JSONObject();
+            o.put("dark", mode == Configuration.UI_MODE_NIGHT_YES);
+            if (bridge != null) bridge.emitSystemEvent("system:theme", o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Fires for light/dark switches because the manifest lists uiMode in
+        // android:configChanges (otherwise the activity would be recreated).
+        emitTheme();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -286,6 +529,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (bridge != null) {
             bridge.onResume();
+            bridge.emitSystemEvent("system:appstate", "{\"state\":\"foreground\"}");
         }
     }
 
@@ -294,6 +538,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         if (bridge != null) {
             bridge.onPause();
+            bridge.emitSystemEvent("system:appstate", "{\"state\":\"background\"}");
         }
     }
 
@@ -310,12 +555,14 @@ public class MainActivity extends AppCompatActivity {
         super.onLowMemory();
         if (bridge != null) {
             bridge.onLowMemory();
+            bridge.emitSystemEvent("system:memory", "{}");
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterSystemEventReceivers();
         if (bridge != null) {
             bridge.shutdown();
         }

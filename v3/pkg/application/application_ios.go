@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -x objective-c -fobjc-arc
-#cgo LDFLAGS: -framework Foundation -framework UIKit -framework WebKit -framework UniformTypeIdentifiers
+#cgo LDFLAGS: -framework Foundation -framework UIKit -framework WebKit -framework UniformTypeIdentifiers -framework Network
 
 #include <stdlib.h>
 #include <string.h>
@@ -209,6 +209,10 @@ func (a *iosApp) run() error {
 		}
 	}
 
+	// Start the native system-event monitors (battery, network, lock, theme,
+	// app lifecycle, memory). They emit "system:*" custom events to JS.
+	C.ios_start_system_event_monitors()
+
 	a.parent.platformRun()
 
 	// platformRun blocks forever with select{}
@@ -409,6 +413,31 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 		WindowID: uint(windowID),
 		EventID:  uint(eventID),
 	}
+}
+
+// emitMobileSystemEvent emits a custom "system:*" event to JS from a
+// native-triggered callback (battery/network/lock/theme/lifecycle). jsonStr
+// (which may be empty) is decoded into the event payload; if it is not valid
+// JSON it is passed through as a plain string.
+func emitMobileSystemEvent(name, jsonStr string) {
+	if globalApplication == nil || name == "" {
+		return
+	}
+	var data any
+	if jsonStr != "" {
+		if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
+			data = jsonStr
+		}
+	}
+	globalApplication.Event.Emit(name, data)
+}
+
+// emitSystemEvent is the C entry point the iOS system-event monitors call (see
+// ios_system_events.m): name is e.g. "system:battery", json is the payload.
+//
+//export emitSystemEvent
+func emitSystemEvent(name *C.char, jsonData *C.char) {
+	emitMobileSystemEvent(C.GoString(name), C.GoString(jsonData))
 }
 
 // iosEventListeners records which native event IDs have at least one Go-side

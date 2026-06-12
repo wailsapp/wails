@@ -62,6 +62,7 @@ public class WailsBridge {
     private static native void nativeFilePickerResult(int callbackID, String path);
     private static native void nativeFilePickerDone(int callbackID);
     private static native void nativeMainThreadCallback(int callbackID);
+    private static native void nativeEmitSystemEvent(String name, String json);
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
@@ -133,6 +134,14 @@ public class WailsBridge {
      */
     public void onPageFinished(String url) {
         if (initialized) nativeOnPageFinished(url);
+    }
+
+    /**
+     * Emit a "system:*" event (battery, network, lock, theme, lifecycle) to JS.
+     * Called from the system-event receivers registered by MainActivity.
+     */
+    public void emitSystemEvent(String name, String json) {
+        if (initialized) nativeEmitSystemEvent(name, json);
     }
 
     /**
