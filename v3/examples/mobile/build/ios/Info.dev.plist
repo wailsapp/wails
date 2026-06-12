@@ -51,6 +51,11 @@
     <key>WailsDevelopmentMode</key>
     <true/>
 
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Used to demonstrate the one-shot geolocation feature.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Used to demonstrate the accelerometer feature.</string>
+
     <key>NSHumanReadableCopyright</key>
     <string>© now, My Company</string>
 

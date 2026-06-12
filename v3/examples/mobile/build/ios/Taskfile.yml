@@ -116,6 +116,7 @@ tasks:
           -framework UniformTypeIdentifiers \
           -framework LocalAuthentication -framework UserNotifications \
           -framework AVFoundation \
+          -framework CoreLocation -framework CoreMotion -framework SystemConfiguration \
           -lresolv \
           -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
           "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"

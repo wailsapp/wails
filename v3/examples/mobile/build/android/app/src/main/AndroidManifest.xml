@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- Local notifications (Phase C); runtime-requested on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Geolocation (Phase D); runtime-requested on first use -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"

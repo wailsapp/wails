@@ -56,23 +56,22 @@ html, body {
 
 .tabs {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;             /* wrap onto multiple rows so each pill keeps a readable width */
+    gap: 6px;
     padding: 0 12px 10px;
     flex-shrink: 0;
 }
 .tab {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 1 auto;             /* grow to fill the row, but never shrink below a legible size */
+    min-width: 92px;
     border: none;
     background: var(--surface);
     color: var(--muted);
-    padding: 9px 4px;
+    padding: 9px 12px;
     border-radius: 999px;
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 .tab.active { background: var(--accent); color: #fff; }
 

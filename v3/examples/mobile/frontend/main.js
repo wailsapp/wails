@@ -469,6 +469,122 @@ Events.On("native:secureValue", (e) => {
     logMobile("Loaded '" + d.key + "' = " + (d.value ? "\"" + d.value + "\"" : "(empty)"));
 });
 
+// ---- Hardware: sensors & device capabilities ----------------------------
+const logHardware = (msg) => show("hardwareOut", msg);
+
+// Haptics
+document.querySelectorAll("[data-haptic2]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        Events.Emit("native:haptic", { type: btn.dataset.haptic2 });
+        logHardware("Haptic: " + btn.dataset.haptic2);
+    });
+});
+
+// Location (one-shot)
+$("btnLocation")?.addEventListener("click", () => {
+    Events.Emit("native:getLocation", {});
+    logHardware("Requesting location…");
+});
+Events.On("native:location", (e) => {
+    const d = eventValue(e) || {};
+    if (d.error) {
+        logHardware("Location error: " + d.error);
+    } else {
+        logHardware(`Location: ${d.lat?.toFixed(5)}, ${d.lng?.toFixed(5)} (±${Math.round(d.accuracy)}m)`);
+    }
+});
+
+// Accelerometer stream
+$("mfMotion")?.addEventListener("change", (e) => {
+    Events.Emit("native:watchMotion", { enabled: e.target.checked });
+    logHardware("Accelerometer: " + (e.target.checked ? "on" : "off"));
+});
+Events.On("native:motion", (e) => {
+    const d = eventValue(e) || {};
+    if (d.available === false) {
+        logHardware("Accelerometer not available");
+        if ($("mfMotion")) $("mfMotion").checked = false;
+        return;
+    }
+    logHardware(`Motion  x:${d.x?.toFixed(2)}  y:${d.y?.toFixed(2)}  z:${d.z?.toFixed(2)}`);
+});
+
+// Proximity
+$("mfProximity")?.addEventListener("change", (e) => {
+    Events.Emit("native:watchProximity", { enabled: e.target.checked });
+    logHardware("Proximity: " + (e.target.checked ? "watching" : "off"));
+});
+Events.On("native:proximity", (e) => {
+    const d = eventValue(e) || {};
+    if (d.available === false) {
+        logHardware("Proximity sensor not available");
+        if ($("mfProximity")) $("mfProximity").checked = false;
+        return;
+    }
+    logHardware("Proximity: " + (d.near ? "near" : "far"));
+});
+
+// Text-to-speech
+$("btnSpeak")?.addEventListener("click", () => {
+    Events.Emit("native:speak", { text: $("speakText").value });
+    logHardware("Speaking…");
+});
+$("btnStopSpeak")?.addEventListener("click", () => {
+    Events.Emit("native:stopSpeak", {});
+    logHardware("Speech stopped");
+});
+
+// Device state queries → metrics card
+const bytesToGB = (b) => (b / 1e9).toFixed(2) + " GB";
+$("btnStorage")?.addEventListener("click", () => Events.Emit("native:getStorage", {}));
+Events.On("native:storage", (e) => {
+    const d = eventValue(e) || {};
+    renderKeyVals($("hardwareMetrics"), {
+        free: bytesToGB(d.free || 0),
+        total: bytesToGB(d.total || 0),
+        used: bytesToGB((d.total || 0) - (d.free || 0)),
+    });
+    logHardware("Storage loaded");
+});
+$("btnPower")?.addEventListener("click", () => Events.Emit("native:getPower", {}));
+Events.On("native:power", (e) => {
+    const d = eventValue(e) || {};
+    renderKeyVals($("hardwareMetrics"), {
+        battery: typeof d.level === "number" && d.level >= 0 ? Math.round(d.level * 100) + "%" : "unknown",
+        charging: !!d.charging,
+        lowPowerMode: !!d.lowPower,
+    });
+    logHardware("Power state loaded");
+});
+$("btnNetwork")?.addEventListener("click", () => Events.Emit("native:getNetwork", {}));
+Events.On("native:network", (e) => {
+    const d = eventValue(e) || {};
+    renderKeyVals($("hardwareMetrics"), { connected: !!d.connected, type: d.type || "none" });
+    logHardware("Network status loaded");
+});
+
+// Keyboard insets
+$("mfKeyboard")?.addEventListener("change", (e) => {
+    Events.Emit("native:watchKeyboard", { enabled: e.target.checked });
+    logHardware("Keyboard watch: " + (e.target.checked ? "on" : "off"));
+});
+Events.On("native:keyboard", (e) => {
+    const d = eventValue(e) || {};
+    logHardware(`Keyboard ${d.visible ? "shown" : "hidden"} (height ${d.height || 0}px)`);
+});
+
+// Screen-capture protection / detection
+$("mfScreenProtect")?.addEventListener("change", (e) => {
+    Events.Emit("native:setScreenProtect", { enabled: e.target.checked });
+    logHardware("Screen protection: " + (e.target.checked ? "on" : "off"));
+});
+Events.On("native:screenCapture", (e) => {
+    const d = eventValue(e) || {};
+    if (d.screenshot) logHardware("⚠ Screenshot detected");
+    else if (d.recording !== undefined) logHardware("Screen recording: " + (d.recording ? "active" : "inactive"));
+    else logHardware("Screen capture " + (d.protected ? "blocked (FLAG_SECURE)" : "allowed"));
+});
+
 // Ask for the current orientation once the page is up.
 if (isMobile) setTimeout(() => Events.Emit("native:getOrientation", {}), 600);
 

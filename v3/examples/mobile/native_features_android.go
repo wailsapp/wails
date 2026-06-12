@@ -75,4 +75,39 @@ func registerNativeFeatures(app *application.App) {
 	app.Event.On("native:secureDelete", func(e *application.CustomEvent) {
 		application.AndroidSecureDelete(eventString(e.Data, "key"))
 	})
+
+	// Phase D — sensors & hardware
+	app.Event.On("native:haptic", func(e *application.CustomEvent) {
+		application.AndroidHaptic(eventString(e.Data, "type"))
+	})
+	app.Event.On("native:getLocation", func(e *application.CustomEvent) {
+		application.AndroidGetLocation()
+	})
+	app.Event.On("native:watchMotion", func(e *application.CustomEvent) {
+		application.AndroidSetMotion(eventBool(e.Data, "enabled", false))
+	})
+	app.Event.On("native:watchProximity", func(e *application.CustomEvent) {
+		application.AndroidSetProximity(eventBool(e.Data, "enabled", false))
+	})
+	app.Event.On("native:speak", func(e *application.CustomEvent) {
+		application.AndroidSpeak(eventString(e.Data, "text"))
+	})
+	app.Event.On("native:stopSpeak", func(e *application.CustomEvent) {
+		application.AndroidStopSpeak()
+	})
+	app.Event.On("native:getStorage", func(e *application.CustomEvent) {
+		app.Event.Emit("native:storage", jsonToMap(application.AndroidStorageJSON()))
+	})
+	app.Event.On("native:getPower", func(e *application.CustomEvent) {
+		app.Event.Emit("native:power", jsonToMap(application.AndroidPowerJSON()))
+	})
+	app.Event.On("native:getNetwork", func(e *application.CustomEvent) {
+		app.Event.Emit("native:network", jsonToMap(application.AndroidNetworkJSON()))
+	})
+	app.Event.On("native:watchKeyboard", func(e *application.CustomEvent) {
+		application.AndroidSetKeyboardWatch(eventBool(e.Data, "enabled", false))
+	})
+	app.Event.On("native:setScreenProtect", func(e *application.CustomEvent) {
+		application.AndroidSetScreenProtect(eventBool(e.Data, "enabled", false))
+	})
 }

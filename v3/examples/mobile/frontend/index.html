@@ -23,6 +23,7 @@
         <button class="tab" data-tab="dialogs">Dialogs</button>
         <button class="tab" data-tab="system">System</button>
         <button class="tab" data-tab="mobile">Mobile</button>
+        <button class="tab" data-tab="hardware">Hardware</button>
         <button class="tab" data-tab="native">Native</button>
     </nav>
 
@@ -168,6 +169,64 @@
                 </div>
 
                 <pre id="mobileOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
+        </section>
+
+        <!-- Hardware: sensors & device capabilities (iOS + Android) -->
+        <section class="pane" id="pane-hardware">
+            <div class="mobile-only">
+                <h2>Haptics</h2>
+                <p class="hint">Tactile feedback via the Taptic Engine (iOS) / Vibrator (Android).</p>
+                <div class="grid">
+                    <button class="btn" data-haptic2="impact-light">Light</button>
+                    <button class="btn" data-haptic2="impact-medium">Medium</button>
+                    <button class="btn" data-haptic2="impact-heavy">Heavy</button>
+                    <button class="btn" data-haptic2="success">Success</button>
+                    <button class="btn" data-haptic2="warning">Warning</button>
+                    <button class="btn" data-haptic2="error">Error</button>
+                    <button class="btn" data-haptic2="selection">Selection</button>
+                </div>
+
+                <h2>Location</h2>
+                <p class="hint">One-shot GPS fix. Prompts for permission on first use.</p>
+                <div class="grid">
+                    <button class="btn primary" id="btnLocation">Get location</button>
+                </div>
+
+                <h2>Motion &amp; proximity</h2>
+                <label class="switch"><input type="checkbox" id="mfMotion"/> Accelerometer</label>
+                <p class="hint">Streams device acceleration (x, y, z) in real time.</p>
+                <label class="switch"><input type="checkbox" id="mfProximity"/> Proximity sensor</label>
+                <p class="hint">Reports near/far — cover the top of the device to trigger it.</p>
+
+                <h2>Speech</h2>
+                <div class="row">
+                    <input id="speakText" value="Hello from Wails" autocomplete="off"/>
+                    <button class="btn" id="btnSpeak">Speak</button>
+                    <button class="btn" id="btnStopSpeak">Stop</button>
+                </div>
+
+                <h2>Device state</h2>
+                <div class="grid">
+                    <button class="btn" id="btnStorage">Storage</button>
+                    <button class="btn" id="btnPower">Power</button>
+                    <button class="btn" id="btnNetwork">Network</button>
+                </div>
+                <div id="hardwareMetrics" class="metrics-out"></div>
+
+                <h2>Keyboard &amp; privacy</h2>
+                <label class="switch"><input type="checkbox" id="mfKeyboard"/> Watch keyboard insets</label>
+                <p class="hint">Reports the software keyboard's height as it shows and hides.
+                    <input id="keyboardProbe" placeholder="tap to raise the keyboard" autocomplete="off"/>
+                </p>
+                <label class="switch"><input type="checkbox" id="mfScreenProtect"/> Block screen capture</label>
+                <p class="hint">Sets FLAG_SECURE on Android; on iOS, detects screenshots and
+                    screen recording (it cannot block them).</p>
+
+                <pre id="hardwareOut" class="output">Results appear here…</pre>
             </div>
             <div class="platform-only" data-platform="desktop">
                 <p class="hint">These features are available when running on iOS or Android.</p>
