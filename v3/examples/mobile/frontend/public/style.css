@@ -173,21 +173,6 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
 }
 
 .metrics-out { margin: 12px 0 0; }
-
-/* Rolling log of system:* events */
-.event-log { margin: 10px 0 0; }
-.event-line {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    font-size: 12px;
-    padding: 7px 2px;
-    border-bottom: 1px solid var(--surface-2);
-}
-.event-line:last-child { border-bottom: none; }
-.event-time { color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.event-name { font-weight: 600; flex-shrink: 0; }
-.event-detail { color: var(--muted); margin-left: auto; text-align: right; }
 .metric-card {
     background: var(--surface);
     border-radius: var(--radius);

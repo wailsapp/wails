@@ -156,12 +156,12 @@ extern void iosOpenFileCallback(unsigned int callbackID, char* path);
 extern void iosOpenFileCallbackEnd(unsigned int callbackID);
 extern void iosApplicationDidLaunch(void);
 
-// Start the native system-event monitors (battery, network, lock, theme, app
-// lifecycle, memory warnings). Each fires emitSystemEvent(name, json) which the
-// Go side re-emits as a "system:*" custom event to JS. Safe to call once after
-// launch; the actual observer setup is dispatched to the main thread.
-// (emitSystemEvent is a Go //export, declared locally in ios_system_events.m to
-// avoid clashing with cgo's generated _cgo_export.h declaration.)
+// Start the native system-event monitors (battery, network, screen lock).
+// Each fires processApplicationEvent(EventXxx, json) so the Go side delivers a
+// typed ios: application event (mapped to a common: event) with its payload on
+// the event context. Safe to call once after launch; the observer setup is
+// dispatched to the main thread. (Theme is handled in the view controller's
+// traitCollectionDidChange; lifecycle/memory by the generated delegate events.)
 void ios_start_system_event_monitors(void);
 
 #endif // APPLICATION_IOS_H

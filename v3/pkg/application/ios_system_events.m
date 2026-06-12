@@ -3,15 +3,17 @@
 #import <UIKit/UIKit.h>
 #import <Network/Network.h>
 #import "application_ios.h"
+#import "../events/events_ios.h"
 
-// emitSystemEvent is a Go //export (application_ios.go). Declared locally so we
-// don't pull in cgo's _cgo_export.h (which would clash with the header). The
-// linker matches on symbol name; const-ness is not part of the C symbol.
-extern void emitSystemEvent(const char* name, const char* json);
+// processApplicationEvent is a Go //export (application_ios.go). It takes an
+// event ID and an optional data pointer; we pass a JSON object string, which Go
+// decodes into the ApplicationEvent context. Declared locally (matching the
+// other .m files) so we don't pull in cgo's _cgo_export.h.
+extern void processApplicationEvent(unsigned int eventID, void* data);
 
-// Emit a "system:*" event with a JSON payload string.
-static void emitSys(NSString *name, NSString *json) {
-    emitSystemEvent([name UTF8String], json ? [json UTF8String] : "");
+// Emit an application event with an optional JSON payload string.
+static void emitEvent(unsigned int eventID, NSString *json) {
+    processApplicationEvent(eventID, json ? (void *)[json UTF8String] : NULL);
 }
 
 // ---- Battery -------------------------------------------------------------
@@ -30,16 +32,16 @@ static void emitBattery(void) {
     float level = dev.batteryLevel; // 0..1, or -1 when unknown (e.g. Simulator)
     NSString *state = batteryStateString(dev.batteryState);
     BOOL lowPower = [NSProcessInfo processInfo].lowPowerModeEnabled;
-    NSString *json = [NSString stringWithFormat:
+    emitEvent(EventBatteryChanged, [NSString stringWithFormat:
         @"{\"level\":%.2f,\"state\":\"%@\",\"lowPowerMode\":%@}",
-        level, state, lowPower ? @"true" : @"false"];
-    emitSys(@"system:battery", json);
+        level, state, lowPower ? @"true" : @"false"]);
 }
 
 // ---- Theme ---------------------------------------------------------------
+// "isDarkMode" matches the key the desktop platforms set (ApplicationEventContext.IsDarkMode()).
 
 static void emitTheme(void) {
-    emitSys(@"system:theme", ios_is_dark_mode() ? @"{\"dark\":true}" : @"{\"dark\":false}");
+    emitEvent(EventThemeChanged, ios_is_dark_mode() ? @"{\"isDarkMode\":true}" : @"{\"isDarkMode\":false}");
 }
 
 // ---- Network (NWPathMonitor) --------------------------------------------
@@ -65,11 +67,10 @@ static void emitNetwork(nw_path_t path) {
     if (@available(iOS 13.0, *)) {
         constrained = nw_path_is_constrained(path);
     }
-    NSString *json = [NSString stringWithFormat:
+    emitEvent(EventNetworkChanged, [NSString stringWithFormat:
         @"{\"connected\":%@,\"type\":\"%@\",\"expensive\":%@,\"constrained\":%@}",
         connected ? @"true" : @"false", type,
-        expensive ? @"true" : @"false", constrained ? @"true" : @"false"];
-    emitSys(@"system:network", json);
+        expensive ? @"true" : @"false", constrained ? @"true" : @"false"]);
 }
 
 // ---- Setup ---------------------------------------------------------------
@@ -92,50 +93,21 @@ void ios_start_system_event_monitors(void) {
                             object:nil queue:nil
                         usingBlock:^(NSNotification *n){ emitBattery(); }];
 
-            // App lifecycle -> system:appstate.
+            // Refresh battery/theme snapshots when the app comes to the front.
+            // (Lifecycle itself is delivered by the generated UIApplication
+            // delegate events, so we don't re-emit those here.)
             [nc addObserverForName:UIApplicationDidBecomeActiveNotification
                             object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:appstate", @"{\"state\":\"active\"}");
-                // Reopening the app is a good moment to refresh snapshots.
-                emitBattery();
-                emitTheme();
-            }];
-            [nc addObserverForName:UIApplicationWillResignActiveNotification
-                            object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:appstate", @"{\"state\":\"inactive\"}");
-            }];
-            [nc addObserverForName:UIApplicationDidEnterBackgroundNotification
-                            object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:appstate", @"{\"state\":\"background\"}");
-            }];
-            [nc addObserverForName:UIApplicationWillEnterForegroundNotification
-                            object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:appstate", @"{\"state\":\"foreground\"}");
-            }];
-
-            // Memory warning -> system:memory.
-            [nc addObserverForName:UIApplicationDidReceiveMemoryWarningNotification
-                            object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:memory", @"{}");
-            }];
+                        usingBlock:^(NSNotification *n){ emitBattery(); emitTheme(); }];
 
             // Lock / unlock: approximated via data-protection availability.
             // Only fires when the device has a passcode set.
             [nc addObserverForName:UIApplicationProtectedDataWillBecomeUnavailable
                             object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:lock", @"{\"locked\":true}");
-            }];
+                        usingBlock:^(NSNotification *n){ emitEvent(EventScreenLocked, nil); }];
             [nc addObserverForName:UIApplicationProtectedDataDidBecomeAvailable
                             object:nil queue:nil
-                        usingBlock:^(NSNotification *n){
-                emitSys(@"system:lock", @"{\"locked\":false}");
-            }];
+                        usingBlock:^(NSNotification *n){ emitEvent(EventScreenUnlocked, nil); }];
 
             // Network reachability / interface type. The update handler fires
             // immediately with the current path, giving listeners an initial

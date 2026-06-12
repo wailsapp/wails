@@ -7,7 +7,6 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
-extern void emitSystemEvent(const char* name, const char* json);
 // Buffer console messages until a WKWebView exists
 static NSMutableArray<NSString *> *pendingConsoleJS;
 // Subclass that optionally hides the input accessory toolbar based on global flag
@@ -73,8 +72,8 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
     return self;
 }
-// Live light/dark switches arrive here (not via a notification), so forward
-// them to JS as a "system:theme" event.
+// Live light/dark switches arrive here (not via a notification), so emit the
+// ios:ThemeChanged application event with the new mode in its context.
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
     [super traitCollectionDidChange:previousTraitCollection];
     if (@available(iOS 13.0, *)) {
@@ -84,7 +83,8 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
             : UIUserInterfaceStyleUnspecified;
         if (now != was) {
             BOOL dark = (now == UIUserInterfaceStyleDark);
-            emitSystemEvent("system:theme", dark ? "{\"dark\":true}" : "{\"dark\":false}");
+            processApplicationEvent(EventThemeChanged,
+                dark ? (void *)"{\"isDarkMode\":true}" : (void *)"{\"isDarkMode\":false}");
         }
     }
 }

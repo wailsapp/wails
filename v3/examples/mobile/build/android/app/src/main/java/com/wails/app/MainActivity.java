@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
             o.put("level", (double) level);
             o.put("state", state);
             o.put("lowPowerMode", lowPower);
-            if (bridge != null) bridge.emitSystemEvent("system:battery", o.toString());
+            if (bridge != null) bridge.emitSystemEvent("android:BatteryChanged", o.toString());
         } catch (Exception e) {
             Log.e(TAG, "emitBattery failed", e);
         }
@@ -472,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
             if (signal != null) {
                 o.put("signal", (int) signal);
             }
-            if (bridge != null) bridge.emitSystemEvent("system:network", o.toString());
+            if (bridge != null) bridge.emitSystemEvent("android:NetworkChanged", o.toString());
         } catch (Exception e) {
             Log.e(TAG, "emitNetwork failed", e);
         }
@@ -484,17 +484,15 @@ public class MainActivity extends AppCompatActivity {
             o.put("connected", false);
             o.put("type", "none");
             o.put("metered", false);
-            if (bridge != null) bridge.emitSystemEvent("system:network", o.toString());
+            if (bridge != null) bridge.emitSystemEvent("android:NetworkChanged", o.toString());
         } catch (Exception ignored) {
         }
     }
 
     private void emitLock(boolean locked) {
-        try {
-            JSONObject o = new JSONObject();
-            o.put("locked", locked);
-            if (bridge != null) bridge.emitSystemEvent("system:lock", o.toString());
-        } catch (Exception ignored) {
+        // Lock/unlock are signals (no payload); name carries the state.
+        if (bridge != null) {
+            bridge.emitSystemEvent(locked ? "android:ScreenLocked" : "android:ScreenUnlocked", "{}");
         }
     }
 
@@ -502,8 +500,9 @@ public class MainActivity extends AppCompatActivity {
         try {
             int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
             JSONObject o = new JSONObject();
-            o.put("dark", mode == Configuration.UI_MODE_NIGHT_YES);
-            if (bridge != null) bridge.emitSystemEvent("system:theme", o.toString());
+            // "isDarkMode" matches the context key the desktop platforms use.
+            o.put("isDarkMode", mode == Configuration.UI_MODE_NIGHT_YES);
+            if (bridge != null) bridge.emitSystemEvent("android:ThemeChanged", o.toString());
         } catch (Exception ignored) {
         }
     }
@@ -529,7 +528,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (bridge != null) {
             bridge.onResume();
-            bridge.emitSystemEvent("system:appstate", "{\"state\":\"foreground\"}");
         }
     }
 
@@ -538,7 +536,6 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         if (bridge != null) {
             bridge.onPause();
-            bridge.emitSystemEvent("system:appstate", "{\"state\":\"background\"}");
         }
     }
 
@@ -555,7 +552,6 @@ public class MainActivity extends AppCompatActivity {
         super.onLowMemory();
         if (bridge != null) {
             bridge.onLowMemory();
-            bridge.emitSystemEvent("system:memory", "{}");
         }
     }
 

@@ -59,11 +59,11 @@
             <pre id="eventsOut" class="output">No pong yet…</pre>
 
             <h2>System events</h2>
-            <p class="hint">Live native signals (Go → JS) for battery, network, theme,
-                lock and app state. Try toggling charging, airplane mode, dark mode,
-                or backgrounding the app.</p>
-            <div id="sysState" class="metrics-out"><p class="hint">Waiting for system events…</p></div>
-            <div id="sysLog" class="event-log"></div>
+            <p class="hint">Battery, network, theme, screen-lock and low-memory are
+                delivered natively as Go <code>application events</code>
+                (<code>ios:</code>/<code>android:</code> → <code>common:</code>).
+                They're handled in Go — watch the device log (Xcode console / logcat)
+                while you toggle charging, airplane mode or dark mode.</p>
         </section>
 
         <!-- Dialogs -->

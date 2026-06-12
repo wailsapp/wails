@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Wails uses Go's `embed` package to embed the frontend files into the binary.
@@ -46,6 +47,22 @@ func main() {
 	app.Event.On("ping", func(e *application.CustomEvent) {
 		app.Event.Emit("pong", time.Now().Format(time.RFC1123))
 	})
+
+	// Native system events (battery, network, theme, screen lock, low memory)
+	// arrive as application events. The per-platform ios:/android: events are
+	// mapped to common: events, so cross-platform code listens on those. These
+	// are Go-side only; the payload (where present) is on the event context.
+	onSystemEvent := func(label string) func(*application.ApplicationEvent) {
+		return func(e *application.ApplicationEvent) {
+			app.Logger.Info("system event", "event", label, "data", e.Context().Data())
+		}
+	}
+	app.Event.OnApplicationEvent(events.Common.BatteryChanged, onSystemEvent("battery"))
+	app.Event.OnApplicationEvent(events.Common.NetworkChanged, onSystemEvent("network"))
+	app.Event.OnApplicationEvent(events.Common.ThemeChanged, onSystemEvent("theme"))
+	app.Event.OnApplicationEvent(events.Common.ScreenLocked, onSystemEvent("screen-locked"))
+	app.Event.OnApplicationEvent(events.Common.ScreenUnlocked, onSystemEvent("screen-unlocked"))
+	app.Event.OnApplicationEvent(events.Common.LowMemory, onSystemEvent("low-memory"))
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Wails Mobile Kitchen Sink",

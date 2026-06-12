@@ -573,27 +573,34 @@ func emitAndroidApplicationEvent(event events.ApplicationEventType) {
 	applicationEvents <- newApplicationEvent(event)
 }
 
-// emitMobileSystemEvent emits a custom "system:*" event to JS from a
-// native-triggered callback (battery/network/lock/theme/lifecycle). jsonStr
-// (which may be empty) is decoded into the event payload; if it is not valid
-// JSON it is passed through as a plain string.
-func emitMobileSystemEvent(name, jsonStr string) {
-	if name == "" {
-		return
-	}
+// androidSystemEventTypes maps the canonical android: event names the Java
+// system-event receivers send to their typed application event.
+var androidSystemEventTypes = map[string]events.ApplicationEventType{
+	"android:BatteryChanged": events.Android.BatteryChanged,
+	"android:NetworkChanged": events.Android.NetworkChanged,
+	"android:ThemeChanged":   events.Android.ThemeChanged,
+	"android:ScreenLocked":   events.Android.ScreenLocked,
+	"android:ScreenUnlocked": events.Android.ScreenUnlocked,
+}
+
+// emitAndroidApplicationEventWithData forwards a typed application event with an
+// optional JSON payload (battery level, theme, …) attached to its context, so
+// Go listeners can read it via event.Context().Data() / IsDarkMode().
+func emitAndroidApplicationEventWithData(event events.ApplicationEventType, jsonStr string) {
 	globalAppLock.RLock()
 	app := globalApp
 	globalAppLock.RUnlock()
 	if app == nil {
 		return
 	}
-	var data any
+	evt := newApplicationEvent(event)
 	if jsonStr != "" {
-		if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
-			data = jsonStr
+		var m map[string]any
+		if err := json.Unmarshal([]byte(jsonStr), &m); err == nil && m != nil {
+			evt.Context().setData(m)
 		}
 	}
-	app.Event.Emit(name, data)
+	applicationEvents <- evt
 }
 
 // JNI Export Functions - Called from Java
@@ -651,8 +658,8 @@ func Java_com_wails_app_WailsBridge_nativeOnLowMemory(env *C.JNIEnv, obj C.jobje
 }
 
 // Java_com_wails_app_WailsBridge_nativeEmitSystemEvent is the funnel the
-// Android system-event receivers (battery, network, lock, theme, lifecycle)
-// call to deliver a "system:*" custom event to JS.
+// Android system-event receivers (battery, network, lock, theme) call to
+// deliver a typed android: application event with its JSON payload.
 //
 //export Java_com_wails_app_WailsBridge_nativeEmitSystemEvent
 func Java_com_wails_app_WailsBridge_nativeEmitSystemEvent(env *C.JNIEnv, obj C.jobject, jname C.jstring, jjson C.jstring) {
@@ -664,7 +671,11 @@ func Java_com_wails_app_WailsBridge_nativeEmitSystemEvent(env *C.JNIEnv, obj C.j
 	jsonStr := C.GoString(cJSON)
 	C.releaseJString(env, jjson, cJSON)
 
-	emitMobileSystemEvent(name, jsonStr)
+	if eventType, ok := androidSystemEventTypes[name]; ok {
+		emitAndroidApplicationEventWithData(eventType, jsonStr)
+	} else {
+		androidLogf("warn", "[JNI] nativeEmitSystemEvent: unknown event %q", name)
+	}
 }
 
 //export Java_com_wails_app_WailsBridge_nativeOnPageFinished
