@@ -49,6 +49,11 @@
     </dict>
     
     
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Used to provide location-based features.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Used to read device motion (accelerometer).</string>
+
     <key>CFBundleGetInfoString</key>
     <string>(c) 2026 Test</string>
     

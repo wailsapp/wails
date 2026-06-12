@@ -12,17 +12,32 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.os.StatFs;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -44,6 +59,7 @@ import androidx.security.crypto.MasterKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 /**
@@ -68,6 +84,14 @@ public class WailsBridge {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
+
+    // Phase D state: sensor listeners, speech engine and keyboard watcher are
+    // retained so they can be registered and torn down on demand.
+    private SensorEventListener accelListener;
+    private SensorEventListener proximityListener;
+    private long lastMotionEmit = 0;
+    private TextToSpeech tts;
+    private View.OnApplyWindowInsetsListener keyboardListener;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -752,6 +776,302 @@ public class WailsBridge {
         } catch (Exception e) {
             Log.e(TAG, "secureDelete failed", e);
         }
+    }
+
+    // MARK: - Mobile features (Phase D: sensors & hardware)
+
+    /**
+     * Play a haptic pattern via the Vibrator. type: impact-light|impact-medium|
+     * impact-heavy|success|warning|error|selection.
+     */
+    public void haptic(final String type) {
+        try {
+            Vibrator vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator == null || !vibrator.hasVibrator()) return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                int effect;
+                switch (type) {
+                    case "impact-heavy": case "error":
+                        effect = VibrationEffect.EFFECT_HEAVY_CLICK; break;
+                    case "impact-light": case "selection":
+                        effect = VibrationEffect.EFFECT_TICK; break;
+                    case "success": case "warning": case "impact-medium": default:
+                        effect = VibrationEffect.EFFECT_CLICK; break;
+                }
+                vibrator.vibrate(VibrationEffect.createPredefined(effect));
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                long ms = "impact-heavy".equals(type) || "error".equals(type) ? 40
+                        : "impact-light".equals(type) || "selection".equals(type) ? 10 : 20;
+                vibrator.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(20);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "haptic failed", e);
+        }
+    }
+
+    private void emitLocationError(String msg) {
+        try {
+            emitEvent("native:location", new JSONObject().put("error", msg).toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Request a one-shot location fix. Emits "native:location"
+     * {lat,lng,accuracy} or {error}. Requests ACCESS_FINE_LOCATION on first use.
+     */
+    public void getLocation() {
+        mainHandler.post(() -> {
+            try {
+                if (activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION")
+                        != PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(new String[]{
+                            "android.permission.ACCESS_FINE_LOCATION",
+                            "android.permission.ACCESS_COARSE_LOCATION"}, 1002);
+                    emitLocationError("location permission requested — tap again once granted");
+                    return;
+                }
+                LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+                if (lm == null) { emitLocationError("location unavailable"); return; }
+                Location best = null;
+                for (String provider : new String[]{LocationManager.GPS_PROVIDER,
+                        LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER}) {
+                    try {
+                        Location l = lm.getLastKnownLocation(provider);
+                        if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
+                    } catch (SecurityException | IllegalArgumentException ignored) {
+                    }
+                }
+                if (best != null) {
+                    emitLocation(best);
+                    return;
+                }
+                // No cached fix: request a single update from whichever provider is enabled.
+                String provider = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                        ? LocationManager.GPS_PROVIDER
+                        : lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                        ? LocationManager.NETWORK_PROVIDER : null;
+                if (provider == null) { emitLocationError("no location provider enabled"); return; }
+                lm.requestSingleUpdate(provider, new LocationListener() {
+                    @Override public void onLocationChanged(Location location) { emitLocation(location); }
+                    @Override public void onProviderEnabled(String p) {}
+                    @Override public void onProviderDisabled(String p) {}
+                    @Override public void onStatusChanged(String p, int s, android.os.Bundle e) {}
+                }, Looper.getMainLooper());
+            } catch (Exception e) {
+                Log.e(TAG, "getLocation failed", e);
+                emitLocationError("exception");
+            }
+        });
+    }
+
+    private void emitLocation(Location l) {
+        try {
+            emitEvent("native:location", new JSONObject()
+                    .put("lat", l.getLatitude())
+                    .put("lng", l.getLongitude())
+                    .put("accuracy", l.getAccuracy()).toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    /** Start (1) / stop (0) accelerometer updates, streamed as "native:motion". */
+    public void setMotion(final int enabled) {
+        mainHandler.post(() -> {
+            SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+            if (sm == null) return;
+            if (enabled != 0) {
+                if (accelListener != null) return;
+                Sensor accel = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                if (accel == null) { emitEvent("native:motion", "{\"available\":false}"); return; }
+                accelListener = new SensorEventListener() {
+                    @Override public void onSensorChanged(SensorEvent e) {
+                        long now = System.currentTimeMillis();
+                        if (now - lastMotionEmit < 100) return; // throttle to ~10 Hz
+                        lastMotionEmit = now;
+                        try {
+                            emitEvent("native:motion", new JSONObject()
+                                    .put("x", e.values[0]).put("y", e.values[1])
+                                    .put("z", e.values[2]).toString());
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    @Override public void onAccuracyChanged(Sensor s, int a) {}
+                };
+                sm.registerListener(accelListener, accel, SensorManager.SENSOR_DELAY_UI);
+            } else if (accelListener != null) {
+                sm.unregisterListener(accelListener);
+                accelListener = null;
+            }
+        });
+    }
+
+    /** Enable (1) / disable (0) the proximity sensor, reported as "native:proximity". */
+    public void setProximity(final int enabled) {
+        mainHandler.post(() -> {
+            SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+            if (sm == null) return;
+            if (enabled != 0) {
+                if (proximityListener != null) return;
+                Sensor prox = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+                if (prox == null) { emitEvent("native:proximity", "{\"available\":false}"); return; }
+                final float max = prox.getMaximumRange();
+                proximityListener = new SensorEventListener() {
+                    @Override public void onSensorChanged(SensorEvent e) {
+                        boolean near = e.values[0] < max;
+                        emitEvent("native:proximity", "{\"near\":" + (near ? "true" : "false") + "}");
+                    }
+                    @Override public void onAccuracyChanged(Sensor s, int a) {}
+                };
+                sm.registerListener(proximityListener, prox, SensorManager.SENSOR_DELAY_NORMAL);
+            } else if (proximityListener != null) {
+                sm.unregisterListener(proximityListener);
+                proximityListener = null;
+            }
+        });
+    }
+
+    /** Speak text via TextToSpeech (lazily initialised). */
+    public void speak(final String text) {
+        mainHandler.post(() -> {
+            if (text == null || text.isEmpty()) return;
+            if (tts == null) {
+                tts = new TextToSpeech(activity, status -> {
+                    if (status == TextToSpeech.SUCCESS && tts != null) {
+                        tts.setLanguage(Locale.US);
+                        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wails");
+                    }
+                });
+            } else {
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "wails");
+            }
+        });
+    }
+
+    /** Stop any in-progress speech. */
+    public void stopSpeak() {
+        mainHandler.post(() -> {
+            if (tts != null) tts.stop();
+        });
+    }
+
+    /** Disk space as {"free":bytes,"total":bytes}. */
+    public String getStorageJson() {
+        try {
+            StatFs stat = new StatFs(activity.getFilesDir().getAbsolutePath());
+            long free = stat.getAvailableBytes();
+            long total = stat.getTotalBytes();
+            return new JSONObject().put("free", free).put("total", total).toString();
+        } catch (Exception e) {
+            return "{\"free\":0,\"total\":0}";
+        }
+    }
+
+    /** Battery/power state as {"level":0-1,"charging":bool,"lowPower":bool}. */
+    public String getPowerJson() {
+        try {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+            android.content.Intent batt = activity.registerReceiver(null, filter);
+            float level = -1;
+            boolean charging = false;
+            if (batt != null) {
+                int raw = batt.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batt.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                if (raw >= 0 && scale > 0) level = raw / (float) scale;
+                int status = batt.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                charging = status == BatteryManager.BATTERY_STATUS_CHARGING
+                        || status == BatteryManager.BATTERY_STATUS_FULL;
+            }
+            boolean lowPower = false;
+            PowerManager pm = (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+            if (pm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                lowPower = pm.isPowerSaveMode();
+            }
+            return new JSONObject().put("level", level)
+                    .put("charging", charging).put("lowPower", lowPower).toString();
+        } catch (Exception e) {
+            return "{\"level\":-1,\"charging\":false,\"lowPower\":false}";
+        }
+    }
+
+    /** Network status as {"connected":bool,"type":"wifi|cellular|ethernet|none"}. */
+    public String getNetworkJson() {
+        try {
+            ConnectivityManager cm =
+                    (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+            boolean connected = false;
+            String type = "none";
+            if (cm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network net = cm.getActiveNetwork();
+                NetworkCapabilities caps = net != null ? cm.getNetworkCapabilities(net) : null;
+                if (caps != null) {
+                    connected = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) type = "wifi";
+                    else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) type = "cellular";
+                    else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) type = "ethernet";
+                }
+            }
+            return new JSONObject().put("connected", connected).put("type", type).toString();
+        } catch (Exception e) {
+            return "{\"connected\":false,\"type\":\"none\"}";
+        }
+    }
+
+    /**
+     * Watch (1) / unwatch (0) the soft keyboard, emitting "native:keyboard"
+     * {visible,height} (height in px) via an inset listener on the content view.
+     */
+    public void setKeyboardWatch(final int enabled) {
+        mainHandler.post(() -> {
+            final View content = activity.getWindow().getDecorView();
+            if (enabled != 0) {
+                if (keyboardListener != null) return;
+                keyboardListener = (v, insets) -> {
+                    int imeHeight = 0;
+                    boolean visible;
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        imeHeight = insets.getInsets(WindowInsets.Type.ime()).bottom;
+                        visible = insets.isVisible(WindowInsets.Type.ime());
+                    } else {
+                        imeHeight = insets.getSystemWindowInsetBottom();
+                        visible = imeHeight > 0;
+                    }
+                    emitKeyboard(visible, imeHeight);
+                    return insets;
+                };
+                content.setOnApplyWindowInsetsListener(keyboardListener);
+                content.requestApplyInsets();
+            } else if (keyboardListener != null) {
+                content.setOnApplyWindowInsetsListener(null);
+                keyboardListener = null;
+            }
+        });
+    }
+
+    private void emitKeyboard(boolean visible, int height) {
+        try {
+            emitEvent("native:keyboard",
+                    new JSONObject().put("visible", visible).put("height", height).toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Toggle FLAG_SECURE (blocks screenshots & screen recording). Reports the new
+     * state as "native:screenCapture" {protected}.
+     */
+    public void setScreenProtect(final int enabled) {
+        mainHandler.post(() -> {
+            if (enabled != 0) {
+                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            } else {
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            }
+            emitEvent("native:screenCapture",
+                    "{\"protected\":" + (enabled != 0 ? "true" : "false") + "}");
+        });
     }
 
     /**
