@@ -30,4 +30,27 @@ func registerNativeFeatures(app *application.App) {
 		}
 		application.IOSSetTorch(eventBool(e.Data, "enabled", false))
 	})
+
+	// Phase B — state / query (request → response event)
+	app.Event.On("native:getSafeArea", func(e *application.CustomEvent) {
+		app.Event.Emit("native:safeArea", jsonToMap(application.IOSSafeAreaJSON()))
+	})
+	app.Event.On("native:setBrightness", func(e *application.CustomEvent) {
+		application.IOSSetBrightness(eventFloat(e.Data, "value", 0.5))
+	})
+	app.Event.On("native:getBrightness", func(e *application.CustomEvent) {
+		app.Event.Emit("native:brightness", map[string]any{"value": application.IOSGetBrightness()})
+	})
+	app.Event.On("native:getAppInfo", func(e *application.CustomEvent) {
+		app.Event.Emit("native:appInfo", jsonToMap(application.IOSAppInfoJSON()))
+	})
+	app.Event.On("native:setOrientation", func(e *application.CustomEvent) {
+		application.IOSSetOrientation(eventString(e.Data, "mode"))
+	})
+	app.Event.On("native:getOrientation", func(e *application.CustomEvent) {
+		app.Event.Emit("native:orientation", jsonToMap(application.IOSGetOrientation()))
+	})
+	app.Event.On("native:setStatusBar", func(e *application.CustomEvent) {
+		application.IOSSetStatusBar(payloadJSON(e.Data))
+	})
 }

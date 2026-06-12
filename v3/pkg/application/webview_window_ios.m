@@ -3,8 +3,10 @@
 #import "application_ios.h"
 #import "application_ios_delegate.h"
 #import "../events/events_ios.h"
+#import "mobile_features_ios_internal.h"
 #import <stdlib.h>
 extern void processApplicationEvent(unsigned int, void* data);
+extern void iosEmitNativeEvent(const char* name, const char* json);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
 // Buffer console messages until a WKWebView exists
@@ -193,6 +195,30 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     CGFloat webTop = safe.top;
     CGFloat webBottom = safe.bottom + tabH;
     self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
+}
+// Orientation lock and status-bar appearance are driven by global state set
+// from Go (see mobile_features_ios.m). These overrides feed UIKit the current
+// preference; the setters call the matching setNeeds… to apply it live.
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return mfSupportedOrientations();
+}
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return mfStatusBarStyle();
+}
+- (BOOL)prefersStatusBarHidden {
+    return mfStatusBarHidden();
+}
+// Push safe-area changes (rotation, notch) to the frontend so layouts can react
+// beyond what CSS env(safe-area-inset-*) already provides.
+- (void)viewSafeAreaInsetsDidChange {
+    [super viewSafeAreaInsetsDidChange];
+    if (@available(iOS 11.0, *)) {
+        UIEdgeInsets s = self.view.safeAreaInsets;
+        NSString *json = [NSString stringWithFormat:
+            @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
+            (int)s.top, (int)s.bottom, (int)s.left, (int)s.right];
+        iosEmitNativeEvent("native:safeArea", [json UTF8String]);
+    }
 }
 - (void)enableNativeTabs:(BOOL)enabled {
     dispatch_async(dispatch_get_main_queue(), ^{

@@ -214,3 +214,14 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
     padding: 14px;
     flex-shrink: 0;
 }
+
+/* Mobile-features brightness slider row */
+.range-label {
+    color: var(--muted);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent, #3b82f6);
+}

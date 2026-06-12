@@ -118,6 +118,34 @@
                 <p class="hint">Prevents the display from auto-locking while the app is in front.</p>
                 <label class="switch"><input type="checkbox" id="mfTorch"/> Torch (flashlight)</label>
                 <p class="hint">Has no visible effect on a simulator/emulator without a camera flash.</p>
+                <div class="row">
+                    <label class="range-label">Brightness</label>
+                    <input type="range" id="mfBrightness" min="0" max="100" value="50"/>
+                    <button class="btn" id="btnGetBrightness">Read</button>
+                </div>
+
+                <h2>Layout &amp; info</h2>
+                <div class="grid">
+                    <button class="btn" id="btnSafeArea">Safe-area insets</button>
+                    <button class="btn" id="btnAppInfo">App info</button>
+                </div>
+                <div id="mobileMetrics" class="metrics-out"></div>
+
+                <h2>Orientation</h2>
+                <div class="grid">
+                    <button class="btn" data-orient="portrait">Portrait</button>
+                    <button class="btn" data-orient="landscape">Landscape</button>
+                    <button class="btn" data-orient="auto">Auto</button>
+                </div>
+                <p class="hint">Current: <span id="mfOrientation">—</span></p>
+
+                <h2>Status bar</h2>
+                <div class="grid">
+                    <button class="btn" data-statusbar="light">Light icons</button>
+                    <button class="btn" data-statusbar="dark">Dark icons</button>
+                    <button class="btn" data-statusbar="hidden">Hide</button>
+                    <button class="btn" data-statusbar="shown">Show</button>
+                </div>
 
                 <pre id="mobileOut" class="output">Results appear here…</pre>
             </div>

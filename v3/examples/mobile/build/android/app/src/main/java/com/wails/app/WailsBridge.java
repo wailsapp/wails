@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
@@ -15,9 +17,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -452,6 +457,148 @@ public class WailsBridge {
             } catch (Exception e) {
                 Log.e(TAG, "setTorch failed", e);
                 emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+            }
+        });
+    }
+
+    // MARK: - Mobile features (Phase B)
+
+    /**
+     * System-bar insets as JSON {"top","bottom","left","right"} in px.
+     */
+    public String getSafeAreaJson() {
+        try {
+            int top = 0, bottom = 0, left = 0, right = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Insets insets = activity.getWindowManager()
+                        .getCurrentWindowMetrics().getWindowInsets()
+                        .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+                top = insets.top; bottom = insets.bottom; left = insets.left; right = insets.right;
+            }
+            return new JSONObject()
+                    .put("top", top).put("bottom", bottom)
+                    .put("left", left).put("right", right).toString();
+        } catch (Exception e) {
+            return "{\"top\":0,\"bottom\":0,\"left\":0,\"right\":0}";
+        }
+    }
+
+    /**
+     * Set window brightness, 0-100. A negative value restores the system default.
+     */
+    public void setBrightness(final int pct) {
+        mainHandler.post(() -> {
+            try {
+                WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+                lp.screenBrightness = pct < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                                              : Math.max(0.01f, Math.min(1f, pct / 100f));
+                activity.getWindow().setAttributes(lp);
+            } catch (Exception e) {
+                Log.e(TAG, "setBrightness failed", e);
+            }
+        });
+    }
+
+    /**
+     * Current brightness as {"value": 0.0-1.0}. Falls back to the system
+     * brightness setting when the window has not overridden it.
+     */
+    public String getBrightnessJson() {
+        try {
+            float v = activity.getWindow().getAttributes().screenBrightness;
+            if (v < 0) {
+                int sys = Settings.System.getInt(activity.getContentResolver(),
+                        Settings.System.SCREEN_BRIGHTNESS, 128);
+                v = sys / 255f;
+            }
+            return new JSONObject().put("value", v).toString();
+        } catch (Exception e) {
+            return "{\"value\":-1}";
+        }
+    }
+
+    /**
+     * App info as JSON {"name","version","build","bundleId"}.
+     */
+    public String getAppInfoJson() {
+        try {
+            PackageInfo pi = activity.getPackageManager()
+                    .getPackageInfo(activity.getPackageName(), 0);
+            long code = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                    ? pi.getLongVersionCode()
+                    : pi.versionCode;
+            CharSequence label = activity.getApplicationInfo()
+                    .loadLabel(activity.getPackageManager());
+            return new JSONObject()
+                    .put("name", label != null ? label.toString() : "")
+                    .put("version", pi.versionName != null ? pi.versionName : "")
+                    .put("build", String.valueOf(code))
+                    .put("bundleId", activity.getPackageName())
+                    .toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    /**
+     * Lock orientation to "portrait", "landscape" or "auto".
+     */
+    public void setOrientation(final String mode) {
+        mainHandler.post(() -> {
+            int o = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+            if ("portrait".equals(mode)) o = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            else if ("landscape".equals(mode)) o = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            activity.setRequestedOrientation(o);
+        });
+    }
+
+    /**
+     * Current orientation as {"orientation":"portrait"|"landscape"}.
+     */
+    public String getOrientationJson() {
+        int o = activity.getResources().getConfiguration().orientation;
+        String s = o == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait";
+        try {
+            return new JSONObject().put("orientation", s).toString();
+        } catch (Exception e) {
+            return "{\"orientation\":\"" + s + "\"}";
+        }
+    }
+
+    /**
+     * Set status-bar appearance. json: {"style":"light|dark|default","hidden":bool}.
+     * "light" = light (white) icons; "dark" = dark icons.
+     */
+    public void setStatusBar(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String style = opts.optString("style", "default");
+                boolean hidden = opts.optBoolean("hidden", false);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    WindowInsetsController c = activity.getWindow().getInsetsController();
+                    if (c != null) {
+                        if ("dark".equals(style)) {
+                            c.setSystemBarsAppearance(
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                        } else if ("light".equals(style)) {
+                            c.setSystemBarsAppearance(0,
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                        }
+                        if (hidden) c.hide(WindowInsets.Type.statusBars());
+                        else c.show(WindowInsets.Type.statusBars());
+                    }
+                } else {
+                    int vis = activity.getWindow().getDecorView().getSystemUiVisibility();
+                    if ("dark".equals(style)) vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    else if ("light".equals(style)) vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (hidden) vis |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    else vis &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    activity.getWindow().getDecorView().setSystemUiVisibility(vis);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "setStatusBar failed", e);
             }
         });
     }

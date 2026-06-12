@@ -377,4 +377,58 @@ Events.On("native:torch", (e) => {
     }
 });
 
+// Brightness (0-100 in the slider, 0-1 over the wire)
+const mfBrightness = $("mfBrightness");
+mfBrightness?.addEventListener("change", (e) => {
+    Events.Emit("native:setBrightness", { value: e.target.value / 100 });
+    logMobile("Brightness set to " + e.target.value + "%");
+});
+$("btnGetBrightness")?.addEventListener("click", () => Events.Emit("native:getBrightness", {}));
+Events.On("native:brightness", (e) => {
+    const v = (eventValue(e) || {}).value;
+    if (typeof v === "number" && v >= 0) {
+        if (mfBrightness) mfBrightness.value = Math.round(v * 100);
+        logMobile("Brightness is " + Math.round(v * 100) + "%");
+    }
+});
+
+// Safe-area insets + app info → metrics card
+$("btnSafeArea")?.addEventListener("click", () => Events.Emit("native:getSafeArea", {}));
+Events.On("native:safeArea", (e) => {
+    renderKeyVals($("mobileMetrics"), eventValue(e));
+    logMobile("Safe-area insets updated");
+});
+$("btnAppInfo")?.addEventListener("click", () => Events.Emit("native:getAppInfo", {}));
+Events.On("native:appInfo", (e) => {
+    renderKeyVals($("mobileMetrics"), eventValue(e));
+    logMobile("App info loaded");
+});
+
+// Orientation
+document.querySelectorAll("[data-orient]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        Events.Emit("native:setOrientation", { mode: btn.dataset.orient });
+        logMobile("Orientation: " + btn.dataset.orient);
+        setTimeout(() => Events.Emit("native:getOrientation", {}), 400);
+    });
+});
+Events.On("native:orientation", (e) => {
+    const o = (eventValue(e) || {}).orientation;
+    if (o) $("mfOrientation").textContent = o;
+});
+
+// Status bar
+document.querySelectorAll("[data-statusbar]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const v = btn.dataset.statusbar;
+        if (v === "hidden") Events.Emit("native:setStatusBar", { hidden: true });
+        else if (v === "shown") Events.Emit("native:setStatusBar", { hidden: false });
+        else Events.Emit("native:setStatusBar", { style: v });
+        logMobile("Status bar: " + v);
+    });
+});
+
+// Ask for the current orientation once the page is up.
+if (isMobile) setTimeout(() => Events.Emit("native:getOrientation", {}), 600);
+
 applyPlatform();

@@ -55,3 +55,13 @@ func payloadJSON(data any) string {
 	}
 	return "{}"
 }
+
+// jsonToMap parses a JSON object string returned by a native getter into a map
+// suitable for emitting back to the frontend.
+func jsonToMap(s string) map[string]any {
+	m := map[string]any{}
+	if s != "" {
+		_ = json.Unmarshal([]byte(s), &m)
+	}
+	return m
+}

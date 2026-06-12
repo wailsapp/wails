@@ -3,10 +3,16 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "mobile_features_ios.h"
+#import "mobile_features_ios_internal.h"
 #import "application_ios_delegate.h"
 
 // appDelegate is defined in application_ios.m.
 extern WailsAppDelegate *appDelegate;
+
+// Global appearance state, read back by the WailsViewController overrides.
+static int g_mfOrientationMode = 0;   // 0=auto, 1=portrait, 2=landscape
+static int g_mfStatusBarStyle = 0;    // 0=default, 1=light content, 2=dark content
+static BOOL g_mfStatusBarHidden = NO;
 
 // Run a block on the main thread without deadlocking when already on it.
 static void mfRunOnMain(void (^block)(void)) {
@@ -107,5 +113,152 @@ void ios_set_torch(bool enabled) {
             iosEmitNativeEvent("native:torch", enabled ? "{\"on\":true,\"available\":true}"
                                                        : "{\"on\":false,\"available\":true}");
         }
+    });
+}
+
+// dupCString clones an NSString into a malloc'd C string (caller frees).
+static const char* mfDup(NSString *str) {
+    if (str == nil) return NULL;
+    const char* utf8 = [str UTF8String];
+    if (utf8 == NULL) return NULL;
+    size_t len = strlen(utf8) + 1;
+    char* out = (char*)malloc(len);
+    if (out) memcpy(out, utf8, len);
+    return out;
+}
+
+static void mfRunOnMainSync(void (^block)(void)) {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
+    }
+}
+
+// MARK: - Safe-area insets
+
+const char* ios_safe_area_json(void) {
+    __block NSString *json = nil;
+    mfRunOnMainSync(^{
+        UIEdgeInsets safe = UIEdgeInsetsZero;
+        if (@available(iOS 11.0, *)) {
+            UIView *root = appDelegate.window.rootViewController.view;
+            safe = root ? root.safeAreaInsets : appDelegate.window.safeAreaInsets;
+        }
+        json = [NSString stringWithFormat:
+            @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
+            (int)safe.top, (int)safe.bottom, (int)safe.left, (int)safe.right];
+    });
+    return mfDup(json);
+}
+
+// MARK: - Brightness
+
+void ios_set_brightness(double value) {
+    if (value < 0) value = 0;
+    if (value > 1) value = 1;
+    mfRunOnMain(^{
+        [UIScreen mainScreen].brightness = value;
+    });
+}
+
+double ios_get_brightness(void) {
+    __block double v = 0;
+    mfRunOnMainSync(^{
+        v = (double)[UIScreen mainScreen].brightness;
+    });
+    return v;
+}
+
+// MARK: - App info
+
+const char* ios_app_info_json(void) {
+    NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
+    NSString *name = info[@"CFBundleDisplayName"] ?: info[@"CFBundleName"] ?: @"";
+    NSString *version = info[@"CFBundleShortVersionString"] ?: @"";
+    NSString *build = info[@"CFBundleVersion"] ?: @"";
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier] ?: @"";
+    NSString *json = [NSString stringWithFormat:
+        @"{\"name\":\"%@\",\"version\":\"%@\",\"build\":\"%@\",\"bundleId\":\"%@\"}",
+        name, version, build, bundleId];
+    return mfDup(json);
+}
+
+// MARK: - Orientation
+
+UIInterfaceOrientationMask mfSupportedOrientations(void) {
+    switch (g_mfOrientationMode) {
+        case 1: return UIInterfaceOrientationMaskPortrait;
+        case 2: return UIInterfaceOrientationMaskLandscape;
+        default: return UIInterfaceOrientationMaskAll;
+    }
+}
+
+void ios_set_orientation(const char* cmode) {
+    NSString *mode = cmode ? [NSString stringWithUTF8String:cmode] : @"auto";
+    if ([mode isEqualToString:@"portrait"]) g_mfOrientationMode = 1;
+    else if ([mode isEqualToString:@"landscape"]) g_mfOrientationMode = 2;
+    else g_mfOrientationMode = 0;
+    mfRunOnMain(^{
+        UIViewController *vc = appDelegate.window.rootViewController;
+        if (@available(iOS 16.0, *)) {
+            [vc setNeedsUpdateOfSupportedInterfaceOrientations];
+            UIWindowScene *scene = (UIWindowScene *)appDelegate.window.windowScene;
+            if (scene) {
+                UIWindowSceneGeometryPreferencesIOS *prefs =
+                    [[UIWindowSceneGeometryPreferencesIOS alloc]
+                        initWithInterfaceOrientations:mfSupportedOrientations()];
+                [scene requestGeometryUpdateWithPreferences:prefs errorHandler:^(NSError *e){ (void)e; }];
+            }
+        } else {
+            [UIViewController attemptRotationToDeviceOrientation];
+        }
+    });
+}
+
+const char* ios_get_orientation(void) {
+    __block NSString *out = @"unknown";
+    mfRunOnMainSync(^{
+        UIInterfaceOrientation o = UIInterfaceOrientationUnknown;
+        if (@available(iOS 13.0, *)) {
+            UIWindowScene *scene = (UIWindowScene *)appDelegate.window.windowScene;
+            if (scene) o = scene.interfaceOrientation;
+        }
+        switch (o) {
+            case UIInterfaceOrientationPortrait:
+            case UIInterfaceOrientationPortraitUpsideDown:
+                out = @"portrait"; break;
+            case UIInterfaceOrientationLandscapeLeft:
+            case UIInterfaceOrientationLandscapeRight:
+                out = @"landscape"; break;
+            default: out = @"unknown"; break;
+        }
+    });
+    return mfDup(out);
+}
+
+// MARK: - Status bar
+
+UIStatusBarStyle mfStatusBarStyle(void) {
+    switch (g_mfStatusBarStyle) {
+        case 1: return UIStatusBarStyleLightContent;
+        case 2: if (@available(iOS 13.0, *)) return UIStatusBarStyleDarkContent; return UIStatusBarStyleDefault;
+        default: return UIStatusBarStyleDefault;
+    }
+}
+
+BOOL mfStatusBarHidden(void) { return g_mfStatusBarHidden; }
+
+void ios_set_status_bar(const char* json) {
+    NSDictionary *opts = mfParseJSON(json);
+    NSString *style = opts[@"style"];
+    if ([style isEqualToString:@"light"]) g_mfStatusBarStyle = 1;
+    else if ([style isEqualToString:@"dark"]) g_mfStatusBarStyle = 2;
+    else g_mfStatusBarStyle = 0;
+    id hidden = opts[@"hidden"];
+    if ([hidden isKindOfClass:[NSNumber class]]) g_mfStatusBarHidden = [hidden boolValue];
+    mfRunOnMain(^{
+        UIViewController *vc = appDelegate.window.rootViewController;
+        [vc setNeedsStatusBarAppearanceUpdate];
     });
 }

@@ -53,6 +53,47 @@ func IOSSetKeepAwake(enabled bool) { C.ios_set_keep_awake(C.bool(enabled)) }
 // IOSSetTorch turns the device torch (flashlight) on or off.
 func IOSSetTorch(enabled bool) { C.ios_set_torch(C.bool(enabled)) }
 
+// --- Phase B: state / query --------------------------------------------------
+
+func cStr(p *C.char) string {
+	if p == nil {
+		return ""
+	}
+	defer C.free(unsafe.Pointer(p))
+	return C.GoString(p)
+}
+
+// IOSSafeAreaJSON returns the safe-area insets ({top,bottom,left,right}) in points.
+func IOSSafeAreaJSON() string { return cStr(C.ios_safe_area_json()) }
+
+// IOSSetBrightness sets the screen brightness (0.0 - 1.0).
+func IOSSetBrightness(value float64) { C.ios_set_brightness(C.double(value)) }
+
+// IOSGetBrightness returns the current screen brightness (0.0 - 1.0).
+func IOSGetBrightness() float64 { return float64(C.ios_get_brightness()) }
+
+// IOSAppInfoJSON returns {name,version,build,bundleId} from the app bundle.
+func IOSAppInfoJSON() string { return cStr(C.ios_app_info_json()) }
+
+// IOSSetOrientation locks orientation to "portrait", "landscape" or "auto".
+func IOSSetOrientation(mode string) {
+	c, free := cString(mode)
+	defer free()
+	C.ios_set_orientation(c)
+}
+
+// IOSGetOrientation returns the current interface orientation ("portrait" /
+// "landscape" / "unknown").
+func IOSGetOrientation() string { return cStr(C.ios_get_orientation()) }
+
+// IOSSetStatusBar sets the status-bar style/visibility. JSON: {"style":"light|
+// dark|default","hidden":bool}.
+func IOSSetStatusBar(jsonPayload string) {
+	c, free := cString(jsonPayload)
+	defer free()
+	C.ios_set_status_bar(c)
+}
+
 // iosEmitNativeEvent is called from the Objective-C bridge to deliver an
 // asynchronous result to the frontend as a custom event.
 //

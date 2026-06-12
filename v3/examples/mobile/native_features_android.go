@@ -28,4 +28,27 @@ func registerNativeFeatures(app *application.App) {
 		}
 		application.AndroidSetTorch(eventBool(e.Data, "enabled", false))
 	})
+
+	// Phase B — state / query (request → response event)
+	app.Event.On("native:getSafeArea", func(e *application.CustomEvent) {
+		app.Event.Emit("native:safeArea", jsonToMap(application.AndroidSafeAreaJSON()))
+	})
+	app.Event.On("native:setBrightness", func(e *application.CustomEvent) {
+		application.AndroidSetBrightness(int(eventFloat(e.Data, "value", 0.5) * 100))
+	})
+	app.Event.On("native:getBrightness", func(e *application.CustomEvent) {
+		app.Event.Emit("native:brightness", jsonToMap(application.AndroidBrightnessJSON()))
+	})
+	app.Event.On("native:getAppInfo", func(e *application.CustomEvent) {
+		app.Event.Emit("native:appInfo", jsonToMap(application.AndroidAppInfoJSON()))
+	})
+	app.Event.On("native:setOrientation", func(e *application.CustomEvent) {
+		application.AndroidSetOrientation(eventString(e.Data, "mode"))
+	})
+	app.Event.On("native:getOrientation", func(e *application.CustomEvent) {
+		app.Event.Emit("native:orientation", jsonToMap(application.AndroidOrientationJSON()))
+	})
+	app.Event.On("native:setStatusBar", func(e *application.CustomEvent) {
+		application.AndroidSetStatusBar(payloadJSON(e.Data))
+	})
 }

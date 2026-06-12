@@ -29,3 +29,28 @@ func AndroidSetKeepAwake(enabled bool) { androidBridgeVoidInt("setKeepAwake", bo
 
 // AndroidSetTorch toggles the camera flash via CameraManager.setTorchMode.
 func AndroidSetTorch(enabled bool) { androidBridgeVoidInt("setTorch", boolToInt(enabled)) }
+
+// --- Phase B: state / query ---------------------------------------------------
+
+// AndroidSafeAreaJSON returns the system-bar insets ({top,bottom,left,right}) in px.
+func AndroidSafeAreaJSON() string { s, _ := androidBridgeString("getSafeAreaJson"); return s }
+
+// AndroidSetBrightness sets the window brightness, 0-100 (negative restores the
+// system default).
+func AndroidSetBrightness(pct int) { androidBridgeVoidInt("setBrightness", pct) }
+
+// AndroidBrightnessJSON returns the current brightness as {"value":0.0-1.0}.
+func AndroidBrightnessJSON() string { s, _ := androidBridgeString("getBrightnessJson"); return s }
+
+// AndroidAppInfoJSON returns {name,version,build,bundleId} for the app.
+func AndroidAppInfoJSON() string { s, _ := androidBridgeString("getAppInfoJson"); return s }
+
+// AndroidSetOrientation locks orientation to "portrait", "landscape" or "auto".
+func AndroidSetOrientation(mode string) { androidBridgeVoidString("setOrientation", mode) }
+
+// AndroidOrientationJSON returns the current orientation as {"orientation":"…"}.
+func AndroidOrientationJSON() string { s, _ := androidBridgeString("getOrientationJson"); return s }
+
+// AndroidSetStatusBar sets the status-bar appearance. JSON: {"style":"light|dark|
+// default","hidden":bool}.
+func AndroidSetStatusBar(jsonPayload string) { androidBridgeVoidString("setStatusBar", jsonPayload) }
