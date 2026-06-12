@@ -1,12 +1,17 @@
 package com.wails.app;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
@@ -28,9 +33,18 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.concurrent.Executor;
 
 /**
  * WailsBridge manages the connection between the Java/Android side and the Go
@@ -601,6 +615,143 @@ public class WailsBridge {
                 Log.e(TAG, "setStatusBar failed", e);
             }
         });
+    }
+
+    // MARK: - Mobile features (Phase C)
+
+    private void emitBiometric(boolean ok, String error) {
+        try {
+            JSONObject o = new JSONObject().put("ok", ok);
+            if (error != null) o.put("error", error);
+            emitEvent("native:biometric", o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Show the BiometricPrompt (biometric or device credential). The outcome is
+     * emitted as "native:biometric" {ok, error}.
+     */
+    public void authenticate(final String reason) {
+        mainHandler.post(() -> {
+            try {
+                int allowed = BiometricManager.Authenticators.BIOMETRIC_WEAK
+                        | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+                BiometricManager bm = BiometricManager.from(activity);
+                if (bm.canAuthenticate(allowed) != BiometricManager.BIOMETRIC_SUCCESS) {
+                    emitBiometric(false, "no biometrics or device credential enrolled");
+                    return;
+                }
+                Executor exec = ContextCompat.getMainExecutor(activity);
+                BiometricPrompt prompt = new BiometricPrompt((FragmentActivity) activity, exec,
+                        new BiometricPrompt.AuthenticationCallback() {
+                            @Override
+                            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                                emitBiometric(true, null);
+                            }
+                            @Override
+                            public void onAuthenticationError(int code, CharSequence err) {
+                                emitBiometric(false, err != null ? err.toString() : "error " + code);
+                            }
+                            // onAuthenticationFailed = a single non-match; prompt stays up, no terminal event.
+                        });
+                BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Authenticate")
+                        .setSubtitle(reason != null && !reason.isEmpty() ? reason : "Confirm it's you")
+                        .setAllowedAuthenticators(allowed)
+                        .build();
+                prompt.authenticate(info);
+            } catch (Exception e) {
+                Log.e(TAG, "authenticate failed", e);
+                emitBiometric(false, "exception");
+            }
+        });
+    }
+
+    /**
+     * Post a local notification. json: {"title","body"}. Requests the
+     * POST_NOTIFICATIONS runtime permission on Android 13+.
+     */
+    public void postNotification(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String title = opts.optString("title", "Notification");
+                String body = opts.optString("body", "");
+                String channelId = "wails_default";
+                NotificationManager nm =
+                        (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel ch = new NotificationChannel(
+                            channelId, "General", NotificationManager.IMPORTANCE_DEFAULT);
+                    nm.createNotificationChannel(ch);
+                }
+                if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission(
+                        "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(
+                            new String[]{"android.permission.POST_NOTIFICATIONS"}, 1001);
+                }
+                Notification n = new NotificationCompat.Builder(activity, channelId)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setAutoCancel(true)
+                        .build();
+                nm.notify((int) (System.currentTimeMillis() & 0x0fffffff), n);
+                emitEvent("native:notification", "{\"ok\":true}");
+            } catch (Exception e) {
+                Log.e(TAG, "postNotification failed", e);
+                emitEvent("native:notification", "{\"ok\":false}");
+            }
+        });
+    }
+
+    /**
+     * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
+     * the Android Keystore) on API 23+, falling back to plain prefs below that.
+     */
+    private SharedPreferences securePrefs() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                MasterKey key = new MasterKey.Builder(activity)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build();
+                return EncryptedSharedPreferences.create(activity, "wails_secure", key,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "securePrefs failed, using plain prefs", e);
+        }
+        return activity.getSharedPreferences("wails_secure_plain", Context.MODE_PRIVATE);
+    }
+
+    /** Store a value in secure storage. json: {"key","value"}. */
+    public void secureSet(final String json) {
+        try {
+            JSONObject o = new JSONObject(json);
+            securePrefs().edit().putString(o.optString("key"), o.optString("value")).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "secureSet failed", e);
+        }
+    }
+
+    /** Read a value from secure storage (empty if absent). */
+    public String secureGet(final String key) {
+        try {
+            return securePrefs().getString(key, "");
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /** Remove a value from secure storage. */
+    public void secureDelete(final String key) {
+        try {
+            securePrefs().edit().remove(key).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "secureDelete failed", e);
+        }
     }
 
     /**

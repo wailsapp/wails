@@ -139,6 +139,39 @@ static char* callBridgeStringMethod(const char* name) {
     return result;
 }
 
+// Call `String name(String)` on the bridge. Returns a malloc'd C string
+// (caller frees) or NULL.
+static char* callBridgeStringStringMethod(const char* name, const char* arg) {
+    if (g_bridge == NULL) return NULL;
+    int detach = 0;
+    JNIEnv* env = wailsGetEnv(&detach);
+    if (env == NULL) return NULL;
+    char* result = NULL;
+    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    if (cls != NULL) {
+        jmethodID mid = (*env)->GetMethodID(env, cls, name, "(Ljava/lang/String;)Ljava/lang/String;");
+        if (mid != NULL) {
+            jstring jarg = (*env)->NewStringUTF(env, arg);
+            jstring jresult = (jstring)(*env)->CallObjectMethod(env, g_bridge, mid, jarg);
+            clearException(env, name);
+            if (jresult != NULL) {
+                const char* chars = (*env)->GetStringUTFChars(env, jresult, NULL);
+                if (chars != NULL) {
+                    result = strdup(chars);
+                    (*env)->ReleaseStringUTFChars(env, jresult, chars);
+                }
+                (*env)->DeleteLocalRef(env, jresult);
+            }
+            if (jarg != NULL) (*env)->DeleteLocalRef(env, jarg);
+        } else {
+            clearException(env, name);
+        }
+        (*env)->DeleteLocalRef(env, cls);
+    }
+    wailsReleaseEnv(detach);
+    return result;
+}
+
 // Call `void name(String)` on the bridge.
 static void callBridgeVoidString(const char* name, const char* arg) {
     if (g_bridge == NULL) return;
@@ -340,6 +373,19 @@ func androidBridgeString(method string) (string, bool) {
 	cname := C.CString(method)
 	defer C.free(unsafe.Pointer(cname))
 	cresult := C.callBridgeStringMethod(cname)
+	if cresult == nil {
+		return "", false
+	}
+	defer C.free(unsafe.Pointer(cresult))
+	return C.GoString(cresult), true
+}
+
+func androidBridgeStringString(method string, arg string) (string, bool) {
+	cname := C.CString(method)
+	carg := C.CString(arg)
+	defer C.free(unsafe.Pointer(cname))
+	defer C.free(unsafe.Pointer(carg))
+	cresult := C.callBridgeStringStringMethod(cname, carg)
 	if cresult == nil {
 		return "", false
 	}

@@ -94,6 +94,47 @@ func IOSSetStatusBar(jsonPayload string) {
 	C.ios_set_status_bar(c)
 }
 
+// --- Phase C: async results / permissions ------------------------------------
+
+// IOSBiometricAuthenticate triggers Face ID / Touch ID. The outcome is delivered
+// to the frontend as the "native:biometric" event {ok, error}.
+func IOSBiometricAuthenticate(reason string) {
+	c, free := cString(reason)
+	defer free()
+	C.ios_biometric_authenticate(c)
+}
+
+// IOSPostNotification schedules a local notification. JSON: {"title","body",
+// "delay":seconds}.
+func IOSPostNotification(jsonPayload string) {
+	c, free := cString(jsonPayload)
+	defer free()
+	C.ios_post_notification(c)
+}
+
+// IOSSecureSet stores a value in the Keychain under key.
+func IOSSecureSet(key, value string) {
+	ck, freeK := cString(key)
+	defer freeK()
+	cv, freeV := cString(value)
+	defer freeV()
+	C.ios_secure_set(ck, cv)
+}
+
+// IOSSecureGet reads a Keychain value (empty if absent).
+func IOSSecureGet(key string) string {
+	c, free := cString(key)
+	defer free()
+	return cStr(C.ios_secure_get(c))
+}
+
+// IOSSecureDelete removes a Keychain value.
+func IOSSecureDelete(key string) {
+	c, free := cString(key)
+	defer free()
+	C.ios_secure_delete(c)
+}
+
 // iosEmitNativeEvent is called from the Objective-C bridge to deliver an
 // asynchronous result to the frontend as a custom event.
 //

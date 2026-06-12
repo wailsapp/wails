@@ -428,6 +428,47 @@ document.querySelectorAll("[data-statusbar]").forEach((btn) => {
     });
 });
 
+// Biometric authentication
+$("btnBiometric")?.addEventListener("click", () => {
+    Events.Emit("native:authenticate", { reason: "Unlock the kitchen sink" });
+    logMobile("Requesting authentication…");
+});
+Events.On("native:biometric", (e) => {
+    const d = eventValue(e) || {};
+    logMobile(d.ok ? "✓ Authenticated" : "✗ Authentication failed: " + (d.error || "unknown"));
+});
+
+// Local notification
+$("btnNotify")?.addEventListener("click", () => {
+    Events.Emit("native:notify", {
+        title: "Wails Kitchen Sink",
+        body: "This is a local notification 👋",
+        delay: 2,
+    });
+    logMobile("Scheduling notification…");
+});
+Events.On("native:notification", (e) => {
+    const d = eventValue(e) || {};
+    logMobile(d.ok ? "Notification posted" + (d.scheduled ? " (in " + d.scheduled + "s)" : "")
+                   : "Notification failed: " + (d.error || "denied"));
+});
+
+// Secure storage
+$("btnSecSet")?.addEventListener("click", () => {
+    Events.Emit("native:secureSet", { key: $("secKey").value, value: $("secVal").value });
+    logMobile("Saved '" + $("secKey").value + "' securely");
+});
+$("btnSecGet")?.addEventListener("click", () =>
+    Events.Emit("native:secureGet", { key: $("secKey").value }));
+$("btnSecDel")?.addEventListener("click", () => {
+    Events.Emit("native:secureDelete", { key: $("secKey").value });
+    logMobile("Deleted '" + $("secKey").value + "'");
+});
+Events.On("native:secureValue", (e) => {
+    const d = eventValue(e) || {};
+    logMobile("Loaded '" + d.key + "' = " + (d.value ? "\"" + d.value + "\"" : "(empty)"));
+});
+
 // Ask for the current orientation once the page is up.
 if (isMobile) setTimeout(() => Events.Emit("native:getOrientation", {}), 600);
 

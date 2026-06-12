@@ -54,3 +54,24 @@ func AndroidOrientationJSON() string { s, _ := androidBridgeString("getOrientati
 // AndroidSetStatusBar sets the status-bar appearance. JSON: {"style":"light|dark|
 // default","hidden":bool}.
 func AndroidSetStatusBar(jsonPayload string) { androidBridgeVoidString("setStatusBar", jsonPayload) }
+
+// --- Phase C: async results / permissions -------------------------------------
+
+// AndroidBiometricAuthenticate shows the BiometricPrompt. The outcome is
+// delivered to the frontend as the "native:biometric" event {ok, error}.
+func AndroidBiometricAuthenticate(reason string) { androidBridgeVoidString("authenticate", reason) }
+
+// AndroidNotify posts a local notification. JSON: {"title","body","delay":seconds}.
+func AndroidNotify(jsonPayload string) { androidBridgeVoidString("postNotification", jsonPayload) }
+
+// AndroidSecureSet stores a value in EncryptedSharedPreferences. JSON: {"key","value"}.
+func AndroidSecureSet(jsonPayload string) { androidBridgeVoidString("secureSet", jsonPayload) }
+
+// AndroidSecureGet reads a value from secure storage (empty if absent).
+func AndroidSecureGet(key string) string {
+	s, _ := androidBridgeStringString("secureGet", key)
+	return s
+}
+
+// AndroidSecureDelete removes a value from secure storage.
+func AndroidSecureDelete(key string) { androidBridgeVoidString("secureDelete", key) }

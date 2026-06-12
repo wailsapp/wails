@@ -2,6 +2,9 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <LocalAuthentication/LocalAuthentication.h>
+#import <UserNotifications/UserNotifications.h>
+#import <Security/Security.h>
 #import "mobile_features_ios.h"
 #import "mobile_features_ios_internal.h"
 #import "application_ios_delegate.h"
@@ -261,4 +264,114 @@ void ios_set_status_bar(const char* json) {
         UIViewController *vc = appDelegate.window.rootViewController;
         [vc setNeedsStatusBarAppearanceUpdate];
     });
+}
+
+// Emit a custom event with a dictionary payload (JSON-encoded safely).
+static void mfEmit(NSString *name, NSDictionary *dict) {
+    extern void iosEmitNativeEvent(const char* name, const char* json);
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+    NSString *s = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : @"{}";
+    iosEmitNativeEvent([name UTF8String], [s UTF8String]);
+}
+
+// MARK: - Biometric authentication
+
+void ios_biometric_authenticate(const char* creason) {
+    NSString *reason = creason ? [NSString stringWithUTF8String:creason] : @"Authenticate";
+    LAContext *ctx = [[LAContext alloc] init];
+    NSError *err = nil;
+    LAPolicy policy = LAPolicyDeviceOwnerAuthenticationWithBiometrics;
+    if (![ctx canEvaluatePolicy:policy error:&err]) {
+        // Fall back to device passcode if biometrics are unavailable/unenrolled.
+        policy = LAPolicyDeviceOwnerAuthentication;
+        if (![ctx canEvaluatePolicy:policy error:&err]) {
+            mfEmit(@"native:biometric", @{@"ok": @NO,
+                @"error": err ? err.localizedDescription : @"biometrics unavailable"});
+            return;
+        }
+    }
+    [ctx evaluatePolicy:policy localizedReason:reason reply:^(BOOL success, NSError *error) {
+        if (success) {
+            mfEmit(@"native:biometric", @{@"ok": @YES});
+        } else {
+            mfEmit(@"native:biometric", @{@"ok": @NO,
+                @"error": error ? error.localizedDescription : @"failed"});
+        }
+    }];
+}
+
+// MARK: - Local notifications
+
+void ios_post_notification(const char* json) {
+    NSDictionary *opts = mfParseJSON(json);
+    NSString *title = [opts[@"title"] isKindOfClass:[NSString class]] ? opts[@"title"] : @"Notification";
+    NSString *body = [opts[@"body"] isKindOfClass:[NSString class]] ? opts[@"body"] : @"";
+    double delay = [opts[@"delay"] isKindOfClass:[NSNumber class]] ? [opts[@"delay"] doubleValue] : 2.0;
+    if (delay < 1) delay = 1; // UNTimeIntervalNotificationTrigger requires > 0
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center requestAuthorizationWithOptions:
+        (UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+        completionHandler:^(BOOL granted, NSError *error) {
+            if (!granted) {
+                mfEmit(@"native:notification", @{@"ok": @NO,
+                    @"error": error ? error.localizedDescription : @"not authorized"});
+                return;
+            }
+            UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+            content.title = title;
+            content.body = body;
+            content.sound = [UNNotificationSound defaultSound];
+            UNTimeIntervalNotificationTrigger *trigger =
+                [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:delay repeats:NO];
+            UNNotificationRequest *req = [UNNotificationRequest
+                requestWithIdentifier:[[NSUUID UUID] UUIDString] content:content trigger:trigger];
+            [center addNotificationRequest:req withCompletionHandler:^(NSError *e) {
+                if (e) {
+                    mfEmit(@"native:notification", @{@"ok": @NO, @"error": e.localizedDescription});
+                } else {
+                    mfEmit(@"native:notification", @{@"ok": @YES, @"scheduled": @(delay)});
+                }
+            }];
+        }];
+}
+
+// MARK: - Secure storage (Keychain)
+
+static NSMutableDictionary* mfKeychainQuery(NSString *key) {
+    NSMutableDictionary *q = [NSMutableDictionary dictionary];
+    q[(__bridge id)kSecClass] = (__bridge id)kSecClassGenericPassword;
+    q[(__bridge id)kSecAttrService] = @"wails.mobile.securestore";
+    q[(__bridge id)kSecAttrAccount] = key ?: @"";
+    return q;
+}
+
+void ios_secure_set(const char* ckey, const char* cvalue) {
+    NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
+    NSString *value = cvalue ? [NSString stringWithUTF8String:cvalue] : @"";
+    if (key.length == 0) return;
+    NSMutableDictionary *q = mfKeychainQuery(key);
+    SecItemDelete((__bridge CFDictionaryRef)q);
+    q[(__bridge id)kSecValueData] = [value dataUsingEncoding:NSUTF8StringEncoding];
+    q[(__bridge id)kSecAttrAccessible] = (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly;
+    SecItemAdd((__bridge CFDictionaryRef)q, NULL);
+}
+
+const char* ios_secure_get(const char* ckey) {
+    NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
+    NSMutableDictionary *q = mfKeychainQuery(key);
+    q[(__bridge id)kSecReturnData] = @YES;
+    q[(__bridge id)kSecMatchLimit] = (__bridge id)kSecMatchLimitOne;
+    CFTypeRef result = NULL;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)q, &result);
+    if (status == errSecSuccess && result) {
+        NSData *data = (__bridge_transfer NSData *)result;
+        NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        return mfDup(s ?: @"");
+    }
+    return mfDup(@"");
+}
+
+void ios_secure_delete(const char* ckey) {
+    NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
+    SecItemDelete((__bridge CFDictionaryRef)mfKeychainQuery(key));
 }

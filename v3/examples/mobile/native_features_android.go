@@ -51,4 +51,28 @@ func registerNativeFeatures(app *application.App) {
 	app.Event.On("native:setStatusBar", func(e *application.CustomEvent) {
 		application.AndroidSetStatusBar(payloadJSON(e.Data))
 	})
+
+	// Phase C — async results / permissions
+	app.Event.On("native:authenticate", func(e *application.CustomEvent) {
+		reason := eventString(e.Data, "reason")
+		if reason == "" {
+			reason = "Authenticate to continue"
+		}
+		application.AndroidBiometricAuthenticate(reason)
+	})
+	app.Event.On("native:notify", func(e *application.CustomEvent) {
+		application.AndroidNotify(payloadJSON(e.Data))
+	})
+	app.Event.On("native:secureSet", func(e *application.CustomEvent) {
+		application.AndroidSecureSet(payloadJSON(e.Data))
+	})
+	app.Event.On("native:secureGet", func(e *application.CustomEvent) {
+		key := eventString(e.Data, "key")
+		app.Event.Emit("native:secureValue", map[string]any{
+			"key": key, "value": application.AndroidSecureGet(key),
+		})
+	})
+	app.Event.On("native:secureDelete", func(e *application.CustomEvent) {
+		application.AndroidSecureDelete(eventString(e.Data, "key"))
+	})
 }

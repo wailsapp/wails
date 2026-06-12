@@ -147,6 +147,26 @@
                     <button class="btn" data-statusbar="shown">Show</button>
                 </div>
 
+                <h2>Security &amp; notifications</h2>
+                <div class="grid">
+                    <button class="btn primary" id="btnBiometric">Authenticate</button>
+                    <button class="btn" id="btnNotify">Send notification</button>
+                </div>
+                <p class="hint">Biometric uses Face ID / Touch ID / fingerprint, with a
+                    device-passcode fallback.</p>
+
+                <h2>Secure storage</h2>
+                <p class="hint">Backed by the iOS Keychain / Android EncryptedSharedPreferences.</p>
+                <div class="row">
+                    <input id="secKey" value="token" placeholder="key" autocomplete="off"/>
+                    <input id="secVal" value="s3cr3t-value" placeholder="value" autocomplete="off"/>
+                </div>
+                <div class="grid">
+                    <button class="btn" id="btnSecSet">Save</button>
+                    <button class="btn" id="btnSecGet">Load</button>
+                    <button class="btn" id="btnSecDel">Delete</button>
+                </div>
+
                 <pre id="mobileOut" class="output">Results appear here…</pre>
             </div>
             <div class="platform-only" data-platform="desktop">
