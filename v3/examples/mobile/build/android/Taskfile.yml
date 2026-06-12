@@ -258,7 +258,7 @@ tasks:
   logs:
     summary: Stream Android logcat filtered to this app
     cmds:
-      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})"'
+      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})" || true'
 
   logs:all:
     summary: Stream all Android logcat (verbose)

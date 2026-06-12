@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- allowBackup is enabled for this example; review it for production apps
+         that store sensitive data (e.g. the secure-storage demo). -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

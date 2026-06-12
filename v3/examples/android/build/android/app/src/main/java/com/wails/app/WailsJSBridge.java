@@ -1,6 +1,8 @@
 package com.wails.app;
 
 import android.util.Log;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.wails.app.BuildConfig;
@@ -15,6 +17,8 @@ import com.wails.app.BuildConfig;
 public class WailsJSBridge {
     private static final String TAG = "WailsJSBridge";
     private static final boolean DEBUG = BuildConfig.DEBUG;
+    // Pooled threads avoid unbounded thread creation under high call volume.
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final WailsBridge bridge;
     private final WebView webView;
@@ -49,8 +53,8 @@ public class WailsJSBridge {
     public void invokeAsync(final String callbackId, final String payload) {
         if (DEBUG) Log.d(TAG, "InvokeAsync called: " + payload);
 
-        // Handle in background thread to not block JavaScript
-        new Thread(() -> {
+        // Handle off the JS thread so we don't block the WebView.
+        executor.execute(() -> {
             try {
                 String response = bridge.handleRuntimeCall(payload);
                 sendCallback(callbackId, response, null);
@@ -58,7 +62,7 @@ public class WailsJSBridge {
                 Log.e(TAG, "Error in async invoke", e);
                 sendCallback(callbackId, null, e.getMessage());
             }
-        }).start();
+        });
     }
 
     /**
@@ -138,6 +142,10 @@ public class WailsJSBridge {
         return str.replace("\\", "\\\\")
                 .replace("'", "\\'")
                 .replace("\n", "\\n")
-                .replace("\r", "\\r");
+                .replace("\r", "\\r")
+                // JS line terminators (U+2028/U+2029) must be escaped too; built via
+                // (char) casts so the Java lexer does not reinterpret them as newlines.
+                .replace(String.valueOf((char) 0x2028), "\\u2028")
+                .replace(String.valueOf((char) 0x2029), "\\u2029");
     }
 }
