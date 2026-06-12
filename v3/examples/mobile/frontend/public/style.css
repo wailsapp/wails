@@ -23,8 +23,13 @@ html, body {
 #app {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
+    /* min-height (not height): the document body grows past the viewport when a
+       pane is tall, so the NATIVE WKWebView scrollView is the real scroller and
+       the iOS Scroll/Bounce toggles act on something visible. An inner-overflow
+       scroller here would scroll independently of the native scrollView and make
+       those toggles do nothing. */
+    min-height: 100vh;
+    min-height: 100dvh;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
@@ -72,10 +77,7 @@ html, body {
 .tab.active { background: var(--accent); color: #fff; }
 
 main {
-    flex: 1;
-    min-height: 0;            /* allow the flex child to shrink so it can scroll */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    flex: 1;                 /* fill the viewport on short panes so the footer sits at the bottom */
     padding: 4px 16px 24px;
 }
 
@@ -132,6 +134,9 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
     font-size: 15px;
 }
 .switch input { width: 20px; height: 20px; accent-color: var(--accent); }
+/* Bounce only manifests while scroll is enabled (a disabled UIScrollView ignores
+   drags), so the bounce toggle is dimmed and inert until scroll is turned on. */
+.switch.disabled { opacity: 0.45; }
 
 .clock {
     background: var(--surface);

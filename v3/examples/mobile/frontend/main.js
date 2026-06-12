@@ -217,13 +217,37 @@ function setScrollEnabled(enabled) {
 }
 
 const iosScroll = $("iosScroll");
+const iosBounce = $("iosBounce");
+
+function setBounceEnabled(enabled) {
+    Events.Emit("ios:setBounceEnabled", { enabled });
+}
+
+// Bounce acts on the native WKWebView scrollView, which only tracks drags while
+// scroll is enabled — so a disabled scrollView can never bounce. Reflect that by
+// dimming and disabling the bounce toggle until scroll is turned on.
+function syncBounceAvailability() {
+    if (!iosBounce) return;
+    const scrollOn = iosScroll ? iosScroll.checked : false;
+    iosBounce.disabled = !scrollOn;
+    iosBounce.closest(".switch")?.classList.toggle("disabled", !scrollOn);
+}
+
 if (iosScroll) {
     // Apply the initial state (scroll off by default) on the native side.
     setScrollEnabled(iosScroll.checked);
-    iosScroll.addEventListener("change", (e) => setScrollEnabled(e.target.checked));
+    iosScroll.addEventListener("change", (e) => {
+        setScrollEnabled(e.target.checked);
+        syncBounceAvailability();
+    });
 }
-$("iosBounce")?.addEventListener("change", (e) =>
-    Events.Emit("ios:setBounceEnabled", { enabled: e.target.checked }));
+if (iosBounce) {
+    // Push the initial bounce state too (the change handler alone never fires for
+    // the default), then keep it in sync with the scroll toggle.
+    setBounceEnabled(iosBounce.checked);
+    iosBounce.addEventListener("change", (e) => setBounceEnabled(e.target.checked));
+}
+syncBounceAvailability();
 
 // ---- Native: Android ----------------------------------------------------
 $("btnVibrate")?.addEventListener("click", async () => {
