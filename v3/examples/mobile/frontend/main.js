@@ -192,28 +192,12 @@ $("btnDevice").addEventListener("click", async () => {
 document.querySelectorAll("[data-haptic]").forEach((btn) => {
     btn.addEventListener("click", () => IOS.Haptics.Impact(btn.dataset.haptic).catch(() => {}));
 });
-// Scroll is disabled by default. Enabling it turns the native WKWebView
-// scrollView on AND appends a tall filler section so the page actually has
-// somewhere to scroll/bounce; disabling removes the filler and the native
-// scroll again, so there is nothing to scroll.
+// Scroll is enabled by default so content taller than the viewport (e.g. the
+// System tab's screen/device cards) is always reachable. Turning it off sets the
+// native WKWebView scrollView's scrollEnabled = NO, freezing the page — that is
+// the demonstrated effect, no filler needed.
 function setScrollEnabled(enabled) {
     Events.Emit("ios:setScrollEnabled", { enabled });
-    let filler = $("scrollFiller");
-    if (enabled && !filler) {
-        filler = document.createElement("section");
-        filler.id = "scrollFiller";
-        filler.className = "scroll-filler";
-        filler.innerHTML =
-            "<h2>Scroll test</h2>" +
-            '<p class="hint">Scrolling is on, so this tall section was added to ' +
-            "give the page something to scroll and bounce against. Turn scrolling " +
-            "off to remove it.</p>" +
-            Array.from({ length: 12 }, (_, i) =>
-                `<div class="scroll-block">Scroll block ${i + 1} / 12</div>`).join("");
-        document.querySelector("main").appendChild(filler);
-    } else if (!enabled && filler) {
-        filler.remove();
-    }
 }
 
 const iosScroll = $("iosScroll");
