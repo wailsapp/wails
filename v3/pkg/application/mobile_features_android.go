@@ -75,3 +75,48 @@ func AndroidSecureGet(key string) string {
 
 // AndroidSecureDelete removes a value from secure storage.
 func AndroidSecureDelete(key string) { androidBridgeVoidString("secureDelete", key) }
+
+// --- Phase D: sensors & hardware ---------------------------------------------
+
+// AndroidHaptic plays a haptic pattern (impact-light/medium/heavy, success,
+// warning, error, selection) via the Vibrator.
+func AndroidHaptic(hapticType string) { androidBridgeVoidString("haptic", hapticType) }
+
+// AndroidGetLocation requests a one-shot location fix; the result arrives as the
+// "native:location" event {lat,lng,accuracy,error}.
+func AndroidGetLocation() { androidBridgeVoid("getLocation") }
+
+// AndroidSetMotion starts/stops accelerometer updates, streamed as
+// "native:motion" {x,y,z} events.
+func AndroidSetMotion(enabled bool) { androidBridgeVoidInt("setMotion", boolToInt(enabled)) }
+
+// AndroidSetProximity enables/disables the proximity sensor; changes arrive as
+// "native:proximity" {near} events.
+func AndroidSetProximity(enabled bool) { androidBridgeVoidInt("setProximity", boolToInt(enabled)) }
+
+// AndroidSpeak speaks the given text via Android TextToSpeech.
+func AndroidSpeak(text string) { androidBridgeVoidString("speak", text) }
+
+// AndroidStopSpeak stops any in-progress speech.
+func AndroidStopSpeak() { androidBridgeVoid("stopSpeak") }
+
+// AndroidStorageJSON returns disk space as {"free":bytes,"total":bytes}.
+func AndroidStorageJSON() string { s, _ := androidBridgeString("getStorageJson"); return s }
+
+// AndroidPowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
+func AndroidPowerJSON() string { s, _ := androidBridgeString("getPowerJson"); return s }
+
+// AndroidNetworkJSON returns {"connected":bool,"type":"wifi|cellular|ethernet|none"}.
+func AndroidNetworkJSON() string { s, _ := androidBridgeString("getNetworkJson"); return s }
+
+// AndroidSetKeyboardWatch starts/stops emitting "native:keyboard"
+// {visible,height} events as the soft keyboard shows and hides.
+func AndroidSetKeyboardWatch(enabled bool) {
+	androidBridgeVoidInt("setKeyboardWatch", boolToInt(enabled))
+}
+
+// AndroidSetScreenProtect toggles FLAG_SECURE (blocks screenshots & screen
+// recording) and reports state as a "native:screenCapture" event.
+func AndroidSetScreenProtect(enabled bool) {
+	androidBridgeVoidInt("setScreenProtect", boolToInt(enabled))
+}

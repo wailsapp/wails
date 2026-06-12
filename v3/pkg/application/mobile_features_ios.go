@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -x objective-c -fmodules -fobjc-arc
-#cgo LDFLAGS: -framework UIKit -framework LocalAuthentication -framework UserNotifications -framework AVFoundation -framework Security
+#cgo LDFLAGS: -framework UIKit -framework LocalAuthentication -framework UserNotifications -framework AVFoundation -framework Security -framework CoreLocation -framework CoreMotion -framework SystemConfiguration
 #include <stdlib.h>
 #include "mobile_features_ios.h"
 */
@@ -134,6 +134,56 @@ func IOSSecureDelete(key string) {
 	defer free()
 	C.ios_secure_delete(c)
 }
+
+// --- Phase D: sensors & hardware ---------------------------------------------
+
+// IOSHaptic plays a haptic feedback pattern. type is one of impact-light,
+// impact-medium, impact-heavy, success, warning, error, selection.
+func IOSHaptic(hapticType string) {
+	c, free := cString(hapticType)
+	defer free()
+	C.ios_haptic(c)
+}
+
+// IOSGetLocation requests a one-shot location fix. The result is delivered to
+// the frontend as the "native:location" event {lat,lng,accuracy,error}.
+func IOSGetLocation() { C.ios_get_location() }
+
+// IOSSetMotion starts (true) or stops (false) accelerometer updates, streamed
+// to the frontend as "native:motion" {x,y,z} events.
+func IOSSetMotion(enabled bool) { C.ios_set_motion(C.bool(enabled)) }
+
+// IOSSetProximity enables/disables the proximity sensor; changes arrive as
+// "native:proximity" {near} events.
+func IOSSetProximity(enabled bool) { C.ios_set_proximity(C.bool(enabled)) }
+
+// IOSSpeak speaks the given text via AVSpeechSynthesizer.
+func IOSSpeak(text string) {
+	c, free := cString(text)
+	defer free()
+	C.ios_speak(c)
+}
+
+// IOSStopSpeak stops any in-progress speech.
+func IOSStopSpeak() { C.ios_stop_speak() }
+
+// IOSStorageJSON returns disk space as {"free":bytes,"total":bytes}.
+func IOSStorageJSON() string { return cStr(C.ios_storage_json()) }
+
+// IOSPowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
+func IOSPowerJSON() string { return cStr(C.ios_power_json()) }
+
+// IOSNetworkJSON returns {"connected":bool,"type":"wifi|cellular|none"}.
+func IOSNetworkJSON() string { return cStr(C.ios_network_json()) }
+
+// IOSSetKeyboardWatch starts/stops emitting "native:keyboard" {visible,height}
+// events as the software keyboard shows and hides.
+func IOSSetKeyboardWatch(enabled bool) { C.ios_set_keyboard_watch(C.bool(enabled)) }
+
+// IOSSetScreenProtect starts/stops screenshot & screen-recording detection,
+// reported as "native:screenCapture" events. (iOS cannot block screenshots, so
+// this is detection-only; on Android the same control sets FLAG_SECURE.)
+func IOSSetScreenProtect(enabled bool) { C.ios_set_screen_protect(C.bool(enabled)) }
 
 // iosEmitNativeEvent is called from the Objective-C bridge to deliver an
 // asynchronous result to the frontend as a custom event.

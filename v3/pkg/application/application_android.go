@@ -172,6 +172,26 @@ static char* callBridgeStringStringMethod(const char* name, const char* arg) {
     return result;
 }
 
+// Call `void name()` on the bridge.
+static void callBridgeVoidMethod(const char* name) {
+    if (g_bridge == NULL) return;
+    int detach = 0;
+    JNIEnv* env = wailsGetEnv(&detach);
+    if (env == NULL) return;
+    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    if (cls != NULL) {
+        jmethodID mid = (*env)->GetMethodID(env, cls, name, "()V");
+        if (mid != NULL) {
+            (*env)->CallVoidMethod(env, g_bridge, mid);
+            clearException(env, name);
+        } else {
+            clearException(env, name);
+        }
+        (*env)->DeleteLocalRef(env, cls);
+    }
+    wailsReleaseEnv(detach);
+}
+
 // Call `void name(String)` on the bridge.
 static void callBridgeVoidString(const char* name, const char* arg) {
     if (g_bridge == NULL) return;
@@ -391,6 +411,12 @@ func androidBridgeStringString(method string, arg string) (string, bool) {
 	}
 	defer C.free(unsafe.Pointer(cresult))
 	return C.GoString(cresult), true
+}
+
+func androidBridgeVoid(method string) {
+	cname := C.CString(method)
+	defer C.free(unsafe.Pointer(cname))
+	C.callBridgeVoidMethod(cname)
 }
 
 func androidBridgeVoidString(method string, arg string) {

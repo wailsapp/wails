@@ -5,6 +5,10 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <UserNotifications/UserNotifications.h>
 #import <Security/Security.h>
+#import <CoreLocation/CoreLocation.h>
+#import <CoreMotion/CoreMotion.h>
+#import <SystemConfiguration/SystemConfiguration.h>
+#import <netinet/in.h>
 #import "mobile_features_ios.h"
 #import "mobile_features_ios_internal.h"
 #import "application_ios_delegate.h"
@@ -374,4 +378,299 @@ const char* ios_secure_get(const char* ckey) {
 void ios_secure_delete(const char* ckey) {
     NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
     SecItemDelete((__bridge CFDictionaryRef)mfKeychainQuery(key));
+}
+
+// MARK: - Haptics
+
+void ios_haptic(const char* ctype) {
+    NSString *type = ctype ? [NSString stringWithUTF8String:ctype] : @"impact-medium";
+    mfRunOnMain(^{
+        if ([type isEqualToString:@"selection"]) {
+            UISelectionFeedbackGenerator *g = [[UISelectionFeedbackGenerator alloc] init];
+            [g prepare];
+            [g selectionChanged];
+        } else if ([type isEqualToString:@"success"] || [type isEqualToString:@"warning"]
+                   || [type isEqualToString:@"error"]) {
+            UINotificationFeedbackType t = UINotificationFeedbackTypeSuccess;
+            if ([type isEqualToString:@"warning"]) t = UINotificationFeedbackTypeWarning;
+            else if ([type isEqualToString:@"error"]) t = UINotificationFeedbackTypeError;
+            UINotificationFeedbackGenerator *g = [[UINotificationFeedbackGenerator alloc] init];
+            [g prepare];
+            [g notificationOccurred:t];
+        } else {
+            UIImpactFeedbackStyle s = UIImpactFeedbackStyleMedium;
+            if ([type isEqualToString:@"impact-light"]) s = UIImpactFeedbackStyleLight;
+            else if ([type isEqualToString:@"impact-heavy"]) s = UIImpactFeedbackStyleHeavy;
+            UIImpactFeedbackGenerator *g = [[UIImpactFeedbackGenerator alloc] initWithStyle:s];
+            [g prepare];
+            [g impactOccurred];
+        }
+    });
+}
+
+// MARK: - Geolocation
+
+@interface MFLocationDelegate : NSObject <CLLocationManagerDelegate>
+@end
+@implementation MFLocationDelegate
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
+    CLLocation *loc = locations.lastObject;
+    if (!loc) return;
+    mfEmit(@"native:location", @{
+        @"lat": @(loc.coordinate.latitude),
+        @"lng": @(loc.coordinate.longitude),
+        @"accuracy": @(loc.horizontalAccuracy),
+    });
+}
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+    mfEmit(@"native:location", @{@"error": error ? error.localizedDescription : @"location failed"});
+}
+- (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager {
+    if (@available(iOS 14.0, *)) {
+        CLAuthorizationStatus s = manager.authorizationStatus;
+        if (s == kCLAuthorizationStatusAuthorizedWhenInUse || s == kCLAuthorizationStatusAuthorizedAlways) {
+            [manager requestLocation];
+        } else if (s == kCLAuthorizationStatusDenied || s == kCLAuthorizationStatusRestricted) {
+            mfEmit(@"native:location", @{@"error": @"location permission denied"});
+        }
+    }
+}
+@end
+
+static CLLocationManager *g_mfLocationManager = nil;
+static MFLocationDelegate *g_mfLocationDelegate = nil;
+
+void ios_get_location(void) {
+    mfRunOnMain(^{
+        if (g_mfLocationManager == nil) {
+            g_mfLocationDelegate = [[MFLocationDelegate alloc] init];
+            g_mfLocationManager = [[CLLocationManager alloc] init];
+            g_mfLocationManager.delegate = g_mfLocationDelegate;
+            g_mfLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+        }
+        CLAuthorizationStatus status;
+        if (@available(iOS 14.0, *)) {
+            status = g_mfLocationManager.authorizationStatus;
+        } else {
+            status = [CLLocationManager authorizationStatus];
+        }
+        if (status == kCLAuthorizationStatusNotDetermined) {
+            // The authorization callback issues requestLocation once granted.
+            [g_mfLocationManager requestWhenInUseAuthorization];
+        } else if (status == kCLAuthorizationStatusAuthorizedWhenInUse
+                   || status == kCLAuthorizationStatusAuthorizedAlways) {
+            [g_mfLocationManager requestLocation];
+        } else {
+            mfEmit(@"native:location", @{@"error": @"location permission denied"});
+        }
+    });
+}
+
+// MARK: - Accelerometer / device motion
+
+static CMMotionManager *g_mfMotionManager = nil;
+
+void ios_set_motion(bool enabled) {
+    mfRunOnMain(^{
+        if (g_mfMotionManager == nil) {
+            g_mfMotionManager = [[CMMotionManager alloc] init];
+            g_mfMotionManager.accelerometerUpdateInterval = 0.1; // ~10 Hz
+        }
+        if (enabled) {
+            if (!g_mfMotionManager.isAccelerometerAvailable) {
+                mfEmit(@"native:motion", @{@"available": @NO});
+                return;
+            }
+            [g_mfMotionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
+                withHandler:^(CMAccelerometerData *data, NSError *error) {
+                    if (!data) return;
+                    mfEmit(@"native:motion", @{
+                        @"x": @(data.acceleration.x),
+                        @"y": @(data.acceleration.y),
+                        @"z": @(data.acceleration.z),
+                    });
+                }];
+        } else {
+            [g_mfMotionManager stopAccelerometerUpdates];
+        }
+    });
+}
+
+// MARK: - Proximity sensor
+
+static id g_mfProximityObserver = nil;
+
+void ios_set_proximity(bool enabled) {
+    mfRunOnMain(^{
+        UIDevice *device = [UIDevice currentDevice];
+        if (enabled) {
+            device.proximityMonitoringEnabled = YES;
+            if (!device.proximityMonitoringEnabled) {
+                mfEmit(@"native:proximity", @{@"available": @NO});
+                return;
+            }
+            if (g_mfProximityObserver == nil) {
+                g_mfProximityObserver = [[NSNotificationCenter defaultCenter]
+                    addObserverForName:UIDeviceProximityStateDidChangeNotification
+                    object:nil queue:[NSOperationQueue mainQueue]
+                    usingBlock:^(NSNotification *note) {
+                        mfEmit(@"native:proximity", @{@"near": @([UIDevice currentDevice].proximityState)});
+                    }];
+            }
+        } else {
+            if (g_mfProximityObserver) {
+                [[NSNotificationCenter defaultCenter] removeObserver:g_mfProximityObserver];
+                g_mfProximityObserver = nil;
+            }
+            device.proximityMonitoringEnabled = NO;
+        }
+    });
+}
+
+// MARK: - Text-to-speech
+
+static AVSpeechSynthesizer *g_mfSpeech = nil;
+
+void ios_speak(const char* ctext) {
+    NSString *text = ctext ? [NSString stringWithUTF8String:ctext] : @"";
+    if (text.length == 0) return;
+    mfRunOnMain(^{
+        if (g_mfSpeech == nil) g_mfSpeech = [[AVSpeechSynthesizer alloc] init];
+        AVSpeechUtterance *u = [AVSpeechUtterance speechUtteranceWithString:text];
+        u.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
+        [g_mfSpeech speakUtterance:u];
+    });
+}
+
+void ios_stop_speak(void) {
+    mfRunOnMain(^{
+        [g_mfSpeech stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
+    });
+}
+
+// MARK: - Storage info
+
+const char* ios_storage_json(void) {
+    NSError *err = nil;
+    NSDictionary *attrs = [[NSFileManager defaultManager]
+        attributesOfFileSystemForPath:NSHomeDirectory() error:&err];
+    long long freeBytes = [attrs[NSFileSystemFreeSize] longLongValue];
+    long long totalBytes = [attrs[NSFileSystemSize] longLongValue];
+    NSString *json = [NSString stringWithFormat:@"{\"free\":%lld,\"total\":%lld}", freeBytes, totalBytes];
+    return mfDup(json);
+}
+
+// MARK: - Power / battery state
+
+const char* ios_power_json(void) {
+    __block NSString *json = nil;
+    mfRunOnMainSync(^{
+        UIDevice *device = [UIDevice currentDevice];
+        device.batteryMonitoringEnabled = YES;
+        float level = device.batteryLevel; // -1 when unknown (e.g. simulator)
+        UIDeviceBatteryState state = device.batteryState;
+        BOOL charging = (state == UIDeviceBatteryStateCharging || state == UIDeviceBatteryStateFull);
+        BOOL lowPower = [NSProcessInfo processInfo].isLowPowerModeEnabled;
+        json = [NSString stringWithFormat:
+            @"{\"level\":%.2f,\"charging\":%@,\"lowPower\":%@}",
+            level, charging ? @"true" : @"false", lowPower ? @"true" : @"false"];
+    });
+    return mfDup(json);
+}
+
+// MARK: - Network reachability
+
+const char* ios_network_json(void) {
+    struct sockaddr_in zeroAddress;
+    bzero(&zeroAddress, sizeof(zeroAddress));
+    zeroAddress.sin_len = sizeof(zeroAddress);
+    zeroAddress.sin_family = AF_INET;
+    SCNetworkReachabilityRef ref =
+        SCNetworkReachabilityCreateWithAddress(NULL, (const struct sockaddr *)&zeroAddress);
+    SCNetworkReachabilityFlags flags = 0;
+    BOOL ok = ref && SCNetworkReachabilityGetFlags(ref, &flags);
+    if (ref) CFRelease(ref);
+    BOOL reachable = ok && (flags & kSCNetworkReachabilityFlagsReachable)
+        && !(flags & kSCNetworkReachabilityFlagsConnectionRequired);
+    NSString *type = @"none";
+    if (reachable) {
+        type = (flags & kSCNetworkReachabilityFlagsIsWWAN) ? @"cellular" : @"wifi";
+    }
+    NSString *json = [NSString stringWithFormat:
+        @"{\"connected\":%@,\"type\":\"%@\"}", reachable ? @"true" : @"false", type];
+    return mfDup(json);
+}
+
+// MARK: - Keyboard insets
+
+static id g_mfKeyboardShowObs = nil;
+static id g_mfKeyboardHideObs = nil;
+
+void ios_set_keyboard_watch(bool enabled) {
+    mfRunOnMain(^{
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        if (enabled) {
+            if (g_mfKeyboardShowObs == nil) {
+                g_mfKeyboardShowObs = [nc addObserverForName:UIKeyboardWillChangeFrameNotification
+                    object:nil queue:[NSOperationQueue mainQueue]
+                    usingBlock:^(NSNotification *note) {
+                        CGRect frame = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+                        CGFloat screenH = [UIScreen mainScreen].bounds.size.height;
+                        CGFloat height = MAX(0, screenH - frame.origin.y);
+                        mfEmit(@"native:keyboard", @{@"visible": @(height > 0), @"height": @((int)height)});
+                    }];
+            }
+            if (g_mfKeyboardHideObs == nil) {
+                g_mfKeyboardHideObs = [nc addObserverForName:UIKeyboardWillHideNotification
+                    object:nil queue:[NSOperationQueue mainQueue]
+                    usingBlock:^(NSNotification *note) {
+                        mfEmit(@"native:keyboard", @{@"visible": @NO, @"height": @0});
+                    }];
+            }
+        } else {
+            if (g_mfKeyboardShowObs) { [nc removeObserver:g_mfKeyboardShowObs]; g_mfKeyboardShowObs = nil; }
+            if (g_mfKeyboardHideObs) { [nc removeObserver:g_mfKeyboardHideObs]; g_mfKeyboardHideObs = nil; }
+        }
+    });
+}
+
+// MARK: - Screen-capture detection
+//
+// iOS provides no public API to BLOCK screenshots; instead it notifies after a
+// screenshot is taken and exposes UIScreen.isCaptured for mirroring/recording.
+// We report both so the frontend can react (e.g. blur sensitive content).
+
+static id g_mfScreenshotObs = nil;
+static id g_mfCapturedObs = nil;
+
+static void mfEmitCaptured(void) {
+    BOOL captured = NO;
+    if (@available(iOS 11.0, *)) captured = [UIScreen mainScreen].isCaptured;
+    mfEmit(@"native:screenCapture", @{@"recording": @(captured), @"protected": @NO});
+}
+
+void ios_set_screen_protect(bool enabled) {
+    mfRunOnMain(^{
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        if (enabled) {
+            if (g_mfScreenshotObs == nil) {
+                g_mfScreenshotObs = [nc addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+                    object:nil queue:[NSOperationQueue mainQueue]
+                    usingBlock:^(NSNotification *note) {
+                        mfEmit(@"native:screenCapture", @{@"screenshot": @YES, @"protected": @NO});
+                    }];
+            }
+            if (@available(iOS 11.0, *)) {
+                if (g_mfCapturedObs == nil) {
+                    g_mfCapturedObs = [nc addObserverForName:UIScreenCapturedDidChangeNotification
+                        object:nil queue:[NSOperationQueue mainQueue]
+                        usingBlock:^(NSNotification *note) { mfEmitCaptured(); }];
+                }
+                mfEmitCaptured(); // report the current state immediately
+            }
+        } else {
+            if (g_mfScreenshotObs) { [nc removeObserver:g_mfScreenshotObs]; g_mfScreenshotObs = nil; }
+            if (g_mfCapturedObs) { [nc removeObserver:g_mfCapturedObs]; g_mfCapturedObs = nil; }
+        }
+    });
 }
