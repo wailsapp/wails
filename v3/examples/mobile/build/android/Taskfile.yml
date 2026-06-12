@@ -204,8 +204,15 @@ tasks:
           exit 1
         fi
 
+        # Start the emulator daemonized so it outlives this task step. go-task's
+        # shell tracks background jobs by PID and reaps them when the command's
+        # interpreter finishes (which nohup/setsid alone don't prevent — the kill
+        # is direct), so a bare `emulator &` is gone before the later
+        # install/launch steps run. Launch it from a short-lived child shell that
+        # backgrounds the emulator and exits immediately: the emulator is then
+        # reparented to init/launchd and go-task's shell has no handle to reap it.
         echo "Starting emulator: $AVD_NAME"
-        "{{.EMULATOR}}" -avd "$AVD_NAME" -no-snapshot-load >/dev/null 2>&1 &
+        nohup sh -c "'{{.EMULATOR}}' -avd '$AVD_NAME' -no-snapshot-load </dev/null >/dev/null 2>&1 &" >/dev/null 2>&1
 
         # Wait for emulator to boot (max 120 seconds)
         echo "Waiting for emulator to boot..."
