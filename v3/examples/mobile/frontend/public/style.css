@@ -161,6 +161,17 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
     min-height: 44px;
 }
 
+.scroll-filler { margin-top: 8px; }
+.scroll-block {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
 .metrics-out { margin: 12px 0 0; }
 .metric-card {
     background: var(--surface);
