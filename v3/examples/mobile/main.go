@@ -2,7 +2,10 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"log"
+	"math"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -49,20 +52,69 @@ func main() {
 	})
 
 	// Native system events (battery, network, theme, screen lock, low memory)
-	// arrive as application events. The per-platform ios:/android: events are
-	// mapped to common: events, so cross-platform code listens on those. These
-	// are Go-side only; the payload (where present) is on the event context.
-	onSystemEvent := func(label string) func(*application.ApplicationEvent) {
+	// arrive in Go as common: application events (mapped from the per-platform
+	// ios:/android: events), with their payload on the event context. They are
+	// Go-only, so the app forwards them to the frontend as custom events here.
+	forward := func(jsName string) func(*application.ApplicationEvent) {
 		return func(e *application.ApplicationEvent) {
-			app.Logger.Info("system event", "event", label, "data", e.Context().Data())
+			data := e.Context().Data()
+			app.Logger.Info("system event", "event", jsName, "data", data)
+			app.Event.Emit(jsName, data)
 		}
 	}
-	app.Event.OnApplicationEvent(events.Common.BatteryChanged, onSystemEvent("battery"))
-	app.Event.OnApplicationEvent(events.Common.NetworkChanged, onSystemEvent("network"))
-	app.Event.OnApplicationEvent(events.Common.ThemeChanged, onSystemEvent("theme"))
-	app.Event.OnApplicationEvent(events.Common.ScreenLocked, onSystemEvent("screen-locked"))
-	app.Event.OnApplicationEvent(events.Common.ScreenUnlocked, onSystemEvent("screen-unlocked"))
-	app.Event.OnApplicationEvent(events.Common.LowMemory, onSystemEvent("low-memory"))
+	app.Event.OnApplicationEvent(events.Common.NetworkChanged, forward("sys:network"))
+	app.Event.OnApplicationEvent(events.Common.ThemeChanged, forward("sys:theme"))
+	app.Event.OnApplicationEvent(events.Common.LowMemory, forward("sys:memory"))
+	app.Event.OnApplicationEvent(events.Common.ScreenLocked, func(e *application.ApplicationEvent) {
+		app.Event.Emit("sys:lock", map[string]any{"locked": true})
+	})
+	app.Event.OnApplicationEvent(events.Common.ScreenUnlocked, func(e *application.ApplicationEvent) {
+		app.Event.Emit("sys:lock", map[string]any{"locked": false})
+	})
+
+	// Battery is reported by the OS far more often than is useful (on Android,
+	// ACTION_BATTERY_CHANGED also fires on temperature/voltage changes). Throttle
+	// what we forward: every 10% while above 10%, then every 1% from 10% down,
+	// plus immediately on any charge-state / low-power change.
+	var (
+		batteryMu       sync.Mutex
+		lastBatteryPct  = -1
+		lastBatteryMeta = ""
+	)
+	app.Event.OnApplicationEvent(events.Common.BatteryChanged, func(e *application.ApplicationEvent) {
+		data := e.Context().Data()
+		pct := -1
+		if lv, ok := data["level"].(float64); ok && lv >= 0 {
+			pct = int(math.Round(lv * 100))
+		}
+		state, _ := data["state"].(string)
+		low, _ := data["lowPowerMode"].(bool)
+		meta := fmt.Sprintf("%s|%t", state, low)
+
+		batteryMu.Lock()
+		report := lastBatteryPct < 0 || meta != lastBatteryMeta
+		if !report && pct >= 0 {
+			if pct <= 10 || lastBatteryPct <= 10 {
+				report = pct != lastBatteryPct // 1% steps once at/below 10%
+			} else {
+				delta := pct - lastBatteryPct
+				if delta < 0 {
+					delta = -delta
+				}
+				report = delta >= 10 // 10% steps above 10%
+			}
+		}
+		if report {
+			lastBatteryPct = pct
+			lastBatteryMeta = meta
+		}
+		batteryMu.Unlock()
+
+		if report {
+			app.Logger.Info("system event", "event", "sys:battery", "pct", pct, "data", data)
+			app.Event.Emit("sys:battery", data)
+		}
+	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Wails Mobile Kitchen Sink",

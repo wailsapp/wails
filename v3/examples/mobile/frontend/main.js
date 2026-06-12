@@ -88,6 +88,78 @@ $("btnPing").addEventListener("click", () => {
     $("eventsOut").textContent = "ping sent, waiting for pong…";
 });
 
+// ---- System events ------------------------------------------------------
+// Native OS signals arrive in Go as common: application events; the app
+// forwards them here as "sys:*" custom events. We keep the latest value per
+// category as a state card plus a rolling event log.
+const SYS = {
+    battery: { icon: "🔋", label: "Battery" },
+    network: { icon: "📶", label: "Network" },
+    theme: { icon: "🎨", label: "Theme" },
+    lock: { icon: "🔒", label: "Lock" },
+    memory: { icon: "⚠️", label: "Memory" },
+};
+const sysState = {};
+
+function fmtSystem(kind, d) {
+    d = d || {};
+    switch (kind) {
+        case "battery": {
+            const pct = typeof d.level === "number" && d.level >= 0
+                ? Math.round(d.level * 100) + "%" : "—";
+            const tags = [d.state, d.lowPowerMode ? "low-power" : null].filter(Boolean).join(", ");
+            return tags ? `${pct} · ${tags}` : pct;
+        }
+        case "network": {
+            if (!d.connected) return "offline";
+            const tags = [d.type,
+                d.metered ? "metered" : null,
+                typeof d.signal === "number" ? `${d.signal} dBm` : null,
+                d.expensive ? "expensive" : null,
+                d.constrained ? "low-data" : null].filter(Boolean).join(", ");
+            return tags ? `online · ${tags}` : "online";
+        }
+        case "theme": return d.isDarkMode ? "dark" : "light";
+        case "lock": return d.locked ? "locked" : "unlocked";
+        case "memory": return "low-memory warning";
+        default: return JSON.stringify(d);
+    }
+}
+
+function renderSysState() {
+    const target = $("sysState");
+    const keys = Object.keys(SYS).filter((k) => k in sysState && k !== "memory");
+    if (keys.length === 0) {
+        target.innerHTML = '<p class="hint">Waiting for system events…</p>';
+        return;
+    }
+    target.innerHTML = `<div class="metric-card">${keys.map((k) =>
+        `<div class="metric-row"><span class="metric-key">${SYS[k].icon} ${SYS[k].label}</span>` +
+        `<span class="metric-val">${esc(fmtSystem(k, sysState[k]))}</span></div>`).join("")}</div>`;
+}
+
+function logSystem(kind, d) {
+    const log = $("sysLog");
+    if (!log) return;
+    const line = document.createElement("div");
+    line.className = "event-line";
+    line.innerHTML =
+        `<span class="event-time">${esc(new Date().toLocaleTimeString())}</span>` +
+        `<span class="event-name">${SYS[kind].icon} sys:${kind}</span>` +
+        `<span class="event-detail">${esc(fmtSystem(kind, d))}</span>`;
+    log.prepend(line);
+    while (log.childElementCount > 8) log.removeChild(log.lastChild);
+}
+
+Object.keys(SYS).forEach((kind) => {
+    Events.On("sys:" + kind, (e) => {
+        const d = eventValue(e);
+        if (kind !== "memory") sysState[kind] = d;
+        renderSysState();
+        logSystem(kind, d);
+    });
+});
+
 // ---- Dialogs ------------------------------------------------------------
 async function runDialog(kind, fn) {
     try {

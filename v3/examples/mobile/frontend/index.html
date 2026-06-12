@@ -59,11 +59,12 @@
             <pre id="eventsOut" class="output">No pong yet…</pre>
 
             <h2>System events</h2>
-            <p class="hint">Battery, network, theme, screen-lock and low-memory are
-                delivered natively as Go <code>application events</code>
-                (<code>ios:</code>/<code>android:</code> → <code>common:</code>).
-                They're handled in Go — watch the device log (Xcode console / logcat)
-                while you toggle charging, airplane mode or dark mode.</p>
+            <p class="hint">Battery, network, theme, screen-lock and low-memory arrive
+                in Go as <code>common:</code> application events
+                (<code>ios:</code>/<code>android:</code> → <code>common:</code>) and are
+                forwarded here by the app. Try toggling charging, airplane mode or dark mode.</p>
+            <div id="sysState" class="metrics-out"><p class="hint">Waiting for system events…</p></div>
+            <div id="sysLog" class="event-log"></div>
         </section>
 
         <!-- Dialogs -->
