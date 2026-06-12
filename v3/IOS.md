@@ -25,6 +25,8 @@ by `//go:build ios`.
 | Screens API | ✅ UIScreen (points, pixels, scale, safe-area work area) |
 | App lifecycle events (`events.IOS.*`, `Common.ApplicationStarted`) | ✅ Working |
 | Haptics, device info, native UITabBar, scroll/bounce/UA options | ✅ `IOSOptions` + `IOS.*` runtime API |
+| System events (battery, network, theme, screen-lock, low-memory) | ✅ `events.IOS.*` → `events.Common.*` application events |
+| Native mobile features (share, torch, biometrics, geolocation, sensors, …) | ✅ Exported `application.IOS*` functions — see [Native mobile features](#native-mobile-features) |
 | Window geometry (SetSize/SetPosition/Minimize/...) | Intentional no-ops (apps are fullscreen) |
 | Menus, system tray | Intentional no-ops |
 | Multiple windows | ⚠️ Only the first window is displayed |
@@ -96,6 +98,56 @@ The frontend can drive iOS features at runtime through the `IOS` runtime
 object: `IOS.Haptics.Impact(style)`, `IOS.Device.Info()`,
 `IOS.Scroll.SetEnabled(...)`, etc. Native tab selections arrive as a
 `nativeTabSelected` `CustomEvent` on `window`.
+
+## Native mobile features
+
+Beyond the cross-platform runtime, iOS exposes a set of "genuinely mobile"
+capabilities as exported `application.IOS*` functions (guarded by
+`//go:build ios`, implemented by a small Objective-C bridge). Each has an
+`application.Android*` counterpart, so a single event-driven layer can drive
+both platforms (see the `mobile` example's `registerNativeFeatures`).
+
+| Capability | API | Notes |
+|---|---|---|
+| Share sheet | `IOSShare(json)` | `UIActivityViewController` |
+| Open URL externally | `IOSOpenURL(url)` | Opens in Safari |
+| Keep screen awake | `IOSSetKeepAwake(bool)` | Idle-timer toggle |
+| Torch / flashlight | `IOSSetTorch(bool)` | → `native:torch` event |
+| Safe-area insets | `IOSSafeAreaJSON()` | `{top,bottom,left,right}` |
+| Brightness | `IOSSetBrightness(0-1)` / `IOSGetBrightness()` | |
+| App info | `IOSAppInfoJSON()` | `{name,version,build,bundleId}` |
+| Orientation lock | `IOSSetOrientation("portrait\|landscape\|auto")` / `IOSGetOrientation()` | |
+| Status bar | `IOSSetStatusBar(json)` | style + visibility |
+| Biometrics | `IOSBiometricAuthenticate(reason)` | Face ID / Touch ID, passcode fallback → `native:biometric` |
+| Local notification | `IOSPostNotification(json)` | `UNUserNotificationCenter` |
+| Secure storage | `IOSSecureSet/Get/Delete` | Keychain |
+| Haptics | `IOSHaptic(type)` | impact / notification / selection |
+| Geolocation | `IOSGetLocation()` | one-shot → `native:location` (needs `NSLocationWhenInUseUsageDescription`) |
+| Accelerometer | `IOSSetMotion(bool)` | Core Motion stream → `native:motion` (needs `NSMotionUsageDescription`) |
+| Proximity | `IOSSetProximity(bool)` | → `native:proximity` |
+| Text-to-speech | `IOSSpeak(text)` / `IOSStopSpeak()` | `AVSpeechSynthesizer` |
+| Storage info | `IOSStorageJSON()` | `{free,total}` bytes |
+| Power / battery | `IOSPowerJSON()` | `{level,charging,lowPower}` |
+| Network status | `IOSNetworkJSON()` | `{connected,type}` |
+| Keyboard insets | `IOSSetKeyboardWatch(bool)` | → `native:keyboard {visible,height}` |
+| Screen-capture | `IOSSetScreenProtect(bool)` | Detects screenshots & recording (iOS can't block them) → `native:screenCapture` |
+
+Asynchronous results are delivered to the frontend as custom events
+(`iosEmitNativeEvent` → `globalApplication.Event.Emit`). Geolocation and motion
+require the matching `NS*UsageDescription` keys in `Info.plist`; the linker
+pulls in `CoreLocation`, `CoreMotion` and `SystemConfiguration` (already wired
+in `build/ios/Taskfile.yml`).
+
+## System events
+
+OS signals surface as typed application events: `events.IOS.BatteryChanged`,
+`NetworkChanged`, `ThemeChanged`, `ScreenLocked`, `ScreenUnlocked` and
+`ApplicationDidReceiveMemoryWarning`, each also mapped to a platform-neutral
+`events.Common.*` (`BatteryChanged`, `NetworkChanged`, `ThemeChanged`,
+`ScreenLocked`, `ScreenUnlocked`, `LowMemory`). Subscribe with
+`app.Event.OnApplicationEvent(events.Common.BatteryChanged, …)` and read the
+payload (battery level, network type, dark-mode flag, …) from the event
+context. The `mobile` example forwards these to its frontend as `sys:*` events.
 
 ## Porting an existing desktop app
 

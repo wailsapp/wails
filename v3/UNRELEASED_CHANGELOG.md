@@ -23,6 +23,9 @@ After processing, the content will be moved to the main changelog and this file 
 - iOS: device builds (`IOS_PLATFORM=device`), code-signing identity / provisioning profile / entitlements support, `.ipa` packaging, and `deploy-device` via devicectl
 - iOS: configurable minimum iOS version (`ios.minIOSVersion` in build/config.yml)
 - iOS: `wails3 doctor` reports Xcode and iOS SDK availability on macOS
+- iOS: system events — battery, network, theme, screen-lock and low-memory surface as `events.IOS.*` and platform-neutral `events.Common.*` application events
+- iOS: native mobile feature bridge (exported `application.IOS*`) — share sheet, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (Face ID/Touch ID), local notifications and Keychain secure storage
+- iOS: sensors & hardware — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and screen-capture detection
 - iOS: documentation (IOS.md and a docs-site guide)
 - Android: native message dialogs (AlertDialog) and open file/files dialogs (Storage Access Framework, imported as cache copies); open-directory and save dialogs return an explicit error
 - Android: clipboard support via ClipboardManager
@@ -31,7 +34,11 @@ After processing, the content will be moved to the main changelog and this file 
 - Android: typed lifecycle events (`events.Android.*`, generated from events.txt) with `ActivityCreated` mapped to `Common.ApplicationStarted`
 - Android: build pipeline produces installable debug and release APKs (`android:run`, `android:package`, `android:package:fat`); release signing via the debug keystore by default or a real keystore through `ANDROID_KEYSTORE_*` env vars
 - Android: `wails3 doctor` reports the Android SDK, NDK and JDK
+- Android: system events — battery, network, theme, screen-lock and low-memory surface as `events.Android.*` and platform-neutral `events.Common.*` application events
+- Android: native mobile feature bridge (exported `application.Android*`) — share, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (BiometricPrompt), local notifications and EncryptedSharedPreferences secure storage
+- Android: sensors & hardware — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and FLAG_SECURE screen-capture blocking
 - Android: documentation (ANDROID.md and a docs-site guide)
+- Example: the `mobile` kitchen sink gains Mobile and Hardware tabs demonstrating the native feature bridge across iOS and Android (pill tabs wrap to multiple rows)
 
 ## Changed
 <!-- Changes in existing functionality -->

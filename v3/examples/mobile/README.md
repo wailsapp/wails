@@ -6,13 +6,16 @@ A single Wails v3 app that runs on **iOS, Android and desktop** from one
 | Tab | Demonstrates |
 |---|---|
 | **Bindings** | JS → Go service calls returning values, structs and an error |
-| **Events** | Go → JS (`time` clock) and JS → Go → JS (`ping`/`pong`) |
+| **Events** | Go → JS (`time` clock), JS → Go → JS (`ping`/`pong`), and OS **system events** (battery, network, theme, screen-lock, low-memory) |
 | **Dialogs** | Native message dialogs (Info / Warning / Error / Question + callback) |
 | **System** | Clipboard round-trip, screen metrics, device info |
+| **Mobile** | Share sheet, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics, local notifications, secure storage |
+| **Hardware** | Haptics, geolocation, accelerometer, proximity, text-to-speech, storage, power/battery, network, keyboard insets, screen-capture |
 | **Native** | Platform-specific: iOS haptics + WKWebView toggles, Android vibrate + toast |
 
 The UI feature-detects the platform (`window.wails` on Android, the WKWebView
-message handler on iOS) and shows only the controls that platform supports.
+message handler on iOS) and shows only the controls that platform supports —
+the **Mobile** and **Hardware** tabs appear on both iOS and Android.
 
 ## Run it
 
@@ -40,3 +43,14 @@ toolchain requirements and device/signing details.
 - `SystemService` (`greetservice.go`) is the bound Go service.
 - The frontend imports `@wailsio/runtime` and calls `Runtime.IOS.*` /
   `Runtime.Android.*` for the platform-specific features.
+- The **Mobile** and **Hardware** tabs use an event bridge: the frontend emits
+  a `native:*` event, a per-platform listener (`native_features_ios.go` /
+  `native_features_android.go`, registered by `registerNativeFeatures`) calls
+  the matching exported `application.IOS*` / `application.Android*` function, and
+  asynchronous results (a biometric prompt, a GPS fix, a torch toggle) come back
+  as `native:*` events. See [`../../IOS.md`](../../IOS.md) /
+  [`../../ANDROID.md`](../../ANDROID.md) for the full list of these APIs.
+- **System events** (Events tab) arrive in Go as `events.Common.*` application
+  events (battery, network, theme, screen-lock, low-memory — mapped from the
+  per-platform `ios:` / `android:` events); `main.go` forwards them to the
+  frontend as `sys:*` custom events.

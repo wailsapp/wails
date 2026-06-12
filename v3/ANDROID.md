@@ -28,6 +28,8 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 | Screens API | ✅ WindowMetrics/DisplayMetrics (dp, pixels, scale, system-bar work area) |
 | App lifecycle events (`events.Android.*`, `Common.ApplicationStarted`) | ✅ Working |
 | Haptics (vibrate), device info, toast | ✅ `Android.*` runtime API |
+| System events (battery, network, theme, screen-lock, low-memory) | ✅ `events.Android.*` → `events.Common.*` application events |
+| Native mobile features (share, torch, biometrics, geolocation, sensors, …) | ✅ Exported `application.Android*` functions — see [Native mobile features](#native-mobile-features) |
 | Window geometry (SetSize/SetPosition/Minimize/...) | Intentional no-ops (apps are fullscreen) |
 | Menus, system tray | Intentional no-ops |
 | Multiple windows | ⚠️ Only the first window is displayed |
@@ -114,6 +116,56 @@ App-level options (`application.Options.Android`) are a placeholder today; the
 Android surface is driven mostly from the frontend through the `Android`
 runtime object: `Android.Haptics.Vibrate(durationMs)`,
 `Android.Device.Info()`, `Android.Toast.Show(message)`.
+
+## Native mobile features
+
+Android exposes a set of "genuinely mobile" capabilities as exported
+`application.Android*` functions (guarded by `//go:build android`), each
+forwarded to a matching method on the Java `WailsBridge` via JNI. They mirror
+the `application.IOS*` surface, so one event-driven layer drives both platforms
+(see the `mobile` example's `registerNativeFeatures`).
+
+| Capability | API | Notes |
+|---|---|---|
+| Share sheet | `AndroidShare(json)` | `Intent.ACTION_SEND` |
+| Open URL externally | `AndroidOpenURL(url)` | `Intent.ACTION_VIEW` |
+| Keep screen awake | `AndroidSetKeepAwake(bool)` | `FLAG_KEEP_SCREEN_ON` |
+| Torch / flashlight | `AndroidSetTorch(bool)` | `CameraManager` → `native:torch` |
+| Safe-area insets | `AndroidSafeAreaJSON()` | `{top,bottom,left,right}` |
+| Brightness | `AndroidSetBrightness(0-100)` / `AndroidBrightnessJSON()` | |
+| App info | `AndroidAppInfoJSON()` | `{name,version,build,bundleId}` |
+| Orientation lock | `AndroidSetOrientation(...)` / `AndroidOrientationJSON()` | |
+| Status bar | `AndroidSetStatusBar(json)` | style + visibility |
+| Biometrics | `AndroidBiometricAuthenticate(reason)` | `BiometricPrompt` → `native:biometric` |
+| Local notification | `AndroidNotify(json)` | `NotificationManager` (POST_NOTIFICATIONS) |
+| Secure storage | `AndroidSecureSet/Get/Delete` | `EncryptedSharedPreferences` |
+| Haptics | `AndroidHaptic(type)` | `VibrationEffect` |
+| Geolocation | `AndroidGetLocation()` | one-shot → `native:location` (ACCESS_FINE_LOCATION) |
+| Accelerometer | `AndroidSetMotion(bool)` | `SensorManager` stream → `native:motion` |
+| Proximity | `AndroidSetProximity(bool)` | → `native:proximity` |
+| Text-to-speech | `AndroidSpeak(text)` / `AndroidStopSpeak()` | `TextToSpeech` |
+| Storage info | `AndroidStorageJSON()` | `{free,total}` bytes (`StatFs`) |
+| Power / battery | `AndroidPowerJSON()` | `{level,charging,lowPower}` |
+| Network status | `AndroidNetworkJSON()` | `{connected,type}` (`ConnectivityManager`) |
+| Keyboard insets | `AndroidSetKeyboardWatch(bool)` | → `native:keyboard {visible,height}` |
+| Screen-capture | `AndroidSetScreenProtect(bool)` | `FLAG_SECURE` → `native:screenCapture` |
+
+Asynchronous results flow back to the frontend through the bridge's
+`nativeEmitEvent` JNI export → `globalApp.Event.Emit`. Geolocation, biometrics
+and notifications need their permissions in `AndroidManifest.xml`
+(`ACCESS_FINE_LOCATION`, `USE_BIOMETRIC`, `POST_NOTIFICATIONS`); location and
+notifications are requested at runtime on first use.
+
+## System events
+
+OS signals surface as typed application events: `events.Android.BatteryChanged`,
+`NetworkChanged`, `ThemeChanged`, `ScreenLocked`, `ScreenUnlocked` and
+`ApplicationLowMemory`, each also mapped to a platform-neutral `events.Common.*`
+(`BatteryChanged`, `NetworkChanged`, `ThemeChanged`, `ScreenLocked`,
+`ScreenUnlocked`, `LowMemory`). Subscribe with
+`app.Event.OnApplicationEvent(events.Common.BatteryChanged, …)` and read the
+payload (battery level, network type, dark-mode flag, …) from the event
+context. The `mobile` example forwards these to its frontend as `sys:*` events.
 
 ## Porting an existing desktop app
 
