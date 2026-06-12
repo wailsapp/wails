@@ -9,7 +9,9 @@ package webview
 #include <webkit/webkit.h>
 
 static gboolean unref_request_on_main(gpointer data) {
-	g_object_unref(data);
+	if (data != NULL) {
+		g_object_unref(data);
+	}
 	return G_SOURCE_REMOVE;
 }
 
@@ -18,6 +20,9 @@ static gboolean unref_request_on_main(gpointer data) {
 // what may be the last reference finalizes a WebKit GObject — only safe on the
 // UI thread (see #5557).
 static void releaseRequestOnMainThread(WebKitURISchemeRequest *request) {
+	if (request == NULL) {
+		return;
+	}
 	g_main_context_invoke(NULL, unref_request_on_main, request);
 }
 */
