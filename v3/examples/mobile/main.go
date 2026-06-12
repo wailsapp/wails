@@ -57,26 +57,40 @@ func main() {
 	// ios:/android: events), with their payload on the event context. They are
 	// Go-only, so the app forwards them to the frontend as custom events here.
 	// forward re-emits a Go application event to the frontend as a "sys:*"
-	// custom event, skipping consecutive duplicates — the OS re-fires the theme
-	// and network callbacks repeatedly with the same value (e.g. one dark-mode
-	// toggle yields several ThemeChanged events).
+	// custom event, trailing-debounced: the OS fires theme/network callbacks in
+	// rapid bursts that often interleave transient values (e.g. one dark-mode
+	// toggle yields several ThemeChanged events; disabling wifi flaps
+	// wifi→none→cellular). We forward only the value that the burst settles on,
+	// once it has been quiet for debounce, and skip it if it matches the last
+	// value we forwarded.
+	const debounce = 300 * time.Millisecond
 	forward := func(jsName string) func(*application.ApplicationEvent) {
 		var (
-			mu   sync.Mutex
-			last string
+			mu     sync.Mutex
+			timer  *time.Timer
+			latest map[string]any
+			last   string
 		)
 		return func(e *application.ApplicationEvent) {
-			data := e.Context().Data()
-			key, _ := json.Marshal(data)
 			mu.Lock()
-			dup := string(key) == last
-			last = string(key)
-			mu.Unlock()
-			if dup {
-				return
+			latest = e.Context().Data()
+			if timer != nil {
+				timer.Stop()
 			}
-			app.Logger.Info("system event", "event", jsName, "data", data)
-			app.Event.Emit(jsName, data)
+			timer = time.AfterFunc(debounce, func() {
+				mu.Lock()
+				data := latest
+				key, _ := json.Marshal(data)
+				dup := string(key) == last
+				last = string(key)
+				mu.Unlock()
+				if dup {
+					return
+				}
+				app.Logger.Info("system event", "event", jsName, "data", data)
+				app.Event.Emit(jsName, data)
+			})
+			mu.Unlock()
 		}
 	}
 	app.Event.OnApplicationEvent(events.Common.NetworkChanged, forward("sys:network"))
