@@ -1,26 +1,50 @@
 package com.wails.app;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.concurrent.Executor;
 
 /**
  * WailsBridge manages the connection between the Java/Android side and the Go
@@ -63,6 +87,7 @@ public class WailsBridge {
     private static native void nativeFilePickerDone(int callbackID);
     private static native void nativeMainThreadCallback(int callbackID);
     private static native void nativeEmitSystemEvent(String name, String json);
+    private static native void nativeEmitEvent(String name, String json);
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
@@ -142,6 +167,14 @@ public class WailsBridge {
      */
     public void emitSystemEvent(String name, String json) {
         if (initialized) nativeEmitSystemEvent(name, json);
+    }
+
+    /**
+     * Emit an arbitrary custom event with a JSON payload to JS. Used by the
+     * mobile-feature bridges to deliver asynchronous results.
+     */
+    public void emitEvent(String name, String json) {
+        if (initialized) nativeEmitEvent(name, json);
     }
 
     /**
@@ -349,6 +382,375 @@ public class WailsBridge {
             }
         } catch (Exception e) {
             Log.e(TAG, "vibrate failed", e);
+        }
+    }
+
+    // MARK: - Mobile features (Phase A)
+
+    /**
+     * Present the Android share chooser. json: {"text": "...", "url": "..."}.
+     */
+    public void share(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String text = opts.optString("text", "");
+                String url = opts.optString("url", "");
+                StringBuilder body = new StringBuilder();
+                if (!text.isEmpty()) body.append(text);
+                if (!url.isEmpty()) {
+                    if (body.length() > 0) body.append("\n");
+                    body.append(url);
+                }
+                if (body.length() == 0) return;
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType("text/plain");
+                send.putExtra(Intent.EXTRA_TEXT, body.toString());
+                Intent chooser = Intent.createChooser(send, null);
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(chooser);
+            } catch (Exception e) {
+                Log.e(TAG, "share failed", e);
+            }
+        });
+    }
+
+    /**
+     * Open a URL in the system browser.
+     */
+    public void openURL(final String url) {
+        mainHandler.post(() -> {
+            try {
+                Intent view = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(view);
+            } catch (Exception e) {
+                Log.e(TAG, "openURL failed", e);
+            }
+        });
+    }
+
+    /**
+     * Keep the screen on (1) or release the hold (0) via FLAG_KEEP_SCREEN_ON.
+     */
+    public void setKeepAwake(final int enabled) {
+        mainHandler.post(() -> {
+            if (enabled != 0) {
+                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else {
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        });
+    }
+
+    /**
+     * Toggle the camera flash (torch). Emits "native:torch" with the resulting
+     * state and availability.
+     */
+    public void setTorch(final int enabled) {
+        mainHandler.post(() -> {
+            try {
+                CameraManager cm = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+                String flashId = null;
+                for (String id : cm.getCameraIdList()) {
+                    Boolean hasFlash = cm.getCameraCharacteristics(id)
+                            .get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                    if (Boolean.TRUE.equals(hasFlash)) {
+                        flashId = id;
+                        break;
+                    }
+                }
+                if (flashId == null) {
+                    emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+                    return;
+                }
+                cm.setTorchMode(flashId, enabled != 0);
+                emitEvent("native:torch",
+                        enabled != 0 ? "{\"on\":true,\"available\":true}"
+                                     : "{\"on\":false,\"available\":true}");
+            } catch (Exception e) {
+                Log.e(TAG, "setTorch failed", e);
+                emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+            }
+        });
+    }
+
+    // MARK: - Mobile features (Phase B)
+
+    /**
+     * System-bar insets as JSON {"top","bottom","left","right"} in px.
+     */
+    public String getSafeAreaJson() {
+        try {
+            int top = 0, bottom = 0, left = 0, right = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Insets insets = activity.getWindowManager()
+                        .getCurrentWindowMetrics().getWindowInsets()
+                        .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+                top = insets.top; bottom = insets.bottom; left = insets.left; right = insets.right;
+            }
+            return new JSONObject()
+                    .put("top", top).put("bottom", bottom)
+                    .put("left", left).put("right", right).toString();
+        } catch (Exception e) {
+            return "{\"top\":0,\"bottom\":0,\"left\":0,\"right\":0}";
+        }
+    }
+
+    /**
+     * Set window brightness, 0-100. A negative value restores the system default.
+     */
+    public void setBrightness(final int pct) {
+        mainHandler.post(() -> {
+            try {
+                WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+                lp.screenBrightness = pct < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                                              : Math.max(0.01f, Math.min(1f, pct / 100f));
+                activity.getWindow().setAttributes(lp);
+            } catch (Exception e) {
+                Log.e(TAG, "setBrightness failed", e);
+            }
+        });
+    }
+
+    /**
+     * Current brightness as {"value": 0.0-1.0}. Falls back to the system
+     * brightness setting when the window has not overridden it.
+     */
+    public String getBrightnessJson() {
+        try {
+            float v = activity.getWindow().getAttributes().screenBrightness;
+            if (v < 0) {
+                int sys = Settings.System.getInt(activity.getContentResolver(),
+                        Settings.System.SCREEN_BRIGHTNESS, 128);
+                v = sys / 255f;
+            }
+            return new JSONObject().put("value", v).toString();
+        } catch (Exception e) {
+            return "{\"value\":-1}";
+        }
+    }
+
+    /**
+     * App info as JSON {"name","version","build","bundleId"}.
+     */
+    public String getAppInfoJson() {
+        try {
+            PackageInfo pi = activity.getPackageManager()
+                    .getPackageInfo(activity.getPackageName(), 0);
+            long code = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                    ? pi.getLongVersionCode()
+                    : pi.versionCode;
+            CharSequence label = activity.getApplicationInfo()
+                    .loadLabel(activity.getPackageManager());
+            return new JSONObject()
+                    .put("name", label != null ? label.toString() : "")
+                    .put("version", pi.versionName != null ? pi.versionName : "")
+                    .put("build", String.valueOf(code))
+                    .put("bundleId", activity.getPackageName())
+                    .toString();
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    /**
+     * Lock orientation to "portrait", "landscape" or "auto".
+     */
+    public void setOrientation(final String mode) {
+        mainHandler.post(() -> {
+            int o = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+            if ("portrait".equals(mode)) o = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            else if ("landscape".equals(mode)) o = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            activity.setRequestedOrientation(o);
+        });
+    }
+
+    /**
+     * Current orientation as {"orientation":"portrait"|"landscape"}.
+     */
+    public String getOrientationJson() {
+        int o = activity.getResources().getConfiguration().orientation;
+        String s = o == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait";
+        try {
+            return new JSONObject().put("orientation", s).toString();
+        } catch (Exception e) {
+            return "{\"orientation\":\"" + s + "\"}";
+        }
+    }
+
+    /**
+     * Set status-bar appearance. json: {"style":"light|dark|default","hidden":bool}.
+     * "light" = light (white) icons; "dark" = dark icons.
+     */
+    public void setStatusBar(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String style = opts.optString("style", "default");
+                boolean hidden = opts.optBoolean("hidden", false);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    WindowInsetsController c = activity.getWindow().getInsetsController();
+                    if (c != null) {
+                        if ("dark".equals(style)) {
+                            c.setSystemBarsAppearance(
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                        } else if ("light".equals(style)) {
+                            c.setSystemBarsAppearance(0,
+                                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                        }
+                        if (hidden) c.hide(WindowInsets.Type.statusBars());
+                        else c.show(WindowInsets.Type.statusBars());
+                    }
+                } else {
+                    int vis = activity.getWindow().getDecorView().getSystemUiVisibility();
+                    if ("dark".equals(style)) vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    else if ("light".equals(style)) vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (hidden) vis |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    else vis &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    activity.getWindow().getDecorView().setSystemUiVisibility(vis);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "setStatusBar failed", e);
+            }
+        });
+    }
+
+    // MARK: - Mobile features (Phase C)
+
+    private void emitBiometric(boolean ok, String error) {
+        try {
+            JSONObject o = new JSONObject().put("ok", ok);
+            if (error != null) o.put("error", error);
+            emitEvent("native:biometric", o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Show the BiometricPrompt (biometric or device credential). The outcome is
+     * emitted as "native:biometric" {ok, error}.
+     */
+    public void authenticate(final String reason) {
+        mainHandler.post(() -> {
+            try {
+                int allowed = BiometricManager.Authenticators.BIOMETRIC_WEAK
+                        | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+                BiometricManager bm = BiometricManager.from(activity);
+                if (bm.canAuthenticate(allowed) != BiometricManager.BIOMETRIC_SUCCESS) {
+                    emitBiometric(false, "no biometrics or device credential enrolled");
+                    return;
+                }
+                Executor exec = ContextCompat.getMainExecutor(activity);
+                BiometricPrompt prompt = new BiometricPrompt((FragmentActivity) activity, exec,
+                        new BiometricPrompt.AuthenticationCallback() {
+                            @Override
+                            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                                emitBiometric(true, null);
+                            }
+                            @Override
+                            public void onAuthenticationError(int code, CharSequence err) {
+                                emitBiometric(false, err != null ? err.toString() : "error " + code);
+                            }
+                            // onAuthenticationFailed = a single non-match; prompt stays up, no terminal event.
+                        });
+                BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Authenticate")
+                        .setSubtitle(reason != null && !reason.isEmpty() ? reason : "Confirm it's you")
+                        .setAllowedAuthenticators(allowed)
+                        .build();
+                prompt.authenticate(info);
+            } catch (Exception e) {
+                Log.e(TAG, "authenticate failed", e);
+                emitBiometric(false, "exception");
+            }
+        });
+    }
+
+    /**
+     * Post a local notification. json: {"title","body"}. Requests the
+     * POST_NOTIFICATIONS runtime permission on Android 13+.
+     */
+    public void postNotification(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String title = opts.optString("title", "Notification");
+                String body = opts.optString("body", "");
+                String channelId = "wails_default";
+                NotificationManager nm =
+                        (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel ch = new NotificationChannel(
+                            channelId, "General", NotificationManager.IMPORTANCE_DEFAULT);
+                    nm.createNotificationChannel(ch);
+                }
+                if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission(
+                        "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(
+                            new String[]{"android.permission.POST_NOTIFICATIONS"}, 1001);
+                }
+                Notification n = new NotificationCompat.Builder(activity, channelId)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setAutoCancel(true)
+                        .build();
+                nm.notify((int) (System.currentTimeMillis() & 0x0fffffff), n);
+                emitEvent("native:notification", "{\"ok\":true}");
+            } catch (Exception e) {
+                Log.e(TAG, "postNotification failed", e);
+                emitEvent("native:notification", "{\"ok\":false}");
+            }
+        });
+    }
+
+    /**
+     * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
+     * the Android Keystore) on API 23+, falling back to plain prefs below that.
+     */
+    private SharedPreferences securePrefs() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                MasterKey key = new MasterKey.Builder(activity)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build();
+                return EncryptedSharedPreferences.create(activity, "wails_secure", key,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "securePrefs failed, using plain prefs", e);
+        }
+        return activity.getSharedPreferences("wails_secure_plain", Context.MODE_PRIVATE);
+    }
+
+    /** Store a value in secure storage. json: {"key","value"}. */
+    public void secureSet(final String json) {
+        try {
+            JSONObject o = new JSONObject(json);
+            securePrefs().edit().putString(o.optString("key"), o.optString("value")).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "secureSet failed", e);
+        }
+    }
+
+    /** Read a value from secure storage (empty if absent). */
+    public String secureGet(final String key) {
+        try {
+            return securePrefs().getString(key, "");
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /** Remove a value from secure storage. */
+    public void secureDelete(final String key) {
+        try {
+            securePrefs().edit().remove(key).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "secureDelete failed", e);
         }
     }
 

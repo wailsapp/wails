@@ -114,6 +114,8 @@ tasks:
           -framework Foundation -framework UIKit -framework WebKit \
           -framework Security -framework CoreFoundation \
           -framework UniformTypeIdentifiers \
+          -framework LocalAuthentication -framework UserNotifications \
+          -framework AVFoundation \
           -lresolv \
           -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
           "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"
