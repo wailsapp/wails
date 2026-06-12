@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,6 +18,7 @@ import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 
@@ -63,6 +68,7 @@ public class WailsBridge {
     private static native void nativeFilePickerDone(int callbackID);
     private static native void nativeMainThreadCallback(int callbackID);
     private static native void nativeEmitSystemEvent(String name, String json);
+    private static native void nativeEmitEvent(String name, String json);
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
@@ -142,6 +148,14 @@ public class WailsBridge {
      */
     public void emitSystemEvent(String name, String json) {
         if (initialized) nativeEmitSystemEvent(name, json);
+    }
+
+    /**
+     * Emit an arbitrary custom event with a JSON payload to JS. Used by the
+     * mobile-feature bridges to deliver asynchronous results.
+     */
+    public void emitEvent(String name, String json) {
+        if (initialized) nativeEmitEvent(name, json);
     }
 
     /**
@@ -350,6 +364,96 @@ public class WailsBridge {
         } catch (Exception e) {
             Log.e(TAG, "vibrate failed", e);
         }
+    }
+
+    // MARK: - Mobile features (Phase A)
+
+    /**
+     * Present the Android share chooser. json: {"text": "...", "url": "..."}.
+     */
+    public void share(final String json) {
+        mainHandler.post(() -> {
+            try {
+                JSONObject opts = new JSONObject(json);
+                String text = opts.optString("text", "");
+                String url = opts.optString("url", "");
+                StringBuilder body = new StringBuilder();
+                if (!text.isEmpty()) body.append(text);
+                if (!url.isEmpty()) {
+                    if (body.length() > 0) body.append("\n");
+                    body.append(url);
+                }
+                if (body.length() == 0) return;
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType("text/plain");
+                send.putExtra(Intent.EXTRA_TEXT, body.toString());
+                Intent chooser = Intent.createChooser(send, null);
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(chooser);
+            } catch (Exception e) {
+                Log.e(TAG, "share failed", e);
+            }
+        });
+    }
+
+    /**
+     * Open a URL in the system browser.
+     */
+    public void openURL(final String url) {
+        mainHandler.post(() -> {
+            try {
+                Intent view = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(view);
+            } catch (Exception e) {
+                Log.e(TAG, "openURL failed", e);
+            }
+        });
+    }
+
+    /**
+     * Keep the screen on (1) or release the hold (0) via FLAG_KEEP_SCREEN_ON.
+     */
+    public void setKeepAwake(final int enabled) {
+        mainHandler.post(() -> {
+            if (enabled != 0) {
+                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else {
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        });
+    }
+
+    /**
+     * Toggle the camera flash (torch). Emits "native:torch" with the resulting
+     * state and availability.
+     */
+    public void setTorch(final int enabled) {
+        mainHandler.post(() -> {
+            try {
+                CameraManager cm = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+                String flashId = null;
+                for (String id : cm.getCameraIdList()) {
+                    Boolean hasFlash = cm.getCameraCharacteristics(id)
+                            .get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                    if (Boolean.TRUE.equals(hasFlash)) {
+                        flashId = id;
+                        break;
+                    }
+                }
+                if (flashId == null) {
+                    emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+                    return;
+                }
+                cm.setTorchMode(flashId, enabled != 0);
+                emitEvent("native:torch",
+                        enabled != 0 ? "{\"on\":true,\"available\":true}"
+                                     : "{\"on\":false,\"available\":true}");
+            } catch (Exception e) {
+                Log.e(TAG, "setTorch failed", e);
+                emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+            }
+        });
     }
 
     /**

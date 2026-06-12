@@ -22,6 +22,7 @@
         <button class="tab" data-tab="events">Events</button>
         <button class="tab" data-tab="dialogs">Dialogs</button>
         <button class="tab" data-tab="system">System</button>
+        <button class="tab" data-tab="mobile">Mobile</button>
         <button class="tab" data-tab="native">Native</button>
     </nav>
 
@@ -97,6 +98,32 @@
             <h2>Device</h2>
             <button class="btn" id="btnDevice">Get device info</button>
             <div id="deviceOut" class="metrics-out"><p class="hint">Device info appears here…</p></div>
+        </section>
+
+        <!-- Mobile: genuinely mobile features (iOS + Android) -->
+        <section class="pane" id="pane-mobile">
+            <div class="mobile-only">
+                <h2>Share &amp; links</h2>
+                <p class="hint">Native share sheet and opening links in the system browser.</p>
+                <div class="grid">
+                    <button class="btn primary" id="btnShare">Share…</button>
+                </div>
+                <div class="row">
+                    <input id="openUrl" value="https://wails.io" autocomplete="off"/>
+                    <button class="btn" id="btnOpenUrl">Open</button>
+                </div>
+
+                <h2>Screen</h2>
+                <label class="switch"><input type="checkbox" id="mfKeepAwake"/> Keep screen awake</label>
+                <p class="hint">Prevents the display from auto-locking while the app is in front.</p>
+                <label class="switch"><input type="checkbox" id="mfTorch"/> Torch (flashlight)</label>
+                <p class="hint">Has no visible effect on a simulator/emulator without a camera flash.</p>
+
+                <pre id="mobileOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
         </section>
 
         <!-- Native: platform-specific -->

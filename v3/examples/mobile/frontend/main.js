@@ -21,10 +21,17 @@ function detectPlatform() {
 
 const platform = detectPlatform();
 
+const isMobile = platform === "ios" || platform === "android";
+
 function applyPlatform() {
     $("platform").textContent = platform;
     document.querySelectorAll(".platform-only").forEach((el) => {
         el.style.display = el.dataset.platform === platform ? "" : "none";
+    });
+    // .mobile-only blocks are shown on both iOS and Android (the Go side routes
+    // each native:* event to the matching platform bridge), hidden on desktop.
+    document.querySelectorAll(".mobile-only").forEach((el) => {
+        el.style.display = isMobile ? "" : "none";
     });
     const hints = {
         ios: "Running on iOS — haptics and WKWebView toggles are available.",
@@ -329,6 +336,45 @@ $("btnVibrate")?.addEventListener("click", async () => {
 $("btnToast")?.addEventListener("click", async () => {
     await Android.Toast.Show("Hello from Wails 👋");
     show("nativeOut", "Toast shown");
+});
+
+// ---- Mobile features (iOS + Android) ------------------------------------
+// Each control emits a "native:*" event; the Go side routes it to the matching
+// platform bridge. Asynchronous results arrive back as "native:*" events.
+const logMobile = (msg) => show("mobileOut", msg);
+
+$("btnShare")?.addEventListener("click", () => {
+    Events.Emit("native:share", {
+        text: "Check out Wails — the Go + Web framework for native apps.",
+        url: "https://wails.io",
+    });
+    logMobile("Opened share sheet");
+});
+
+$("btnOpenUrl")?.addEventListener("click", () => {
+    const url = $("openUrl").value.trim();
+    if (!url) return;
+    Events.Emit("native:openURL", { url });
+    logMobile("Opening " + url);
+});
+
+$("mfKeepAwake")?.addEventListener("change", (e) => {
+    Events.Emit("native:keepAwake", { enabled: e.target.checked });
+    logMobile("Keep awake: " + (e.target.checked ? "on" : "off"));
+});
+
+const mfTorch = $("mfTorch");
+mfTorch?.addEventListener("change", (e) => {
+    Events.Emit("native:torch", { enabled: e.target.checked });
+});
+Events.On("native:torch", (e) => {
+    const d = eventValue(e) || {};
+    if (d.available === false) {
+        if (mfTorch) mfTorch.checked = false;
+        logMobile("Torch not available on this device");
+    } else {
+        logMobile("Torch: " + (d.on ? "on" : "off"));
+    }
 });
 
 applyPlatform();

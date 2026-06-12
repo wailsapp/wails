@@ -678,6 +678,39 @@ func Java_com_wails_app_WailsBridge_nativeEmitSystemEvent(env *C.JNIEnv, obj C.j
 	}
 }
 
+// emitNativeEventToJS forwards a named custom event with an optional JSON
+// payload to the frontend. Used by the mobile-feature bridges (torch, biometric,
+// secure storage, …) to deliver asynchronous results.
+func emitNativeEventToJS(name string, jsonStr string) {
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+	if app == nil {
+		return
+	}
+	var data map[string]any
+	if jsonStr != "" {
+		_ = json.Unmarshal([]byte(jsonStr), &data)
+	}
+	app.Event.Emit(name, data)
+}
+
+// Java_com_wails_app_WailsBridge_nativeEmitEvent is the funnel the mobile-feature
+// bridges call to deliver an arbitrary custom event (with JSON payload) to JS.
+//
+//export Java_com_wails_app_WailsBridge_nativeEmitEvent
+func Java_com_wails_app_WailsBridge_nativeEmitEvent(env *C.JNIEnv, obj C.jobject, jname C.jstring, jjson C.jstring) {
+	cName := C.jstringToC(env, jname)
+	name := C.GoString(cName)
+	C.releaseJString(env, jname, cName)
+
+	cJSON := C.jstringToC(env, jjson)
+	jsonStr := C.GoString(cJSON)
+	C.releaseJString(env, jjson, cJSON)
+
+	emitNativeEventToJS(name, jsonStr)
+}
+
 //export Java_com_wails_app_WailsBridge_nativeOnPageFinished
 func Java_com_wails_app_WailsBridge_nativeOnPageFinished(env *C.JNIEnv, obj C.jobject, jurl C.jstring) {
 	cUrl := C.jstringToC(env, jurl)

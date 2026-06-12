@@ -45,6 +45,11 @@ func main() {
 	// Compiled to a no-op on non-iOS platforms.
 	registerIOSRuntimeEventHandlers(app)
 
+	// Register the mobile-feature bridges (share, open URL, keep awake, torch,
+	// safe-area, brightness, biometrics, notifications, secure storage, …).
+	// Compiled to a no-op on desktop.
+	registerNativeFeatures(app)
+
 	// JS -> Go event: the frontend emits "ping" and Go replies with "pong"
 	// carrying a timestamp, demonstrating bidirectional events on every
 	// platform.
