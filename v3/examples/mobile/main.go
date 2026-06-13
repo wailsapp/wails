@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -157,9 +158,28 @@ func main() {
 
 	// Go -> JS event: emit the current time once a second. The frontend
 	// listens for "time" and updates a live clock.
+	//
+	// Battery: pause the clock while the app is backgrounded so it doesn't push an
+	// event into a hidden webview every second. On Android the process keeps
+	// running in the background (unlike iOS, which suspends it), so an ungated
+	// ticker would keep waking the WebView. The lifecycle events drive a flag.
+	var foreground atomic.Bool
+	foreground.Store(true)
+	for _, e := range []events.ApplicationEventType{
+		events.Android.ActivityStopped, events.IOS.ApplicationDidEnterBackground,
+	} {
+		app.Event.OnApplicationEvent(e, func(*application.ApplicationEvent) { foreground.Store(false) })
+	}
+	for _, e := range []events.ApplicationEventType{
+		events.Android.ActivityStarted, events.IOS.ApplicationWillEnterForeground,
+	} {
+		app.Event.OnApplicationEvent(e, func(*application.ApplicationEvent) { foreground.Store(true) })
+	}
 	go func() {
 		for {
-			app.Event.Emit("time", time.Now().Format(time.RFC1123))
+			if foreground.Load() {
+				app.Event.Emit("time", time.Now().Format(time.RFC1123))
+			}
 			time.Sleep(time.Second)
 		}
 	}()

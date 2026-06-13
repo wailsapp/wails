@@ -50,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private WailsBridge bridge;
+    // Battery: system-event receivers are registered only while the activity is
+    // in the foreground (onStart) and torn down in onStop, so background battery/
+    // network/screen broadcasts don't wake the app.
+    private boolean systemReceiversRegistered = false;
     private WebViewAssetLoader assetLoader;
 
     // The Go-side dialog ID of the in-flight file picker (-1 when idle)
@@ -75,9 +79,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up WebView
         setupWebView();
-
-        // Start the system-event sources (battery, lock, network).
-        registerSystemEventReceivers();
 
         // Load the application
         loadApplication();
@@ -518,6 +519,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        // Battery: only monitor system events while the app is visible.
+        if (!systemReceiversRegistered) {
+            registerSystemEventReceivers();
+            systemReceiversRegistered = true;
+        }
         if (bridge != null) {
             bridge.onStart();
         }
@@ -542,6 +548,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        if (systemReceiversRegistered) {
+            unregisterSystemEventReceivers();
+            systemReceiversRegistered = false;
+        }
         if (bridge != null) {
             bridge.onStop();
         }

@@ -92,6 +92,11 @@ public class WailsBridge {
     private long lastMotionEmit = 0;
     private TextToSpeech tts;
     private View.OnApplyWindowInsetsListener keyboardListener;
+    // Battery: remember the user's intent so sensors paused while the app is
+    // backgrounded can be restored on foreground; the torch is switched off.
+    private boolean motionWanted = false;
+    private boolean proximityWanted = false;
+    private boolean torchOn = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -160,6 +165,7 @@ public class WailsBridge {
 
     public void onStart() {
         if (initialized) nativeOnStart();
+        resumeFeaturesForForeground();
     }
 
     public void onResume() {
@@ -172,6 +178,7 @@ public class WailsBridge {
 
     public void onStop() {
         if (initialized) nativeOnStop();
+        pauseFeaturesForBackground();
     }
 
     public void onLowMemory() {
@@ -489,6 +496,7 @@ public class WailsBridge {
                     return;
                 }
                 cm.setTorchMode(flashId, enabled != 0);
+                torchOn = enabled != 0;
                 emitEvent("native:torch",
                         enabled != 0 ? "{\"on\":true,\"available\":true}"
                                      : "{\"on\":false,\"available\":true}");
@@ -879,6 +887,7 @@ public class WailsBridge {
 
     /** Start (1) / stop (0) accelerometer updates, streamed as "native:motion". */
     public void setMotion(final int enabled) {
+        motionWanted = enabled != 0;
         mainHandler.post(() -> {
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
@@ -910,6 +919,7 @@ public class WailsBridge {
 
     /** Enable (1) / disable (0) the proximity sensor, reported as "native:proximity". */
     public void setProximity(final int enabled) {
+        proximityWanted = enabled != 0;
         mainHandler.post(() -> {
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
@@ -931,6 +941,31 @@ public class WailsBridge {
                 proximityListener = null;
             }
         });
+    }
+
+    /**
+     * Called when the activity leaves the foreground (onStop): stop the
+     * accelerometer and proximity sensor and switch the torch off so none of
+     * them drain the battery while the app isn't visible. The "wanted" flags are
+     * kept so foregrounding can restore the sensors.
+     */
+    private void pauseFeaturesForBackground() {
+        mainHandler.post(() -> {
+            SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+            if (sm != null) {
+                if (accelListener != null) { sm.unregisterListener(accelListener); accelListener = null; }
+                if (proximityListener != null) { sm.unregisterListener(proximityListener); proximityListener = null; }
+            }
+            if (torchOn) {
+                setTorch(0); // turns the torch off, emits native:torch and clears torchOn
+            }
+        });
+    }
+
+    /** Re-enable on foreground (onStart) any sensors the user had switched on. */
+    private void resumeFeaturesForForeground() {
+        if (motionWanted && accelListener == null) setMotion(1);
+        if (proximityWanted && proximityListener == null) setProximity(1);
     }
 
     /** Speak text via TextToSpeech (lazily initialised). */

@@ -100,26 +100,42 @@ void ios_set_keep_awake(bool enabled) {
 
 // MARK: - Torch / flashlight
 
+// Battery: the torch, accelerometer and proximity sensor are paused when the app
+// leaves the foreground (the torch in particular is hardware state that would
+// otherwise keep draining while the app is suspended). g_mf*Wanted records the
+// user's intent so the accelerometer/proximity can be resumed on return.
+static BOOL g_mfTorchOn = NO;
+static BOOL g_mfMotionWanted = NO;
+static BOOL g_mfProximityWanted = NO;
+static void mfEnsureLifecycleObservers(void); // defined at end of file
+
+// mfApplyTorch toggles the hardware torch and records the state. Returns NO if no
+// usable torch device exists. Emits nothing — the caller reports as needed.
+static BOOL mfApplyTorch(BOOL on) {
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    if (device == nil || !device.hasTorch || !device.isTorchAvailable) return NO;
+    NSError *error = nil;
+    if (![device lockForConfiguration:&error]) return NO;
+    if (on) {
+        [device setTorchModeOnWithLevel:AVCaptureMaxAvailableTorchLevel error:nil];
+    } else {
+        device.torchMode = AVCaptureTorchModeOff;
+    }
+    [device unlockForConfiguration];
+    g_mfTorchOn = on;
+    return YES;
+}
+
 void ios_set_torch(bool enabled) {
     mfRunOnMain(^{
-        AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
-            extern void iosEmitNativeEvent(const char* name, const char* json);
+        mfEnsureLifecycleObservers();
+        extern void iosEmitNativeEvent(const char* name, const char* json);
+        if (!mfApplyTorch(enabled ? YES : NO)) {
             iosEmitNativeEvent("native:torch", "{\"on\":false,\"available\":false}");
             return;
         }
-        NSError *error = nil;
-        if ([device lockForConfiguration:&error]) {
-            if (enabled) {
-                [device setTorchModeOnWithLevel:AVCaptureMaxAvailableTorchLevel error:nil];
-            } else {
-                device.torchMode = AVCaptureTorchModeOff;
-            }
-            [device unlockForConfiguration];
-            extern void iosEmitNativeEvent(const char* name, const char* json);
-            iosEmitNativeEvent("native:torch", enabled ? "{\"on\":true,\"available\":true}"
-                                                       : "{\"on\":false,\"available\":true}");
-        }
+        iosEmitNativeEvent("native:torch", enabled ? "{\"on\":true,\"available\":true}"
+                                                   : "{\"on\":false,\"available\":true}");
     });
 }
 
@@ -472,6 +488,8 @@ static CMMotionManager *g_mfMotionManager = nil;
 
 void ios_set_motion(bool enabled) {
     mfRunOnMain(^{
+        mfEnsureLifecycleObservers();
+        g_mfMotionWanted = enabled ? YES : NO;
         if (g_mfMotionManager == nil) {
             g_mfMotionManager = [[CMMotionManager alloc] init];
             g_mfMotionManager.accelerometerUpdateInterval = 0.1; // ~10 Hz
@@ -502,6 +520,8 @@ static id g_mfProximityObserver = nil;
 
 void ios_set_proximity(bool enabled) {
     mfRunOnMain(^{
+        mfEnsureLifecycleObservers();
+        g_mfProximityWanted = enabled ? YES : NO;
         UIDevice *device = [UIDevice currentDevice];
         if (enabled) {
             device.proximityMonitoringEnabled = YES;
@@ -673,4 +693,55 @@ void ios_set_screen_protect(bool enabled) {
             if (g_mfCapturedObs) { [nc removeObserver:g_mfCapturedObs]; g_mfCapturedObs = nil; }
         }
     });
+}
+
+// MARK: - Foreground/background lifecycle (battery)
+//
+// When the app leaves the foreground we stop the accelerometer, disable the
+// proximity sensor and switch the torch off so none of them keep draining the
+// battery while the app is backgrounded/suspended. On return we restart only the
+// sensors the user had switched on (the torch is left off — re-enabling hardware
+// light without a user action would be surprising).
+
+static void mfHandleEnterBackground(void) {
+    if (g_mfMotionManager && g_mfMotionManager.isAccelerometerActive) {
+        [g_mfMotionManager stopAccelerometerUpdates];
+    }
+    if ([UIDevice currentDevice].proximityMonitoringEnabled) {
+        [UIDevice currentDevice].proximityMonitoringEnabled = NO;
+    }
+    if (g_mfTorchOn && mfApplyTorch(NO)) {
+        extern void iosEmitNativeEvent(const char* name, const char* json);
+        iosEmitNativeEvent("native:torch", "{\"on\":false,\"available\":true}");
+    }
+}
+
+static void mfHandleEnterForeground(void) {
+    if (g_mfMotionWanted && g_mfMotionManager
+        && g_mfMotionManager.isAccelerometerAvailable
+        && !g_mfMotionManager.isAccelerometerActive) {
+        [g_mfMotionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
+            withHandler:^(CMAccelerometerData *data, NSError *error) {
+                if (!data) return;
+                mfEmit(@"native:motion", @{
+                    @"x": @(data.acceleration.x),
+                    @"y": @(data.acceleration.y),
+                    @"z": @(data.acceleration.z),
+                });
+            }];
+    }
+    if (g_mfProximityWanted) {
+        [UIDevice currentDevice].proximityMonitoringEnabled = YES;
+    }
+}
+
+static void mfEnsureLifecycleObservers(void) {
+    static BOOL registered = NO;
+    if (registered) return; // only ever called on the main thread
+    registered = YES;
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+        queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *n){ mfHandleEnterBackground(); }];
+    [nc addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
+        queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *n){ mfHandleEnterForeground(); }];
 }
