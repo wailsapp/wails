@@ -6,6 +6,7 @@ bin/
 # Android build artifacts
 build/android/.gradle/
 build/android/app/build/
+build/android/build/
 build/android/local.properties
 
 # JNI libraries (generated during build)
@@ -22,3 +23,6 @@ Thumbs.db
 # Frontend build
 frontend/dist/
 frontend/node_modules/
+
+# Task runner cache
+.task/

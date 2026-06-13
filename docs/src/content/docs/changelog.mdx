@@ -31,6 +31,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha.100 - 2026-06-13
+
+## Added
+- Extend `MacWebviewPreferences` with additional WKWebView configuration options: `EnableAutoplayWithoutUserAction`, `AllowsAirPlayForMediaPlayback`, `AllowsMagnification`, `JavaScriptCanOpenWindowsAutomatically`, `MinimumFontSize`, and `ApplicationNameForUserAgent` (#5549)
+
+## Fixed
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5561)
+- Fix JS resize events not firing for frameless windows on Linux; fix scrollbar edge detection for frameless windows (#5368)
+- Fix updater on Windows failing with "invalid cross-device link" when the temp directory is on a different volume to the install directory (#5560)
+
+## v3.0.0-alpha.99 - 2026-06-10
+
+## Fixed
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+
 ## v3.0.0-alpha.98 - 2026-06-03
 
 ## Fixed

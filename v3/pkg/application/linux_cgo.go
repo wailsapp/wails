@@ -1260,6 +1260,7 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
@@ -1305,6 +1306,7 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
@@ -1457,6 +1459,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1499,6 +1502,25 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 	return C.gboolean(0)
+}
+
+//export handlePermissionRequest
+func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Honour the window's
+	// Permissions for camera/microphone; leave every other request to WebKit's
+	// default handling (deny).
+	if C.is_user_media_permission_request(request) == 0 {
+		return C.gboolean(0)
+	}
+	needAudio := C.is_user_media_for_audio(request) != 0
+	needVideo := C.is_user_media_for_video(request) != 0
+	if allowMediaCapture(uint(data), needAudio, needVideo) {
+		C.webkit_permission_request_allow(request)
+	} else {
+		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
 }
 
 //export handleLoadChanged

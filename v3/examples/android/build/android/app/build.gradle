@@ -23,10 +23,28 @@ android {
         }
     }
 
+    def keystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
+    def hasKeystore = keystoreFile != null && !keystoreFile.trim().isEmpty()
+
+    signingConfigs {
+        // A real keystore can be provided via environment variables; without
+        // one, release builds are signed with the debug keystore so they can
+        // be installed for testing (not suitable for Play Store uploads).
+        release {
+            if (hasKeystore) {
+                storeFile file(keystoreFile)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig hasKeystore ? signingConfigs.release : signingConfigs.debug
         }
         debug {
             debuggable true
