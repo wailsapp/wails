@@ -40,6 +40,11 @@ After processing, the content will be moved to the main changelog and this file 
 - Android: documentation (ANDROID.md and a docs-site guide)
 - Example: the `mobile` kitchen sink gains Mobile and Hardware tabs demonstrating the native feature bridge across iOS and Android (pill tabs wrap to multiple rows)
 - Mobile: battery — the accelerometer, proximity sensor, torch and the example's periodic clock are paused when the app is backgrounded and restored on return (Android keeps the process running in the background, and the torch is hardware state that persists on iOS), and Android system-event receivers are only registered while the app is in the foreground
+- iOS: camera capture — `application.IOSCapturePhoto`/`IOSCaptureVideo` (UIImagePickerController → a `native:capture` event with a base64 thumbnail)
+- iOS: background execution — `application.IOSBeginBackgroundTask`/`IOSEndBackgroundTask` (a UIApplication background-task window) and a configurable `ios.backgroundModes` (build/config.yml) that templates `UIBackgroundModes` into the generated Info.plist
+- Android: camera capture — `application.AndroidCapturePhoto`/`AndroidCaptureVideo` (system camera via FileProvider → a `native:capture` event)
+- Android: foreground service — `application.AndroidStartForegroundService`/`AndroidStopForegroundService` (a `WailsForegroundService` with an ongoing notification keeps the process alive for long-running background work)
+- Example: a Camera tab demonstrating photo/video capture and background execution (foreground service on Android, background-task window on iOS)
 
 ## Changed
 <!-- Changes in existing functionality -->
