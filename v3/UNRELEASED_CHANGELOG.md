@@ -16,13 +16,15 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-<!-- New features, capabilities, or enhancements -->
+- Extend `MacWebviewPreferences` with additional WKWebView configuration options: `EnableAutoplayWithoutUserAction`, `AllowsAirPlayForMediaPlayback`, `AllowsMagnification`, `JavaScriptCanOpenWindowsAutomatically`, `MinimumFontSize`, and `ApplicationNameForUserAgent` (#5549)
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
-<!-- Bug fixes -->
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5561)
+- Fix JS resize events not firing for frameless windows on Linux; fix scrollbar edge detection for frameless windows (#5368)
+- Fix updater on Windows failing with "invalid cross-device link" when the temp directory is on a different volume to the install directory (#5560)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
