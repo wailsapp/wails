@@ -35,7 +35,7 @@ export default defineConfig({
       lastUpdated: true,
       pagination: true,
       editLink: {
-        baseUrl: "https://github.com/wailsapp/wails/edit/v3-alpha/docs",
+        baseUrl: "https://github.com/wailsapp/wails/edit/master/docs",
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
@@ -125,7 +125,15 @@ export default defineConfig({
       ],
       defaultLocale: "root",
       locales: {
-        root: { label: "English", lang: "en", dir: "ltr" },
+        root:    { label: "English",             lang: "en",    dir: "ltr" },
+        "zh-cn": { label: "简体中文",             lang: "zh-CN", dir: "ltr" },
+        "zh-tw": { label: "繁體中文",             lang: "zh-TW", dir: "ltr" },
+        ja:      { label: "日本語",               lang: "ja",    dir: "ltr" },
+        ko:      { label: "한국어",               lang: "ko",    dir: "ltr" },
+        ru:      { label: "Русский",             lang: "ru",    dir: "ltr" },
+        fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
+        pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
+        de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
@@ -180,6 +188,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
@@ -225,6 +234,11 @@ export default defineConfig({
                 { label: "Message Dialogs", link: "/features/dialogs/message" },
                 { label: "Custom Dialogs", link: "/features/dialogs/custom" },
               ],
+            },
+            {
+              label: "Autostart",
+              collapsed: true,
+              autogenerate: { directory: "features/autostart" },
             },
             {
               label: "Clipboard",
@@ -296,13 +310,16 @@ export default defineConfig({
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
+                { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
+                { label: "iOS", link: "/guides/build/ios" },
+                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {
               label: "Distribution",
               collapsed: true,
               items: [
-                { label: "Auto-Updates", link: "/guides/distribution/auto-updates" },
+                { label: "In-App Updater", link: "/guides/updater" },
                 { label: "File Associations", link: "/guides/distribution/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
                 { label: "Single Instance", link: "/guides/distribution/single-instance" },

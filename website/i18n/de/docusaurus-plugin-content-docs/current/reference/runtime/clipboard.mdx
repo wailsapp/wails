@@ -1,0 +1,23 @@
+---
+sidebar_position: 8
+---
+
+# Zwischenablage
+
+Dieser Teil der Laufzeit bietet Zugriff auf die Zwischenablage des Betriebssystems.<br/> Die aktuelle Implementierung verarbeitet nur Texte.
+
+### ClipboardGetText
+
+Diese Methode liest den aktuell gespeicherten Text aus der Zwischenablage aus.
+
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Gibt einen String zurück (wenn die Zwischenablage leer ist, wird ein leerer String zurückgegeben) oder einen Fehler.
+
+JS: `ClipboardGetText(): Promise<string>`<br/> Rückgabewert: Ein Promise mit einem String-Ergebnis (wenn die Zwischenablage leer ist, wird ein leerer String zurückgegeben).
+
+### ClipboardSetText
+
+Diese Methode schreibt einen Text in die Zwischenablage.
+
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Gibt einen Fehler zurück, wenn es einen gibt.
+
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Rückgabewert: Ein Promise mit dem Ergebnis true, wenn der Text erfolgreich in die Zwischenablage kopiert wurde, andernfalls false.

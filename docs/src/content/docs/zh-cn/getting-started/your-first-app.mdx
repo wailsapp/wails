@@ -1,0 +1,257 @@
+---
+title: 你的第一个应用程序
+description: 逐步创建你的第一个 Wails 桌面应用程序
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+本指南将向你展示如何创建你的第一个 Wails v3 应用程序，涵盖项目设置、构建和开发工作流。
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## 创建新项目
+
+    打开终端并运行以下命令来创建一个新的 Wails 项目：
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    此命令会创建一个名为 `myfirstapp` 的新目录，其中包含所有必要的文件。
+
+      <video src={wails_init} controls></video> 
+
+2.  ## 探索项目结构
+
+    导航到 `myfirstapp` 目录。你会发现几个文件和文件夹：
+
+    <FileTree>
+    - build/           包含构建过程使用的文件
+        - appicon.png  应用程序图标
+        - config.yml   构建配置
+        - Taskfile.yml 构建任务
+        - darwin/      macOS 特定构建文件
+            - Info.dev.plist 开发配置
+            - Info.plist    生产配置
+            - Taskfile.yml  macOS 构建任务
+            - icons.icns    macOS 应用程序图标
+        - linux/       Linux 特定构建文件
+            - Taskfile.yml  Linux 构建任务
+            - appimage/     AppImage 打包
+                - build.sh  AppImage 构建脚本
+            - nfpm/        NFPM 打包
+                - nfpm.yaml 包配置
+                - scripts/  构建脚本
+        - windows/     Windows 特定构建文件
+            - Taskfile.yml        Windows 构建任务
+            - icon.ico           Windows 应用程序图标
+            - info.json          应用程序元数据
+            - wails.exe.manifest Windows 清单文件
+            - nsis/              NSIS 安装程序文件
+                - project.nsi                    NSIS 项目文件
+                - wails_tools.nsh               NSIS 辅助脚本
+    - frontend/        前端应用程序文件
+        - index.html   主 HTML 文件
+        - main.js      主 JavaScript 文件
+        - package.json NPM 包配置
+        - public/      静态资源
+        - Inter Font License.txt 字体许可证
+    - .gitignore      Git 忽略文件
+    - README.md       项目文档
+    - Taskfile.yml    项目任务
+    - go.mod          Go 模块文件
+    - go.sum          Go 模块校验和
+    - greetservice.go 问候服务
+    - main.go         主应用程序代码
+    </FileTree>
+
+    花点时间探索这些文件，熟悉其结构。
+
+    :::note
+    虽然 Wails v3 使用 [Task](https://taskfile.dev/) 作为其默认构建系统，但你也可以使用 `make` 或任何其他替代构建系统。
+    :::
+
+3.  ## 构建你的应用程序
+
+    要构建你的应用程序，请执行：
+
+    ```bash
+    wails3 build
+    ```
+
+    此命令会编译你的应用程序的调试版本，并将其保存在新的 `bin` 目录中。
+
+    :::note
+    `wails3 build` 是 `wails3 task build` 的简写，它将运行 `Taskfile.yml` 中的 `build` 任务。
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    构建完成后，你可以像运行普通应用程序一样运行它：
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    你将看到一个简单的用户界面，这是你应用程序的起点。由于是调试版本，你还会在控制台窗口中看到日志。这对调试很有用。
+
+4.  ## 开发模式
+
+    我们还可以以开发模式运行应用程序。此模式允许你更改前端代码，并在不重新构建整个应用程序的情况下看到更改反映在运行的应用程序中。
+
+    1. 打开一个新的终端窗口。
+    2. 运行 `wails3 dev`。应用程序将以调试模式编译并运行。
+    3. 在你选择的编辑器中打开 `frontend/index.html`。
+    4. 编辑代码，将 `Please enter your name below` 更改为 `Please enter your name below!!!`。
+    5. 保存文件。
+
+    此更改将立即反映在你的应用程序中。
+
+    对后端代码的任何更改都会触发重新构建：
+
+    1. 打开 `greetservice.go`。
+    2. 将包含 `return "Hello " + name + "!"` 的行更改为 `return "Hello there " + name + "!"`。
+    3. 保存文件。
+
+    应用程序将在几秒钟内更新。
+
+        <video src={wails_dev} controls></video>
+
+5.  ## 打包你的应用程序
+
+        一旦你的应用程序准备好分发，你可以创建特定平台的包：
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              要创建 `.app` 包：
+
+              ```bash
+              wails3 package
+              ```
+
+              这将创建一个生产版本，并将其打包到 `bin` 目录中的 `.app` 包中。
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              要创建 NSIS 安装程序：
+
+              ```bash
+              wails3 package
+              ```
+
+              这将创建一个生产版本，并将其打包到 `bin` 目录中的 NSIS 安装程序中。
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails 支持多种 Linux 发行版的包格式：
+
+              ```bash
+              # 创建所有包类型 (AppImage, deb, rpm 和 Arch Linux)
+              wails3 package
+
+              # 或者创建特定的包类型
+              wails3 task linux:create:appimage  # AppImage 格式
+              wails3 task linux:create:deb       # Debian 包
+              wails3 task linux:create:rpm       # Red Hat 包
+              wails3 task linux:create:aur       # Arch Linux 包
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        有关打包选项和配置的更多详细信息，请查看我们的 [打包指南](/guides/packaging)。
+
+6.  ## 设置版本控制和模块名称
+
+    你的项目使用占位符模块名称 `changeme` 创建。建议将其更新以匹配你的仓库 URL：
+
+    1. 在 GitHub（或你喜欢的 Git 托管服务）上创建一个新的仓库
+    2. 在你的项目目录中初始化 git：
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. 设置你的远程仓库（替换为你的仓库 URL）：
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. 在 `go.mod` 中更新你的模块名称以匹配你的仓库 URL：
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. 推送你的代码：
+       ```bash
+       git push -u origin main
+       ```
+
+    这确保你的 Go 模块名称与 Go 的模块命名约定一致，并使你更容易分享代码。
+
+    :::tip[专业提示]
+    您可以在创建项目时使用 `-git` 标志来自动化所有初始化步骤：
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    这支持各种 Git URL 格式：
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` 或 `ssh://git@github.com/username/project`
+    - Git 协议: `git://github.com/username/project`
+    - 文件系统: `file:///path/to/project.git`
+    :::
+
+</Steps>
+
+## 恭喜！
+
+您刚刚创建、开发并打包了您的第一个 Wails 应用程序。
+这仅仅是您使用 Wails v3 所能实现的成就的开始。
+
+## 下一步
+
+如果您是 Wails 的新手，我们建议您接下来阅读我们的教程，这将是一份通过 Wails 各种功能的实用指南。第一个教程是 [创建服务](/tutorials/01-creating-a-service)。
+
+如果您是高级用户，请查看我们的 [指南](/guides) 以获取有关如何使用 Wails 的更详细信息。

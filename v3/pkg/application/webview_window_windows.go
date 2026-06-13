@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -13,17 +14,17 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/bep/debounce"
-	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 
-	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -75,6 +76,12 @@ type windowsWebviewWindow struct {
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
+	// Gate the dark-menubar force-repaint on a state transition so it does not fire
+	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
+	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
+	lastSizeWParam uintptr
 
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
@@ -350,22 +357,26 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) ||
-			w.parent.options.IgnoreMouseEvents {
-			// Always if transparent and frameless
+		if w.parent.options.IgnoreMouseEvents {
+			// WS_EX_TRANSPARENT makes WM_NCHITTEST return HTTRANSPARENT, so the window
+			// passes mouse input through to whatever is behind it. Only apply it when
+			// the caller explicitly opts in via IgnoreMouseEvents — applying it to every
+			// frameless + transparent window causes clicks to fall through to the desktop
+			// in any area the child WebView2 HWND does not currently cover (issue #4871).
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
 		} else {
-			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			// Transparent/translucent composition via DirectComposition.
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	// WS_EX_TOOLWINDOW hides the window from the taskbar without blocking keyboard focus.
+	// WS_EX_NOACTIVATE (previously used here) prevents the window from being activated,
+	// which blocks keyboard focus and causes click-through issues after Win+D or Alt+Tab.
 	if options.Windows.HiddenOnTaskbar {
-		//exStyle |= w32.WS_EX_TOOLWINDOW
-		exStyle |= w32.WS_EX_NOACTIVATE
+		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -699,6 +710,13 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
 	)
 	w.ignoreDPIChangeResizing = previousFlag
+
+	// For WS_EX_LAYERED windows (frameless+transparent or IgnoreMouseEvents), the hit-test
+	// region is not updated by SetWindowPos alone. Calling SetLayeredWindowAttributes refreshes
+	// the layered region so that the full new window area responds to mouse events.
+	if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+		w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+	}
 }
 
 // Get window dip bounds
@@ -831,6 +849,9 @@ func (w *windowsWebviewWindow) getZoom() float64 {
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 	w.chromium.PutZoomFactor(zoom)
 }
 
@@ -864,7 +885,9 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -874,7 +897,30 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
+	w.enforceMinSizeConstraints()
+}
+
+func (w *windowsWebviewWindow) enforceMinSizeConstraints() {
+	options := w.parent.options
+	if options.MinWidth <= 0 && options.MinHeight <= 0 {
+		return
+	}
+	b := w.bounds()
+	changed := false
+	if options.MinWidth > 0 && b.Width < options.MinWidth {
+		b.Width = options.MinWidth
+		changed = true
+	}
+	if options.MinHeight > 0 && b.Height < options.MinHeight {
+		b.Height = options.MinHeight
+		changed = true
+	}
+	if changed {
+		w.setBounds(b)
+	}
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -908,7 +954,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 	w32.SetWindowLong(
 		w.hwnd,
 		w32.GWL_EXSTYLE,
-		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME|w32.WS_EX_TRANSPARENT),
 	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
@@ -921,7 +967,9 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	w.chromium.Focus()
+	if w.chromium.GetController() != nil {
+		w.chromium.Focus()
+	}
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
@@ -991,6 +1039,14 @@ func (w *windowsWebviewWindow) focus() {
 	}
 	if w.isMinimised() {
 		w.unminimise()
+	}
+
+	// Guard against calling Focus when the WebView2 controller is not yet
+	// initialized or has already been torn down (e.g. during dev hot-reload).
+	// go-webview2's Focus() calls os.Exit(1) on any MoveFocus error, so we
+	// must not call it when the controller is in a nil/invalid state.
+	if w.chromium.GetController() == nil {
+		return
 	}
 
 	w.focusingChromium = true
@@ -1202,12 +1258,30 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
-	// Remove or add the frame
-	if b {
-		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_POPUP)
-	} else {
-		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
+	if w.isFullscreen() {
+		// Avoid disrupting fullscreen (WS_POPUP) styling; frame trimming will be handled on exit.
+		return
 	}
+	// Keep the full overlapped-window style in both states and let the
+	// WM_NCCALCSIZE handler — keyed on options.Frameless, which the caller
+	// has already updated — trim the frame, exactly like Frameless: true at
+	// window creation. The previous implementation switched frameless
+	// windows to a bare WS_POPUP style, which silently loses the styles DWM
+	// animations are keyed on: minimise/restore/maximise transitions, Aero
+	// snap and the resize borders all stopped working after
+	// SetFrameless(true), unlike creation-time frameless windows (#5541).
+	//
+	// Preserve the live state/button bits rather than overwriting GWL_STYLE
+	// wholesale: a blanket WS_VISIBLE|WS_OVERLAPPEDWINDOW would clear the
+	// WS_MAXIMIZE/WS_MINIMIZE state bits and re-enable the minimise/maximise/
+	// close buttons even when they were disabled via options or the runtime
+	// setMinimiseButtonState/setMaximiseButtonState/setCloseButtonState calls.
+	const preserve = w32.WS_VISIBLE | w32.WS_DISABLED | w32.WS_MAXIMIZE | w32.WS_MINIMIZE |
+		w32.WS_MINIMIZEBOX | w32.WS_MAXIMIZEBOX | w32.WS_SYSMENU | w32.WS_THICKFRAME
+	current := uint(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
+	style := (uint(w32.WS_OVERLAPPEDWINDOW) &^ preserve) | (current & preserve)
+	w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(style))
+	// Inform the application of the frame change to trigger WM_NCCALCSIZE.
 	w32.SetWindowPos(
 		w.hwnd,
 		0,
@@ -1443,6 +1517,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		return code
 	}
 
+	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
+		return w32.HTCLIENT
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1574,25 +1652,42 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
 			if w.isMinimizing {
+				// A maximised window leaving the minimised state arrives
+				// here (not at SIZE_RESTORED), and needs the same DPI
+				// resync as the restore path below (#5544).
+				w.resyncWebviewDPIAfterMinimise()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
-			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
-				// Invalidate the entire window to force complete redraw
-				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
+				// While minimised the window is parked at (-32000,-32000),
+				// which on mixed-DPI systems can re-associate it with another
+				// monitor's DPI. Nothing corrects WebView2's rasterization
+				// scale on restore, so window.devicePixelRatio keeps the
+				// wrong monitor's value until a manual resize (#5544).
+				w.resyncWebviewDPIAfterMinimise()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
+			// Repaint the dark menubar only when leaving a maximized/snapped state.
+			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
+			// previous state avoids per-frame invalidations and the associated flicker.
+			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
+			// (Win+Left) bypasses those messages entirely.
+			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
+			}
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+		w.lastSizeWParam = wparam
 
 		doResize := func() {
 			// Get the new size from lparam
@@ -1662,7 +1757,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
-		if !w.ignoreDPIChangeResizing {
+		// While minimised the window is parked at (-32000,-32000); a DPI
+		// change in that state delivers a suggested rect scaled for whatever
+		// monitor the parked position maps to. Applying it resizes the
+		// window's restore bookkeeping (e.g. a maximised 1920x1080 window
+		// restored at 3072x1728 after crossing a 200%→125% boundary while
+		// minimised, #5544). Skip the resize; a fresh WM_DPICHANGED with a
+		// correct rect arrives if the DPI really differs on restore.
+		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
@@ -1671,7 +1773,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
 				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
+			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
+				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
+			}
 		}
+		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds
+		// mode), so the rasterization scale must follow DPI changes manually.
+		w.resyncWebviewRasterizationScale()
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
 
@@ -1794,6 +1903,70 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	}
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+}
+
+// resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
+// WebView2 controller and reports whether the scale was out of sync. Wails
+// runs WebView2 in raw-pixels bounds mode with ShouldDetectMonitorScaleChanges
+// disabled, so keeping the rasterization scale in step with the window's DPI
+// is the application's responsibility. It is a no-op when the controller is
+// unavailable or already in sync.
+func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
+	controller := w.chromium.GetController()
+	if controller == nil {
+		return false
+	}
+	controller3 := controller.GetICoreWebView2Controller3()
+	if controller3 == nil {
+		return false
+	}
+	dpiX, _ := w.DPI()
+	if dpiX == 0 {
+		return false
+	}
+	scale := float64(dpiX) / 96.0
+	// Compare with a tolerance: GetRasterizationScale returns a float that may
+	// not be bit-identical to dpi/96 for non-25% DPI steps, and an exact ==
+	// would re-Put the scale on every resync.
+	if current, err := controller3.GetRasterizationScale(); err == nil && math.Abs(current-scale) < 0.001 {
+		return false
+	}
+	if err := controller3.PutRasterizationScale(scale); err != nil {
+		globalApplication.error("failed to update WebView2 rasterization scale: %s", err)
+		return false
+	}
+	return true
+}
+
+// resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
+// state (whether it comes back as restored or maximised). If the rasterization
+// scale had drifted while the window was parked at (-32000,-32000), a scale
+// re-put alone does not make WebView2 re-lay out content whose bounds are
+// unchanged — the page keeps reporting sizes computed with the stale scale
+// until the bounds are re-asserted (#5544, reporter verification round 2).
+func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
+	if w.resyncWebviewRasterizationScale() {
+		w.chromium.Resize()
+	}
+}
+
+// crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
+// WebView2 permission-kind enum. Unknown types map to UnknownPermission.
+func crossPermissionToWebView2Kind(p PermissionType) edge.CoreWebView2PermissionKind {
+	switch p {
+	case PermissionMicrophone:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindMicrophone)
+	case PermissionCamera:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindCamera)
+	case PermissionGeolocation:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindGeolocation)
+	case PermissionNotifications:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindNotifications)
+	case PermissionClipboardRead:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindClipboardRead)
+	default:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindUnknownPermission)
+	}
 }
 
 func (w *windowsWebviewWindow) DPI() (w32.UINT, w32.UINT) {
@@ -2012,6 +2185,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
+	// Apply the cross-platform Permissions map first; the WebView2-specific
+	// Windows.Permissions map below can override individual kinds.
+	hasPermissionPolicy := len(w.parent.options.Permissions) > 0 || len(opts.Permissions) > 0
+	for permission, state := range w.parent.options.Permissions {
+		chromium.SetPermission(crossPermissionToWebView2Kind(permission),
+			edge.CoreWebView2PermissionState(state))
+	}
+
 	if opts.Permissions != nil {
 		for permission, state := range opts.Permissions {
 			chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
@@ -2128,7 +2309,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.parent.options.BackgroundColour.Alpha,
 	)
 
-	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	// WebView2's PermissionRequested handler checks the global permission
+	// before the per-kind map, so the blanket "allow all" must only be set
+	// when no per-kind policy is configured — otherwise it would override the
+	// Permissions map and a configured PermissionDeny would be ignored. When a
+	// policy is present, unset kinds fall through to PermissionDefault (the
+	// platform's native prompt).
+	if !hasPermissionPolicy {
+		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 
 	if w.parent.options.HTML != "" {
@@ -2447,6 +2636,10 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	case ButtonHidden:
 		w.setStyle(false, w32.WS_SYSMENU)
 	}
+}
+
+func (w *windowsWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// Windows has no dedicated fullscreen button in the standard title bar; no-op.
 }
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {

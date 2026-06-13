@@ -23,18 +23,20 @@ wails3 init [flags]
 #### Flags
 | Flag                  | Description          | Default                  |
 |-----------------------|----------------------|--------------------------|
-| `-p`                  | Package name         | `main`                   |
+| `-p`                  | Go package name      | `main`                   |
 | `-t`                  | Template name or URL | `vanilla`                |
 | `-n`                  | Project name         |                          |
 | `-d`                  | Project directory    | `.`                      |
 | `-q`                  | Suppress output      | `false`                  |
 | `-l`                  | List templates       | `false`                  |
+| `-mod`                | Go module path (computed from `-git` if omitted) | |
 | `-git`                | Git repository URL   |                          |
+| `-s`                  | Skip the warning when using a remote template    | `false` |
 | `-productname`        | Product name         | `My Product`             |
 | `-productdescription` | Product description  | `My Product Description` |
 | `-productversion`     | Product version      | `0.1.0`                  |
 | `-productcompany`     | Company name         | `My Company`             |
-| `-productcopyright`   | Copyright notice     | ` now, My Company`       |
+| `-productcopyright`   | Copyright notice     | `© now, My Company`      |
 | `-productcomments`    | File comments        | `This is a comment`      |
 | `-productidentifier`  | Product identifier   |                          |
 | `-skipgomodtidy`      | Skip go mod tidy     | `false`                   |
@@ -92,14 +94,14 @@ wails3 build PLATFORM=linux CONFIG=production
 
 Use the `-tags` flag to pass custom Go build tags:
 ```bash
-# Build with GTK4 support on Linux
-wails3 build -tags gtk4
+# Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
+wails3 build -tags gtk3
 
 # Build in server mode (no GUI)
 wails3 build -tags server
 
 # Multiple tags
-wails3 build -tags gtk4,customtag
+wails3 build -tags gtk3,customtag
 ```
 
 Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
@@ -235,10 +237,11 @@ wails3 generate bindings [flags] [patterns...]
 | `-b`        | Use bundled runtime       | `false`             |
 | `-names`    | Use names instead of IDs  | `false`             |
 | `-noindex`  | Skip index files          | `false`             |
+| `-noevents` | Skip generating event-related bindings | `false`  |
 | `-dry`      | Dry run                   | `false`             |
 | `-silent`   | Silent mode               | `false`             |
 | `-v`        | Debug output              | `false`             |
-| `-clean`    | Clean output directory    | `false`             |
+| `-clean`    | Clean output directory before generating | `true` |
 
 ### `generate build-assets`
 Generates build assets for your application.
@@ -351,6 +354,20 @@ Generates JavaScript constants from Go code.
 wails3 generate constants
 ```
 
+### `generate webview2bootstrapper`
+Generates a Windows WebView2 bootstrap installer for distribution.
+
+```bash
+wails3 generate webview2bootstrapper [flags]
+```
+
+### `generate template`
+Scaffolds a new project template directory.
+
+```bash
+wails3 generate template [flags]
+```
+
 ### `generate appimage`
 Generates a Linux AppImage.
 
@@ -366,8 +383,6 @@ wails3 generate appimage [flags]
 | `-desktop`  | Path to .desktop file | Required       |
 | `-builddir` | Build directory       | Temp directory |
 | `-output`   | Output directory      | `.`            |
-
-Base command: `wails3 service`
 
 ## Service Commands
 
@@ -393,8 +408,6 @@ wails3 service init [flags]
 | `-w` | Website URL         |                   |
 | `-r` | Repository URL      |                   |
 | `-l` | License             |                   |
-
-Base command: `wails3 tool`
 
 ## Tool Commands
 
@@ -475,14 +488,6 @@ wails3 tool package [flags]
 ```
 
 #### Flags
-| Flag      | Description                          | Default  |
-|-----------|--------------------------------------|----------|
-| `-format` | Package format (deb, rpm, archlinux) | `deb`    |
-| `-name`   | Executable name                      | Required |
-| `-config` | Config file path                     | Required |
-| `-out`    | Output directory                     | `.`      |
-
-#### Flags
 | Flag      | Description                          | Default |
 |-----------|--------------------------------------|---------|
 | `-format` | Package format (deb, rpm, archlinux) | `deb`   |
@@ -490,7 +495,69 @@ wails3 tool package [flags]
 | `-config` | Config file path                     |         |
 | `-out`    | Output directory                     | `.`     |
 
-Base command: `wails3 update`
+### `tool lipo`
+Creates a macOS universal binary by combining architecture-specific binaries.
+
+```bash
+wails3 tool lipo [flags]
+```
+
+#### Flags
+| Flag      | Description                         | Default |
+|-----------|-------------------------------------|---------|
+| `-output` | Output binary path                  |         |
+
+### `tool capabilities`
+Checks system build capabilities (GTK4/GTK3 availability on Linux).
+
+```bash
+wails3 tool capabilities
+```
+
+### `tool docker-mounts`
+Generates Docker volume mount flags for cross-compilation. Outputs `-v` flags for the Go module cache and any local `replace` directives in `go.mod`, for use in Taskfile `docker run` commands.
+
+```bash
+wails3 tool docker-mounts
+```
+
+### `tool has`
+Checks whether a tool or capability is available, printing `true` or `false` to stdout. Designed for use in Taskfile `sh:` variables as a cross-platform alternative to `command -v`.
+
+Use `|` to check for any one of several alternatives.
+
+```bash
+wails3 tool has <tool>
+```
+
+#### Examples
+```bash
+# Check for a C compiler (gcc or clang)
+wails3 tool has gcc|clang
+
+# Check for a specific tool
+wails3 tool has git
+wails3 tool has node
+```
+
+#### Usage in a Taskfile
+```yaml
+vars:
+  HAS_CC:
+    sh: 'wails3 tool has gcc|clang'
+```
+
+### `tool has-cc`
+
+:::caution[Deprecated]
+`wails3 tool has-cc` is deprecated. Update your Taskfile to use `wails3 tool has gcc|clang` instead.
+:::
+
+A backward-compatible alias for `wails3 tool has gcc|clang`. Checks whether `gcc` or `clang` is available in PATH and prints `true` or `false`.
+
+```bash
+wails3 tool has-cc
+```
 
 ## Update Commands
 
@@ -539,7 +606,6 @@ wails3 update build-assets [flags]
 | `-copyright`   | Copyright notice    |         |
 | `-comments`    | File comments       |         |
 
-Base command: `wails3`
 
 ## Utility Commands
 

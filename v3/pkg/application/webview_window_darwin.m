@@ -191,6 +191,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (BOOL) resignFirstResponder {
     return YES;
 }
+- (void) cancelOperation:(id)sender {
+    if (self.disableEscapeExitsFullscreen &&
+        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
