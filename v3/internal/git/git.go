@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/url"
 	"os/exec"
 	"strings"
 )
@@ -16,13 +17,27 @@ func isNotFound(err error) bool {
 	return errors.As(err, &execErr) && errors.Is(execErr.Err, exec.ErrNotFound)
 }
 
+// redactArgs returns a copy of args with any URL credentials (user:pass@host)
+// replaced by user:***@host so tokens are not leaked in error messages.
+func redactArgs(args []string) []string {
+	out := make([]string, len(args))
+	for i, a := range args {
+		if u, err := url.Parse(a); err == nil && u.User != nil {
+			u.User = url.UserPassword(u.User.Username(), "***")
+			a = u.String()
+		}
+		out[i] = a
+	}
+	return out
+}
+
 func run(args ...string) error {
 	out, err := exec.Command("git", args...).CombinedOutput()
 	if err != nil {
 		if isNotFound(err) {
 			return ErrNotInstalled
 		}
-		return fmt.Errorf("git %s: %w\n%s", strings.Join(args, " "), err, bytes.TrimSpace(out))
+		return fmt.Errorf("git %s: %w\n%s", strings.Join(redactArgs(args), " "), err, bytes.TrimSpace(out))
 	}
 	return nil
 }
@@ -33,7 +48,7 @@ func output(args ...string) (string, error) {
 		if isNotFound(err) {
 			return "", ErrNotInstalled
 		}
-		return "", fmt.Errorf("git %s: %w\n%s", strings.Join(args, " "), err, bytes.TrimSpace(out))
+		return "", fmt.Errorf("git %s: %w\n%s", strings.Join(redactArgs(args), " "), err, bytes.TrimSpace(out))
 	}
 	return strings.TrimSpace(string(out)), nil
 }
@@ -43,6 +58,9 @@ func HeadHash(dir string) (string, error) {
 	hash, err := output("-C", dir, "rev-parse", "HEAD")
 	if err != nil {
 		return "", err
+	}
+	if len(hash) < 8 {
+		return "", fmt.Errorf("git rev-parse returned unexpected output %q", hash)
 	}
 	return hash[:8], nil
 }
