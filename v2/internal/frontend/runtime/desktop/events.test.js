@@ -154,4 +154,18 @@ describe('notifyListeners during dispatch (#4393)', () => {
 
     expect(cb).toHaveBeenCalledTimes(1)
   })
+
+  it('retains a listener registered inside a callback during dispatch', () => {
+    const late = vi.fn()
+    const cb = vi.fn(() => { EventsOn('addduring', late) })
+    EventsOn('addduring', cb)
+
+    EventsNotify(JSON.stringify({name: 'addduring', data: {}}))
+    EventsNotify(JSON.stringify({name: 'addduring', data: {}}))
+
+    // `cb` fires on both dispatches; `late` was registered during the first
+    // dispatch and must survive to fire on the second.
+    expect(cb).toHaveBeenCalledTimes(2)
+    expect(late).toHaveBeenCalledTimes(1)
+  })
 })

@@ -110,16 +110,7 @@ function notifyListeners(eventData) {
             // listeners removed via EventsOff during dispatch were
             // resurrected and listeners added during dispatch were
             // dropped (#4393).
-            const current = eventListeners[eventName];
-            if (current) {
-                const index = current.indexOf(listener);
-                if (index !== -1) {
-                    current.splice(index, 1);
-                }
-                if (current.length === 0) {
-                    removeListener(eventName);
-                }
-            }
+            listenerOff(listener);
         }
     }
 }
