@@ -177,12 +177,73 @@ replace foo => C:\vendor\lib
 	}
 }
 
-func TestToolHasCC(t *testing.T) {
-	out, err := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
-	if err != nil {
-		t.Fatalf("ToolHasCC returned error: %v", err)
+func TestToolHas(t *testing.T) {
+	// Create a temp dir with a stub executable so we control exactly what is
+	// and isn't in PATH — no reliance on the host environment.
+	dir := t.TempDir()
+	stubName := createStubExecutable(t, dir)
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		tool    string
+		want    string
+		wantErr bool
+	}{
+		{tool: stubName, want: "true"},                            // found: stub is in PATH
+		{tool: "nonexistent-wails-tool-xyz", want: "false"},      // not found
+		{tool: "nonexistent-wails-tool-xyz|" + stubName, want: "true"}, // second alternative found
+		{tool: stubName + "|nonexistent-wails-tool-xyz", want: "true"}, // first alternative found
+		{tool: "", wantErr: true},                                 // missing arg: error
 	}
-	if out != "true" && out != "false" {
-		t.Errorf("expected exactly \"true\" or \"false\", got %q", out)
+
+	for _, tc := range tests {
+		out, err := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: tc.tool}) })
+		if tc.wantErr {
+			if err == nil {
+				t.Errorf("ToolHas(%q): expected error, got nil (output %q)", tc.tool, out)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("ToolHas(%q): unexpected error: %v", tc.tool, err)
+			continue
+		}
+		if out != tc.want {
+			t.Errorf("ToolHas(%q): got %q, want %q", tc.tool, out, tc.want)
+		}
 	}
+
+	// Deprecated alias: put a gcc stub in the same temp dir so the result is
+	// deterministic regardless of what the host has installed.
+	createNamedStub(t, dir, "gcc")
+	out1, err1 := captureStdout(t, func() error { return ToolHasCC(&HasCCOptions{}) })
+	out2, err2 := captureStdout(t, func() error { return ToolHas(&HasOptions{Tool: "gcc|clang"}) })
+	if err1 != nil || err2 != nil {
+		t.Errorf("ToolHasCC/ToolHas errors: %v / %v", err1, err2)
+	}
+	if out1 != "true" || out2 != "true" {
+		t.Errorf("expected \"true\" with gcc stub in PATH, got ToolHasCC=%q ToolHas=%q", out1, out2)
+	}
+}
+
+// createStubExecutable writes a minimal executable named "wails-test-stub" in
+// dir and returns its base name. LookPath only checks existence and the
+// executable bit, so content is irrelevant.
+func createStubExecutable(t *testing.T, dir string) string {
+	t.Helper()
+	return createNamedStub(t, dir, "wails-test-stub")
+}
+
+// createNamedStub writes a minimal executable with the given name in dir and
+// returns the base name (without any platform extension).
+func createNamedStub(t *testing.T, dir, name string) string {
+	t.Helper()
+	filename := filepath.Join(dir, name)
+	if runtime.GOOS == "windows" {
+		filename += ".exe"
+	}
+	if err := os.WriteFile(filename, []byte{}, 0755); err != nil {
+		t.Fatalf("creating stub executable %q: %v", name, err)
+	}
+	return name
 }

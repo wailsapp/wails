@@ -495,6 +495,70 @@ wails3 tool package [flags]
 | `-config` | Config file path                     |         |
 | `-out`    | Output directory                     | `.`     |
 
+### `tool lipo`
+Creates a macOS universal binary by combining architecture-specific binaries.
+
+```bash
+wails3 tool lipo [flags]
+```
+
+#### Flags
+| Flag      | Description                         | Default |
+|-----------|-------------------------------------|---------|
+| `-output` | Output binary path                  |         |
+
+### `tool capabilities`
+Checks system build capabilities (GTK4/GTK3 availability on Linux).
+
+```bash
+wails3 tool capabilities
+```
+
+### `tool docker-mounts`
+Generates Docker volume mount flags for cross-compilation. Outputs `-v` flags for the Go module cache and any local `replace` directives in `go.mod`, for use in Taskfile `docker run` commands.
+
+```bash
+wails3 tool docker-mounts
+```
+
+### `tool has`
+Checks whether a tool or capability is available, printing `true` or `false` to stdout. Designed for use in Taskfile `sh:` variables as a cross-platform alternative to `command -v`.
+
+Use `|` to check for any one of several alternatives.
+
+```bash
+wails3 tool has <tool>
+```
+
+#### Examples
+```bash
+# Check for a C compiler (gcc or clang)
+wails3 tool has gcc|clang
+
+# Check for a specific tool
+wails3 tool has git
+wails3 tool has node
+```
+
+#### Usage in a Taskfile
+```yaml
+vars:
+  HAS_CC:
+    sh: 'wails3 tool has gcc|clang'
+```
+
+### `tool has-cc`
+
+:::caution[Deprecated]
+`wails3 tool has-cc` is deprecated. Update your Taskfile to use `wails3 tool has gcc|clang` instead.
+:::
+
+A backward-compatible alias for `wails3 tool has gcc|clang`. Checks whether `gcc` or `clang` is available in PATH and prints `true` or `false`.
+
+```bash
+wails3 tool has-cc
+```
+
 ## Update Commands
 
 Update commands help manage and update project assets. All update commands use the base command: `wails3 update <command>`.
