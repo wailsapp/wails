@@ -171,8 +171,13 @@ jobs:
         steps.quick_check.outputs.should_continue == 'true' || 
         github.event.inputs.force_release == 'true'
       env:
-        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
+        # against the API before pushing anything and falls back to
+        # GITHUB_TOKEN if the PAT is expired/revoked. Passing the same value
+        # for both (as before) made the fallback meaningless and an expired
+        # PAT produced a half-release: tag pushed, no GitHub release.
+        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         cd v3/tasks/release
         ARGS=()
