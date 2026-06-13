@@ -75,6 +75,9 @@ void activateLinux(gpointer data);
 
 // Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
 int is_user_media_permission_request(WebKitPermissionRequest *request);
+// Whether a user-media request needs the microphone / camera respectively.
+int is_user_media_for_audio(WebKitPermissionRequest *request);
+int is_user_media_for_video(WebKitPermissionRequest *request);
 
 // ============================================================================
 // Main thread dispatch

@@ -1866,6 +1866,25 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
 }
 
+// crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
+// WebView2 permission-kind enum. Unknown types map to UnknownPermission.
+func crossPermissionToWebView2Kind(p PermissionType) edge.CoreWebView2PermissionKind {
+	switch p {
+	case PermissionMicrophone:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindMicrophone)
+	case PermissionCamera:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindCamera)
+	case PermissionGeolocation:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindGeolocation)
+	case PermissionNotifications:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindNotifications)
+	case PermissionClipboardRead:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindClipboardRead)
+	default:
+		return edge.CoreWebView2PermissionKind(CoreWebView2PermissionKindUnknownPermission)
+	}
+}
+
 func (w *windowsWebviewWindow) DPI() (w32.UINT, w32.UINT) {
 	if w32.HasGetDpiForWindowFunc() {
 		// GetDpiForWindow is supported beginning with Windows 10, 1607 and is the most accurate
@@ -2081,6 +2100,13 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
+
+	// Apply the cross-platform Permissions map first; the WebView2-specific
+	// Windows.Permissions map below can override individual kinds.
+	for permission, state := range w.parent.options.Permissions {
+		chromium.SetPermission(crossPermissionToWebView2Kind(permission),
+			edge.CoreWebView2PermissionState(state))
+	}
 
 	if opts.Permissions != nil {
 		for permission, state := range opts.Permissions {

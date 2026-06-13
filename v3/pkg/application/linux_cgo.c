@@ -179,6 +179,14 @@ int is_user_media_permission_request(WebKitPermissionRequest *request) {
     return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
 }
 
+int is_user_media_for_audio(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+int is_user_media_for_video(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
 // ============================================================================
 // WebView helpers
 // ============================================================================

@@ -1507,15 +1507,20 @@ func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 //export handlePermissionRequest
 func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
 	// WebKitGTK denies any permission request nobody handles, so without this
-	// getUserMedia always fails with NotAllowedError. Grant camera/microphone
-	// access to match the other platforms: Windows grants all permissions by
-	// default and macOS defers to the OS-level prompt. Returning FALSE for
-	// everything else keeps WebKit's default handling (deny).
-	if C.is_user_media_permission_request(request) != 0 {
-		C.webkit_permission_request_allow(request)
-		return C.gboolean(1)
+	// getUserMedia always fails with NotAllowedError. Honour the window's
+	// Permissions for camera/microphone; leave every other request to WebKit's
+	// default handling (deny).
+	if C.is_user_media_permission_request(request) == 0 {
+		return C.gboolean(0)
 	}
-	return C.gboolean(0)
+	needAudio := C.is_user_media_for_audio(request) != 0
+	needVideo := C.is_user_media_for_video(request) != 0
+	if allowMediaCapture(uint(data), needAudio, needVideo) {
+		C.webkit_permission_request_allow(request)
+	} else {
+		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
 }
 
 //export handleLoadChanged

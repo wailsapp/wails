@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix `getUserMedia` always failing with `NotAllowedError` on Linux: WebKitGTK denies permission requests nobody handles, and the `permission-request` signal was not connected. Camera/microphone requests are now granted, matching the Windows WebView2 default; all other permission kinds keep WebKit's default handling (#5552)
+- Fix `getUserMedia` always failing with `NotAllowedError` on Linux: WebKitGTK denies permission requests nobody handles, and the `permission-request` signal was not connected. Camera/microphone are now handled per a new cross-platform `WebviewWindowOptions.Permissions` map (`map[PermissionType]Permission`), honored on both Linux (WebKitGTK) and Windows (WebView2). On Linux, which has no native prompt, camera/microphone default to allowed (restoring `getUserMedia`) and can be turned off with `PermissionDeny` (#5552)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
