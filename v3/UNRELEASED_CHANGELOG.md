@@ -51,6 +51,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `getUserMedia` always failing with `NotAllowedError` on Linux: WebKitGTK denies permission requests nobody handles, and the `permission-request` signal was not connected. Camera/microphone are now handled per a new cross-platform `WebviewWindowOptions.Permissions` map (`map[PermissionType]Permission`), honored on both Linux (WebKitGTK) and Windows (WebView2). On Linux, which has no native prompt, camera/microphone default to allowed (restoring `getUserMedia`) and can be turned off with `PermissionDeny` (#5552)
 - iOS: `GOOS=ios` compiles again (exported `events.IOS`, mobile method-name stubs) and production-tagged builds compile (build-tag fixes in pkg/application and several services)
 - iOS: Go→JS events and ExecJS now work — the page no longer loads twice at startup and the `wails:runtime:ready` handshake can no longer be lost
 - iOS: `ApplicationDidFinishLaunching`/`ApplicationStarted` no longer race app startup; removed the fixed 2-second startup sleep
