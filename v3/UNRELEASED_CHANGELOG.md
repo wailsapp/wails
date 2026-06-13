@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fix compile errors in the experimental purego Linux assetserver backend: leftover cgo code, `RegisterLibFunc` calls registering into the wrong function variables, soup symbols resolved through the wrong library handle, and a stale `Finish()` signature that no longer satisfied the `ResponseWriter` interface (#5550)
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
