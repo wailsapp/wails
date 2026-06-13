@@ -39,6 +39,17 @@ func TestRouteGoTest(t *testing.T) {
 	require.IsType(t, &GoTestCmd{}, ex)
 }
 
+func TestParseGoTestCount(t *testing.T) {
+	// Regression: parseGoTestArgs used to read only the first digit of the
+	// -count value via args[i+1][0]-'0', so `-count 10` became 1 and
+	// `-count 100` became 1 too. Pin the full-integer parse in place.
+	for _, in := range []string{"1", "10", "100", "1000"} {
+		got := parseGoTestArgs([]string{"go", "test", "-count", in, "./..."})
+		want := map[string]int{"1": 1, "10": 10, "100": 100, "1000": 1000}[in]
+		require.Equal(t, want, got.Count, "-count %s parsed as %d", in, got.Count)
+	}
+}
+
 func TestRouteGoModTidy(t *testing.T) {
 	ex := Route("go mod tidy", RouteOptions{})
 	require.IsType(t, &GoModTidyCmd{}, ex)
@@ -136,8 +147,8 @@ func TestParseGoBuildArgs(t *testing.T) {
 			expected: GoBuildOptions{Package: "./cmd/app"},
 		},
 		{
-			name:     "complex build",
-			args:     []string{"go", "build", "-tags", "production", "-ldflags", "-s -w", "-trimpath", "-o", "bin/app", "./cmd/app"},
+			name: "complex build",
+			args: []string{"go", "build", "-tags", "production", "-ldflags", "-s -w", "-trimpath", "-o", "bin/app", "./cmd/app"},
 			expected: GoBuildOptions{
 				Tags:     []string{"production"},
 				Ldflags:  "-s -w",

@@ -111,9 +111,9 @@ func TestMergeTask(t *testing.T) {
 	result := MergeTask(base, override)
 
 	require.Equal(t, "/override", result.Dir)
-	require.Len(t, result.Cmds, 2)
-	require.Equal(t, "echo base", result.Cmds[0].Cmd)
-	require.Equal(t, "echo override", result.Cmds[1].Cmd)
+	// Local-wins: override cmds replace base cmds (they do not append).
+	require.Len(t, result.Cmds, 1)
+	require.Equal(t, "echo override", result.Cmds[0].Cmd)
 	require.Equal(t, "override", result.Vars["A"].Static)
 	require.Equal(t, "new", result.Vars["B"].Static)
 	require.Equal(t, "override", result.Env["FOO"])

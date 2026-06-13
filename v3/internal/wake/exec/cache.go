@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 const cacheDirName = ".wake"
@@ -22,8 +23,12 @@ type TaskCacheEntry struct {
 	LastRun time.Time `json:"last_run"`
 }
 
+// TaskCache is shared across parallel workers: ShouldSkip / ShouldSkipGoCmd
+// read Entries while RecordTask / RecordGoCmd write to it, and Save serialises
+// the whole map. All access goes through mu.
 type TaskCache struct {
-	Dir     string                     `json:"-"`
+	mu      sync.RWMutex
+	Dir     string                    `json:"-"`
 	Entries map[string]TaskCacheEntry `json:"entries"`
 }
 
@@ -50,17 +55,18 @@ func LoadTaskCache(baseDir string) (*TaskCache, error) {
 }
 
 func (tc *TaskCache) Save() error {
+	tc.mu.RLock()
 	dir := filepath.Join(tc.Dir, cacheDirName)
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		tc.mu.RUnlock()
 		return fmt.Errorf("wake: create cache dir: %w", err)
 	}
-
 	path := filepath.Join(dir, cacheFileName)
 	data, err := json.MarshalIndent(tc, "", "  ")
+	tc.mu.RUnlock()
 	if err != nil {
 		return fmt.Errorf("wake: marshal cache: %w", err)
 	}
-
 	return os.WriteFile(path, data, 0644)
 }
 
@@ -107,9 +113,21 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
+	taskDir := baseDir
+	if task.Dir != "" {
+		if filepath.IsAbs(task.Dir) {
+			taskDir = task.Dir
+		} else {
+			taskDir = filepath.Join(baseDir, task.Dir)
+		}
+	}
+
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
-			c := exec.Command("sh", "-c", cmd)
+			// platform.ShellCommand picks `sh -c` on Unix and `cmd /C` on
+			// Windows. The previous unconditional `sh -c` here broke status-
+			// based skipping on stock Windows installs.
+			c := platform.ShellCommand(cmd)
 			if err := c.Run(); err != nil {
 				return false
 			}
@@ -118,7 +136,7 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 	}
 
 	for _, pattern := range task.Generates {
-		if !globExists(baseDir, pattern) {
+		if !globExists(taskDir, pattern) {
 			return false
 		}
 	}
@@ -128,7 +146,9 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
+	tc.mu.RLock()
 	entry, ok := tc.Entries[task.Name]
+	tc.mu.RUnlock()
 	if !ok {
 		return false
 	}
@@ -137,8 +157,10 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 		return false
 	}
 
-	for _, pattern := range task.Sources {
-		files := globMatches(baseDir, pattern)
+	sources, excludes := splitSources(task.Sources)
+	for _, pattern := range sources {
+		files := globMatches(taskDir, pattern)
+		files = applyExcludes(files, taskDir, excludes)
 		for _, file := range files {
 			info, err := os.Stat(file)
 			if err != nil {
@@ -153,16 +175,98 @@ func (tc *TaskCache) ShouldSkip(task *ast.Task, baseDir string) bool {
 	return true
 }
 
+func splitSources(sources []string) ([]string, []string) {
+	var includes, excludes []string
+	for _, s := range sources {
+		if strings.HasPrefix(s, "exclude:") || strings.HasPrefix(s, "exclude ") {
+			pattern := strings.TrimSpace(strings.TrimPrefix(s, "exclude:"))
+			pattern = strings.TrimSpace(strings.TrimPrefix(pattern, "exclude "))
+			if pattern != "" {
+				excludes = append(excludes, pattern)
+			}
+		} else {
+			includes = append(includes, s)
+		}
+	}
+	return includes, excludes
+}
+
+func applyExcludes(files []string, baseDir string, excludes []string) []string {
+	if len(excludes) == 0 {
+		return files
+	}
+
+	var result []string
+	for _, file := range files {
+		rel, err := filepath.Rel(baseDir, file)
+		if err != nil {
+			rel = file
+		}
+		// Taskfile glob patterns are slash-separated. On Windows
+		// filepath.Rel produces backslash paths, which then fail to
+		// match a slash-based pattern. Normalise both sides to slashes
+		// before matching so exclude rules behave the same on every OS.
+		rel = filepath.ToSlash(rel)
+		excluded := false
+		for _, ex := range excludes {
+			if matchesGlob(rel, filepath.ToSlash(ex)) {
+				excluded = true
+				break
+			}
+		}
+		if !excluded {
+			result = append(result, file)
+		}
+	}
+	return result
+}
+
+func matchesGlob(path, pattern string) bool {
+	if strings.Contains(pattern, "**") {
+		return recursiveMatch(path, pattern)
+	}
+	matched, err := filepath.Match(pattern, path)
+	if err != nil {
+		return false
+	}
+	return matched
+}
+
+func recursiveMatch(path, pattern string) bool {
+	parts := strings.SplitN(pattern, "**", 2)
+	prefix := parts[0]
+	suffix := ""
+	if len(parts) > 1 {
+		suffix = strings.TrimLeft(parts[1], "/")
+	}
+
+	// The portion before `**` is a literal path prefix the file must live under.
+	if prefix != "" && !strings.HasPrefix(path, prefix) {
+		return false
+	}
+
+	if suffix == "" || suffix == "*" {
+		return true
+	}
+
+	if matched, _ := filepath.Match(suffix, filepath.Base(path)); matched {
+		return true
+	}
+	return strings.HasSuffix(path, suffix)
+}
+
 func (tc *TaskCache) RecordTask(task *ast.Task, baseDir string) error {
 	hash, err := ComputeTaskHash(task, baseDir)
 	if err != nil {
 		return err
 	}
 
+	tc.mu.Lock()
 	tc.Entries[task.Name] = TaskCacheEntry{
 		Hash:    hash,
 		LastRun: time.Now(),
 	}
+	tc.mu.Unlock()
 
 	return tc.Save()
 }
@@ -180,21 +284,33 @@ func globMatches(baseDir, pattern string) []string {
 
 func recursiveGlob(baseDir, pattern string) []string {
 	var results []string
-	parts := strings.Split(pattern, "**")
-	suffix := strings.TrimLeft(parts[len(parts)-1], "/")
+	parts := strings.SplitN(pattern, "**", 2)
+	prefix := parts[0]
+	suffix := ""
+	if len(parts) > 1 {
+		suffix = strings.TrimLeft(parts[1], "/")
+	}
 
-	filepath.WalkDir(baseDir, func(path string, d os.DirEntry, err error) error {
+	// Only walk the subtree named by the literal prefix (e.g. `frontend/dist`),
+	// not the whole baseDir. Without this, `frontend/dist/**/*` matched every
+	// file under baseDir, including unrelated paths like `.wake/cache.json`.
+	root := baseDir
+	if prefix != "" {
+		root = filepath.Join(baseDir, prefix)
+	}
+
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil
 		}
 		if d.IsDir() {
 			return nil
 		}
-		rel, err := filepath.Rel(baseDir, path)
-		if err != nil {
+		if suffix == "" || suffix == "*" {
+			results = append(results, path)
 			return nil
 		}
-		if suffix == "" || strings.HasSuffix(rel, suffix) || matchesPattern(rel, suffix) {
+		if matchesPattern(filepath.Base(path), suffix) || strings.HasSuffix(path, suffix) {
 			results = append(results, path)
 		}
 		return nil

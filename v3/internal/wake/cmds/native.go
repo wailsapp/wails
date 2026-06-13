@@ -1,8 +1,8 @@
 package cmds
 
 import (
-	"os"
 	"os/exec"
+	"strconv"
 )
 
 type GoBuildOptions struct {
@@ -19,6 +19,7 @@ type GoBuildOptions struct {
 }
 
 type GoBuildCmd struct {
+	Output
 	Opts GoBuildOptions
 	Dir  string
 	Env  []string
@@ -62,8 +63,7 @@ func (g *GoBuildCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -75,6 +75,7 @@ type GoRunOptions struct {
 }
 
 type GoRunCmd struct {
+	Output
 	Opts GoRunOptions
 	Dir  string
 	Env  []string
@@ -100,8 +101,7 @@ func (g *GoRunCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -117,6 +117,7 @@ type GoTestOptions struct {
 }
 
 type GoTestCmd struct {
+	Output
 	Opts GoTestOptions
 	Dir  string
 	Env  []string
@@ -141,7 +142,7 @@ func (g *GoTestCmd) Run() error {
 		args = append(args, "-tags", joinTags(g.Opts.Tags))
 	}
 	if g.Opts.Count > 0 {
-		args = append(args, "-count", string(rune('0'+g.Opts.Count)))
+		args = append(args, "-count", strconv.Itoa(g.Opts.Count))
 	}
 	if g.Opts.Run != "" {
 		args = append(args, "-run", g.Opts.Run)
@@ -154,12 +155,12 @@ func (g *GoTestCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoModTidyCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -172,8 +173,7 @@ func (g *GoModTidyCmd) Run() error {
 	c := exec.Command("go", "mod", "tidy")
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -182,6 +182,7 @@ type GoInstallOptions struct {
 }
 
 type GoInstallCmd struct {
+	Output
 	Opts GoInstallOptions
 	Dir  string
 	Env  []string
@@ -199,8 +200,7 @@ func (g *GoInstallCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
@@ -210,6 +210,7 @@ type GoModOptions struct {
 }
 
 type GoModCmd struct {
+	Output
 	Opts GoModOptions
 	Dir  string
 	Env  []string
@@ -224,12 +225,12 @@ func (g *GoModCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoVetCmd struct {
+	Output
 	Package string
 	Dir     string
 	Env     []string
@@ -247,12 +248,12 @@ func (g *GoVetCmd) Run() error {
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 
 type GoFmtCmd struct {
+	Output
 	Write bool
 	Paths []string
 	Dir   string
@@ -264,16 +265,22 @@ func GoFmt() *GoFmtCmd {
 }
 
 func (g *GoFmtCmd) Run() error {
-	args := []string{"fmt"}
+	// `go fmt` doesn't accept `-w` — that flag lives on the underlying
+	// `gofmt` binary that `go fmt` shells out to. When the caller wants
+	// `-w`-style "rewrite in place" we therefore invoke `gofmt` directly.
 	if g.Write {
-		args = append(args, "-w")
+		args := append([]string{"-w"}, g.Paths...)
+		c := exec.Command("gofmt", args...)
+		c.Dir = g.Dir
+		c.Env = g.Env
+		g.apply(c)
+		return c.Run()
 	}
-	args = append(args, g.Paths...)
+	args := append([]string{"fmt"}, g.Paths...)
 	c := exec.Command("go", args...)
 	c.Dir = g.Dir
 	c.Env = g.Env
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	g.apply(c)
 	return c.Run()
 }
 

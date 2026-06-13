@@ -7,22 +7,29 @@ import (
 )
 
 func DetectPackageManager(dir string) string {
-	lockfiles := map[string]string{
-		"package-lock.json": "npm",
-		"bun.lock":          "bun",
-		"bun.lockb":         "bun",
-		"pnpm-lock.yaml":    "pnpm",
-		"yarn.lock":         "yarn",
-	}
-	for name, pm := range lockfiles {
-		if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
-			return pm
+	// Ordered slice, not a map: when more than one lockfile is present
+	// (e.g. a repo migrated from npm to pnpm but kept the old lockfile)
+	// the choice has to be deterministic across runs. Map iteration order
+	// is randomised in Go, so the previous implementation could return
+	// "npm" on one run and "pnpm" on the next from the same tree.
+	for _, lf := range []struct {
+		name, pm string
+	}{
+		{"pnpm-lock.yaml", "pnpm"},
+		{"yarn.lock", "yarn"},
+		{"bun.lock", "bun"},
+		{"bun.lockb", "bun"},
+		{"package-lock.json", "npm"},
+	} {
+		if _, err := os.Stat(filepath.Join(dir, lf.name)); err == nil {
+			return lf.pm
 		}
 	}
 	return "npm"
 }
 
 type NpmInstallCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -35,12 +42,12 @@ func (n *NpmInstallCmd) Run() error {
 	c := exec.Command("npm", "install")
 	c.Dir = n.Dir
 	c.Env = n.Env
-	c.Stdout = nil
-	c.Stderr = nil
+	n.apply(c)
 	return c.Run()
 }
 
 type NpmRunCmd struct {
+	Output
 	Script string
 	Dir    string
 	Env    []string
@@ -54,12 +61,12 @@ func (n *NpmRunCmd) Run() error {
 	c := exec.Command("npm", "run", n.Script)
 	c.Dir = n.Dir
 	c.Env = n.Env
-	c.Stdout = nil
-	c.Stderr = nil
+	n.apply(c)
 	return c.Run()
 }
 
 type BunInstallCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -72,12 +79,12 @@ func (b *BunInstallCmd) Run() error {
 	c := exec.Command("bun", "install")
 	c.Dir = b.Dir
 	c.Env = b.Env
-	c.Stdout = nil
-	c.Stderr = nil
+	b.apply(c)
 	return c.Run()
 }
 
 type PnpmInstallCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -90,12 +97,12 @@ func (p *PnpmInstallCmd) Run() error {
 	c := exec.Command("pnpm", "install")
 	c.Dir = p.Dir
 	c.Env = p.Env
-	c.Stdout = nil
-	c.Stderr = nil
+	p.apply(c)
 	return c.Run()
 }
 
 type YarnInstallCmd struct {
+	Output
 	Dir string
 	Env []string
 }
@@ -108,7 +115,6 @@ func (y *YarnInstallCmd) Run() error {
 	c := exec.Command("yarn", "install")
 	c.Dir = y.Dir
 	c.Env = y.Env
-	c.Stdout = nil
-	c.Stderr = nil
+	y.apply(c)
 	return c.Run()
 }

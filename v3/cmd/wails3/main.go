@@ -4,15 +4,16 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
+	"github.com/wailsapp/wails/v3/internal/wake"
 )
 
 func init() {
@@ -143,7 +144,11 @@ func main() {
 
 	err := app.Run()
 	if err != nil {
-		pterm.Error.Println(err)
+		// A wake build failure is already rendered as a clean panel by the build
+		// reporter; printing the raw error again would duplicate it.
+		if !wake.IsReported(err) {
+			pterm.Error.Println(err)
+		}
 		os.Exit(1)
 	}
 }

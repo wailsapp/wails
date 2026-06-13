@@ -4,9 +4,17 @@ package application
 
 import "github.com/wailsapp/wails/v3/pkg/events"
 
-// Map platform events → common events (same pattern as macOS & others)
+// Map platform events → common events (same pattern as macOS & others).
+// setupCommonEvents copies the source event's context, so any data attached on
+// the iOS side (battery level, theme, …) rides along to the common event.
 var commonApplicationEventMap = map[events.ApplicationEventType]events.ApplicationEventType{
-    events.IOS.ApplicationDidFinishLaunching: events.Common.ApplicationStarted,
+    events.IOS.ApplicationDidFinishLaunching:      events.Common.ApplicationStarted,
+    events.IOS.ApplicationDidReceiveMemoryWarning: events.Common.LowMemory,
+    events.IOS.BatteryChanged:                     events.Common.BatteryChanged,
+    events.IOS.NetworkChanged:                     events.Common.NetworkChanged,
+    events.IOS.ThemeChanged:                       events.Common.ThemeChanged,
+    events.IOS.ScreenLocked:                       events.Common.ScreenLocked,
+    events.IOS.ScreenUnlocked:                     events.Common.ScreenUnlocked,
 }
 
 // setupCommonEvents forwards iOS platform events to their common counterparts

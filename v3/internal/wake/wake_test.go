@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake/ast"
 )
 
 func TestParseSimpleTaskfile(t *testing.T) {
@@ -251,6 +252,34 @@ tasks:
 	require.NoError(t, err)
 	require.NotNil(t, tf)
 	require.Contains(t, tf.Tasks, "hello")
+}
+
+func TestResolveInNamespacePrefersLocal(t *testing.T) {
+	tf := &ast.Taskfile{
+		Tasks: map[string]*ast.Task{
+			"build":          {Name: "build"},
+			"darwin:build":   {Name: "darwin:build"},
+			"darwin:package": {Name: "darwin:package"},
+			"darwin:common:go:mod:tidy": {Name: "darwin:common:go:mod:tidy"},
+		},
+		Includes: map[string]*ast.Include{"common": {}},
+	}
+
+	// A bare dep `build` inside the darwin namespace must bind to darwin:build,
+	// not the same-named top-level wrapper (the prod-packaging dep-var bug).
+	if got, ok := resolveInNamespace(tf, "darwin:package", "build"); !ok || got != "darwin:build" {
+		t.Errorf("resolveInNamespace(darwin:package, build) = %q,%v; want darwin:build,true", got, ok)
+	}
+
+	// common:-qualified dep inside a namespace resolves to the namespaced copy.
+	if got, ok := resolveInNamespace(tf, "darwin:build", "common:go:mod:tidy"); !ok || got != "darwin:common:go:mod:tidy" {
+		t.Errorf("resolveInNamespace(darwin:build, common:go:mod:tidy) = %q,%v; want darwin:common:go:mod:tidy,true", got, ok)
+	}
+
+	// No namespace context: bare top-level name resolves to itself.
+	if got, ok := resolveInNamespace(tf, "run", "build"); !ok || got != "build" {
+		t.Errorf("resolveInNamespace(run, build) = %q,%v; want build,true", got, ok)
+	}
 }
 
 func TestUseWakeEnvVar(t *testing.T) {

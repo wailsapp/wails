@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/hash"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
@@ -87,6 +88,37 @@ type Bindings struct {
 	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
+}
+
+var registeredBindingMethodIDs sync.Map
+
+// RegisterBindingMethodID registers a stable binding ID for a service method
+// expression so the runtime can resolve it without relying on reflection-visible
+// names (which may be obfuscated).
+func RegisterBindingMethodID(method any, id uint32) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		panic(fmt.Sprintf("binding method ID registration expects a function, got %s", value.Kind()))
+	}
+	registeredBindingMethodIDs.Store(value.Pointer(), id)
+}
+
+// UnregisterBindingMethodID removes the stable binding ID for a service method.
+// Intended for use in tests to restore global state after calling RegisterBindingMethodID.
+func UnregisterBindingMethodID(method any) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		return
+	}
+	registeredBindingMethodIDs.Delete(value.Pointer())
+}
+
+func getRegisteredBindingMethodID(method reflect.Method) (uint32, bool) {
+	id, ok := registeredBindingMethodIDs.Load(method.Func.Pointer())
+	if !ok {
+		return 0, false
+	}
+	return id.(uint32), true
 }
 
 func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
@@ -202,7 +234,8 @@ func getMethods(value any) ([]*BoundMethod, error) {
 
 	// Process Methods
 	for i := range ptrType.NumMethod() {
-		methodName := ptrType.Method(i).Name
+		methodDef := ptrType.Method(i)
+		methodName := methodDef.Name
 		method := namedValue.Method(i)
 
 		if internalServiceMethods[methodName] {
@@ -215,8 +248,13 @@ func getMethods(value any) ([]*BoundMethod, error) {
 		methodType := method.Type()
 
 		// Create new method with cached flags
+		methodID := hash.Fnv(fqn)
+		if registeredID, ok := getRegisteredBindingMethodID(methodDef); ok {
+			methodID = registeredID
+		}
+
 		boundMethod := &BoundMethod{
-			ID:         hash.Fnv(fqn),
+			ID:         methodID,
 			FQN:        fqn,
 			Name:       methodName,
 			Inputs:     nil,

@@ -3,12 +3,11 @@ package exec
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
 type runCache struct {
@@ -25,7 +24,7 @@ func checkPreconditions(task *ast.Task) error {
 		if pc.Sh == "" {
 			continue
 		}
-		c := exec.Command("sh", "-c", pc.Sh)
+		c := platform.ShellCommand(pc.Sh)
 		if err := c.Run(); err != nil {
 			msg := pc.Msg
 			if msg == "" {
@@ -44,7 +43,7 @@ func isUpToDate(task *ast.Task, baseDir string) bool {
 
 	if len(task.Status) > 0 {
 		for _, cmd := range task.Status {
-			c := exec.Command("sh", "-c", cmd)
+			c := platform.ShellCommand(cmd)
 			if err := c.Run(); err != nil {
 				return false
 			}
@@ -58,12 +57,19 @@ func isUpToDate(task *ast.Task, baseDir string) bool {
 		}
 	}
 
+	// Read lastRuns under the mutex — RecordRun writes to this map and runs
+	// concurrently when Parallel=true. The map snapshot was previously read
+	// raw, which both produced inconsistent up-to-date decisions and could
+	// panic on Go's "concurrent map read and map write" detector.
+	cache.mu.Lock()
 	lastRun := cache.lastRuns[task.Name]
+	cache.mu.Unlock()
+
 	for _, pattern := range task.Sources {
-		matches, err := filepath.Glob(filepath.Join(baseDir, pattern))
-		if err != nil {
-			continue
-		}
+		// globMatches understands Taskfile-style "**" recursive globs;
+		// stdlib filepath.Glob does not, and silently returning no matches
+		// would make recursively-watched directories spuriously up-to-date.
+		matches := globMatches(baseDir, pattern)
 		for _, file := range matches {
 			info, err := os.Stat(file)
 			if err != nil {
@@ -78,12 +84,11 @@ func isUpToDate(task *ast.Task, baseDir string) bool {
 	return true
 }
 
+// globExists reports whether at least one file matches pattern within
+// baseDir. Uses globMatches so "**" recursive patterns behave consistently
+// with the rest of the cache layer.
 func globExists(baseDir, pattern string) bool {
-	matches, err := filepath.Glob(filepath.Join(baseDir, pattern))
-	if err != nil {
-		return false
-	}
-	return len(matches) > 0
+	return len(globMatches(baseDir, pattern)) > 0
 }
 
 func RecordRun(taskName string) {

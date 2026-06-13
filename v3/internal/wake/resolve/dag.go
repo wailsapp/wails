@@ -108,24 +108,31 @@ func topologicalSort(dag *DAG) []string {
 		inDeg[k] = v
 	}
 
-	var queue []string
+	var ready []string
 	for name, deg := range inDeg {
 		if deg == 0 {
-			queue = append(queue, name)
+			ready = append(ready, name)
 		}
 	}
-	sort.Strings(queue)
 
+	// Sort the *ready* set on every iteration, not just the first one.
+	// As tasks unblock, the order in which their newly-zero-in-degree
+	// dependents are appended depends on Go's randomised map iteration
+	// over dag.Edges, which made the resulting DAG order unstable
+	// between runs (and made any UI/summary derived from it flicker).
+	// Sorting the ready set each time fixes the displayed order without
+	// changing semantic correctness.
 	var order []string
-	for len(queue) > 0 {
-		u := queue[0]
-		queue = queue[1:]
+	for len(ready) > 0 {
+		sort.Strings(ready)
+		u := ready[0]
+		ready = ready[1:]
 		order = append(order, u)
 
 		for _, v := range dag.Edges[u] {
 			inDeg[v]--
 			if inDeg[v] == 0 {
-				queue = append(queue, v)
+				ready = append(ready, v)
 			}
 		}
 	}
