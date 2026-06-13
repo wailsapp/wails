@@ -188,6 +188,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
