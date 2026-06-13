@@ -697,8 +697,8 @@ Permissions: map[application.PermissionType]application.Permission{
 **PermissionType values:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
 
 **Permission values:**
-- `PermissionDefault` (0) — platform's native handling: OS/WebView2 prompt on macOS/Windows; media capture allowed, others denied on Linux
-- `PermissionAllow` (1) — grant without prompting
+- `PermissionDefault` (0) — platform's native handling: OS/WebView2 prompt on macOS/Windows; on Linux, camera/microphone are allowed, everything else is denied
+- `PermissionAllow` (1) — grant without prompting (Linux: only camera/microphone are implemented; other types remain denied)
 - `PermissionDeny` (2) — deny without prompting
 
 **Important — Windows:** Before this option existed, Wails silently granted all WebView2 capabilities. Now, setting any entry in `Permissions` disables that blanket grant. Capabilities not listed will show WebView2's native prompt rather than being auto-allowed. List every capability your app needs explicitly.
