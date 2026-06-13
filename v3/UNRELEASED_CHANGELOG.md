@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fix message dialogs with icons on Windows: in dev builds (no embedded icon resource) the dialog never appeared and the app aborted; the dialog now falls back to a standard message box. Question dialogs with icons also no longer lose their Yes/No buttons (the icon path forced `MB_OK`) (#4233)
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
