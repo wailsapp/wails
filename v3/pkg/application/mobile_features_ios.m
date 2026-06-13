@@ -745,3 +745,126 @@ static void mfEnsureLifecycleObservers(void) {
     [nc addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
         queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *n){ mfHandleEnterForeground(); }];
 }
+
+// MARK: - Camera capture (Phase E)
+
+// Downscale a UIImage into a base64 JPEG data URL for display in the webview.
+static NSString* mfImageThumbnailDataURL(UIImage *image) {
+    if (!image) return nil;
+    CGFloat maxDim = 640;
+    CGFloat scale = MIN((CGFloat)1.0, maxDim / MAX(image.size.width, image.size.height));
+    CGSize sz = CGSizeMake(image.size.width * scale, image.size.height * scale);
+    UIGraphicsBeginImageContextWithOptions(sz, YES, 1.0);
+    [image drawInRect:CGRectMake(0, 0, sz.width, sz.height)];
+    UIImage *small = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    NSData *jpeg = UIImageJPEGRepresentation(small, 0.7);
+    if (!jpeg) return nil;
+    return [@"data:image/jpeg;base64," stringByAppendingString:[jpeg base64EncodedStringWithOptions:0]];
+}
+
+@interface MFCameraDelegate : NSObject <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@end
+
+static MFCameraDelegate *g_mfCameraDelegate = nil; // retained while the picker is presented
+
+@implementation MFCameraDelegate
+- (void)imagePickerController:(UIImagePickerController *)picker
+        didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id> *)info {
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    NSString *mediaType = info[UIImagePickerControllerMediaType];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([mediaType isEqualToString:@"public.movie"]) {
+        NSURL *src = info[UIImagePickerControllerMediaURL];
+        NSString *dst = [NSTemporaryDirectory() stringByAppendingPathComponent:
+            [NSString stringWithFormat:@"capture_%@.mov", [[NSUUID UUID] UUIDString]]];
+        [fm removeItemAtPath:dst error:nil];
+        [fm copyItemAtURL:src toURL:[NSURL fileURLWithPath:dst] error:nil];
+        unsigned long long size = [[fm attributesOfItemAtPath:dst error:nil] fileSize];
+        mfEmit(@"native:capture", @{@"type": @"video", @"path": dst, @"size": @(size)});
+    } else {
+        UIImage *image = info[UIImagePickerControllerOriginalImage];
+        NSData *jpeg = UIImageJPEGRepresentation(image, 0.9);
+        NSString *dst = [NSTemporaryDirectory() stringByAppendingPathComponent:
+            [NSString stringWithFormat:@"capture_%@.jpg", [[NSUUID UUID] UUIDString]]];
+        [jpeg writeToFile:dst atomically:YES];
+        NSMutableDictionary *payload = [@{@"type": @"photo", @"path": dst,
+                                          @"size": @(jpeg.length)} mutableCopy];
+        NSString *thumb = mfImageThumbnailDataURL(image);
+        if (thumb) payload[@"thumb"] = thumb;
+        mfEmit(@"native:capture", payload);
+    }
+    g_mfCameraDelegate = nil;
+}
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    mfEmit(@"native:capture", @{@"cancelled": @YES});
+    g_mfCameraDelegate = nil;
+}
+@end
+
+static void mfPresentCamera(BOOL video) {
+    mfRunOnMain(^{
+        if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            mfEmit(@"native:capture", @{@"error": @"camera not available (e.g. simulator)"});
+            return;
+        }
+        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        picker.mediaTypes = video ? @[@"public.movie"] : @[@"public.image"];
+        if (video) picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
+        g_mfCameraDelegate = [[MFCameraDelegate alloc] init];
+        picker.delegate = g_mfCameraDelegate;
+        [mfTopViewController() presentViewController:picker animated:YES completion:nil];
+    });
+}
+
+void ios_capture_photo(void) { mfPresentCamera(NO); }
+void ios_capture_video(void) { mfPresentCamera(YES); }
+
+// MARK: - Background-task window (Phase E)
+
+// UIBackgroundTaskInvalid is an extern const (not a compile-time constant), so a
+// separate BOOL tracks whether a task is active rather than initializing to it.
+static UIBackgroundTaskIdentifier g_mfBgTask;
+static BOOL g_mfBgTaskActive = NO;
+
+static void mfEndBgTask(void) {
+    if (g_mfBgTaskActive) {
+        [[UIApplication sharedApplication] endBackgroundTask:g_mfBgTask];
+        g_mfBgTaskActive = NO;
+    }
+}
+
+void ios_begin_background_task(int seconds) {
+    mfRunOnMain(^{
+        mfEndBgTask();
+        g_mfBgTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:@"wails.bgtask"
+            expirationHandler:^{
+                mfEmit(@"native:backgroundTask", @{@"message": @"expired"});
+                mfEndBgTask();
+            }];
+        if (g_mfBgTask == UIBackgroundTaskInvalid) {
+            mfEmit(@"native:backgroundTask", @{@"message": @"unavailable"});
+            return;
+        }
+        g_mfBgTaskActive = YES;
+        NSTimeInterval remaining = [UIApplication sharedApplication].backgroundTimeRemaining;
+        NSString *msg = remaining > 1e8
+            ? @"started (full time while in foreground)"
+            : [NSString stringWithFormat:@"started (~%.0fs remaining)", remaining];
+        mfEmit(@"native:backgroundTask", @{@"message": msg, @"granted": @(seconds)});
+        int secs = seconds > 0 ? seconds : 20;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)secs * NSEC_PER_SEC),
+            dispatch_get_main_queue(), ^{
+                if (g_mfBgTaskActive) {
+                    mfEmit(@"native:backgroundTask", @{@"message": @"finished"});
+                    mfEndBgTask();
+                }
+            });
+    });
+}
+
+void ios_end_background_task(void) {
+    mfRunOnMain(^{ mfEndBgTask(); });
+}

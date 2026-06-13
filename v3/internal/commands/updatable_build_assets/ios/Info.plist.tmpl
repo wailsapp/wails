@@ -46,6 +46,13 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
+    {{if .BackgroundModes}}
+    <key>UIBackgroundModes</key>
+    <array>
+        {{range .BackgroundModes}}<string>{{.}}</string>
+        {{end}}
+    </array>
+    {{end}}
     {{if .ProductCopyright}}
     <key>NSHumanReadableCopyright</key>
     <string>{{.ProductCopyright}}</string>

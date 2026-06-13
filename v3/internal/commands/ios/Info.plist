@@ -52,6 +52,10 @@
     <string>Used to provide location-based features.</string>
     <key>NSMotionUsageDescription</key>
     <string>Used to read device motion (accelerometer).</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Used to capture photos and video.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Used to record audio with video capture.</string>
 
     <key>CFBundleGetInfoString</key>
     <string>(c) 2026 Test</string>

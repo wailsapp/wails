@@ -120,3 +120,23 @@ func AndroidSetKeyboardWatch(enabled bool) {
 func AndroidSetScreenProtect(enabled bool) {
 	androidBridgeVoidInt("setScreenProtect", boolToInt(enabled))
 }
+
+// --- Phase E: camera & background -------------------------------------------
+
+// AndroidCapturePhoto launches the system camera to take a photo; the result
+// arrives as the "native:capture" event {type:"photo",path,size,thumb}.
+func AndroidCapturePhoto() { androidBridgeVoidString("capturePhoto", "{}") }
+
+// AndroidCaptureVideo launches the system camera to record a video; the result
+// arrives as the "native:capture" event {type:"video",path,size}.
+func AndroidCaptureVideo() { androidBridgeVoidString("captureVideo", "{}") }
+
+// AndroidStartForegroundService starts a foreground service (with an ongoing
+// notification) so the process keeps running for long-running background work.
+// JSON: {"title","text"}.
+func AndroidStartForegroundService(jsonPayload string) {
+	androidBridgeVoidString("startForegroundService", jsonPayload)
+}
+
+// AndroidStopForegroundService stops the foreground service.
+func AndroidStopForegroundService() { androidBridgeVoid("stopForegroundService") }

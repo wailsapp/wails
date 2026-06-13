@@ -38,4 +38,10 @@ const char* ios_network_json(void);         // {"connected":bool,"type":"wifi|ce
 void ios_set_keyboard_watch(bool enabled);  // keyboard insets → "native:keyboard" {visible,height}
 void ios_set_screen_protect(bool enabled);  // screenshot/recording detection → "native:screenCapture"
 
+// Phase E — camera & background
+void ios_capture_photo(void);               // camera → "native:capture" {type:"photo",path,size,thumb}
+void ios_capture_video(void);               // camera → "native:capture" {type:"video",path,size}
+void ios_begin_background_task(int seconds); // open a background-task window → "native:backgroundTask"
+void ios_end_background_task(void);
+
 #endif

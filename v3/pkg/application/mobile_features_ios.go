@@ -185,6 +185,26 @@ func IOSSetKeyboardWatch(enabled bool) { C.ios_set_keyboard_watch(C.bool(enabled
 // this is detection-only; on Android the same control sets FLAG_SECURE.)
 func IOSSetScreenProtect(enabled bool) { C.ios_set_screen_protect(C.bool(enabled)) }
 
+// --- Phase E: camera & background --------------------------------------------
+
+// IOSCapturePhoto presents the camera to take a photo; the result is delivered
+// as the "native:capture" event {type:"photo",path,size,thumb}.
+func IOSCapturePhoto() { C.ios_capture_photo() }
+
+// IOSCaptureVideo presents the camera to record a video; the result is delivered
+// as the "native:capture" event {type:"video",path,size}.
+func IOSCaptureVideo() { C.ios_capture_video() }
+
+// IOSBeginBackgroundTask opens a UIApplication background-task window so short
+// work can finish after the app is backgrounded. iOS grants a limited amount of
+// time; the granted/remaining seconds are reported as the "native:backgroundTask"
+// event. Sustained background execution requires a declared UIBackgroundMode.
+func IOSBeginBackgroundTask(seconds int) { C.ios_begin_background_task(C.int(seconds)) }
+
+// IOSEndBackgroundTask ends the background-task window opened by
+// IOSBeginBackgroundTask.
+func IOSEndBackgroundTask() { C.ios_end_background_task() }
+
 // iosEmitNativeEvent is called from the Objective-C bridge to deliver an
 // asynchronous result to the frontend as a custom event.
 //

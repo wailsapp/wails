@@ -96,6 +96,9 @@ type iosBuildYAML struct {
 		Company       string `yaml:"company"`
 		Comments      string `yaml:"comments"`
 		MinIOSVersion string `yaml:"minIOSVersion"`
+		// BackgroundModes templates UIBackgroundModes into Info.plist (e.g.
+		// "fetch", "processing", "location", "audio", "voip", "remote-notification").
+		BackgroundModes []string `yaml:"backgroundModes"`
 	} `yaml:"ios"`
 	Info struct {
 		ProductName       string `yaml:"productName"`
@@ -161,6 +164,9 @@ func loadIOSProjectConfig(configPath string, cfg *iOSProjectConfig) error {
 	if in.IOS.MinIOSVersion != "" {
 		cfg.MinIOSVersion = in.IOS.MinIOSVersion
 	}
+	if len(in.IOS.BackgroundModes) > 0 {
+		cfg.BackgroundModes = in.IOS.BackgroundModes
+	}
 	// BinaryName remains default unless we later add config support
 	return nil
 }
@@ -176,6 +182,7 @@ type iOSProjectConfig struct {
 	ProductCopyright  string
 	ProductDescription string
 	MinIOSVersion     string
+	BackgroundModes   []string
 }
 
 // IOSXcodeGen generates an Xcode project skeleton for the current app.
