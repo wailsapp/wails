@@ -9,10 +9,45 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/term"
+	"github.com/wailsapp/wails/v3/internal/wake"
 
 	"github.com/wailsapp/task/v3"
 	"github.com/wailsapp/task/v3/taskfile/ast"
 )
+
+// wakeRoutableInvocation reports whether `wails3 task <name>` can be safely
+// dispatched to wake. wake doesn't model the introspection flags (list,
+// dry-run, summary, watch) — those bypass wake and fall through to the
+// embedded task runtime below.
+//
+// `--dir` / `--taskfile` also bypass wake: they reshape where the Taskfile
+// is loaded from, and the wake fast path currently always loads from the
+// process cwd. Routing those through wake would silently run the task from
+// the wrong directory or ignore the user's chosen entrypoint, so let the
+// embedded runtime keep its semantics for that case.
+func wakeRoutableInvocation(o *RunTaskOptions) bool {
+	if o.List || o.ListAll || o.ListJSON || o.Status || o.Watch ||
+		o.Dry || o.Summary {
+		return false
+	}
+	if o.Dir != "" || o.EntryPoint != "" {
+		return false
+	}
+	return true
+}
+
+// parseCLIVars splits the trailing "KEY=VALUE" arguments off `wails3 task`
+// invocations into a map for wake.ExecuteOptions.Vars. Args without an "="
+// are silently skipped (matching the embedded task runtime's behaviour).
+func parseCLIVars(args []string) map[string]string {
+	vars := make(map[string]string)
+	for _, a := range args {
+		if k, v, ok := strings.Cut(a, "="); ok {
+			vars[k] = v
+		}
+	}
+	return vars
+}
 
 // BuildSettings contains the CLI build settings
 var BuildSettings = map[string]string{}
@@ -64,6 +99,33 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		}
 		return task.InitTaskfile(os.Stdout, wd)
 	}
+
+	// When WAILS_USE_WAKE=true, route arbitrary `wails3 task <name>`
+	// invocations through wake too, for consistency with `wails3 build` /
+	// `wails3 package` / `wails3 sign` (which all dispatch via wrapTask).
+	// Operations wake doesn't support (--list, --watch, --dry, etc.) fall
+	// through to the embedded task runtime below. wake itself will fall
+	// back to the embedded runtime if the Taskfile uses an unsupported
+	// feature (dotenv, requires, ...), so this path is always safe.
+	if useWake() && options.Name != "" && wakeRoutableInvocation(options) {
+		dir, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		vars := parseCLIVars(otherArgs)
+		opts := wake.ExecuteOptions{
+			Dir:      dir,
+			Verb:     options.Name,
+			Vars:     vars,
+			Verbose:  options.Verbose || os.Getenv("WAKE_VERBOSE") != "",
+			Silent:   options.Silent || os.Getenv("WAKE_SILENT") != "",
+			Debug:    os.Getenv("WAKE_DEBUG") != "",
+			Parallel: options.Parallel || os.Getenv("WAKE_SERIAL") == "",
+			Force:    options.Force || os.Getenv("WAKE_FORCE") != "",
+		}
+		return wake.Execute(options.Name, opts)
+	}
+
 
 	if options.Dir != "" && options.EntryPoint != "" {
 		return fmt.Errorf("task: You can't set both --dir and --taskfile")

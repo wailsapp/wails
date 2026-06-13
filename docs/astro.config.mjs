@@ -188,6 +188,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
@@ -309,6 +310,9 @@ export default defineConfig({
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
+                { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
+                { label: "iOS", link: "/guides/build/ios" },
+                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {
