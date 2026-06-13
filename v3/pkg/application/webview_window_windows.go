@@ -1265,10 +1265,17 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	// animations are keyed on: minimise/restore/maximise transitions, Aero
 	// snap and the resize borders all stopped working after
 	// SetFrameless(true), unlike creation-time frameless windows (#5541).
-	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
-	// Re-apply the resizable setting, since WS_OVERLAPPEDWINDOW includes
-	// WS_THICKFRAME unconditionally.
-	w.setStyle(!w.parent.options.DisableResize, w32.WS_THICKFRAME)
+	//
+	// Preserve the live state/button bits rather than overwriting GWL_STYLE
+	// wholesale: a blanket WS_VISIBLE|WS_OVERLAPPEDWINDOW would clear the
+	// WS_MAXIMIZE/WS_MINIMIZE state bits and re-enable the minimise/maximise/
+	// close buttons even when they were disabled via options or the runtime
+	// setMinimiseButtonState/setMaximiseButtonState/setCloseButtonState calls.
+	const preserve = w32.WS_VISIBLE | w32.WS_MAXIMIZE | w32.WS_MINIMIZE |
+		w32.WS_MINIMIZEBOX | w32.WS_MAXIMIZEBOX | w32.WS_SYSMENU | w32.WS_THICKFRAME
+	current := uint(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
+	style := (uint(w32.WS_OVERLAPPEDWINDOW) &^ preserve) | (current & preserve)
+	w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(style))
 	// Inform the application of the frame change to trigger WM_NCCALCSIZE.
 	w32.SetWindowPos(
 		w.hwnd,
