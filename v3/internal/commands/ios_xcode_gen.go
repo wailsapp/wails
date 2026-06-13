@@ -173,16 +173,16 @@ func loadIOSProjectConfig(configPath string, cfg *iOSProjectConfig) error {
 
 // iOSProjectConfig is a minimal config used to fill templates. Extend later to read build/config.yml.
 type iOSProjectConfig struct {
-	ProductName       string
-	BinaryName        string
-	ProductIdentifier string
-	ProductVersion    string
-	ProductCompany    string
-	ProductComments   string
-	ProductCopyright  string
+	ProductName        string
+	BinaryName         string
+	ProductIdentifier  string
+	ProductVersion     string
+	ProductCompany     string
+	ProductComments    string
+	ProductCopyright   string
 	ProductDescription string
-	MinIOSVersion     string
-	BackgroundModes   []string
+	MinIOSVersion      string
+	BackgroundModes    []string
 }
 
 // IOSXcodeGen generates an Xcode project skeleton for the current app.
@@ -208,15 +208,15 @@ func IOSXcodeGen(options *IOSXcodeGenOptions) error {
 
 	// Prepare config with defaults, then merge from build/config.yml if present
 	cfg := iOSProjectConfig{
-		ProductName:       "Wails App",
-		BinaryName:        "wailsapp",
-		ProductIdentifier: "com.wails.app",
-		ProductVersion:    "0.1.0",
-		ProductCompany:    "",
-		ProductComments:   "",
-		ProductCopyright:  "",
+		ProductName:        "Wails App",
+		BinaryName:         "wailsapp",
+		ProductIdentifier:  "com.wails.app",
+		ProductVersion:     "0.1.0",
+		ProductCompany:     "",
+		ProductComments:    "",
+		ProductCopyright:   "",
 		ProductDescription: "",
-		MinIOSVersion:     "15.0",
+		MinIOSVersion:      "15.0",
 	}
 	if err := loadIOSProjectConfig(options.Config, &cfg); err != nil {
 		return fmt.Errorf("parse config: %w", err)
@@ -302,8 +302,9 @@ func copyEmbeddedFile(efs fs.FS, src, dest string) error {
 
 // IOSXcodeGenCmd is a CLI entry compatible with NewSubCommandFunction.
 // Defaults:
-//   config: ./build/config.yml (optional)
-//   out:    ./build/ios/xcode
+//
+//	config: ./build/config.yml (optional)
+//	out:    ./build/ios/xcode
 func IOSXcodeGenCmd() error {
 	out := filepath.Join("build", "ios", "xcode")
 	cfg := filepath.Join("build", "config.yml")
