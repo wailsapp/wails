@@ -232,11 +232,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void handleCaptureResult(int resultCode) {
-        final File file = pendingCaptureFile;
+    private void handleCaptureResult(int resultCode, @Nullable Intent data) {
+        File file = pendingCaptureFile;
         final boolean video = pendingCaptureIsVideo;
         pendingCaptureFile = null;
-        if (resultCode != RESULT_OK || file == null || !file.exists() || file.length() == 0) {
+        if (resultCode != RESULT_OK) {
+            bridge.emitEvent("native:capture", "{\"cancelled\":true}");
+            return;
+        }
+        // Some camera apps (commonly for video) ignore EXTRA_OUTPUT and instead
+        // return a content URI in the result data; copy that into our cache.
+        if ((file == null || !file.exists() || file.length() == 0)
+                && data != null && data.getData() != null) {
+            String copied = copyUriToCache(data.getData());
+            if (copied != null) file = new File(copied);
+        }
+        final File f = file;
+        if (f == null || !f.exists() || f.length() == 0) {
             bridge.emitEvent("native:capture", "{\"cancelled\":true}");
             return;
         }
@@ -244,11 +256,14 @@ public class MainActivity extends AppCompatActivity {
             try {
                 JSONObject o = new JSONObject();
                 o.put("type", video ? "video" : "photo");
-                o.put("path", file.getAbsolutePath());
-                o.put("size", file.length());
+                o.put("path", f.getAbsolutePath());
+                o.put("size", f.length());
                 if (!video) {
-                    String thumb = makePhotoThumbnail(file);
+                    String thumb = makePhotoThumbnail(f);
                     if (thumb != null) o.put("thumb", thumb);
+                } else {
+                    String dataUrl = makeVideoDataUrl(f);
+                    if (dataUrl != null) o.put("dataUrl", dataUrl);
                 }
                 bridge.emitEvent("native:capture", o.toString());
             } catch (Exception e) {
@@ -275,6 +290,29 @@ public class MainActivity extends AppCompatActivity {
             bmp.compress(Bitmap.CompressFormat.JPEG, 70, baos);
             bmp.recycle();
             return "data:image/jpeg;base64," + Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Read a captured video into a base64 data URL so it can play back in the
+     * webview's &lt;video&gt; element. Capped so a long clip doesn't blow up the
+     * heap or the JS bridge; larger videos fall back to the file path only.
+     */
+    @Nullable
+    private String makeVideoDataUrl(File file) {
+        try {
+            long len = file.length();
+            if (len <= 0 || len > 12 * 1024 * 1024) return null; // too large to inline
+            byte[] bytes = new byte[(int) len];
+            try (InputStream in = new java.io.FileInputStream(file)) {
+                int off = 0, n;
+                while (off < bytes.length && (n = in.read(bytes, off, bytes.length - off)) > 0) {
+                    off += n;
+                }
+            }
+            return "data:video/mp4;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP);
         } catch (Exception e) {
             return null;
         }
@@ -312,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PHOTO_CAPTURE_REQUEST || requestCode == VIDEO_CAPTURE_REQUEST) {
-            handleCaptureResult(resultCode);
+            handleCaptureResult(resultCode, data);
             return;
         }
         if (requestCode != FILE_PICKER_REQUEST) {
