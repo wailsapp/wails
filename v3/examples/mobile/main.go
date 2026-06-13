@@ -159,10 +159,19 @@ func main() {
 	// Go -> JS event: emit the current time once a second. The frontend
 	// listens for "time" and updates a live clock.
 	//
-	// Battery: pause the clock while the app is backgrounded so it doesn't push an
-	// event into a hidden webview every second. On Android the process keeps
-	// running in the background (unlike iOS, which suspends it), so an ungated
-	// ticker would keep waking the WebView. The lifecycle events drive a flag.
+	// Battery: by default the clock is paused while the app is backgrounded so it
+	// doesn't push an event into a hidden webview every second. Set
+	// pauseClockInBackground = false to keep it running while backgrounded — but
+	// note the platform limits:
+	//   - iOS suspends the process within seconds of backgrounding, so a plain
+	//     ticker stops regardless. Genuine background execution needs a declared
+	//     UIBackgroundMode plus BGTaskScheduler / beginBackgroundTask (not wrapped
+	//     by Wails yet).
+	//   - Android keeps the process alive, so it keeps emitting — but Doze and
+	//     background-execution limits throttle it over time; guaranteed
+	//     long-running work needs a foreground Service.
+	const pauseClockInBackground = true
+
 	var foreground atomic.Bool
 	foreground.Store(true)
 	for _, e := range []events.ApplicationEventType{
@@ -177,7 +186,7 @@ func main() {
 	}
 	go func() {
 		for {
-			if foreground.Load() {
+			if !pauseClockInBackground || foreground.Load() {
 				app.Event.Emit("time", time.Now().Format(time.RFC1123))
 			}
 			time.Sleep(time.Second)
