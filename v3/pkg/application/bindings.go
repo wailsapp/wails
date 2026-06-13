@@ -320,8 +320,11 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result 
 		if !ok {
 			recoveredErr = fmt.Errorf("%v", e)
 		}
-		stackTrace := getStackTrace(3, 5)
+		// The stack trace is only used for logging or the PanicHandler, so
+		// only compute it when there is a globalApplication to consume it
+		// (the CallError below carries the message, not the trace).
 		if globalApplication != nil {
+			stackTrace := getStackTrace(3, 5)
 			if handler := globalApplication.options.PanicHandler; handler != nil {
 				handler(newPanicDetails(recoveredErr, stackTrace))
 			} else {
