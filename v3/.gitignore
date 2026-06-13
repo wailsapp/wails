@@ -13,5 +13,7 @@ cmd/wails3/wails
 problems-report.html
 !internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
 internal/commands/appimage_testfiles/appimage_testfiles
+# Package files emitted by tool_package_test (nfpm DEB/RPM/ARCHLINUX/etc.)
+/internal/commands/myapp.*
 testiosapp/
 test/manual/systray/bin/
