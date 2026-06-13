@@ -171,6 +171,12 @@ public class MainActivity extends AppCompatActivity {
                         );
                     }
 
+                    // Stream captured photos/videos from the cache with HTTP Range
+                    // support so <video> can seek/stream a clip of any length.
+                    if (path != null && path.startsWith("/__capture__/")) {
+                        return serveCaptureFile(path.substring("/__capture__/".length()), request);
+                    }
+
                     // For regular assets, use the asset loader
                     return assetLoader.shouldInterceptRequest(request.getUrl());
                 }
@@ -261,10 +267,10 @@ public class MainActivity extends AppCompatActivity {
                 if (!video) {
                     String thumb = makePhotoThumbnail(f);
                     if (thumb != null) o.put("thumb", thumb);
-                } else {
-                    String dataUrl = makeVideoDataUrl(f);
-                    if (dataUrl != null) o.put("dataUrl", dataUrl);
                 }
+                // Stream URL works for both: <video>/<img> load it from the cache
+                // via shouldInterceptRequest (Range-enabled), no size limit.
+                o.put("streamUrl", captureStreamUrl(f));
                 bridge.emitEvent("native:capture", o.toString());
             } catch (Exception e) {
                 Log.e(TAG, "handleCaptureResult failed", e);
@@ -296,25 +302,102 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Read a captured video into a base64 data URL so it can play back in the
-     * webview's &lt;video&gt; element. Capped so a long clip doesn't blow up the
-     * heap or the JS bridge; larger videos fall back to the file path only.
+     * Build a same-origin URL the webview can stream a capture from. Served by
+     * serveCaptureFile (via shouldInterceptRequest); the path is relative to the
+     * cache dir so both camera files (captures/) and copied content URIs
+     * (wails-picker/) resolve.
      */
-    @Nullable
-    private String makeVideoDataUrl(File file) {
+    private String captureStreamUrl(File file) {
+        String base = getCacheDir().getAbsolutePath() + File.separator;
+        String abs = file.getAbsolutePath();
+        String rel = abs.startsWith(base) ? abs.substring(base.length()) : file.getName();
+        return "/__capture__/" + Uri.encode(rel, "/");
+    }
+
+    /**
+     * Serve a captured file (under the app cache) to the webview with HTTP Range
+     * support, so &lt;video&gt; can stream and seek a clip of any length without
+     * inlining it as a data URL.
+     */
+    private WebResourceResponse serveCaptureFile(String relPath, WebResourceRequest request) {
         try {
-            long len = file.length();
-            if (len <= 0 || len > 12 * 1024 * 1024) return null; // too large to inline
-            byte[] bytes = new byte[(int) len];
-            try (InputStream in = new java.io.FileInputStream(file)) {
-                int off = 0, n;
-                while (off < bytes.length && (n = in.read(bytes, off, bytes.length - off)) > 0) {
-                    off += n;
-                }
+            File cache = getCacheDir();
+            File file = new File(cache, Uri.decode(relPath));
+            // Path-traversal guard: only ever serve files under the cache dir.
+            if (!file.getCanonicalPath().startsWith(cache.getCanonicalPath() + File.separator)
+                    || !file.exists() || !file.isFile()) {
+                return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found",
+                        new java.util.HashMap<>(), new java.io.ByteArrayInputStream(new byte[0]));
             }
-            return "data:video/mp4;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP);
+            String name = file.getName().toLowerCase();
+            String mime = name.endsWith(".mp4") ? "video/mp4"
+                    : name.endsWith(".mov") ? "video/quicktime"
+                    : name.endsWith(".jpg") || name.endsWith(".jpeg") ? "image/jpeg"
+                    : name.endsWith(".png") ? "image/png" : "application/octet-stream";
+            long length = file.length();
+            java.util.Map<String, String> reqHeaders = request.getRequestHeaders();
+            String range = reqHeaders != null ? reqHeaders.get("Range") : null;
+            if (range == null && reqHeaders != null) range = reqHeaders.get("range");
+
+            java.util.Map<String, String> headers = new java.util.HashMap<>();
+            headers.put("Accept-Ranges", "bytes");
+            headers.put("Cache-Control", "no-store");
+
+            if (range != null && range.startsWith("bytes=")) {
+                long start = 0, end = length - 1;
+                String spec = range.substring(6).trim();
+                int dash = spec.indexOf('-');
+                if (dash >= 0) {
+                    try {
+                        if (dash > 0) start = Long.parseLong(spec.substring(0, dash).trim());
+                        String e = spec.substring(dash + 1).trim();
+                        if (!e.isEmpty()) end = Long.parseLong(e);
+                    } catch (NumberFormatException ignored) { }
+                }
+                if (start < 0) start = 0;
+                if (end >= length) end = length - 1;
+                if (start > end) { start = 0; end = length - 1; }
+                long count = end - start + 1;
+                java.io.InputStream in = new java.io.FileInputStream(file);
+                long toSkip = start;
+                while (toSkip > 0) {
+                    long s = in.skip(toSkip);
+                    if (s <= 0) break;
+                    toSkip -= s;
+                }
+                headers.put("Content-Range", "bytes " + start + "-" + end + "/" + length);
+                headers.put("Content-Length", String.valueOf(count));
+                return new WebResourceResponse(mime, null, 206, "Partial Content",
+                        headers, new LimitedInputStream(in, count));
+            }
+            headers.put("Content-Length", String.valueOf(length));
+            return new WebResourceResponse(mime, null, 200, "OK", headers,
+                    new java.io.FileInputStream(file));
         } catch (Exception e) {
-            return null;
+            Log.e(TAG, "serveCaptureFile failed", e);
+            return new WebResourceResponse("text/plain", "UTF-8", 500, "Error",
+                    new java.util.HashMap<>(), new java.io.ByteArrayInputStream(new byte[0]));
+        }
+    }
+
+    /** Wraps a stream to yield at most a fixed number of bytes (for Range responses). */
+    private static final class LimitedInputStream extends java.io.FilterInputStream {
+        private long remaining;
+        LimitedInputStream(java.io.InputStream in, long limit) {
+            super(in);
+            this.remaining = limit;
+        }
+        @Override public int read() throws java.io.IOException {
+            if (remaining <= 0) return -1;
+            int b = super.read();
+            if (b >= 0) remaining--;
+            return b;
+        }
+        @Override public int read(byte[] b, int off, int len) throws java.io.IOException {
+            if (remaining <= 0) return -1;
+            int n = super.read(b, off, (int) Math.min(len, remaining));
+            if (n > 0) remaining -= n;
+            return n;
         }
     }
 
