@@ -59,6 +59,9 @@ type WebviewWindowOptions struct {
     ContentProtectionEnabled    bool
     KeyBindings                 map[string]func(window *WebviewWindow)
 
+    // Permissions
+    Permissions map[PermissionType]Permission
+
     // Window-control button states
     MinimiseButtonState ButtonState
     MaximiseButtonState ButtonState
@@ -675,6 +678,32 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 // Toggle at runtime
 window.SetContentProtection(true)
 ```
+
+### Permissions
+
+**Type:** `map[PermissionType]Permission`  
+**Default:** `nil` (platform default handling)  
+**Platform:** Linux, Windows (macOS defers to TCC)
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionAllow,
+},
+```
+
+**Purpose:** Declaratively control how capability requests (camera, microphone, geolocation, notifications, clipboard read) from the window's web content are handled, without platform-specific code.
+
+**PermissionType values:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
+
+**Permission values:**
+- `PermissionDefault` (0) — platform's native handling: OS/WebView2 prompt on macOS/Windows; media capture allowed, others denied on Linux
+- `PermissionAllow` (1) — grant without prompting
+- `PermissionDeny` (2) — deny without prompting
+
+**Important — Windows:** Before this option existed, Wails silently granted all WebView2 capabilities. Now, setting any entry in `Permissions` disables that blanket grant. Capabilities not listed will show WebView2's native prompt rather than being auto-allowed. List every capability your app needs explicitly.
+
+**See [Web Permissions](/features/windows/permissions) for the full guide, platform matrix, and examples.**
 
 ## Window Lifecycle Events
 
