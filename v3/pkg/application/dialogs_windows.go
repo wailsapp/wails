@@ -221,7 +221,7 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 // MB_OK here (the old behaviour) silently destroyed Yes/No buttons on
 // question dialogs shown with an icon (#4233).
 func messageDialogUserIconFlags(flags uint32) uint32 {
-	const mbIconMask = 0xF0
+	const mbIconMask = w32.MB_ICONHAND | w32.MB_ICONQUESTION | w32.MB_ICONASTERISK | w32.MB_USERICON
 	return (flags &^ uint32(mbIconMask)) | windows.MB_USERICON | windows.MB_SYSTEMMODAL
 }
 
