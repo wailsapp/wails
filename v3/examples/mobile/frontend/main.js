@@ -639,11 +639,14 @@ Events.On("native:capture", (e) => {
         setCaptureMode("photo"); // reveal the photo preview
         logCamera(`Photo captured (${kb} KB)\n${d.path || ""}`);
     } else {
-        if (d.dataUrl && captureVideo) captureVideo.src = d.dataUrl;
+        // Prefer the streamed URL (served from the cache with Range support, any
+        // size); fall back to an inline data URL if that's all we got.
+        const vsrc = d.streamUrl || d.dataUrl;
+        if (vsrc && captureVideo) captureVideo.src = vsrc;
         setCaptureMode("video"); // reveal the <video> for playback
-        logCamera(d.dataUrl
+        logCamera(vsrc
             ? `Video captured (${kb} KB) — tap ▶ to play\n${d.path || ""}`
-            : `Video captured (${kb} KB) — too large to preview inline\n${d.path || ""}`);
+            : `Video captured (${kb} KB)\n${d.path || ""}`);
     }
 });
 

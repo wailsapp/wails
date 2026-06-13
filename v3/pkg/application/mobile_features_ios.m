@@ -781,18 +781,11 @@ static MFCameraDelegate *g_mfCameraDelegate = nil; // retained while the picker 
         [fm removeItemAtPath:dst error:nil];
         [fm copyItemAtURL:src toURL:[NSURL fileURLWithPath:dst] error:nil];
         unsigned long long size = [[fm attributesOfItemAtPath:dst error:nil] fileSize];
-        NSMutableDictionary *payload = [@{@"type": @"video", @"path": dst,
-                                          @"size": @(size)} mutableCopy];
-        // Inline the clip as a data URL so it can play back in the webview's
-        // <video> element; cap it so a long recording doesn't blow up the bridge.
-        if (size > 0 && size <= 12 * 1024 * 1024) {
-            NSData *data = [NSData dataWithContentsOfFile:dst];
-            if (data) {
-                payload[@"dataUrl"] = [@"data:video/quicktime;base64,"
-                    stringByAppendingString:[data base64EncodedStringWithOptions:0]];
-            }
-        }
-        mfEmit(@"native:capture", payload);
+        // Stream the clip from the temp dir via the wails:// scheme handler (Range
+        // support, any length) rather than inlining it as a data URL.
+        NSString *streamUrl = [@"/__capture__/" stringByAppendingString:[dst lastPathComponent]];
+        mfEmit(@"native:capture", @{@"type": @"video", @"path": dst,
+                                    @"size": @(size), @"streamUrl": streamUrl});
     } else {
         UIImage *image = info[UIImagePickerControllerOriginalImage];
         NSData *jpeg = UIImageJPEGRepresentation(image, 0.9);

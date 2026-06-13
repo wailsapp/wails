@@ -31,7 +31,80 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     return self;
 }
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
+    // Stream captured media (saved in NSTemporaryDirectory) straight from disk
+    // with HTTP Range support, so <video> can stream/seek a clip of any length
+    // without inlining it as a data URL.
+    if ([urlSchemeTask.request.URL.path hasPrefix:@"/__capture__/"]) {
+        [self serveCaptureTask:urlSchemeTask];
+        return;
+    }
     ServeAssetRequest(self.windowID, (__bridge void*)urlSchemeTask);
+}
+- (void)serveCaptureTask:(id<WKURLSchemeTask>)task {
+    NSURL *url = task.request.URL;
+    // lastPathComponent strips any directory parts → only files directly in the
+    // temp dir can be served (no path traversal).
+    NSString *name = [url.path lastPathComponent];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSFileHandle *fh = [fm fileExistsAtPath:filePath]
+        ? [NSFileHandle fileHandleForReadingAtPath:filePath] : nil;
+    if (!fh) {
+        NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:404
+            HTTPVersion:@"HTTP/1.1" headerFields:@{}];
+        [task didReceiveResponse:r];
+        [task didFinish];
+        return;
+    }
+    @try {
+        unsigned long long length = [[fm attributesOfItemAtPath:filePath error:nil] fileSize];
+        NSString *ext = [[name pathExtension] lowercaseString];
+        NSString *mime = [ext isEqualToString:@"mp4"] ? @"video/mp4"
+            : [ext isEqualToString:@"mov"] ? @"video/quicktime"
+            : ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"jpeg"]) ? @"image/jpeg"
+            : [ext isEqualToString:@"png"] ? @"image/png" : @"application/octet-stream";
+        NSString *range = task.request.allHTTPHeaderFields[@"Range"];
+        if (range && [range hasPrefix:@"bytes="]) {
+            unsigned long long start = 0, end = length > 0 ? length - 1 : 0;
+            NSArray<NSString *> *parts = [[range substringFromIndex:6] componentsSeparatedByString:@"-"];
+            if (parts.count >= 1 && parts[0].length) start = strtoull(parts[0].UTF8String, NULL, 10);
+            if (parts.count >= 2 && parts[1].length) end = strtoull(parts[1].UTF8String, NULL, 10);
+            if (end >= length) end = length > 0 ? length - 1 : 0;
+            if (start > end) start = 0;
+            unsigned long long count = end - start + 1;
+            [fh seekToFileOffset:start];
+            NSData *data = [fh readDataOfLength:(NSUInteger)count];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Content-Range": [NSString stringWithFormat:@"bytes %llu-%llu/%llu", start, end, length],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:206
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        } else {
+            NSData *data = [fh readDataToEndOfFile];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        }
+    } @catch (NSException *e) {
+        [task didFailWithError:[NSError errorWithDomain:@"wails.capture" code:500 userInfo:nil]];
+    } @finally {
+        [fh closeFile];
+    }
 }
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
     WailsVLog(@"[WailsSchemeHandler] stop task");
