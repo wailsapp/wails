@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fix a panic inside a bound service method killing the whole application (catastrophic-failure banner). Panics are now converted into a `RuntimeError` call rejection on the frontend; a registered `PanicHandler` still observes them for logging/telemetry (#5037)
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
