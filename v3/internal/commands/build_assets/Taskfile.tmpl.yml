@@ -174,7 +174,6 @@ tasks:
 
 
   generate:bindings:
-    label: generate:bindings (BUILD_FLAGS={{.Opn}}.BUILD_FLAGS{{.Cls}})
     summary: Generates bindings for the frontend
     run: once
     deps:
