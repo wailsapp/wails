@@ -1,7 +1,6 @@
 package collect
 
 import (
-	_ "embed"
 	"go/ast"
 	"go/constant"
 	"go/token"
