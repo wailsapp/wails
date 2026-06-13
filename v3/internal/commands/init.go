@@ -9,14 +9,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/defaults"
-	"github.com/wailsapp/wails/v3/internal/term"
-
-	"github.com/go-git/go-git/v5"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/templates"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 var DisableFooter bool
@@ -70,32 +68,15 @@ func gitURLToModulePath(gitURL string) string {
 }
 
 func initGitRepository(projectDir string, gitURL string) error {
-	// Initialize repository
-	repo, err := git.PlainInit(projectDir, false)
-	if err != nil {
+	if err := git.Init(projectDir); err != nil {
 		return fmt.Errorf("failed to initialize git repository: %w", err)
 	}
-
-	// Create remote
-	_, err = repo.CreateRemote(&config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{gitURL},
-	})
-	if err != nil {
+	if err := git.RemoteAdd(projectDir, "origin", gitURL); err != nil {
 		return fmt.Errorf("failed to create git remote: %w", err)
 	}
-
-	// Stage all files
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("failed to get git worktree: %w", err)
-	}
-
-	_, err = worktree.Add(".")
-	if err != nil {
+	if err := git.AddAll(projectDir); err != nil {
 		return fmt.Errorf("failed to stage files: %w", err)
 	}
-
 	return nil
 }
 
