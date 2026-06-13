@@ -585,6 +585,59 @@ Events.On("native:screenCapture", (e) => {
     else logHardware("Screen capture " + (d.protected ? "blocked (FLAG_SECURE)" : "allowed"));
 });
 
+// ---- Camera & background ------------------------------------------------
+const logCamera = (msg) => show("cameraOut", msg);
+
+$("btnPhoto")?.addEventListener("click", () => {
+    Events.Emit("native:capturePhoto", {});
+    logCamera("Opening camera…");
+});
+$("btnVideo")?.addEventListener("click", () => {
+    Events.Emit("native:captureVideo", {});
+    logCamera("Opening camera (video)…");
+});
+Events.On("native:capture", (e) => {
+    const d = eventValue(e) || {};
+    const img = $("captureImg");
+    if (d.error) { logCamera("Capture error: " + d.error); return; }
+    if (d.cancelled) { logCamera("Capture cancelled"); return; }
+    const kb = d.size ? Math.round(d.size / 1024) : 0;
+    if (d.type === "photo") {
+        if (d.thumb && img) { img.src = d.thumb; img.style.display = "block"; }
+        logCamera(`Photo captured (${kb} KB)\n${d.path || ""}`);
+    } else {
+        if (img) img.style.display = "none";
+        logCamera(`Video captured (${kb} KB)\n${d.path || ""}`);
+    }
+});
+
+// Foreground service (Android)
+$("mfForegroundService")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+        Events.Emit("native:startForegroundService", {
+            title: "Wails Kitchen Sink",
+            text: "Background work running",
+        });
+    } else {
+        Events.Emit("native:stopForegroundService", {});
+    }
+});
+Events.On("native:foregroundService", (e) => {
+    const d = eventValue(e) || {};
+    if (d.error) logCamera("Foreground service error: " + d.error);
+    else logCamera("Foreground service: " + (d.running ? "running" : "stopped"));
+});
+
+// Background task window (iOS)
+$("btnBgTask")?.addEventListener("click", () => {
+    Events.Emit("native:beginBackgroundTask", { seconds: 20 });
+    logCamera("Requested a background-task window…");
+});
+Events.On("native:backgroundTask", (e) => {
+    const d = eventValue(e) || {};
+    logCamera("Background task: " + (d.message || JSON.stringify(d)));
+});
+
 // Ask for the current orientation once the page is up.
 if (isMobile) setTimeout(() => Events.Emit("native:getOrientation", {}), 600);
 

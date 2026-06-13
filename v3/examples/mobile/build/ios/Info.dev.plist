@@ -54,6 +54,10 @@
     <string>Used to demonstrate the one-shot geolocation feature.</string>
     <key>NSMotionUsageDescription</key>
     <string>Used to demonstrate the accelerometer feature.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Used to capture photos and video.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Used to record audio with video capture.</string>
 
     <key>NSHumanReadableCopyright</key>
     <string>© now, My Company</string>

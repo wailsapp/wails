@@ -112,4 +112,22 @@ func registerNativeFeatures(app *application.App) {
 	app.Event.On("native:setScreenProtect", func(e *application.CustomEvent) {
 		application.IOSSetScreenProtect(eventBool(e.Data, "enabled", false))
 	})
+
+	// Phase E — camera & background
+	app.Event.On("native:capturePhoto", func(e *application.CustomEvent) {
+		application.IOSCapturePhoto()
+	})
+	app.Event.On("native:captureVideo", func(e *application.CustomEvent) {
+		application.IOSCaptureVideo()
+	})
+	app.Event.On("native:beginBackgroundTask", func(e *application.CustomEvent) {
+		application.IOSBeginBackgroundTask(int(eventFloat(e.Data, "seconds", 20)))
+	})
+	// iOS has no foreground service; a background-task window is the closest analogue.
+	app.Event.On("native:startForegroundService", func(e *application.CustomEvent) {
+		application.IOSBeginBackgroundTask(30)
+	})
+	app.Event.On("native:stopForegroundService", func(e *application.CustomEvent) {
+		application.IOSEndBackgroundTask()
+	})
 }

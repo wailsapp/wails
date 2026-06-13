@@ -26,6 +26,13 @@ info:
 #   company: "My Company"
 #   # Additional comments to embed in Info.plist metadata
 #   comments: "Some Product Comments"
+#   # Background execution modes templated into UIBackgroundModes in Info.plist.
+#   # Only declare modes your app actually uses (App Review enforces this);
+#   # valid values include fetch, processing, location, audio, voip,
+#   # remote-notification, bluetooth-central, bluetooth-peripheral.
+#   backgroundModes:
+#     - processing
+#     - fetch
 
 # Dev mode configuration
 dev_mode:

@@ -15,7 +15,12 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -25,12 +30,14 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -58,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
 
     // The Go-side dialog ID of the in-flight file picker (-1 when idle)
     private int pendingFilePickerCallbackID = -1;
+    private static final int PHOTO_CAPTURE_REQUEST = 7002;
+    private static final int VIDEO_CAPTURE_REQUEST = 7003;
+    private static final int CAMERA_PERMISSION_REQUEST = 7010;
+    private File pendingCaptureFile;
+    private boolean pendingCaptureIsVideo;
 
     // System-event sources (battery/power, screen lock, network). Registered in
     // onCreate, torn down in onDestroy. Each forwards a "system:*" event to JS
@@ -188,6 +200,87 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Launch the system camera to capture a photo (video=false) or a video
+     * (video=true). The capture is written to a FileProvider URI in the cache and
+     * the result is delivered to JS as a "native:capture" event.
+     */
+    public void launchCameraCapture(boolean video) {
+        if (checkSelfPermission("android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{"android.permission.CAMERA"}, CAMERA_PERMISSION_REQUEST);
+            bridge.emitEvent("native:capture",
+                    "{\"error\":\"camera permission requested \u2014 tap again once granted\"}");
+            return;
+        }
+        try {
+            File dir = new File(getCacheDir(), "captures");
+            if (!dir.exists()) dir.mkdirs();
+            pendingCaptureFile = new File(dir, "capture_" + System.currentTimeMillis() + (video ? ".mp4" : ".jpg"));
+            pendingCaptureIsVideo = video;
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", pendingCaptureFile);
+            Intent intent = new Intent(video ? MediaStore.ACTION_VIDEO_CAPTURE : MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            // Don't pre-check with resolveActivity(): Android 11+ package visibility
+            // hides other apps' intents unless declared in <queries>, so it can
+            // return null even when a camera app exists. Just launch and handle a miss.
+            startActivityForResult(intent, video ? VIDEO_CAPTURE_REQUEST : PHOTO_CAPTURE_REQUEST);
+        } catch (android.content.ActivityNotFoundException e) {
+            bridge.emitEvent("native:capture", "{\"error\":\"no camera app available\"}");
+        } catch (Exception e) {
+            Log.e(TAG, "launchCameraCapture failed", e);
+            bridge.emitEvent("native:capture", "{\"error\":\"capture failed\"}");
+        }
+    }
+
+    private void handleCaptureResult(int resultCode) {
+        final File file = pendingCaptureFile;
+        final boolean video = pendingCaptureIsVideo;
+        pendingCaptureFile = null;
+        if (resultCode != RESULT_OK || file == null || !file.exists() || file.length() == 0) {
+            bridge.emitEvent("native:capture", "{\"cancelled\":true}");
+            return;
+        }
+        new Thread(() -> {
+            try {
+                JSONObject o = new JSONObject();
+                o.put("type", video ? "video" : "photo");
+                o.put("path", file.getAbsolutePath());
+                o.put("size", file.length());
+                if (!video) {
+                    String thumb = makePhotoThumbnail(file);
+                    if (thumb != null) o.put("thumb", thumb);
+                }
+                bridge.emitEvent("native:capture", o.toString());
+            } catch (Exception e) {
+                Log.e(TAG, "handleCaptureResult failed", e);
+                bridge.emitEvent("native:capture", "{\"error\":\"result processing failed\"}");
+            }
+        }).start();
+    }
+
+    /** Downscale a captured photo into a base64 JPEG data URL for display in the webview. */
+    @Nullable
+    private String makePhotoThumbnail(File file) {
+        try {
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+            int sample = 1;
+            while (Math.max(bounds.outWidth, bounds.outHeight) / sample > 640) sample *= 2;
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = sample;
+            Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
+            if (bmp == null) return null;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+            bmp.recycle();
+            return "data:image/jpeg;base64," + Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Launch the system document picker. Results are copied into the app's
      * cache directory so Go receives real filesystem paths. Called by
      * WailsBridge on the main thread.
@@ -218,6 +311,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PHOTO_CAPTURE_REQUEST || requestCode == VIDEO_CAPTURE_REQUEST) {
+            handleCaptureResult(resultCode);
+            return;
+        }
         if (requestCode != FILE_PICKER_REQUEST) {
             return;
         }

@@ -110,4 +110,18 @@ func registerNativeFeatures(app *application.App) {
 	app.Event.On("native:setScreenProtect", func(e *application.CustomEvent) {
 		application.AndroidSetScreenProtect(eventBool(e.Data, "enabled", false))
 	})
+
+	// Phase E — camera & background
+	app.Event.On("native:capturePhoto", func(e *application.CustomEvent) {
+		application.AndroidCapturePhoto()
+	})
+	app.Event.On("native:captureVideo", func(e *application.CustomEvent) {
+		application.AndroidCaptureVideo()
+	})
+	app.Event.On("native:startForegroundService", func(e *application.CustomEvent) {
+		application.AndroidStartForegroundService(payloadJSON(e.Data))
+	})
+	app.Event.On("native:stopForegroundService", func(e *application.CustomEvent) {
+		application.AndroidStopForegroundService()
+	})
 }

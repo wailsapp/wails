@@ -24,6 +24,7 @@
         <button class="tab" data-tab="system">System</button>
         <button class="tab" data-tab="mobile">Mobile</button>
         <button class="tab" data-tab="hardware">Hardware</button>
+        <button class="tab" data-tab="camera">Camera</button>
         <button class="tab" data-tab="native">Native</button>
     </nav>
 
@@ -227,6 +228,36 @@
                     screen recording (it cannot block them).</p>
 
                 <pre id="hardwareOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
+        </section>
+
+        <!-- Camera: photo/video capture + background execution -->
+        <section class="pane" id="pane-camera">
+            <div class="mobile-only">
+                <h2>Camera</h2>
+                <p class="hint">Capture a photo or video with the system camera (prompts for the
+                    camera permission on first use).</p>
+                <div class="grid">
+                    <button class="btn primary" id="btnPhoto">Take photo</button>
+                    <button class="btn" id="btnVideo">Record video</button>
+                </div>
+                <img id="captureImg" alt="captured photo"
+                     style="display:none;width:100%;border-radius:var(--radius);margin-top:8px"/>
+
+                <h2>Background execution</h2>
+                <p class="hint">Keep the app working while backgrounded. On Android this runs a
+                    foreground service with an ongoing notification (the process — and your Go
+                    goroutines — keep running); on iOS it opens a short background-task window
+                    (sustained background work needs a declared <code>UIBackgroundMode</code>).</p>
+                <label class="switch"><input type="checkbox" id="mfForegroundService"/> Foreground service (Android)</label>
+                <div class="grid">
+                    <button class="btn" id="btnBgTask">Begin background task (iOS)</button>
+                </div>
+
+                <pre id="cameraOut" class="output">Results appear here…</pre>
             </div>
             <div class="platform-only" data-platform="desktop">
                 <p class="hint">These features are available when running on iOS or Android.</p>
