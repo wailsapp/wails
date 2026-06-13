@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #include "linux_cgo.h"
 
@@ -12,10 +12,14 @@
 typedef int (*WailsXMoveWindowFunc)(Display*, Window, int, int);
 typedef int (*WailsXFlushFunc)(Display*);
 typedef Bool (*WailsXTranslateCoordinatesFunc)(Display*, Window, Window, int, int, int*, int*, Window*);
+typedef Status (*WailsXSendEventFunc)(Display*, Window, Bool, long, XEvent*);
+typedef Atom (*WailsXInternAtomFunc)(Display*, const char*, Bool);
 
 static WailsXMoveWindowFunc wails_XMoveWindow = NULL;
 static WailsXFlushFunc wails_XFlush = NULL;
 static WailsXTranslateCoordinatesFunc wails_XTranslateCoordinates = NULL;
+static WailsXSendEventFunc wails_XSendEvent = NULL;
+static WailsXInternAtomFunc wails_XInternAtom = NULL;
 static gboolean x11_funcs_resolved = FALSE;
 
 static void resolve_x11_funcs(void) {
@@ -24,6 +28,8 @@ static void resolve_x11_funcs(void) {
     wails_XMoveWindow = (WailsXMoveWindowFunc)dlsym(RTLD_DEFAULT, "XMoveWindow");
     wails_XFlush = (WailsXFlushFunc)dlsym(RTLD_DEFAULT, "XFlush");
     wails_XTranslateCoordinates = (WailsXTranslateCoordinatesFunc)dlsym(RTLD_DEFAULT, "XTranslateCoordinates");
+    wails_XSendEvent = (WailsXSendEventFunc)dlsym(RTLD_DEFAULT, "XSendEvent");
+    wails_XInternAtom = (WailsXInternAtomFunc)dlsym(RTLD_DEFAULT, "XInternAtom");
 }
 #endif
 
@@ -108,12 +114,37 @@ void install_signal_handlers(void) {
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
+    // NOTE: Do NOT add SA_ONSTACK to SIGUSR1. WebKit's JavaScriptCore uses
+    // SIGUSR1 to suspend/resume threads for conservative GC stack scanning.
+    // Once JSC installs its own SIGUSR1 handler it owns the signal (Go no
+    // longer handles it), and forcing SA_ONSTACK makes that handler run on
+    // Go's alternate signal stack, breaking GC thread synchronisation and
+    // freezing WebKit during idle collection. See issue #5527.
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif
 #if defined(SIGXFSZ)
     fix_signal(SIGXFSZ);
 #endif
+}
+
+// WebKit's JSC lazily installs signal handlers without SA_ONSTACK when
+// JavaScript first executes. This timer re-applies the fix every 50ms
+// for the first 5 seconds, covering the JSC initialization window.
+static gboolean install_signal_handlers_timeout(gpointer data) {
+    install_signal_handlers();
+    int *remaining = (int *)data;
+    (*remaining)--;
+    if (*remaining <= 0) {
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
+
+void schedule_signal_handler_fix(void) {
+    int *remaining = (int *)g_malloc(sizeof(int));
+    *remaining = 100;
+    g_timeout_add_full(G_PRIORITY_DEFAULT, 50, install_signal_handlers_timeout, remaining, g_free);
 }
 
 // ============================================================================
@@ -142,6 +173,18 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager) {
 
 void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
     g_signal_connect(widget, event, cb, (gpointer)data);
+}
+
+int is_user_media_permission_request(WebKitPermissionRequest *request) {
+    return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
+}
+
+int is_user_media_for_audio(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+int is_user_media_for_video(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
 }
 
 // ============================================================================
@@ -324,6 +367,32 @@ void menu_remove_item(GMenu *menu, gint position) {
 
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item) {
     g_menu_insert_item(menu, position, item);
+}
+
+static void on_context_menu_closed(GtkPopover *popover, gpointer user_data) {
+    // Unparent on the next main loop iteration so the popover finishes
+    // its close animation/cleanup before being removed from the widget tree.
+    g_idle_add_once((GSourceOnceFunc)gtk_widget_unparent, GTK_WIDGET(popover));
+}
+
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y) {
+    init_app_action_group();
+
+    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu_model));
+    gtk_widget_set_parent(popover, parent);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+    // Ensure the menu actions resolve even if the parent's hierarchy does not
+    // already expose the "app" action group.
+    gtk_widget_insert_action_group(popover, "app", G_ACTION_GROUP(app_action_group));
+
+    GdkRectangle rect = { .x = x, .y = y, .width = 1, .height = 1 };
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+
+    g_signal_connect(popover, "closed", G_CALLBACK(on_context_menu_closed), NULL);
+
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 
 // ============================================================================
@@ -944,6 +1013,64 @@ void window_get_position_x11(GtkWindow *window, int *x, int *y) {
         *y = abs_y;
     }
 #endif
+}
+
+// ============================================================================
+// Always-on-top (X11 only via _NET_WM_STATE_ABOVE)
+// ============================================================================
+
+static void window_send_always_on_top_x11(GtkWindow *window, gboolean always_on_top) {
+#ifdef GDK_WINDOWING_X11
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
+    if (native == NULL) return;
+
+    GdkSurface *surface = gtk_native_get_surface(native);
+    if (surface == NULL) return;
+
+    GdkDisplay *display = gdk_surface_get_display(surface);
+    if (!GDK_IS_X11_DISPLAY(display)) return;
+
+    resolve_x11_funcs();
+    if (wails_XSendEvent == NULL || wails_XInternAtom == NULL) return;
+
+    Display *xdisplay = gdk_x11_display_get_xdisplay(display);
+    Window xwindow = gdk_x11_surface_get_xid(GDK_X11_SURFACE(surface));
+    Window root = DefaultRootWindow(xdisplay);
+
+    Atom net_wm_state = wails_XInternAtom(xdisplay, "_NET_WM_STATE", False);
+    Atom net_wm_state_above = wails_XInternAtom(xdisplay, "_NET_WM_STATE_ABOVE", False);
+
+    XEvent xev = {0};
+    xev.type = ClientMessage;
+    xev.xclient.display = xdisplay;
+    xev.xclient.window = xwindow;
+    xev.xclient.message_type = net_wm_state;
+    xev.xclient.format = 32;
+    xev.xclient.data.l[0] = always_on_top ? 1 : 0; // _NET_WM_STATE_ADD=1, _NET_WM_STATE_REMOVE=0
+    xev.xclient.data.l[1] = net_wm_state_above;
+    xev.xclient.data.l[2] = 0;
+    xev.xclient.data.l[3] = 1; // source: normal application
+
+    wails_XSendEvent(xdisplay, root, False,
+                     SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+    if (wails_XFlush != NULL) wails_XFlush(xdisplay);
+#endif
+}
+
+void window_set_always_on_top(GtkWindow *window, gboolean always_on_top) {
+    // Store the desired state so windowShow can re-apply it if the surface
+    // doesn't exist yet. Use 1=true, 2=false as sentinels (NULL means never set).
+    g_object_set_data(G_OBJECT(window), "wails-always-on-top",
+                      GINT_TO_POINTER(always_on_top ? 1 : 2));
+    window_send_always_on_top_x11(window, always_on_top);
+}
+
+// Apply a previously-set always-on-top state once the window surface exists.
+// Called from windowShow after gtk_window_present.
+void window_apply_pending_always_on_top(GtkWindow *window) {
+    gpointer stored = g_object_get_data(G_OBJECT(window), "wails-always-on-top");
+    if (stored == NULL) return; // never been set
+    window_send_always_on_top_x11(window, GPOINTER_TO_INT(stored) == 1 ? TRUE : FALSE);
 }
 
 // ============================================================================
