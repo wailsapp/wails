@@ -17,9 +17,8 @@ import (
 
 	"errors"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/debug"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -240,27 +239,20 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	return result, nil
 }
 
-// Clones the given uri and returns the temporary cloned directory
+// gitclone clones uri into a temporary directory and returns its path.
 func gitclone(uri string) (string, error) {
-	// Create temporary directory
 	dirname, err := os.MkdirTemp("", "wails-template-*")
 	if err != nil {
 		return "", err
 	}
 
-	// Parse remote template url and version number
-	templateInfo := strings.Split(uri, "@")
-	cloneOption := &git.CloneOptions{
-		URL: templateInfo[0],
-	}
-	if len(templateInfo) > 1 {
-		cloneOption.ReferenceName = plumbing.NewTagReferenceName(templateInfo[1])
+	parts := strings.SplitN(uri, "@", 2)
+	url, tag := parts[0], ""
+	if len(parts) > 1 {
+		tag = parts[1]
 	}
 
-	_, err = git.PlainClone(dirname, false, cloneOption)
-
-	return dirname, err
-
+	return dirname, git.Clone(url, dirname, tag)
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {

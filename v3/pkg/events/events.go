@@ -34,6 +34,11 @@ type commonEvents struct {
 	WindowZoomIn               WindowEventType
 	WindowZoomOut              WindowEventType
 	WindowZoomReset            WindowEventType
+	BatteryChanged             ApplicationEventType
+	NetworkChanged             ApplicationEventType
+	ScreenLocked               ApplicationEventType
+	ScreenUnlocked             ApplicationEventType
+	LowMemory                  ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -66,6 +71,11 @@ func newCommonEvents() commonEvents {
 		WindowZoomIn:               1049,
 		WindowZoomOut:              1050,
 		WindowZoomReset:            1051,
+		BatteryChanged:             1286,
+		NetworkChanged:             1287,
+		ScreenLocked:               1288,
+		ScreenUnlocked:             1289,
+		LowMemory:                  1290,
 	}
 }
 
@@ -485,7 +495,7 @@ func newWindowsEvents() windowsEvents {
 	}
 }
 
-var iOS = newIOSEvents()
+var IOS = newIOSEvents()
 
 type iosEvents struct {
 	ApplicationDidBecomeActive             ApplicationEventType
@@ -510,6 +520,11 @@ type iosEvents struct {
 	WebViewDidFinishNavigation             WindowEventType
 	WebViewDidFailNavigation               WindowEventType
 	WebViewDecidePolicyForNavigationAction WindowEventType
+	BatteryChanged                         ApplicationEventType
+	NetworkChanged                         ApplicationEventType
+	ThemeChanged                           ApplicationEventType
+	ScreenLocked                           ApplicationEventType
+	ScreenUnlocked                         ApplicationEventType
 }
 
 func newIOSEvents() iosEvents {
@@ -536,6 +551,49 @@ func newIOSEvents() iosEvents {
 		WebViewDidFinishNavigation:             1264,
 		WebViewDidFailNavigation:               1265,
 		WebViewDecidePolicyForNavigationAction: 1266,
+		BatteryChanged:                         1276,
+		NetworkChanged:                         1277,
+		ThemeChanged:                           1278,
+		ScreenLocked:                           1279,
+		ScreenUnlocked:                         1280,
+	}
+}
+
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+	ActivityCreated      ApplicationEventType
+	ActivityStarted      ApplicationEventType
+	ActivityResumed      ApplicationEventType
+	ActivityPaused       ApplicationEventType
+	ActivityStopped      ApplicationEventType
+	ActivityDestroyed    ApplicationEventType
+	ApplicationLowMemory ApplicationEventType
+	WebViewPageStarted   WindowEventType
+	WebViewPageFinished  WindowEventType
+	BatteryChanged       ApplicationEventType
+	NetworkChanged       ApplicationEventType
+	ThemeChanged         ApplicationEventType
+	ScreenLocked         ApplicationEventType
+	ScreenUnlocked       ApplicationEventType
+}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated:      1267,
+		ActivityStarted:      1268,
+		ActivityResumed:      1269,
+		ActivityPaused:       1270,
+		ActivityStopped:      1271,
+		ActivityDestroyed:    1272,
+		ApplicationLowMemory: 1273,
+		WebViewPageStarted:   1274,
+		WebViewPageFinished:  1275,
+		BatteryChanged:       1281,
+		NetworkChanged:       1282,
+		ThemeChanged:         1283,
+		ScreenLocked:         1284,
+		ScreenUnlocked:       1285,
 	}
 }
 
@@ -787,4 +845,28 @@ var eventToJS = map[uint]string{
 	1264: "ios:WebViewDidFinishNavigation",
 	1265: "ios:WebViewDidFailNavigation",
 	1266: "ios:WebViewDecidePolicyForNavigationAction",
+	1267: "android:ActivityCreated",
+	1268: "android:ActivityStarted",
+	1269: "android:ActivityResumed",
+	1270: "android:ActivityPaused",
+	1271: "android:ActivityStopped",
+	1272: "android:ActivityDestroyed",
+	1273: "android:ApplicationLowMemory",
+	1274: "android:WebViewPageStarted",
+	1275: "android:WebViewPageFinished",
+	1276: "ios:BatteryChanged",
+	1277: "ios:NetworkChanged",
+	1278: "ios:ThemeChanged",
+	1279: "ios:ScreenLocked",
+	1280: "ios:ScreenUnlocked",
+	1281: "android:BatteryChanged",
+	1282: "android:NetworkChanged",
+	1283: "android:ThemeChanged",
+	1284: "android:ScreenLocked",
+	1285: "android:ScreenUnlocked",
+	1286: "common:BatteryChanged",
+	1287: "common:NetworkChanged",
+	1288: "common:ScreenLocked",
+	1289: "common:ScreenUnlocked",
+	1290: "common:LowMemory",
 }

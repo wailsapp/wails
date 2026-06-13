@@ -311,30 +311,30 @@ const sum = await CalculatorService.Add(5, 3)
 
 ### Primitive Types
 
-| Go Type | JavaScript/TypeScript |
-|---------|----------------------|
-| `string` | `string` |
-| `bool` | `boolean` |
-| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
-| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
-| `float32`, `float64` | `number` |
-| `byte` | `number` |
-| `rune` | `number` |
+| Go Type                                       | JavaScript/TypeScript |
+|-----------------------------------------------|-----------------------|
+| `string`                                      | `string`              |
+| `bool`                                        | `boolean`             |
+| `int`, `int8`, `int16`, `int32`, `int64`      | `number`              |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number`              |
+| `float32`, `float64`                          | `number`              |
+| `byte`                                        | `number`              |
+| `rune`                                        | `number`              |
 
 ### Complex Types
 
-| Go Type | JavaScript/TypeScript |
-|---------|----------------------|
-| `[]T` | `T[]` |
-| `[N]T` | `T[]` |
-| `map[string]T` | `{ [_: string]: T }` (string-keyed map) |
-| `map[K]V` | `{ [_ in K]?: V }` (non-string `K` is rendered as a mapped type, **not** a JS `Map`) |
-| `[]byte` | `Uint8Array` |
-| `struct` | `class` (with fields) |
-| `time.Time` | `Date` |
-| `*T` | `T \| null` (pointer-nullable) |
-| `any` / `interface{}` | `any` |
-| `error` | Exception (thrown) |
+| Go Type               | JavaScript/TypeScript | Notes                                                           |
+|-----------------------|-----------------------|-----------------------------------------------------------------|
+| `[]T`                 | `T[]`                 | -                                                               |
+| `[N]T`                | `T[]`                 | -                                                               |
+| `map[string]T`        | `{ [_: string]: T }`  | string-keyed map                                                |
+| `map[K]V`             | `{ [_ in K]?: V }`    | non-string `K` is rendered as a mapped type, **not** a JS `Map` |
+| `[]byte`              | `string`              | base64-encoded                                                  |
+| `struct`              | `class` / `interface` | with fields                                                     |
+| `time.Time`           | `any`                 | serialized as RFC3339Nano string in runtime                     |
+| `*T`                  | `T \| null`           | pointer means nullable                                          |
+| `any` / `interface{}` | `any`                 | -                                                               |
+| `error`               | `any` / `Exception`   | Exception if as return value else any                           |
 
 ### Unsupported Types
 
