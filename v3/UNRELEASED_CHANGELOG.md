@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix intermittent SIGSEGV on Linux when the assetserver closes a `WebKitURISchemeRequest`: the final `g_object_unref` ran on the assetserver goroutine, finalizing a WebKit GObject off the GTK main thread. The unref is now marshalled onto the GTK main context via `g_main_context_invoke` (#5557)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
