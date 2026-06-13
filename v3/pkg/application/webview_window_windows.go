@@ -1271,8 +1271,8 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	// WS_MAXIMIZE/WS_MINIMIZE state bits and re-enable the minimise/maximise/
 	// close buttons even when they were disabled via options or the runtime
 	// setMinimiseButtonState/setMaximiseButtonState/setCloseButtonState calls.
-	const preserve = w32.WS_VISIBLE | w32.WS_MAXIMIZE | w32.WS_MINIMIZE |
-		w32.WS_MINIMIZEBOX | w32.WS_MAXIMIZEBOX | w32.WS_SYSMENU | w32.WS_THICKFRAME
+const preserve = w32.WS_VISIBLE | w32.WS_DISABLED | w32.WS_MAXIMIZE | w32.WS_MINIMIZE |
+	w32.WS_MINIMIZEBOX | w32.WS_MAXIMIZEBOX | w32.WS_SYSMENU | w32.WS_THICKFRAME
 	current := uint(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
 	style := (uint(w32.WS_OVERLAPPEDWINDOW) &^ preserve) | (current & preserve)
 	w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(style))
