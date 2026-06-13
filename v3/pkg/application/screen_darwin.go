@@ -34,8 +34,18 @@ int GetNumScreens(){
 	return [[NSScreen screens] count];
 }
 
+// copyCString duplicates an NSString's UTF-8 representation onto the C heap.
+// UTF8String returns a pointer owned by the (autoreleased) NSString; storing it
+// in a struct that Go reads later is a dangling pointer once the string is
+// deallocated (observed as SIGSEGV in C.GoString during display-reconfiguration
+// event storms, e.g. on sleep/wake). The caller (Go side) frees the copy.
+static const char* copyCString(NSString* s) {
+	const char* utf8 = [s UTF8String];
+	return strdup(utf8 ? utf8 : "");
+}
+
 Screen processScreen(NSScreen* screen){
-	Screen returnScreen;
+	Screen returnScreen = {0};
 	returnScreen.scaleFactor = screen.backingScaleFactor;
 
 	// NSScreen's native coordinate space is Y-up with (0,0) at the bottom-left
@@ -68,7 +78,7 @@ Screen processScreen(NSScreen* screen){
 	NSDictionary* screenDictionary = [screen deviceDescription];
 	NSNumber* screenID = [screenDictionary objectForKey:@"NSScreenNumber"];
 	CGDirectDisplayID displayID = [screenID unsignedIntValue];
-	returnScreen.id = [[NSString stringWithFormat:@"%d", displayID] UTF8String];
+	returnScreen.id = copyCString([NSString stringWithFormat:@"%d", displayID]);
 
 	// Get physical monitor size
 	NSValue *sizeValue = [screenDictionary objectForKey:@"NSDeviceSize"];
@@ -80,11 +90,15 @@ Screen processScreen(NSScreen* screen){
 	double rotation = CGDisplayRotation(displayID);
 	returnScreen.rotation = rotation;
 
+	NSString* localizedName = nil;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
 	if( @available(macOS 10.15, *) ){
-		returnScreen.name = [screen.localizedName UTF8String];
+		localizedName = screen.localizedName;
 	}
 #endif
+	// Always an owned, non-NULL pointer (empty string when unavailable),
+	// so the Go side can unconditionally GoString + free.
+	returnScreen.name = copyCString(localizedName);
 	return returnScreen;
 }
 
@@ -95,10 +109,16 @@ Screen GetPrimaryScreen(){
 	return processScreen(mainScreen);
 }
 
-Screen* getAllScreens() {
+// getAllScreens returns the screen array and reports its length via outCount.
+// The count must be captured in the same snapshot as the allocation: fetching
+// it separately (the previous GetNumScreens round-trip) races with display
+// reconfiguration and can over-read the malloc'd array.
+Screen* getAllScreens(int* outCount) {
 	NSArray<NSScreen *> *screens = [NSScreen screens];
-	Screen* returnScreens = malloc(sizeof(Screen) * screens.count);
-	for (int i = 0; i < screens.count; i++) {
+	int count = (int)screens.count;
+	*outCount = count;
+	Screen* returnScreens = malloc(sizeof(Screen) * count);
+	for (int i = 0; i < count; i++) {
 		NSScreen* screen = [screens objectAtIndex:i];
 		returnScreens[i] = processScreen(screen);
 		returnScreens[i].isPrimary = (i == 0);
@@ -147,6 +167,11 @@ func cScreenToScreen(screen C.Screen) *Screen {
 	sf := float64(screen.scaleFactor)
 	toPhysical := func(points C.int) int { return int(float64(points) * sf) }
 
+	// id/name are strdup'd on the C heap (see copyCString); free them once
+	// converted so every processScreen caller stays leak-free.
+	defer C.free(unsafe.Pointer(screen.id))
+	defer C.free(unsafe.Pointer(screen.name))
+
 	return &Screen{
 		// Screen.X/Y must mirror Bounds.X/Y: shared code in screenmanager.go
 		// (areScreensTouching, calculateScreenPlacement, move) reads the
@@ -190,9 +215,10 @@ func cScreenToScreen(screen C.Screen) *Screen {
 }
 
 func (m *macosApp) processAndCacheScreens() error {
-	cScreens := C.getAllScreens()
+	var cCount C.int
+	cScreens := C.getAllScreens(&cCount)
 	defer C.free(unsafe.Pointer(cScreens))
-	numScreens := int(C.GetNumScreens())
+	numScreens := int(cCount)
 	screens := make([]*Screen, numScreens)
 	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
 	for i := 0; i < numScreens; i++ {
