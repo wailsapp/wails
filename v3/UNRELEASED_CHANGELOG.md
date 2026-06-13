@@ -63,6 +63,8 @@ After processing, the content will be moved to the main changelog and this file 
 - Android: framework debug logging is compiled out of production builds and routes through logcat under the `Wails` tag in debug builds
 - Android: real `hasListeners` registry, JNI reference/exception handling, and a single-load page lifecycle (no double navigation)
 - Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+- Fix intermittent fatal crash on macOS when reading screen information after a display change: the screen id and name stored pointers to autoreleased `UTF8String` buffers that could be freed before Go copied them (use-after-free). The strings are now `strdup`'d and freed after conversion, and screen enumeration runs in an explicit autorelease pool so it no longer leaks when called from Go goroutines (#5556)
+- Fix intermittent SIGSEGV on Linux when the assetserver closes a `WebKitURISchemeRequest`: the final `g_object_unref` ran on the assetserver goroutine, finalizing a WebKit GObject off the GTK main thread. The unref is now marshalled onto the GTK main context via `g_main_context_invoke` (#5557)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
