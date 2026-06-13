@@ -224,3 +224,50 @@ input[type="range"] {
     flex: 1;
     accent-color: var(--accent, #3b82f6);
 }
+
+/* Camera: Photo/Video pill toggle + switched capture (preview/playback) area */
+.pill-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface);
+    border-radius: 999px;
+    margin: 0 0 12px;
+}
+.pill-tab {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pill-tab.active { background: var(--accent); color: #fff; }
+
+.capture-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    margin-bottom: 12px;
+    background: #0f1726;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+/* No explicit display here, so the [hidden] attribute keeps controlling
+   visibility; the flex container blockifies whichever child is shown. */
+.capture-area img,
+.capture-area video {
+    width: 100%;
+    border-radius: var(--radius);
+}
+.capture-placeholder {
+    margin: 0;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+}
+.capture-btn { width: 100%; }

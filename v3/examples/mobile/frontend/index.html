@@ -238,14 +238,18 @@
         <section class="pane" id="pane-camera">
             <div class="mobile-only">
                 <h2>Camera</h2>
-                <p class="hint">Capture a photo or video with the system camera (prompts for the
-                    camera permission on first use).</p>
-                <div class="grid">
-                    <button class="btn primary" id="btnPhoto">Take photo</button>
-                    <button class="btn" id="btnVideo">Record video</button>
+                <p class="hint">Capture a photo or record a video with the system camera (prompts
+                    for the camera permission on first use).</p>
+                <div class="pill-tabs" id="captureMode" role="tablist">
+                    <button class="pill-tab active" data-mode="photo">Photo</button>
+                    <button class="pill-tab" data-mode="video">Video</button>
                 </div>
-                <img id="captureImg" alt="captured photo"
-                     style="display:none;width:100%;border-radius:var(--radius);margin-top:8px"/>
+                <div class="capture-area">
+                    <img id="captureImg" alt="captured photo" hidden/>
+                    <video id="captureVideo" controls playsinline hidden></video>
+                    <p id="capturePlaceholder" class="capture-placeholder">No photo yet — tap Take photo.</p>
+                </div>
+                <button class="btn primary capture-btn" id="btnCapture">Take photo</button>
 
                 <h2>Background execution</h2>
                 <p class="hint">Keep the app working while backgrounded. On Android this runs a

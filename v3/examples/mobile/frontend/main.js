@@ -588,26 +588,62 @@ Events.On("native:screenCapture", (e) => {
 // ---- Camera & background ------------------------------------------------
 const logCamera = (msg) => show("cameraOut", msg);
 
-$("btnPhoto")?.addEventListener("click", () => {
-    Events.Emit("native:capturePhoto", {});
-    logCamera("Opening camera…");
+// Photo/Video pill tabs drive a single capture button and a switched preview
+// area: photos show in an <img>, recorded videos play back in a <video>.
+const captureImg = $("captureImg");
+const captureVideo = $("captureVideo");
+const capturePlaceholder = $("capturePlaceholder");
+let captureModeVal = "photo";
+
+function setCaptureMode(mode) {
+    captureModeVal = mode;
+    document.querySelectorAll("#captureMode .pill-tab").forEach((t) =>
+        t.classList.toggle("active", t.dataset.mode === mode));
+    if ($("btnCapture")) $("btnCapture").textContent = mode === "video" ? "Record video" : "Take photo";
+    const hasPhoto = !!(captureImg && captureImg.getAttribute("src"));
+    const hasVideo = !!(captureVideo && captureVideo.getAttribute("src"));
+    if (mode === "video") {
+        if (captureImg) captureImg.hidden = true;
+        if (captureVideo) captureVideo.hidden = !hasVideo;
+    } else {
+        if (captureVideo) { try { captureVideo.pause(); } catch (_) {} captureVideo.hidden = true; }
+        if (captureImg) captureImg.hidden = !hasPhoto;
+    }
+    if (capturePlaceholder) {
+        const has = mode === "video" ? hasVideo : hasPhoto;
+        capturePlaceholder.hidden = has;
+        capturePlaceholder.textContent = mode === "video"
+            ? "No video yet — tap Record video." : "No photo yet — tap Take photo.";
+    }
+}
+document.querySelectorAll("#captureMode .pill-tab").forEach((t) =>
+    t.addEventListener("click", () => setCaptureMode(t.dataset.mode)));
+
+$("btnCapture")?.addEventListener("click", () => {
+    if (captureModeVal === "video") {
+        Events.Emit("native:captureVideo", {});
+        logCamera("Opening camera (video)…");
+    } else {
+        Events.Emit("native:capturePhoto", {});
+        logCamera("Opening camera…");
+    }
 });
-$("btnVideo")?.addEventListener("click", () => {
-    Events.Emit("native:captureVideo", {});
-    logCamera("Opening camera (video)…");
-});
+
 Events.On("native:capture", (e) => {
     const d = eventValue(e) || {};
-    const img = $("captureImg");
     if (d.error) { logCamera("Capture error: " + d.error); return; }
     if (d.cancelled) { logCamera("Capture cancelled"); return; }
     const kb = d.size ? Math.round(d.size / 1024) : 0;
     if (d.type === "photo") {
-        if (d.thumb && img) { img.src = d.thumb; img.style.display = "block"; }
+        if (d.thumb && captureImg) captureImg.src = d.thumb;
+        setCaptureMode("photo"); // reveal the photo preview
         logCamera(`Photo captured (${kb} KB)\n${d.path || ""}`);
     } else {
-        if (img) img.style.display = "none";
-        logCamera(`Video captured (${kb} KB)\n${d.path || ""}`);
+        if (d.dataUrl && captureVideo) captureVideo.src = d.dataUrl;
+        setCaptureMode("video"); // reveal the <video> for playback
+        logCamera(d.dataUrl
+            ? `Video captured (${kb} KB) — tap ▶ to play\n${d.path || ""}`
+            : `Video captured (${kb} KB) — too large to preview inline\n${d.path || ""}`);
     }
 });
 
