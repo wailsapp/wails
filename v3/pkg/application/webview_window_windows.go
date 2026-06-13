@@ -1257,6 +1257,10 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
+	if w.isFullscreen() {
+		// Avoid disrupting fullscreen (WS_POPUP) styling; frame trimming will be handled on exit.
+		return
+	}
 	// Keep the full overlapped-window style in both states and let the
 	// WM_NCCALCSIZE handler — keyed on options.Frameless, which the caller
 	// has already updated — trim the frame, exactly like Frameless: true at
