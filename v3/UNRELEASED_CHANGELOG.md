@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
-- Fix `@wailsio/runtime` throwing `window is not defined` when imported without a DOM (e.g. during `next build` prerendering): direct import-time `window`/`document` access is now behind a `hasDOM` guard (`system.ts` uses a try/catch IIFE that is already SSR-safe), and the runtime URL is resolved lazily (#4679)
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
