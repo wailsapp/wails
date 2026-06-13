@@ -45,6 +45,8 @@ func init() {
 	}
 }
 
+var _ ResponseWriter = &responseWriter{}
+
 type responseWriter struct {
 	req uintptr
 
@@ -109,34 +111,27 @@ func (rw *responseWriter) WriteHeader(code int) {
 	var unRef func(uintptr)
 	purego.RegisterLibFunc(&unRef, gtk, "g_object_unref")
 	stream := newStream(rFD, true)
+	defer unRef(stream)
 
-	/*	var reqFinish func(uintptr, uintptr, uintptr, uintptr, int64) int
-		purego.RegisterLibFunc(&reqFinish, webkit, "webkit_uri_scheme_request_finish")
-
-		header := rw.Header()
-			defer unRef(stream)
-		if err := reqFinish(rw.req, code, header, stream, contentLength); err != nil {
-			rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
-		}
-	*/
 	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), stream, contentLength); err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
 		return
 	}
 }
 
-func (rw *responseWriter) Finish() {
+func (rw *responseWriter) Finish() error {
 	if !rw.wroteHeader {
 		rw.WriteHeader(http.StatusNotImplemented)
 	}
 
 	if rw.finished {
-		return
+		return nil
 	}
 	rw.finished = true
 	if rw.w != nil {
 		rw.w.Close()
 	}
+	return nil
 }
 
 func (rw *responseWriter) finishWithError(code int, err error) {
@@ -146,18 +141,17 @@ func (rw *responseWriter) finishWithError(code int, err error) {
 	}
 	rw.wErr = err
 
-	var newLiteral func(uint32, string, int, string) uintptr // is this correct?
+	var newLiteral func(uint32, int32, string) uintptr
 	purego.RegisterLibFunc(&newLiteral, gtk, "g_error_new_literal")
-	var newQuark func(string) uintptr
+	var newQuark func(string) uint32
 	purego.RegisterLibFunc(&newQuark, gtk, "g_quark_from_string")
 	var freeError func(uintptr)
 	purego.RegisterLibFunc(&freeError, gtk, "g_error_free")
 	var finishError func(uintptr, uintptr)
 	purego.RegisterLibFunc(&finishError, webkit, "webkit_uri_scheme_request_finish_error")
 
-	msg := string(err.Error())
-	//gquark := newQuark(msg)
-	gerr := newLiteral(1, msg, code, msg)
+	msg := err.Error()
+	gerr := newLiteral(newQuark(msg), int32(code), msg)
 	finishError(rw.req, gerr)
 	freeError(gerr)
 }
