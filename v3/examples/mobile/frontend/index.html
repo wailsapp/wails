@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/png" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Wails Mobile Kitchen Sink</title>
+</head>
+<body>
+<div id="app">
+    <header class="app-header">
+        <img src="/wails.png" class="logo" alt="Wails"/>
+        <div>
+            <h1>Kitchen Sink</h1>
+            <p class="subtitle">Platform: <span id="platform" class="badge">…</span></p>
+        </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="bindings">Bindings</button>
+        <button class="tab" data-tab="events">Events</button>
+        <button class="tab" data-tab="dialogs">Dialogs</button>
+        <button class="tab" data-tab="system">System</button>
+        <button class="tab" data-tab="mobile">Mobile</button>
+        <button class="tab" data-tab="hardware">Hardware</button>
+        <button class="tab" data-tab="camera">Camera</button>
+        <button class="tab" data-tab="native">Native</button>
+    </nav>
+
+    <main>
+        <!-- Bindings: JS -> Go calls -->
+        <section class="pane active" id="pane-bindings">
+            <h2>Service bindings</h2>
+            <p class="hint">Call Go methods from JS and get typed results back.</p>
+            <div class="row">
+                <input id="greetName" placeholder="Your name" autocomplete="off"/>
+                <button class="btn primary" id="btnGreet">Greet</button>
+            </div>
+            <div class="row">
+                <input id="addA" type="number" value="2" inputmode="numeric"/>
+                <span class="op">+</span>
+                <input id="addB" type="number" value="3" inputmode="numeric"/>
+                <button class="btn" id="btnAdd">Add</button>
+            </div>
+            <div class="row">
+                <input id="divA" type="number" value="10" inputmode="decimal"/>
+                <span class="op">÷</span>
+                <input id="divB" type="number" value="0" inputmode="decimal"/>
+                <button class="btn" id="btnDivide">Divide</button>
+            </div>
+            <pre id="bindingsOut" class="output">Results appear here…</pre>
+        </section>
+
+        <!-- Events: Go <-> JS -->
+        <section class="pane" id="pane-events">
+            <h2>Events</h2>
+            <p class="hint">Go emits a <code>time</code> event every second (Go → JS).</p>
+            <div class="clock" id="clock">waiting for first tick…</div>
+            <p class="hint">Send a <code>ping</code> to Go; it replies with <code>pong</code> (JS → Go → JS).</p>
+            <button class="btn primary" id="btnPing">Send ping</button>
+            <pre id="eventsOut" class="output">No pong yet…</pre>
+
+            <h2>System events</h2>
+            <p class="hint">Battery, network, theme, screen-lock and low-memory arrive
+                in Go as <code>common:</code> application events
+                (<code>ios:</code>/<code>android:</code> → <code>common:</code>) and are
+                forwarded here by the app. Try toggling charging, airplane mode or dark mode.</p>
+            <div id="sysState" class="metrics-out"><p class="hint">Waiting for system events…</p></div>
+            <div id="sysLog" class="event-log"></div>
+        </section>
+
+        <!-- Dialogs -->
+        <section class="pane" id="pane-dialogs">
+            <h2>Native dialogs</h2>
+            <p class="hint">Backed by UIAlertController (iOS) / AlertDialog (Android).</p>
+            <div class="grid">
+                <button class="btn" id="btnInfo">Info</button>
+                <button class="btn" id="btnWarning">Warning</button>
+                <button class="btn" id="btnError">Error</button>
+                <button class="btn primary" id="btnQuestion">Question</button>
+            </div>
+            <pre id="dialogsOut" class="output">Dialog results appear here…</pre>
+        </section>
+
+        <!-- System: clipboard, screens, device info -->
+        <section class="pane" id="pane-system">
+            <h2>Clipboard</h2>
+            <div class="row">
+                <input id="clipText" value="wails ❤️ mobile"/>
+                <button class="btn" id="btnClipSet">Copy</button>
+                <button class="btn" id="btnClipGet">Paste</button>
+            </div>
+            <pre id="clipOut" class="output">Clipboard value appears here…</pre>
+
+            <h2>Screen</h2>
+            <button class="btn" id="btnScreens">Get screen metrics</button>
+            <div id="screensOut" class="metrics-out"><p class="hint">Screen metrics appear here…</p></div>
+
+            <h2>Device</h2>
+            <button class="btn" id="btnDevice">Get device info</button>
+            <div id="deviceOut" class="metrics-out"><p class="hint">Device info appears here…</p></div>
+        </section>
+
+        <!-- Mobile: genuinely mobile features (iOS + Android) -->
+        <section class="pane" id="pane-mobile">
+            <div class="mobile-only">
+                <h2>Share &amp; links</h2>
+                <p class="hint">Native share sheet and opening links in the system browser.</p>
+                <div class="grid">
+                    <button class="btn primary" id="btnShare">Share…</button>
+                </div>
+                <div class="row">
+                    <input id="openUrl" value="https://wails.io" autocomplete="off"/>
+                    <button class="btn" id="btnOpenUrl">Open</button>
+                </div>
+
+                <h2>Screen</h2>
+                <label class="switch"><input type="checkbox" id="mfKeepAwake"/> Keep screen awake</label>
+                <p class="hint">Prevents the display from auto-locking while the app is in front.</p>
+                <label class="switch"><input type="checkbox" id="mfTorch"/> Torch (flashlight)</label>
+                <p class="hint">Has no visible effect on a simulator/emulator without a camera flash.</p>
+                <div class="row">
+                    <label class="range-label">Brightness</label>
+                    <input type="range" id="mfBrightness" min="0" max="100" value="50"/>
+                    <button class="btn" id="btnGetBrightness">Read</button>
+                </div>
+
+                <h2>Layout &amp; info</h2>
+                <div class="grid">
+                    <button class="btn" id="btnSafeArea">Safe-area insets</button>
+                    <button class="btn" id="btnAppInfo">App info</button>
+                </div>
+                <div id="mobileMetrics" class="metrics-out"></div>
+
+                <h2>Orientation</h2>
+                <div class="grid">
+                    <button class="btn" data-orient="portrait">Portrait</button>
+                    <button class="btn" data-orient="landscape">Landscape</button>
+                    <button class="btn" data-orient="auto">Auto</button>
+                </div>
+                <p class="hint">Current: <span id="mfOrientation">—</span></p>
+
+                <h2>Status bar</h2>
+                <div class="grid">
+                    <button class="btn" data-statusbar="light">Light icons</button>
+                    <button class="btn" data-statusbar="dark">Dark icons</button>
+                    <button class="btn" data-statusbar="hidden">Hide</button>
+                    <button class="btn" data-statusbar="shown">Show</button>
+                </div>
+
+                <h2>Security &amp; notifications</h2>
+                <div class="grid">
+                    <button class="btn primary" id="btnBiometric">Authenticate</button>
+                    <button class="btn" id="btnNotify">Send notification</button>
+                </div>
+                <p class="hint">Biometric uses Face ID / Touch ID / fingerprint, with a
+                    device-passcode fallback.</p>
+
+                <h2>Secure storage</h2>
+                <p class="hint">Backed by the iOS Keychain / Android EncryptedSharedPreferences.</p>
+                <div class="row">
+                    <input id="secKey" value="token" placeholder="key" autocomplete="off"/>
+                    <input id="secVal" value="s3cr3t-value" placeholder="value" autocomplete="off"/>
+                </div>
+                <div class="grid">
+                    <button class="btn" id="btnSecSet">Save</button>
+                    <button class="btn" id="btnSecGet">Load</button>
+                    <button class="btn" id="btnSecDel">Delete</button>
+                </div>
+
+                <pre id="mobileOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
+        </section>
+
+        <!-- Hardware: sensors & device capabilities (iOS + Android) -->
+        <section class="pane" id="pane-hardware">
+            <div class="mobile-only">
+                <h2>Haptics</h2>
+                <p class="hint">Tactile feedback via the Taptic Engine (iOS) / Vibrator (Android).</p>
+                <div class="grid">
+                    <button class="btn" data-haptic2="impact-light">Light</button>
+                    <button class="btn" data-haptic2="impact-medium">Medium</button>
+                    <button class="btn" data-haptic2="impact-heavy">Heavy</button>
+                    <button class="btn" data-haptic2="success">Success</button>
+                    <button class="btn" data-haptic2="warning">Warning</button>
+                    <button class="btn" data-haptic2="error">Error</button>
+                    <button class="btn" data-haptic2="selection">Selection</button>
+                </div>
+
+                <h2>Location</h2>
+                <p class="hint">One-shot GPS fix. Prompts for permission on first use.</p>
+                <div class="grid">
+                    <button class="btn primary" id="btnLocation">Get location</button>
+                </div>
+
+                <h2>Motion &amp; proximity</h2>
+                <label class="switch"><input type="checkbox" id="mfMotion"/> Accelerometer</label>
+                <p class="hint">Streams device acceleration (x, y, z) in real time.</p>
+                <label class="switch"><input type="checkbox" id="mfProximity"/> Proximity sensor</label>
+                <p class="hint">Reports near/far — cover the top of the device to trigger it.</p>
+
+                <h2>Speech</h2>
+                <div class="row">
+                    <input id="speakText" value="Hello from Wails" autocomplete="off"/>
+                    <button class="btn" id="btnSpeak">Speak</button>
+                    <button class="btn" id="btnStopSpeak">Stop</button>
+                </div>
+
+                <h2>Device state</h2>
+                <div class="grid">
+                    <button class="btn" id="btnStorage">Storage</button>
+                    <button class="btn" id="btnPower">Power</button>
+                    <button class="btn" id="btnNetwork">Network</button>
+                </div>
+                <div id="hardwareMetrics" class="metrics-out"></div>
+
+                <h2>Keyboard &amp; privacy</h2>
+                <label class="switch"><input type="checkbox" id="mfKeyboard"/> Watch keyboard insets</label>
+                <p class="hint">Reports the software keyboard's height as it shows and hides.
+                    <input id="keyboardProbe" placeholder="tap to raise the keyboard" autocomplete="off"/>
+                </p>
+                <label class="switch"><input type="checkbox" id="mfScreenProtect"/> Block screen capture</label>
+                <p class="hint">Sets FLAG_SECURE on Android; on iOS, detects screenshots and
+                    screen recording (it cannot block them).</p>
+
+                <pre id="hardwareOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
+        </section>
+
+        <!-- Camera: photo/video capture + background execution -->
+        <section class="pane" id="pane-camera">
+            <div class="mobile-only">
+                <h2>Camera</h2>
+                <p class="hint">Capture a photo or record a video with the system camera (prompts
+                    for the camera permission on first use).</p>
+                <div class="pill-tabs" id="captureMode" role="tablist">
+                    <button class="pill-tab active" data-mode="photo">Photo</button>
+                    <button class="pill-tab" data-mode="video">Video</button>
+                </div>
+                <div class="capture-area">
+                    <img id="captureImg" alt="captured photo" hidden/>
+                    <video id="captureVideo" controls playsinline hidden></video>
+                    <p id="capturePlaceholder" class="capture-placeholder">No photo yet — tap Take photo.</p>
+                </div>
+                <button class="btn primary capture-btn" id="btnCapture">Take photo</button>
+
+                <h2>Background execution</h2>
+                <p class="hint">Keep the app working while backgrounded. On Android this runs a
+                    foreground service with an ongoing notification (the process — and your Go
+                    goroutines — keep running); on iOS it opens a short background-task window
+                    (sustained background work needs a declared <code>UIBackgroundMode</code>).</p>
+                <label class="switch"><input type="checkbox" id="mfForegroundService"/> Foreground service (Android)</label>
+                <div class="grid">
+                    <button class="btn" id="btnBgTask">Begin background task (iOS)</button>
+                </div>
+
+                <pre id="cameraOut" class="output">Results appear here…</pre>
+            </div>
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">These features are available when running on iOS or Android.</p>
+            </div>
+        </section>
+
+        <!-- Native: platform-specific -->
+        <section class="pane" id="pane-native">
+            <h2>Platform features</h2>
+            <p class="hint" id="nativeHint">…</p>
+
+            <!-- iOS-only -->
+            <div class="platform-only" data-platform="ios">
+                <div class="grid">
+                    <button class="btn" data-haptic="light">Haptic: light</button>
+                    <button class="btn" data-haptic="medium">Haptic: medium</button>
+                    <button class="btn" data-haptic="heavy">Haptic: heavy</button>
+                </div>
+                <label class="switch"><input type="checkbox" id="iosScroll" checked/> Scroll enabled</label>
+                <label class="switch"><input type="checkbox" id="iosBounce" checked/> Bounce enabled</label>
+                <p class="hint">Drag the page past its edge to feel bounce; turn Scroll off to freeze the page.</p>
+            </div>
+
+            <!-- Android-only -->
+            <div class="platform-only" data-platform="android">
+                <div class="grid">
+                    <button class="btn" id="btnVibrate">Vibrate</button>
+                    <button class="btn primary" id="btnToast">Show toast</button>
+                </div>
+            </div>
+
+            <!-- Desktop -->
+            <div class="platform-only" data-platform="desktop">
+                <p class="hint">Native mobile features are available when running on iOS or Android.</p>
+            </div>
+            <pre id="nativeOut" class="output"></pre>
+        </section>
+    </main>
+
+    <footer class="app-footer">Built with Wails v3</footer>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
+</html>

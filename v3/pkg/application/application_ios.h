@@ -120,4 +120,48 @@ void ios_haptics_impact(const char* style);
 // Returns a JSON string with basic device info. Caller is responsible for freeing with free().
 const char* ios_device_info_json(void);
 
+// Framework diagnostic logging. Disabled by default; Go enables it for debug
+// (non-production) builds. WailsVLog gates native NSLog diagnostics.
+void ios_set_verbose_logging(bool enabled);
+bool ios_is_verbose_logging(void);
+#define WailsVLog(...) do { if (ios_is_verbose_logging()) NSLog(__VA_ARGS__); } while (0)
+
+// Screen metrics. Returns a JSON object for the main screen:
+// {"pointWidth":..,"pointHeight":..,"pixelWidth":..,"pixelHeight":..,"scale":..,
+//  "safeTop":..,"safeBottom":..,"safeLeft":..,"safeRight":..}
+// Caller is responsible for freeing with free().
+const char* ios_screen_info_json(void);
+
+// Clipboard (UIPasteboard). Getter result must be freed with free(); returns
+// NULL when the pasteboard has no string.
+void ios_clipboard_set_text(const char* text);
+const char* ios_clipboard_get_text(void);
+
+// Message dialog (UIAlertController). buttonsJSON is a JSON array of
+// {"label":string,"isCancel":bool,"isDefault":bool}. When the user picks a
+// button, iosDialogCallback(callbackID, buttonIndex) fires (index into the
+// array, or -1 for the implicit OK of a button-less dialog).
+void ios_show_message_dialog(const char* title, const char* message, const char* buttonsJSON, unsigned int callbackID);
+
+// Document picker (UIDocumentPickerViewController). Selected paths are
+// delivered via iosOpenFileCallback (one call per path) followed by
+// iosOpenFileCallbackEnd. Cancellation delivers only the End callback.
+// Files are imported as copies into the app sandbox; directories are opened
+// in place with security-scoped access.
+void ios_show_document_picker(unsigned int callbackID, bool directories, bool multiple);
+
+// Go callbacks for the above
+extern void iosDialogCallback(unsigned int callbackID, int buttonIndex);
+extern void iosOpenFileCallback(unsigned int callbackID, char* path);
+extern void iosOpenFileCallbackEnd(unsigned int callbackID);
+extern void iosApplicationDidLaunch(void);
+
+// Start the native system-event monitors (battery, network, screen lock).
+// Each fires processApplicationEvent(EventXxx, json) so the Go side delivers a
+// typed ios: application event (mapped to a common: event) with its payload on
+// the event context. Safe to call once after launch; the observer setup is
+// dispatched to the main thread. (Theme is handled in the view controller's
+// traitCollectionDidChange; lifecycle/memory by the generated delegate events.)
+void ios_start_system_event_monitors(void);
+
 #endif // APPLICATION_IOS_H

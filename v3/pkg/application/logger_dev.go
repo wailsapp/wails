@@ -1,4 +1,4 @@
-//go:build !windows && !production && !ios
+//go:build !windows && !production && !ios && !android
 
 package application
 
