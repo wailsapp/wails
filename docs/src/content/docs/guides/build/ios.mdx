@@ -1,0 +1,134 @@
+---
+title: iOS
+description: Build and run Wails applications on iOS
+sidebar:
+  order: 8
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimental Feature">
+iOS support is experimental and may change in future releases.
+</Aside>
+
+Wails v3 applications run on iOS as native UIKit apps: a `WKWebView` renders
+the frontend, assets are served **in-process** over a custom `wails://` URL
+scheme (no localhost server, no open ports), and the standard
+`@wailsio/runtime` works unchanged — service bindings, events, dialogs and
+the clipboard use the same `/wails/runtime` transport as on desktop.
+
+The same `main.go` builds for desktop and iOS. iOS-specific behaviour is
+configured through `application.Options.IOS`, with per-platform Go files
+guarded by `//go:build ios`.
+
+## Requirements
+
+- macOS with **full Xcode** installed (the command-line tools alone are not
+  enough) — `wails3 doctor` shows the iOS SDKs it can find
+- Go 1.24+ and npm
+
+## Running on the Simulator
+
+From your project directory:
+
+```bash
+wails3 task ios:run
+```
+
+This generates the iOS scaffolding (`build/ios/`), compiles your Go code as
+a C archive (`GOOS=ios`), links it against UIKit, bundles, signs ad-hoc,
+boots a simulator if necessary, and launches the app.
+
+Useful companions:
+
+```bash
+wails3 task ios:logs:dev    # stream the app's logs from the simulator
+wails3 task ios:xcode       # open the generated Xcode project
+```
+
+In debug builds the webview is inspectable from Safari's Develop menu.
+
+## Packaging
+
+```bash
+wails3 task ios:package             # production .app for the simulator
+wails3 task ios:deploy-simulator    # install + launch it
+```
+
+Production builds use `-tags production,ios`, are stripped, and compile out
+the framework's internal diagnostics.
+
+## Device builds
+
+```bash
+wails3 task ios:package IOS_PLATFORM=device \
+    CODESIGN_IDENTITY="Apple Development: You (TEAMID)" \
+    PROVISIONING_PROFILE=path/to/profile.mobileprovision
+
+wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # via xcrun devicectl
+wails3 task ios:package:ipa IOS_PLATFORM=device ...  # distribution .ipa
+```
+
+`IOS_PLATFORM=device` selects the `iphoneos` SDK and the
+`arm64-apple-ios<min>` target. Entitlements from
+`build/ios/entitlements.plist` are applied to device builds only —
+`get-task-allow` by default; add capability keys as your app needs them.
+
+<Aside type="tip">
+For automatically managed signing, provisioning and App Store archives, open
+the generated Xcode project with `wails3 task ios:xcode` and build from
+Xcode instead.
+</Aside>
+
+## Configuration
+
+`build/config.yml`:
+
+```yaml
+ios:
+  bundleID: com.example.myapp
+  displayName: My App
+  version: 1.0.0
+  minIOSVersion: "15.0"
+```
+
+Application options (`application.Options.IOS`) include `DisableScroll`,
+`DisableBounce`, `DisableScrollIndicators`, `DisableInputAccessoryView`,
+`EnableBackForwardNavigationGestures`, `DisableLinkPreview`,
+`EnableInlineMediaPlayback`, `EnableAutoplayWithoutUserAction`,
+`DisableInspectable`, `UserAgent`, `ApplicationNameForUserAgent`,
+`BackgroundColour`, and native bottom tabs via `EnableNativeTabs` +
+`NativeTabsItems`.
+
+The frontend can drive iOS features at runtime through the `IOS` runtime
+object — `IOS.Haptics.Impact(style)`, `IOS.Device.Info()`,
+`IOS.Scroll.SetEnabled(...)` — and native tab selections arrive as a
+`nativeTabSelected` `CustomEvent` on `window`.
+
+## What works, what doesn't
+
+| Area | Status |
+|---|---|
+| WKWebView + in-process assets (`wails://`) | ✅ |
+| Service bindings, events (both directions) | ✅ |
+| Message dialogs | ✅ UIAlertController with button callbacks |
+| Open file / files / directory dialogs | ✅ UIDocumentPicker (files imported as sandbox copies) |
+| Save file dialogs | ❌ Returns an error — write inside the app sandbox instead |
+| Clipboard | ✅ UIPasteboard |
+| Screens API | ✅ UIScreen metrics incl. safe-area work area |
+| Lifecycle events (`events.IOS.*`) | ✅ |
+| Window geometry, menus, system tray | Intentional no-ops |
+| Multiple windows | Only the first window is displayed |
+
+## Porting notes
+
+- Desktop code compiles unchanged under `GOOS=ios`; geometry/menu/tray
+  calls become no-ops because iOS apps are fullscreen.
+- `ios` **implies the `darwin` build tag**: macOS-only files need
+  `//go:build darwin && !ios`, and at runtime `runtime.GOOS` is `"ios"`.
+- Replace save-file dialogs with writes into the app sandbox (for example
+  the Documents directory) plus a share flow.
+- Design the frontend responsively; safe areas are handled natively.

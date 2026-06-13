@@ -151,6 +151,12 @@ type WebviewWindowOptions struct {
 	// `data-file-drop-target` attribute will trigger a FilesDropped event.
 	EnableFileDrop bool
 
+	// Permissions controls how capability requests (camera, microphone, …)
+	// from the web content are handled, per PermissionType. Unset entries use
+	// PermissionDefault. Cross-platform; see the Permission constants for the
+	// per-platform meaning of the default.
+	Permissions map[PermissionType]Permission
+
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool
 
@@ -254,6 +260,37 @@ const (
 	Mica    BackdropType = 2
 	Acrylic BackdropType = 3
 	Tabbed  BackdropType = 4
+)
+
+// PermissionType identifies a capability that web content can request from
+// the webview (camera, microphone, …). It is the cross-platform equivalent of
+// the platform-specific permission-kind enums.
+type PermissionType uint8
+
+const (
+	PermissionMicrophone PermissionType = iota
+	PermissionCamera
+	PermissionGeolocation
+	PermissionNotifications
+	PermissionClipboardRead
+)
+
+// Permission is the policy applied to a PermissionType. The values are kept in
+// step with the native WebView2 permission-state ABI (Default=0, Allow=1,
+// Deny=2) so the Windows backend needs no translation.
+type Permission uint8
+
+const (
+	// PermissionDefault uses the platform's native handling and is the zero
+	// value. On macOS (TCC) and Windows (WebView2) this presents the OS/webview
+	// permission prompt to the user. Linux/WebKitGTK has no prompt mechanism,
+	// so media capture (camera/microphone) is allowed — restoring getUserMedia
+	// for app content — and other capabilities are denied.
+	PermissionDefault Permission = iota
+	// PermissionAllow grants the capability without prompting.
+	PermissionAllow
+	// PermissionDeny denies the capability without prompting.
+	PermissionDeny
 )
 
 type CoreWebView2PermissionKind uint32
