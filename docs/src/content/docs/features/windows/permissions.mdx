@@ -123,9 +123,9 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-### Restore the pre-5567 Windows behaviour (allow all)
+### Allow all capabilities on Windows
 
-Before PR #5567, Windows silently granted all capabilities. To preserve that:
+To grant every capability without prompting:
 
 ```go
 Permissions: map[application.PermissionType]application.Permission{
