@@ -11,7 +11,7 @@ The v3 API in `v3/pkg/application` and related packages is stable. We will not m
 Full documentation is available at [v3.wails.io](https://v3.wails.io).
 
 To get started with a new project:
-```
+```bash
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 wails3 init -n myapp
 ```
@@ -24,7 +24,7 @@ The following areas are still under active development and are **not** covered b
 - **GTK4 Linux backend**: Now the default on Linux but still in active stabilisation. Some rendering edge cases may remain.
 - **Some niche AppKit APIs**: A small number of macOS-specific window APIs are still being finalised.
 
-See [`v3/STABILITY.md`](STABILITY.md) for the full stability policy.
+The items listed above may have breaking changes without a deprecation cycle.
 
 ## Giving feedback
 
