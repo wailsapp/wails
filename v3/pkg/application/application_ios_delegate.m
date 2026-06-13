@@ -5,6 +5,7 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
+extern void iosApplicationDidLaunch(void);
 @implementation WailsAppDelegate
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Set global appDelegate reference and bring up a window if needed
@@ -31,9 +32,11 @@ extern bool hasListeners(unsigned int);
     if (!self.viewControllers) {
         self.viewControllers = [NSMutableArray array];
     }
-    if (hasListeners(EventApplicationDidFinishLaunching)) {
-        processApplicationEvent(EventApplicationDidFinishLaunching, NULL);
-    }
+    // Unconditional launch signal for the Go runtime. platformRun waits on
+    // this and emits ApplicationDidFinishLaunching from the Go side once the
+    // event listeners are wired up - emitting it from here would race the Go
+    // runtime's startup and the event could be dropped.
+    iosApplicationDidLaunch();
     return YES;
 }
 // GENERATED EVENTS START
