@@ -3,10 +3,28 @@ version: '3'
 includes:
   common: ../Taskfile.yml
 
+# Platform selection:
+#   task ios:package                          -> simulator bundle (ad-hoc signed)
+#   task ios:package IOS_PLATFORM=device CODESIGN_IDENTITY="Apple Development: ..." \
+#        [PROVISIONING_PROFILE=path.mobileprovision]
+#                                             -> device bundle (real signing)
+#   task ios:package:ipa IOS_PLATFORM=device ... -> .ipa for distribution/install
+# For automatically managed signing & provisioning, use `task ios:xcode` and
+# build from the generated Xcode project instead.
 vars:
   BUNDLE_ID: '{{.BUNDLE_ID | default "com.wails.app"}}'
-  SDK_PATH:
-    sh: xcrun --sdk iphonesimulator --show-sdk-path
+  IOS_PLATFORM: '{{.IOS_PLATFORM | default "simulator"}}'
+  MIN_IOS_VERSION: '{{.MIN_IOS_VERSION | default "15.0"}}'
+  IOS_SDK: '{{if eq .IOS_PLATFORM "device"}}iphoneos{{else}}iphonesimulator{{end}}'
+  IOS_TARGET: 'arm64-apple-ios{{.MIN_IOS_VERSION}}{{if ne .IOS_PLATFORM "device"}}-simulator{{end}}'
+  IOS_VERSION_MIN_FLAG: '{{if eq .IOS_PLATFORM "device"}}-miphoneos-version-min={{.MIN_IOS_VERSION}}{{else}}-mios-simulator-version-min={{.MIN_IOS_VERSION}}{{end}}'
+  # "-" is ad-hoc signing: fine for the simulator, rejected by real devices.
+  CODESIGN_IDENTITY: '{{.CODESIGN_IDENTITY | default "-"}}'
+  # Optional path to a .mobileprovision embedded into device bundles
+  PROVISIONING_PROFILE: '{{.PROVISIONING_PROFILE | default ""}}'
+  # Optional entitlements applied at codesign time (generated default below)
+  ENTITLEMENTS_FILE: '{{.ENTITLEMENTS_FILE | default "build/ios/entitlements.plist"}}'
+  # SDK_PATH is computed lazily at task-level to avoid errors on non-macOS systems
 
 tasks:
   install:deps:
@@ -38,25 +56,21 @@ tasks:
             ref: .PRODUCTION
       - task: common:generate:icons
     cmds:
-      - echo "Building iOS app {{.APP_NAME}}..."
+      - echo "Building iOS app {{.APP_NAME}} ({{.IOS_PLATFORM}})..."
       - go build -buildmode=c-archive -overlay build/ios/xcode/overlay.json {{.BUILD_FLAGS}} -o {{.OUTPUT}}.a
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,ios -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags ios,debug -buildvcs=false -gcflags=all="-l"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
     env:
       GOOS: ios
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default "arm64"}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
-      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target arm64-apple-ios15.0-simulator -mios-simulator-version-min=15.0'
-      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target arm64-apple-ios15.0-simulator'
-
-  compile:objc:
-    summary: Compile Objective-C iOS wrapper
-    cmds:
-      - xcrun -sdk iphonesimulator clang -target arm64-apple-ios15.0-simulator -isysroot {{.SDK_PATH}} -framework Foundation -framework UIKit -framework WebKit -o {{.BIN_DIR}}/{{.APP_NAME}} build/ios/main.m
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}
+      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}} {{.IOS_VERSION_MIN_FLAG}}'
+      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}}'
 
   package:
     summary: Packages a production build of the application into a `.app` bundle
@@ -65,15 +79,57 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: compile:ios:link
       - task: create:app:bundle
+
+  package:ipa:
+    summary: Packages a production build into an .ipa (requires IOS_PLATFORM=device and a real CODESIGN_IDENTITY)
+    deps:
+      - task: package
+    cmds:
+      - rm -rf "{{.BIN_DIR}}/Payload" "{{.BIN_DIR}}/{{.APP_NAME}}.ipa"
+      - mkdir -p "{{.BIN_DIR}}/Payload"
+      - cp -R "{{.BIN_DIR}}/{{.APP_NAME}}.app" "{{.BIN_DIR}}/Payload/"
+      - cd "{{.BIN_DIR}}" && zip -qry "{{.APP_NAME}}.ipa" Payload
+      - rm -rf "{{.BIN_DIR}}/Payload"
+      - echo "Created {{.BIN_DIR}}/{{.APP_NAME}}.ipa"
+
+  # Link the Go c-archive with main.m into the final executable.
+  # Used by both the dev `run` flow and `package`.
+  compile:ios:link:
+    internal: true
+    summary: Link the iOS executable from the Go archive and main.m
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
+    cmds:
+      - |
+        MAIN_M=build/ios/xcode/main/main.m
+        if [ ! -f "$MAIN_M" ]; then
+          MAIN_M=build/ios/main.m
+        fi
+        xcrun -sdk {{.IOS_SDK}} clang \
+          -target {{.IOS_TARGET}} \
+          -isysroot {{.SDK_PATH}} \
+          -framework Foundation -framework UIKit -framework WebKit \
+          -framework Security -framework CoreFoundation \
+          -framework UniformTypeIdentifiers \
+          -lresolv \
+          -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
+          "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"
 
   create:app:bundle:
     summary: Creates an iOS `.app` bundle
     cmds:
-      - rm -rf {{.BIN_DIR}}/{{.APP_NAME}}.app
-      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.app
-      - cp {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}.app/
-      - cp build/ios/Info.plist {{.BIN_DIR}}/{{.APP_NAME}}.app/
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME | lower}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
+      - cp build/ios/Info.plist "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
+      - |
+        # Embed the provisioning profile for device builds when provided
+        if [ "{{.IOS_PLATFORM}}" = "device" ] && [ -n "{{.PROVISIONING_PROFILE}}" ]; then
+          cp "{{.PROVISIONING_PROFILE}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/embedded.mobileprovision"
+        fi
       - |
         # Compile asset catalog and embed icons in the app bundle
         APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.app"
@@ -83,8 +139,8 @@ tasks:
           xcrun actool \
             --compile "$TMP_AC" \
             --app-icon AppIcon \
-            --platform iphonesimulator \
-            --minimum-deployment-target 15.0 \
+            --platform {{.IOS_SDK}} \
+            --minimum-deployment-target {{.MIN_IOS_VERSION}} \
             --product-type com.apple.product-type.application \
             --target-device iphone \
             --target-device ipad \
@@ -98,7 +154,16 @@ tasks:
             /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
           fi
         fi
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}.app
+      - |
+        # Sign the bundle. Ad-hoc ("-") works on the simulator only; device
+        # builds need a real identity (and usually entitlements + profile).
+        # Entitlements are only applied to device builds - simulator bundles
+        # must not carry them (SpringBoard refuses to launch the app).
+        if [ "{{.IOS_PLATFORM}}" = "device" ] && [ -f "{{.ENTITLEMENTS_FILE}}" ]; then
+          codesign --force --sign "{{.CODESIGN_IDENTITY}}" --entitlements "{{.ENTITLEMENTS_FILE}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        else
+          codesign --force --sign "{{.CODESIGN_IDENTITY}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        fi
 
   deploy-simulator:
     summary: Deploy to iOS Simulator
@@ -106,27 +171,30 @@ tasks:
     cmds:
       - xcrun simctl terminate booted {{.BUNDLE_ID}} 2>/dev/null || true
       - xcrun simctl uninstall booted {{.BUNDLE_ID}} 2>/dev/null || true
-      - xcrun simctl install booted {{.BIN_DIR}}/{{.APP_NAME}}.app
+      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.app"
       - xcrun simctl launch booted {{.BUNDLE_ID}}
+
+  deploy-device:
+    summary: Install and launch on a connected device (requires IOS_PLATFORM=device build and real signing)
+    cmds:
+      - |
+        DEVICE="{{.DEVICE_ID}}"
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$(xcrun devicectl list devices --hide-headers 2>/dev/null | awk 'NR==1 {print $3}')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "No connected device found. Pass DEVICE_ID=<identifier> (see: xcrun devicectl list devices)"
+          exit 1
+        fi
+        xcrun devicectl device install app --device "$DEVICE" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        xcrun devicectl device process launch --device "$DEVICE" "{{.BUNDLE_ID}}"
 
   compile:ios:
     summary: Compile the iOS executable from Go archive and main.m
     deps:
       - task: build
     cmds:
-      - |
-        MAIN_M=build/ios/xcode/main/main.m
-        if [ ! -f "$MAIN_M" ]; then
-          MAIN_M=build/ios/main.m
-        fi
-        xcrun -sdk iphonesimulator clang \
-          -target arm64-apple-ios15.0-simulator \
-          -isysroot {{.SDK_PATH}} \
-          -framework Foundation -framework UIKit -framework WebKit \
-          -framework Security -framework CoreFoundation \
-          -lresolv \
-          -o {{.BIN_DIR}}/{{.APP_NAME | lower}} \
-          "$MAIN_M" {{.BIN_DIR}}/{{.APP_NAME}}.a
+      - task: compile:ios:link
 
   generate:ios:bindings:
     internal: true
@@ -137,14 +205,17 @@ tasks:
       - go.sum
     generates:
       - frontend/bindings/**/*
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
     cmds:
       - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
     env:
       GOOS: ios
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default "arm64"}}'
-      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target arm64-apple-ios15.0-simulator -mios-simulator-version-min=15.0'
-      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target arm64-apple-ios15.0-simulator'
+      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}} {{.IOS_VERSION_MIN_FLAG}}'
+      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}}'
 
   ensure-simulator:
     internal: true
@@ -159,7 +230,9 @@ tasks:
           if [ -z "$DEVICE_ID" ]; then
             echo "No iPhone simulator found. Creating one..."
             RUNTIME=$(xcrun simctl list runtimes | grep iOS | tail -1 | awk '{print $NF}')
-            DEVICE_ID=$(xcrun simctl create "iPhone 15 Pro" "iPhone 15 Pro" "$RUNTIME")
+            # Use the newest iPhone device type this Xcode knows about
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep -oE "iPhone [0-9][^(]*" | tail -1 | xargs)
+            DEVICE_ID=$(xcrun simctl create "Wails iPhone" "${DEVICE_TYPE:-iPhone 15}" "$RUNTIME")
           fi
           # Boot the device
           echo "Booting device $DEVICE_ID..."
@@ -214,10 +287,10 @@ tasks:
       - task: ensure-simulator
       - task: compile:ios
     cmds:
-      - rm -rf {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - cp {{.BIN_DIR}}/{{.APP_NAME | lower}} {{.BIN_DIR}}/{{.APP_NAME}}.dev.app/{{.APP_NAME | lower}}
-      - cp build/ios/Info.dev.plist {{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Info.plist
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME | lower}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/{{.APP_NAME | lower}}"
+      - cp build/ios/Info.dev.plist "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Info.plist"
       - |
         # Compile asset catalog and embed icons for dev bundle
         APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
@@ -228,7 +301,7 @@ tasks:
             --compile "$TMP_AC" \
             --app-icon AppIcon \
             --platform iphonesimulator \
-            --minimum-deployment-target 15.0 \
+            --minimum-deployment-target {{.MIN_IOS_VERSION}} \
             --product-type com.apple.product-type.application \
             --target-device iphone \
             --target-device ipad \
@@ -242,11 +315,11 @@ tasks:
             /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
           fi
         fi
-      - codesign --force --sign - {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - xcrun simctl terminate booted com.wails.{{.APP_NAME | lower}}.dev 2>/dev/null || true
-      - xcrun simctl uninstall booted com.wails.{{.APP_NAME | lower}}.dev 2>/dev/null || true
-      - xcrun simctl install booted {{.BIN_DIR}}/{{.APP_NAME}}.dev.app
-      - xcrun simctl launch booted com.wails.{{.APP_NAME | lower}}.dev
+      - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - xcrun simctl terminate booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
+      - xcrun simctl uninstall booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
+      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - xcrun simctl launch booted "com.wails.{{.APP_NAME | lower}}.dev"
 
   xcode:
     summary: Open the generated Xcode project for this app

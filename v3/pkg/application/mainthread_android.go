@@ -2,24 +2,28 @@
 
 package application
 
-// isOnMainThread returns whether the current goroutine is on the main thread
+// Main-thread dispatch is routed through the WailsBridge: runOnMainThread
+// posts to the Android main looper, which calls back into Go via
+// nativeMainThreadCallback (see application_android.go).
+
 func (a *androidApp) isOnMainThread() bool {
-	// On Android, Go runs in its own thread separate from the UI thread
-	// UI operations need to be dispatched via JNI to the main thread
-	return false
+	return androidBridgeBool("isMainThread")
 }
 
-// dispatchOnMainThread executes a function on the Android main/UI thread
 func (a *androidApp) dispatchOnMainThread(id uint) {
-	// TODO: Implement via JNI callback to Activity.runOnUiThread()
-	// For now, execute the callback directly
+	androidBridgeVoidInt("runOnMainThread", int(id))
+}
+
+// androidMainThreadCallback is invoked from JNI on the Android main thread.
+func androidMainThreadCallback(callbackID uint) {
 	mainThreadFunctionStoreLock.Lock()
-	fn := mainThreadFunctionStore[id]
+	fn := mainThreadFunctionStore[callbackID]
 	if fn == nil {
 		mainThreadFunctionStoreLock.Unlock()
+		Fatal("dispatchOnMainThread called with invalid id: %v", callbackID)
 		return
 	}
-	delete(mainThreadFunctionStore, id)
+	delete(mainThreadFunctionStore, callbackID)
 	mainThreadFunctionStoreLock.Unlock()
 	fn()
 }

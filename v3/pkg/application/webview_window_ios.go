@@ -17,6 +17,8 @@ void ios_window_set_background_color(void* viewController, unsigned char r, unsi
 import "C"
 import (
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 // iosWebviewWindow implements the webviewWindowImpl interface for iOS
@@ -42,8 +44,9 @@ func (w *iosWebviewWindow) destroy() {
 func (w *iosWebviewWindow) execJS(js string) {
 	// Direct call to the native window's JavaScript execution
 	if w.nativeHandle != nil {
-		// Call the Objective-C method directly on this window's view controller
-		C.ios_window_exec_js(w.nativeHandle, C.CString(js))
+		cjs := C.CString(js)
+		defer C.free(unsafe.Pointer(cjs))
+		C.ios_window_exec_js(w.nativeHandle, cjs)
 	}
 }
 
@@ -215,6 +218,14 @@ func (w *iosWebviewWindow) run() {
 				w.nativeHandle,
 				C.uchar(rgba.Red), C.uchar(rgba.Green), C.uchar(rgba.Blue), C.uchar(rgba.Alpha),
 			)
+			// Load the start URL. This is the only initial navigation: the
+			// native layer no longer issues its own loadRequest, so the page
+			// loads exactly once.
+			if startURL, err := assetserver.GetStartURL(w.parent.options.URL); err == nil {
+				w.setURL(startURL)
+			} else if globalApplication != nil {
+				globalApplication.error("iOS: invalid start URL %q: %v", w.parent.options.URL, err)
+			}
 		}
 	}
 }
@@ -333,7 +344,7 @@ func (w *iosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
 }
 
 func (w *iosWebviewWindow) on(eventID uint) {
-	// iOS event handling
+	registerIOSListener(eventID)
 }
 
 func (w *iosWebviewWindow) position() (int, int) {
