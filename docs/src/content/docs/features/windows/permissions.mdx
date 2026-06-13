@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+import { Aside } from "@astrojs/starlight/components";
 
 Web content that calls `navigator.mediaDevices.getUserMedia()`, the Geolocation API, or the Notifications API needs the host application to grant or deny those requests. Wails exposes a cross-platform `Permissions` map on `WebviewWindowOptions` that lets you control this declaratively — no platform-specific code required.
 
@@ -81,13 +81,18 @@ This means if you configure `Permissions` at all on Windows, any capability you 
 
 ### macOS (TCC)
 
-macOS manages camera, microphone, geolocation, and notification access through the system privacy framework (TCC). The OS prompt appears automatically when web content requests a capability, and the user's choice is remembered per-app.
+macOS manages camera, microphone, geolocation, and notification access through its system privacy framework. The OS prompt appears automatically the first time web content requests a capability, and the user's choice is remembered per-app in System Settings → Privacy & Security.
 
-The `Permissions` map **has no effect on macOS** — all requests defer to TCC regardless of what you set. Include the appropriate `NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc. keys in your `Info.plist`.
+This works correctly without any `Permissions` configuration. The map is **currently ignored on macOS** — all requests go through TCC regardless of what you set. The practical gap is that `PermissionDeny` has no effect on macOS: you cannot block a webview from using a capability that TCC has already granted at the system level.
 
-<Aside type="note">
-Wiring the `WKUIDelegate` to the `Permissions` map on macOS is a planned follow-up. For now, macOS permission behaviour is unchanged.
-</Aside>
+Ensure your `Info.plist` includes the appropriate usage description keys:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>Used for voice input</string>
+<key>NSCameraUsageDescription</key>
+<string>Used for video calls</string>
+```
 
 ## Common Patterns
 
