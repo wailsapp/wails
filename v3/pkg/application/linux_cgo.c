@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #include "linux_cgo.h"
 
@@ -173,6 +173,18 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager) {
 
 void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
     g_signal_connect(widget, event, cb, (gpointer)data);
+}
+
+int is_user_media_permission_request(WebKitPermissionRequest *request) {
+    return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
+}
+
+int is_user_media_for_audio(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+int is_user_media_for_video(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
 }
 
 // ============================================================================

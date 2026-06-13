@@ -36,6 +36,7 @@ export const objectNames = Object.freeze({
     Browser: 9,
     CancelCall: 10,
     IOS: 11,
+    Android: 12,
 });
 export let clientId = nanoid();
 
@@ -186,4 +187,64 @@ async function sendChunked(url: URL, headers: Record<string, string>, bodyStr: s
         },
         body: bodyBytes.subarray((totalChunks - 1) * CHUNK_THRESHOLD),
     });
+}
+
+/**
+ * Android WebView cannot deliver fetch() POST bodies to
+ * shouldInterceptRequest, so the default HTTP transport cannot reach Go.
+ * When the Android JavascriptInterface bridge (window.wails) is present,
+ * route runtime calls through it instead. Responses arrive via
+ * window._wailsAndroidCallback, invoked by the Java side.
+ */
+interface AndroidJSBridge {
+    invokeAsync(callbackID: string, payload: string): void;
+}
+
+const androidBridge: AndroidJSBridge | null =
+    typeof (window as any).wails?.invokeAsync === "function" ? (window as any).wails : null;
+
+if (androidBridge) {
+    const pending = new Map<string, { resolve: (value: any) => void; reject: (reason: any) => void }>();
+
+    (window as any)._wailsAndroidCallback = (id: string, response: string | null, error: string | null) => {
+        const promise = pending.get(id);
+        if (!promise) return;
+        pending.delete(id);
+        if (error) {
+            promise.reject(new Error(error));
+            return;
+        }
+        try {
+            const envelope = JSON.parse(response ?? "{}");
+            if (!envelope.ok) {
+                promise.reject(new Error(envelope.error ?? "unknown runtime call error"));
+                return;
+            }
+            promise.resolve("text" in envelope ? envelope.text : envelope.data);
+        } catch (e) {
+            promise.reject(e);
+        }
+    };
+
+    customTransport = {
+        call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+            return new Promise((resolve, reject) => {
+                const id = nanoid();
+                pending.set(id, { resolve, reject });
+                try {
+                    androidBridge.invokeAsync(id, JSON.stringify({
+                        object: objectID,
+                        method: method,
+                        windowName: windowName,
+                        args: args ?? null,
+                        clientId: clientId,
+                    }));
+                } catch (e) {
+                    // Don't leak the pending entry if dispatch throws synchronously
+                    pending.delete(id);
+                    reject(e);
+                }
+            });
+        },
+    };
 }
