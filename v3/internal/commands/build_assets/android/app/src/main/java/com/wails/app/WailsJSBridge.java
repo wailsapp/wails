@@ -1,6 +1,8 @@
 package com.wails.app;
 
 import android.util.Log;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.wails.app.BuildConfig;
@@ -14,6 +16,9 @@ import com.wails.app.BuildConfig;
  */
 public class WailsJSBridge {
     private static final String TAG = "WailsJSBridge";
+    private static final boolean DEBUG = BuildConfig.DEBUG;
+    // Pooled threads avoid unbounded thread creation under high call volume.
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final WailsBridge bridge;
     private final WebView webView;
@@ -32,7 +37,7 @@ public class WailsJSBridge {
      */
     @JavascriptInterface
     public String invoke(String message) {
-        Log.d(TAG, "Invoke called: " + message);
+        if (DEBUG) Log.d(TAG, "Invoke called: " + message);
         return bridge.handleMessage(message);
     }
 
@@ -45,19 +50,19 @@ public class WailsJSBridge {
      * @param message The message to send (JSON string)
      */
     @JavascriptInterface
-    public void invokeAsync(final String callbackId, final String message) {
-        Log.d(TAG, "InvokeAsync called: " + message);
+    public void invokeAsync(final String callbackId, final String payload) {
+        if (DEBUG) Log.d(TAG, "InvokeAsync called: " + payload);
 
-        // Handle in background thread to not block JavaScript
-        new Thread(() -> {
+        // Handle off the JS thread so we don't block the WebView.
+        executor.execute(() -> {
             try {
-                String response = bridge.handleMessage(message);
+                String response = bridge.handleRuntimeCall(payload);
                 sendCallback(callbackId, response, null);
             } catch (Exception e) {
                 Log.e(TAG, "Error in async invoke", e);
                 sendCallback(callbackId, null, e.getMessage());
             }
-        }).start();
+        });
     }
 
     /**
@@ -117,15 +122,15 @@ public class WailsJSBridge {
         final String js;
         if (error != null) {
             js = String.format(
-                    "window.wails && window.wails._callback('%s', null, '%s');",
+                    "window._wailsAndroidCallback && window._wailsAndroidCallback('%s', null, '%s');",
                     escapeJsString(callbackId),
                     escapeJsString(error)
             );
         } else {
             js = String.format(
-                    "window.wails && window.wails._callback('%s', %s, null);",
+                    "window._wailsAndroidCallback && window._wailsAndroidCallback('%s', '%s', null);",
                     escapeJsString(callbackId),
-                    result != null ? result : "null"
+                    escapeJsString(result != null ? result : "")
             );
         }
 
@@ -137,6 +142,10 @@ public class WailsJSBridge {
         return str.replace("\\", "\\\\")
                 .replace("'", "\\'")
                 .replace("\n", "\\n")
-                .replace("\r", "\\r");
+                .replace("\r", "\\r")
+                // JS line terminators (U+2028/U+2029) must be escaped too; built via
+                // (char) casts so the Java lexer does not reinterpret them as newlines.
+                .replace(String.valueOf((char) 0x2028), "\\u2028")
+                .replace(String.valueOf((char) 0x2029), "\\u2029");
     }
 }
