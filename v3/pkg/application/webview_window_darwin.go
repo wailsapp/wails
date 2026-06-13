@@ -143,7 +143,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 		[dragView autorelease];
 
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		// The mask must be on the drag view itself: it was previously set on
+		// the content view (a no-op), leaving the drag overlay frozen at its
+		// creation size — files dragged over any area gained by resizing the
+		// window were rejected (#3743).
+		[dragView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[view addSubview:dragView];
 		dragView.windowId = id;
 	}
