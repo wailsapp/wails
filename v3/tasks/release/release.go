@@ -502,6 +502,23 @@ func runRelease(opts releaseOptions) error {
 		return nil
 	}
 
+	// Resolve the repository and validate the token BEFORE touching any
+	// files: discovering a dead token after the version bump and changelog
+	// reset have been written (and committed) would leave local side effects
+	// even though nothing was pushed — both in CI and when run locally.
+	// Dry runs never push, so they need no token at all.
+	var repoSlug, token string
+	if !opts.dryRun {
+		repoSlug, err = resolveRepoSlug(repoDir)
+		if err != nil {
+			return fmt.Errorf("failed to determine repository slug: %w", err)
+		}
+		token, err = selectAPIToken(repoSlug)
+		if err != nil {
+			return err
+		}
+	}
+
 	originalVersionData, err := os.ReadFile(versionFile)
 	if err != nil {
 		return fmt.Errorf("failed to read version file: %w", err)
@@ -581,16 +598,6 @@ func runRelease(opts releaseOptions) error {
 	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog [skip ci]", newVersion)
 	if err := git.commit(commitMessage); err != nil {
 		return fmt.Errorf("failed to commit release changes: %w", err)
-	}
-
-	repoSlug, err := resolveRepoSlug(repoDir)
-	if err != nil {
-		return fmt.Errorf("failed to determine repository slug: %w", err)
-	}
-
-	token, err := selectAPIToken(repoSlug)
-	if err != nil {
-		return err
 	}
 
 	if err := git.push(opts.branch, repoSlug, token); err != nil {
