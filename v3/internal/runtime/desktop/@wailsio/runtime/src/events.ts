@@ -93,14 +93,29 @@ function dispatchWailsEvent(event: any) {
         wailsEvent.sender = event.sender;
     }
 
-    // Dispatch to a snapshot and remove expired listeners individually.
-    // Writing the snapshot back into the map wholesale would undo any
-    // subscription change made inside a handler: listeners that
-    // unsubscribed themselves were resurrected and listeners registered
-    // during dispatch were dropped (#4393).
+    // Dispatch to a snapshot, then remove all expired listeners in a single
+    // post-dispatch filter of the live map.
+    // - Writing the snapshot back wholesale would undo subscription changes
+    //   made inside a handler (#4393).
+    // - Calling listenerOff() per expired listener inside the loop is O(n²)
+    //   when many listeners expire on the same event.
+    // Filtering the live array once after dispatch is O(n) and still honours
+    // any listeners added or removed by handlers during dispatch.
+    const expired = new Set<Listener>();
     for (const listener of listeners.slice()) {
         if (listener.dispatch(wailsEvent)) {
-            listenerOff(listener);
+            expired.add(listener);
+        }
+    }
+    if (expired.size > 0) {
+        const live = eventListeners.get(event.name);
+        if (live) {
+            const remaining = live.filter(l => !expired.has(l));
+            if (remaining.length === 0) {
+                eventListeners.delete(event.name);
+            } else {
+                eventListeners.set(event.name, remaining);
+            }
         }
     }
 }
