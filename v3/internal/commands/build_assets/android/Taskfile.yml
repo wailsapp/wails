@@ -7,7 +7,17 @@ vars:
   APP_ID: '{{.APP_ID | default "com.wails.app"}}'
   MIN_SDK: '21'
   TARGET_SDK: '34'
-  NDK_VERSION: 'r26d'
+  # The emulator runs the host architecture; physical devices are arm64
+  HOST_ARCH:
+    sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
+  # SDK location: $ANDROID_HOME / $ANDROID_SDK_ROOT, else the per-OS default
+  # (macOS: ~/Library/Android/sdk, Linux/other: ~/Android/Sdk)
+  SDK_ROOT:
+    sh: 'echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}"'
+  ADB:
+    sh: 'command -v adb || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/platform-tools/adb"'
+  EMULATOR:
+    sh: 'command -v emulator || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/emulator/emulator"'
 
 tasks:
   install:deps:
@@ -19,7 +29,7 @@ tasks:
     prompt: This will check and install Android development dependencies. Continue?
 
   build:
-    summary: Creates a build of the application for Android
+    summary: Creates a debug build of the application for Android
     deps:
       - task: common:go:mod:tidy
       - task: generate:android:bindings
@@ -37,7 +47,7 @@ tasks:
       - echo "Building Android app {{.APP_NAME}}..."
       - task: compile:go:shared
         vars:
-          ARCH: '{{.ARCH | default "arm64"}}'
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
     env:
@@ -47,10 +57,15 @@ tasks:
     summary: Compile Go code to shared library (.so)
     cmds:
       - |
-        NDK_ROOT="${ANDROID_NDK_HOME:-$ANDROID_HOME/ndk/{{.NDK_VERSION}}}"
-        if [ ! -d "$NDK_ROOT" ]; then
-          echo "Error: Android NDK not found at $NDK_ROOT"
-          echo "Please set ANDROID_NDK_HOME or install NDK {{.NDK_VERSION}} via Android Studio"
+        # Locate the NDK: $ANDROID_NDK_HOME, or the newest installed NDK
+        NDK_ROOT="$ANDROID_NDK_HOME"
+        if [ -z "$NDK_ROOT" ]; then
+          SDK_ROOT="{{.SDK_ROOT}}"
+          NDK_ROOT=$(ls -d "$SDK_ROOT"/ndk/* 2>/dev/null | sort -V | tail -1)
+        fi
+        if [ -z "$NDK_ROOT" ] || [ ! -d "$NDK_ROOT" ]; then
+          echo "Error: Android NDK not found"
+          echo "Install one with: sdkmanager 'ndk;26.3.11579264' (or set ANDROID_NDK_HOME)"
           exit 1
         fi
 
@@ -105,22 +120,34 @@ tasks:
           ARCH: amd64
 
   package:
-    summary: Packages a production build of the application into an APK
+    summary: Packages a production build of the application into a signed release APK
     deps:
       - task: build
         vars:
           PRODUCTION: "true"
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
     cmds:
-      - task: assemble:apk
+      - task: assemble:apk:release
 
   package:fat:
     summary: Packages a production build for all architectures (fat APK)
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: arm64
     cmds:
-      - task: compile:go:all-archs
-      - task: assemble:apk
+      - task: compile:go:shared
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+      - task: assemble:apk:release
 
   assemble:apk:
-    summary: Assembles the APK using Gradle
+    summary: Assembles a debug APK using Gradle
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
     cmds:
       - |
         cd build/android
@@ -129,13 +156,16 @@ tasks:
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
 
   assemble:apk:release:
-    summary: Assembles a release APK using Gradle
+    summary: Assembles a release APK using Gradle (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
     cmds:
       - |
         cd build/android
         ./gradlew assembleRelease
-        cp app/build/outputs/apk/release/app-release-unsigned.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
-        echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}-release.apk"
+        cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
 
   generate:android:bindings:
     internal: true
@@ -147,11 +177,12 @@ tasks:
     generates:
       - frontend/bindings/**/*
     cmds:
-      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+      # Bindings are generated from the Go AST; CGO is disabled so the NDK
+      # is not required for this step
+      - wails3 generate bindings -f '-tags android' -clean=true
     env:
       GOOS: android
-      CGO_ENABLED: 1
-      GOARCH: '{{.ARCH | default "arm64"}}'
+      CGO_ENABLED: 0
 
   ensure-emulator:
     internal: true
@@ -160,28 +191,28 @@ tasks:
     cmds:
       - |
         # Check if an emulator is already running
-        if adb devices | grep -q "emulator"; then
+        if "{{.ADB}}" devices | grep -q "emulator"; then
           echo "Emulator already running"
           exit 0
         fi
 
         # Get first available AVD
-        AVD_NAME=$(emulator -list-avds | head -1)
+        AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
         if [ -z "$AVD_NAME" ]; then
-          echo "No Android Virtual Devices found."
-          echo "Create one using: Android Studio > Tools > Device Manager"
+          echo "No Android Virtual Devices found. Create one with:"
+          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
           exit 1
         fi
 
         echo "Starting emulator: $AVD_NAME"
-        emulator -avd "$AVD_NAME" -no-snapshot-load &
+        "{{.EMULATOR}}" -avd "$AVD_NAME" -no-snapshot-load >/dev/null 2>&1 &
 
-        # Wait for emulator to boot (max 60 seconds)
+        # Wait for emulator to boot (max 120 seconds)
         echo "Waiting for emulator to boot..."
-        adb wait-for-device
+        "{{.ADB}}" wait-for-device
 
-        for i in {1..60}; do
-          BOOT_COMPLETED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+        for i in $(seq 1 120); do
+          BOOT_COMPLETED=$("{{.ADB}}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
           if [ "$BOOT_COMPLETED" = "1" ]; then
             echo "Emulator booted successfully"
             exit 0
@@ -192,41 +223,40 @@ tasks:
         echo "Emulator boot timeout"
         exit 1
     preconditions:
-      - sh: command -v adb
-        msg: "adb not found. Please install Android SDK and add platform-tools to PATH"
-      - sh: command -v emulator
-        msg: "emulator not found. Please install Android SDK and add emulator to PATH"
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
+      - sh: '[ -x "{{.EMULATOR}}" ] || command -v emulator'
+        msg: "emulator not found. Install the Android SDK emulator package (or set ANDROID_HOME)"
 
   deploy-emulator:
-    summary: Deploy to Android Emulator
+    summary: Deploy the packaged release APK to the Android Emulator
     deps: [package]
     cmds:
-      - adb uninstall {{.APP_ID}} 2>/dev/null || true
-      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-      - adb shell am start -n {{.APP_ID}}/.MainActivity
+      - task: ensure-emulator
+      - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
+      - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
+      - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
   run:
-    summary: Run the application in Android Emulator
+    summary: Build, install and launch a debug build in the Android Emulator
     deps:
       - task: ensure-emulator
       - task: build
-        vars:
-          ARCH: x86_64
     cmds:
       - task: assemble:apk
-      - adb uninstall {{.APP_ID}} 2>/dev/null || true
-      - adb install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-      - adb shell am start -n {{.APP_ID}}/.MainActivity
+      - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
+      - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
+      - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
   logs:
     summary: Stream Android logcat filtered to this app
     cmds:
-      - adb logcat -v time | grep -E "(Wails|{{.APP_NAME}})"
+      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})"'
 
   logs:all:
     summary: Stream all Android logcat (verbose)
     cmds:
-      - adb logcat -v time
+      - '"{{.ADB}}" logcat -v time'
 
   clean:
     summary: Clean build artifacts
