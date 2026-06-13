@@ -7,6 +7,10 @@ cmd/wails3/wails
 /examples/clipboard/clipboard
 /examples/plain/plain
 /cmd/wails3/ui/.task/
+# Taskfile checksum cache (any location)
+.task/
+# Gradle build problems report
+problems-report.html
 !internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
 internal/commands/appimage_testfiles/appimage_testfiles
 testiosapp/
