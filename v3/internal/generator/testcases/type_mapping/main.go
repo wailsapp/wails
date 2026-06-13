@@ -54,7 +54,7 @@ type AllTypes struct {
 		Number     int
 	}
 
-	Strcut struct {
+	Struct struct {
 		Any         any
 		MapByteBool map[byte]bool
 	}

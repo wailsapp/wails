@@ -34,7 +34,7 @@ import * as time$0 from "../../../../../../../../time/models.js";
  * @property {string | null} PtrStr - pointer means nullable
  * @property {number | null} PtrInt
  * @property {{"MapIntBool": { [_ in `${number}`]?: boolean } | null, "Number": number} | null} PtrStruct
- * @property {{"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean } | null}} Strcut
+ * @property {{"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean } | null}} Struct
  * @property {GenericType<number>} GenericType
  * @property {time$0.Time} Time - maps to any
  * @property {any} Err

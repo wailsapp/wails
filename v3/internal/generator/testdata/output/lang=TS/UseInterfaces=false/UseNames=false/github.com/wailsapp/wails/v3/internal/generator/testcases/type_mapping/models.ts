@@ -46,7 +46,7 @@ export class AllTypes {
     "PtrStr": string | null;
     "PtrInt": number | null;
     "PtrStruct": {"MapIntBool": { [_ in `${number}`]?: boolean }, "Number": number} | null;
-    "Strcut": {"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean }};
+    "Struct": {"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean }};
     "GenericType": GenericType<number>;
 
     /**
@@ -132,8 +132,8 @@ export class AllTypes {
         if (!("PtrStruct" in $$source)) {
             this["PtrStruct"] = null;
         }
-        if (!("Strcut" in $$source)) {
-            this["Strcut"] = {"Any": null, "MapByteBool": {}};
+        if (!("Struct" in $$source)) {
+            this["Struct"] = {"Any": null, "MapByteBool": {}};
         }
         if (!("GenericType" in $$source)) {
             this["GenericType"] = (new GenericType());
@@ -179,8 +179,8 @@ export class AllTypes {
         if ("PtrStruct" in $$parsedSource) {
             $$parsedSource["PtrStruct"] = $$createField24_0($$parsedSource["PtrStruct"]);
         }
-        if ("Strcut" in $$parsedSource) {
-            $$parsedSource["Strcut"] = $$createField25_0($$parsedSource["Strcut"]);
+        if ("Struct" in $$parsedSource) {
+            $$parsedSource["Struct"] = $$createField25_0($$parsedSource["Struct"]);
         }
         if ("GenericType" in $$parsedSource) {
             $$parsedSource["GenericType"] = $$createField26_0($$parsedSource["GenericType"]);

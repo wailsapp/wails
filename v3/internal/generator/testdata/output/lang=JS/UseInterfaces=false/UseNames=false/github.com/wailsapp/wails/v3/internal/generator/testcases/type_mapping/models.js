@@ -196,12 +196,12 @@ export class AllTypes {
              */
             this["PtrStruct"] = null;
         }
-        if (!("Strcut" in $$source)) {
+        if (!("Struct" in $$source)) {
             /**
              * @member
              * @type {{"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean }}}
              */
-            this["Strcut"] = {"Any": null, "MapByteBool": {}};
+            this["Struct"] = {"Any": null, "MapByteBool": {}};
         }
         if (!("GenericType" in $$source)) {
             /**
@@ -262,8 +262,8 @@ export class AllTypes {
         if ("PtrStruct" in $$parsedSource) {
             $$parsedSource["PtrStruct"] = $$createField24_0($$parsedSource["PtrStruct"]);
         }
-        if ("Strcut" in $$parsedSource) {
-            $$parsedSource["Strcut"] = $$createField25_0($$parsedSource["Strcut"]);
+        if ("Struct" in $$parsedSource) {
+            $$parsedSource["Struct"] = $$createField25_0($$parsedSource["Struct"]);
         }
         if ("GenericType" in $$parsedSource) {
             $$parsedSource["GenericType"] = $$createField26_0($$parsedSource["GenericType"]);

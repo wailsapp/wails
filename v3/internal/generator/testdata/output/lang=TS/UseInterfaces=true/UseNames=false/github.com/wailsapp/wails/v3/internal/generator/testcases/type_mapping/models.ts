@@ -42,7 +42,7 @@ export interface AllTypes {
     "PtrStr": string | null;
     "PtrInt": number | null;
     "PtrStruct": {"MapIntBool": { [_ in `${number}`]?: boolean } | null, "Number": number} | null;
-    "Strcut": {"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean } | null};
+    "Struct": {"Any": any, "MapByteBool": { [_ in `${number}`]?: boolean } | null};
     "GenericType": GenericType<number>;
 
     /**
