@@ -1109,6 +1109,73 @@ public class WailsBridge {
         });
     }
 
+    // MARK: - Mobile features (Phase E: camera & background)
+
+    /** Capture a photo with the system camera. Result → "native:capture" event. */
+    public void capturePhoto(final String json) {
+        mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).launchCameraCapture(false);
+            } else {
+                emitEvent("native:capture", "{\"error\":\"camera unavailable\"}");
+            }
+        });
+    }
+
+    /** Capture a video with the system camera. Result → "native:capture" event. */
+    public void captureVideo(final String json) {
+        mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).launchCameraCapture(true);
+            } else {
+                emitEvent("native:capture", "{\"error\":\"camera unavailable\"}");
+            }
+        });
+    }
+
+    /**
+     * Start a foreground service that keeps the process alive for long-running
+     * background work (with an ongoing notification). json: {"title","text"}.
+     */
+    public void startForegroundService(final String json) {
+        mainHandler.post(() -> {
+            try {
+                String title = "Wails", text = "Running in the background";
+                try {
+                    JSONObject o = new JSONObject(json);
+                    title = o.optString("title", title);
+                    text = o.optString("text", text);
+                } catch (Exception ignored) {
+                }
+                if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission(
+                        "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 1003);
+                }
+                Intent i = new Intent(activity, WailsForegroundService.class);
+                i.setAction(WailsForegroundService.ACTION_START);
+                i.putExtra("title", title);
+                i.putExtra("text", text);
+                ContextCompat.startForegroundService(activity, i);
+                emitEvent("native:foregroundService", "{\"running\":true}");
+            } catch (Exception e) {
+                Log.e(TAG, "startForegroundService failed", e);
+                emitEvent("native:foregroundService", "{\"running\":false,\"error\":\"failed to start\"}");
+            }
+        });
+    }
+
+    /** Stop the foreground service. */
+    public void stopForegroundService() {
+        mainHandler.post(() -> {
+            try {
+                activity.stopService(new Intent(activity, WailsForegroundService.class));
+                emitEvent("native:foregroundService", "{\"running\":false}");
+            } catch (Exception e) {
+                Log.e(TAG, "stopForegroundService failed", e);
+            }
+        });
+    }
+
     /**
      * Show a message dialog. optionsJson:
      * {"title": "...", "message": "...",
