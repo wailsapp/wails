@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #ifndef LINUX_CGO_H
 #define LINUX_CGO_H
@@ -83,6 +83,7 @@ void dispatchOnMainThread(unsigned int id);
 // ============================================================================
 
 void install_signal_handlers(void);
+void schedule_signal_handler_fix(void);
 
 // ============================================================================
 // Object data helpers
@@ -125,6 +126,7 @@ void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);
 
 // ============================================================================
 // Window event controllers (GTK4 style)

@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -589,13 +589,27 @@ const (
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {
 	// TabFocusesLinks will enable tabbing to links
-	TabFocusesLinks u.Bool
+	TabFocusesLinks optional.Bool
 	// TextInteractionEnabled will enable text interaction
-	TextInteractionEnabled u.Bool
+	TextInteractionEnabled optional.Bool
 	// FullscreenEnabled will enable fullscreen
-	FullscreenEnabled u.Bool
+	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
-	AllowsBackForwardNavigationGestures u.Bool
+	AllowsBackForwardNavigationGestures optional.Bool
+	// AllowsMagnification enables pinch-to-zoom on the webview
+	AllowsMagnification optional.Bool
+	// AllowsAirPlayForMediaPlayback enables AirPlay media playback
+	AllowsAirPlayForMediaPlayback optional.Bool
+	// JavaScriptCanOpenWindowsAutomatically allows JS to open windows without a user gesture
+	JavaScriptCanOpenWindowsAutomatically optional.Bool
+	// MinimumFontSize sets the minimum font size in points
+	MinimumFontSize optional.Var[float64]
+	// ApplicationNameForUserAgent overrides the application name portion of the user agent string.
+	// Leave empty to use the default "wails.io" suffix.
+	ApplicationNameForUserAgent string
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

@@ -309,6 +309,9 @@ export default defineConfig({
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
+                { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
+                { label: "iOS", link: "/guides/build/ios" },
+                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {

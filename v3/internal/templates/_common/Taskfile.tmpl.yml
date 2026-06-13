@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  APP_NAME: "{{.ProjectName}}"
+  APP_NAME: "{{.BinaryName}}"
   BIN_DIR: "bin"
   PACKAGE_MANAGER: '{{.Opn}}.PACKAGE_MANAGER | default "npm"{{.Cls}}'
   VITE_PORT: '{{.Opn}}.WAILS_VITE_PORT | default 9245{{.Cls}}'

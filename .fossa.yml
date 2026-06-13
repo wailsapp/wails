@@ -1,7 +1,7 @@
 version: 3
 
 # Exclude documentation-site build tooling from license scanning.
-# Docusaurus pulls in webpack-dev-server → selfsigned → node-forge
+# Docusaurus (website/) pulls in webpack-dev-server → selfsigned → node-forge
 # whose dual SPDX expression (BSD-3-Clause OR GPL-2.0) trips the org
 # license policy. node-forge is build-time only for serving the docs
 # site locally; it is not distributed with the Wails Go module or the
@@ -11,9 +11,16 @@ version: 3
 # distributed as part of the Wails Go module or @wailsio/runtime and
 # are excluded to keep the compliance posture focused on distributed
 # artifacts.
+#
+# The Astro-based docs site (docs/) carries the same pattern: sharp pulls in
+# @img/sharp-libvips-* (LGPL-3.0-or-later) and astro-d2 pulls in
+# @terrastruct/d2 (MPL-2.0). Both are dev/build tools only and are never
+# distributed with the Wails module or npm package.
 targets:
   exclude:
     - type: npm
       path: website
     - type: npm
       path: v3/examples
+    - type: npm
+      path: docs

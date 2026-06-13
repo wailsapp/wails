@@ -45,6 +45,11 @@ func Parse(path string) (*ast.Taskfile, error) {
 			if err != nil {
 				return nil, err
 			}
+		case "env":
+			tf.Env, err = parseEnv(val)
+			if err != nil {
+				return nil, err
+			}
 		case "tasks":
 			tf.Tasks, err = parseTasks(val)
 			if err != nil {
@@ -54,11 +59,27 @@ func Parse(path string) (*ast.Taskfile, error) {
 			tf.Shopt = parseStringList(val)
 		case "silent":
 			tf.Silent = val.Value == "true"
+		case "dotenv":
+			tf.Dotenv = parseStringList(val)
+		case "output":
+			tf.Output = val.Value
+		case "run":
+			tf.Run = val.Value
+		case "interval":
+			tf.Interval = val.Value
+		case "requires":
+			tf.Requires = parseRequires(val)
 		}
 	}
 
 	if tf.Version != "3" {
 		return nil, fmt.Errorf("wake: unsupported Taskfile version %q in %s (only v3 supported)", tf.Version, path)
+	}
+
+	// A Taskfile without a `tasks:` key leaves Tasks nil; downstream code
+	// (merges, builtins, DAG) assumes a non-nil map, so normalise it here.
+	if tf.Tasks == nil {
+		tf.Tasks = make(map[string]*ast.Task)
 	}
 
 	return tf, nil
@@ -203,6 +224,14 @@ func parseTask(name string, node *yaml.Node) (*ast.Task, error) {
 			task.Env = env
 		case "method":
 			task.Method = val.Value
+		case "run":
+			task.Run = val.Value
+		case "short":
+			task.Short = val.Value
+		case "defer":
+			task.Defer = parseStringList(val)
+		case "interval":
+			task.Interval = val.Value
 		}
 	}
 	return task, nil
@@ -287,13 +316,33 @@ func parseCmds(node *yaml.Node) ([]*ast.Cmd, error) {
 
 func parseFor(node *yaml.Node) (*ast.ForLoop, error) {
 	fl := &ast.ForLoop{}
-	if node.Kind == yaml.MappingNode {
+	switch node.Kind {
+	case yaml.ScalarNode:
+		// `for: someVar` — the loop iterates the value of `someVar`,
+		// space-split at execution time. The variable name lands in
+		// ForLoop.Var; runForLoop knows how to expand it.
+		fl.Var = node.Value
+	case yaml.SequenceNode:
+		// `for: [a, b, c]` — inline item list.
+		for _, it := range node.Content {
+			fl.Items = append(fl.Items, it.Value)
+		}
+	case yaml.MappingNode:
+		// `for: { var: …, task: …, vars: … }` — the explicit mapping form.
+		// Also accepts a nested `items:` list inside the mapping; previously
+		// this was silently dropped.
 		for i := 0; i < len(node.Content); i += 2 {
 			k := node.Content[i].Value
 			v := node.Content[i+1]
 			switch k {
 			case "var":
 				fl.Var = v.Value
+			case "items":
+				if v.Kind == yaml.SequenceNode {
+					for _, it := range v.Content {
+						fl.Items = append(fl.Items, it.Value)
+					}
+				}
 			case "task":
 				fl.Task = v.Value
 			case "vars":
@@ -327,6 +376,19 @@ func parsePreconditions(node *yaml.Node) ([]*ast.Precondition, error) {
 	return preconds, nil
 }
 
+func parseRequires(node *yaml.Node) *ast.Requires {
+	req := &ast.Requires{}
+	for i := 0; i < len(node.Content); i += 2 {
+		k := node.Content[i].Value
+		v := node.Content[i+1]
+		switch k {
+		case "preconditions":
+			req.Preconditions = parseStringList(v)
+		}
+	}
+	return req
+}
+
 func parseEnv(node *yaml.Node) (map[string]string, error) {
 	env := make(map[string]string)
 	for i := 0; i < len(node.Content); i += 2 {
@@ -340,16 +402,27 @@ func parseEnv(node *yaml.Node) (map[string]string, error) {
 func parseStringList(node *yaml.Node) []string {
 	var list []string
 	for _, item := range node.Content {
-		list = append(list, item.Value)
+		if item.Kind == yaml.ScalarNode {
+			list = append(list, item.Value)
+		} else if item.Kind == yaml.MappingNode && len(item.Content) >= 2 {
+			key := item.Content[0].Value
+			val := item.Content[1].Value
+			if key == "exclude" {
+				list = append(list, "exclude: "+val)
+			} else {
+				list = append(list, val)
+			}
+		}
 	}
 	return list
 }
 
 func ResolveIncludes(tf *ast.Taskfile) error {
-	return resolveIncludes(tf, make(map[string]bool))
+	resolved := make(map[string]*ast.Taskfile)
+	return resolveIncludes(tf, resolved)
 }
 
-func resolveIncludes(tf *ast.Taskfile, visited map[string]bool) error {
+func resolveIncludes(tf *ast.Taskfile, resolved map[string]*ast.Taskfile) error {
 	baseDir := filepath.Dir(tf.Location)
 	for name, inc := range tf.Includes {
 		incPath := inc.Taskfile
@@ -373,24 +446,28 @@ func resolveIncludes(tf *ast.Taskfile, visited map[string]bool) error {
 		}
 
 		cleanPath, _ := filepath.EvalSymlinks(incPath)
-		if visited[cleanPath] {
-			continue
-		}
-		visited[cleanPath] = true
 
-		resolved, err := Parse(incPath)
-		if err != nil {
-			return fmt.Errorf("wake: include %q: %w", name, err)
-		}
-		inc.Resolved = resolved
+		var tfResolved *ast.Taskfile
+		if existing, ok := resolved[cleanPath]; ok {
+			tfResolved = existing
+		} else {
+			var err error
+			tfResolved, err = Parse(incPath)
+			if err != nil {
+				return fmt.Errorf("wake: include %q: %w", name, err)
+			}
+			resolved[cleanPath] = tfResolved
 
-		for taskName, task := range resolved.Tasks {
+			if err := resolveIncludes(tfResolved, resolved); err != nil {
+				return err
+			}
+		}
+
+		inc.Resolved = tfResolved
+
+		for taskName, task := range tfResolved.Tasks {
 			namespaced := name + ":" + taskName
-			tf.Tasks[namespaced] = task
-		}
-
-		if err := resolveIncludes(resolved, visited); err != nil {
-			return err
+			tf.Tasks[namespaced] = task.Clone()
 		}
 	}
 	return nil
@@ -419,15 +496,18 @@ func PopulateBuiltins(tf *ast.Taskfile) {
 	if tf.Vars == nil {
 		tf.Vars = make(map[string]*ast.Var)
 	}
+	wd, _ := os.Getwd()
 	builtins := map[string]string{
-		"OS":       runtime.GOOS,
-		"ARCH":     runtime.GOARCH,
-		"OSFAMILY": osFamily(runtime.GOOS),
-		"NUMCPU":   fmt.Sprintf("%d", runtime.NumCPU()),
-		"ROOT_DIR": filepath.Dir(tf.Location),
-		"TASKFILE": tf.Location,
-		"TASKFILE_DIR": filepath.Dir(tf.Location),
-		"exeExt":   exeExt(runtime.GOOS),
+		"OS":                 runtime.GOOS,
+		"ARCH":               runtime.GOARCH,
+		"OSFAMILY":           osFamily(runtime.GOOS),
+		"NUMCPU":             fmt.Sprintf("%d", runtime.NumCPU()),
+		"ROOT_DIR":           filepath.Dir(tf.Location),
+		"TASKFILE":           tf.Location,
+		"TASKFILE_DIR":       filepath.Dir(tf.Location),
+		"exeExt":             exeExt(runtime.GOOS),
+		"BUILD_TAGS":         os.Getenv("BUILD_TAGS"),
+		"USER_WORKING_DIR":   wd,
 	}
 	for k, v := range builtins {
 		if _, ok := tf.Vars[k]; !ok {
@@ -454,21 +534,7 @@ func exeExt(goos string) string {
 	return ""
 }
 
-func ExpandTemplates(s string, vars map[string]*ast.Var) string {
-	if !strings.Contains(s, "{{") {
-		return s
-	}
-	result := s
-	for name, vr := range vars {
-		val := vr.Value
-		if val == "" {
-			val = vr.Static
-		}
-		result = strings.ReplaceAll(result, "{{."+name+"}}", val)
-		result = strings.ReplaceAll(result, "{{ ."+name+" }}", val)
-	}
-	return result
-}
+
 
 func ResolveVars(vars map[string]*ast.Var) error {
 	resolved := make(map[string]bool)
@@ -495,7 +561,12 @@ func resolveVar(name string, vars map[string]*ast.Var, done, visiting map[string
 	}
 
 	if vr.Shell != "" && vr.Value == "" {
-		vr.Value = vr.Shell
+		// Intentionally leave Value empty here — ResolveAllVarShells (called
+		// separately from wake.go) detects unresolved shell vars by
+		// Shell != "" && Value == "" and executes the command. Setting
+		// Value = Shell here would short-circuit that detection and the
+		// raw command string would propagate into templates instead of
+		// the command's stdout.
 	} else if vr.Ref != "" {
 		refName := strings.TrimPrefix(vr.Ref, ".")
 		if err := resolveVar(refName, vars, done, visiting); err != nil {
@@ -505,11 +576,43 @@ func resolveVar(name string, vars map[string]*ast.Var, done, visiting map[string
 		if ref != nil {
 			vr.Value = ref.Value
 		}
-	} else if vr.Value == "" {
+	} else if vr.Value == "" && !strings.Contains(vr.Static, "{{") {
 		vr.Value = vr.Static
 	}
 
 	delete(visiting, name)
 	done[name] = true
 	return nil
+}
+
+// ExpandVarTemplates does a fixed-point pass over vars, evaluating any var
+// whose Static is a template against the *same* var map. Used for vars at a
+// scope where every reference is in-scope — typically the top-level Taskfile
+// vars after [ResolveVars] has settled the static/shell/ref ones. Task-level
+// vars must NOT go through this: a task-local template often references
+// root-level vars that aren't yet in scope, and committing a half-expanded
+// result here would freeze the wrong value before mergeVars at execution
+// time can finish the job.
+//
+// Iterates up to 10 times for chained defaults like
+// `OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'` where one var's
+// resolved Value feeds the next.
+func ExpandVarTemplates(vars map[string]*ast.Var) {
+	for iter := 0; iter < 10; iter++ {
+		changed := false
+		for _, vr := range vars {
+			if vr.Value != "" || !strings.Contains(vr.Static, "{{") {
+				continue
+			}
+			expanded := ExpandTemplates(vr.Static, vars)
+			if strings.Contains(expanded, "{{") {
+				continue // template still references something unresolved
+			}
+			vr.Value = expanded
+			changed = true
+		}
+		if !changed {
+			break
+		}
+	}
 }
