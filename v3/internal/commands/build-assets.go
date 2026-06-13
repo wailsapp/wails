@@ -57,6 +57,12 @@ type BuildAssetsOptions struct {
 type TemplateEnrichment struct {
 	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
 	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+	// BackgroundModes feeds the iOS Info.plist template's UIBackgroundModes block.
+	// It's populated by the iOS Xcode generator from ios.backgroundModes in
+	// build/config.yml; the generic build-assets path leaves it empty (like
+	// MinIOSVersion there, it doesn't read the ios: section), so no
+	// UIBackgroundModes key is emitted unless configured.
+	BackgroundModes []string `yaml:"-"`
 }
 
 // BuildConfig defines the configuration for generating build assets.
