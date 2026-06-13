@@ -12,7 +12,7 @@ import (
 
 // SoupMessageHeadersType value for response headers
 // (libsoup soup-message-headers.h: REQUEST = 0, RESPONSE = 1, MULTIPART = 2).
-const SOUP_MESSAGE_HEADERS_RESPONSE = 1
+const soupMessageHeadersResponse = 1
 
 // goString converts a NUL-terminated C string to a Go string. Needed for
 // C out-parameters, where purego's automatic string conversion does not apply.
@@ -92,7 +92,7 @@ func webkit_uri_scheme_request_finish(req uintptr, code int, header http.Header,
 	// webkit_uri_scheme_response_set_http_headers (transfer full), so we must
 	// not unref it here — doing so frees the headers while WebKit/libsoup still
 	// reference them, crashing in soup_message_headers_iter_next on render.
-	hdrs := soupHeadersNew(SOUP_MESSAGE_HEADERS_RESPONSE)
+	hdrs := soupHeadersNew(soupMessageHeadersResponse)
 	for name, values := range header {
 		for _, value := range values {
 			soupHeadersAppend(hdrs, name, value)
