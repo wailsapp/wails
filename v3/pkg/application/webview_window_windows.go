@@ -13,17 +13,17 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/debounce"
-	"github.com/wailsapp/wails/webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
+	"github.com/wailsapp/wails/webview2/webviewloader"
 
-	"github.com/wailsapp/wails/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"github.com/wailsapp/wails/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -2103,6 +2103,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	// Apply the cross-platform Permissions map first; the WebView2-specific
 	// Windows.Permissions map below can override individual kinds.
+	hasPermissionPolicy := len(w.parent.options.Permissions) > 0 || len(opts.Permissions) > 0
 	for permission, state := range w.parent.options.Permissions {
 		chromium.SetPermission(crossPermissionToWebView2Kind(permission),
 			edge.CoreWebView2PermissionState(state))
@@ -2224,7 +2225,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.parent.options.BackgroundColour.Alpha,
 	)
 
-	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	// WebView2's PermissionRequested handler checks the global permission
+	// before the per-kind map, so the blanket "allow all" must only be set
+	// when no per-kind policy is configured — otherwise it would override the
+	// Permissions map and a configured PermissionDeny would be ignored. When a
+	// policy is present, unset kinds fall through to PermissionDefault (the
+	// platform's native prompt).
+	if !hasPermissionPolicy {
+		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 
 	if w.parent.options.HTML != "" {
