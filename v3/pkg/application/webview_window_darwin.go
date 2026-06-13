@@ -620,12 +620,14 @@ int windowGetHeight(void* nsWindow) {
 	return [(WebviewWindow*)nsWindow frame].size.height;
 }
 
-// Get the window position relative to its screen: X from the screen's left
-// edge, Y from the screen's top edge (Y-down). Must mirror
-// windowSetRelativePosition exactly so Get/Set round-trip on every screen:
-// previously X was returned absolute (missing the screenFrame.origin.x
-// subtraction) and Y omitted screenFrame.origin.y, so both axes drifted on
-// any screen whose NSScreen origin is not (0,0) (issue #5408).
+// Get the window position relative to its screen's NSScreen frame origin:
+// X from the screen's left edge, Y from the screen's top edge (Y-down).
+// Uses NSScreen frame (full extent, including menu bar/dock) rather than
+// visibleFrame. Must mirror windowSetRelativePosition exactly so Get/Set
+// round-trip on every screen: previously X was returned absolute (missing
+// the screenFrame.origin.x subtraction) and Y omitted screenFrame.origin.y,
+// so each axis was wrong only on screens whose corresponding NSScreen
+// frame.origin component is non-zero (issue #5408).
 void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSRect frame = [window frame];
