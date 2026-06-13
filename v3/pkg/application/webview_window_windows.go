@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -1906,7 +1907,10 @@ func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 		return false
 	}
 	scale := float64(dpiX) / 96.0
-	if current, err := controller3.GetRasterizationScale(); err == nil && current == scale {
+	// Compare with a tolerance: GetRasterizationScale returns a float that may
+	// not be bit-identical to dpi/96 for non-25% DPI steps, and an exact ==
+	// would re-Put the scale on every resync.
+	if current, err := controller3.GetRasterizationScale(); err == nil && math.Abs(current-scale) < 0.001 {
 		return false
 	}
 	if err := controller3.PutRasterizationScale(scale); err != nil {
