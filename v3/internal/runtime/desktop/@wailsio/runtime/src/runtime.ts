@@ -9,6 +9,7 @@ The electron alternative for Go
 */
 
 import { nanoid } from "./nanoid.js";
+import { hasDOM } from "./environment.js";
 
 // Resolved lazily: window does not exist when the module is imported during
 // server-side rendering (#4679), and nothing can call the runtime there.
@@ -200,7 +201,7 @@ interface AndroidJSBridge {
     invokeAsync(callbackID: string, payload: string): void;
 }
 
-const androidBridge: AndroidJSBridge | null =
+const androidBridge: AndroidJSBridge | null = hasDOM &&
     typeof (window as any).wails?.invokeAsync === "function" ? (window as any).wails : null;
 
 if (androidBridge) {

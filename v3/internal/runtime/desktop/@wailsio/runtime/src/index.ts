@@ -92,7 +92,9 @@ if (hasDOM) {
     window._wails.handleDragOver = handleDragOver;
 }
 
-System.invoke("wails:runtime:ready");
+if (hasDOM) {
+    System.invoke("wails:runtime:ready");
+}
 
 /**
  * Loads a script from the given URL if it exists.

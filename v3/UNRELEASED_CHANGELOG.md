@@ -67,7 +67,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix intermittent fatal crash on macOS when reading screen information after a display change: the screen id and name stored pointers to autoreleased `UTF8String` buffers that could be freed before Go copied them (use-after-free). The strings are now `strdup`'d and freed after conversion, and screen enumeration runs in an explicit autorelease pool so it no longer leaks when called from Go goroutines (#5556)
 - Fix intermittent SIGSEGV on Linux when the assetserver closes a `WebKitURISchemeRequest`: the final `g_object_unref` ran on the assetserver goroutine, finalizing a WebKit GObject off the GTK main thread. The unref is now marshalled onto the GTK main context via `g_main_context_invoke` (#5557)
 
-- Fix `@wailsio/runtime` throwing `window is not defined` when imported without a DOM (e.g. during `next build` prerendering): all import-time `window`/`document` access is now behind a `hasDOM` guard, and the runtime URL is resolved lazily (#4679)
+- Fix `@wailsio/runtime` throwing `window is not defined` when imported without a DOM (e.g. during `next build` prerendering): direct import-time `window`/`document` access is now behind a `hasDOM` guard (`system.ts` uses a try/catch IIFE that is already SSR-safe), and the runtime URL is resolved lazily (#4679)
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
