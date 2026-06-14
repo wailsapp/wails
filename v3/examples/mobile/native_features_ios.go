@@ -48,7 +48,10 @@ func registerNativeFeatures(app *application.App) {
 		application.IOS.SetOrientation(eventString(e.Data, "mode"))
 	})
 	app.Event.On("common:getOrientation", func(e *application.CustomEvent) {
-		app.Event.Emit("common:orientation", jsonToMap(application.IOS.GetOrientation()))
+		// GetOrientation returns a plain string ("portrait"/"landscape"/…), not
+		// JSON, so wrap it in a map under the "orientation" key the frontend reads
+		// (matching the Android handler, which emits {"orientation":…}).
+		app.Event.Emit("common:orientation", map[string]any{"orientation": application.IOS.GetOrientation()})
 	})
 	app.Event.On("common:setStatusBar", func(e *application.CustomEvent) {
 		application.IOS.SetStatusBar(payloadJSON(e.Data))
