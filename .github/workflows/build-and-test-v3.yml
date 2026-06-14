@@ -284,6 +284,9 @@ jobs:
           # Replace @wailsio/runtime version with local tarball
           npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
           cd ..
+          # Register the generated project in the workspace so Go 1.25 workspace
+          # mode does not reject packages in a module not listed in go.work.
+          go work use .
           wails3 build
 
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
