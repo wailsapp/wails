@@ -328,9 +328,6 @@ tasks:
         events-bug
         file-association
         frameless
-        gin-example
-        gin-routing
-        gin-service
         hide-window
         ignore-mouse
         keybindings
