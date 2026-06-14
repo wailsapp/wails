@@ -426,6 +426,15 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     decisionHandler(WKNavigationActionPolicyAllow);
 }
 
+// Recover from WebContent (renderer) process termination. iOS reaps the
+// WKWebView's content process under memory pressure or after repeated
+// background/foreground and launch cycles; without this the view goes
+// permanently blank — the "white screen on the 3rd+ launch". Reloading
+// respawns the renderer and restores the current page.
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    [webView reload];
+}
+
 // GENERATED EVENTS END
 @end
 // MARK: - C bridges used by Go
