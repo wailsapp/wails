@@ -1,3 +1,17 @@
+// MCP example — a playground Wails application controllable by LLM agents.
+//
+// Build with the mcp tag to start the built-in MCP server automatically:
+//
+//	WAILS_MCP=1 wails3 dev
+//	WAILS_MCP=1 wails3 build
+//	go run -tags mcp .
+//
+// Then connect any MCP client to the logged endpoint, e.g. Claude Code:
+//
+//	claude mcp add --transport http my-app http://127.0.0.1:9099/mcp
+//
+// No code changes are required: the MCP server starts as part of the
+// application when the build tag is present.
 package main
 
 import (
@@ -7,14 +21,12 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/services/mcp"
 )
 
 //go:embed assets
 var assets embed.FS
 
-// GreetService is a demo service so MCP clients can exercise the
-// call_bound_method tool.
+// GreetService is a demo service so MCP clients can exercise call_bound_method.
 type GreetService struct{}
 
 func (g *GreetService) Greet(name string) string {
@@ -35,11 +47,6 @@ func main() {
 		Description: "A playground app controlled by LLMs over the Model Context Protocol",
 		Services: []application.Service{
 			application.NewService(&GreetService{}),
-			// The Route gives the MCP service a same-origin callback channel
-			// on the asset server for JavaScript results.
-			application.NewServiceWithOptions(mcp.New(), application.ServiceOptions{
-				Route: "/wails-mcp",
-			}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),

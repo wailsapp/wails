@@ -1,6 +1,6 @@
 //go:build mcp
 
-package mcp
+package application
 
 import (
 	"encoding/json"
@@ -11,57 +11,57 @@ import (
 	"strings"
 )
 
-// protocolVersion is the latest MCP protocol revision this server knows.
-// Older revisions are accepted as-is since the subset we implement
-// (initialize, ping, tools/list, tools/call) is identical across them.
-const protocolVersion = "2025-06-18"
+// protocolVersion is the latest MCP protocol revision this server supports.
+// Older revisions are accepted; the subset we implement (initialize, ping,
+// tools/list, tools/call) is identical across them.
+const mcpProtocolVersion = "2025-06-18"
 
-const serverVersion = "1.0.0"
+const mcpServerVersion = "1.0.0"
 
 // JSON-RPC 2.0 error codes.
 const (
-	codeParseError     = -32700
-	codeInvalidRequest = -32600
-	codeMethodNotFound = -32601
-	codeInvalidParams  = -32602
-	codeInternalError  = -32603
+	mcpCodeParseError     = -32700
+	mcpCodeInvalidRequest = -32600
+	mcpCodeMethodNotFound = -32601
+	mcpCodeInvalidParams  = -32602
+	mcpCodeInternalError  = -32603
 )
 
-type jsonrpcRequest struct {
+type mcpJSONRPCRequest struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      json.RawMessage `json:"id,omitempty"`
 	Method  string          `json:"method"`
 	Params  json.RawMessage `json:"params,omitempty"`
 }
 
-type jsonrpcError struct {
+type mcpJSONRPCError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
-type jsonrpcResponse struct {
+type mcpJSONRPCResponse struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      json.RawMessage `json:"id"`
 	Result  any             `json:"result,omitempty"`
-	Error   *jsonrpcError   `json:"error,omitempty"`
+	Error   *mcpJSONRPCError `json:"error,omitempty"`
 }
 
-func errorResponse(id json.RawMessage, code int, format string, args ...any) *jsonrpcResponse {
-	return &jsonrpcResponse{
+func mcpErrorResponse(id json.RawMessage, code int, format string, args ...any) *mcpJSONRPCResponse {
+	return &mcpJSONRPCResponse{
 		JSONRPC: "2.0",
 		ID:      id,
-		Error:   &jsonrpcError{Code: code, Message: fmt.Sprintf(format, args...)},
+		Error:   &mcpJSONRPCError{Code: code, Message: fmt.Sprintf(format, args...)},
 	}
 }
 
-func resultResponse(id json.RawMessage, result any) *jsonrpcResponse {
-	return &jsonrpcResponse{JSONRPC: "2.0", ID: id, Result: result}
+func mcpResultResponse(id json.RawMessage, result any) *mcpJSONRPCResponse {
+	return &mcpJSONRPCResponse{JSONRPC: "2.0", ID: id, Result: result}
 }
 
-// originAllowed guards against DNS-rebinding attacks as required by the MCP
-// streamable HTTP spec. Requests from non-browser clients carry no Origin
-// header and are allowed; browser contexts must be local.
-func originAllowed(r *http.Request) bool {
+// mcpOriginAllowed guards against DNS-rebinding attacks as required by the MCP
+// streamable HTTP spec. Requests with no Origin header (non-browser clients)
+// are always allowed; browser contexts must originate from localhost.
+func mcpOriginAllowed(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 	if origin == "" || origin == "null" {
 		return true
@@ -75,7 +75,7 @@ func originAllowed(r *http.Request) bool {
 		strings.HasSuffix(host, ".localhost")
 }
 
-func setCORSHeaders(w http.ResponseWriter) {
+func mcpSetCORSHeaders(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id, MCP-Protocol-Version, Last-Event-ID")
@@ -85,8 +85,8 @@ func setCORSHeaders(w http.ResponseWriter) {
 // handleMCP implements the server side of the MCP streamable HTTP transport.
 // Responses are always plain JSON (the spec allows this in place of SSE).
 func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
-	setCORSHeaders(w)
-	if !originAllowed(r) {
+	mcpSetCORSHeaders(w)
+	if !mcpOriginAllowed(r) {
 		http.Error(w, "forbidden origin", http.StatusForbidden)
 		return
 	}
@@ -96,7 +96,6 @@ func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	case http.MethodGet:
-		// No server-initiated streams.
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	case http.MethodDelete:
@@ -116,13 +115,13 @@ func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requests, batch, parseErr := parseMessages(body)
+	requests, batch, parseErr := mcpParseMessages(body)
 	if parseErr != nil {
-		writeJSON(w, http.StatusBadRequest, errorResponse(nil, codeParseError, "parse error: %v", parseErr))
+		mcpWriteJSON(w, http.StatusBadRequest, mcpErrorResponse(nil, mcpCodeParseError, "parse error: %v", parseErr))
 		return
 	}
 
-	var responses []*jsonrpcResponse
+	var responses []*mcpJSONRPCResponse
 	for _, req := range requests {
 		if response := m.handleMessage(req); response != nil {
 			responses = append(responses, response)
@@ -130,44 +129,44 @@ func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(responses) == 0 {
-		// Notifications and responses only.
+		// Notifications only — acknowledged but no body.
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
 	if batch {
-		writeJSON(w, http.StatusOK, responses)
+		mcpWriteJSON(w, http.StatusOK, responses)
 		return
 	}
-	writeJSON(w, http.StatusOK, responses[0])
+	mcpWriteJSON(w, http.StatusOK, responses[0])
 }
 
-func parseMessages(body []byte) (requests []*jsonrpcRequest, batch bool, err error) {
+func mcpParseMessages(body []byte) (requests []*mcpJSONRPCRequest, batch bool, err error) {
 	trimmed := strings.TrimLeftFunc(string(body), func(r rune) bool {
 		return r == ' ' || r == '\t' || r == '\r' || r == '\n'
 	})
 	if strings.HasPrefix(trimmed, "[") {
-		var reqs []*jsonrpcRequest
+		var reqs []*mcpJSONRPCRequest
 		if err := json.Unmarshal(body, &reqs); err != nil {
 			return nil, true, err
 		}
 		return reqs, true, nil
 	}
-	var req jsonrpcRequest
+	var req mcpJSONRPCRequest
 	if err := json.Unmarshal(body, &req); err != nil {
 		return nil, false, err
 	}
-	return []*jsonrpcRequest{&req}, false, nil
+	return []*mcpJSONRPCRequest{&req}, false, nil
 }
 
-func writeJSON(w http.ResponseWriter, status int, value any) {
+func mcpWriteJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(value)
 }
 
-// handleMessage processes a single JSON-RPC message. It returns nil for
+// handleMessage processes a single JSON-RPC message. Returns nil for
 // notifications, which receive no response.
-func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
+func (m *mcpServer) handleMessage(req *mcpJSONRPCRequest) *mcpJSONRPCResponse {
 	isNotification := len(req.ID) == 0 || string(req.ID) == "null"
 
 	switch req.Method {
@@ -176,13 +175,12 @@ func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
 			ProtocolVersion string `json:"protocolVersion"`
 		}
 		_ = json.Unmarshal(req.Params, &params)
-		version := protocolVersion
-		// Echo back known earlier revisions for maximum compatibility.
+		version := mcpProtocolVersion
 		switch params.ProtocolVersion {
 		case "2024-11-05", "2025-03-26":
 			version = params.ProtocolVersion
 		}
-		return resultResponse(req.ID, map[string]any{
+		return mcpResultResponse(req.ID, map[string]any{
 			"protocolVersion": version,
 			"capabilities": map[string]any{
 				"tools": map[string]any{"listChanged": false},
@@ -190,7 +188,7 @@ func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
 			"serverInfo": map[string]any{
 				"name":    "wails-mcp",
 				"title":   "Wails Application Control",
-				"version": serverVersion,
+				"version": mcpServerVersion,
 			},
 			"instructions": "This MCP server controls a live Wails desktop application. " +
 				"Use the tools to inspect windows, query the DOM, simulate user input " +
@@ -200,7 +198,7 @@ func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
 		})
 
 	case "ping":
-		return resultResponse(req.ID, map[string]any{})
+		return mcpResultResponse(req.ID, map[string]any{})
 
 	case "tools/list":
 		tools := make([]map[string]any, 0, len(m.tools))
@@ -211,7 +209,7 @@ func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
 				"inputSchema": t.Schema,
 			})
 		}
-		return resultResponse(req.ID, map[string]any{"tools": tools})
+		return mcpResultResponse(req.ID, map[string]any{"tools": tools})
 
 	case "tools/call":
 		if isNotification {
@@ -223,20 +221,20 @@ func (m *mcpServer) handleMessage(req *jsonrpcRequest) *jsonrpcResponse {
 		if strings.HasPrefix(req.Method, "notifications/") || isNotification {
 			return nil
 		}
-		return errorResponse(req.ID, codeMethodNotFound, "method not found: %s", req.Method)
+		return mcpErrorResponse(req.ID, mcpCodeMethodNotFound, "method not found: %s", req.Method)
 	}
 }
 
-func (m *mcpServer) handleToolCall(req *jsonrpcRequest) (response *jsonrpcResponse) {
+func (m *mcpServer) handleToolCall(req *mcpJSONRPCRequest) (response *mcpJSONRPCResponse) {
 	var params struct {
 		Name      string         `json:"name"`
 		Arguments map[string]any `json:"arguments"`
 	}
 	if err := json.Unmarshal(req.Params, &params); err != nil {
-		return errorResponse(req.ID, codeInvalidParams, "invalid params: %v", err)
+		return mcpErrorResponse(req.ID, mcpCodeInvalidParams, "invalid params: %v", err)
 	}
 
-	var selected *tool
+	var selected *mcpTool
 	for _, t := range m.tools {
 		if t.Name == params.Name {
 			selected = t
@@ -244,7 +242,7 @@ func (m *mcpServer) handleToolCall(req *jsonrpcRequest) (response *jsonrpcRespon
 		}
 	}
 	if selected == nil {
-		return errorResponse(req.ID, codeInvalidParams, "unknown tool: %s", params.Name)
+		return mcpErrorResponse(req.ID, mcpCodeInvalidParams, "unknown tool: %s", params.Name)
 	}
 	if params.Arguments == nil {
 		params.Arguments = map[string]any{}
@@ -253,19 +251,19 @@ func (m *mcpServer) handleToolCall(req *jsonrpcRequest) (response *jsonrpcRespon
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			m.logger.Error("mcp: tool panicked", "tool", params.Name, "panic", recovered)
-			response = resultResponse(req.ID, toolError(fmt.Sprintf("tool %s panicked: %v", params.Name, recovered)))
+			response = mcpResultResponse(req.ID, mcpToolError(fmt.Sprintf("tool %s panicked: %v", params.Name, recovered)))
 		}
 	}()
 
 	result, err := selected.Handler(params.Arguments)
 	if err != nil {
-		return resultResponse(req.ID, toolError(err.Error()))
+		return mcpResultResponse(req.ID, mcpToolError(err.Error()))
 	}
-	return resultResponse(req.ID, toolResult(result))
+	return mcpResultResponse(req.ID, mcpToolResult(result))
 }
 
-// toolResult converts a tool's return value into an MCP CallToolResult.
-func toolResult(value any) map[string]any {
+// mcpToolResult converts a tool's return value into an MCP CallToolResult.
+func mcpToolResult(value any) map[string]any {
 	var text string
 	switch v := value.(type) {
 	case nil:
@@ -286,7 +284,7 @@ func toolResult(value any) map[string]any {
 	}
 }
 
-func toolError(message string) map[string]any {
+func mcpToolError(message string) map[string]any {
 	return map[string]any{
 		"content": []map[string]any{{"type": "text", "text": message}},
 		"isError": true,

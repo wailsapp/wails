@@ -1,6 +1,6 @@
 //go:build mcp
 
-package mcp
+package application
 
 import (
 	"encoding/json"
@@ -9,29 +9,26 @@ import (
 	"runtime"
 	"strconv"
 	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// tool is a single MCP tool: metadata plus its handler. Handlers return a
+// mcpTool is a single MCP tool: metadata plus its handler. Handlers return a
 // value that is JSON-encoded into the tool result, or an error which becomes
 // an isError result.
-type tool struct {
+type mcpTool struct {
 	Name        string
 	Description string
 	Schema      map[string]any
 	Handler     func(args map[string]any) (any, error)
 }
 
-// Argument helpers. MCP arguments arrive as generic JSON, so numbers are
-// float64 and everything needs type-checked extraction.
+// Argument helpers. MCP arguments arrive as generic JSON; numbers are float64.
 
-func argString(args map[string]any, key string) (string, bool) {
+func mcpArgString(args map[string]any, key string) (string, bool) {
 	value, ok := args[key].(string)
 	return value, ok && value != ""
 }
 
-func argFloat(args map[string]any, key string) (float64, bool) {
+func mcpArgFloat(args map[string]any, key string) (float64, bool) {
 	switch value := args[key].(type) {
 	case float64:
 		return value, true
@@ -43,19 +40,19 @@ func argFloat(args map[string]any, key string) (float64, bool) {
 	}
 }
 
-func argInt(args map[string]any, key string, fallback int) int {
-	if value, ok := argFloat(args, key); ok {
+func mcpArgInt(args map[string]any, key string, fallback int) int {
+	if value, ok := mcpArgFloat(args, key); ok {
 		return int(value)
 	}
 	return fallback
 }
 
-func argBool(args map[string]any, key string) bool {
+func mcpArgBool(args map[string]any, key string) bool {
 	value, _ := args[key].(bool)
 	return value
 }
 
-func argStrings(args map[string]any, key string) []string {
+func mcpArgStrings(args map[string]any, key string) []string {
 	raw, ok := args[key].([]any)
 	if !ok {
 		return nil
@@ -71,7 +68,7 @@ func argStrings(args map[string]any, key string) []string {
 
 // Schema helpers.
 
-func objectSchema(required []string, properties map[string]any) map[string]any {
+func mcpObjectSchema(required []string, properties map[string]any) map[string]any {
 	s := map[string]any{
 		"type":       "object",
 		"properties": properties,
@@ -82,19 +79,19 @@ func objectSchema(required []string, properties map[string]any) map[string]any {
 	return s
 }
 
-func property(propType, description string) map[string]any {
+func mcpProp(propType, description string) map[string]any {
 	return map[string]any{"type": propType, "description": description}
 }
 
-func windowProperty() map[string]any {
-	return property("string", "Window name. Defaults to the focused window, or the first window.")
+func mcpWindowProp() map[string]any {
+	return mcpProp("string", "Window name. Defaults to the focused window, or the first window.")
 }
 
-func timeoutProperty() map[string]any {
-	return property("number", "Timeout in milliseconds for the page to respond. Defaults to the service's EvalTimeout (30s).")
+func mcpTimeoutProp() map[string]any {
+	return mcpProp("number", "Timeout in milliseconds for the page to respond. Defaults to WAILS_MCP_TIMEOUT (30s).")
 }
 
-func targetProperties(prefix, what string) map[string]any {
+func mcpTargetProps(prefix, what string) map[string]any {
 	key := func(name string) string {
 		if prefix == "" {
 			return name
@@ -102,15 +99,14 @@ func targetProperties(prefix, what string) map[string]any {
 		return prefix + "_" + name
 	}
 	return map[string]any{
-		key("x"):        property("number", "X coordinate of "+what+" in CSS pixels, relative to the window viewport. Ignored when a selector is given."),
-		key("y"):        property("number", "Y coordinate of "+what+" in CSS pixels, relative to the window viewport. Ignored when a selector is given."),
-		key("selector"): property("string", "CSS selector of "+what+". The first matching element is scrolled into view and its centre is used."),
+		key("x"):        mcpProp("number", "X coordinate of "+what+" in CSS pixels, relative to the window viewport. Ignored when a selector is given."),
+		key("y"):        mcpProp("number", "Y coordinate of "+what+" in CSS pixels, relative to the window viewport. Ignored when a selector is given."),
+		key("selector"): mcpProp("string", "CSS selector of "+what+". The first matching element is scrolled into view and its centre is used."),
 	}
 }
 
-// target builds the JSON target object consumed by inject.js from x/y/selector
-// arguments.
-func target(args map[string]any, prefix string) (string, error) {
+// mcpTarget builds the JSON target object consumed by the in-page library.
+func mcpTarget(args map[string]any, prefix string) (string, error) {
 	key := func(name string) string {
 		if prefix == "" {
 			return name
@@ -118,11 +114,11 @@ func target(args map[string]any, prefix string) (string, error) {
 		return prefix + "_" + name
 	}
 	result := map[string]any{}
-	if selector, ok := argString(args, key("selector")); ok {
+	if selector, ok := mcpArgString(args, key("selector")); ok {
 		result["selector"] = selector
 	}
-	x, hasX := argFloat(args, key("x"))
-	y, hasY := argFloat(args, key("y"))
+	x, hasX := mcpArgFloat(args, key("x"))
+	y, hasY := mcpArgFloat(args, key("y"))
 	if hasX && hasY {
 		result["x"], result["y"] = x, y
 	}
@@ -133,7 +129,7 @@ func target(args map[string]any, prefix string) (string, error) {
 	return string(data), err
 }
 
-func mergeProperties(maps ...map[string]any) map[string]any {
+func mcpMergeProps(maps ...map[string]any) map[string]any {
 	result := map[string]any{}
 	for _, m := range maps {
 		for k, v := range m {
@@ -143,8 +139,8 @@ func mergeProperties(maps ...map[string]any) map[string]any {
 	return result
 }
 
-// windowDescriptor summarises a window for tool results.
-func windowDescriptor(window application.Window) map[string]any {
+// mcpWindowDescriptor summarises a window for tool results.
+func mcpWindowDescriptor(window Window) map[string]any {
 	width, height := window.Size()
 	x, y := window.Position()
 	return map[string]any{
@@ -163,36 +159,32 @@ func windowDescriptor(window application.Window) map[string]any {
 	}
 }
 
-// evalTool is the common shape of tools that run JavaScript in a window and
-// return its JSON result.
-func (m *mcpServer) evalTool(args map[string]any, body string) (any, error) {
-	window, err := m.resolveWindow(firstString(args, "window"))
+// mcpEvalTool is the common shape of tools that run JavaScript in a window
+// and return its JSON result.
+func (m *mcpServer) mcpEvalTool(args map[string]any, body string) (any, error) {
+	name, _ := mcpArgString(args, "window")
+	window, err := m.resolveWindow(name)
 	if err != nil {
 		return nil, err
 	}
 	var result any
-	if err := m.evalInto(window, body, m.evalTimeout(args), &result); err != nil {
+	if err := m.evalInto(window, body, m.mcpEvalTimeout(args), &result); err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func firstString(args map[string]any, key string) string {
-	value, _ := argString(args, key)
-	return value
-}
-
 func (m *mcpServer) registerTools() {
-	m.tools = []*tool{
+	m.tools = []*mcpTool{
 		{
 			Name:        "app_info",
 			Description: "Get information about the running Wails application: platform, windows and MCP endpoint.",
-			Schema:      objectSchema(nil, map[string]any{}),
+			Schema:      mcpObjectSchema(nil, map[string]any{}),
 			Handler: func(args map[string]any) (any, error) {
 				windows := m.app.Window.GetAll()
 				descriptors := make([]map[string]any, 0, len(windows))
 				for _, window := range windows {
-					descriptors = append(descriptors, windowDescriptor(window))
+					descriptors = append(descriptors, mcpWindowDescriptor(window))
 				}
 				return map[string]any{
 					"os":       runtime.GOOS,
@@ -205,12 +197,12 @@ func (m *mcpServer) registerTools() {
 		{
 			Name:        "windows_list",
 			Description: "List all application windows with their geometry and state.",
-			Schema:      objectSchema(nil, map[string]any{}),
+			Schema:      mcpObjectSchema(nil, map[string]any{}),
 			Handler: func(args map[string]any) (any, error) {
 				windows := m.app.Window.GetAll()
 				descriptors := make([]map[string]any, 0, len(windows))
 				for _, window := range windows {
-					descriptors = append(descriptors, windowDescriptor(window))
+					descriptors = append(descriptors, mcpWindowDescriptor(window))
 				}
 				return descriptors, nil
 			},
@@ -220,51 +212,51 @@ func (m *mcpServer) registerTools() {
 			Description: "Control a window. Actions: focus, show, hide, close, center, maximise, unmaximise, " +
 				"minimise, unminimise, restore, fullscreen, unfullscreen, toggle_fullscreen, reload, force_reload, " +
 				"open_devtools, set_size, set_position, set_title, set_url, set_zoom, set_always_on_top.",
-			Schema: objectSchema([]string{"action"}, map[string]any{
-				"action":        property("string", "The action to perform."),
-				"window":        windowProperty(),
-				"width":         property("number", "New width for set_size."),
-				"height":        property("number", "New height for set_size."),
-				"x":             property("number", "New x position for set_position."),
-				"y":             property("number", "New y position for set_position."),
-				"title":         property("string", "New title for set_title."),
-				"url":           property("string", "URL to load for set_url."),
-				"zoom":          property("number", "Zoom factor for set_zoom (1.0 = 100%)."),
-				"always_on_top": property("boolean", "Flag for set_always_on_top."),
+			Schema: mcpObjectSchema([]string{"action"}, map[string]any{
+				"action":        mcpProp("string", "The action to perform."),
+				"window":        mcpWindowProp(),
+				"width":         mcpProp("number", "New width for set_size."),
+				"height":        mcpProp("number", "New height for set_size."),
+				"x":             mcpProp("number", "New x position for set_position."),
+				"y":             mcpProp("number", "New y position for set_position."),
+				"title":         mcpProp("string", "New title for set_title."),
+				"url":           mcpProp("string", "URL to load for set_url."),
+				"zoom":          mcpProp("number", "Zoom factor for set_zoom (1.0 = 100%)."),
+				"always_on_top": mcpProp("boolean", "Flag for set_always_on_top."),
 			}),
-			Handler: m.windowControl,
+			Handler: m.mcpWindowControl,
 		},
 		{
 			Name: "js_eval",
 			Description: "Evaluate JavaScript in a window. The code runs in an async function body, so use " +
 				"`return` to produce a value and `await` freely. The result must be JSON-serialisable. " +
 				"The Wails runtime is importable inside the page via `await import('/wails/runtime.js')`.",
-			Schema: objectSchema([]string{"js"}, map[string]any{
-				"js":         property("string", "JavaScript code to run (async function body)."),
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+			Schema: mcpObjectSchema([]string{"js"}, map[string]any{
+				"js":         mcpProp("string", "JavaScript code to run (async function body)."),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				js, ok := argString(args, "js")
+				js, ok := mcpArgString(args, "js")
 				if !ok {
 					return nil, errors.New("missing required argument: js")
 				}
-				return m.evalTool(args, js)
+				return m.mcpEvalTool(args, js)
 			},
 		},
 		{
 			Name: "dom_html",
 			Description: "Get the HTML of the page or of the first element matching a selector. " +
 				"Useful for inspecting the UI before interacting with it.",
-			Schema: objectSchema(nil, map[string]any{
-				"selector":  property("string", "CSS selector. Defaults to the whole document."),
-				"max_bytes": property("number", "Maximum HTML length to return. Defaults to 100000."),
-				"window":    windowProperty(),
+			Schema: mcpObjectSchema(nil, map[string]any{
+				"selector":  mcpProp("string", "CSS selector. Defaults to the whole document."),
+				"max_bytes": mcpProp("number", "Maximum HTML length to return. Defaults to 100000."),
+				"window":    mcpWindowProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				selector := firstString(args, "selector")
-				maxBytes := argInt(args, "max_bytes", 100_000)
-				return m.evalTool(args, fmt.Sprintf(`
+				selector, _ := mcpArgString(args, "selector")
+				maxBytes := mcpArgInt(args, "max_bytes", 100_000)
+				return m.mcpEvalTool(args, fmt.Sprintf(`
 					const selector = %s, maxBytes = %d;
 					const el = selector ? document.querySelector(selector) : document.documentElement;
 					if (!el) throw new Error('no element matches selector: ' + selector);
@@ -281,36 +273,36 @@ func (m *mcpServer) registerTools() {
 			Name: "dom_query",
 			Description: "Find elements by CSS selector and return a summary of each: tag, id, classes, text, " +
 				"value, viewport bounds and visibility. Use this to discover what to click or type into.",
-			Schema: objectSchema([]string{"selector"}, map[string]any{
-				"selector": property("string", "CSS selector to query."),
-				"limit":    property("number", "Maximum number of elements to return. Defaults to 25."),
-				"window":   windowProperty(),
+			Schema: mcpObjectSchema([]string{"selector"}, map[string]any{
+				"selector": mcpProp("string", "CSS selector to query."),
+				"limit":    mcpProp("number", "Maximum number of elements to return. Defaults to 25."),
+				"window":   mcpWindowProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				selector, ok := argString(args, "selector")
+				selector, ok := mcpArgString(args, "selector")
 				if !ok {
 					return nil, errors.New("missing required argument: selector")
 				}
-				return m.evalTool(args, fmt.Sprintf("return mcp.query(%s, %d);",
-					strconv.Quote(selector), argInt(args, "limit", 25)))
+				return m.mcpEvalTool(args, fmt.Sprintf("return mcp.query(%s, %d);",
+					strconv.Quote(selector), mcpArgInt(args, "limit", 25)))
 			},
 		},
 		{
 			Name: "mouse_move",
 			Description: "Move the animated mouse cursor to a point or element, firing pointer/mouse move and " +
 				"hover events along the way. Returns a description of the hovered element.",
-			Schema: objectSchema(nil, mergeProperties(targetProperties("", "the destination"), map[string]any{
-				"duration_ms": property("number", "Animation duration. Defaults to a natural speed based on distance."),
-				"window":      windowProperty(),
-				"timeout_ms":  timeoutProperty(),
+			Schema: mcpObjectSchema(nil, mcpMergeProps(mcpTargetProps("", "the destination"), map[string]any{
+				"duration_ms": mcpProp("number", "Animation duration in ms. Defaults to a natural speed based on distance."),
+				"window":      mcpWindowProp(),
+				"timeout_ms":  mcpTimeoutProp(),
 			})),
 			Handler: func(args map[string]any) (any, error) {
-				targetJSON, err := target(args, "")
+				targetJSON, err := mcpTarget(args, "")
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.move(%s, {duration: %d});",
-					targetJSON, argInt(args, "duration_ms", 0)))
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.move(%s, {duration: %d});",
+					targetJSON, mcpArgInt(args, "duration_ms", 0)))
 			},
 		},
 		{
@@ -318,76 +310,77 @@ func (m *mcpServer) registerTools() {
 			Description: "Click a point or element with the animated mouse cursor: the cursor visibly moves " +
 				"there, presses with a ripple effect and dispatches the full pointer/mouse event sequence. " +
 				"Returns a description of the clicked element.",
-			Schema: objectSchema(nil, mergeProperties(targetProperties("", "the click target"), map[string]any{
-				"button":     property("string", "Mouse button: left (default), right or middle."),
-				"count":      property("number", "Number of clicks: 1 (default) or 2 for a double-click."),
+			Schema: mcpObjectSchema(nil, mcpMergeProps(mcpTargetProps("", "the click target"), map[string]any{
+				"button":     mcpProp("string", "Mouse button: left (default), right or middle."),
+				"count":      mcpProp("number", "Number of clicks: 1 (default) or 2 for a double-click."),
 				"modifiers":  map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Held modifier keys: ctrl, shift, alt, meta."},
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			})),
 			Handler: func(args map[string]any) (any, error) {
-				targetJSON, err := target(args, "")
+				targetJSON, err := mcpTarget(args, "")
 				if err != nil {
 					return nil, err
 				}
+				button, _ := mcpArgString(args, "button")
 				options := map[string]any{
-					"button":    firstString(args, "button"),
-					"count":     argInt(args, "count", 1),
-					"modifiers": argStrings(args, "modifiers"),
+					"button":    button,
+					"count":     mcpArgInt(args, "count", 1),
+					"modifiers": mcpArgStrings(args, "modifiers"),
 				}
 				optionsJSON, err := json.Marshal(options)
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.click(%s, %s);", targetJSON, optionsJSON))
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.click(%s, %s);", targetJSON, optionsJSON))
 			},
 		},
 		{
 			Name: "mouse_drag",
 			Description: "Drag from one point/element to another with the animated cursor: press, animated move " +
 				"with continuous pointer/mouse events (and HTML5 drag events for draggable elements), release.",
-			Schema: objectSchema(nil, mergeProperties(
-				targetProperties("from", "the drag start"),
-				targetProperties("to", "the drop target"),
+			Schema: mcpObjectSchema(nil, mcpMergeProps(
+				mcpTargetProps("from", "the drag start"),
+				mcpTargetProps("to", "the drop target"),
 				map[string]any{
-					"duration_ms": property("number", "Drag animation duration. Defaults to a natural speed."),
-					"window":      windowProperty(),
-					"timeout_ms":  timeoutProperty(),
+					"duration_ms": mcpProp("number", "Drag animation duration in ms. Defaults to a natural speed."),
+					"window":      mcpWindowProp(),
+					"timeout_ms":  mcpTimeoutProp(),
 				})),
 			Handler: func(args map[string]any) (any, error) {
-				fromJSON, err := target(args, "from")
+				fromJSON, err := mcpTarget(args, "from")
 				if err != nil {
 					return nil, err
 				}
-				toJSON, err := target(args, "to")
+				toJSON, err := mcpTarget(args, "to")
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.drag(%s, %s, {duration: %d});",
-					fromJSON, toJSON, argInt(args, "duration_ms", 0)))
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.drag(%s, %s, {duration: %d});",
+					fromJSON, toJSON, mcpArgInt(args, "duration_ms", 0)))
 			},
 		},
 		{
 			Name: "mouse_scroll",
 			Description: "Scroll at a point or element: the animated cursor moves there, a wheel event is " +
 				"dispatched and the nearest scrollable container scrolls smoothly.",
-			Schema: objectSchema(nil, mergeProperties(targetProperties("", "the scroll position"), map[string]any{
-				"delta_x":    property("number", "Horizontal scroll amount in pixels."),
-				"delta_y":    property("number", "Vertical scroll amount in pixels. Positive scrolls down."),
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+			Schema: mcpObjectSchema(nil, mcpMergeProps(mcpTargetProps("", "the scroll position"), map[string]any{
+				"delta_x":    mcpProp("number", "Horizontal scroll amount in pixels."),
+				"delta_y":    mcpProp("number", "Vertical scroll amount in pixels. Positive scrolls down."),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			})),
 			Handler: func(args map[string]any) (any, error) {
-				targetJSON, err := target(args, "")
+				targetJSON, err := mcpTarget(args, "")
 				if err != nil {
 					return nil, err
 				}
-				deltaX, _ := argFloat(args, "delta_x")
-				deltaY, _ := argFloat(args, "delta_y")
+				deltaX, _ := mcpArgFloat(args, "delta_x")
+				deltaY, _ := mcpArgFloat(args, "delta_y")
 				if deltaX == 0 && deltaY == 0 {
 					deltaY = 120
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.scroll(%s, %g, %g);",
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.scroll(%s, %g, %g);",
 					targetJSON, deltaX, deltaY))
 			},
 		},
@@ -396,12 +389,12 @@ func (m *mcpServer) registerTools() {
 			Description: "Type text into the focused element (or an element given by selector, which is clicked " +
 				"first) with per-character key, input and change events. Works with inputs, textareas and " +
 				"contenteditable elements, including React-style controlled inputs.",
-			Schema: objectSchema([]string{"text"}, map[string]any{
-				"text":       property("string", "The text to type."),
-				"selector":   property("string", "CSS selector of the element to focus first."),
-				"delay_ms":   property("number", "Delay between characters. Defaults to 25ms."),
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+			Schema: mcpObjectSchema([]string{"text"}, map[string]any{
+				"text":       mcpProp("string", "The text to type."),
+				"selector":   mcpProp("string", "CSS selector of the element to focus first."),
+				"delay_ms":   mcpProp("number", "Delay between characters in ms. Defaults to 25."),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
 				text, ok := args["text"].(string)
@@ -412,8 +405,9 @@ func (m *mcpServer) registerTools() {
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.typeText(%s, %s, %d);",
-					textJSON, strconv.Quote(firstString(args, "selector")), argInt(args, "delay_ms", 25)))
+				selector, _ := mcpArgString(args, "selector")
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.typeText(%s, %s, %d);",
+					textJSON, strconv.Quote(selector), mcpArgInt(args, "delay_ms", 25)))
 			},
 		},
 		{
@@ -421,22 +415,22 @@ func (m *mcpServer) registerTools() {
 			Description: "Press a single key with optional modifiers, e.g. Enter, Tab, Escape, Backspace, " +
 				"ArrowDown, F5, a. Dispatches keydown/keyup and applies the default editing action for " +
 				"Enter, Backspace and Tab.",
-			Schema: objectSchema([]string{"key"}, map[string]any{
-				"key":        property("string", "Key value as in KeyboardEvent.key."),
+			Schema: mcpObjectSchema([]string{"key"}, map[string]any{
+				"key":        mcpProp("string", "Key value as in KeyboardEvent.key."),
 				"modifiers":  map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Held modifier keys: ctrl, shift, alt, meta."},
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				key, ok := argString(args, "key")
+				key, ok := mcpArgString(args, "key")
 				if !ok {
 					return nil, errors.New("missing required argument: key")
 				}
-				modifiersJSON, err := json.Marshal(argStrings(args, "modifiers"))
+				modifiersJSON, err := json.Marshal(mcpArgStrings(args, "modifiers"))
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf("return await mcp.press(%s, %s);",
+				return m.mcpEvalTool(args, fmt.Sprintf("return await mcp.press(%s, %s);",
 					strconv.Quote(key), modifiersJSON))
 			},
 		},
@@ -444,14 +438,14 @@ func (m *mcpServer) registerTools() {
 			Name: "call_bound_method",
 			Description: "Call a bound Go service method through the Wails runtime, e.g. " +
 				"'main.GreetService.Greet' with args ['World']. Returns the method's result.",
-			Schema: objectSchema([]string{"name"}, map[string]any{
-				"name":       property("string", "Fully qualified method name: package.Service.Method."),
+			Schema: mcpObjectSchema([]string{"name"}, map[string]any{
+				"name":       mcpProp("string", "Fully qualified method name: package.Service.Method."),
 				"args":       map[string]any{"type": "array", "description": "Positional arguments for the method."},
-				"window":     windowProperty(),
-				"timeout_ms": timeoutProperty(),
+				"window":     mcpWindowProp(),
+				"timeout_ms": mcpTimeoutProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				name, ok := argString(args, "name")
+				name, ok := mcpArgString(args, "name")
 				if !ok {
 					return nil, errors.New("missing required argument: name")
 				}
@@ -463,7 +457,7 @@ func (m *mcpServer) registerTools() {
 				if err != nil {
 					return nil, err
 				}
-				return m.evalTool(args, fmt.Sprintf(`
+				return m.mcpEvalTool(args, fmt.Sprintf(`
 					const runtime = await import('/wails/runtime.js');
 					const result = await runtime.Call.ByName(%s, ...%s);
 					return result === undefined ? null : result;`,
@@ -473,12 +467,12 @@ func (m *mcpServer) registerTools() {
 		{
 			Name:        "emit_event",
 			Description: "Emit a Wails application event that both Go and frontend listeners receive.",
-			Schema: objectSchema([]string{"name"}, map[string]any{
-				"name": property("string", "Event name."),
+			Schema: mcpObjectSchema([]string{"name"}, map[string]any{
+				"name": mcpProp("string", "Event name."),
 				"data": map[string]any{"description": "Optional event data (any JSON value)."},
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				name, ok := argString(args, "name")
+				name, ok := mcpArgString(args, "name")
 				if !ok {
 					return nil, errors.New("missing required argument: name")
 				}
@@ -494,17 +488,17 @@ func (m *mcpServer) registerTools() {
 			Name: "wait_for_event",
 			Description: "Wait for a Wails application event to be emitted (by Go or the frontend) and return " +
 				"its data. Useful for asserting that an interaction triggered the expected event.",
-			Schema: objectSchema([]string{"name"}, map[string]any{
-				"name":       property("string", "Event name to wait for."),
-				"timeout_ms": property("number", "How long to wait. Defaults to 30000."),
+			Schema: mcpObjectSchema([]string{"name"}, map[string]any{
+				"name":       mcpProp("string", "Event name to wait for."),
+				"timeout_ms": mcpProp("number", "How long to wait in ms. Defaults to 30000."),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				name, ok := argString(args, "name")
+				name, ok := mcpArgString(args, "name")
 				if !ok {
 					return nil, errors.New("missing required argument: name")
 				}
 				received := make(chan any, 1)
-				cancel := m.app.Event.On(name, func(event *application.CustomEvent) {
+				cancel := m.app.Event.On(name, func(event *CustomEvent) {
 					select {
 					case received <- event.Data:
 					default:
@@ -514,7 +508,7 @@ func (m *mcpServer) registerTools() {
 				select {
 				case data := <-received:
 					return map[string]any{"name": name, "data": data}, nil
-				case <-time.After(m.evalTimeout(args)):
+				case <-time.After(m.mcpEvalTimeout(args)):
 					return nil, fmt.Errorf("timed out waiting for event %q", name)
 				}
 			},
@@ -524,24 +518,25 @@ func (m *mcpServer) registerTools() {
 			Description: "Capture a structural snapshot of the visible page: the viewport size, scroll position, " +
 				"focused element and a compact outline of visible elements with their bounds. This is a " +
 				"DOM-based alternative to a pixel screenshot.",
-			Schema: objectSchema(nil, map[string]any{
-				"max_depth": property("number", "Maximum DOM depth to include. Defaults to 12."),
-				"window":    windowProperty(),
+			Schema: mcpObjectSchema(nil, map[string]any{
+				"max_depth": mcpProp("number", "Maximum DOM depth to include. Defaults to 12."),
+				"window":    mcpWindowProp(),
 			}),
 			Handler: func(args map[string]any) (any, error) {
-				return m.evalTool(args, fmt.Sprintf("return mcp.snapshot(%d);", argInt(args, "max_depth", 12)))
+				return m.mcpEvalTool(args, fmt.Sprintf("return mcp.snapshot(%d);", mcpArgInt(args, "max_depth", 12)))
 			},
 		},
 	}
 }
 
-// windowControl implements the window_control tool.
-func (m *mcpServer) windowControl(args map[string]any) (any, error) {
-	action, ok := argString(args, "action")
+// mcpWindowControl implements the window_control tool.
+func (m *mcpServer) mcpWindowControl(args map[string]any) (any, error) {
+	action, ok := mcpArgString(args, "action")
 	if !ok {
 		return nil, errors.New("missing required argument: action")
 	}
-	window, err := m.resolveWindow(firstString(args, "window"))
+	name, _ := mcpArgString(args, "window")
+	window, err := m.resolveWindow(name)
 	if err != nil {
 		return nil, err
 	}
@@ -549,7 +544,7 @@ func (m *mcpServer) windowControl(args map[string]any) (any, error) {
 	requireNumbers := func(keys ...string) ([]int, error) {
 		values := make([]int, len(keys))
 		for i, key := range keys {
-			value, ok := argFloat(args, key)
+			value, ok := mcpArgFloat(args, key)
 			if !ok {
 				return nil, fmt.Errorf("action %s requires argument %q", action, key)
 			}
@@ -604,28 +599,28 @@ func (m *mcpServer) windowControl(args map[string]any) (any, error) {
 		}
 		window.SetPosition(values[0], values[1])
 	case "set_title":
-		title, ok := argString(args, "title")
+		title, ok := mcpArgString(args, "title")
 		if !ok {
 			return nil, errors.New("action set_title requires argument \"title\"")
 		}
 		window.SetTitle(title)
 	case "set_url":
-		url, ok := argString(args, "url")
+		u, ok := mcpArgString(args, "url")
 		if !ok {
 			return nil, errors.New("action set_url requires argument \"url\"")
 		}
-		window.SetURL(url)
+		window.SetURL(u)
 	case "set_zoom":
-		zoom, ok := argFloat(args, "zoom")
+		zoom, ok := mcpArgFloat(args, "zoom")
 		if !ok {
 			return nil, errors.New("action set_zoom requires argument \"zoom\"")
 		}
 		window.SetZoom(zoom)
 	case "set_always_on_top":
-		window.SetAlwaysOnTop(argBool(args, "always_on_top"))
+		window.SetAlwaysOnTop(mcpArgBool(args, "always_on_top"))
 	default:
 		return nil, fmt.Errorf("unknown action: %s", action)
 	}
 
-	return windowDescriptor(window), nil
+	return mcpWindowDescriptor(window), nil
 }

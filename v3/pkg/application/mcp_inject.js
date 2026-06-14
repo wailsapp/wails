@@ -1,9 +1,9 @@
 /*
  * Wails MCP in-page support library.
  *
- * Injected by the MCP service (v3/pkg/services/mcp) before every evaluation.
- * Provides an animated, visible mouse cursor, realistic input simulation and
- * the callback harness used to return results to the Go side.
+ * Injected into the webview before every MCP tool evaluation. Provides an
+ * animated, visible mouse cursor, realistic input simulation and the callback
+ * harness used to return results to the Go side.
  *
  * Everything lives under window.__wailsMCP and installation is idempotent.
  */
@@ -456,8 +456,8 @@
             const beforeLeft = scrolled.scrollLeft;
             scrolled.scrollBy({ left: deltaX, top: deltaY, behavior: 'smooth' });
             await sleep(400);
-            // Smooth scrolling needs rendering frames; if the webview is not
-            // rendering (unfocused window), fall back to an instant scroll.
+            // Smooth scrolling needs rendering frames; fall back to instant if
+            // the webview is not rendering (e.g. unfocused window).
             if (scrolled.scrollTop === beforeTop && scrolled.scrollLeft === beforeLeft) {
                 scrolled.scrollBy({ left: deltaX, top: deltaY, behavior: 'instant' });
             }

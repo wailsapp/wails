@@ -5,104 +5,272 @@ sidebar:
   order: 11
 ---
 
-Wails v3 ships with an optional [Model Context Protocol](https://modelcontextprotocol.io)
-(MCP) service that lets LLM agents — Claude Code, IDE assistants, or any MCP
-client — inspect, test and drive a **running** Wails application.
+import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-An agent connected to your app can:
+Wails v3 has a built-in [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
+server that lets LLM agents — Claude Code, IDE assistants, or any MCP client — inspect,
+test, and drive a **running** Wails application.
 
-- list and control windows (size, position, focus, fullscreen, devtools, …)
-- inspect the DOM (`dom_html`, `dom_query`, `screenshot_dom`)
-- evaluate JavaScript inside any window
-- simulate user input — mouse moves, clicks, drags and scrolls are rendered
-  with an **animated cursor** inside the window so you can watch the agent work
-- type and press keys with realistic per-character events (works with React
-  style controlled inputs)
-- call bound Go service methods and emit/await application events
+When enabled, an agent connected to your app can:
 
-## Enabling the service
+- **List and control windows** — size, position, focus, fullscreen, devtools, reload, …
+- **Inspect the DOM** — query elements, get HTML, take a structural snapshot
+- **Evaluate JavaScript** — run arbitrary code inside any window and get the result
+- **Simulate user input** — mouse moves, clicks, drags and scrolls rendered with an
+  **animated on-screen cursor** so you can watch the agent work
+- **Type and press keys** — realistic per-character events that work with React controlled inputs
+- **Call bound Go methods** and emit/await application events
 
-Register the service in your application — it is safe to leave registered in
-all builds because it compiles to a no-op stub unless the `mcp` build tag is
-present:
+## How it works
 
-```go
-import "github.com/wailsapp/wails/v3/pkg/services/mcp"
+The MCP server is compiled into your application only when the **`mcp` build tag** is
+present. Without the tag the server code is completely absent from the binary — no
+runtime overhead, no open ports, no attack surface.
 
-app := application.New(application.Options{
-    Services: []application.Service{
-        application.NewServiceWithOptions(mcp.New(), application.ServiceOptions{
-            // Optional but recommended: a same-origin callback route used to
-            // return JavaScript results reliably.
-            Route: "/wails-mcp",
-        }),
-    },
-})
+When the tag is present the server starts automatically inside `application.New()`,
+binds to `127.0.0.1:9099` by default, and logs its endpoint. No user code is required.
+
+## Tutorial
+
+### Step 1 — write a normal Wails application
+
+MCP requires no imports and no registration. Create your app as you normally would:
+
+```go title="main.go"
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Width: 1024, Height: 768,
+    })
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
 ```
 
-Then build or run with the tag. The easiest way is the `WAILS_MCP` environment
-variable, which the Wails CLI converts into the build tag for you:
+### Step 2 — build or run with the `mcp` tag
+
+<Tabs>
+<TabItem label="Wails CLI (recommended)">
+
+Set `WAILS_MCP=1` and the Wails CLI adds the `mcp` tag for you:
 
 ```shell
+# Development
 WAILS_MCP=1 wails3 dev
+
+# Production build
 WAILS_MCP=1 wails3 build
-# equivalent to:
-wails3 build -tags mcp
 ```
 
-On startup the application logs the endpoint:
+</TabItem>
+<TabItem label="Direct Go">
+
+Pass the tag to `go run` or `go build` directly:
+
+```shell
+go run -tags mcp .
+go build -tags mcp -o myapp .
+```
+
+</TabItem>
+<TabItem label="Windows (PowerShell)">
+
+```powershell
+$env:WAILS_MCP = "1"
+wails3 dev
+# or
+wails3 build
+```
+
+</TabItem>
+</Tabs>
+
+On startup the application logs the MCP endpoint:
 
 ```
-INFO MCP server started. Connect MCP clients using the streamable HTTP transport. url=http://127.0.0.1:9099/mcp
+INFO MCP server started. Connect MCP clients using the streamable HTTP transport.
+     url=http://127.0.0.1:9099/mcp
 ```
 
-## Connecting a client
+### Step 3 — connect a client
 
-The server speaks the MCP streamable HTTP transport. For Claude Code:
+The server speaks the **MCP streamable HTTP transport**. Connect with any MCP-compatible client.
+
+<Tabs>
+<TabItem label="Claude Code">
 
 ```shell
 claude mcp add --transport http my-app http://127.0.0.1:9099/mcp
 ```
 
-Then ask the agent to exercise your app:
+Then ask Claude to interact with your app:
 
-> Click the "Save" button, then verify a `document:saved` event is emitted and
-> the status bar shows "Saved".
+```
+Click the "Submit" button, then verify a success toast appears.
+```
+
+</TabItem>
+<TabItem label="VS Code (GitHub Copilot)">
+
+Add to `.vscode/settings.json`:
+
+```json
+{
+  "github.copilot.chat.mcp.enabled": true,
+  "mcp": {
+    "servers": {
+      "my-wails-app": {
+        "type": "http",
+        "url": "http://127.0.0.1:9099/mcp"
+      }
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Other clients">
+
+Point any MCP client that supports the streamable HTTP transport at:
+
+```
+http://127.0.0.1:9099/mcp
+```
+
+</TabItem>
+</Tabs>
+
+### Step 4 — run a test session
+
+Ask the agent to exercise your application. Here are some example prompts:
+
+```
+Take a DOM snapshot of the main window.
+```
+```
+Click the "Add item" button, type "Hello world" in the input field,
+then press Enter and verify the item appears in the list.
+```
+```
+Call the bound method main.GreetService.Greet with argument ["World"]
+and return the result.
+```
+```
+Wait for the event "save:complete" while clicking the Save button.
+```
 
 ## Configuration
 
-```go
-mcp.NewWithConfig(mcp.Config{
-    Host:        "127.0.0.1",        // default; keep localhost unless you know better
-    Port:        9099,               // default; -1 picks a free port
-    EvalTimeout: 30 * time.Second,   // how long tools wait for the page
-    HideCursor:  false,              // disable the animated cursor overlay
-})
-```
+All configuration is via environment variables — no code changes required.
 
-The `WAILS_MCP_PORT` environment variable overrides the port at runtime.
+| Environment variable   | Default     | Description |
+|------------------------|-------------|-------------|
+| `WAILS_MCP`            | (unset)     | Set to `1`, `true`, `on` or `yes` to add the `mcp` build tag automatically when using the Wails CLI. |
+| `WAILS_MCP_HOST`       | `127.0.0.1` | Interface to bind to. Change only in trusted, isolated networks. |
+| `WAILS_MCP_PORT`       | `9099`      | Port to listen on. Set to `0` for a randomly assigned free port (printed in the log). |
+| `WAILS_MCP_TIMEOUT`    | `30000`     | Default JS evaluation timeout in **milliseconds**. |
+| `WAILS_MCP_HIDE_CURSOR`| (unset)     | Set to `1` or `true` to disable the animated cursor overlay. |
+
+Example — custom port and a 60-second timeout:
+
+```shell
+WAILS_MCP=1 WAILS_MCP_PORT=9200 WAILS_MCP_TIMEOUT=60000 wails3 dev
+```
 
 ## Available tools
 
 | Tool | Purpose |
 |------|---------|
-| `app_info`, `windows_list` | Application and window inventory |
-| `window_control` | Focus, resize, move, fullscreen, reload, devtools, … |
-| `js_eval` | Run JavaScript in a window and return its result |
-| `dom_html`, `dom_query`, `screenshot_dom` | Inspect page structure |
-| `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Animated mouse input |
-| `keyboard_type`, `keyboard_press` | Keyboard input with realistic events |
-| `call_bound_method` | Call bound Go methods through the runtime |
-| `emit_event`, `wait_for_event` | Work with Wails application events |
+| `app_info` | Application information: platform, architecture, all windows, MCP endpoint |
+| `windows_list` | List all windows with geometry and state |
+| `window_control` | Focus, resize, move, fullscreen, devtools, reload, set URL, … (22 actions) |
+| `js_eval` | Evaluate JavaScript in a window (async body, `return` for value) |
+| `dom_html` | Get the HTML of the page or a specific element |
+| `dom_query` | Find elements by CSS selector — tag, text, bounds, visibility |
+| `screenshot_dom` | Structural snapshot of the visible page (DOM-based, no pixels) |
+| `mouse_move` | Animate the cursor to a point or CSS selector |
+| `mouse_click` | Click with the animated cursor (left/right/middle, double-click, modifiers) |
+| `mouse_drag` | Drag with the animated cursor (supports HTML5 drag-and-drop elements) |
+| `mouse_scroll` | Scroll at a point or element |
+| `keyboard_type` | Type text character by character with realistic events |
+| `keyboard_press` | Press a single key (Enter, Tab, Escape, ArrowDown, …) with optional modifiers |
+| `call_bound_method` | Call a bound Go service method, e.g. `main.GreetService.Greet` |
+| `emit_event` | Emit a Wails application event |
+| `wait_for_event` | Wait for a Wails application event and return its data |
 
-## Security notes
+### Multi-window support
 
-- The server binds to `127.0.0.1` by default and rejects non-local browser
-  origins. Anything that can reach the port can fully control your
-  application — do not expose it beyond localhost in untrusted environments.
-- The service is intended for development and testing. Avoid shipping
-  production builds with the `mcp` tag; the default build (without the tag)
-  contains none of the server code.
+All tools that act on a window accept an optional `window` argument containing the
+window's **name** (set via `WebviewWindowOptions.Name`). When omitted, the tool targets
+the currently focused window, or the first window if none is focused.
 
-A complete playground application lives at
+```
+List all windows, then click the "New" button in the window named "editor".
+```
+
+### Selecting elements
+
+Mouse and keyboard tools accept either:
+- **CSS selector** — `selector: "#submit-btn"` (element is scrolled into view automatically)
+- **Coordinates** — `x: 400, y: 300` (CSS pixels relative to the viewport)
+
+For drag operations, prefix with `from_` and `to_`:
+```
+Drag from selector: ".card" to selector: ".dropzone"
+```
+
+## Security
+
+<Aside type="caution">
+The MCP server gives full programmatic control over your application. Anyone who can
+reach the port can read the DOM, evaluate JavaScript, click buttons, and call Go methods.
+</Aside>
+
+- The server binds to `127.0.0.1` by default and rejects non-local browser origins
+  (DNS-rebinding protection per the MCP spec).
+- Production builds should **not** include the `mcp` tag. The Wails CLI only adds it when
+  `WAILS_MCP=1` is explicitly set, and the default `wails3 build` has none of the server code.
+- If you need to expose the server on a non-loopback interface (e.g. LAN testing), set
+  `WAILS_MCP_HOST=0.0.0.0` and ensure your network is trusted.
+
+## Example application
+
+A complete playground application demonstrating all tools is available at
 [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/mcp).
+It includes:
+- Counter with increment/reset buttons
+- Name input with Greet, Add, Shout bound methods
+- HTML5 drag-and-drop source and target
+- Scrollable list (50 items)
+- Event log
+
+Run it with:
+
+```shell
+cd v3/examples/mcp
+WAILS_MCP=1 go run -tags mcp .
+```
+
+Then connect Claude Code or any MCP client to `http://127.0.0.1:9099/mcp` and ask it to
+exercise the UI.

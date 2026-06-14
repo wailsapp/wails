@@ -1,6 +1,6 @@
 //go:build mcp
 
-package mcp
+package application
 
 import (
 	"crypto/rand"
@@ -10,49 +10,40 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-// injectJS is the in-page support library: the animated cursor overlay, input
-// simulation and the result callback harness. It is idempotent, so it is
-// prepended to every evaluation to survive page reloads.
+// mcpInjectJS is the in-page support library: animated cursor overlay, input
+// simulation and result callback harness. Idempotent, prepended to every eval.
 //
-//go:embed inject.js
-var injectJS string
+//go:embed mcp_inject.js
+var mcpInjectJS string
 
-// evalResult is the payload posted back by the page when an evaluation
+// mcpEvalResult is the payload posted back by the page when an evaluation
 // finishes.
-type evalResult struct {
+type mcpEvalResult struct {
 	ID    string          `json:"id"`
 	Ok    bool            `json:"ok"`
 	Value json.RawMessage `json:"value"`
 	Error string          `json:"error"`
 }
 
-// callbackURL returns the URL the page posts evaluation results to. When the
-// service is mounted on the asset server the same-origin route is used;
-// otherwise the localhost listener (CORS-enabled) is the fallback.
+// callbackURL returns the URL the in-page script POSTs evaluation results to.
 func (m *mcpServer) callbackURL() string {
-	if m.route != "" {
-		return strings.TrimSuffix(m.route, "/") + "/eval-result"
-	}
 	return fmt.Sprintf("http://%s/eval-result", m.addr)
 }
 
 // eval runs JavaScript in the window and waits for its result. The body is
 // wrapped in an async function receiving the support library as `mcp`; use
 // `return` to produce a value.
-func (m *mcpServer) eval(window application.Window, body string, timeout time.Duration) (json.RawMessage, error) {
+func (m *mcpServer) eval(window Window, body string, timeout time.Duration) (json.RawMessage, error) {
 	idBytes := make([]byte, 16)
 	if _, err := rand.Read(idBytes); err != nil {
 		return nil, fmt.Errorf("failed to generate evaluation id: %w", err)
 	}
 	id := hex.EncodeToString(idBytes)
 
-	ch := make(chan evalResult, 1)
+	ch := make(chan mcpEvalResult, 1)
 	m.pendingMu.Lock()
 	m.pending[id] = ch
 	m.pendingMu.Unlock()
@@ -62,11 +53,11 @@ func (m *mcpServer) eval(window application.Window, body string, timeout time.Du
 		m.pendingMu.Unlock()
 	}()
 
-	script := injectJS + "\n" + fmt.Sprintf(
+	script := mcpInjectJS + "\n" + fmt.Sprintf(
 		"window.__wailsMCP.run(%s, %s, %s, async (mcp) => {\n%s\n});",
 		strconv.Quote(id),
 		strconv.Quote(m.callbackURL()),
-		strconv.FormatBool(!m.config.HideCursor),
+		strconv.FormatBool(!m.hideCursor),
 		body,
 	)
 	window.ExecJS(script)
@@ -84,7 +75,7 @@ func (m *mcpServer) eval(window application.Window, body string, timeout time.Du
 }
 
 // evalInto runs JavaScript and unmarshals the result into out.
-func (m *mcpServer) evalInto(window application.Window, body string, timeout time.Duration, out any) error {
+func (m *mcpServer) evalInto(window Window, body string, timeout time.Duration, out any) error {
 	value, err := m.eval(window, body, timeout)
 	if err != nil {
 		return err
@@ -95,10 +86,9 @@ func (m *mcpServer) evalInto(window application.Window, body string, timeout tim
 	return json.Unmarshal(value, out)
 }
 
-// handleEvalResult receives evaluation results posted by the page. It is
-// reachable both on the localhost listener and on the asset server route.
+// handleEvalResult receives evaluation results posted by the in-page script.
 func (m *mcpServer) handleEvalResult(w http.ResponseWriter, r *http.Request) {
-	setCORSHeaders(w)
+	mcpSetCORSHeaders(w)
 	switch r.Method {
 	case http.MethodOptions:
 		w.WriteHeader(http.StatusNoContent)
@@ -110,7 +100,7 @@ func (m *mcpServer) handleEvalResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var result evalResult
+	var result mcpEvalResult
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64*1024*1024)).Decode(&result); err != nil {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
