@@ -1,0 +1,468 @@
+---
+title: Your First Mobile App
+description: Run your Wails app on iOS Simulator or Android Emulator in minutes
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+This guide takes a standard Wails desktop app and runs it on iOS Simulator or Android Emulator. **You do not need to change your Go code.** The same `main.go` builds for all targets.
+
+**Time to complete:** 15–30 minutes (most of that is toolchain installation on first run)
+
+## Start from a desktop project
+
+If you don't have one yet, create a fresh project:
+
+```bash
+wails3 init -n mymobileapp
+cd mymobileapp
+```
+
+Confirm the desktop app works first:
+
+```bash
+wails3 dev
+```
+
+Once it opens, quit and move on. Everything that runs on desktop also runs on mobile — you won't need to touch `main.go` or any Go code for this guide.
+
+---
+
+## Choose your platform
+
+<Tabs syncKey="mobile-platform">
+<TabItem label="iOS Simulator" icon="apple">
+
+### Requirements
+
+- **macOS** (iOS builds are macOS-only)
+- **Full Xcode** — not just command-line tools. Install from the App Store, then:
+
+  ```bash
+  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+  sudo xcodebuild -license accept
+  ```
+
+- **Go 1.24+** and **npm** (already installed if you ran `wails3 init`)
+
+Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
+
+### Run on the Simulator
+
+<Steps>
+
+1. **Launch the app**
+
+   ```bash
+   wails3 task ios:run
+   ```
+
+   On first run this:
+   - Generates the Xcode project scaffold in `build/ios/`
+   - Compiles your Go code as a C archive (`GOOS=ios GOARCH=arm64`)
+   - Bundles the frontend
+   - Signs ad-hoc
+   - Boots a simulator (if none is running)
+   - Installs and launches your app
+
+   Subsequent runs are much faster — only changed files recompile.
+
+   <Aside type="tip">
+   The first build takes 2–5 minutes. Go is compiling the entire Wails framework for `GOOS=ios` for the first time and caching it. Future builds of any iOS app will be significantly faster.
+   </Aside>
+
+2. **Stream logs**
+
+   In a separate terminal:
+
+   ```bash
+   wails3 task ios:logs:dev
+   ```
+
+   This tails the simulator log, filtered to your app. `fmt.Println` and `log.Println` output appears here.
+
+3. **Inspect the WebView**
+
+   In Safari: **Develop → Simulator → your app**. The full Web Inspector works — console, debugger, network panel, everything.
+
+4. **Make a change**
+
+   Edit any frontend file (`frontend/src/main.js`, `index.html`, etc.) and re-run `wails3 task ios:run`. Wails rebuilds the frontend and relaunches the app.
+
+   For Go changes: also re-run `wails3 task ios:run`. Go recompilation is incremental, so only changed packages rebuild.
+
+</Steps>
+
+### Open in Xcode (optional)
+
+```bash
+wails3 task ios:xcode
+```
+
+This opens `build/ios/` in Xcode. You can use Xcode for device deployment, advanced profiling, or managing provisioning profiles. Wails regenerates the Xcode project on each build, so don't modify the generated files directly.
+
+</TabItem>
+<TabItem label="Android Emulator" icon="seti:android">
+
+### Requirements
+
+You need the **Android SDK**, **NDK**, and a **JDK**. The easiest way is Android Studio, or the command-line tools:
+
+<Steps>
+
+1. **Install the Android command-line tools**
+
+   Download from [developer.android.com/studio#command-line-tools-only](https://developer.android.com/studio#command-line-tools-only), unzip to `~/android-sdk/cmdline-tools/latest/`.
+
+2. **Install SDK components**
+
+   ```bash
+   sdkmanager "platform-tools" \
+              "platforms;android-34" \
+              "build-tools;34.0.0" \
+              "ndk;26.3.11579264" \
+              "emulator" \
+              "system-images;android-34;google_apis;arm64-v8a"
+   ```
+
+3. **Create an emulator**
+
+   ```bash
+   avdmanager create avd \
+     --name wails \
+     --package "system-images;android-34;google_apis;arm64-v8a" \
+     --device pixel_7
+   ```
+
+4. **Set environment variables**
+
+   Add to `~/.zshrc` or `~/.bashrc`:
+
+   ```bash
+   export ANDROID_HOME=~/android-sdk
+   export ANDROID_SDK_ROOT=~/android-sdk
+   export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
+   ```
+
+   Reload: `source ~/.zshrc`
+
+5. **Install a JDK**
+
+   ```bash
+   # macOS
+   brew install openjdk@21
+   export JAVA_HOME=$(brew --prefix openjdk@21)
+
+   # Ubuntu/Debian
+   sudo apt install openjdk-21-jdk
+   export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+   # Windows (scoop)
+   scoop install openjdk21
+   ```
+
+</Steps>
+
+Run `wails3 doctor` to confirm everything is found.
+
+### Run on the Emulator
+
+<Steps>
+
+1. **Launch the app**
+
+   ```bash
+   wails3 task android:run
+   ```
+
+   On first run this:
+   - Boots the emulator if none is running
+   - Generates bindings and builds the frontend
+   - Compiles your Go code to `libwails.so` via the NDK cross-compiler
+   - Assembles a debug APK with Gradle
+   - Installs and launches it on the emulator
+
+   <Aside type="tip">
+   The first build downloads Gradle and compiles the NDK toolchain — expect 5–10 minutes. Subsequent builds are incremental and take under a minute.
+   </Aside>
+
+2. **Stream logs**
+
+   In a separate terminal:
+
+   ```bash
+   wails3 task android:logs
+   ```
+
+   This runs `adb logcat` filtered to your app. `fmt.Println` output appears here.
+
+3. **Inspect the WebView**
+
+   Open Chrome and navigate to `chrome://inspect`. Your app's WebView appears under **Remote Target** — click **inspect** to open DevTools.
+
+4. **Make a change**
+
+   Edit any file and re-run `wails3 task android:run`. Gradle's incremental build means only changed code recompiles.
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+---
+
+## Understanding what happened
+
+Your `main.go` didn't change at all. Wails handled everything:
+
+- **Build system** — `Taskfile.yml` in your project contains `ios:*` and `android:*` tasks that drive the platform-specific toolchain.
+- **Go cross-compilation** — `GOOS=ios` or `GOOS=android` with the appropriate `GOARCH` and sysroot.
+- **Native host** — a generated Xcode project (iOS) or Gradle project (Android) that embeds your compiled Go code and hosts the WebView.
+- **Asset serving** — your `frontend/dist/` is embedded in the Go binary and served in-process. No localhost server is needed.
+
+---
+
+## Make your app mobile-aware
+
+Your app already works, but it looks like a desktop app on a phone screen. A few small changes make a big difference.
+
+### Responsive CSS
+
+Mobile screens are narrower and use different input patterns. In `frontend/public/style.css` (or equivalent):
+
+```css
+/* Prevent horizontal scrolling */
+body {
+  overflow-x: hidden;
+}
+
+/* Touch-friendly tap targets */
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Respect the iOS safe area (notch, home indicator) */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+```
+
+### Detect the platform in Go
+
+Use build tags to add platform-specific behaviour without cluttering shared code.
+
+Create `mobile_ios.go` for iOS-only code:
+
+```go title="mobile_ios.go"
+//go:build ios
+
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func platformOptions() application.IOSOptions {
+    return application.IOSOptions{
+        DisableBounce: true,
+    }
+}
+```
+
+Create `mobile_android.go` for Android-only code:
+
+```go title="mobile_android.go"
+//go:build android
+
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func platformOptions() application.AndroidOptions {
+    return application.AndroidOptions{}
+}
+```
+
+Create `mobile_desktop.go` as a stub so the shared code compiles on desktop too:
+
+```go title="mobile_desktop.go"
+//go:build !ios && !android
+
+package main
+
+type mobileOptions struct{}
+
+func platformOptions() mobileOptions { return mobileOptions{} }
+```
+
+### Detect the platform in JavaScript
+
+```javascript
+const isIOS = window.webkit?.messageHandlers?.wails !== undefined;
+const isAndroid = window.wails !== undefined;
+const isMobile = isIOS || isAndroid;
+
+if (isMobile) {
+  document.body.classList.add('mobile');
+}
+```
+
+### Add haptic feedback (iOS)
+
+```javascript
+import { IOS } from '@wailsio/runtime';
+
+async function onButtonTap() {
+  if (isIOS) {
+    await IOS.Haptics.Impact({ style: 'medium' });
+  }
+  // ... rest of your handler
+}
+```
+
+### Add vibration (Android)
+
+```javascript
+import { Android } from '@wailsio/runtime';
+
+async function onButtonTap() {
+  if (isAndroid) {
+    await Android.Haptics.Vibrate(50); // 50ms
+  }
+}
+```
+
+---
+
+## Build for production
+
+<Tabs syncKey="mobile-platform">
+<TabItem label="iOS" icon="apple">
+
+**Simulator build** (for testing on simulator, no signing needed):
+
+```bash
+wails3 task ios:package
+wails3 task ios:deploy-simulator
+```
+
+**Device build** (requires a signing identity and provisioning profile):
+
+```bash
+wails3 task ios:package \
+  IOS_PLATFORM=device \
+  CODESIGN_IDENTITY="Apple Development: You (TEAMID)" \
+  PROVISIONING_PROFILE=path/to/profile.mobileprovision
+
+wails3 task ios:deploy-device   # installs via xcrun devicectl
+```
+
+**Distribution IPA** (for App Store or TestFlight):
+
+```bash
+wails3 task ios:package:ipa IOS_PLATFORM=device \
+  CODESIGN_IDENTITY="..." \
+  PROVISIONING_PROFILE=path/to/distribution.mobileprovision
+```
+
+<Aside type="tip">
+For App Store Connect uploads, use `wails3 task ios:xcode` and let Xcode manage signing and archiving — it handles the complexity of certificates, profiles and notarization automatically.
+</Aside>
+
+</TabItem>
+<TabItem label="Android" icon="seti:android">
+
+**Debug APK** (signed with the Android debug keystore, installs directly):
+
+```bash
+wails3 task android:package
+wails3 task android:deploy-emulator
+```
+
+**Release APK** (signed with your own keystore):
+
+```bash
+ANDROID_KEYSTORE_FILE=/path/to/release.jks \
+ANDROID_KEYSTORE_PASSWORD=yourpassword \
+ANDROID_KEY_ALIAS=youralias \
+ANDROID_KEY_PASSWORD=yourkeypassword \
+  wails3 task android:package
+```
+
+**Universal APK** (arm64 + x86_64 in one file):
+
+```bash
+wails3 task android:package:fat
+```
+
+<Aside type="tip">
+For Play Store uploads, produce an `.aab` (Android App Bundle) instead of an APK — open `build/android/` in Android Studio and use **Build → Generate Signed Bundle / APK**.
+</Aside>
+
+</TabItem>
+</Tabs>
+
+---
+
+## Troubleshooting
+
+#### `wails3 task ios:run` fails with "no iOS SDKs found"
+
+Full Xcode must be installed and selected:
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+xcode-select -p  # should print the Xcode path
+```
+
+#### `wails3 task android:run` fails with "SDK not found"
+
+Ensure `ANDROID_HOME` is set and exported. Verify with:
+```bash
+echo $ANDROID_HOME
+ls $ANDROID_HOME/platform-tools/adb
+```
+
+#### Simulator doesn't boot
+
+List available simulators and boot one manually:
+```bash
+xcrun simctl list devices available
+xcrun simctl boot "iPhone 16"
+```
+
+#### `chrome://inspect` shows no targets
+
+The WebView must be in debug mode (the default for `android:run`). Make sure you're running a debug build, not a production one. Also confirm `adb devices` shows the emulator as connected.
+
+#### Safe area insets not applied
+
+Make sure your HTML includes the viewport meta tag:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
+---
+
+## What's next
+
+<CardGrid>
+  <Card title="iOS Guide" icon="apple">
+    Full reference: configuration options, native tabs, WKWebView toggles, device builds, signing.
+
+    [iOS Guide →](/guides/mobile/ios)
+  </Card>
+  <Card title="Android Guide" icon="seti:android">
+    Full reference: configuration, toasts, Play Store packaging, NDK details.
+
+    [Android Guide →](/guides/mobile/android)
+  </Card>
+  <Card title="Kitchen Sink Example" icon="open-book">
+    A complete cross-platform app demonstrating haptics, geolocation, biometrics, notifications, and more.
+
+    [View on GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+  </Card>
+</CardGrid>
