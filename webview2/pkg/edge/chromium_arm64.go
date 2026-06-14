@@ -4,6 +4,7 @@
 package edge
 
 import (
+	"log"
 	"unsafe"
 
 	"github.com/wailsapp/wails/webview2/internal/w32"
@@ -22,6 +23,11 @@ func (e *Chromium) SetSize(bounds w32.Rect) {
 		words[1],
 	)
 	if windows.Handle(hr) != windows.S_OK {
-		e.errorCallback(windows.Errno(hr))
+		// PutBounds can fail transiently while the browser process is
+		// reconfiguring — e.g. RESOURCE_NOT_IN_CORRECT_STATE during a DPI
+		// transition or after restoring from a minimised state
+		// (wailsapp/wails#5544). A dropped resize is recoverable (the next
+		// WM_SIZE will re-assert bounds); killing the process is not.
+		log.Printf("[WebView2] SetSize failed: %v", windows.Errno(hr))
 	}
 }
