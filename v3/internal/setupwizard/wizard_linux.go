@@ -3,6 +3,7 @@
 package setupwizard
 
 import (
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -35,6 +36,18 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 				status.Installed = true
 				status.Status = "installed"
 				status.Version = dep.Version
+				// For gcc, the package manager reports the build-essential meta-package
+				// version, not the actual gcc binary version. Use gcc --version instead.
+				if dep.Name == "gcc" {
+					if gccOut, err := execCommand("gcc", "--version"); err == nil {
+						firstLine := strings.SplitN(gccOut, "\n", 2)[0]
+						if idx := strings.LastIndex(firstLine, ")"); idx != -1 {
+							if ver := strings.TrimSpace(firstLine[idx+1:]); ver != "" {
+								status.Version = ver
+							}
+						}
+					}
+				}
 			} else {
 				// Also check if the binary is in PATH (might be installed via other means)
 				if _, err := exec.LookPath(dep.Name); err == nil {
@@ -100,14 +113,120 @@ func checkGo() DependencyStatus {
 				return dep
 			}
 			if major < 1 || (major == 1 && minor < 25) {
-				dep.Status = "needs_update"
-				dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
-				dep.HelpURL = "https://go.dev/dl/"
+				// System go is < 1.25. Check whether GOTOOLCHAIN provides a newer version
+				// automatically. If GOTOOLCHAIN is not "off", Go will download and use
+				// 1.25+ when a module requires it, so the user needs no manual action.
+				if tcVer := findToolchainGo(); tcVer != "" {
+					dep.Status = "installed"
+					dep.Message = "Go 1.25 available via GOTOOLCHAIN (" + tcVer + ")"
+				} else {
+					dep.Status = "needs_update"
+					dep.Message = "Go 1.25+ is required (found " + versionStr + ")"
+					dep.HelpURL = "https://go.dev/dl/"
+				}
 			}
 		}
 	}
 
 	return dep
+}
+
+// findToolchainGo returns a Go 1.25+ version string if one is available via
+// GOTOOLCHAIN, or an empty string if the system go is the only option.
+func findToolchainGo() string {
+	gotoolchain, _ := execCommand("go", "env", "GOTOOLCHAIN")
+	if gotoolchain == "off" {
+		return ""
+	}
+
+	// GOTOOLCHAIN may name a specific version: "go1.25.0" or "go1.25.0+auto".
+	tc := strings.TrimSuffix(gotoolchain, "+auto")
+	tc = strings.TrimSuffix(tc, "+path")
+	if strings.HasPrefix(tc, "go") {
+		ver := strings.TrimPrefix(tc, "go")
+		if isGoMinVersion(ver, 1, 25) {
+			return ver
+		}
+	}
+
+	// GOTOOLCHAIN=auto|path: scan the module cache for a downloaded toolchain.
+	// Use GOMODCACHE rather than GOPATH so that a custom GOMODCACHE env var and
+	// multi-entry GOPATH values are handled correctly.
+	gomodcache, err := execCommand("go", "env", "GOMODCACHE")
+	if err != nil || gomodcache == "" {
+		return ""
+	}
+	entries, err := os.ReadDir(gomodcache + "/golang.org")
+	if err != nil {
+		return ""
+	}
+	for _, e := range entries {
+		// Directory names follow the pattern:
+		//   toolchain@v<modver>-go<goversion>.<goos>-<goarch>
+		// e.g. "toolchain@v0.0.1-go1.25.0.linux-amd64"
+		// Match any module version to stay forward-compatible with future
+		// changes to the golang.org/toolchain module versioning.
+		name := e.Name()
+		if !strings.HasPrefix(name, "toolchain@v") {
+			continue
+		}
+		goIdx := strings.Index(name, "-go")
+		if goIdx == -1 {
+			continue
+		}
+		// goVerAndPlatform is e.g. "1.25.0.linux-amd64"
+		goVerAndPlatform := name[goIdx+3:]
+		parts := strings.SplitN(goVerAndPlatform, ".", 3)
+		if len(parts) < 2 {
+			continue
+		}
+		minorStr := parts[1]
+		for i, c := range minorStr {
+			if c < '0' || c > '9' {
+				minorStr = minorStr[:i]
+				break
+			}
+		}
+		if isGoMinVersion(parts[0]+"."+minorStr, 1, 25) {
+			if len(parts) >= 3 {
+				// Third segment is "0.linux-amd64"; extract leading digits only.
+				patch := parts[2]
+				for i, c := range patch {
+					if c < '0' || c > '9' {
+						patch = patch[:i]
+						break
+					}
+				}
+				if patch != "" {
+					return parts[0] + "." + minorStr + "." + patch
+				}
+			}
+			return parts[0] + "." + minorStr
+		}
+	}
+	return ""
+}
+
+// isGoMinVersion reports whether the version string (e.g. "1.25") meets the
+// given minimum major.minor requirement.
+func isGoMinVersion(ver string, minMajor, minMinor int) bool {
+	parts := strings.SplitN(ver, ".", 2)
+	if len(parts) < 2 {
+		return false
+	}
+	major, err1 := strconv.Atoi(parts[0])
+	minorStr := parts[1]
+	for i, c := range minorStr {
+		if c < '0' || c > '9' {
+			minorStr = minorStr[:i]
+			break
+		}
+	}
+	minor, err2 := strconv.Atoi(minorStr)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return major > minMajor || (major == minMajor && minor >= minMinor)
 }
 
 func checkNpm() DependencyStatus {

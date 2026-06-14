@@ -31,13 +31,13 @@ type AuthorDefaults struct {
 
 // ProjectDefaults contains default project settings
 type ProjectDefaults struct {
-	ProductIdentifierPrefix string `json:"productIdentifierPrefix" yaml:"productIdentifierPrefix"`
-	DefaultTemplate         string `json:"defaultTemplate" yaml:"defaultTemplate"`
-	Framework               string `json:"framework" yaml:"framework"`
-	Language                string `json:"language" yaml:"language"`
-	CopyrightTemplate       string `json:"copyrightTemplate" yaml:"copyrightTemplate"`
-	DescriptionTemplate     string `json:"descriptionTemplate" yaml:"descriptionTemplate"`
-	DefaultVersion          string `json:"defaultVersion" yaml:"defaultVersion"`
+	ProductIdentifierPrefix string `json:"productIdentifierPrefix,omitempty" yaml:"productIdentifierPrefix,omitempty"`
+	DefaultTemplate         string `json:"defaultTemplate,omitempty" yaml:"defaultTemplate,omitempty"`
+	Framework               string `json:"framework,omitempty" yaml:"framework,omitempty"`
+	Language                string `json:"language,omitempty" yaml:"language,omitempty"`
+	CopyrightTemplate       string `json:"copyrightTemplate,omitempty" yaml:"copyrightTemplate,omitempty"`
+	DescriptionTemplate     string `json:"descriptionTemplate,omitempty" yaml:"descriptionTemplate,omitempty"`
+	DefaultVersion          string `json:"defaultVersion,omitempty" yaml:"defaultVersion,omitempty"`
 	UseInterfaces           bool   `json:"useInterfaces" yaml:"useInterfaces"`
 }
 
