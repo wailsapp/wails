@@ -1666,6 +1666,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_RESTORED:
+			restoredFromMaximised := w.lastSizeWParam == w32.SIZE_MAXIMIZED
+			if restoredFromMaximised {
+				// Native caption drag from a maximised frameless window bypasses UnMaximise(),
+				// so we need to restore the saved constraints here before the next resize.
+				w.parent.restoreSavedSizeConstraintOptions()
+			}
 			if w.isMinimizing {
 				// While minimised the window is parked at (-32000,-32000),
 				// which on mixed-DPI systems can re-associate it with another
@@ -1682,7 +1688,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// previous state avoids per-frame invalidations and the associated flicker.
 			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
 			// (Win+Left) bypasses those messages entirely.
-			if w.lastSizeWParam == w32.SIZE_MAXIMIZED && w.menu != nil && w.menubarTheme != nil {
+			if restoredFromMaximised && w.menu != nil && w.menubarTheme != nil {
 				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_MINIMIZED:
