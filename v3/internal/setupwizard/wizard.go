@@ -740,17 +740,14 @@ func (w *Wizard) startDockerPull() {
 // permission issues, etc.), the caller falls back to pullViaDockerCLI which works
 // with any Docker version but provides less detailed progress.
 func (w *Wizard) pullViaDockerAPI() error {
-	socketPath := "/var/run/docker.sock"
 	if runtime.GOOS == "windows" {
-		socketPath = "//./pipe/docker_engine"
+		return fmt.Errorf("windows named pipes not supported, falling back to CLI")
 	}
+	socketPath := "/var/run/docker.sock"
 
 	client := &http.Client{
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				if runtime.GOOS == "windows" {
-					return nil, fmt.Errorf("windows named pipes not supported, falling back to CLI")
-				}
 				return net.Dial("unix", socketPath)
 			},
 		},
@@ -1088,6 +1085,28 @@ type InstallResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
+// allowedInstallers is the set of executables permitted by handleInstallDependency.
+// The wizard only ever sends package-manager install commands, so we restrict to
+// those to prevent an adversarial local process from invoking arbitrary binaries.
+var allowedInstallers = map[string]bool{
+	// Linux package managers (invoked directly or via sudo)
+	"sudo": true, "apt": true, "apt-get": true, "dnf": true, "yum": true,
+	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
+	"eopkg": true, "nix-env": true,
+	// macOS
+	"brew": true,
+	// Windows
+	"winget": true, "choco": true, "scoop": true,
+}
+
+// allowedSudoSubcmds lists the second word (the real executable) when the
+// command starts with "sudo", so callers cannot do e.g. "sudo rm -rf /".
+var allowedSudoSubcmds = map[string]bool{
+	"apt": true, "apt-get": true, "dnf": true, "yum": true,
+	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
+	"eopkg": true, "nix-env": true,
+}
+
 func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
@@ -1102,13 +1121,26 @@ func (w *Wizard) handleInstallDependency(rw http.ResponseWriter, r *http.Request
 
 	rw.Header().Set("Content-Type", "application/json")
 
-	// Execute the install command
-	// Split the command into parts
 	parts := strings.Fields(req.Command)
 	if len(parts) == 0 {
 		json.NewEncoder(rw).Encode(InstallResponse{
 			Success: false,
 			Error:   "Empty command",
+		})
+		return
+	}
+
+	if !allowedInstallers[parts[0]] {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   fmt.Sprintf("command not allowed: %s", parts[0]),
+		})
+		return
+	}
+	if parts[0] == "sudo" && (len(parts) < 2 || !allowedSudoSubcmds[parts[1]]) {
+		json.NewEncoder(rw).Encode(InstallResponse{
+			Success: false,
+			Error:   "sudo subcommand not allowed",
 		})
 		return
 	}
