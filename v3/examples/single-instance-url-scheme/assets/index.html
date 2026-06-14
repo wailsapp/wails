@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Single Instance URL Scheme Repro</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 2rem; background: #1b2636; color: #eee; }
+  h1 { margin-top: 0; }
+  .row { margin: 0.5rem 0; padding: 0.75rem 1rem; background: #223043; border-radius: 6px; }
+  .label { color: #8aa4c8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  pre { margin: 0.25rem 0 0; white-space: pre-wrap; word-break: break-all; }
+  .missing { color: #ff6b6b; }
+  .ok { color: #7bd88f; }
+</style>
+</head>
+<body>
+<h1>wails#5089 repro</h1>
+<p>Launch a custom-scheme URL from Terminal while this window is open:</p>
+<pre>open 'wails-single-url://hello?n=1'</pre>
+
+<div class="row">
+  <div class="label">Last <code>ApplicationLaunchedWithUrl</code></div>
+  <pre id="evt-url" class="missing">(never fired)</pre>
+</div>
+
+<div class="row">
+  <div class="label">Last <code>OnSecondInstanceLaunch</code></div>
+  <pre id="evt-si" class="missing">(never fired)</pre>
+</div>
+
+<script type="module">
+  import { Events } from "/wails/runtime.js";
+
+  Events.On("launchedWithUrl", (ev) => {
+    const el = document.getElementById("evt-url");
+    el.className = "ok";
+    el.textContent = JSON.stringify(ev.data, null, 2);
+  });
+
+  Events.On("secondInstance", (ev) => {
+    const el = document.getElementById("evt-si");
+    const data = ev.data;
+    el.className = data.found ? "ok" : "missing";
+    el.textContent = JSON.stringify(data, null, 2);
+  });
+</script>
+</body>
+</html>

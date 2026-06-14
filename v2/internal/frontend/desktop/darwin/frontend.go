@@ -178,7 +178,7 @@ func (f *Frontend) startBindingsMessageProcessor() {
 
 		origin, err := f.originValidator.GetOriginFromURL(msg.source)
 		if err != nil {
-			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
+			f.logger.Error("failed to get origin for URL %q: %v", msg.source, err)
 			continue
 		}
 
@@ -389,7 +389,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	payload, err := json.Marshal(notification)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		return
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
@@ -427,7 +427,7 @@ func (f *Frontend) processMessage(message string) {
 	go func() {
 		result, err := f.dispatcher.ProcessMessage(message, f)
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			f.Callback(result)
 			return
 		}

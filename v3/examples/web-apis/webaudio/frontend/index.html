@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Audio API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        .controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        input[type="range"] {
+            width: 150px;
+        }
+        select {
+            padding: 8px;
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .piano {
+            display: flex;
+            gap: 2px;
+            margin: 20px 0;
+        }
+        .key {
+            width: 50px;
+            height: 150px;
+            background: white;
+            border: 1px solid #333;
+            border-radius: 0 0 5px 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            color: #333;
+            font-size: 0.8rem;
+        }
+        .key:hover { background: #ddd; }
+        .key:active { background: #4ade80; }
+        .key.black {
+            background: #1a1a2e;
+            color: #aaa;
+            width: 35px;
+            height: 100px;
+            margin: 0 -17px;
+            z-index: 1;
+        }
+        .key.black:hover { background: #333; }
+        .key.black:active { background: #4ade80; }
+        canvas {
+            width: 100%;
+            height: 100px;
+            background: #0a0a1a;
+            border-radius: 8px;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Audio API Demo</h1>
+        <p class="description">
+            The Web Audio API provides a powerful system for controlling audio,
+            allowing developers to generate, process, and analyze audio in real time.
+        </p>
+
+        <div class="status success">
+            Web Audio API supported: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Oscillator Synthesizer</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Waveform</label>
+                    <select id="waveform">
+                        <option value="sine">Sine</option>
+                        <option value="square">Square</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="triangle">Triangle</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Frequency: <span id="freqValue">440</span> Hz</label>
+                    <input type="range" id="frequency" min="100" max="2000" value="440">
+                </div>
+                <div class="control-group">
+                    <label>Volume: <span id="volValue">50</span>%</label>
+                    <input type="range" id="volume" min="0" max="100" value="50">
+                </div>
+            </div>
+            <button onclick="playTone()">Play Tone</button>
+            <button class="danger" onclick="stopTone()">Stop</button>
+        </div>
+
+        <div class="card">
+            <h2>Piano Keyboard</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Click keys or use keyboard: A S D F G H J K</p>
+            <div class="piano" id="piano">
+                <div class="key" data-note="C4" data-key="a">C</div>
+                <div class="key black" data-note="C#4" data-key="w">C#</div>
+                <div class="key" data-note="D4" data-key="s">D</div>
+                <div class="key black" data-note="D#4" data-key="e">D#</div>
+                <div class="key" data-note="E4" data-key="d">E</div>
+                <div class="key" data-note="F4" data-key="f">F</div>
+                <div class="key black" data-note="F#4" data-key="t">F#</div>
+                <div class="key" data-note="G4" data-key="g">G</div>
+                <div class="key black" data-note="G#4" data-key="y">G#</div>
+                <div class="key" data-note="A4" data-key="h">A</div>
+                <div class="key black" data-note="A#4" data-key="u">A#</div>
+                <div class="key" data-note="B4" data-key="j">B</div>
+                <div class="key" data-note="C5" data-key="k">C</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Audio Visualizer</h2>
+            <button onclick="startVisualizer()">Start Mic Visualizer</button>
+            <button class="danger" onclick="stopVisualizer()">Stop</button>
+            <canvas id="visualizer"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Sound Effects</h2>
+            <button onclick="playEffect('beep')">Beep</button>
+            <button onclick="playEffect('laser')">Laser</button>
+            <button onclick="playEffect('explosion')">Explosion</button>
+            <button onclick="playEffect('coin')">Coin</button>
+        </div>
+    </div>
+
+    <script>
+        let audioContext = null;
+        let oscillator = null;
+        let gainNode = null;
+        let analyser = null;
+        let micStream = null;
+        let animationId = null;
+
+        // Note frequencies
+        const noteFrequencies = {
+            'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13,
+            'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00,
+            'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+            'C5': 523.25
+        };
+
+        // Check Web Audio support
+        function checkSupport() {
+            const supported = typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined';
+            document.getElementById('supported').textContent = supported ? 'Yes' : 'No';
+            return supported;
+        }
+
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        // Oscillator controls
+        document.getElementById('frequency').addEventListener('input', (e) => {
+            document.getElementById('freqValue').textContent = e.target.value;
+            if (oscillator) oscillator.frequency.value = e.target.value;
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            document.getElementById('volValue').textContent = e.target.value;
+            if (gainNode) gainNode.gain.value = e.target.value / 100;
+        });
+
+        function playTone() {
+            stopTone();
+            const ctx = getAudioContext();
+
+            oscillator = ctx.createOscillator();
+            gainNode = ctx.createGain();
+
+            oscillator.type = document.getElementById('waveform').value;
+            oscillator.frequency.value = document.getElementById('frequency').value;
+            gainNode.gain.value = document.getElementById('volume').value / 100;
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            oscillator.start();
+        }
+
+        function stopTone() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator = null;
+            }
+        }
+
+        // Piano
+        function playNote(note) {
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.frequency.value = noteFrequencies[note];
+            osc.type = 'triangle';
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
+        }
+
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('mousedown', () => playNote(key.dataset.note));
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const key = document.querySelector(`.key[data-key="${e.key.toLowerCase()}"]`);
+            if (key && !e.repeat) {
+                key.classList.add('active');
+                playNote(key.dataset.note);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = document.querySelector(`.key[data-key="${e.key.toLowerCase()}"]`);
+            if (key) key.classList.remove('active');
+        });
+
+        // Visualizer
+        async function startVisualizer() {
+            try {
+                const ctx = getAudioContext();
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const source = ctx.createMediaStreamSource(micStream);
+
+                analyser = ctx.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                const canvas = document.getElementById('visualizer');
+                const canvasCtx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function draw() {
+                    animationId = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+
+                    canvasCtx.fillStyle = '#0a0a1a';
+                    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const barWidth = (canvas.width / bufferLength) * 2.5;
+                    let x = 0;
+
+                    for (let i = 0; i < bufferLength; i++) {
+                        const barHeight = (dataArray[i] / 255) * canvas.height;
+                        const hue = (i / bufferLength) * 120 + 100;
+                        canvasCtx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                        x += barWidth + 1;
+                    }
+                }
+                draw();
+            } catch (e) {
+                alert('Could not access microphone: ' + e.message);
+            }
+        }
+
+        function stopVisualizer() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+                micStream = null;
+            }
+        }
+
+        // Sound effects
+        function playEffect(type) {
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            switch (type) {
+                case 'beep':
+                    osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                    break;
+                case 'laser':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(1000, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.2);
+                    break;
+                case 'explosion':
+                    const noise = ctx.createBufferSource();
+                    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < data.length; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    noise.buffer = buffer;
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(1000, ctx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
+                    const expGain = ctx.createGain();
+                    expGain.gain.setValueAtTime(0.5, ctx.currentTime);
+                    expGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                    noise.connect(filter);
+                    filter.connect(expGain);
+                    expGain.connect(ctx.destination);
+                    noise.start();
+                    return;
+                case 'coin':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+                    osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

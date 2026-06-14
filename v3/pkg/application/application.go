@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
 //go:embed assets/*
@@ -40,6 +41,12 @@ func Get() *App {
 }
 
 func New(appOptions Options) *App {
+	// If we were spawned as an updater helper the process must perform the
+	// swap and exit before any application machinery touches the disk. This
+	// is a no-op when the sentinel env vars are absent, so normal startup is
+	// unaffected.
+	updater.HandleHelperMode()
+
 	if globalApplication != nil {
 		return globalApplication
 	}
@@ -116,6 +123,10 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve transport.js: %w", err)
 					}
+				case "/wails/custom.js":
+					// custom.js is only served in server mode.
+					// Return 404 so the runtime's loadOptionalScript skips it.
+					http.NotFound(rw, req)
 				default:
 					next.ServeHTTP(rw, req)
 				}
@@ -346,6 +357,8 @@ type App struct {
 	Screen      *ScreenManager
 	Clipboard   *ClipboardManager
 	SystemTray  *SystemTrayManager
+	Autostart   *AutostartManager
+	Updater     *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -495,6 +508,8 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Autostart = newAutostartManager(a)
+	a.Updater = updater.New(newUpdaterHost(a))
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
@@ -798,12 +813,12 @@ func (a *App) cleanup() {
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.RLock()
+		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Close()
 		}
 		a.windows = nil
-		a.windowsLock.RUnlock()
+		a.windowsLock.Unlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()

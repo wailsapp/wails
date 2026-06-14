@@ -1,70 +1,70 @@
 # SvelteKit
 
-This guide will go into:
+Diese Anleitung zeigt folgende Dinge:
 
-1. Minimal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
-2. Install Script - Bash script for accomplishing the Minimal Installation Steps with optional Wails branding.
-3. Important Notes - Issues that can be encountered when using SvelteKit + Wails and fixes.
+1. Minimale Installationsschritte – Die erforderlichen Schritte, um eine minimale Wails-Konfiguration für SvelteKit zum Laufen zu bringen.
+2. Installationsskript – Bash-Skript zur Durchführung der minimalen Installationsschritte mit optionalem Wails-Branding.
+3. Wichtige Hinweise – Probleme, die bei der Verwendung von SvelteKit + Wails auftreten können, und deren Behebung.
 
-## 1. Minimal Installation Steps
+## 1. Minimale Installationsschritte
 
-##### Install Wails for Svelte.
+##### Wails für Svelte installieren.
 
 - `wails init -n myapp -t svelte`
 
-##### Delete the svelte frontend.
+##### Lösche das svelte frontend.
 
-- Navigate into your newly created myapp folder.
-- Delete the folder named "frontend"
+- Navigiere in deinen neu erstellten myapp Ordner.
+- Lösche den Ordner mit dem Namen "frontend"
 
-##### While in the Wails project root. Use the Svelte CLI to create a SvelteKit project as the new frontend. Follow the prompts, nothing Wails specific is needed here.
+##### Gehe in das Wails Stamm Projekt Verzeichnis. Benutze das Svelte CLI, um ein SvelteKit-Projekt als neues Frontend zu erstellen. Folge den Anweisungen, hier ist nichts Wails spezifisch erforderlich.
 
 - `npx sv create frontend`
 
-##### Modify wails.json.
+##### Ändere wails.json.
 
-- Add `"wailsjsdir": "./frontend/src/lib",` Do note that this is where your Go and runtime functions will appear.
-- Change your package manager frontend here if not using npm.
+- Füge `„wailsjsdir“: „./frontend/src/lib“,` hinzu. Beachte, dass hier deine Go- und Laufzeitfunktionen erscheinen werden.
+- Ändere hier deinen Frontendpaket-Manager, solltest du npm nicht verwenden.
 
-##### Modify main.go.
+##### Ändere main.go.
 
-- The first comment `//go:embed all:frontend/dist` needs to be changed to `//go:embed all:frontend/build`
+- Der erste Kommentar `//go:embed all:frontend/dist` muss in `//go:embed all:frontend/build` geändert werden
 
-##### Modify .gitignore
+##### Ändere .gitignore
 
-- The line `frontend/dist` needs to be replaced with `frontend/build`
+- Die Zeile `frontend/dist` muss durch `frontend/build` ersetzt werden
 
-##### Install/remove dependencies using your favorite package manager.
+##### Abhängigkeiten mit deinem bevorzugten Paketmanager installieren/entfernen.
 
-- Navigate into your "frontend" folder.
+- Navigiere in deinen "Frontend" Ordner.
 - `npm i`
 - `npm uninstall @sveltejs/adapter-auto`
 - `npm i -D @sveltejs/adapter-static`
 
-##### Change adapter in svelte.config.js
+##### Adapter in svelte.config.js ändern
 
-- First line of file change `import adapter from '@sveltejs/adapter-auto';` to `import adapter from '@sveltejs/adapter-static';`
+- Änder in der ersten Zeile der Datei `import adapter from '@sveltejs/adapter-auto';` zu `import adapter from '@sveltejs/adapter-static';`
 
-##### Put SvelteKit into SPA mode with prerendering.
+##### SvelteKit in den SPA-Modus mit prerendering setzen.
 
-- Create a file under myapp/frontend/src/routes/ named +layout.ts/+layout.js.
-- Add two lines into the newly created file `export const prerender = true` and `export const ssr = false`
+- Erstelle eine Datei unter myapp/frontend/src/routes/ mit dem Namen +layout.ts/+layout.js.
+- Füge zwei Zeilen in die neu erstellte Datei `export const prerender = true` und `export const ssr = false` hinzu
 
-##### Test installation.
+##### Testinstallation.
 
-- Navigate back into the Wails project root (one directory up).
-- run `wails dev`
-- If the application doesn't run please check through the previous steps.
+- Navigiere zurück zum Wails Stammprojektverzeichnis (ein Verzeichnis oben).
+- führe `wails dev` aus
+- Falls die Anwendung nicht läuft, überprüfe bitte die vorherigen Schritte.
 
-## 2. Install Script
+## 2. Installations Skript
 
-##### This Bash Script does the steps listed above.  Make sure to read over the script and understand what the script is doing on your computer.
+##### Dieses Bash-Skript führt die oben aufgeführten Schritte aus.  Stelle sicher, dass du über das Skript liest und verstehst, was das Skript auf deinem Computer macht.
 
-- Create a file sveltekit-wails.sh
-- Copy the below code into the new file then save it.
-- Make it executable with `chmod +x sveltekit-wails.sh`
-- Brand is an optional param below that adds back in the wails branding.  Leave third param blank to not insert the Wails branding.
-- Example usage: `./sveltekit-wails.sh pnpm newapp brand`
+- Erstelle die Datei sveltekit-wails.sh
+- Kopiere den folgenden Code in die neue Datei und speicher diese.
+- Mache das Skipt ausführbar mit `chmod +x sveltekit-wails.sh`
+- Brand ist ein optionaler Parameter, der das Branding von Wails wieder einfügt.  Lasse den dritten Parameter leer, um das Branding von Wails nicht einzufügen.
+- Beispiel Verwendung: `./sveltekit-wails.sh pnpm newapp brand`
 
 ##### sveltekit-wails.sh:
 
@@ -100,17 +100,17 @@ cd ..
 wails dev
 ```
 
-## 3. Important Notes
+## 3. Wichtige Notizen
 
-##### Server files will cause build failures.
+##### Serverdateien führen zu Build-Fehlern.
 
-- \+layout.server.ts, +page.server.ts, +server.ts or any file with "server" in the name will fail to build as all routes are prerendered.
+- \+layout.server.ts, +page.server.ts, +server.ts oder jede Datei mit "Server" im Namen wird nicht builden, da alle Routen prerendered werden.
 
-##### The Wails runtime unloads with full page navigations!
+##### Die Wails-Laufzeitumgebung entlädt sich bei vollständiger Seitennavigation!
 
-- Anything that causes full page navigations: `window.location.href = '/<some>/<page>'` or Context menu reload when using wails dev.  What this means is that you can end up losing the ability to call any runtime breaking the app. There are two ways to work around this.
-- Use `import { goto } from '$app/navigation'` then call `goto('/<some>/<page>')` in your +page.svelte. This will prevent a full page navigation.
-- If full page navigation can't be prevented the Wails runtime can be added to all pages by adding the below into the `<head>` of myapp/frontend/src/app.html
+- Alles, was eine vollständige Seitennavigation verursacht: `window.location.href = '/<some>/<page>'` oder Nachladen des Kontextmenüs bei Verwendung von wails dev.  Das bedeutet, dass du am Ende die Möglichkeit verlieren könnest, jede beliebige Laufzeit Funktion aufzurufen, da diese die App crasht. Es gibt zwei Wege, dies zu umgehen.
+- Benutze `import { goto } von '$app/navigation'` und rufe dann `goto('/<some>/<page>')` in deiner +page.svelte auf. Dadurch wird eine vollständige Seitennavigation verhindert.
+- Wenn die Ganzseitennavigation nicht verhindert werden kann, kann die Wails-Laufzeit zu allen Seiten hinzugefügt werden, indem die folgende Zeile `<head>` in myapp/frontend/src/app.html eingefügt wird
 
 ```
 <head>
@@ -122,17 +122,17 @@ wails dev
 </head>
 ```
 
-See https://wails.io/docs/guides/frontend for more information.
+Siehe https://wails.io/docs/guides/frontend für weitere Informationen.
 
-##### Initial data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
+##### Anfangsdaten können von +page.ts/+page.js bis +page.svelte geladen und aktualisiert werden.
 
-- \+page.ts/+page.js works well with load() https://kit.svelte.dev/docs/load#page-data
-- invalidateAll() in +page.svelte will call load() from +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation.
+- \+page.ts/+page.js funktioniert gut mit load() https://kit.svelte.dev/docs/load#page-data
+- invalidateAll() in +page.svelte ruft load() von +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation auf.
 
-##### Error Handling
+##### Fehlerbehandlung
 
-- Expected errors using Throw error works in +page.ts/+page.js with a +error.svelte page. https://kit.svelte.dev/docs/errors#expected-errors
-- Unexpected errors will cause the application to become unusable.  Only recovery option (known so far) from unexpected errors is to reload the app.  To do this create a file myapp/frontend/src/hooks.client.ts then add the below code to the file.
+- Erwartete Fehler bei Verwendung von „Throw error“ funktionieren in +page.ts/+page.js mit einer +error.svelte-Seite. https://kit.svelte.dev/docs/errors#erwartete Fehler
+- Unerwartete Fehler werden die Anwendung unbrauchbar machen.  Die einzige bisher bekannte Wiederherstellungsoption ist es, die App neu zu laden.  Erstelle dazu eine Datei in myapp/frontend/src/hooks.client.ts und füge den folgenden Code in die Datei ein.
 
 ```
 import { WindowReloadApp } from '$lib/wailsjs/runtime/runtime' 
@@ -141,10 +141,10 @@ export async function handleError() {
 }
 ```
 
-##### Using Forms and handling functions
+##### Formulare und Bearbeitungsfunktionen verwenden
 
-- The simplest way is to call a function from the form is the standard, bind:value your variables and prevent submission `<form method="POST" on:submit|preventDefault={handle}>`
-- The more advanced way is to use:enhance (progressive enhancement) which will allow for convenient access to formData, formElement, submitter.  The important note is to always cancel() the form which prevents server side behavior.  https://kit.svelte.dev/docs/form-actions#progressive-enhancement  Example:
+- Der einfachste Weg ist, eine Funktion vom Formular aus aufzurufen, welche der Standard ist. Binde deine Variablen mit `bind:value` und verhindere das Absenden mit `<form method="POST" on:submit|preventDefault={handle}>`
+- Der fortgeschrittenere Weg ist use:enhance (progressive Erweiterung), was einen bequemen Zugriff auf Formatierdaten, formElement, Absender ermöglicht.  Wichtig ist es, das Formular, das das Verhalten auf Serverseite verhindert, immer zu annullieren.  https://kit.svelte.dev/docs/form-actions#progressive-enhancement Beispiel:
 
 ```
 <form method="POST" use:enhance={({cancel, formData, formElement, submitter}) => {

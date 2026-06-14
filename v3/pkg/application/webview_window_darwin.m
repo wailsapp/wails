@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
@@ -191,6 +191,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (BOOL) resignFirstResponder {
     return YES;
 }
+- (void) cancelOperation:(id)sender {
+    if (self.disableEscapeExitsFullscreen &&
+        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
@@ -345,6 +352,15 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];
         if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            // Skip drag if the click is near a window edge (resize zone).
+            // This prevents conflict between dragging and native top-corner resizing,
+            // which causes window content to shake/jitter (#4960).
+            CGFloat resizeThreshold = 5.0;
+            BOOL nearLeftEdge = location.x < resizeThreshold;
+            BOOL nearRightEdge = location.x > frame.size.width - resizeThreshold;
+            if( nearLeftEdge || nearRightEdge ) {
+                return;
+            }
             [window performWindowDragWithEvent:event];
             return;
         }
@@ -780,6 +796,22 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 // GENERATED EVENTS END
+// WKUIDelegate - Handle file input element clicks
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    [openPanel beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
+}
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;

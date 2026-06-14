@@ -55,9 +55,11 @@ type Window interface {
 	SetMinimiseButtonState(state ButtonState) Window
 	SetMaximiseButtonState(state ButtonState) Window
 	SetCloseButtonState(state ButtonState) Window
+	SetFullscreenButtonState(state ButtonState) Window
 	SetMaxSize(maxWidth, maxHeight int) Window
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
+	SetScreen(screen *Screen) Window
 	SetResizable(b bool) Window
 	SetIgnoreMouseEvents(ignore bool) Window
 	SetSize(width, height int) Window
@@ -91,6 +93,7 @@ type Window interface {
 	Flash(enabled bool)
 	Print() error
 	RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+	AttachModal(modalWindow Window)
 	shouldUnconditionallyClose() bool
 
 	// Editing methods

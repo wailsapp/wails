@@ -16,7 +16,7 @@ export {
     IndirectPersonAlias,
     Person,
     StrangelyAliasedPerson,
-    TPIndirectPersonAlias
+    SubPackageAlias
 } from "./models.js";
 
 import * as $models from "./models.js";
@@ -35,12 +35,6 @@ import * as $models from "./models.js";
 /**
  * An empty struct alias.
  * @typedef {$models.EmptyAliasStruct} EmptyAliasStruct
- */
-
-/**
- * A generic alias that forwards to a type parameter.
- * @template T
- * @typedef {$models.GenericAlias<T>} GenericAlias
  */
 
 /**

@@ -3,6 +3,8 @@
 package application
 
 import (
+	"encoding/json"
+
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -17,6 +19,10 @@ var androidMethodNames = map[int]string{
 	AndroidDeviceInfo:     "Device.Info",
 	AndroidToast:          "Toast.Show",
 }
+
+// iosMethodNames is referenced by the shared messageprocessor debug logging;
+// empty on Android.
+var iosMethodNames = map[int]string{}
 
 func (m *MessageProcessor) processAndroidMethod(req *RuntimeRequest, window Window) (any, error) {
 	args := req.Args.AsMap()
@@ -48,23 +54,27 @@ func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) 
 	return nil, errs.NewInvalidIOSCallErrorf("iOS methods not available on Android")
 }
 
-// Android-specific runtime functions (stubs for now)
+// Android-specific runtime functions, backed by the WailsBridge
 
 func androidHapticsVibrate(durationMs int) {
-	// TODO: Implement via JNI to Android Vibrator service
-	androidLogf("debug", "Haptics vibrate: %dms", durationMs)
+	androidBridgeVoidInt("vibrate", durationMs)
 }
 
 func androidDeviceInfo() map[string]interface{} {
-	// TODO: Implement via JNI to get actual device info
-	return map[string]interface{}{
+	info := map[string]interface{}{
 		"platform": "android",
-		"model":    "Unknown",
-		"version":  "Unknown",
 	}
+	if jsonStr, ok := androidBridgeString("getDeviceInfoJson"); ok && jsonStr != "" {
+		var parsed map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonStr), &parsed); err == nil {
+			for k, v := range parsed {
+				info[k] = v
+			}
+		}
+	}
+	return info
 }
 
 func androidShowToast(message string) {
-	// TODO: Implement via JNI to Android Toast
-	androidLogf("debug", "Toast: %s", message)
+	androidBridgeVoidString("showToast", message)
 }

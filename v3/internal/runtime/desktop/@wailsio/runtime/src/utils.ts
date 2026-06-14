@@ -94,7 +94,11 @@ export function eventTarget(event: Event): HTMLElement {
  ***/
 
 let isReady = false;
-document.addEventListener('DOMContentLoaded', () => { isReady = true });
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    document.addEventListener('DOMContentLoaded', () => { isReady = true });
+}
 
 export function whenReady(callback: () => void) {
     if (isReady || document.readyState === 'complete') {

@@ -57,6 +57,15 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Workspace power notifications are posted on a separate notification
+	// center from the default one — apps must observe NSWorkspace's centre
+	// to receive sleep/wake events. Mirrors WM_POWERBROADCAST on Windows.
+	NSNotificationCenter *workspaceCenter = [[NSWorkspace sharedWorkspace] notificationCenter];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceWillSleep:) name:NSWorkspaceWillSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
+
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
 }
@@ -146,10 +155,37 @@ static char* getAppName(void) {
 
 // get the current window ID
 static unsigned int getCurrentWindowID(void) {
-	NSWindow *window = [NSApp keyWindow];
-	// Get the window delegate
-	WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
-	return delegate.windowId;
+	// AppKit must be accessed on the main thread. This function may be called
+	// from arbitrary Go goroutines, so we hop to the main queue when needed.
+	__block unsigned int result = 0;
+	if (NSApp == nil) {
+		return result;
+	}
+	void (^resolve)(void) = ^{
+		NSWindow *window = [NSApp keyWindow];
+		if (window == nil) {
+			window = [NSApp mainWindow];
+		}
+		if (window == nil) {
+			return;
+		}
+		// System panels (e.g. PMPrintPanelController) can become the key window;
+		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		id delegateObj = [window delegate];
+		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
+		if (delegate != nil) {
+			result = delegate.windowId;
+		}
+	};
+	if ([NSThread isMainThread]) {
+		resolve();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), resolve);
+	}
+	return result;
 }
 
 // Set the application icon
@@ -279,6 +315,18 @@ func (m *macosApp) run() error {
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 			C.activateIgnoringOtherApps()
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
+		},
+	)
+	// Refresh screen cache when display configuration changes
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidChangeScreenParameters,
+		func(*ApplicationEvent) {
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
 		},
 	)
 	m.setupCommonEvents()

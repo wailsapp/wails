@@ -18,10 +18,10 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
 )
@@ -112,12 +112,9 @@ func collectReport(quiet bool) (*DoctorReport, error) {
 	wailsVersion := strings.TrimSpace(version.String())
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
-		repo, err := git.PlainOpen(filepath.Join(wailsPackage.Replace.Path, ".."))
-		if err == nil {
-			head, err := repo.Head()
-			if err == nil {
-				wailsVersion += " (" + head.Hash().String()[:8] + ")"
-			}
+		// Get the latest commit hash
+		if hash, err := git.HeadHash(filepath.Join(wailsPackage.Replace.Path, "..")); err == nil {
+			wailsVersion += " (" + hash + ")"
 		}
 	}
 

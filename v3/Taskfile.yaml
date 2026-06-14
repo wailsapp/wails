@@ -92,13 +92,24 @@ tasks:
       GOARCH: amd64
 
   test:example:linux:
+    summary: Build example for Linux (pass BUILD_TAGS env var to add -tags, e.g. BUILD_TAGS=gtk3)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux"
+      - echo "Building example {{.DIR}} for Linux (${BUILD_TAGS:-GTK4})"
       - go mod tidy
-      - go build -o "testbuild-{{.DIR}}-linux"
+      - go build ${BUILD_TAGS:+-tags $BUILD_TAGS} -o "testbuild-{{.DIR}}-linux"
+
+  test:example:linux:gtk3:
+    summary: Build example for Linux with GTK3 (legacy, opt-in via -tags gtk3)
+    dir: 'examples/{{.DIR}}'
+    platforms:
+      - linux
+    cmds:
+      - echo "Building example {{.DIR}} for Linux (GTK3 legacy)"
+      - go mod tidy
+      - go build -tags gtk3 -o "testbuild-{{.DIR}}-linux-gtk3"
 
   test:example:linux:docker:arm64:
     summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
@@ -115,20 +126,36 @@ tasks:
       - docker run --rm wails-v3-linux-x86_64 /build/build-linux-x86_64.sh {{.DIR}}
 
   test:examples:linux:docker:arm64:
-    summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04)
+    summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04, GTK4)
     cmds:
       - echo "Building Docker image for Linux ARM64 compilation..."
       - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
-      - echo "Running Linux ARM64 compilation in Docker container..."
+      - echo "Running Linux ARM64 compilation in Docker container (GTK4)..."
       - docker run --rm wails-v3-linux-arm64
 
   test:examples:linux:docker:x86_64:
-    summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04)
+    summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04, GTK4)
     cmds:
       - echo "Building Docker image for Linux x86_64 compilation..."
       - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
-      - echo "Running Linux x86_64 compilation in Docker container..."
+      - echo "Running Linux x86_64 compilation in Docker container (GTK4)..."
       - docker run --rm wails-v3-linux-x86_64
+
+  test:examples:linux:docker:x86_64:gtk3:
+    summary: Build all examples for Linux x86_64 using Docker with GTK3 (legacy)
+    cmds:
+      - echo "Building Docker image for Linux x86_64 compilation..."
+      - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - echo "Running Linux x86_64 compilation in Docker container (GTK3 legacy)..."
+      - docker run --rm -e BUILD_TAGS=gtk3 wails-v3-linux-x86_64
+
+  test:examples:linux:docker:arm64:gtk3:
+    summary: Build all examples for Linux ARM64 using Docker with GTK3 (legacy)
+    cmds:
+      - echo "Building Docker image for Linux ARM64 compilation..."
+      - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - echo "Running Linux ARM64 compilation in Docker container (GTK3 legacy)..."
+      - docker run --rm -e BUILD_TAGS=gtk3 wails-v3-linux-arm64
 
   test:example:linux:docker:
     summary: Build a single example for Linux using Docker (auto-detect architecture)
@@ -301,9 +328,6 @@ tasks:
         events-bug
         file-association
         frameless
-        gin-example
-        gin-routing
-        gin-service
         hide-window
         ignore-mouse
         keybindings
@@ -338,6 +362,7 @@ tasks:
         vars:
           DIR: "{{.ITEM}}"
         platforms: [linux]
+      # GTK3 legacy example builds are handled in CI via: BUILD_TAGS=gtk3 task test:examples
       - for: { var: EXAMPLEDIRS }
         task: test:example:windows
         vars:
@@ -367,6 +392,32 @@ tasks:
       - echo "=== Cleaning Up Test Binaries ==="
       - task: clean:test:binaries
       - echo "✅ All tests completed successfully"
+
+  sanity:
+    summary: Quick compilation sanity check for key examples (GTK4 default + GTK3 opt-in)
+    platforms:
+      - linux
+    cmds:
+      - echo "🔍 Running quick sanity check (GTK4 - default)..."
+      - cd examples/menu && go build -o /dev/null .
+      - cd examples/window && go build -o /dev/null .
+      - cd examples/events && go build -o /dev/null .
+      - cd examples/plain && go build -o /dev/null .
+      - cd examples/dialogs-basic && go build -o /dev/null .
+      - echo "✅ GTK4 sanity check passed"
+      - task: sanity:gtk3
+
+  sanity:gtk3:
+    summary: Quick compilation sanity check for GTK3 (legacy, opt-in via -tags gtk3)
+    platforms:
+      - linux
+    cmds:
+      - echo "🔍 Running GTK3 legacy sanity check..."
+      - cd examples/menu && go build -tags gtk3 -o /dev/null .
+      - cd examples/window && go build -tags gtk3 -o /dev/null .
+      - cd examples/events && go build -tags gtk3 -o /dev/null .
+      - cd examples/plain && go build -tags gtk3 -o /dev/null .
+      - echo "✅ GTK3 legacy sanity check passed"
 
   build:server:
     summary: Build an application in server mode (no GUI, HTTP server only)

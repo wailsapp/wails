@@ -2,7 +2,7 @@ package commands
 
 import (
 	"embed"
-	_ "embed"
+
 	"fmt"
 	"io/fs"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v3/internal/gosod"
 	"gopkg.in/yaml.v3"
 	"howett.net/plist"
 )
@@ -42,6 +42,8 @@ type BuildAssetsOptions struct {
 	ProductCopyright      string `description:"The copyright notice" default:"\u00a9 now, My Company"`
 	ProductComments       string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	CFBundleIconName      string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion         string `description:"Minimum iOS version for the generated Info.plist" default:"15.0"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
 	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
 	ExecutablePath        string `description:"Path to executable for MSIX package"`
@@ -53,9 +55,21 @@ type BuildAssetsOptions struct {
 	UseInterfaces         bool   `description:"Generate TypeScript interfaces instead of classes"`
 }
 
+type TemplateEnrichment struct {
+	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
+	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+	// BackgroundModes feeds the iOS Info.plist template's UIBackgroundModes block.
+	// It's populated by the iOS Xcode generator from ios.backgroundModes in
+	// build/config.yml; the generic build-assets path leaves it empty (like
+	// MinIOSVersion there, it doesn't read the ios: section), so no
+	// UIBackgroundModes key is emitted unless configured.
+	BackgroundModes []string `yaml:"-"`
+}
+
 // BuildConfig defines the configuration for generating build assets.
 type BuildConfig struct {
 	BuildAssetsOptions
+	TemplateEnrichment
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
 }
@@ -72,6 +86,8 @@ type UpdateBuildAssetsOptions struct {
 	ProductCopyright   string `description:"The copyright notice"                                default:"© now, My Company"`
 	ProductComments    string `description:"Comments to add to the generated files"              default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	CFBundleIconName   string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion      string `description:"Minimum iOS version for the generated Info.plist"     default:"15.0"`
 	Config             string `description:"The path to the config file"`
 	Silent             bool   `description:"Suppress output to console"`
 }
@@ -95,6 +111,8 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	var config BuildConfig
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	if options.ProductComments == "" {
 		options.ProductComments = fmt.Sprintf("(c) %d %s", time.Now().Year(), options.ProductCompany)
@@ -116,7 +134,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	}
 
 	if options.ProcessorArchitecture == "" {
-		options.ProcessorArchitecture = "x64"
+		options.ProcessorArchitecture = archToMSIX(runtime.GOARCH)
 	}
 
 	if options.ExecutableName == "" {
@@ -147,10 +165,23 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	if err != nil {
 		return err
 	}
+	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
+	// This must happen BEFORE the updatable_build_assets extraction so CFBundleIconName is available in Info.plist templates
+	assetsCarPath := filepath.Join(config.Dir, "darwin", "Assets.car")
+	if _, err := os.Stat(assetsCarPath); err == nil {
+		if config.CFBundleIconName == "" {
+			config.CFBundleIconName = "appicon"
+			options.CFBundleIconName = "appicon"
+		}
+	}
+	// Update config with the potentially modified options
+	config.BuildAssetsOptions = *options
+
 	tfs, err = fs.Sub(updatableBuildAssets, "updatable_build_assets")
 	if err != nil {
 		return err
 	}
+
 	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
@@ -171,6 +202,7 @@ type FileAssociation struct {
 
 // UpdateConfig defines the configuration for updating build assets.
 type UpdateConfig struct {
+	TemplateEnrichment
 	UpdateBuildAssetsOptions
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
@@ -186,6 +218,7 @@ type WailsConfig struct {
 		Copyright         string `yaml:"copyright"`
 		Comments          string `yaml:"comments"`
 		Version           string `yaml:"version"`
+		CFBundleIconName  string `yaml:"cfBundleIconName,omitempty"`
 	} `yaml:"info"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations,omitempty"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
@@ -234,11 +267,17 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		if options.ProductVersion == "0.1.0" && wailsConfig.Info.Version != "" {
 			options.ProductVersion = wailsConfig.Info.Version
 		}
+		if options.CFBundleIconName == "" && wailsConfig.Info.CFBundleIconName != "" {
+			options.CFBundleIconName = wailsConfig.Info.CFBundleIconName
+		}
 		config.FileAssociations = wailsConfig.FileAssociations
 		config.Protocols = wailsConfig.Protocols
 	}
 
 	config.UpdateBuildAssetsOptions = *options
+
+	config.Cls = "}}"
+	config.Opn = "{{"
 
 	// If directory doesn't exist, create it
 	if _, err := os.Stat(options.Dir); os.IsNotExist(err) {
@@ -247,6 +286,18 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 			return err
 		}
 	}
+
+	// Check if Assets.car exists - if so, set CFBundleIconName if not already set
+	assetsCarPath := filepath.Join(config.Dir, "darwin", "Assets.car")
+	if _, err := os.Stat(assetsCarPath); err == nil {
+		if config.CFBundleIconName == "" {
+			config.CFBundleIconName = "appicon"
+			options.CFBundleIconName = "appicon"
+		}
+	}
+
+	// Update config with the potentially modified options
+	config.UpdateBuildAssetsOptions = *options
 
 	tfs, err := fs.Sub(updatableBuildAssets, "updatable_build_assets")
 	if err != nil {
@@ -283,6 +334,17 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 func normaliseName(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+func archToMSIX(goarch string) string {
+	switch goarch {
+	case "amd64":
+		return "x64"
+	case "386":
+		return "x86"
+	default:
+		return goarch
+	}
 }
 
 // mergeMaps recursively merges src into dst.
@@ -346,6 +408,13 @@ func mergeBackupPlists(backups []plistBackup) error {
 			return fmt.Errorf("failed to parse backup plist %s: %w", backup.backupPath, err)
 		}
 
+		// Remove any string values that contain Go template syntax. Older
+		// project templates stored template directives directly in the plist
+		// file; the XML parser treats block-level directives as text nodes
+		// (dropping them) but captures inner <string>{{.Ext}}</string> literals
+		// as real values, which would otherwise appear as garbage in the output.
+		backupDict = sanitizePlistDict(backupDict)
+
 		// Read the newly extracted plist
 		newContent, err := os.ReadFile(backup.originalPath)
 		if err != nil {
@@ -382,5 +451,57 @@ func mergeBackupPlists(backups []plistBackup) error {
 func cleanupBackups(backups []plistBackup) {
 	for _, backup := range backups {
 		os.Remove(backup.backupPath)
+	}
+}
+
+// sanitizePlistDict recursively removes any plist entries whose string values
+// contain Go template syntax (e.g. "{{.Ext}}"). Older wails projects stored
+// the darwin Info.plist as a raw Go template; when that file is parsed as a
+// plain plist the block-level directives ({{if}}, {{range}}, {{end}}) are
+// silently dropped as XML text nodes, but inner field references inside
+// <string> elements survive as literal garbage values. Sanitizing before the
+// merge prevents those stubs from polluting the updated plist.
+func sanitizePlistDict(d map[string]any) map[string]any {
+	result := make(map[string]any, len(d))
+	for k, v := range d {
+		if sanitized, keep := sanitizePlistValue(v); keep {
+			result[k] = sanitized
+		}
+	}
+	return result
+}
+
+// sanitizePlistValue recursively sanitizes a single plist value.
+// Returns the sanitized value and a boolean indicating whether the value
+// should be kept (true) or dropped (false). Values containing Go template
+// syntax are dropped; other types are passed through unchanged.
+// Originally empty containers (empty maps and arrays) are preserved,
+// while containers that become empty due to template removal are dropped.
+func sanitizePlistValue(v any) (any, bool) {
+	switch val := v.(type) {
+	case string:
+		if strings.Contains(val, "{{") {
+			return nil, false
+		}
+		return val, true
+	case map[string]any:
+		if len(val) == 0 {
+			return val, true
+		}
+		sanitized := sanitizePlistDict(val)
+		return sanitized, len(sanitized) > 0
+	case []any:
+		if len(val) == 0 {
+			return val, true
+		}
+		var result []any
+		for _, item := range val {
+			if sanitized, keep := sanitizePlistValue(item); keep {
+				result = append(result, sanitized)
+			}
+		}
+		return result, len(result) > 0
+	default:
+		return v, true
 	}
 }

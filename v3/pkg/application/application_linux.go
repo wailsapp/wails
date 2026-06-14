@@ -1,49 +1,40 @@
-//go:build linux && !android && !server
+//go:build linux && cgo && !gtk3 && !android && !server
 
 package application
 
 /*
-	#include "gtk/gtk.h"
-	#include "webkit2/webkit2.h"
-	static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
-	static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
-	static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
-	static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
-	static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
-	static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
+static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
+static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
+static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
+static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
+static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
+static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
 */
 import "C"
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
-
-	"path/filepath"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-// sanitizeAppName sanitizes the application name to be a valid GTK/D-Bus application ID.
-// Valid IDs contain only alphanumeric characters, hyphens, and underscores.
-// They must not start with a digit.
 var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 var leadingDigits = regexp.MustCompile(`^[0-9]+`)
 
 func sanitizeAppName(name string) string {
-	// Replace invalid characters with underscores
 	name = invalidAppNameChars.ReplaceAllString(name, "_")
-	// Prefix with underscore if starts with digit
 	name = leadingDigits.ReplaceAllString(name, "_$0")
-	// Remove consecutive underscores
 	for strings.Contains(name, "__") {
 		name = strings.ReplaceAll(name, "__", "_")
 	}
-	// Trim leading/trailing underscores
 	name = strings.Trim(name, "_")
 	if name == "" {
 		name = "wailsapp"
@@ -52,26 +43,17 @@ func sanitizeAppName(name string) string {
 }
 
 func init() {
-	// FIXME: This should be handled appropriately in the individual files most likely.
-	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	if os.Getenv("GDK_BACKEND") == "" &&
-		(os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
-		_ = os.Setenv("GDK_BACKEND", "x11")
-	}
-
-	// Disable DMA-BUF renderer on Wayland with NVIDIA to prevent "Error 71 (Protocol error)" crashes.
-	// This is a known WebKitGTK issue with NVIDIA proprietary drivers on Wayland.
+	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
+	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
 	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
-	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" &&
-		os.Getenv("XDG_SESSION_TYPE") == "wayland" &&
-		isNVIDIAGPU() {
+	// See: https://github.com/wailsapp/wails/issues/4985
+	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
 }
 
-// isNVIDIAGPU checks if an NVIDIA GPU is present by looking for the nvidia kernel module.
 func isNVIDIAGPU() bool {
-	// Check if nvidia module is loaded (most reliable for proprietary driver)
 	if _, err := os.Stat("/sys/module/nvidia"); err == nil {
 		return true
 	}
@@ -82,9 +64,9 @@ type linuxApp struct {
 	application pointer
 	parent      *App
 
-	startupActions []func()
+	activated     chan struct{}
+	activatedOnce sync.Once
 
-	// Native -> uint
 	windowMap     map[windowPointer]uint
 	windowMapLock sync.Mutex
 
@@ -100,96 +82,21 @@ func (a *linuxApp) GetFlags(options Options) map[string]any {
 	return options.Flags
 }
 
-func getNativeApplication() *linuxApp {
-	return globalApplication.impl.(*linuxApp)
-}
-
-func (a *linuxApp) hide() {
-	a.hideAllWindows()
-}
-
-func (a *linuxApp) show() {
-	a.showAllWindows()
-}
-
-func (a *linuxApp) on(eventID uint) {
-	// TODO: Test register/unregister events
-	//C.registerApplicationEvent(l.application, C.uint(eventID))
-}
-
 func (a *linuxApp) name() string {
 	return appName()
 }
 
-type rnr struct {
-	f func()
-}
-
-func (r rnr) run() {
-	r.f()
-}
-
-func (a *linuxApp) setApplicationMenu(menu *Menu) {
-	// FIXME: How do we avoid putting a menu?
-	if menu == nil {
-		// Create a default menu
-		menu = DefaultApplicationMenu()
-		globalApplication.applicationMenu = menu
-	}
-}
-
 func (a *linuxApp) run() error {
-
-	if len(os.Args) == 2 { // Case: program + 1 argument
-		arg1 := os.Args[1]
-		// Check if the argument is likely a URL from a custom protocol invocation
-		if strings.Contains(arg1, "://") {
-			a.parent.debug("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
-			eventContext := newApplicationEventContext()
-			eventContext.setURL(arg1)
-			applicationEvents <- &ApplicationEvent{
-				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
-				ctx: eventContext,
-			}
-		} else {
-			// Check if the argument matches any file associations
-			if a.parent.options.FileAssociations != nil {
-				ext := filepath.Ext(arg1)
-				if slices.Contains(a.parent.options.FileAssociations, ext) {
-					a.parent.debug("File opened via file association", "file", arg1, "extension", ext)
-					eventContext := newApplicationEventContext()
-					eventContext.setOpenedWithFile(arg1)
-					applicationEvents <- &ApplicationEvent{
-						Id:  uint(events.Common.ApplicationOpenedWithFile),
-						ctx: eventContext,
-					}
-					return nil
-				}
-			}
-			a.parent.debug("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
-		}
-	} else if len(os.Args) > 2 {
-		// Log if multiple arguments are passed
-		a.parent.debug("Application launched with multiple arguments", "args", os.Args[1:])
-	}
-
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
-		// TODO: What should happen here?
+		if err := a.processAndCacheScreens(); err != nil {
+			a.parent.handleError(err)
+		}
 	})
 	a.setupCommonEvents()
-	a.monitorThemeChanges()
+	// Theme changes are already monitored by listenForSystemThemeChanges via init();
+	// it uses the portal-standard org.freedesktop.appearance namespace.
+	a.monitorPowerEvents()
 	return appRun(a.application)
-}
-
-func (a *linuxApp) unregisterWindow(w windowPointer) {
-	a.windowMapLock.Lock()
-	delete(a.windowMap, w)
-	a.windowMapLock.Unlock()
-
-	// If this was the last window...
-	if len(a.windowMap) == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
-		a.destroy()
-	}
 }
 
 func (a *linuxApp) destroy() {
@@ -200,77 +107,105 @@ func (a *linuxApp) destroy() {
 	appDestroy(a.application)
 }
 
+func (a *linuxApp) getApplicationMenu() *Menu {
+	return nil
+}
+
+func (a *linuxApp) setApplicationMenu(menu *Menu) {}
+
+func (a *linuxApp) hide() {
+	a.hideAllWindows()
+}
+
+func (a *linuxApp) show() {
+	a.showAllWindows()
+}
+
+func (a *linuxApp) on(eventID uint) {
+}
+
 func (a *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
-// register our window to our parent mapping
+func (a *linuxApp) appendGTKVersion(result map[string]string) {
+	result["GTK"] = fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version())
+	result["WebKit"] = fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version())
+}
+
+func (a *linuxApp) init(_ *App, options Options) {
+	osInfo, _ := operatingsystem.Info()
+	a.parent.info("Compiled with GTK %d.%d.%d",
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version())
+	a.parent.info("Compiled with WebKitGTK %d.%d.%d",
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version())
+	a.parent.info("Using %s", osInfo.Name)
+
+	if options.Icon != nil {
+		a.setIcon(options.Icon)
+	}
+
+	go listenForSystemThemeChanges(a)
+}
+
+func listenForSystemThemeChanges(a *linuxApp) {
+	conn, err := dbus.SessionBus()
+	if err != nil {
+		a.parent.error("failed to connect to session bus: %v", err)
+		return
+	}
+
+	if err = conn.AddMatchSignal(
+		dbus.WithMatchInterface("org.freedesktop.portal.Settings"),
+		dbus.WithMatchMember("SettingChanged"),
+	); err != nil {
+		return
+	}
+
+	c := make(chan *dbus.Signal, 10)
+	conn.Signal(c)
+
+	for s := range c {
+		if len(s.Body) < 3 {
+			continue
+		}
+		namespace, ok := s.Body[0].(string)
+		if !ok || namespace != "org.freedesktop.appearance" {
+			continue
+		}
+		key, ok := s.Body[1].(string)
+		if !ok || key != "color-scheme" {
+			continue
+		}
+		processApplicationEvent(C.uint(events.Linux.SystemThemeChanged), nil)
+	}
+}
+
 func (a *linuxApp) registerWindow(window pointer, id uint) {
 	a.windowMapLock.Lock()
 	a.windowMap[windowPointer(window)] = id
 	a.windowMapLock.Unlock()
 }
 
-func (a *linuxApp) isDarkMode() bool {
-	return strings.Contains(a.theme, "dark")
-}
+func (a *linuxApp) unregisterWindow(window windowPointer) {
+	a.windowMapLock.Lock()
+	delete(a.windowMap, window)
+	remainingWindows := len(a.windowMap)
+	a.windowMapLock.Unlock()
 
-func (a *linuxApp) getAccentColor() string {
-	// Linux doesn't have a unified system accent color API
-	// Return a default blue color
-	return "rgb(0,122,255)"
-}
-
-func (a *linuxApp) monitorThemeChanges() {
-	go func() {
-		defer handlePanic()
-		conn, err := dbus.ConnectSessionBus()
-		if err != nil {
-			a.parent.warning(
-				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function: %v",
-				err,
-			)
-			return
-		}
-		defer conn.Close()
-
-		if err = conn.AddMatchSignal(
-			dbus.WithMatchObjectPath("/org/freedesktop/portal/desktop"),
-		); err != nil {
-			panic(err)
-		}
-
-		c := make(chan *dbus.Signal, 10)
-		conn.Signal(c)
-
-		getTheme := func(body []interface{}) (string, bool) {
-			if len(body) < 2 {
-				return "", false
-			}
-			if entry, ok := body[0].(string); !ok || entry != "org.gnome.desktop.interface" {
-				return "", false
-			}
-			if entry, ok := body[1].(string); ok && entry == "color-scheme" {
-				return body[2].(dbus.Variant).Value().(string), true
-			}
-			return "", false
-		}
-
-		for v := range c {
-			theme, ok := getTheme(v.Body)
-			if !ok {
-				continue
-			}
-
-			if theme != a.theme {
-				a.theme = theme
-				event := newApplicationEvent(events.Linux.SystemThemeChanged)
-				event.Context().setIsDarkMode(a.isDarkMode())
-				applicationEvents <- event
-			}
-
-		}
-	}()
+	if remainingWindows == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
+		a.destroy()
+	}
 }
 
 func newPlatformApp(parent *App) *linuxApp {
@@ -278,6 +213,7 @@ func newPlatformApp(parent *App) *linuxApp {
 	app := &linuxApp{
 		parent:      parent,
 		application: appNew(name),
+		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}
 
@@ -288,6 +224,108 @@ func newPlatformApp(parent *App) *linuxApp {
 	return app
 }
 
+func (a *linuxApp) markActivated() {
+	a.activatedOnce.Do(func() {
+		close(a.activated)
+	})
+}
+
+func (a *linuxApp) waitForActivation() {
+	<-a.activated
+}
+
+func (a *linuxApp) getIconForFile(filename string) ([]byte, error) {
+	if filename == "" {
+		return nil, nil
+	}
+
+	ext := filepath.Ext(filename)
+	iconMap := map[string]string{
+		".txt":  "text-x-generic",
+		".pdf":  "application-pdf",
+		".doc":  "x-office-document",
+		".docx": "x-office-document",
+		".xls":  "x-office-spreadsheet",
+		".xlsx": "x-office-spreadsheet",
+		".ppt":  "x-office-presentation",
+		".pptx": "x-office-presentation",
+		".zip":  "package-x-generic",
+		".tar":  "package-x-generic",
+		".gz":   "package-x-generic",
+		".jpg":  "image-x-generic",
+		".jpeg": "image-x-generic",
+		".png":  "image-x-generic",
+		".gif":  "image-x-generic",
+		".mp3":  "audio-x-generic",
+		".wav":  "audio-x-generic",
+		".mp4":  "video-x-generic",
+		".avi":  "video-x-generic",
+		".html": "text-html",
+		".css":  "text-css",
+		".js":   "text-javascript",
+		".json": "text-json",
+		".xml":  "text-xml",
+	}
+
+	iconName := "application-x-generic"
+	if name, ok := iconMap[ext]; ok {
+		iconName = name
+	}
+
+	return getIconBytes(iconName)
+}
+
+func getIconBytes(iconName string) ([]byte, error) {
+	return nil, fmt.Errorf("icon lookup is not currently implemented for the GTK4 build path; build with -tags gtk3 for the legacy implementation")
+}
+
+func (a *linuxApp) isDarkMode() bool {
+	conn, err := dbus.SessionBus()
+	if err != nil {
+		return false
+	}
+
+	obj := conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
+	call := obj.Call("org.freedesktop.portal.Settings.Read", 0, "org.freedesktop.appearance", "color-scheme")
+	if call.Err != nil {
+		return false
+	}
+
+	var result dbus.Variant
+	if err := call.Store(&result); err != nil {
+		return false
+	}
+
+	innerVariant, ok := result.Value().(dbus.Variant)
+	if !ok {
+		return false
+	}
+	colorScheme, ok := innerVariant.Value().(uint32)
+	if !ok {
+		return false
+	}
+
+	return colorScheme == 1
+}
+
+func (a *linuxApp) getAccentColor() string {
+	return "rgb(0,122,255)"
+}
+
+func (a *linuxApp) isVisible() bool {
+	windows := a.getWindows()
+	for _, window := range windows {
+		if C.gtk_widget_is_visible((*C.GtkWidget)(window)) != 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func getNativeApplication() *linuxApp {
+	return globalApplication.impl.(*linuxApp)
+}
+
 // logPlatformInfo logs the platform information to the console
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
@@ -296,48 +334,51 @@ func (a *App) logPlatformInfo() {
 		return
 	}
 
-	wkVersion := operatingsystem.GetWebkitVersion()
 	platformInfo := info.AsLogSlice()
-	platformInfo = append(platformInfo, "Webkit2Gtk", wkVersion)
+	platformInfo = append(platformInfo, "GTK", fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version()))
+	platformInfo = append(platformInfo, "WebKitGTK", fmt.Sprintf("%d.%d.%d",
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version()))
 
 	a.info("Platform Info:", platformInfo...)
 }
 
-//export processWindowEvent
-func processWindowEvent(windowID C.uint, eventID C.uint) {
-	windowEvents <- &windowEvent{
-		WindowID: uint(windowID),
-		EventID:  uint(eventID),
-	}
-}
-
-func buildVersionString(major, minor, micro C.uint) string {
+func buildVersionString(major, minor, micro C.guint) string {
 	return fmt.Sprintf("%d.%d.%d", uint(major), uint(minor), uint(micro))
 }
 
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	result["gtk3-compiled"] = buildVersionString(
+	result["gtk4-compiled"] = buildVersionString(
 		C.get_compiled_gtk_major_version(),
 		C.get_compiled_gtk_minor_version(),
 		C.get_compiled_gtk_micro_version(),
 	)
-	result["gtk3-runtime"] = buildVersionString(
+	result["gtk4-runtime"] = buildVersionString(
 		C.gtk_get_major_version(),
 		C.gtk_get_minor_version(),
 		C.gtk_get_micro_version(),
 	)
 
-	result["webkit2gtk-compiled"] = buildVersionString(
+	result["webkitgtk6-compiled"] = buildVersionString(
 		C.get_compiled_webkit_major_version(),
 		C.get_compiled_webkit_minor_version(),
 		C.get_compiled_webkit_micro_version(),
 	)
-	result["webkit2gtk-runtime"] = buildVersionString(
+	result["webkitgtk6-runtime"] = buildVersionString(
 		C.webkit_get_major_version(),
 		C.webkit_get_minor_version(),
 		C.webkit_get_micro_version(),
 	)
+
+	result["compositor"] = detectCompositor()
+	result["wayland"] = isWayland()
+	result["focusFollowsMouse"] = detectFocusFollowsMouse()
+
 	return result
 }
 
