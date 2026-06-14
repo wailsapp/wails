@@ -299,17 +299,68 @@ type mobileOptions struct{}
 func platformOptions() mobileOptions { return mobileOptions{} }
 ```
 
-### Detect the platform in JavaScript
+### Detect the platform in JavaScript and gate mobile-only UI
+
+The `IOS.*` and `Android.*` runtime objects only exist on their respective platforms. Calling them on desktop throws. The right pattern — used by the Kitchen Sink — is to detect the platform once and hide mobile-only controls entirely:
 
 ```javascript
-const isIOS = window.webkit?.messageHandlers?.wails !== undefined;
-const isAndroid = window.wails !== undefined;
-const isMobile = isIOS || isAndroid;
+// Detect platform from the bridge the host injects into the WebView
+const platform = (() => {
+  if (typeof window.wails?.platform === 'function') return window.wails.platform(); // Android
+  if (window.webkit?.messageHandlers?.external) return 'ios';
+  return 'desktop';
+})();
 
-if (isMobile) {
-  document.body.classList.add('mobile');
+const isIOS     = platform === 'ios';
+const isAndroid = platform === 'android';
+const isMobile  = isIOS || isAndroid;
+
+// Hide any element marked as mobile-only
+document.querySelectorAll('.mobile-only').forEach(el => {
+  el.style.display = isMobile ? '' : 'none';
+});
+```
+
+Then in your HTML:
+```html
+<section class="mobile-only">
+  <button id="btnHaptic">Haptic feedback</button>
+</section>
+```
+
+This way mobile-only buttons are never rendered on desktop, and you never need to guard every individual call with an `if (isMobile)` check.
+
+On the Go side, pair this with a build-tag stub so the event handlers are only registered on the platforms that need them:
+
+```go title="native_desktop.go"
+//go:build !ios && !android
+
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+// No-op on desktop — mobile tabs are hidden in the frontend so these
+// events are never emitted.
+func registerNativeFeatures(app *application.App) {}
+```
+
+```go title="native_ios.go"
+//go:build ios
+
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func registerNativeFeatures(app *application.App) {
+    app.Event.On("native:haptic", func(e *application.CustomEvent) {
+        // only compiled and called on iOS
+        application.IOSHaptic("medium")
+    })
+    // ... other handlers
 }
 ```
+
+This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) uses — see `native_features_stub.go`, `native_features_ios.go`, and `native_features_android.go`.
 
 ### Add haptic feedback (iOS)
 

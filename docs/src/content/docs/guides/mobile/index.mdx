@@ -37,17 +37,17 @@ The best way to understand what's possible is to look at the **Kitchen Sink** �
   href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile"
 />
 
-It demonstrates every major mobile API surface across 7 tabs:
+It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mobile** and **Hardware** tabs are hidden on desktop via a platform check in the frontend; the Go side registers no handlers for `native:*` events when built for desktop. This is the recommended pattern for shipping one codebase everywhere.
 
-| Tab | What it shows |
-|---|---|
-| **Bindings** | JS → Go service calls returning values, structs, and errors |
-| **Events** | Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme) |
-| **Dialogs** | Native message dialogs on each platform |
-| **System** | Clipboard, screen metrics, device info |
-| **Mobile** | Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage |
-| **Hardware** | Haptics, geolocation, accelerometer, proximity, text-to-speech |
-| **Native** | iOS: haptics + WKWebView toggles · Android: vibrate + toast |
+| Tab | Platforms | What it shows |
+|---|---|---|
+| **Bindings** | all | JS → Go service calls returning values, structs, and errors |
+| **Events** | all | Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme) |
+| **Dialogs** | all | Native message dialogs on each platform |
+| **System** | all | Clipboard, screen metrics, device info |
+| **Mobile** | iOS + Android | Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage |
+| **Hardware** | iOS + Android | Haptics, geolocation, accelerometer, proximity, text-to-speech |
+| **Native** | iOS + Android | iOS: haptics + WKWebView toggles · Android: vibrate + toast |
 
 To run it yourself:
 
