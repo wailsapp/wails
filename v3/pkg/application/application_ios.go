@@ -169,11 +169,9 @@ func newPlatformApp(app *App) *iosApp {
 		C.free(unsafe.Pointer(cname))
 	}
 	// App-wide background colour for the iOS window (shown before the WebView
-	// paints). Any non-zero BackgroundColour counts as "set" so callers don't
-	// need to also flip AppBackgroundColourSet; the flag is only needed to force
-	// a fully zero/transparent colour (RGBA{}), which is otherwise
-	// indistinguishable from the unset zero value.
-	if app.options.IOS.AppBackgroundColourSet || app.options.IOS.BackgroundColour != (RGBA{}) {
+	// paints). A non-zero BackgroundColour is applied; the zero value (RGBA{})
+	// means "unset" and the delegate falls back to white.
+	if app.options.IOS.BackgroundColour != (RGBA{}) {
 		rgba := app.options.IOS.BackgroundColour
 		C.ios_set_app_background_color(
 			C.uchar(rgba.Red), C.uchar(rgba.Green), C.uchar(rgba.Blue), C.uchar(rgba.Alpha), C.bool(true),

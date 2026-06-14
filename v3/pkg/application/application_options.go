@@ -341,12 +341,9 @@ type IOSOptions struct {
 
 	// BackgroundColour is the app-wide background colour for the main iOS window,
 	// shown before the WebView paints. Set it to match your web background to
-	// avoid a white flash on launch. Any non-zero value is applied
-	// automatically; AppBackgroundColourSet only needs to be set to force a
-	// fully zero/transparent colour (RGBA{}), which is otherwise
-	// indistinguishable from the unset default (white).
-	BackgroundColour       RGBA
-	AppBackgroundColourSet bool
+	// avoid a white flash on launch. Defaults to white when left at its zero
+	// value.
+	BackgroundColour RGBA
 
 	// EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
 	// When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
