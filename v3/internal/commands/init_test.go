@@ -341,7 +341,7 @@ func TestApplyGlobalDefaults(t *testing.T) {
 			},
 		},
 		{
-			name: "empty global defaults do not change options",
+			name: "empty global defaults normalize copyright year but leave other options unchanged",
 			options: flags.Init{
 				TemplateName:       "vanilla",
 				ProductCompany:     "My Company",

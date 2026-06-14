@@ -23,6 +23,8 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [status, setStatus] = useState<SigningStatus | null>(null);
   const [config, setConfig] = useState<SigningDefaults | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [hostOS, setHostOS] = useState<HostOS>('linux');
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('darwin');
   // 'status' | 'identity' | 'notarize'
@@ -41,6 +43,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   }, []);
 
   const loadData = async () => {
+    setLoadError(null);
     try {
       const [s, c, state] = await Promise.all([getSigningStatus(), getSigning(), getState()]);
       setStatus(s);
@@ -50,6 +53,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
       }
     } catch (e) {
       console.error('Failed to load signing data:', e);
+      setLoadError('Failed to load signing configuration. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -75,10 +79,12 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
 
   const handleSave = async () => {
     if (!config) return;
+    setSaveError(null);
     try {
       await saveSigning(config);
     } catch (e) {
       console.error('Failed to save signing config:', e);
+      setSaveError('Failed to save configuration. Please try again.');
     }
   };
 
@@ -480,6 +486,16 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
           </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-4">
+            <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>
+            <button
+              onClick={() => { setLoading(true); loadData(); }}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
+            >
+              Retry
+            </button>
+          </div>
         ) : (
           <div className="max-w-xl mx-auto">
             <div className="flex gap-2 mb-6" role="tablist">
@@ -542,19 +558,31 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                   transition={{ duration: 0.2 }}
                 >
                   {renderConfigForm()}
+                  {saveError && (
+                    <p className="mt-3 text-sm text-red-600 dark:text-red-400">{saveError}</p>
+                  )}
                   <div className="flex gap-3 mt-6">
                     <button
-                      onClick={() => setConfigStep('status')}
+                      onClick={() => { setSaveError(null); setConfigStep('status'); }}
                       className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       Cancel
                     </button>
-                    <button
-                      onClick={() => setConfigStep('notarize')}
-                      className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
-                    >
-                      Next
-                    </button>
+                    {selectedPlatform === 'darwin' && hostOS === 'darwin' ? (
+                      <button
+                        onClick={() => setConfigStep('notarize')}
+                        className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
+                      >
+                        Next
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => { await handleSave(); if (!saveError) { setConfigStep('status'); await loadData(); } }}
+                        className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
+                      >
+                        Save
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ) : (

@@ -722,6 +722,13 @@ func (w *Wizard) startDockerPull() {
 		defer w.buildWg.Done()
 
 		if err := w.pullViaDockerAPI(); err != nil {
+			// Reset status so the SSE stream stays open and handleClose detects
+			// the active build while the CLI fallback runs.
+			w.dockerMu.Lock()
+			w.dockerStatus.PullStatus = "pulling"
+			w.dockerStatus.PullMessage = "Retrying via Docker CLI"
+			w.dockerStatus.PullError = ""
+			w.dockerMu.Unlock()
 			w.pullViaDockerCLI()
 		}
 	}()
@@ -1327,10 +1334,23 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the profile name to defaults
-	defaults, _ := LoadGlobalDefaults()
-	defaults.Signing.Darwin.KeychainProfile = req.ProfileName
-	defaults.Signing.Darwin.TeamID = req.TeamID
-	_ = SaveGlobalDefaults(defaults)
+	defs, err := LoadGlobalDefaults()
+	if err != nil {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Profile created but failed to load defaults: " + err.Error(),
+		})
+		return
+	}
+	defs.Signing.Darwin.KeychainProfile = req.ProfileName
+	defs.Signing.Darwin.TeamID = req.TeamID
+	if err := SaveGlobalDefaults(defs); err != nil {
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Profile created but failed to save defaults: " + err.Error(),
+		})
+		return
+	}
 
 	json.NewEncoder(rw).Encode(map[string]interface{}{
 		"success": true,

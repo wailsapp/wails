@@ -16,7 +16,7 @@ import (
 
 // resolveSigningDefaults fills in missing signing options from ~/.config/wails/defaults.yaml
 func resolveSigningDefaults(options *flags.Sign) {
-	if options.Identity != "" && options.KeychainProfile != "" {
+	if options.Identity != "" && options.KeychainProfile != "" && options.Entitlements != "" {
 		return // all provided via flags
 	}
 
