@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"golang.org/x/tools/go/packages"
@@ -67,6 +68,7 @@ func ResolvePatterns(buildFlags []string, patterns ...string) (paths []string, e
 	pkgs, err := packages.Load(&packages.Config{
 		Mode:       packages.NeedName,
 		BuildFlags: buildFlags,
+		Env:        append(os.Environ(), "GOWORK=off"),
 	}, rewrittenPatterns...)
 
 	for _, pkg := range pkgs {
@@ -105,6 +107,10 @@ func LoadPackages(buildFlags []string, patterns ...string) (pkgs []*packages.Pac
 		Mode:       packages.LoadAllSyntax,
 		BuildFlags: buildFlags,
 		Fset:       fset,
+		// Disable workspace mode: if the project lives inside a Go workspace but is
+		// not listed as a workspace module, Go 1.25 emits package errors that leave
+		// TypesInfo incomplete, causing the generator to find zero services.
+		Env: append(os.Environ(), "GOWORK=off"),
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (file *ast.File, err error) {
 			file, err = parser.ParseFile(fset, filename, src, parser.ParseComments|parser.SkipObjectResolution)
 			return
