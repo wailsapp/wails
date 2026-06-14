@@ -8,7 +8,7 @@ sidebar:
     variant: caution
 ---
 
-import { Card, CardGrid, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Card, CardGrid, Aside, LinkCard } from '@astrojs/starlight/components';
 
 Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for desktop. There is no separate mobile project, no code-sharing bridge, and no rewrite: the Go binary is compiled for the mobile target and a native WebView renders your existing frontend.
 
@@ -26,6 +26,39 @@ Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you a
     [Android Guide →](/guides/mobile/android)
   </Card>
 </CardGrid>
+
+## See it running: Kitchen Sink example
+
+The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app that runs identically on iOS, Android and desktop from one codebase:
+
+<LinkCard
+  title="Mobile Kitchen Sink — GitHub"
+  description="Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · and more — all from one main.go"
+  href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile"
+/>
+
+It demonstrates every major mobile API surface across 7 tabs:
+
+| Tab | What it shows |
+|---|---|
+| **Bindings** | JS → Go service calls returning values, structs, and errors |
+| **Events** | Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme) |
+| **Dialogs** | Native message dialogs on each platform |
+| **System** | Clipboard, screen metrics, device info |
+| **Mobile** | Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage |
+| **Hardware** | Haptics, geolocation, accelerometer, proximity, text-to-speech |
+| **Native** | iOS: haptics + WKWebView toggles · Android: vibrate + toast |
+
+To run it yourself:
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails/v3/examples/mobile
+
+wails3 task ios:run        # iOS Simulator (macOS + Xcode required)
+wails3 task android:run    # Android Emulator
+wails3 task run            # Desktop
+```
 
 ## How it works
 
@@ -99,10 +132,5 @@ At runtime, `runtime.GOOS` returns `"ios"` and `"android"` respectively.
     Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API reference.
 
     [Android Guide →](/guides/mobile/android)
-  </Card>
-  <Card title="Kitchen Sink Example" icon="open-book">
-    A single app that runs on iOS, Android and desktop, exercising the full mobile API surface.
-
-    [View on GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
   </Card>
 </CardGrid>

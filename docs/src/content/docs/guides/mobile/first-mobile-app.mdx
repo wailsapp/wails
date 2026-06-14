@@ -447,6 +447,21 @@ Make sure your HTML includes the viewport meta tag:
 
 ---
 
+## Explore the Kitchen Sink
+
+Once your first app is running, the **Kitchen Sink** example is the fastest way to learn what else is possible. It's a complete Wails app that runs on iOS, Android and desktop from a single codebase, covering haptics, geolocation, biometrics, local notifications, secure storage, and more:
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails/v3/examples/mobile
+
+wails3 task ios:run        # iOS Simulator
+wails3 task android:run    # Android Emulator
+wails3 task run            # Desktop
+```
+
+Browse the source at [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — the `native_features_ios.go` and `native_features_android.go` files are particularly useful as copy-paste starting points for platform-specific features.
+
 ## What's next
 
 <CardGrid>
@@ -460,8 +475,8 @@ Make sure your HTML includes the viewport meta tag:
 
     [Android Guide →](/guides/mobile/android)
   </Card>
-  <Card title="Kitchen Sink Example" icon="open-book">
-    A complete cross-platform app demonstrating haptics, geolocation, biometrics, notifications, and more.
+  <Card title="Kitchen Sink source" icon="open-book">
+    Haptics, geolocation, biometrics, notifications, secure storage — all in one runnable app.
 
     [View on GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
   </Card>
