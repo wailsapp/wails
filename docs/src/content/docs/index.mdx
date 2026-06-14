@@ -216,6 +216,19 @@ cd myapp && wails3 dev
 <p style="font-size: 0.875rem; color: var(--sl-color-gray-3); margin-top: 0.5rem;">Having issues with <code>wails3 setup</code>? See the <a href="/quick-start/installation">manual installation guide</a>.</p>
 
 
+## Your desktop app is already a mobile app
+
+```bash
+wails3 task ios:run      # run your existing app on iOS Simulator
+wails3 task android:run  # run your existing app on Android Emulator
+```
+
+**Zero changes to your Go code.** The same `main.go`, the same services, the same frontend — Wails compiles it for iOS and Android automatically. Platform-specific features (haptics, native dialogs, safe areas) are there when you want them, but you don't need them to ship.
+
+[Mobile docs →](/guides/mobile)
+
+---
+
 ## Why Wails?
 
 <CardGrid>
@@ -243,11 +256,12 @@ cd myapp && wails3 dev
     - Code signing and packaging tools
   </Card>
   
-  <Card title="Cross-Platform Native" icon="laptop">
-    - Single codebase for Windows, macOS, Linux, iOS, Android
-    - Platform-specific features when needed
-    - No compromise on user experience
-    - Deploy to all platforms from one build
+  <Card title="Desktop & Mobile" icon="laptop">
+    - Windows, macOS, Linux, iOS, Android
+    - Same codebase, zero rewrites
+    - Native WebView on every platform
+    - No open ports, no localhost server
+    - Platform features available when needed
   </Card>
 </CardGrid>
 
