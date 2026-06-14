@@ -813,32 +813,31 @@ static void mfPresentCamera(BOOL video) {
             mfEmit(@"common:capture", @{@"error": @"camera not available (e.g. simulator)"});
             return;
         }
-        // The camera source type can be "available" while still not supporting the
-        // requested media type — notably the Simulator's virtual camera reports
-        // available but only offers stills. Setting picker.mediaTypes to an
-        // unsupported type throws an uncaught NSException (SIGABRT), so verify the
-        // type is offered before configuring the picker.
-        NSString *wanted = video ? @"public.movie" : @"public.image";
-        NSArray<NSString *> *supported =
-            [UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera];
-        if (![supported containsObject:wanted]) {
-            mfEmit(@"common:capture", @{@"error": video
-                ? @"video recording not supported by this camera (e.g. simulator)"
-                : @"photo capture not supported by this camera"});
-            return;
+        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+        // Photos use the picker's default media type (public.image), which never
+        // throws. Video requires explicitly opting into public.movie — but
+        // -setMediaTypes: throws an uncaught NSException ("No available types for
+        // source 1") when the camera doesn't currently offer movie capture. That
+        // happens on the iOS Simulator, whose camera reports an empty media-type
+        // list regardless of authorization. Guard it so a missing video type
+        // degrades to a graceful error instead of a SIGABRT. Real devices list
+        // public.movie and record normally.
+        if (video) {
+            @try {
+                picker.mediaTypes = @[@"public.movie"];
+                picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
+            } @catch (NSException *ex) {
+                mfEmit(@"common:capture", @{@"error":
+                    @"video recording isn't available from this camera (the iOS Simulator camera can't record video — use a physical device)"});
+                return;
+            }
         }
-        @try {
-            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-            picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-            picker.mediaTypes = @[wanted];
-            if (video) picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
-            g_mfCameraDelegate = [[MFCameraDelegate alloc] init];
-            picker.delegate = g_mfCameraDelegate;
-            [mfTopViewController() presentViewController:picker animated:YES completion:nil];
-        } @catch (NSException *ex) {
-            mfEmit(@"common:capture", @{@"error":
-                [NSString stringWithFormat:@"camera unavailable: %@", ex.reason ?: ex.name]});
-        }
+
+        g_mfCameraDelegate = [[MFCameraDelegate alloc] init];
+        picker.delegate = g_mfCameraDelegate;
+        [mfTopViewController() presentViewController:picker animated:YES completion:nil];
     });
 }
 
