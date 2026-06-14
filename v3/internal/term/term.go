@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -92,6 +93,7 @@ func Section(s string) {
 
 func DisableColor() {
 	pterm.DisableColor()
+	lipgloss.SetColorProfile(termenv.Ascii)
 }
 
 func EnableOutput() {

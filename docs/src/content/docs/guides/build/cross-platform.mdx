@@ -411,6 +411,7 @@ If you have your own macOS SDK (e.g., extracted from Xcode), you can modify the 
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
+# (Replace 14.5 with your SDK version in both the COPY and mv commands)
 COPY MacOSX14.5.sdk.tar.xz /tmp/sdk.tar.xz
 RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
     && mv /opt/MacOSX14.5.sdk /opt/macos-sdk \

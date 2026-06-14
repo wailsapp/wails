@@ -247,6 +247,7 @@ func renderReport(report *DoctorReport) error {
 		var dependencyTableData pterm.TableData
 		var optionals pterm.TableData
 		mapKeys = lo.Keys(report.Dependencies)
+		slices.Sort(mapKeys)
 		for _, key := range mapKeys {
 			if strings.HasPrefix(report.Dependencies[key], "*") {
 				optionals = append(optionals, []string{key, report.Dependencies[key]})
@@ -262,8 +263,10 @@ func renderReport(report *DoctorReport) error {
 	term.Section("Signing")
 	signingTableData := pterm.TableData{}
 	signingMap := formatSigningStatus(report.Signing)
-	for key, value := range signingMap {
-		signingTableData = append(signingTableData, []string{key, value})
+	for _, key := range []string{"macOS Signing", "Windows Signing", "Linux Signing"} {
+		if value, ok := signingMap[key]; ok {
+			signingTableData = append(signingTableData, []string{key, value})
+		}
 	}
 	if err := pterm.DefaultTable.WithBoxed(true).WithData(signingTableData).Render(); err != nil {
 		return err

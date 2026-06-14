@@ -1310,9 +1310,10 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		req.ProfileName,
 		"--apple-id", req.AppleID,
 		"--team-id", req.TeamID,
-		"--password", req.Password,
+		"--password-stdin",
 		"--validate",
 	)
+	cmd.Stdin = strings.NewReader(req.Password)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		errMsg := strings.TrimSpace(string(output))

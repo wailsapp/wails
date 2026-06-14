@@ -107,10 +107,12 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 		options.ProductVersion = globalDefaults.GetDefaultVersion()
 	}
 
-	// Always apply UseInterfaces from global defaults.
-	// The CLI flag default ("true") matches the typical preference, but global
-	// defaults should be authoritative so users can set it to false via `wails3 setup`.
-	options.UseInterfaces = globalDefaults.Project.UseInterfaces
+	// Apply UseInterfaces from global defaults only when the user hasn't explicitly
+	// disabled it via --useinterfaces=false. The CLI default is true, so if it's
+	// still true here the user didn't override it and we can apply the configured default.
+	if options.UseInterfaces {
+		options.UseInterfaces = globalDefaults.Project.UseInterfaces
+	}
 	options.UseInterfacesFromDefaults = true
 }
 

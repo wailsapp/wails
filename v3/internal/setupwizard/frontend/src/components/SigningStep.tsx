@@ -77,14 +77,16 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
     setConfigStep('identity');
   };
 
-  const handleSave = async () => {
-    if (!config) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!config) return false;
     setSaveError(null);
     try {
       await saveSigning(config);
+      return true;
     } catch (e) {
       console.error('Failed to save signing config:', e);
       setSaveError('Failed to save configuration. Please try again.');
+      return false;
     }
   };
 
@@ -542,9 +544,8 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     }}
                     onSkip={async () => {
                       // Save identity/teamID without notarization
-                      await handleSave();
-                      setConfigStep('status');
-                      await loadData();
+                      const ok = await handleSave();
+                      if (ok) { setConfigStep('status'); await loadData(); }
                     }}
                     onBack={() => setConfigStep('identity')}
                   />
@@ -577,7 +578,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                       </button>
                     ) : (
                       <button
-                        onClick={async () => { await handleSave(); if (!saveError) { setConfigStep('status'); await loadData(); } }}
+                        onClick={async () => { const ok = await handleSave(); if (ok) { setConfigStep('status'); await loadData(); } }}
                         className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
                       >
                         Save
