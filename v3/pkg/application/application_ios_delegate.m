@@ -11,10 +11,17 @@ extern void iosApplicationDidLaunch(void);
     // Set global appDelegate reference and bring up a window if needed
     appDelegate = self;
     if (self.window == nil) {
+        // Start the window with the launch-screen colour (a "LaunchBackground"
+        // colour asset, also referenced by UILaunchScreen) so there's no white
+        // flash between the launch screen and the first WebView paint. The Go
+        // options set the colour too, but that happens after this delegate runs,
+        // so it can't colour the initial window. Falls back to white if the
+        // asset isn't present.
+        UIColor *launchBG = [UIColor colorNamed:@"LaunchBackground"] ?: [UIColor whiteColor];
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        self.window.backgroundColor = [UIColor whiteColor];
+        self.window.backgroundColor = launchBG;
         UIViewController *rootVC = [[UIViewController alloc] init];
-        rootVC.view.backgroundColor = [UIColor whiteColor];
+        rootVC.view.backgroundColor = launchBG;
         self.window.rootViewController = rootVC;
         [self.window makeKeyAndVisible];
     }
