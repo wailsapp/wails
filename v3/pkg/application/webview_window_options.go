@@ -344,11 +344,6 @@ type WindowsWindow struct {
 	// Default: false
 	WindowMaskDraggable bool
 
-	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
-	// when resizing the window
-	// Default: 0
-	ResizeDebounceMS uint16
-
 	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
 	// when moving the window
 	// Default: 0
