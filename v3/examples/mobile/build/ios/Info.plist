@@ -55,6 +55,8 @@
     <string>Used to capture photos and video.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Used to record audio with video capture.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Used to demonstrate biometric authentication.</string>
 
     <key>NSHumanReadableCopyright</key>
     <string>© now, My Company</string>
