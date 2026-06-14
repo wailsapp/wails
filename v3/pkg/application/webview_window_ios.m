@@ -290,7 +290,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         NSString *json = [NSString stringWithFormat:
             @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
             (int)s.top, (int)s.bottom, (int)s.left, (int)s.right];
-        iosEmitNativeEvent("native:safeArea", [json UTF8String]);
+        iosEmitNativeEvent("common:safeArea", [json UTF8String]);
     }
 }
 - (void)enableNativeTabs:(BOOL)enabled {

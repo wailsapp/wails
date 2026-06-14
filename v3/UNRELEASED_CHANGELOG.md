@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Move iOS and Android native features onto platform managers: call them via `application.IOS.*` and `application.Android.*` (e.g. `application.IOS.Haptic("medium")`, `application.Android.Share(payload)`) instead of the old `application.IOS*`/`application.Android*` free functions (#5602)
+- Rename mobile bridge events: cross-platform events now use the `common:*` prefix (e.g. `common:haptic`, `common:location`) and platform-exclusive events use `ios:*` / `android:*` (e.g. `ios:backgroundTask`, `android:foregroundService`); the `native:*` prefix is no longer used (#5602)
 
 ## Fixed
 <!-- Bug fixes -->

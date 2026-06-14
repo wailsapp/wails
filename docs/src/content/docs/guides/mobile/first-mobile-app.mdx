@@ -352,15 +352,31 @@ package main
 import "github.com/wailsapp/wails/v3/pkg/application"
 
 func registerNativeFeatures(app *application.App) {
-    app.Event.On("native:haptic", func(e *application.CustomEvent) {
+    app.Event.On("common:haptic", func(e *application.CustomEvent) {
         // only compiled and called on iOS
-        application.IOSHaptic("medium")
+        application.IOS.Haptic("medium")
     })
     // ... other handlers
 }
 ```
 
 This is the exact pattern the [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) uses — see `native_features_stub.go`, `native_features_ios.go`, and `native_features_android.go`.
+
+<Aside type="note" title="Native feature API & event naming">
+Two conventions are worth knowing:
+
+- **Go-side native features use platform managers.** Call them through the
+  `application.IOS.*` and `application.Android.*` singletons — for example
+  `application.IOS.Haptic("medium")` or `application.Android.Share(payload)`.
+  Each manager only exists on its own platform, so its calls live in
+  `//go:build ios` / `//go:build android` files.
+- **Events are namespaced by reach.** Anything both platforms understand uses the
+  `common:*` prefix (`common:haptic`, `common:location`, …); events that only one
+  platform can produce or handle use `ios:*` or `android:*` (for example
+  `ios:backgroundTask`, `android:foregroundService`). Because almost every mobile
+  feature is shared, your frontend keeps a single listener per event under
+  `common:*`.
+</Aside>
 
 ### Add haptic feedback (iOS)
 
