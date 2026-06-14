@@ -413,7 +413,19 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
 }
 
-- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation {
+// Fix: the previous override was missing the withError: parameter, so its
+// selector never matched and iOS silently swallowed provisional-navigation
+// failures. With the correct selector the failure is reported (and logged in
+// verbose mode).
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+    WailsVLog(@"[WailsViewController] provisional navigation failed: %@ (code=%ld domain=%@)", error.localizedDescription, (long)error.code, error.domain);
+    if( hasListeners(EventWebViewDidFailNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+    WailsVLog(@"[WailsViewController] navigation failed: %@ (code=%ld)", error.localizedDescription, (long)error.code);
     if( hasListeners(EventWebViewDidFailNavigation) ) {
         processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
     }
@@ -432,6 +444,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
 // permanently blank — the "white screen on the 3rd+ launch". Reloading
 // respawns the renderer and restores the current page.
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    WailsVLog(@"[WailsViewController] WebContent process terminated — reloading");
     [webView reload];
 }
 
@@ -464,8 +477,12 @@ void* ios_create_webview_with_id(unsigned int wailsID) {
         if (appDelegate.viewControllers.count == 1) {
             appDelegate.window.rootViewController = viewController;
         }
-        [viewController loadView];
-        [viewController viewDidLoad];
+        // Trigger the view to load exactly once, the UIKit-correct way. Calling
+        // -loadView and -viewDidLoad manually made UIKit ALSO load the view
+        // automatically, creating two WebViews/viewDidLoad passes: content loaded
+        // into one while the other (blank) was displayed → intermittent white
+        // screen on cold launch (force-quit + relaunch).
+        [viewController loadViewIfNeeded];
     };
     if ([NSThread isMainThread]) {
         createBlock();

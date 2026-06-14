@@ -38,7 +38,11 @@ func main() {
 		},
 		// Navigation is handled by the in-page tab bar so the UX is identical
 		// on every platform; native iOS tabs are intentionally left off here.
-		IOS:     application.IOSOptions{},
+		// Match the app window background to the web background (--bg #1b2636) so
+		// there's no white flash before the WebView paints on (re)launch.
+		IOS: application.IOSOptions{
+			BackgroundColour: application.NewRGB(27, 38, 54),
+		},
 		Android: application.AndroidOptions{},
 	})
 
