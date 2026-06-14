@@ -70,8 +70,7 @@ type windowsWebviewWindow struct {
 	onceDo             sync.Once
 
 	// Window move debouncer
-	moveDebouncer   func(func())
-	resizeDebouncer func(func())
+	moveDebouncer func(func())
 
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
@@ -463,12 +462,6 @@ func (w *windowsWebviewWindow) run() {
 	w.moveDebouncer = debounce.New(
 		time.Duration(options.Windows.WindowDidMoveDebounceMS) * time.Millisecond,
 	)
-
-	if options.Windows.ResizeDebounceMS > 0 {
-		w.resizeDebouncer = debounce.New(
-			time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond,
-		)
-	}
 
 	// Initialise the window buttons
 	w.setMinimiseButtonState(options.MinimiseButtonState)
@@ -1507,8 +1500,6 @@ func (w *windowsWebviewWindow) isActive() bool {
 	return w32.GetForegroundWindow() == w.hwnd
 }
 
-var resizePending int32
-
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	// Use the original implementation that works perfectly for maximized
@@ -1613,7 +1604,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowPaint)
 	case w32.WM_ERASEBKGND:
 		w.parent.emit(events.Windows.WindowBackgroundErase)
-		return 1 // Let WebView2 handle background erasing
+		// Paint the background with the configured colour so that areas not yet
+		// covered by WebView2 during a resize show the correct colour instead of white.
+		if w.parent.options.BackgroundType == BackgroundTypeSolid {
+			col := w.parent.options.BackgroundColour
+			hdc := w32.HDC(wparam)
+			rc := w32.GetClientRect(w.hwnd)
+			colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
+			hbrush := w32.CreateSolidBrush(colorRef)
+			w32.FillRect(hdc, rc, hbrush)
+			w32.DeleteObject(w32.HGDIOBJ(hbrush))
+		}
+		return 1
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
 	// Check for keypress
 	case w32.WM_SYSCOMMAND:
@@ -1689,35 +1691,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		w.lastSizeWParam = wparam
 
-		doResize := func() {
-			// Get the new size from lparam
+		if !(w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED) {
+			// If the window is frameless and minimizing, suppress the WebView2 resize.
+			// Without this, restoring has wrong dimensions during the animation.
+			// See https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
 			width := int32(lparam & 0xFFFF)
 			height := int32((lparam >> 16) & 0xFFFF)
-			bounds := &edge.Rect{
-				Left:   0,
-				Top:    0,
-				Right:  width,
-				Bottom: height,
-			}
+			bounds := &edge.Rect{Left: 0, Top: 0, Right: width, Bottom: height}
 			InvokeSync(func() {
 				time.Sleep(1 * time.Nanosecond)
 				w.chromium.ResizeWithBounds(bounds)
-				atomic.StoreInt32(&resizePending, 0)
 				w.parent.emit(events.Windows.WindowDidResize)
 			})
-		}
-
-		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
-			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
-			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
-			// size during the restore animation and only fully renders when the animation is done. This highly
-			// depends on the content in the WebView, see https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
-		} else if w.resizeDebouncer != nil {
-			w.resizeDebouncer(doResize)
-		} else {
-			if atomic.CompareAndSwapInt32(&resizePending, 0, 1) {
-				doResize()
-			}
 		}
 		return 0
 
