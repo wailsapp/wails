@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 	"unsafe"
 
 	"encoding/json"
@@ -71,24 +70,16 @@ func (a *App) platformRun() {
 
 	C.ios_app_init()
 
-	// Wait until the UIApplication delegate has finished launching.
-	// UIApplicationMain runs on the main thread (started from main.m); the
-	// delegate signals readiness via iosApplicationDidLaunch. The timeout is a
-	// safety net only - it should never be hit in practice.
-	select {
-	case <-iosLaunched:
-		iosDebugLogf("[application_ios.go] UIKit launch signal received")
-	case <-time.After(10 * time.Second):
-		iosConsoleLogf("warn", "[application_ios.go] Timed out waiting for UIKit launch signal; continuing")
-	}
+	// The Go runtime is started by the UIApplication delegate's
+	// didFinishLaunchingWithOptions (see application_ios_delegate.m), so by the
+	// time we get here UIKit has already launched and appDelegate/window exist.
+	// Release the window-creation waiter and keep the runtime alive. The OS main
+	// thread is owned by UIApplicationMain (in main.m); this runs on the
+	// background goroutine the delegate started.
+	iosLaunchedOnce.Do(func() {
+		close(iosLaunched)
+	})
 
-	// Emit the launch event from here rather than the delegate: by this point
-	// setupCommonEvents has registered its listeners, so the event (and its
-	// Common.ApplicationStarted mapping) cannot be dropped by startup races.
-	applicationEvents <- newApplicationEvent(events.IOS.ApplicationDidFinishLaunching)
-
-	// The WebView is created when the window runs (app.Window.NewWithOptions).
-	// UIApplicationMain owns the main thread; keep the Go runtime alive here.
 	select {}
 }
 
@@ -198,27 +189,37 @@ func newPlatformApp(app *App) *iosApp {
 }
 
 func (a *iosApp) run() error {
-	// UIApplicationMain is already running in the main thread (from main.m).
-	// Wire common events (e.g. map ApplicationDidFinishLaunching → Common.ApplicationStarted)
-	a.setupCommonEvents()
+	// CRITICAL (gomobile/Gio model): nothing may run on the main thread before
+	// UIApplicationMain, or UIKit never delivers the launch to the delegate on a
+	// physical device (blank screen). So defer ALL startup work — including the
+	// pure-Go common-event wiring — to a goroutine. The main goroutine does
+	// nothing but call UIApplicationMain (via platformRun) below.
+	go func() {
+		// Wire common events (maps ApplicationDidFinishLaunching ->
+		// Common.ApplicationStarted) before the launch event is emitted.
+		a.setupCommonEvents()
 
-	// Populate the ScreenManager so Screens.* runtime calls return data
-	// (desktop platforms do this from their event loop; iOS has none).
-	// getScreens() always yields at least a fallback screen, so this is safe.
-	if screens, err := getScreens(); err == nil && len(screens) > 0 {
-		if err := a.parent.Screen.LayoutScreens(screens); err != nil {
-			iosConsoleLogf("error", "[application_ios.go] LayoutScreens failed: %v", err)
+		<-iosLaunched
+
+		// Populate the ScreenManager so Screens.* runtime calls return data.
+		if screens, err := getScreens(); err == nil && len(screens) > 0 {
+			if err := a.parent.Screen.LayoutScreens(screens); err != nil {
+				iosConsoleLogf("error", "[application_ios.go] LayoutScreens failed: %v", err)
+			}
 		}
-	}
 
-	// Start the native system-event monitors (battery, network, lock, theme,
-	// app lifecycle, memory). They emit "system:*" custom events to JS.
-	C.ios_start_system_event_monitors()
+		// Start the native system-event monitors (battery, network, lock, theme,
+		// app lifecycle, memory). They emit "system:*" custom events to JS.
+		C.ios_start_system_event_monitors()
 
+		// Emit the launch event now that listeners are wired and UIKit is up.
+		applicationEvents <- newApplicationEvent(events.IOS.ApplicationDidFinishLaunching)
+	}()
+
+	// Hand the main thread to UIKit. platformRun calls UIApplicationMain and does
+	// not return for the lifetime of the app.
 	a.parent.platformRun()
 
-	// platformRun blocks forever with select{}
-	// If we get here, something went wrong
 	iosConsoleLogf("error", "[application_ios.go] ERROR: platformRun() returned unexpectedly")
 	return nil
 }
@@ -318,47 +319,45 @@ var iosRuntimeReadyWindows sync.Map
 //
 //export ServeAssetRequest
 func ServeAssetRequest(windowID C.uint, urlSchemeTask unsafe.Pointer) {
-	// Route the request through the webviewRequests channel to use the asset server
-	go func() {
-		// Use the webview package's NewRequest to wrap the task pointer
-		req := webview.NewRequest(urlSchemeTask)
-		url, _ := req.URL()
+	// Run synchronously on the calling (UIKit) thread and hand the request off to
+	// the long-lived reader goroutine via the buffered webviewRequests channel.
+	//
+	// We deliberately do NOT spawn a goroutine here. A goroutine started from
+	// within a cgo //export call is not reliably scheduled during cold launch:
+	// it could be created but never run, leaving asset requests unserved and the
+	// WebView blank (an intermittent white/blank screen on relaunch). Waking the
+	// already-running reader via a channel send is reliable, and webviewRequests
+	// is buffered generously so this send does not block the UIKit thread.
+	req := webview.NewRequest(urlSchemeTask)
+	url, _ := req.URL()
 
-		iosDebugLogf("[iOS-request] %s (window %d)", url, windowID)
-
-		// The JavaScript runtime announces itself with a
-		// "wails:runtime:ready" postMessage, but a message posted during the
-		// initial page load can be dropped by WebKit before the bridge is
-		// fully up. A call to /wails/runtime proves the runtime is mounted,
-		// so treat the first one as an implicit ready signal. processMessage
-		// handles duplicate ready messages gracefully.
-		if strings.Contains(url, "/wails/runtime") {
-			if _, alreadyReady := iosRuntimeReadyWindows.LoadOrStore(uint(windowID), true); !alreadyReady {
-				windowMessageBuffer <- &windowMessage{
-					windowId: uint(windowID),
-					message:  "wails:runtime:ready",
-				}
+	// The JS runtime announces itself via a "wails:runtime:ready" postMessage,
+	// but that can be dropped during the initial load; a /wails/runtime call
+	// proves the runtime is mounted, so treat the first one as an implicit ready
+	// signal (duplicate ready messages are handled gracefully).
+	if strings.Contains(url, "/wails/runtime") {
+		if _, alreadyReady := iosRuntimeReadyWindows.LoadOrStore(uint(windowID), true); !alreadyReady {
+			windowMessageBuffer <- &windowMessage{
+				windowId: uint(windowID),
+				message:  "wails:runtime:ready",
 			}
 		}
+	}
 
-		// Try to resolve the window name from the window ID so the AssetServer
-		// receives both x-wails-window-id and x-wails-window-name headers.
-		winName := ""
-		if globalApplication != nil {
-			if window, ok := globalApplication.Window.GetByID(uint(windowID)); ok && window != nil {
-				winName = window.Name()
-			}
+	// Resolve the window name so the AssetServer receives both x-wails-window-id
+	// and x-wails-window-name headers.
+	winName := ""
+	if globalApplication != nil {
+		if window, ok := globalApplication.Window.GetByID(uint(windowID)); ok && window != nil {
+			winName = window.Name()
 		}
+	}
 
-		request := &webViewAssetRequest{
-			Request:    req,
-			windowId:   uint(windowID),
-			windowName: winName,
-		}
-
-		// Send through the channel to be handled by the asset server
-		webviewRequests <- request
-	}()
+	webviewRequests <- &webViewAssetRequest{
+		Request:    req,
+		windowId:   uint(windowID),
+		windowName: winName,
+	}
 }
 
 // HandleJSMessage handles messages from JavaScript

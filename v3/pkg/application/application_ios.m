@@ -9,6 +9,7 @@
 #import <sys/utsname.h>
 #import <stdlib.h>
 #import <string.h>
+#import <os/log.h>
 
 // Forward declarations for Go callbacks
 void ServeAssetRequest(unsigned int windowID, void* urlSchemeTask);
@@ -56,10 +57,9 @@ void ios_app_init(void) {
 }
 
 void ios_app_run(void) {
-    // This function is no longer used - UIApplicationMain is called from main.m
-    // The WailsAppDelegate is automatically instantiated by UIApplicationMain
-    extern void LogInfo(const char* source, const char* message);
-    LogInfo("ios_app_run", "⚠️ This function should not be called - UIApplicationMain runs from main.m");
+    // No-op: UIApplicationMain is invoked from main.m (the C entry point) on the
+    // real OS main thread. The Go runtime is started by the app delegate's
+    // didFinishLaunchingWithOptions, i.e. only after UIKit has launched.
 }
 
 void ios_app_quit(void) {

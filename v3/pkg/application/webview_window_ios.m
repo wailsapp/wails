@@ -5,6 +5,7 @@
 #import "../events/events_ios.h"
 #import "mobile_features_ios_internal.h"
 #import <stdlib.h>
+#import <os/log.h>
 extern void processApplicationEvent(unsigned int, void* data);
 extern void iosEmitNativeEvent(const char* name, const char* json);
 extern void processWindowEvent(unsigned int, unsigned int);
@@ -415,8 +416,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
 
 // Fix: the previous override was missing the withError: parameter, so its
 // selector never matched and iOS silently swallowed provisional-navigation
-// failures. With the correct selector the failure is reported (and logged in
-// verbose mode).
+// failures. With the correct selector the failure is reported.
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
     WailsVLog(@"[WailsViewController] provisional navigation failed: %@ (code=%ld domain=%@)", error.localizedDescription, (long)error.code, error.domain);
     if( hasListeners(EventWebViewDidFailNavigation) ) {
@@ -538,8 +538,9 @@ void ios_console_log(const char* level, const char* message) {
     if (!message) return;
     NSString *lvl = level ? [NSString stringWithUTF8String:level] : @"log";
     NSString *msg = [NSString stringWithUTF8String:message];
-    // Mirror to system log for simctl visibility
-    NSLog(@"[ios_console_log][%@] %@", lvl, msg);
+    // Mirror to system log. Use %@ (NOT %{public}@) so message content is kept
+    // private/redacted in release builds — it can contain app/user data.
+    os_log(OS_LOG_DEFAULT, "[ios_console_log][%@] %@", lvl, msg);
     // Robustly encode message to avoid JS string escaping issues
     NSData *data = [msg dataUsingEncoding:NSUTF8StringEncoding];
     NSString *b64 = [data base64EncodedStringWithOptions:0];

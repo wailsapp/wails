@@ -119,7 +119,7 @@ tasks:
           -framework CoreLocation -framework CoreMotion -framework SystemConfiguration \
           -lresolv \
           -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
-          "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"
+          "$MAIN_M" -Wl,-force_load,"{{.BIN_DIR}}/{{.APP_NAME}}.a"
 
   create:app:bundle:
     summary: Creates an iOS `.app` bundle

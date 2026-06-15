@@ -6,6 +6,7 @@ package webview
 #cgo CFLAGS: -x objective-c -fobjc-arc
 #cgo LDFLAGS: -framework Foundation -framework WebKit
 
+#include <stdlib.h>
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
@@ -68,9 +69,7 @@ static bool URLSchemeTaskDidReceiveResponse(void *wkUrlSchemeTask, int statusCod
 import "C"
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 	"unsafe"
 
 	"encoding/json"
@@ -102,15 +101,6 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 
 	rw.WriteHeader(http.StatusOK)
 
-	// Debug logging for CSS files
-	if url, err := rw.r.URL(); err == nil && (strings.Contains(url, ".css") || strings.Contains(url, "style")) {
-		preview := string(buf)
-		if len(preview) > 100 {
-			preview = preview[:100] + "..."
-		}
-		fmt.Printf("🎨 CSS Write: URL=%s Size=%d Preview=%s\n", url, len(buf), preview)
-	}
-
 	var content unsafe.Pointer
 	var contentLen int
 	if buf != nil {
@@ -136,11 +126,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 		header[k] = rw.Header().Get(k)
 	}
 	headerData, _ := json.Marshal(header)
-
-	// Debug logging for CSS files
-	if url, err := rw.r.URL(); err == nil && (strings.Contains(url, ".css") || strings.Contains(url, "style")) {
-		fmt.Printf("🎨 CSS Response: URL=%s Code=%d Headers=%s\n", url, code, string(headerData))
-	}
 
 	var headers unsafe.Pointer
 	var headersLen int
