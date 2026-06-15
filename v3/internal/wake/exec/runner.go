@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/parse"
 	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
@@ -19,16 +20,17 @@ var cache = &runCache{
 	lastRuns: make(map[string]time.Time),
 }
 
-func checkPreconditions(task *ast.Task) error {
+func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 	for _, pc := range task.Precondition {
 		if pc.Sh == "" {
 			continue
 		}
-		c := platform.ShellCommand(pc.Sh)
+		sh := parse.ExpandTemplates(pc.Sh, vars)
+		c := platform.ShellCommand(sh)
 		if err := c.Run(); err != nil {
-			msg := pc.Msg
+			msg := parse.ExpandTemplates(pc.Msg, vars)
 			if msg == "" {
-				msg = fmt.Sprintf("precondition failed: %q", pc.Sh)
+				msg = fmt.Sprintf("precondition failed: %q", sh)
 			}
 			return fmt.Errorf("wake: %s", msg)
 		}
