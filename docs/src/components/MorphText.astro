@@ -1,0 +1,144 @@
+---
+---
+<style is:global>
+  .morph-word-title {
+    display: inline-block;
+    position: relative;
+    width: 4.5em;
+    text-align: left;
+  }
+
+  .morph-word-title span {
+    display: inline-block;
+    transition: all 0.8s ease-in-out;
+  }
+
+  .morph-word-title span.fade-out {
+    opacity: 0;
+  }
+
+  .morph-word-title span.blur-out {
+    opacity: 0;
+    filter: blur(8px);
+  }
+
+  .morph-word-title span.scale-out {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .morph-word-title span.slide-out {
+    opacity: 0;
+    transform: translateY(-0.3em);
+  }
+
+  .browser-footnote {
+    display: block;
+    font-size: 0.65em;
+    opacity: 0.6;
+    margin-top: 0.5em;
+    font-style: italic;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    const words = ['Desktop', 'Server'];
+    const transitions = ['fade-out', 'blur-out', 'scale-out', 'slide-out'];
+    let currentIndex = 0;
+    let initialized = false;
+
+    function init() {
+      if (initialized) return;
+
+      // Search for "Build Desktop" text
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+
+      let textNode;
+      let targetNode = null;
+
+      while (textNode = walker.nextNode()) {
+        if (textNode.textContent.includes('Build Desktop')) {
+          targetNode = textNode;
+          break;
+        }
+      }
+
+      if (!targetNode) {
+        setTimeout(init, 300);
+        return;
+      }
+
+      const parent = targetNode.parentElement;
+      if (parent.querySelector('.morph-word-title')) return;
+      initialized = true;
+
+      // Replace to add line break after Desktop and make Desktop morphable
+      const newHTML = targetNode.textContent.replace(
+        /Build Desktop Apps with Go/,
+        'Build <span class="morph-word-title"><span>Desktop</span></span><br>Apps with Go'
+      );
+
+      const wrapper = document.createElement('span');
+      wrapper.innerHTML = newHTML;
+      targetNode.parentNode.replaceChild(wrapper, targetNode);
+
+      // Add footnote after tagline
+      const taglineWalker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+
+      let taglineNode;
+      while (taglineNode = taglineWalker.nextNode()) {
+        if (taglineNode.textContent.includes('No browsers.*')) {
+          const taglineParent = taglineNode.parentElement;
+          if (!taglineParent.querySelector('.browser-footnote')) {
+            const footnote = document.createElement('span');
+            footnote.className = 'browser-footnote';
+            footnote.textContent = '* unless you really want to';
+            taglineParent.appendChild(footnote);
+          }
+          break;
+        }
+      }
+
+      scheduleNext();
+    }
+
+    function scheduleNext() {
+      const delay = 3000 + Math.random() * 2000;
+      setTimeout(morph, delay);
+    }
+
+    function morph() {
+      const morphSpan = document.querySelector('.morph-word-title span');
+      if (!morphSpan) return;
+
+      const transition = transitions[Math.floor(Math.random() * transitions.length)];
+      morphSpan.classList.add(transition);
+
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % words.length;
+        morphSpan.textContent = words[currentIndex];
+        morphSpan.classList.remove(transition);
+        scheduleNext();
+      }, 800);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    window.addEventListener('load', init);
+  })();
+</script>

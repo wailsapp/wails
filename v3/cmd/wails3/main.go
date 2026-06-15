@@ -50,7 +50,12 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
 	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
@@ -98,7 +103,8 @@ func main() {
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
-	tool.NewSubCommandFunction("has-cc", "Check if a C compiler (gcc or clang) is available in PATH", commands.ToolHasCC)
+	tool.NewSubCommandFunction("has", "Check if a tool is available in PATH (e.g. wails3 tool has git, wails3 tool has gcc|clang)", commands.ToolHas)
+	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has gcc|clang' instead", commands.ToolHasCC)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
@@ -109,7 +115,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)

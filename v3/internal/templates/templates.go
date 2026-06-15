@@ -12,14 +12,14 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 	"github.com/wailsapp/wails/v3/internal/s"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"gopkg.in/yaml.v3"
 
 	"errors"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/debug"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -100,6 +100,7 @@ type TemplateOptions struct {
 	BinaryName      string
 	LocalModulePath string
 	UseTypescript   bool
+	UseInterfaces   bool
 	WailsVersion    string
 }
 
@@ -240,27 +241,20 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	return result, nil
 }
 
-// Clones the given uri and returns the temporary cloned directory
+// gitclone clones uri into a temporary directory and returns its path.
 func gitclone(uri string) (string, error) {
-	// Create temporary directory
 	dirname, err := os.MkdirTemp("", "wails-template-*")
 	if err != nil {
 		return "", err
 	}
 
-	// Parse remote template url and version number
-	templateInfo := strings.Split(uri, "@")
-	cloneOption := &git.CloneOptions{
-		URL: templateInfo[0],
-	}
-	if len(templateInfo) > 1 {
-		cloneOption.ReferenceName = plumbing.NewTagReferenceName(templateInfo[1])
+	parts := strings.SplitN(uri, "@", 2)
+	url, tag := parts[0], ""
+	if len(parts) > 1 {
+		tag = parts[1]
 	}
 
-	_, err = git.PlainClone(dirname, false, cloneOption)
-
-	return dirname, err
-
+	return dirname, git.Clone(url, dirname, tag)
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {
@@ -331,6 +325,7 @@ func Install(options *flags.Init) error {
 		BinaryName:      NormalizeBinaryName(options.ProjectName),
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
+		UseInterfaces:   options.UseInterfaces,
 		WailsVersion:    version.String(),
 		Opn:             "{{",
 		Cls:             "}}",
@@ -382,19 +377,44 @@ func Install(options *flags.Init) error {
 		}
 	}
 
-	pterm.Printf("Creating project\n")
-	pterm.Printf("----------------\n\n")
-	table := pterm.TableData{
-		{"Project Name", options.ProjectName},
-		{"Project Directory", filepath.FromSlash(options.ProjectDir)},
-		{"Template", template.Name},
-		{"Template Source", template.HelpURL},
-		{"Template Version", template.Version},
+	term.Section("Project")
+
+	language := "JavaScript"
+	if UseTypescript {
+		language = "TypeScript"
 	}
-	err = pterm.DefaultTable.WithData(table).Render()
-	if err != nil {
-		return err
+
+	framework := strings.TrimSuffix(options.TemplateName, "-ts")
+	if len(framework) > 0 {
+		framework = strings.ToUpper(framework[:1]) + framework[1:]
 	}
+
+	frameworkDisplay := framework
+	languageDisplay := language
+	if options.TemplateFromDefaults {
+		frameworkDisplay += " (default)"
+		languageDisplay += " (default)"
+	}
+
+	rows := [][]string{
+		{"Name", options.ProjectName},
+		{"Directory", filepath.FromSlash(options.ProjectDir)},
+		{"Framework", frameworkDisplay},
+		{"Language", languageDisplay},
+	}
+
+	if UseTypescript {
+		bindingStyle := "Classes"
+		if options.UseInterfaces {
+			bindingStyle = "Interfaces"
+		}
+		if options.UseInterfacesFromDefaults {
+			bindingStyle += " (default)"
+		}
+		rows = append(rows, []string{"Bindings", bindingStyle})
+	}
+
+	fmt.Print(term.RenderTable(rows))
 
 	switch template.source {
 	case sourceInternal:
@@ -489,7 +509,8 @@ func Install(options *flags.Init) error {
 		return err
 	}
 
-	pterm.Printf("\nProject '%s' created successfully.\n", options.ProjectName)
+	fmt.Println()
+	fmt.Println(term.OkStyle.Render("✓") + " Project '" + options.ProjectName + "' created successfully.")
 
 	return nil
 

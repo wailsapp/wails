@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
@@ -12,6 +13,13 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   site: "https://v3.wails.io",
+  vite: {
+    resolve: {
+      alias: {
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url))
+      }
+    }
+  },
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",
@@ -188,6 +196,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
@@ -310,6 +319,8 @@ export default defineConfig({
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
                 { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
+                { label: "iOS", link: "/guides/build/ios" },
+                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {

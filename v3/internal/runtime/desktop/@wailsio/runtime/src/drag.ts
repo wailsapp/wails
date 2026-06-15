@@ -23,17 +23,22 @@ let resizeEdge: string = "";
 let defaultCursor = "auto";
 
 let buttons = 0;
-const buttonsTracked = canTrackButtons();
+import { hasDOM } from "./environment.js";
 
-window._wails = window._wails || {};
-window._wails.setResizable = (value: boolean): void => {
-    resizable = value;
-    if (!resizable) {
-        // Stop resizing if in progress.
-        canResize = resizing = false;
-        setResize();
-    }
-};
+let buttonsTracked = false;
+
+if (hasDOM) {
+    buttonsTracked = canTrackButtons();
+    window._wails = window._wails || {};
+    window._wails.setResizable = (value: boolean): void => {
+        resizable = value;
+        if (!resizable) {
+            // Stop resizing if in progress.
+            canResize = resizing = false;
+            setResize();
+        }
+    };
+}
 
 // Defer attaching mouse listeners until we know we're not on mobile.
 let dragInitDone = false;
@@ -55,17 +60,19 @@ function tryInitDragHandlers(): void {
     }
     dragInitDone = true;
 }
-// Attempt immediate init (in case environment already present)
-tryInitDragHandlers();
-// Also attempt on DOM ready
-document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
-// As a last resort, poll for environment for a short period
-let dragEnvPolls = 0;
-const dragEnvPoll = window.setInterval(() => {
-    if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+if (hasDOM) {
+    // Attempt immediate init (in case environment already present)
     tryInitDragHandlers();
-    if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
-}, 50);
+    // Also attempt on DOM ready
+    document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
+    // As a last resort, poll for environment for a short period
+    let dragEnvPolls = 0;
+    const dragEnvPoll = window.setInterval(() => {
+        if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+        tryInitDragHandlers();
+        if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
+    }, 50);
+}
 
 function suppressEvent(event: Event) {
     // Suppress click events while resizing or dragging.
