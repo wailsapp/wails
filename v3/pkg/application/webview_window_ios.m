@@ -414,18 +414,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
 }
 
-// Fix: the previous override was missing the withError: parameter, so its
-// selector never matched and iOS silently swallowed provisional-navigation
-// failures. With the correct selector the failure is reported.
-- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
-    WailsVLog(@"[WailsViewController] provisional navigation failed: %@ (code=%ld domain=%@)", error.localizedDescription, (long)error.code, error.domain);
-    if( hasListeners(EventWebViewDidFailNavigation) ) {
-        processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
-    }
-}
-
-- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
-    WailsVLog(@"[WailsViewController] navigation failed: %@ (code=%ld)", error.localizedDescription, (long)error.code);
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidFailNavigation) ) {
         processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
     }
@@ -436,16 +425,6 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         processWindowEvent(self.windowID, EventWebViewDecidePolicyForNavigationAction);
     }
     decisionHandler(WKNavigationActionPolicyAllow);
-}
-
-// Recover from WebContent (renderer) process termination. iOS reaps the
-// WKWebView's content process under memory pressure or after repeated
-// background/foreground and launch cycles; without this the view goes
-// permanently blank — the "white screen on the 3rd+ launch". Reloading
-// respawns the renderer and restores the current page.
-- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
-    WailsVLog(@"[WailsViewController] WebContent process terminated — reloading");
-    [webView reload];
 }
 
 // GENERATED EVENTS END
