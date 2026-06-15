@@ -31,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.103 - 2026-06-15
+
+## Changed
+- Move iOS and Android native features onto platform managers: call them via `application.IOS.*` and `application.Android.*` (e.g. `application.IOS.Haptic("medium")`, `application.Android.Share(payload)`) instead of the old `application.IOS*`/`application.Android*` free functions (#5602)
+- Rename mobile bridge events: cross-platform events now use the `common:*` prefix (e.g. `common:haptic`, `common:location`) and platform-exclusive events use `ios:*` / `android:*` (e.g. `ios:backgroundTask`, `android:foregroundService`); the `native:*` prefix is no longer used (#5602)
+
 ## v3.0.0-alpha.102 - 2026-06-14
 
 ## Added
