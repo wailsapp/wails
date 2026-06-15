@@ -1798,12 +1798,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds
-		// mode), so the rasterization scale must follow DPI changes manually.
-		w.resyncWebviewRasterizationScale()
-		// Track the new DPI while non-minimised so the un-minimise comparison
-		// (resyncWebviewDPIAfterUnminimiseIfDPIChanged, #5605) stays accurate.
+		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode),
+		// so the rasterization scale must follow DPI changes manually — but only
+		// while non-minimised. While parked at (-32000,-32000) GetDpiForWindow
+		// can report a different monitor's DPI, which would push a wrong scale
+		// onto the controller (one the restore-time DPI gate then won't correct,
+		// since DPI == lastKnownDPI) and would make a COM call into a possibly
+		// suspended controller (#5605). A genuine DPI difference is instead
+		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
+			w.resyncWebviewRasterizationScale()
+			// Track the new DPI so the un-minimise comparison stays accurate.
 			if dpi, _ := w.DPI(); dpi != 0 {
 				w.lastKnownDPI = dpi
 			}
