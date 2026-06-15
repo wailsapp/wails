@@ -5,15 +5,12 @@ import {GreetService} from '../bindings/{{js .ModulePath}}';
 
 /**
  * An example element.
- *
- * @slot - This element has a slot
- * @csspart button - The button
  */
 @customElement('my-element')
 export class MyElement extends LitElement {
 
     @property()
-    result: string = 'Please enter your name below 👇'
+    result: string = ''
 
     @property()
     time: string = 'Listening for Time event...'
@@ -43,128 +40,180 @@ export class MyElement extends LitElement {
 
     render() {
         return html`
-            <div class="container">
-                <div>
-                    <a data-wml-openURL="https://wails.io">
-                        <img src="/wails.png" class="logo" alt="Wails logo"/>
+            <main class="container">
+                <header class="brand">
+                    <a class="brand-mark" data-wml-openURL="https://wails.io" aria-label="Wails website">
+                        <img src="/wails.png" class="brand-logo" alt="Wails logo"/>
                     </a>
-                    <a data-wml-openURL="https://lit.dev">
-                        <img src="/lit.svg" class="logo lit" alt="Lit logo"/>
+                    <a class="brand-badge" data-wml-openURL="https://lit.dev" aria-label="Lit">
+                        <img src="/lit.svg" alt="Lit logo"/>
                     </a>
-                </div>
-                <slot></slot>
-                <div aria-label="result" class="result">${this.result}</div>
-                <div class="card">
+                </header>
+
+                <span class="badge">v3</span>
+
+                <h1 class="title"><span class="title-accent">Wails +</span> Lit</h1>
+                <p class="subtitle">Build beautiful cross-platform apps with Go and Lit.</p>
+
+                <div class="greet">
                     <div class="input-box">
-                        <input aria-label="input" class="input" .value=${this.name} @input=${(e: InputEvent) => this.name = (e.target as HTMLInputElement).value} type="text"
-                               autocomplete="off"/>
-                        <button aria-label="greet-btn" class="btn" @click=${this.doGreet}>Greet</button>
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input aria-label="input" class="input" .value=${this.name} @input=${(e: InputEvent) => this.name = (e.target as HTMLInputElement).value} type="text" placeholder="Enter your name" autocomplete="off"/>
+                        <button aria-label="greet-btn" class="btn" @click=${this.doGreet}>Greet
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </button>
                     </div>
+                    <div aria-label="result" class="result">${this.result}</div>
                 </div>
-                <div class="footer">
-                    <div><p>Click on the Wails logo to learn more</p></div>
-                    <div><p>${this.time}</p></div>
-                </div>
-            </div>
+
+                <a class="learn-card" data-wml-openURL="https://wails.io" aria-label="Learn more about Wails">
+                    <span class="learn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </span>
+                    <span class="learn-text">
+                        <strong>Learn more about Wails</strong>
+                        <span>Discover the docs, guides, and community.</span>
+                    </span>
+                    <svg class="learn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                </a>
+
+                <footer class="footer">
+                    <span class="footer-time">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>${this.time}</span>
+                    </span>
+                    <span class="footer-version"><span class="dot"></span> Wails v3</span>
+                </footer>
+            </main>
         `
     }
 
 
     static styles = css`
-        /* Tokens (--bg, --surface, --accent, ...) are defined on :root in the
-           global stylesheet and inherit across the shadow boundary. */
-        :host {
-            display: block;
-            width: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            color: var(--text);
-        }
+        /* Design tokens (--ink, --text, --accent, ...) are defined on :root in the
+           global stylesheet and inherit across the shadow boundary. The fixed .bg
+           layer and the body flex centering also live in the global stylesheet. */
+        :host { display: contents; }
 
         .container {
+            width: 100%;
+            max-width: 540px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-                     max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
-        }
-
-        ::slotted(h1) {
-            font-size: clamp(1.9rem, 8vw, 3rem);
-            line-height: 1.1;
-            font-weight: 700;
-            margin: 0.4em 0 0.9em;
-        }
-
-        .logo {
-            height: clamp(4rem, 16vw, 6rem);
-            max-width: 40vw;
-            padding: 0.75rem;
-            object-fit: contain;
-            transition: filter 0.2s ease, transform 0.2s ease;
-        }
-        .logo:hover {
-            filter: drop-shadow(0 0 1.2em var(--accent));
-            transform: translateY(-2px);
-        }
-
-        .result {
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.4;
-            margin: 0 0 14px;
-            min-height: 20px;
-        }
-
-        /* No frame around the input — it fills itself and sits on the page. */
-        .card { width: 100%; }
-        .input-box { display: flex; gap: 8px; }
-
-        .input {
-            flex: 1;
-            min-width: 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
+            align-items: flex-start;
+            text-align: left;
             color: var(--text);
-            padding: 12px 14px;
-            border-radius: var(--radius);
-            font-size: 16px;
-            outline: none;
         }
-        .input:focus {
-            outline: 2px solid var(--accent-2);
-            border-color: transparent;
+
+        .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 1.4rem; }
+        .brand-mark, .brand-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
+        .brand-mark:hover, .brand-badge:hover {
+            transform: translateY(-2px);
+            filter: drop-shadow(0 0 1em rgba(255, 77, 77, 0.45));
+        }
+        .brand-logo { height: 54px; width: auto; display: block; object-fit: contain; }
+        .brand-badge img { height: 48px; width: auto; display: block; object-fit: contain; }
+
+        .badge {
+            display: inline-block; padding: 4px 12px; margin-bottom: 1.1rem;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: #ff7a8f;
+            background: rgba(255, 45, 114, 0.14); border: 1px solid rgba(255, 45, 114, 0.32);
+            border-radius: 999px;
+        }
+
+        .title {
+            margin: 0 0 0.5rem; max-width: 100%;
+            font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1.05; font-weight: 800;
+            letter-spacing: -0.02em; color: var(--text); overflow-wrap: break-word;
+        }
+        .title-accent {
+            background: var(--grad);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+        }
+
+        .subtitle {
+            margin: 0 0 1.8rem; max-width: 30rem; color: var(--muted);
+            font-size: clamp(0.95rem, 2.6vw, 1.05rem); line-height: 1.5;
+        }
+
+        .greet { width: 100%; }
+        .input-box {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 7px 7px 7px 14px; background: var(--glass);
+            border: 1px solid var(--glass-border); border-radius: var(--radius);
+            -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            transition: border-color 0.2s ease;
+        }
+        .input-box:focus-within { border-color: rgba(255, 77, 77, 0.55); }
+        .input-icon { width: 20px; height: 20px; flex: 0 0 auto; color: var(--muted); }
+        .input, input[type="text"] {
+            flex: 1; min-width: 0; background: transparent; border: none; color: var(--text);
+            font-size: 16px; padding: 8px 2px; outline: none;
+        }
+        .input::placeholder { color: rgba(154, 166, 192, 0.7); }
 
         .btn {
-            flex: 0 0 auto;
-            border: none;
-            background: var(--accent);
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: var(--radius);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s ease, transform 0.1s ease;
+            flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; border: none;
+            background: var(--grad); color: #fff; padding: 10px 18px; border-radius: 12px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 6px 18px rgba(255, 45, 114, 0.35);
+            transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
         }
-        .btn:hover { opacity: 0.92; }
+        .btn svg { width: 16px; height: 16px; }
+        .btn:hover { box-shadow: 0 8px 24px rgba(255, 45, 114, 0.5); }
         .btn:active { transform: scale(0.97); }
 
-        .footer {
-            margin-top: 22px;
-            color: var(--muted);
-            font-size: 13px;
+        .result {
+            min-height: 1.2em; margin: 0.7rem 2px 0; color: var(--muted);
+            font-size: 14px; line-height: 1.4;
         }
-        .footer p { margin: 6px 0; }
 
-        a {
-            color: var(--accent-2);
-            font-weight: 500;
-            text-decoration: none;
+        .learn-card {
+            display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 1.4rem;
+            padding: 16px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: var(--radius); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            color: var(--text); text-decoration: none;
+            transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
         }
-        a:hover { text-decoration: underline; }
+        .learn-card:hover {
+            transform: translateY(-2px); background: var(--glass-strong);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .learn-icon {
+            display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+            width: 42px; height: 42px; border-radius: 12px; color: #ff7a8f;
+            background: rgba(255, 45, 114, 0.14); border: 1px solid rgba(255, 45, 114, 0.28);
+        }
+        .learn-icon svg { width: 20px; height: 20px; }
+        .learn-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+        .learn-text strong { font-size: 15px; font-weight: 600; }
+        .learn-text span { font-size: 13px; color: var(--muted); }
+        .learn-arrow { width: 18px; height: 18px; flex: 0 0 auto; color: var(--muted); }
+
+        .footer {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            width: 100%; margin-top: 2.2rem; color: var(--muted); font-size: 12.5px; flex-wrap: wrap;
+        }
+        .footer-time { display: inline-flex; align-items: center; gap: 7px; }
+        .footer-time svg { width: 15px; height: 15px; opacity: 0.85; }
+        .footer-version { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .container { align-items: center; text-align: center; }
+            .title-accent { display: block; }
+            .subtitle { margin-left: auto; margin-right: auto; }
+            .footer { justify-content: center; flex-direction: column; gap: 8px; }
+        }
   `;
 }
 

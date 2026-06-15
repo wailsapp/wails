@@ -8,28 +8,56 @@
     <title>Wails App</title>
 </head>
 <body>
-<div class="container">
-    <div>
-        <a data-wml-openURL="https://wails.io">
-            <img src="/wails.png" class="logo" alt="Wails logo"/>
+<!-- Fixed full-bleed background layer (avoids background-attachment:fixed, which
+     is broken in iOS WKWebView). The image swaps to a portrait crop on mobile. -->
+<div class="bg" aria-hidden="true"></div>
+
+<main class="container">
+    <header class="brand">
+        <a class="brand-mark" data-wml-openURL="https://wails.io" aria-label="Wails website">
+            <img src="/wails.png" class="brand-logo" alt="Wails logo"/>
         </a>
-        <a data-wml-openURL="https://www.typescriptlang.org/">
-            <img src="/typescript.svg" class="logo vanilla" alt="Typescript logo"/>
+        <a class="brand-badge" data-wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript" aria-label="JavaScript">
+            <img src="/javascript.svg" alt="JavaScript logo"/>
         </a>
-    </div>
-    <h1>Wails + Typescript</h1>
-    <div aria-label="result" class="result" id="result">Please enter your name below 👇</div>
-    <div class="card">
+    </header>
+
+    <span class="badge">v3</span>
+
+    <h1 class="title"><span class="title-accent">Wails +</span> Javascript</h1>
+    <p class="subtitle">Build beautiful cross-platform apps with Go and Javascript.</p>
+
+    <div class="greet">
         <div class="input-box" id="input">
-            <input aria-label="input" class="input" id="name" type="text" autocomplete="off"/>
-            <button aria-label="greet-btn" class="btn" id="greet">Greet</button>
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input aria-label="input" class="input" id="name" type="text" placeholder="Enter your name" autocomplete="off"/>
+            <button aria-label="greet-btn" id="greet" class="btn">Greet
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
         </div>
+        <div aria-label="result" class="result" id="result"></div>
     </div>
-    <div class="footer">
-        <div><p>Click on the Wails logo to learn more</p></div>
-        <div><p id="time">Listening for Time event...</p></div>
-    </div>
-</div>
-<script type="module" src="/src/main.ts"></script>
+
+    <a class="learn-card" data-wml-openURL="https://wails.io" aria-label="Learn more about Wails">
+        <span class="learn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </span>
+        <span class="learn-text">
+            <strong>Learn more about Wails</strong>
+            <span>Discover the docs, guides, and community.</span>
+        </span>
+        <svg class="learn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+    </a>
+
+    <footer class="footer">
+        <span class="footer-time">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="time">Listening for Time event...</span>
+        </span>
+        <span class="footer-version"><span class="dot"></span> Wails v3</span>
+    </footer>
+</main>
+
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>

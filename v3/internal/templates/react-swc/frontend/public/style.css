@@ -1,40 +1,53 @@
 :root {
-    /* Kitchen-sink design tokens (dark by default). */
-    --bg: #1b2636;
-    --surface: #243049;
-    --surface-2: #2d3a57;
-    --border: #2d3a57;
-    --text: #eef2f8;
-    --muted: #9fb0c8;
-    --accent: #e8453c;   /* Wails red */
-    --accent-2: #3b82f6; /* focus blue */
-    --radius: 12px;
+    /* Neon-night design tokens. */
+    --ink: #06070f;            /* darkest base behind the image */
+    --text: #f4f6fb;
+    --muted: #9aa6c0;
+    --accent: #ff4d4d;         /* Wails red */
+    --accent-2: #ff2d72;       /* pink, used in gradients */
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-strong: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --radius: 16px;
+    --grad: linear-gradient(135deg, #ff5a4d 0%, #ff2d72 100%);
 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
         sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    color-scheme: light dark;
+    color-scheme: dark;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: light) {
-    :root {
-        --bg: #ffffff;
-        --surface: #f5f7fa;
-        --surface-2: #e9eef5;
-        --border: #dde3ec;
-        --text: #1b2636;
-        --muted: #5d6b82;
-    }
-}
-
 * { box-sizing: border-box; }
 
+html {
+    background: var(--ink);
+}
 html, body {
     margin: 0;
-    background: var(--bg);
     color: var(--text);
+}
+body { overflow-x: hidden; }
+
+/* Framework mount nodes (#app / #root) shouldn't affect layout, so the
+   body flex centering applies directly to .container. */
+#app, #root { display: contents; }
+
+/* ----- Background layer ----------------------------------------------------
+   A fixed, full-viewport layer rather than `background-attachment: fixed`
+   (which iOS WKWebView ignores / renders janky). A dark gradient is layered
+   over the photo so foreground text stays legible. On desktop the gradient is
+   weighted to the left, where the content sits. */
+.bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(90deg, rgba(6, 7, 15, 0.94) 0%, rgba(6, 7, 15, 0.78) 32%,
+            rgba(6, 7, 15, 0.42) 64%, rgba(6, 7, 15, 0.30) 100%),
+        linear-gradient(0deg, rgba(6, 7, 15, 0.70) 0%, rgba(6, 7, 15, 0.10) 45%),
+        url("/bg-desktop.jpg") center / cover no-repeat;
 }
 
 body {
@@ -42,108 +55,223 @@ body {
     min-height: 100dvh;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;       /* desktop: content hugs the left */
+    /* Respect mobile safe areas (notch / home indicator). */
+    padding: max(2rem, env(safe-area-inset-top)) max(2rem, env(safe-area-inset-right))
+             max(2rem, env(safe-area-inset-bottom)) max(2.5rem, env(safe-area-inset-left));
 }
 
 .container {
+    width: 100%;
+    max-width: 540px;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+/* ----- Brand row ----------------------------------------------------------- */
+.brand {
+    display: flex;
     align-items: center;
-    text-align: center;
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    /* Respect mobile safe areas (notch / home indicator) and keep content
-       off the screen edges on small viewports. */
-    padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-             max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+    gap: 14px;
+    margin-bottom: 1.4rem;
 }
-
-/* Logos sit side by side (inline images). */
-.logo {
-    height: clamp(4rem, 16vw, 6rem);
-    max-width: 40vw;
-    padding: 0.75rem;
-    object-fit: contain;
-    transition: filter 0.2s ease, transform 0.2s ease;
+.brand-mark, .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, filter 0.2s ease;
 }
-.logo:hover {
-    filter: drop-shadow(0 0 1.2em var(--accent));
+.brand-mark:hover, .brand-badge:hover {
     transform: translateY(-2px);
+    filter: drop-shadow(0 0 1em rgba(255, 77, 77, 0.45));
 }
+.brand-logo { height: 54px; width: auto; display: block; object-fit: contain; }
+.brand-badge img { height: 48px; width: auto; display: block; object-fit: contain; }
 
-h1 {
-    /* Scale with the viewport so the heading fits on one line on phones
-       (~1.9rem) and stays large on desktop (capped at 3rem). */
-    font-size: clamp(1.9rem, 8vw, 3rem);
-    line-height: 1.1;
+/* ----- Version badge ------------------------------------------------------- */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    margin-bottom: 1.1rem;
+    font-size: 12px;
     font-weight: 700;
-    margin: 0.4em 0 0.9em;
+    letter-spacing: 0.02em;
+    color: #ff7a8f;
+    background: rgba(255, 45, 114, 0.14);
+    border: 1px solid rgba(255, 45, 114, 0.32);
+    border-radius: 999px;
 }
 
-/* No panel/frame around the input — the input fills itself and sits directly
-   on the page, like the kitchen-sink example. */
-.card {
-    width: 100%;
+/* ----- Heading ------------------------------------------------------------- */
+.title {
+    margin: 0 0 0.5rem;
+    max-width: 100%;
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+.title-accent {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
-.result {
+.subtitle {
+    margin: 0 0 1.8rem;
+    max-width: 30rem;
     color: var(--muted);
-    font-size: 14px;
-    line-height: 1.4;
-    margin: 0 0 14px;
-    min-height: 20px;
+    font-size: clamp(0.95rem, 2.6vw, 1.05rem);
+    line-height: 1.5;
 }
+
+/* ----- Greet input + button ------------------------------------------------ */
+.greet { width: 100%; }
 
 .input-box {
     display: flex;
+    align-items: center;
     gap: 8px;
+    width: 100%;
+    padding: 7px 7px 7px 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.2s ease;
+}
+.input-box:focus-within { border-color: rgba(255, 77, 77, 0.55); }
+
+.input-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    color: var(--muted);
 }
 
 .input,
-input[type="text"],
-input:not([type]) {
+input[type="text"] {
     flex: 1;
     min-width: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: none;
     color: var(--text);
-    padding: 12px 14px;
-    border-radius: var(--radius);
     font-size: 16px;
+    padding: 8px 2px;
     outline: none;
 }
-.input:focus,
-input:focus {
-    outline: 2px solid var(--accent-2);
-    border-color: transparent;
-}
+.input::placeholder { color: rgba(154, 166, 192, 0.7); }
 
 .btn {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     border: none;
-    background: var(--accent);
+    background: var(--grad);
     color: #fff;
-    padding: 11px 18px;
-    border-radius: var(--radius);
+    padding: 10px 18px;
+    border-radius: 12px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 6px 18px rgba(255, 45, 114, 0.35);
+    transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
-.btn:hover { opacity: 0.92; }
+.btn svg { width: 16px; height: 16px; }
+.btn:hover { box-shadow: 0 8px 24px rgba(255, 45, 114, 0.5); }
 .btn:active { transform: scale(0.97); }
 
-.footer {
-    margin-top: 22px;
+.result {
+    min-height: 1.2em;
+    margin: 0.7rem 2px 0;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.4;
 }
-.footer p { margin: 6px 0; }
 
-a {
-    color: var(--accent-2);
-    font-weight: 500;
+/* ----- Learn-more card ----------------------------------------------------- */
+.learn-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    margin-top: 1.4rem;
+    padding: 16px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: var(--text);
     text-decoration: none;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
 }
-a:hover { text-decoration: underline; }
+.learn-card:hover {
+    transform: translateY(-2px);
+    background: var(--glass-strong);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.learn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: #ff7a8f;
+    background: rgba(255, 45, 114, 0.14);
+    border: 1px solid rgba(255, 45, 114, 0.28);
+}
+.learn-icon svg { width: 20px; height: 20px; }
+.learn-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.learn-text strong { font-size: 15px; font-weight: 600; }
+.learn-text span { font-size: 13px; color: var(--muted); }
+.learn-arrow { width: 18px; height: 18px; flex: 0 0 auto; color: var(--muted); }
+
+/* ----- Footer -------------------------------------------------------------- */
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 2.2rem;
+    color: var(--muted);
+    font-size: 12.5px;
+    flex-wrap: wrap;
+}
+.footer-time { display: inline-flex; align-items: center; gap: 7px; }
+.footer-time svg { width: 15px; height: 15px; opacity: 0.85; }
+.footer-version { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+
+/* ----- Mobile -------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .bg {
+        background:
+            linear-gradient(0deg, rgba(6, 7, 15, 0.92) 0%, rgba(6, 7, 15, 0.55) 40%,
+                rgba(6, 7, 15, 0.45) 100%),
+            url("/bg-mobile.jpg") center / cover no-repeat;
+    }
+    body { justify-content: center; }
+    .container { align-items: center; text-align: center; }
+    /* Stack the title onto two lines ("Wails +" / "Javascript") like the target. */
+    .title-accent { display: block; }
+    .subtitle { margin-left: auto; margin-right: auto; }
+    .footer { justify-content: center; flex-direction: column; gap: 8px; }
+}

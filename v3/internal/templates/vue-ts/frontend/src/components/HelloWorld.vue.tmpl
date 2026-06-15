@@ -3,10 +3,8 @@ import { ref, onMounted } from 'vue'
 import {Events} from "@wailsio/runtime";
 import {GreetService} from "../../bindings/{{js .ModulePath}}";
 
-defineProps<{ msg: string }>()
-
 const name = ref('')
-const result = ref('Please enter your name below 👇')
+const result = ref('')
 const time = ref('Listening for Time event...')
 
 const doGreet = () => {
@@ -30,18 +28,32 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>{{ "{{" }} msg {{ "}}" }}</h1>
-
-  <div aria-label="result" class="result">{{ "{{" }} result {{ "}}" }}</div>
-  <div class="card">
-    <div class="input-box">
-      <input aria-label="input" class="input" v-model="name" type="text" autocomplete="off"/>
-      <button aria-label="greet-btn" class="btn" @click="doGreet">Greet</button>
+  <main class="container">
+    <header class="brand">
+      <a class="brand-mark" data-wml-openURL="https://wails.io" aria-label="Wails website"><img src="/wails.png" class="brand-logo" alt="Wails logo"/></a>
+      <a class="brand-badge" data-wml-openURL="https://vuejs.org/" aria-label="Vue"><img src="/vue.svg" alt="Vue logo"/></a>
+    </header>
+    <span class="badge">v3</span>
+    <h1 class="title"><span class="title-accent">Wails +</span> Vue</h1>
+    <p class="subtitle">Build beautiful cross-platform apps with Go and Vue.</p>
+    <div class="greet">
+      <div class="input-box">
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input aria-label="input" class="input" v-model="name" type="text" placeholder="Enter your name" autocomplete="off"/>
+        <button aria-label="greet-btn" class="btn" @click="doGreet">Greet
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+      <div aria-label="result" class="result">{{ "{{" }} result {{ "}}" }}</div>
     </div>
-  </div>
-
-  <div class="footer">
-    <div><p>Click on the Wails logo to learn more</p></div>
-    <div><p>{{ "{{" }} time {{ "}}" }}</p></div>
-  </div>
+    <a class="learn-card" data-wml-openURL="https://wails.io" aria-label="Learn more about Wails">
+      <span class="learn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+      <span class="learn-text"><strong>Learn more about Wails</strong><span>Discover the docs, guides, and community.</span></span>
+      <svg class="learn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+    </a>
+    <footer class="footer">
+      <span class="footer-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="time">{{ "{{" }} time {{ "}}" }}</span></span>
+      <span class="footer-version"><span class="dot"></span> Wails v3</span>
+    </footer>
+  </main>
 </template>
