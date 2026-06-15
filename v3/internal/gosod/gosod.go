@@ -193,7 +193,11 @@ func (t *TemplateDir) copyFile(src, dst string) error {
 			log.Println("gosod: close source:", err)
 		}
 	}()
-	d, err := os.Create(dst)
+	mode := fs.FileMode(0644)
+	if info, err := s.Stat(); err == nil {
+		mode = info.Mode().Perm()
+	}
+	d, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return err
 	}

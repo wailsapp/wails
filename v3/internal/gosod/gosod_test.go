@@ -38,6 +38,24 @@ func TestExtract_StandardFile(t *testing.T) {
 	}
 }
 
+func TestExtract_StandardFilePreservesMode(t *testing.T) {
+	fsys := fstest.MapFS{
+		"gradlew": {Data: []byte("#!/bin/sh\n"), Mode: 0755},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "gradlew"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := info.Mode().Perm(); got != 0755 {
+		t.Fatalf("expected extracted mode 0755, got %v", got)
+	}
+}
+
 // ---- Template file (.tmpl suffix removed, content rendered) ----
 
 func TestExtract_TemplateFile(t *testing.T) {
@@ -404,7 +422,6 @@ func TestExtract_CopyFileCloseFails(t *testing.T) {
 	}
 }
 
-
 // ---- resolveTarget: template parse error returns original path ----
 
 func TestResolveTarget_TemplateParseError(t *testing.T) {
@@ -527,12 +544,12 @@ func (d *callbackErrDir) ReadDir(n int) ([]fs.DirEntry, error) {
 
 type callbackErrFileInfo struct{}
 
-func (i *callbackErrFileInfo) Name() string      { return "." }
-func (i *callbackErrFileInfo) Size() int64       { return 0 }
-func (i *callbackErrFileInfo) Mode() fs.FileMode { return fs.ModeDir | 0755 }
+func (i *callbackErrFileInfo) Name() string       { return "." }
+func (i *callbackErrFileInfo) Size() int64        { return 0 }
+func (i *callbackErrFileInfo) Mode() fs.FileMode  { return fs.ModeDir | 0755 }
 func (i *callbackErrFileInfo) ModTime() time.Time { return time.Time{} }
-func (i *callbackErrFileInfo) IsDir() bool       { return true }
-func (i *callbackErrFileInfo) Sys() interface{}  { return nil }
+func (i *callbackErrFileInfo) IsDir() bool        { return true }
+func (i *callbackErrFileInfo) Sys() interface{}   { return nil }
 
 type callbackErrEntry struct{}
 
