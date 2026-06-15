@@ -117,8 +117,11 @@ jobs:
             echo "should_continue=true" >> $GITHUB_OUTPUT
           fi
         else
-          # No current tag, check against latest release
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
+          # No current tag, check against latest release.
+          # Only consider the active "alpha2.*" series: it outranks the legacy
+          # "alpha.*" tags in semver, and on the very first run (no alpha2 tag
+          # yet) the empty result correctly forces the inaugural alpha2 release.
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" | sort -V | tail -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "No previous release found, proceeding with release"
             echo "has_changes=true" >> $GITHUB_OUTPUT
