@@ -50,7 +50,12 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
 	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
@@ -110,7 +115,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)
@@ -137,6 +142,10 @@ func main() {
 	ios := app.NewSubCommand("ios", "iOS tooling")
 	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
 	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+
+	// Android tools
+	android := app.NewSubCommand("android", "Android tooling")
+	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

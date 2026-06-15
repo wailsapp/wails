@@ -19,10 +19,11 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-// main is the shared entry point for desktop, iOS and Android. On Android the
-// Go code is compiled as a c-shared library, so main is invoked via
-// RegisterAndroidMain (see main_android.go); on iOS it is invoked through the
-// generated build overlay; on desktop it runs directly.
+// main is the shared entry point for desktop, iOS and Android. On mobile the Go
+// code is compiled as a c-archive/c-shared library, so main is not called
+// automatically; the build injects a tiny generated file (via `wails3 ios
+// overlay:gen` / `wails3 android overlay:gen`) that invokes it. On desktop it
+// runs directly. Your app code stays the same across all three.
 func main() {
 	app := application.New(application.Options{
 		Name:        "Wails Mobile Kitchen Sink",
@@ -38,7 +39,11 @@ func main() {
 		},
 		// Navigation is handled by the in-page tab bar so the UX is identical
 		// on every platform; native iOS tabs are intentionally left off here.
-		IOS:     application.IOSOptions{},
+		// Match the app window background to the web background (--bg #1b2636) so
+		// there's no white flash before the WebView paints on (re)launch.
+		IOS: application.IOSOptions{
+			BackgroundColour: application.NewRGB(27, 38, 54),
+		},
 		Android: application.AndroidOptions{},
 	})
 
