@@ -143,6 +143,10 @@ func main() {
 	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
 	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
 
+	// Android tools
+	android := app.NewSubCommand("android", "Android tooling")
+	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
+
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
 
