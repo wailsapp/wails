@@ -1,179 +1,149 @@
 :root {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 400;
+    /* Kitchen-sink design tokens (dark by default). */
+    --bg: #1b2636;
+    --surface: #243049;
+    --surface-2: #2d3a57;
+    --border: #2d3a57;
+    --text: #eef2f8;
+    --muted: #9fb0c8;
+    --accent: #e8453c;   /* Wails red */
+    --accent-2: #3b82f6; /* focus blue */
+    --radius: 12px;
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: rgba(27, 38, 54, 1);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
 }
 
-@font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 400;
-    src: local(""),
-    url("./Inter-Medium.ttf") format("truetype");
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #ffffff;
+        --surface: #f5f7fa;
+        --surface-2: #e9eef5;
+        --border: #dde3ec;
+        --text: #1b2636;
+        --muted: #5d6b82;
+    }
 }
 
-h3 {
-    font-size: 3em;
-    line-height: 1.1;
-}
+* { box-sizing: border-box; }
 
-a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
-}
-
-a:hover {
-    color: #535bf2;
-}
-
-button {
-    width: 60px;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 3px;
-    border: none;
-    margin: 0 0 0 20px;
-    padding: 0 8px;
-    cursor: pointer;
-}
-
-.result {
-    height: 20px;
-    line-height: 20px;
+html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
 }
 
 body {
-    margin: 0;
-    display: flex;
-    place-items: center;
-    place-content: center;
-    min-width: 320px;
     min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
+    text-align: center;
     width: 100%;
-    max-width: 720px;
+    max-width: 480px;
     margin: 0 auto;
     /* Respect mobile safe areas (notch / home indicator) and keep content
        off the screen edges on small viewports. */
-    padding: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-             max(1rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+    padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+             max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+}
+
+/* Logos sit side by side (inline images). */
+.logo {
+    height: clamp(4rem, 16vw, 6rem);
+    max-width: 40vw;
+    padding: 0.75rem;
+    object-fit: contain;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+.logo:hover {
+    filter: drop-shadow(0 0 1.2em var(--accent));
+    transform: translateY(-2px);
 }
 
 h1 {
     /* Scale with the viewport so the heading fits on one line on phones
-       (~1.9rem) and stays large on desktop (capped at 3.2rem). */
-    font-size: clamp(1.9rem, 8vw, 3.2rem);
+       (~1.9rem) and stays large on desktop (capped at 3rem). */
+    font-size: clamp(1.9rem, 8vw, 3rem);
     line-height: 1.1;
-    text-align: center;
-    margin: 0.6em 0;
+    font-weight: 700;
+    margin: 0.4em 0 0.9em;
 }
 
-#app {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem;
-    text-align: center;
-}
-
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    max-width: 40vw;
-    object-fit: contain;
-    will-change: filter;
-}
-
-/* Tighten spacing and logo size on phone-sized viewports. */
-@media (max-width: 480px) {
-    .logo {
-        height: 4.5em;
-        padding: 1em;
-    }
-}
-
-.logo:hover {
-    filter: drop-shadow(0 0 2em #e80000aa);
-}
-
-.logo.vanilla:hover {
-    filter: drop-shadow(0 0 2em #f7df1eaa);
+/* No panel/frame around the input — the input fills itself and sits directly
+   on the page, like the kitchen-sink example. */
+.card {
+    width: 100%;
 }
 
 .result {
-    height: 20px;
-    line-height: 20px;
-    margin: 1.5rem auto;
-    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 14px;
+    min-height: 20px;
 }
+
+.input-box {
+    display: flex;
+    gap: 8px;
+}
+
+.input,
+input[type="text"],
+input:not([type]) {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    font-size: 16px;
+    outline: none;
+}
+.input:focus,
+input:focus {
+    outline: 2px solid var(--accent-2);
+    border-color: transparent;
+}
+
+.btn {
+    flex: 0 0 auto;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    padding: 11px 18px;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+.btn:hover { opacity: 0.92; }
+.btn:active { transform: scale(0.97); }
 
 .footer {
-    margin-top: 1rem;
-    align-content: center;
-    text-align: center;
+    margin-top: 22px;
+    color: var(--muted);
+    font-size: 13px;
 }
+.footer p { margin: 6px 0; }
 
-@media (prefers-color-scheme: light) {
-    :root {
-        color: #213547;
-        background-color: #ffffff;
-    }
-
-    a:hover {
-        color: #747bff;
-    }
-
-    button {
-        background-color: #f9f9f9;
-    }
+a {
+    color: var(--accent-2);
+    font-weight: 500;
+    text-decoration: none;
 }
-
-
-.input-box .btn:hover {
-    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-    color: #333333;
-}
-
-.input-box .input {
-    border: none;
-    border-radius: 3px;
-    outline: none;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    color: black;
-    background-color: rgba(240, 240, 240, 1);
-    -webkit-font-smoothing: antialiased;
-}
-
-.input-box .input:hover {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
-}
-
-.input-box .input:focus {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
-}
+a:hover { text-decoration: underline; }
