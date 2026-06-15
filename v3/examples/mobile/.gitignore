@@ -13,6 +13,10 @@ build/ios/xcode/overlay.json
 build/ios/xcode/gen/
 build/ios/xcode/main.xcodeproj/
 
+# Android generated (per-machine; overlay holds absolute paths)
+build/android/overlay.json
+build/android/gen/
+
 # Android build artifacts
 build/android/.gradle/
 build/android/build/
