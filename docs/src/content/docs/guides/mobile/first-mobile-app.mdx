@@ -6,6 +6,8 @@ sidebar:
 ---
 
 import { Steps, Tabs, TabItem, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import iosSimApp from '../../../../assets/ios-simulator-first-app.png';
 
 This guide takes a standard Wails desktop app and runs it on iOS Simulator or Android Emulator. **You do not need to change your Go code.** The same `main.go` builds for all targets.
 
@@ -72,6 +74,10 @@ Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
    <Aside type="tip">
    The first build takes 2–5 minutes. Go is compiling the entire Wails framework for `GOOS=ios` for the first time and caching it. Future builds of any iOS app will be significantly faster.
    </Aside>
+
+   When it launches, your unmodified desktop app is running on the iOS Simulator — same `main.go`, same frontend:
+
+   <Image src={iosSimApp} alt="A default Wails app running on the iOS Simulator" width={300} />
 
 2. **Stream logs**
 

@@ -99,18 +99,99 @@ ios:
   minIOSVersion: "15.0"
 ```
 
-Application options (`application.Options.IOS`) include `DisableScroll`,
-`DisableBounce`, `DisableScrollIndicators`, `DisableInputAccessoryView`,
-`EnableBackForwardNavigationGestures`, `DisableLinkPreview`,
-`EnableInlineMediaPlayback`, `EnableAutoplayWithoutUserAction`,
-`DisableInspectable`, `UserAgent`, `ApplicationNameForUserAgent`,
-`BackgroundColour`, and native bottom tabs via `EnableNativeTabs` +
-`NativeTabsItems`.
+Application options (`application.Options.IOS`, applied at startup) include
+`DisableScroll`, `DisableBounce`, `DisableScrollIndicators`,
+`DisableInputAccessoryView`, `EnableBackForwardNavigationGestures`,
+`DisableLinkPreview`, `EnableInlineMediaPlayback`,
+`EnableAutoplayWithoutUserAction`, `DisableInspectable`, `UserAgent`,
+`ApplicationNameForUserAgent`, `BackgroundColour`, and native bottom tabs via
+`EnableNativeTabs` + `NativeTabsItems`.
 
-The frontend can drive iOS features at runtime through the `IOS` runtime
-object — `IOS.Haptics.Impact(style)`, `IOS.Device.Info()`,
-`IOS.Scroll.SetEnabled(...)` — and native tab selections arrive as a
-`nativeTabSelected` `CustomEvent` on `window`.
+## Native device features — the `IOS` manager
+
+iOS-specific native capabilities are exposed through the package-level
+`application.IOS` manager. You call it **from Go**, inside a `//go:build ios`
+file, so your shared code stays platform-agnostic (Android has the same shape
+via `application.Android`). This is the "manager pattern": one singleton,
+flat method names, no per-feature objects to construct.
+
+One-shot actions return immediately:
+
+```go
+//go:build ios
+
+application.IOS.Haptic("impact-medium") // impact-light|impact-medium|impact-heavy|success|warning|error|selection
+application.IOS.Share(`{"text":"Hi","url":"https://wails.io"}`)
+application.IOS.SetKeepAwake(true)
+application.IOS.PostNotification(`{"title":"Done","body":"Build finished","delay":2}`)
+application.IOS.SecureSet("token", "abc") // Keychain-backed
+```
+
+Query helpers return JSON strings — `SafeAreaJSON()`, `AppInfoJSON()`,
+`PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`,
+`GetBrightness()`.
+
+### Asynchronous results: `common:*` and `ios:*` events
+
+Anything that finishes later — a permission prompt, a sensor stream, a camera
+capture — delivers its result as a Wails **event** rather than a return value.
+Listen on either side of the bridge. Names use a `common:` prefix for
+capabilities shared with Android and an `ios:` prefix for iOS-only ones.
+
+```go
+// Go
+app.Event.On("common:location", func(e *application.CustomEvent) {
+    // e.Data -> {"lat":..,"lng":..,"accuracy":..} or {"error":..}
+})
+```
+
+```js
+// frontend
+import { Events } from "@wailsio/runtime";
+Events.On("common:notification", (e) => { /* {ok, scheduled, presented, tapped, error} */ });
+```
+
+| Event | Triggered by | Payload |
+|---|---|---|
+| `common:biometric` | `BiometricAuthenticate(reason)` | `{ok, error}` |
+| `common:location` | `GetLocation()` | `{lat, lng, accuracy}` / `{error}` |
+| `common:motion` | `SetMotion(true)` | `{x, y, z}` |
+| `common:proximity` | `SetProximity(true)` | `{near}` |
+| `common:keyboard` | `SetKeyboardWatch(true)` | `{visible, height}` |
+| `common:torch` | `SetTorch(bool)` | `{on, available}` |
+| `common:notification` | `PostNotification(json)` | `{ok, scheduled, presented, tapped, error}` |
+| `common:capture` | `CapturePhoto()` / `CaptureVideo()` | `{type, path, size, thumb}` |
+| `common:screenCapture` | `SetScreenProtect(true)` | `{screenshot, recording}` |
+| `ios:backgroundTask` | `BeginBackgroundTask(seconds)` | `{message, granted}` |
+
+The kitchen-sink example under `v3/examples/mobile` wires every feature above
+end to end.
+
+## Runtime WebView controls
+
+Beyond the compile-time `application.Options.IOS` flags, several WebView
+behaviours can be toggled at runtime from Go:
+
+```go
+application.IOS.SetScrollEnabled(false)
+application.IOS.SetBounceEnabled(false)
+application.IOS.SetScrollIndicatorsEnabled(false)
+application.IOS.SetBackForwardGesturesEnabled(true)
+application.IOS.SetLinkPreviewEnabled(false)
+application.IOS.SetInspectableEnabled(true)
+application.IOS.SetCustomUserAgent("MyApp/1.0")
+```
+
+The bundled `@wailsio/runtime` also exposes a small **frontend** iOS namespace:
+
+```js
+import { IOS } from "@wailsio/runtime";
+await IOS.Haptics.Impact("medium"); // light|medium|heavy|soft|rigid
+const info = await IOS.Device.Info();
+```
+
+Native bottom-tab selections arrive as a `nativeTabSelected` `CustomEvent` on
+`window`.
 
 ## What works, what doesn't
 
