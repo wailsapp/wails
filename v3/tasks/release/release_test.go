@@ -545,6 +545,20 @@ func TestUpdateVersion(t *testing.T) {
 			currentVersion:  "v3.0.0-alpha.999",
 			expectedVersion: "v3.0.0-alpha.1000",
 		},
+		{
+			// The "alpha2" series outranks the legacy "alpha.*" tags in semver
+			// (label "alpha2" > "alpha"), while keeping a dotted numeric suffix so
+			// ordering stays numeric. The number continues from the legacy series
+			// (alpha.102 -> alpha2.102 -> alpha2.103). See version.txt.
+			name:            "Alpha2 series increment",
+			currentVersion:  "v3.0.0-alpha2.102",
+			expectedVersion: "v3.0.0-alpha2.103",
+		},
+		{
+			name:            "Alpha2 keeps numeric ordering at boundary",
+			currentVersion:  "v3.0.0-alpha2.999",
+			expectedVersion: "v3.0.0-alpha2.1000",
+		},
 	}
 
 	for _, tt := range tests {
