@@ -322,7 +322,59 @@ void ios_biometric_authenticate(const char* creason) {
 
 // MARK: - Local notifications
 
+// By default iOS does NOT display a banner for a local notification while the
+// app that posted it is in the FOREGROUND — it is delivered silently to
+// Notification Center instead. To show it (and to react to taps) the app must
+// register a UNUserNotificationCenterDelegate. Apple requires the delegate be
+// set before the app finishes launching, so ios_notifications_init() is called
+// from the WailsAppDelegate's didFinishLaunchingWithOptions.
+@interface MFNotificationDelegate : NSObject <UNUserNotificationCenterDelegate>
+@end
+
+@implementation MFNotificationDelegate
+// Called when a notification fires while the app is in the foreground. Without
+// this returning presentation options, nothing is shown on screen.
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+    // Diagnostic: lets the frontend confirm this delegate is actually running on
+    // the device (i.e. the build includes the foreground-presentation fix).
+    mfEmit(@"common:notification", @{@"ok": @YES, @"presented": @YES});
+    if (@available(iOS 14.0, *)) {
+        completionHandler(UNNotificationPresentationOptionBanner
+                          | UNNotificationPresentationOptionList
+                          | UNNotificationPresentationOptionSound);
+    } else {
+        completionHandler(UNNotificationPresentationOptionAlert
+                          | UNNotificationPresentationOptionSound);
+    }
+}
+
+// Called when the user taps a delivered notification.
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void (^)(void))completionHandler {
+    mfEmit(@"common:notification", @{@"ok": @YES, @"tapped": @YES});
+    completionHandler();
+}
+@end
+
+static MFNotificationDelegate *g_mfNotificationDelegate = nil;
+
+void ios_notifications_init(void) {
+    mfRunOnMain(^{
+        if (g_mfNotificationDelegate == nil) {
+            g_mfNotificationDelegate = [[MFNotificationDelegate alloc] init];
+        }
+        [UNUserNotificationCenter currentNotificationCenter].delegate = g_mfNotificationDelegate;
+    });
+}
+
 void ios_post_notification(const char* json) {
+    // Defensive: make sure the foreground-presentation delegate is registered
+    // before we schedule, even if ios_notifications_init() wasn't called at
+    // launch (idempotent — just (re)assigns the singleton delegate).
+    ios_notifications_init();
     NSDictionary *opts = mfParseJSON(json);
     NSString *title = [opts[@"title"] isKindOfClass:[NSString class]] ? opts[@"title"] : @"Notification";
     NSString *body = [opts[@"body"] isKindOfClass:[NSString class]] ? opts[@"body"] : @"";

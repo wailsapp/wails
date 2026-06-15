@@ -446,6 +446,8 @@ $("btnNotify")?.addEventListener("click", () => {
 });
 Events.On("common:notification", (e) => {
     const d = eventValue(e) || {};
+    if (d.presented) { show("outSecurity", "📬 Notification shown (foreground)"); return; }
+    if (d.tapped) { show("outSecurity", "👆 Notification tapped"); return; }
     show("outSecurity", d.ok ? "Notification posted" + (d.scheduled ? " (in " + d.scheduled + "s)" : "")
                    : "Notification failed: " + (d.error || "denied"));
 });
