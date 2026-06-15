@@ -82,6 +82,16 @@ type windowsWebviewWindow struct {
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
 
+	// lastKnownDPI is the window's DPI the last time it was in a non-minimised
+	// state. It is used on the un-minimise path to decide whether the WebView2
+	// rasterization scale actually needs resyncing: when the DPI is unchanged
+	// (the common case — same monitor, fixed DPI) we must avoid making any COM
+	// call into the controller, which can be fatal if WebView2 suspended or its
+	// render/GPU process died while minimised (#5605). It is read with the Win32
+	// GetDpiForWindow, never via COM, and only updated while not minimised so it
+	// never captures the (-32000,-32000) parked position's DPI.
+	lastKnownDPI w32.UINT
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
 
@@ -445,6 +455,13 @@ func (w *windowsWebviewWindow) run() {
 
 	if w.hwnd == 0 {
 		globalApplication.fatal("unable to create window")
+	}
+
+	// Seed the last-known DPI so the first un-minimise has a baseline to compare
+	// against (it is otherwise refreshed on every non-minimised WM_SIZE). See
+	// resyncWebviewDPIAfterUnminimiseIfDPIChanged (#5605).
+	if dpi, _ := w.DPI(); dpi != 0 {
+		w.lastKnownDPI = dpi
 	}
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
@@ -1657,7 +1674,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// A maximised window leaving the minimised state arrives
 				// here (not at SIZE_RESTORED), and needs the same DPI
 				// resync as the restore path below (#5544).
-				w.resyncWebviewDPIAfterMinimise()
+				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1678,7 +1695,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// monitor's DPI. Nothing corrects WebView2's rasterization
 				// scale on restore, so window.devicePixelRatio keeps the
 				// wrong monitor's value until a manual resize (#5544).
-				w.resyncWebviewDPIAfterMinimise()
+				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1696,6 +1713,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
 		w.lastSizeWParam = wparam
+
+		// Keep the last-known DPI current while the window is in a normal
+		// (non-minimised) state. The un-minimise transitions above read this to
+		// decide whether a WebView2 rasterization resync is actually needed; it
+		// must never be sampled while minimised, where the window is parked at
+		// (-32000,-32000) and GetDpiForWindow can report a different monitor's
+		// DPI (#5605, #5544).
+		if wparam != w32.SIZE_MINIMIZED {
+			if dpi, _ := w.DPI(); dpi != 0 {
+				w.lastKnownDPI = dpi
+			}
+		}
 
 		if !(w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED) {
 			// If the window is frameless and minimizing, suppress the WebView2 resize.
@@ -1772,6 +1801,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds
 		// mode), so the rasterization scale must follow DPI changes manually.
 		w.resyncWebviewRasterizationScale()
+		// Track the new DPI while non-minimised so the un-minimise comparison
+		// (resyncWebviewDPIAfterUnminimiseIfDPIChanged, #5605) stays accurate.
+		if !w.isMinimizing {
+			if dpi, _ := w.DPI(); dpi != 0 {
+				w.lastKnownDPI = dpi
+			}
+		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
 
@@ -1903,6 +1939,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 // is the application's responsibility. It is a no-op when the controller is
 // unavailable or already in sync.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
+	// Guard the early-initialisation window: e.controller is assigned partway
+	// through controller creation, before COM setup completes, and calling in
+	// then is fatal. IsReady only covers that startup window — it does NOT
+	// detect a controller left unusable by a suspend or render/GPU process
+	// failure (the inited flag is never reset), so it is not what protects the
+	// #5605 restore path. That protection is the DPI-change gate in
+	// resyncWebviewDPIAfterUnminimiseIfDPIChanged, which keeps us off the
+	// controller entirely when the DPI is unchanged.
+	if !w.chromium.IsReady() {
+		return false
+	}
 	controller := w.chromium.GetController()
 	if controller == nil {
 		return false
@@ -1939,6 +1986,25 @@ func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
 	if w.resyncWebviewRasterizationScale() {
 		w.chromium.Resize()
 	}
+}
+
+// resyncWebviewDPIAfterUnminimiseIfDPIChanged is the un-minimise entry point for
+// the DPI resync. It only touches the WebView2 controller when the window's DPI
+// actually differs from the last value seen while non-minimised — the mixed-DPI
+// case #5544 was meant to fix. In the common case (same monitor, unchanged DPI)
+// it makes zero COM calls, which is what prevents the restore crash in #5605:
+// after a window has been minimised long enough for WebView2 to suspend or for
+// its render/GPU process to be torn down, any COM call into the controller can
+// be fatal, and the resync's GetRasterizationScale probe previously ran on every
+// restore. DPI is read with the Win32 GetDpiForWindow, never via COM.
+func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
+	dpi, _ := w.DPI()
+	if dpi == 0 || dpi == w.lastKnownDPI {
+		// DPI unchanged (or unreadable): nothing to resync. Critically, do not
+		// call into the WebView2 controller here.
+		return
+	}
+	w.resyncWebviewDPIAfterMinimise()
 }
 
 // crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
