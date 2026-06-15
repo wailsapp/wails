@@ -1,0 +1,136 @@
+---
+title: Mobile Overview
+description: Build iOS and Android apps from the same Go codebase as your desktop app
+sidebar:
+  order: 1
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Card, CardGrid, Aside, LinkCard } from '@astrojs/starlight/components';
+
+Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for desktop. There is no separate mobile project, no code-sharing bridge, and no rewrite: the Go binary is compiled for the mobile target and a native WebView renders your existing frontend.
+
+<CardGrid>
+  <Card title="iOS" icon="apple">
+    WKWebView + UIKit host. Assets served via a custom `wails://` scheme — no open ports.
+    Requires **macOS** with full Xcode.
+
+    [iOS Guide →](/guides/mobile/ios)
+  </Card>
+  <Card title="Android" icon="seti:android">
+    Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK.
+    Works on macOS, Linux, and Windows.
+
+    [Android Guide →](/guides/mobile/android)
+  </Card>
+</CardGrid>
+
+## See it running: Kitchen Sink example
+
+The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app that runs identically on iOS, Android and desktop from one codebase:
+
+<LinkCard
+  title="Mobile Kitchen Sink — GitHub"
+  description="Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · and more — all from one main.go"
+  href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile"
+/>
+
+It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mobile** and **Hardware** tabs are hidden on desktop via a platform check in the frontend; the Go side registers no handlers for `common:*` mobile events when built for desktop. This is the recommended pattern for shipping one codebase everywhere.
+
+| Tab | Platforms | What it shows |
+|---|---|---|
+| **Bindings** | all | JS → Go service calls returning values, structs, and errors |
+| **Events** | all | Go → JS clock, JS → Go → JS ping/pong, OS system events (battery, network, theme) |
+| **Dialogs** | all | Native message dialogs on each platform |
+| **System** | all | Clipboard, screen metrics, device info |
+| **Mobile** | iOS + Android | Share sheet, keep-awake, torch, brightness, biometrics, local notifications, secure storage |
+| **Hardware** | iOS + Android | Haptics, geolocation, accelerometer, proximity, text-to-speech |
+| **Native** | iOS + Android | iOS: haptics + WKWebView toggles · Android: vibrate + toast |
+
+To run it yourself:
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails/v3/examples/mobile
+
+wails3 task ios:run        # iOS Simulator (macOS + Xcode required)
+wails3 task android:run    # Android Emulator
+wails3 task run            # Desktop
+```
+
+## How it works
+
+The same application model applies on every platform:
+
+1. **Go backend** — your services, event handlers and application logic compile unchanged for `GOOS=ios` and `GOOS=android`.
+2. **Frontend** — the exact same HTML/JS/CSS. The `@wailsio/runtime` package works identically; service bindings, events, dialogs and the clipboard all route through the same in-process transport.
+3. **WebView host** — on iOS a `WKWebView` inside a `UIViewController`; on Android a `WebView` inside an `Activity`. Wails wires up the message bridge automatically.
+4. **In-process asset serving** — assets are served directly from Go memory, not a localhost server. No open ports, no loopback, no extra latency.
+
+Platform-specific behaviour lives in files guarded by `//go:build ios` or `//go:build android`, keeping your shared code clean.
+
+## Prerequisites at a glance
+
+| Requirement | iOS | Android |
+|---|---|---|
+| Operating system | macOS only | macOS, Linux, Windows |
+| Toolchain | Full Xcode (not just CLI tools) | Android SDK + NDK 26.3.x + JDK |
+| Go | 1.25+ | 1.25+ |
+| npm | ✅ | ✅ |
+| Verify with | `wails3 doctor` | `wails3 doctor` |
+
+<Aside type="tip">
+Run `wails3 doctor` after setting up your toolchain — it shows exactly what's found and what's missing for each platform.
+</Aside>
+
+## What's supported
+
+Both platforms share the same core feature set:
+
+| Feature | iOS | Android |
+|---|---|---|
+| Service bindings (JS → Go) | ✅ | ✅ |
+| Events (both directions) | ✅ | ✅ |
+| Message dialogs | ✅ UIAlertController | ✅ AlertDialog |
+| Open file dialogs | ✅ UIDocumentPicker | ✅ Storage Access Framework |
+| Save file dialogs | ❌ write to sandbox instead | ❌ write to sandbox instead |
+| Clipboard | ✅ UIPasteboard | ✅ ClipboardManager |
+| Screens / safe-area metrics | ✅ | ✅ |
+| Lifecycle events | ✅ `events.IOS.*` | ✅ `events.Android.*` |
+| Haptics | ✅ `IOS.Haptics.*` | ✅ `Android.Haptics.Vibrate` |
+| Device info | ✅ `IOS.Device.Info()` | ✅ `Android.Device.Info()` |
+| Native tabs (iOS) | ✅ UITabBar | — |
+| Toast messages (Android) | — | ✅ `Android.Toast.Show` |
+| Multiple windows | ❌ first window only | ❌ first window only |
+| Window geometry / menus / tray | intentional no-ops | intentional no-ops |
+
+## Build tag rules
+
+Two important rules to know when writing platform-conditional code:
+
+- **`ios` implies `darwin`** — a file tagged `//go:build darwin` will also compile for iOS. To target macOS-only, use `//go:build darwin && !ios`.
+- **`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To target desktop-Linux-only, use `//go:build linux && !android`.
+
+At runtime, `runtime.GOOS` returns `"ios"` and `"android"` respectively.
+
+## Next steps
+
+<CardGrid>
+  <Card title="Your First Mobile App" icon="rocket">
+    Take a desktop Wails app and run it on iOS Simulator or Android Emulator in minutes.
+
+    [Get started →](/guides/mobile/first-mobile-app)
+  </Card>
+  <Card title="iOS Guide" icon="apple">
+    Full iOS toolchain setup, simulator, device builds, signing, configuration and API reference.
+
+    [iOS Guide →](/guides/mobile/ios)
+  </Card>
+  <Card title="Android Guide" icon="seti:android">
+    Full Android SDK/NDK setup, emulator, APK signing, Play Store packaging and API reference.
+
+    [Android Guide →](/guides/mobile/android)
+  </Card>
+</CardGrid>

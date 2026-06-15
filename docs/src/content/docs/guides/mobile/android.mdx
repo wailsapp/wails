@@ -1,8 +1,8 @@
 ---
 title: Android
-description: Build and run Wails applications on Android
+description: Build and run Wails applications on Android — toolchain setup, emulator, APK signing, Play Store packaging, and API reference
 sidebar:
-  order: 9
+  order: 4
   badge:
     text: Experimental
     variant: caution
@@ -12,6 +12,10 @@ import { Aside } from '@astrojs/starlight/components';
 
 <Aside type="caution" title="Experimental Feature">
 Android support is experimental and may change in future releases.
+</Aside>
+
+<Aside type="tip">
+New to mobile with Wails? Start with [Your First Mobile App →](/guides/mobile/first-mobile-app) for a step-by-step walkthrough, then return here for the full reference.
 </Aside>
 
 Wails v3 applications run on Android as native apps: an Android `WebView`
@@ -32,7 +36,7 @@ Go files guarded by `//go:build android`.
   build-tools and the **NDK** (26.3.x) — `wails3 doctor` shows what it finds
 - A **JDK** (e.g. OpenJDK 21) for Gradle; set `JAVA_HOME` if `java` is not on
   your `PATH`
-- Go 1.24+ and npm
+- Go 1.25+ and npm
 - `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) pointing at the SDK
 
 Install the SDK pieces with the command-line tools:

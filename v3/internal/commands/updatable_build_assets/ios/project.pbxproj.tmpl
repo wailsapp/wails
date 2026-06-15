@@ -26,7 +26,7 @@
 		C0DEBEEF0000000000000104 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		C0DEBEEF0000000000000105 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		C0DEBEEF0000000000000106 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.text-based-dylib-definition; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		C0DEBEEF0000000000000107 /* {{.ProductName}}.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "{{.ProductName}}.a"; path = ../../../bin/{{.ProductName}}.a; sourceTree = SOURCE_ROOT; };
+		C0DEBEEF0000000000000107 /* {{.ProductName}}.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "{{.ProductName}}.a"; path = "../../../bin/{{.ProductName}}.a"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -155,7 +155,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nAPP_ROOT=\"${PROJECT_DIR}/../../..\"\nPLATFORM=${PLATFORM_NAME:-iphonesimulator}\nSDK_PATH=${SDKROOT:-$(xcrun --sdk ${PLATFORM} --show-sdk-path)}\nif [ ${PLATFORM} = iphonesimulator ]; then GO_TARGET=arm64-apple-ios15.0-simulator; MIN_FLAG=-mios-simulator-version-min=15.0; else GO_TARGET=arm64-apple-ios15.0; MIN_FLAG=-miphoneos-version-min=15.0; fi\nexport GOOS=ios\nexport GOARCH=arm64\nexport CGO_ENABLED=1\nexport CGO_CFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET} ${MIN_FLAG}\"\nexport CGO_LDFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET}\"\ncd \"${APP_ROOT}\"\n# Ensure overlay exists\nif [ ! -f build/ios/xcode/overlay.json ]; then\n  wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml || true\nfi\n# Always rebuild the Go c-archive; Go's build cache keeps this fast\n# and avoids stale binaries when .go sources change.\necho \"Building Go c-archive...\"\ngo build -buildmode=c-archive -overlay build/ios/xcode/overlay.json -o bin/{{.ProductName}}.a\n";
+			shellScript = "set -e\nAPP_ROOT=\"${PROJECT_DIR}/../../..\"\nPLATFORM=${PLATFORM_NAME:-iphonesimulator}\nSDK_PATH=${SDKROOT:-$(xcrun --sdk ${PLATFORM} --show-sdk-path)}\nif [ ${PLATFORM} = iphonesimulator ]; then GO_TARGET=arm64-apple-ios15.0-simulator; MIN_FLAG=-mios-simulator-version-min=15.0; else GO_TARGET=arm64-apple-ios15.0; MIN_FLAG=-miphoneos-version-min=15.0; fi\nexport GOOS=ios\nexport GOARCH=arm64\nexport CGO_ENABLED=1\nexport CGO_CFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET} ${MIN_FLAG}\"\nexport CGO_LDFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET}\"\ncd \"${APP_ROOT}\"\n# Ensure overlay exists\nif [ ! -f build/ios/xcode/overlay.json ]; then\n  wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml || true\nfi\n# Always rebuild the Go c-archive; Go's build cache keeps this fast\n# and avoids stale binaries when .go sources change.\necho \"Building Go c-archive...\"\ngo build -buildmode=c-archive -overlay build/ios/xcode/overlay.json -o \"bin/{{.ProductName}}.a\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

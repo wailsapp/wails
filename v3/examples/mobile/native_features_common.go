@@ -2,7 +2,7 @@ package main
 
 import "encoding/json"
 
-// Helpers for reading "native:*" custom-event payloads emitted by the frontend.
+// Helpers for reading "common:*" custom-event payloads emitted by the frontend.
 // A single Emit("name", obj) delivers obj on event.Data; a multi-arg emit
 // delivers an array, so accept both shapes.
 

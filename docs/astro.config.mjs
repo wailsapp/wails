@@ -291,6 +291,19 @@ export default defineConfig({
           ],
         },
 
+        // Mobile
+        {
+          label: "Mobile",
+          collapsed: true,
+          badge: { text: "Experimental", variant: "caution" },
+          items: [
+            { label: "Overview", link: "/guides/mobile" },
+            { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
+            { label: "iOS", link: "/guides/mobile/ios" },
+            { label: "Android", link: "/guides/mobile/android" },
+          ],
+        },
+
         // Guides - Task-oriented patterns (Netflix: When to use it, when not to use it)
         {
           label: "Guides",
@@ -319,8 +332,6 @@ export default defineConfig({
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
                 { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
-                { label: "iOS", link: "/guides/build/ios" },
-                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {
