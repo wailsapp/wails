@@ -21,6 +21,18 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
+// rootDispatchTasks are the verbs that have a top-level task in the generated
+// root Taskfile which dispatches to the platform-specific task via the GOOS
+// variable (e.g. `build` -> `{{.GOOS}}:build`). For these we run the root task
+// and pass GOOS as a variable, so user customisations in the root Taskfile are
+// honoured for both native and cross-compilation builds. Verbs absent here
+// (e.g. `sign`, which only exists per-platform) always target the
+// platform-specific task directly.
+var rootDispatchTasks = map[string]bool{
+	"build":   true,
+	"package": true,
+}
+
 func Build(buildFlags *flags.Build, otherArgs []string) error {
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -86,15 +98,28 @@ func wrapTask(action string, otherArgs []string) error {
 		}
 	}
 
-	taskName := action
+	// platformTaskName always targets the platform-specific task (e.g.
+	// "linux:build"). The experimental wake runner is built against this concrete
+	// name, so it keeps using it unconditionally.
+	platformTaskName := action
 	if validPlatforms[goos] {
-		taskName = goos + ":" + action
+		platformTaskName = goos + ":" + action
 	}
 
-	remainingArgs = append(remainingArgs, "ARCH="+goarch)
+	// Pass GOOS/ARCH through as Taskfile variables. The root build/package/run
+	// tasks dispatch on {{.GOOS}}, so running the root task (rather than the
+	// platform-prefixed one) means any customisations in the root Taskfile are
+	// honoured, for both native and cross-compilation builds. Verbs without a
+	// root task (e.g. `sign`) still target the platform task directly. See #5615.
+	remainingArgs = append(remainingArgs, "GOOS="+goos, "ARCH="+goarch)
+
+	taskName := platformTaskName
+	if rootDispatchTasks[action] {
+		taskName = action
+	}
 
 	if useWake() {
-		return runWakeTask(action, taskName, goos, goarch, remainingArgs)
+		return runWakeTask(action, platformTaskName, goos, goarch, remainingArgs)
 	}
 
 	newArgs := []string{"wails3", "task", taskName}

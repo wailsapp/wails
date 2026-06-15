@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- `wails3 build`/`dev`/`package` now run the project's root `Taskfile.yml` task instead of bypassing it with an OS-prefixed task, so customisations to the root `build`/`package`/`run` tasks are honoured. The root tasks dispatch to the platform Taskfile via a new `{{.GOOS}}` variable, which works for both native and cross-compilation builds (#5615)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
