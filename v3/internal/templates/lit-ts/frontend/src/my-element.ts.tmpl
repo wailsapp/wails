@@ -71,99 +71,100 @@ export class MyElement extends LitElement {
 
 
     static styles = css`
+        /* Tokens (--bg, --surface, --accent, ...) are defined on :root in the
+           global stylesheet and inherit across the shadow boundary. */
         :host {
-            max-width: 1280px;
+            display: block;
+            width: 100%;
+            max-width: 480px;
             margin: 0 auto;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        h3 {
-            font-size: 3em;
-            line-height: 1.1;
-        }
-
-        a {
-            font-weight: 500;
-            color: #646cff;
-            text-decoration: inherit;
-        }
-
-        a:hover {
-            color: #535bf2;
-        }
-
-        button {
-            width: 60px;
-            height: 30px;
-            line-height: 30px;
-            border-radius: 3px;
-            border: none;
-            margin: 0 0 0 20px;
-            padding: 0 8px;
-            cursor: pointer;
+            color: var(--text);
         }
 
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            text-align: center;
+            padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+                     max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+        }
+
+        ::slotted(h1) {
+            font-size: clamp(1.9rem, 8vw, 3rem);
+            line-height: 1.1;
+            font-weight: 700;
+            margin: 0.4em 0 0.9em;
         }
 
         .logo {
-            height: 6em;
-            padding: 1.5em;
-            will-change: filter;
+            height: clamp(4rem, 16vw, 6rem);
+            max-width: 40vw;
+            padding: 0.75rem;
+            object-fit: contain;
+            transition: filter 0.2s ease, transform 0.2s ease;
         }
-
         .logo:hover {
-            filter: drop-shadow(0 0 2em #e80000aa);
-        }
-
-        .logo.lit:hover {
-            filter: drop-shadow(0 0 2em #325cffaa);
+            filter: drop-shadow(0 0 1.2em var(--accent));
+            transform: translateY(-2px);
         }
 
         .result {
-            height: 20px;
-            line-height: 20px;
-            margin: 1.5rem auto;
-            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.4;
+            margin: 0 0 14px;
+            min-height: 20px;
         }
+
+        /* No frame around the input — it fills itself and sits on the page. */
+        .card { width: 100%; }
+        .input-box { display: flex; gap: 8px; }
+
+        .input {
+            flex: 1;
+            min-width: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 14px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            outline: none;
+        }
+        .input:focus {
+            outline: 2px solid var(--accent-2);
+            border-color: transparent;
+        }
+
+        .btn {
+            flex: 0 0 auto;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+        .btn:hover { opacity: 0.92; }
+        .btn:active { transform: scale(0.97); }
 
         .footer {
-            margin-top: 1rem;
-            align-content: center;
-            text-align: center;
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 13px;
         }
+        .footer p { margin: 6px 0; }
 
-        .input-box .btn:hover {
-            background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-            color: #333333;
+        a {
+            color: var(--accent-2);
+            font-weight: 500;
+            text-decoration: none;
         }
-
-        .input-box .input {
-            border: none;
-            border-radius: 3px;
-            outline: none;
-            height: 30px;
-            line-height: 30px;
-            padding: 0 10px;
-            color: black;
-            background-color: rgba(240, 240, 240, 1);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .input-box .input:hover {
-            border: none;
-            background-color: rgba(255, 255, 255, 1);
-        }
-
-        .input-box .input:focus {
-            border: none;
-            background-color: rgba(255, 255, 255, 1);
-        }
+        a:hover { text-decoration: underline; }
   `;
 }
 
