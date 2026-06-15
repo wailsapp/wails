@@ -162,3 +162,5 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	mvdan.cc/sh/v3 v3.12.0 // indirect
 )
+
+retract v3.0.0-alpha.98-tui
