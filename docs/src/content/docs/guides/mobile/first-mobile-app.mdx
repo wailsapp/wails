@@ -47,7 +47,7 @@ Once it opens, quit and move on. Everything that runs on desktop also runs on mo
   sudo xcodebuild -license accept
   ```
 
-- **Go 1.24+** and **npm** (already installed if you ran `wails3 init`)
+- **Go 1.25+** and **npm** (already installed if you ran `wails3 init`)
 
 Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
 
@@ -61,18 +61,10 @@ Run `wails3 doctor` to verify — it lists the iOS SDKs it can find.
    wails3 task ios:run
    ```
 
-   On first run this:
-   - Generates the Xcode project scaffold in `build/ios/`
-   - Compiles your Go code as a C archive (`GOOS=ios GOARCH=arm64`)
-   - Bundles the frontend
-   - Signs ad-hoc
-   - Boots a simulator (if none is running)
-   - Installs and launches your app
-
-   Subsequent runs are much faster — only changed files recompile.
+   That's it — this builds your app, boots a simulator if one isn't already running, and launches it.
 
    <Aside type="tip">
-   The first build takes 2–5 minutes. Go is compiling the entire Wails framework for `GOOS=ios` for the first time and caching it. Future builds of any iOS app will be significantly faster.
+   The first run takes a few minutes (it's compiling and caching the Wails framework for iOS). Every run after that is much faster.
    </Aside>
 
    When it launches, your unmodified desktop app is running on the iOS Simulator — same `main.go`, same frontend:
