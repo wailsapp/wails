@@ -89,7 +89,8 @@ type windowsWebviewWindow struct {
 	// call into the controller, which can be fatal if WebView2 suspended or its
 	// render/GPU process died while minimised (#5605). It is read with the Win32
 	// GetDpiForWindow, never via COM, and only updated while not minimised so it
-	// never captures the (-32000,-32000) parked position's DPI.
+	// never captures the parked minimised position's DPI (while minimised the
+	// window is repositioned off the monitor it will restore to).
 	lastKnownDPI w32.UINT
 
 	// menubarTheme is the theme for the menubar
@@ -1690,11 +1691,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w.parent.restoreSavedSizeConstraintOptions()
 			}
 			if w.isMinimizing {
-				// While minimised the window is parked at (-32000,-32000),
-				// which on mixed-DPI systems can re-associate it with another
-				// monitor's DPI. Nothing corrects WebView2's rasterization
-				// scale on restore, so window.devicePixelRatio keeps the
-				// wrong monitor's value until a manual resize (#5544).
+				// While minimised the window is repositioned off the monitor it
+				// will restore to (Windows parks it off-screen / at the primary
+				// monitor's corner), which on mixed-DPI systems can re-associate
+				// it with another monitor's DPI. Nothing corrects WebView2's
+				// rasterization scale on restore, so window.devicePixelRatio
+				// keeps the wrong monitor's value until a manual resize (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
@@ -1717,9 +1719,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// Keep the last-known DPI current while the window is in a normal
 		// (non-minimised) state. The un-minimise transitions above read this to
 		// decide whether a WebView2 rasterization resync is actually needed; it
-		// must never be sampled while minimised, where the window is parked at
-		// (-32000,-32000) and GetDpiForWindow can report a different monitor's
-		// DPI (#5605, #5544).
+		// must never be sampled while minimised, where the window is repositioned
+		// off its restore monitor and GetDpiForWindow can report a different
+		// monitor's DPI (#5605, #5544).
 		if wparam != w32.SIZE_MINIMIZED {
 			if dpi, _ := w.DPI(); dpi != 0 {
 				w.lastKnownDPI = dpi
@@ -1777,8 +1779,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
-		// While minimised the window is parked at (-32000,-32000); a DPI
-		// change in that state delivers a suggested rect scaled for whatever
+		// While minimised the window is repositioned off its restore monitor; a
+		// DPI change in that state delivers a suggested rect scaled for whatever
 		// monitor the parked position maps to. Applying it resizes the
 		// window's restore bookkeeping (e.g. a maximised 1920x1080 window
 		// restored at 3072x1728 after crossing a 200%→125% boundary while
@@ -1800,8 +1802,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode),
 		// so the rasterization scale must follow DPI changes manually — but only
-		// while non-minimised. While parked at (-32000,-32000) GetDpiForWindow
-		// can report a different monitor's DPI, which would push a wrong scale
+		// while non-minimised. While minimised the window sits off its restore
+		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
+		// would push a wrong scale
 		// onto the controller (one the restore-time DPI gate then won't correct,
 		// since DPI == lastKnownDPI) and would make a COM call into a possibly
 		// suspended controller (#5605). A genuine DPI difference is instead
@@ -1983,8 +1986,8 @@ func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 
 // resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
 // state (whether it comes back as restored or maximised). If the rasterization
-// scale had drifted while the window was parked at (-32000,-32000), a scale
-// re-put alone does not make WebView2 re-lay out content whose bounds are
+// scale had drifted while the window was minimised off its restore monitor, a
+// scale re-put alone does not make WebView2 re-lay out content whose bounds are
 // unchanged — the page keeps reporting sizes computed with the stale scale
 // until the bounds are re-asserted (#5544, reporter verification round 2).
 func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
