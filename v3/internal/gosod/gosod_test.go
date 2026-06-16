@@ -39,12 +39,15 @@ func TestExtract_StandardFile(t *testing.T) {
 	}
 }
 
-func TestExtract_StandardFilePreservesMode(t *testing.T) {
+func TestExtract_ShebangScriptBecomesExecutable(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("executable bits are not represented in file modes on Windows")
 	}
+	// Model the embedded reality that broke #5606: go:embed reports every file
+	// as 0444, so a script like gradlew arrives without an exec bit. Its
+	// executability has to be recovered from the shebang, not the source mode.
 	fsys := fstest.MapFS{
-		"gradlew": {Data: []byte("#!/bin/sh\n"), Mode: 0755},
+		"gradlew": {Data: []byte("#!/usr/bin/env sh\nexit 0\n"), Mode: 0444},
 	}
 	td := New(fsys)
 	dir := t.TempDir()
@@ -58,7 +61,30 @@ func TestExtract_StandardFilePreservesMode(t *testing.T) {
 	// Assert on the executable bits rather than an exact mode: the umask can
 	// legitimately mask other permission bits, so 0755 is not guaranteed.
 	if info.Mode().Perm()&0111 == 0 {
-		t.Fatalf("expected extracted file to be executable, got mode %v", info.Mode().Perm())
+		t.Fatalf("expected shebang script to be executable, got mode %v", info.Mode().Perm())
+	}
+}
+
+func TestExtract_SourceExecBitPreserved(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
+	// Disk-based local/remote templates keep their real modes, so an executable
+	// binary without a shebang must stay executable after extraction.
+	fsys := fstest.MapFS{
+		"tool": {Data: []byte("\x7fELF not a script\n"), Mode: 0755},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "tool"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0111 == 0 {
+		t.Fatalf("expected executable source to stay executable, got mode %v", info.Mode().Perm())
 	}
 }
 
