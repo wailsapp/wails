@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -39,6 +40,9 @@ func TestExtract_StandardFile(t *testing.T) {
 }
 
 func TestExtract_StandardFilePreservesMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
 	fsys := fstest.MapFS{
 		"gradlew": {Data: []byte("#!/bin/sh\n"), Mode: 0755},
 	}
@@ -51,8 +55,37 @@ func TestExtract_StandardFilePreservesMode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := info.Mode().Perm(); got != 0755 {
-		t.Fatalf("expected extracted mode 0755, got %v", got)
+	// Assert on the executable bits rather than an exact mode: the umask can
+	// legitimately mask other permission bits, so 0755 is not guaranteed.
+	if info.Mode().Perm()&0111 == 0 {
+		t.Fatalf("expected extracted file to be executable, got mode %v", info.Mode().Perm())
+	}
+}
+
+func TestExtract_ReadOnlySourceModeStaysWritable(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
+	// Embedded filesystems frequently report read-only modes (e.g. 0444). The
+	// extracted file should still be writable (umask applied) and must not
+	// gain executable bits the source does not have.
+	fsys := fstest.MapFS{
+		"config.txt": {Data: []byte("data"), Mode: 0444},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "config.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0200 == 0 {
+		t.Fatalf("expected extracted file to be writable, got mode %v", info.Mode().Perm())
+	}
+	if info.Mode().Perm()&0111 != 0 {
+		t.Fatalf("expected extracted file to be non-executable, got mode %v", info.Mode().Perm())
 	}
 }
 

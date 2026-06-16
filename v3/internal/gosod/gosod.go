@@ -193,11 +193,7 @@ func (t *TemplateDir) copyFile(src, dst string) error {
 			log.Println("gosod: close source:", err)
 		}
 	}()
-	mode := fs.FileMode(0644)
-	if info, err := s.Stat(); err == nil {
-		mode = info.Mode().Perm()
-	}
-	d, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	d, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
@@ -205,5 +201,20 @@ func (t *TemplateDir) copyFile(src, dst string) error {
 		_ = d.Close()
 		return err
 	}
-	return d.Close()
+	if err := d.Close(); err != nil {
+		return err
+	}
+	// Preserve the source's executable bits (e.g. Android's gradlew) without
+	// inheriting the read-only modes that embedded filesystems often report.
+	// Creating with 0666 lets the umask apply; we then add only the exec bits.
+	if info, err := s.Stat(); err == nil {
+		if execBits := info.Mode().Perm() & 0111; execBits != 0 {
+			if dstInfo, err := os.Stat(dst); err == nil {
+				if err := os.Chmod(dst, dstInfo.Mode().Perm()|execBits); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
