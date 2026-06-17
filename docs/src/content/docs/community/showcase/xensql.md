@@ -13,7 +13,7 @@ description: Local-first SQL workbench with multi-database support and advanced 
 
 **[XenSQL](https://github.com/Bare7a/XenSQL)** is a **fast, local-first SQL desktop workbench** built with **Go, Wails and React**. It brings together PostgreSQL, MySQL/MariaDB, and SQLite in one clean, native-feeling interface - with zero cloud, zero telemetry, and zero accounts.
 
-### Key Highlights
+## Key Highlights
 
 - **Powerful SQL Editor** - Monaco-based with smart schema-aware autocomplete, multi-statement execution, streaming results, and per-statement result tabs
 - **Advanced Data Viewer** - Interactive JSON inspector, syntax-aware cell editor (JSON, XML, HTML, text), inline editing, and full record inspection
