@@ -3,11 +3,11 @@ title: XenSQL
 description: Local-first SQL workbench with multi-database support and advanced query tooling
 ---
 
-![XenSQL Screenshot](../../../../assets/showcase-images/xensql-1.png)
+<img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL table editor with inline editing">
 <table>
   <tr>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL table editor with inline editing"></td>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-3.png?raw=true" width="100%" alt="XenSQL query history and saved queries panel"></td>
+    <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL query editor with table and column suggestions"></td>
+    <td align="center"><img src="../../../../assets/showcase-images/xensql-3.png?raw=true" width="100%" alt="XenSQL multiple transaction queries"></td>
   </tr>
 </table>
 
