@@ -6,8 +6,8 @@ description: Local-first SQL workbench with multi-database support and advanced 
 ![XenSQL Screenshot](../../../../assets/showcase-images/xensql-1.png)
 <table>
   <tr>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%"></td>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-3.png?raw=true" width="100%"></td>
+    <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL table editor with inline editing"></td>
+    <td align="center"><img src="../../../../assets/showcase-images/xensql-3.png?raw=true" width="100%" alt="XenSQL query history and saved queries panel"></td>
   </tr>
 </table>
 
