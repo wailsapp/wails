@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix an iOS crash (SIGABRT) when a bound Go service method returns an empty string. The iOS asset response writer guarded the body pointer with `buf != nil` instead of its length, so a zero-length body made `&buf[0]` panic; it now guards on length, matching the desktop writers
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
