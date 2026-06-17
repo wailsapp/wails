@@ -3,7 +3,7 @@ title: XenSQL
 description: Local-first SQL workbench with multi-database support and advanced query tooling
 ---
 
-<img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL table editor with inline editing">
+<img src="../../../../assets/showcase-images/xensql-1.png?raw=true" width="100%" alt="XenSQL table editor with inline editing">
 <table>
   <tr>
     <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL query editor with table and column suggestions"></td>
