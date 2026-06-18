@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.104 - 2026-06-18
+
+## Fixed
+- Fix an iOS crash (SIGABRT) when a bound Go service method returns an empty string. The iOS asset response writer guarded the body pointer with `buf != nil` instead of its length, so a zero-length body made `&buf[0]` panic; it now guards on length, matching the desktop writers
+
 ## v3.0.0-alpha2.103 - 2026-06-15
 
 ## Changed
