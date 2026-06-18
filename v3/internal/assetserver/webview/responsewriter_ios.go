@@ -103,7 +103,11 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 
 	var content unsafe.Pointer
 	var contentLen int
-	if buf != nil {
+	// Guard on length, not just nil: a non-nil but empty slice (e.g. the body of
+	// a bound method that returned "") would make &buf[0] panic with an
+	// index-out-of-range, aborting the Go runtime. An empty body is valid — pass
+	// a nil pointer with length 0, which yields an empty NSData on the C side.
+	if len(buf) != 0 {
 		content = unsafe.Pointer(&buf[0])
 		contentLen = len(buf)
 	}
