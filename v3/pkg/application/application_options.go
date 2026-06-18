@@ -311,6 +311,9 @@ type IOSOptions struct {
 	// false => accessory view is enabled/shown
 	DisableInputAccessoryView bool
 
+	// Safe area insets for WebView (default false)
+	DisableSafeAreaInsets bool
+
 	// Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
 	// Use Disable* to keep default true behavior without surprising zero-values.
 	DisableScroll           bool
