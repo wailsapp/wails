@@ -1706,6 +1706,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			bounds := &edge.Rect{Left: 0, Top: 0, Right: width, Bottom: height}
 			InvokeSync(func() {
 				time.Sleep(1 * time.Nanosecond)
+				if w.chromium == nil || !w.chromium.IsReady() {
+					return
+				}
 				w.chromium.ResizeWithBounds(bounds)
 				w.parent.emit(events.Windows.WindowDidResize)
 			})
@@ -1936,6 +1939,9 @@ func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 // unchanged — the page keeps reporting sizes computed with the stale scale
 // until the bounds are re-asserted (#5544, reporter verification round 2).
 func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
+	if w.chromium == nil || !w.chromium.IsReady() {
+		return
+	}
 	if w.resyncWebviewRasterizationScale() {
 		w.chromium.Resize()
 	}
