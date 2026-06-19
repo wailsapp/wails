@@ -65,7 +65,7 @@
       "sinon": "^19.0.2",
       "underscore": "^1.13.7"
     },
-    "serialize-javascript": "^7.0.5",
+    "serialize-javascript": "^7.0.6",
     "diff": "^8.0.2"
   }
 }
