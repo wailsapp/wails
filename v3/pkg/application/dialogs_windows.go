@@ -47,8 +47,19 @@ func (m *windowsDialog) show() {
 	}
 
 	if m.UseAppIcon || m.dialog.Icon != nil {
-		// 3 is the application icon
-		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
+		// Use the application's embedded icon resource (ID 3). MessageBoxIndirect
+		// cannot render arbitrary icon bytes, so a custom Icon also maps to the
+		// app icon — the closest supported behaviour (full custom-icon support
+		// needs a TaskDialog implementation).
+		//
+		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, messageDialogUserIconFlags(flags))
+		if err != nil {
+			// Dev binaries (`go run`, `wails3 dev`) have no embedded icon
+			// resource, which makes MessageBoxIndirect fail outright — the
+			// dialog never appeared and the app aborted via fatal error
+			// (#4233). Fall back to a standard dialog instead.
+			button, err = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
+		}
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
@@ -202,6 +213,16 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 		close(files)
 	}()
 	return files, err
+}
+
+// messageDialogUserIconFlags converts standard message dialog flags for use
+// with MB_USERICON. The user icon replaces the standard one, so the MB_ICON*
+// bits are stripped — but the button configuration is preserved: forcing
+// MB_OK here (the old behaviour) silently destroyed Yes/No buttons on
+// question dialogs shown with an icon (#4233).
+func messageDialogUserIconFlags(flags uint32) uint32 {
+	const mbIconMask = w32.MB_ICONHAND | w32.MB_ICONQUESTION | w32.MB_ICONASTERISK | w32.MB_USERICON
+	return (flags &^ uint32(mbIconMask)) | windows.MB_USERICON | windows.MB_SYSTEMMODAL
 }
 
 func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {

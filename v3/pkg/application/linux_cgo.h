@@ -56,6 +56,7 @@ extern void handleNotifyState(GObject*, GParamSpec*, uintptr_t);
 extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
 extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
+extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
 extern void handleButtonPressed(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern void handleButtonReleased(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern gboolean handleKeyPressed(GtkEventControllerKey*, guint, guint, GdkModifierType, uintptr_t);
@@ -71,6 +72,12 @@ extern void onDropFiles(char**, gint, gint, uintptr_t);
 
 // Forward declaration for activate callback
 void activateLinux(gpointer data);
+
+// Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
+int is_user_media_permission_request(WebKitPermissionRequest *request);
+// Whether a user-media request needs the microphone / camera respectively.
+int is_user_media_for_audio(WebKitPermissionRequest *request);
+int is_user_media_for_video(WebKitPermissionRequest *request);
 
 // ============================================================================
 // Main thread dispatch

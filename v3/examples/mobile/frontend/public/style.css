@@ -160,6 +160,19 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
     min-height: 44px;
 }
 
+/* Per-control inline feedback: sits right under its control group, compact, and
+   stays hidden until it has a result so it doesn't add empty boxes. */
+.output.inline {
+    margin: 8px 0 4px;
+    padding: 8px 12px;
+    min-height: 0;
+    font-size: 12.5px;
+    border-left: 3px solid var(--sl-color-accent, #e8410a);
+}
+.output.inline:empty {
+    display: none;
+}
+
 .scroll-filler { margin-top: 8px; }
 .scroll-block {
     background: var(--surface);

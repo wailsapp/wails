@@ -5,11 +5,11 @@
     <key>CFBundleExecutable</key>
     <string>wailsapp</string>
     <key>CFBundleIdentifier</key>
-    <string>com.mycompany.myproduct</string>
+    <string>com.wails.kitchensink</string>
     <key>CFBundleName</key>
-    <string>My Product</string>
+    <string>KitchenSink</string>
     <key>CFBundleDisplayName</key>
-    <string>My Product</string>
+    <string>KitchenSink</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -46,6 +46,7 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
+    
     
     <key>NSHumanReadableCopyright</key>
     <string>(c) 2025, My Company</string>

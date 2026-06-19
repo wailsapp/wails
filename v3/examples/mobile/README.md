@@ -44,11 +44,11 @@ toolchain requirements and device/signing details.
 - The frontend imports `@wailsio/runtime` and calls `Runtime.IOS.*` /
   `Runtime.Android.*` for the platform-specific features.
 - The **Mobile** and **Hardware** tabs use an event bridge: the frontend emits
-  a `native:*` event, a per-platform listener (`native_features_ios.go` /
+  a `common:*` event, a per-platform listener (`native_features_ios.go` /
   `native_features_android.go`, registered by `registerNativeFeatures`) calls
-  the matching exported `application.IOS*` / `application.Android*` function, and
+  the matching `application.IOS.*` / `application.Android.*` manager method, and
   asynchronous results (a biometric prompt, a GPS fix, a torch toggle) come back
-  as `native:*` events. See [`../../IOS.md`](../../IOS.md) /
+  as `common:*` events. See [`../../IOS.md`](../../IOS.md) /
   [`../../ANDROID.md`](../../ANDROID.md) for the full list of these APIs.
 - **System events** (Events tab) arrive in Go as `events.Common.*` application
   events (battery, network, theme, screen-lock, low-memory — mapped from the

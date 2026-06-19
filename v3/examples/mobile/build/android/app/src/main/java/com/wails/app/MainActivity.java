@@ -208,12 +208,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Launch the system camera to capture a photo (video=false) or a video
      * (video=true). The capture is written to a FileProvider URI in the cache and
-     * the result is delivered to JS as a "native:capture" event.
+     * the result is delivered to JS as a "common:capture" event.
      */
     public void launchCameraCapture(boolean video) {
         if (checkSelfPermission("android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{"android.permission.CAMERA"}, CAMERA_PERMISSION_REQUEST);
-            bridge.emitEvent("native:capture",
+            bridge.emitEvent("common:capture",
                     "{\"error\":\"camera permission requested \u2014 tap again once granted\"}");
             return;
         }
@@ -231,10 +231,10 @@ public class MainActivity extends AppCompatActivity {
             // return null even when a camera app exists. Just launch and handle a miss.
             startActivityForResult(intent, video ? VIDEO_CAPTURE_REQUEST : PHOTO_CAPTURE_REQUEST);
         } catch (android.content.ActivityNotFoundException e) {
-            bridge.emitEvent("native:capture", "{\"error\":\"no camera app available\"}");
+            bridge.emitEvent("common:capture", "{\"error\":\"no camera app available\"}");
         } catch (Exception e) {
             Log.e(TAG, "launchCameraCapture failed", e);
-            bridge.emitEvent("native:capture", "{\"error\":\"capture failed\"}");
+            bridge.emitEvent("common:capture", "{\"error\":\"capture failed\"}");
         }
     }
 
@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         final boolean video = pendingCaptureIsVideo;
         pendingCaptureFile = null;
         if (resultCode != RESULT_OK) {
-            bridge.emitEvent("native:capture", "{\"cancelled\":true}");
+            bridge.emitEvent("common:capture", "{\"cancelled\":true}");
             return;
         }
         // Some camera apps (commonly for video) ignore EXTRA_OUTPUT and instead
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
         }
         final File f = file;
         if (f == null || !f.exists() || f.length() == 0) {
-            bridge.emitEvent("native:capture", "{\"cancelled\":true}");
+            bridge.emitEvent("common:capture", "{\"cancelled\":true}");
             return;
         }
         new Thread(() -> {
@@ -271,10 +271,10 @@ public class MainActivity extends AppCompatActivity {
                 // Stream URL works for both: <video>/<img> load it from the cache
                 // via shouldInterceptRequest (Range-enabled), no size limit.
                 o.put("streamUrl", captureStreamUrl(f));
-                bridge.emitEvent("native:capture", o.toString());
+                bridge.emitEvent("common:capture", o.toString());
             } catch (Exception e) {
                 Log.e(TAG, "handleCaptureResult failed", e);
-                bridge.emitEvent("native:capture", "{\"error\":\"result processing failed\"}");
+                bridge.emitEvent("common:capture", "{\"error\":\"result processing failed\"}");
             }
         }).start();
     }

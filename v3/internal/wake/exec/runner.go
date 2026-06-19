@@ -3,10 +3,12 @@ package exec
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/parse"
 	"github.com/wailsapp/wails/v3/internal/wake/platform"
 )
 
@@ -19,16 +21,22 @@ var cache = &runCache{
 	lastRuns: make(map[string]time.Time),
 }
 
-func checkPreconditions(task *ast.Task) error {
+func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 	for _, pc := range task.Precondition {
-		if pc.Sh == "" {
+		// Precondition `sh:` strings are Go templates just like cmds. They must
+		// be expanded against the task's resolved vars before running; otherwise
+		// a guard like `{{if eq .OBFUSCATED "true"}}command -v garble{{else}}true{{end}}`
+		// reaches the shell verbatim, fails to parse as a command, and surfaces
+		// the precondition's `msg:` as a spurious failure on every build.
+		sh := parse.ExpandTemplates(pc.Sh, vars)
+		if strings.TrimSpace(sh) == "" {
 			continue
 		}
-		c := platform.ShellCommand(pc.Sh)
+		c := platform.ShellCommand(sh)
 		if err := c.Run(); err != nil {
 			msg := pc.Msg
 			if msg == "" {
-				msg = fmt.Sprintf("precondition failed: %q", pc.Sh)
+				msg = fmt.Sprintf("precondition failed: %q", sh)
 			}
 			return fmt.Errorf("wake: %s", msg)
 		}

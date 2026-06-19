@@ -115,6 +115,8 @@
                     <button class="btn" id="btnOpenUrl">Open</button>
                 </div>
 
+                <pre id="outShare" class="output inline"></pre>
+
                 <h2>Screen</h2>
                 <label class="switch"><input type="checkbox" id="mfKeepAwake"/> Keep screen awake</label>
                 <p class="hint">Prevents the display from auto-locking while the app is in front.</p>
@@ -125,6 +127,8 @@
                     <input type="range" id="mfBrightness" min="0" max="100" value="50"/>
                     <button class="btn" id="btnGetBrightness">Read</button>
                 </div>
+
+                <pre id="outScreen" class="output inline"></pre>
 
                 <h2>Layout &amp; info</h2>
                 <div class="grid">
@@ -149,6 +153,8 @@
                     <button class="btn" data-statusbar="shown">Show</button>
                 </div>
 
+                <pre id="outStatusbar" class="output inline"></pre>
+
                 <h2>Security &amp; notifications</h2>
                 <div class="grid">
                     <button class="btn primary" id="btnBiometric">Authenticate</button>
@@ -156,6 +162,7 @@
                 </div>
                 <p class="hint">Biometric uses Face ID / Touch ID / fingerprint, with a
                     device-passcode fallback.</p>
+                <pre id="outSecurity" class="output inline"></pre>
 
                 <h2>Secure storage</h2>
                 <p class="hint">Backed by the iOS Keychain / Android EncryptedSharedPreferences.</p>
@@ -168,8 +175,7 @@
                     <button class="btn" id="btnSecGet">Load</button>
                     <button class="btn" id="btnSecDel">Delete</button>
                 </div>
-
-                <pre id="mobileOut" class="output">Results appear here…</pre>
+                <pre id="outSecure" class="output inline"></pre>
             </div>
             <div class="platform-only" data-platform="desktop">
                 <p class="hint">These features are available when running on iOS or Android.</p>
@@ -191,11 +197,15 @@
                     <button class="btn" data-haptic2="selection">Selection</button>
                 </div>
 
+                <pre id="outHaptics" class="output inline"></pre>
+
                 <h2>Location</h2>
                 <p class="hint">One-shot GPS fix. Prompts for permission on first use.</p>
                 <div class="grid">
                     <button class="btn primary" id="btnLocation">Get location</button>
                 </div>
+
+                <pre id="outLocation" class="output inline"></pre>
 
                 <h2>Motion &amp; proximity</h2>
                 <label class="switch"><input type="checkbox" id="mfMotion"/> Accelerometer</label>
@@ -203,12 +213,16 @@
                 <label class="switch"><input type="checkbox" id="mfProximity"/> Proximity sensor</label>
                 <p class="hint">Reports near/far — cover the top of the device to trigger it.</p>
 
+                <pre id="outMotion" class="output inline"></pre>
+
                 <h2>Speech</h2>
                 <div class="row">
                     <input id="speakText" value="Hello from Wails" autocomplete="off"/>
                     <button class="btn" id="btnSpeak">Speak</button>
                     <button class="btn" id="btnStopSpeak">Stop</button>
                 </div>
+
+                <pre id="outSpeech" class="output inline"></pre>
 
                 <h2>Device state</h2>
                 <div class="grid">
@@ -227,7 +241,7 @@
                 <p class="hint">Sets FLAG_SECURE on Android; on iOS, detects screenshots and
                     screen recording (it cannot block them).</p>
 
-                <pre id="hardwareOut" class="output">Results appear here…</pre>
+                <pre id="outKeyboard" class="output inline"></pre>
             </div>
             <div class="platform-only" data-platform="desktop">
                 <p class="hint">These features are available when running on iOS or Android.</p>
@@ -250,6 +264,7 @@
                     <p id="capturePlaceholder" class="capture-placeholder">No photo yet — tap Take photo.</p>
                 </div>
                 <button class="btn primary capture-btn" id="btnCapture">Take photo</button>
+                <pre id="outCamera" class="output inline"></pre>
 
                 <h2>Background execution</h2>
                 <p class="hint">Keep the app working while backgrounded. On Android this runs a
@@ -261,7 +276,7 @@
                     <button class="btn" id="btnBgTask">Begin background task (iOS)</button>
                 </div>
 
-                <pre id="cameraOut" class="output">Results appear here…</pre>
+                <pre id="outBg" class="output inline"></pre>
             </div>
             <div class="platform-only" data-platform="desktop">
                 <p class="hint">These features are available when running on iOS or Android.</p>

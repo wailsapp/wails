@@ -38,25 +38,25 @@ func registerIOSRuntimeEventHandlers(app *application.App) {
 	}
 
 	app.Event.On("ios:setScrollEnabled", func(e *application.CustomEvent) {
-		application.IOSSetScrollEnabled(getBool(e.Data, "enabled", true))
+		application.IOS.SetScrollEnabled(getBool(e.Data, "enabled", true))
 	})
 	app.Event.On("ios:setBounceEnabled", func(e *application.CustomEvent) {
-		application.IOSSetBounceEnabled(getBool(e.Data, "enabled", true))
+		application.IOS.SetBounceEnabled(getBool(e.Data, "enabled", true))
 	})
 	app.Event.On("ios:setScrollIndicatorsEnabled", func(e *application.CustomEvent) {
-		application.IOSSetScrollIndicatorsEnabled(getBool(e.Data, "enabled", true))
+		application.IOS.SetScrollIndicatorsEnabled(getBool(e.Data, "enabled", true))
 	})
 	app.Event.On("ios:setBackForwardGesturesEnabled", func(e *application.CustomEvent) {
-		application.IOSSetBackForwardGesturesEnabled(getBool(e.Data, "enabled", false))
+		application.IOS.SetBackForwardGesturesEnabled(getBool(e.Data, "enabled", false))
 	})
 	app.Event.On("ios:setLinkPreviewEnabled", func(e *application.CustomEvent) {
-		application.IOSSetLinkPreviewEnabled(getBool(e.Data, "enabled", true))
+		application.IOS.SetLinkPreviewEnabled(getBool(e.Data, "enabled", true))
 	})
 	app.Event.On("ios:setInspectableEnabled", func(e *application.CustomEvent) {
-		application.IOSSetInspectableEnabled(getBool(e.Data, "enabled", true))
+		application.IOS.SetInspectableEnabled(getBool(e.Data, "enabled", true))
 	})
 	app.Event.On("ios:setCustomUserAgent", func(e *application.CustomEvent) {
 		ua := getString(e.Data, "ua")
-		application.IOSSetCustomUserAgent(ua)
+		application.IOS.SetCustomUserAgent(ua)
 	})
 }

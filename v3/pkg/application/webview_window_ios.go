@@ -205,6 +205,12 @@ func (w *iosWebviewWindow) setParent(_ *WebviewWindow) error {
 func (w *iosWebviewWindow) run() {
 	// Create the native WebView when the window runs
 	if w.nativeHandle == nil {
+		// Wait until UIKit has finished launching before creating the WebView.
+		// app.Run() runs this on a background goroutine; the UIApplication
+		// delegate signals launch (via the pure-C handshake) and platformRun then
+		// closes iosLaunched. Creating the WebView before appDelegate/window exist
+		// would return NULL with no retry — an intermittent blank cold launch.
+		<-iosLaunched
 		// Get the Wails window ID from the parent
 		wailsID := w.parent.ID()
 		// Create the native WebView with the Wails window ID

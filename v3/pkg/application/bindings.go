@@ -303,11 +303,40 @@ var errorType = reflect.TypeFor[error]()
 // If the call succeeds, result will be either a non-error return value (if there is only one)
 // or a slice of non-error return values (if there are more than one).
 //
-// If the arguments are mistyped or the call returns one or more non-nil error values,
-// result is nil and err is an instance of *[CallError].
+// If the arguments are mistyped, the call returns one or more non-nil error values,
+// or the method panics, result is nil and err is an instance of *[CallError].
 func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
-	// Use a defer statement to capture panics
-	defer handlePanic(handlePanicOptions{skipEnd: 5})
+	// Convert panics raised by the bound method into a *CallError so the
+	// frontend call rejects instead of the application dying: the default
+	// panic handler is fatal, and a bug in one bound method must not take
+	// down the whole application (#5037). A custom PanicHandler, when
+	// registered, still observes the panic for logging/telemetry.
+	defer func() {
+		e := recover()
+		if e == nil {
+			return
+		}
+		recoveredErr, ok := e.(error)
+		if !ok {
+			recoveredErr = fmt.Errorf("%v", e)
+		}
+		// The stack trace is only used for logging or the PanicHandler, so
+		// only compute it when there is a globalApplication to consume it
+		// (the CallError below carries the message, not the trace).
+		if globalApplication != nil {
+			stackTrace := getStackTrace(3, 5)
+			if handler := globalApplication.options.PanicHandler; handler != nil {
+				handler(newPanicDetails(recoveredErr, stackTrace))
+			} else {
+				globalApplication.error("panic in bound method %s: %s\n%s", b.FQN, recoveredErr, stackTrace)
+			}
+		}
+		result = nil
+		err = &CallError{
+			Message: fmt.Sprintf("%s: panic: %s", b.FQN, recoveredErr),
+			Kind:    RuntimeError,
+		}
+	}()
 	argCount := len(args)
 	if b.needsContext {
 		argCount++
