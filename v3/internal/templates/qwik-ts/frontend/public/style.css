@@ -72,11 +72,23 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    /* Respect mobile safe areas (notch / home indicator) and keep content
+       off the screen edges on small viewports. */
+    padding: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+             max(1rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
 }
 
 h1 {
-    font-size: 3.2em;
+    /* Scale with the viewport so the heading fits on one line on phones
+       (~1.9rem) and stays large on desktop (capped at 3.2rem). */
+    font-size: clamp(1.9rem, 8vw, 3.2rem);
     line-height: 1.1;
+    text-align: center;
+    margin: 0.6em 0;
 }
 
 #app {
@@ -89,7 +101,17 @@ h1 {
 .logo {
     height: 6em;
     padding: 1.5em;
+    max-width: 40vw;
+    object-fit: contain;
     will-change: filter;
+}
+
+/* Tighten logo size on phone-sized viewports. */
+@media (max-width: 480px) {
+    .logo {
+        height: 4.5em;
+        padding: 1em;
+    }
 }
 
 .logo:hover {

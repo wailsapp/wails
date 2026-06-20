@@ -65,9 +65,12 @@ static void install_signal_handlers()
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
-#if defined(SIGUSR1)
-    fix_signal(SIGUSR1);
-#endif
+    // NOTE: Do NOT add SA_ONSTACK to SIGUSR1. WebKit's JavaScriptCore uses
+    // SIGUSR1 to suspend/resume threads for conservative GC stack scanning.
+    // Once JSC installs its own SIGUSR1 handler it owns the signal (Go no
+    // longer handles it), and forcing SA_ONSTACK makes that handler run on
+    // Go's alternate signal stack, breaking GC thread synchronisation and
+    // freezing WebKit during idle collection. See issue #5527.
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif
