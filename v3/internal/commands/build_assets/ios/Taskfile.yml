@@ -44,17 +44,12 @@ tasks:
       - task: generate:ios:overlay
       - task: generate:ios:xcode
       - task: common:go:mod:tidy
-      - task: generate:ios:bindings
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
           PRODUCTION:
             ref: .PRODUCTION
-      - task: common:generate:icons
     cmds:
       - echo "Building iOS app {{.APP_NAME}} ({{.IOS_PLATFORM}})..."
       - go build -buildmode=c-archive -overlay build/ios/xcode/overlay.json {{.BUILD_FLAGS}} -o {{.OUTPUT}}.a
@@ -119,7 +114,7 @@ tasks:
           -framework CoreLocation -framework CoreMotion -framework SystemConfiguration \
           -lresolv \
           -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
-          "$MAIN_M" "{{.BIN_DIR}}/{{.APP_NAME}}.a"
+          "$MAIN_M" -Wl,-force_load,"{{.BIN_DIR}}/{{.APP_NAME}}.a"
 
   create:app:bundle:
     summary: Creates an iOS `.app` bundle
@@ -172,10 +167,15 @@ tasks:
     summary: Deploy to iOS Simulator
     deps: [package]
     cmds:
-      - xcrun simctl terminate booted {{.BUNDLE_ID}} 2>/dev/null || true
-      - xcrun simctl uninstall booted {{.BUNDLE_ID}} 2>/dev/null || true
-      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.app"
-      - xcrun simctl launch booted {{.BUNDLE_ID}}
+      - |
+        # Read the real bundle id from the built bundle (it comes from
+        # build/config.yml, not the BUNDLE_ID var, so it varies per project).
+        APP="{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")
+        xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl install booted "$APP"
+        xcrun simctl launch booted "$BUNDLE_ID"
 
   deploy-device:
     summary: Install and launch on a connected device (requires IOS_PLATFORM=device build and real signing)
@@ -190,7 +190,8 @@ tasks:
           exit 1
         fi
         xcrun devicectl device install app --device "$DEVICE" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
-        xcrun devicectl device process launch --device "$DEVICE" "{{.BUNDLE_ID}}"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "{{.BIN_DIR}}/{{.APP_NAME}}.app/Info.plist")
+        xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE_ID"
 
   compile:ios:
     summary: Compile the iOS executable from Go archive and main.m
@@ -319,10 +320,16 @@ tasks:
           fi
         fi
       - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
-      - xcrun simctl terminate booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
-      - xcrun simctl uninstall booted "com.wails.{{.APP_NAME | lower}}.dev" 2>/dev/null || true
-      - xcrun simctl install booted "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
-      - xcrun simctl launch booted "com.wails.{{.APP_NAME | lower}}.dev"
+      - |
+        # The dev bundle id comes from build/ios/Info.dev.plist (derived from
+        # build/config.yml), so read it from the built bundle rather than
+        # assuming a com.wails.* prefix.
+        DEV_APP="{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DEV_APP/Info.plist")
+        xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl install booted "$DEV_APP"
+        xcrun simctl launch booted "$BUNDLE_ID"
 
   xcode:
     summary: Open the generated Xcode project for this app

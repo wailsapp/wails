@@ -569,65 +569,63 @@ func (w *WebviewWindow) Resizable() bool {
 
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
-	w.options.MinWidth = minWidth
-	w.options.MinHeight = minHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if minHeight != 0 && currentHeight < minHeight {
 		newHeight = minHeight
-		w.options.Height = newHeight
 		newSize = true
 	}
 	if minWidth != 0 && currentWidth < minWidth {
 		newWidth = minWidth
-		w.options.Width = newWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MinWidth = minWidth
+		w.options.MinHeight = minHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMinSize(minWidth, minHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
 // SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
-	w.options.MaxWidth = maxWidth
-	w.options.MaxHeight = maxHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if maxHeight != 0 && currentHeight > maxHeight {
 		newHeight = maxHeight
-		w.options.Height = maxHeight
 		newSize = true
 	}
 	if maxWidth != 0 && currentWidth > maxWidth {
 		newWidth = maxWidth
-		w.options.Width = maxWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MaxWidth = maxWidth
+		w.options.MaxHeight = maxHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMaxSize(maxWidth, maxHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
@@ -1304,13 +1302,25 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 			w.savedMaxHeight = w.options.MaxHeight
 			w.constraintsSaved = true
 		}
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
 			w.impl.setMaxSize(0, 0)
 		}
 	})
+}
+
+func (w *WebviewWindow) restoreSavedSizeConstraintOptions() bool {
+	if !w.constraintsSaved {
+		return false
+	}
+	w.options.MinWidth = w.savedMinWidth
+	w.options.MinHeight = w.savedMinHeight
+	w.options.MaxWidth = w.savedMaxWidth
+	w.options.MaxHeight = w.savedMaxHeight
+	w.constraintsSaved = false
+	return true
 }
 
 func (w *WebviewWindow) EnableSizeConstraints() {
@@ -1318,18 +1328,12 @@ func (w *WebviewWindow) EnableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		minW, minH := w.options.MinWidth, w.options.MinHeight
-		maxW, maxH := w.options.MaxWidth, w.options.MaxHeight
-		if w.constraintsSaved {
-			minW, minH = w.savedMinWidth, w.savedMinHeight
-			maxW, maxH = w.savedMaxWidth, w.savedMaxHeight
-			w.constraintsSaved = false
+		w.restoreSavedSizeConstraintOptions()
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
+			w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
 		}
-		if minW > 0 && minH > 0 {
-			w.SetMinSize(minW, minH)
-		}
-		if maxW > 0 && maxH > 0 {
-			w.SetMaxSize(maxW, maxH)
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
+			w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
 		}
 	})
 }

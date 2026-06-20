@@ -127,28 +127,28 @@ the `application.IOS*` surface, so one event-driven layer drives both platforms
 
 | Capability | API | Notes |
 |---|---|---|
-| Share sheet | `AndroidShare(json)` | `Intent.ACTION_SEND` |
-| Open URL externally | `AndroidOpenURL(url)` | `Intent.ACTION_VIEW` |
-| Keep screen awake | `AndroidSetKeepAwake(bool)` | `FLAG_KEEP_SCREEN_ON` |
-| Torch / flashlight | `AndroidSetTorch(bool)` | `CameraManager` → `native:torch` |
-| Safe-area insets | `AndroidSafeAreaJSON()` | `{top,bottom,left,right}` |
-| Brightness | `AndroidSetBrightness(0-100)` / `AndroidBrightnessJSON()` | |
-| App info | `AndroidAppInfoJSON()` | `{name,version,build,bundleId}` |
-| Orientation lock | `AndroidSetOrientation(...)` / `AndroidOrientationJSON()` | |
-| Status bar | `AndroidSetStatusBar(json)` | style + visibility |
-| Biometrics | `AndroidBiometricAuthenticate(reason)` | `BiometricPrompt` → `native:biometric` |
-| Local notification | `AndroidNotify(json)` | `NotificationManager` (POST_NOTIFICATIONS) |
-| Secure storage | `AndroidSecureSet/Get/Delete` | `EncryptedSharedPreferences` |
-| Haptics | `AndroidHaptic(type)` | `VibrationEffect` |
-| Geolocation | `AndroidGetLocation()` | one-shot → `native:location` (ACCESS_FINE_LOCATION) |
-| Accelerometer | `AndroidSetMotion(bool)` | `SensorManager` stream → `native:motion` |
-| Proximity | `AndroidSetProximity(bool)` | → `native:proximity` |
-| Text-to-speech | `AndroidSpeak(text)` / `AndroidStopSpeak()` | `TextToSpeech` |
-| Storage info | `AndroidStorageJSON()` | `{free,total}` bytes (`StatFs`) |
-| Power / battery | `AndroidPowerJSON()` | `{level,charging,lowPower}` |
-| Network status | `AndroidNetworkJSON()` | `{connected,type}` (`ConnectivityManager`) |
-| Keyboard insets | `AndroidSetKeyboardWatch(bool)` | → `native:keyboard {visible,height}` |
-| Screen-capture | `AndroidSetScreenProtect(bool)` | `FLAG_SECURE` → `native:screenCapture` |
+| Share sheet | `Android.Share(json)` | `Intent.ACTION_SEND` |
+| Open URL externally | `Android.OpenURL(url)` | `Intent.ACTION_VIEW` |
+| Keep screen awake | `Android.SetKeepAwake(bool)` | `FLAG_KEEP_SCREEN_ON` |
+| Torch / flashlight | `Android.SetTorch(bool)` | `CameraManager` → `common:torch` |
+| Safe-area insets | `Android.SafeAreaJSON()` | `{top,bottom,left,right}` |
+| Brightness | `Android.SetBrightness(0-100)` / `Android.BrightnessJSON()` | |
+| App info | `Android.AppInfoJSON()` | `{name,version,build,bundleId}` |
+| Orientation lock | `Android.SetOrientation(...)` / `Android.OrientationJSON()` | |
+| Status bar | `Android.SetStatusBar(json)` | style + visibility |
+| Biometrics | `Android.BiometricAuthenticate(reason)` | `BiometricPrompt` → `common:biometric` |
+| Local notification | `Android.Notify(json)` | `NotificationManager` (POST_NOTIFICATIONS) |
+| Secure storage | `Android.SecureSet/Get/Delete` | `EncryptedSharedPreferences` |
+| Haptics | `Android.Haptic(type)` | `VibrationEffect` |
+| Geolocation | `Android.GetLocation()` | one-shot → `common:location` (ACCESS_FINE_LOCATION) |
+| Accelerometer | `Android.SetMotion(bool)` | `SensorManager` stream → `common:motion` |
+| Proximity | `Android.SetProximity(bool)` | → `common:proximity` |
+| Text-to-speech | `Android.Speak(text)` / `Android.StopSpeak()` | `TextToSpeech` |
+| Storage info | `Android.StorageJSON()` | `{free,total}` bytes (`StatFs`) |
+| Power / battery | `Android.PowerJSON()` | `{level,charging,lowPower}` |
+| Network status | `Android.NetworkJSON()` | `{connected,type}` (`ConnectivityManager`) |
+| Keyboard insets | `Android.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |
+| Screen-capture | `Android.SetScreenProtect(bool)` | `FLAG_SECURE` → `common:screenCapture` |
 
 Asynchronous results flow back to the frontend through the bridge's
 `nativeEmitEvent` JNI export → `globalApp.Event.Emit`. Geolocation, biometrics

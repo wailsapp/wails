@@ -31,6 +31,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.104 - 2026-06-18
+
+## Fixed
+- Fix an iOS crash (SIGABRT) when a bound Go service method returns an empty string. The iOS asset response writer guarded the body pointer with `buf != nil` instead of its length, so a zero-length body made `&buf[0]` panic; it now guards on length, matching the desktop writers
+
+## v3.0.0-alpha2.103 - 2026-06-15
+
+## Changed
+- Move iOS and Android native features onto platform managers: call them via `application.IOS.*` and `application.Android.*` (e.g. `application.IOS.Haptic("medium")`, `application.Android.Share(payload)`) instead of the old `application.IOS*`/`application.Android*` free functions (#5602)
+- Rename mobile bridge events: cross-platform events now use the `common:*` prefix (e.g. `common:haptic`, `common:location`) and platform-exclusive events use `ios:*` / `android:*` (e.g. `ios:backgroundTask`, `android:foregroundService`); the `native:*` prefix is no longer used (#5602)
+
+## v3.0.0-alpha.102 - 2026-06-14
+
+## Added
+- Add experimental `wails3 setup` wizard for interactive project setup and dependency checking
+- Add `--json` flag to `wails3 doctor` for machine-readable output
+- Add signing status section to `wails3 doctor` command
+
+## Fixed
+- Fix npm detection on Linux to check PATH in addition to package manager
+
 ## v3.0.0-alpha.101 - 2026-06-13
 
 ## Added

@@ -205,7 +205,12 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	if err := checkPreconditions(task); err != nil {
+	mergedVars := e.mergeVars(task, depVars)
+
+	// Preconditions are templated against the task's resolved vars, so this
+	// must run after mergeVars (their `sh:` guards reference vars like
+	// .OBFUSCATED) and before the up-to-date short-circuit below.
+	if err := checkPreconditions(task, mergedVars); err != nil {
 		return err
 	}
 
@@ -214,8 +219,6 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		e.reportPrunedCached(task)
 		return nil
 	}
-
-	mergedVars := e.mergeVars(task, depVars)
 
 	// depRuns is shared across goroutines once the parallel dep fanout is
 	// in flight, so take e.mu for both the lazy-init and every read/write.

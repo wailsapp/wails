@@ -9,14 +9,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/defaults"
-	"github.com/wailsapp/wails/v3/internal/term"
-
-	"github.com/go-git/go-git/v5"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/templates"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 var DisableFooter bool
@@ -70,66 +68,52 @@ func gitURLToModulePath(gitURL string) string {
 }
 
 func initGitRepository(projectDir string, gitURL string) error {
-	// Initialize repository
-	repo, err := git.PlainInit(projectDir, false)
-	if err != nil {
+	if err := git.Init(projectDir); err != nil {
 		return fmt.Errorf("failed to initialize git repository: %w", err)
 	}
-
-	// Create remote
-	_, err = repo.CreateRemote(&config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{gitURL},
-	})
-	if err != nil {
+	if err := git.RemoteAdd(projectDir, "origin", gitURL); err != nil {
 		return fmt.Errorf("failed to create git remote: %w", err)
 	}
-
-	// Stage all files
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("failed to get git worktree: %w", err)
-	}
-
-	_, err = worktree.Add(".")
-	if err != nil {
+	if err := git.AddAll(projectDir); err != nil {
 		return fmt.Errorf("failed to stage files: %w", err)
 	}
-
 	return nil
 }
 
-// applyGlobalDefaults applies global defaults to init options if they are using default values
 func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefaults) {
-	// Apply template default if using the built-in default
-	if options.TemplateName == "vanilla" && globalDefaults.Project.DefaultTemplate != "" {
-		options.TemplateName = globalDefaults.Project.DefaultTemplate
+	templateName := globalDefaults.GetTemplateName()
+	if options.TemplateName == "vanilla" && templateName != "" && templateName != "vanilla" {
+		options.TemplateName = templateName
+		options.TemplateFromDefaults = true
 	}
 
-	// Apply company default if using the built-in default
 	if options.ProductCompany == "My Company" && globalDefaults.Author.Company != "" {
 		options.ProductCompany = globalDefaults.Author.Company
 	}
 
-	// Apply copyright from global defaults if using the built-in default
 	if options.ProductCopyright == "\u00a9 now, My Company" {
 		options.ProductCopyright = globalDefaults.GenerateCopyright()
 	}
 
-	// Apply product identifier from global defaults if not explicitly set
 	if options.ProductIdentifier == "" && globalDefaults.Project.ProductIdentifierPrefix != "" {
 		options.ProductIdentifier = globalDefaults.GenerateProductIdentifier(options.ProjectName)
 	}
 
-	// Apply description from global defaults if using the built-in default
 	if options.ProductDescription == "My Product Description" && globalDefaults.Project.DescriptionTemplate != "" {
 		options.ProductDescription = globalDefaults.GenerateDescription(options.ProjectName)
 	}
 
-	// Apply version from global defaults if using the built-in default
 	if options.ProductVersion == "0.1.0" && globalDefaults.Project.DefaultVersion != "" {
 		options.ProductVersion = globalDefaults.GetDefaultVersion()
 	}
+
+	// Apply UseInterfaces from global defaults only when the user hasn't explicitly
+	// disabled it via --useinterfaces=false. The CLI default is true, so if it's
+	// still true here the user didn't override it and we can apply the configured default.
+	if options.UseInterfaces {
+		options.UseInterfaces = globalDefaults.Project.UseInterfaces
+	}
+	options.UseInterfacesFromDefaults = true
 }
 
 func Init(options *flags.Init) error {
@@ -196,6 +180,7 @@ func Init(options *flags.Init) error {
 		ProductCopyright:   options.ProductCopyright,
 		ProductComments:    options.ProductComments,
 		Typescript:         isTypescript,
+		UseInterfaces:      options.UseInterfaces,
 	}
 	err = GenerateBuildAssets(buildAssetsOptions)
 	if err != nil {
