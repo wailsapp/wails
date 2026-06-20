@@ -69,6 +69,9 @@ type windowsWebviewWindow struct {
 	focusingChromium   bool
 	onceDo             sync.Once
 
+	// resizePending gates WebView2 resize execution during WM_SIZE handling.
+	resizePending atomic.Int32
+
 	// Window move debouncer
 	moveDebouncer func(func())
 
@@ -1508,8 +1511,6 @@ func (w *windowsWebviewWindow) isActive() bool {
 	return w32.GetForegroundWindow() == w.hwnd
 }
 
-var resizePending atomic.Int32
-
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	// Use the original implementation that works perfectly for maximized
@@ -1716,14 +1717,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			InvokeSync(func() {
 				time.Sleep(1 * time.Nanosecond)
 				w.chromium.ResizeWithBounds(bounds)
-				resizePending.Store(0)
+				w.resizePending.Store(0)
 				w.parent.emit(events.Windows.WindowDidResize)
 			})
 		}
 
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// suppress WebView2 resize while minimizing
-		} else if resizePending.CompareAndSwap(0, 1) {
+		} else if w.resizePending.CompareAndSwap(0, 1) {
 			doResize()
 		}
 		return 0
