@@ -69,12 +69,23 @@ type windowsWebviewWindow struct {
 	focusingChromium   bool
 	onceDo             sync.Once
 
+	// resizePending gates WebView2 resize execution during WM_SIZE handling.
+	resizePending atomic.Int32
+
 	// Window move debouncer
 	moveDebouncer func(func())
 
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// dpiBeforeMinimise records the window's DPI immediately before it entered
+	// the minimised state, so that on restore we can tell whether the DPI
+	// genuinely changed while the window was parked (the cross-monitor #5544
+	// scenario), as opposed to unconditionally touching WebView2's Controller3
+	// rasterization-scale APIs on every single minimise/restore cycle, even on
+	// a single-monitor, single-DPI setup where nothing needs correcting.
+	dpiBeforeMinimise w32.UINT
 
 	// lastSizeWParam is the wParam from the most-recent WM_SIZE message.
 	// Gate the dark-menubar force-repaint on a state transition so it does not fire
@@ -1606,14 +1617,20 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowBackgroundErase)
 		// Paint the background with the configured colour so that areas not yet
 		// covered by WebView2 during a resize show the correct colour instead of white.
+		// GetClientRect can legitimately return nil for a window in a transient
+		// state (the same nil case already guarded against in
+		// convertWindowToWebviewCoordinates above), which minimise/restore
+		// transitions are especially prone to triggering; FillRect with a nil
+		// rect crashes, so this must be checked before painting.
 		if w.parent.options.BackgroundType == BackgroundTypeSolid {
-			col := w.parent.options.BackgroundColour
-			hdc := w32.HDC(wparam)
-			rc := w32.GetClientRect(w.hwnd)
-			colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
-			hbrush := w32.CreateSolidBrush(colorRef)
-			w32.FillRect(hdc, rc, hbrush)
-			w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			if rc := w32.GetClientRect(w.hwnd); rc != nil {
+				col := w.parent.options.BackgroundColour
+				hdc := w32.HDC(wparam)
+				colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
+				hbrush := w32.CreateSolidBrush(colorRef)
+				w32.FillRect(hdc, rc, hbrush)
+				w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			}
 		}
 		return 1
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
@@ -1654,9 +1671,6 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
 			if w.isMinimizing {
-				// A maximised window leaving the minimised state arrives
-				// here (not at SIZE_RESTORED), and needs the same DPI
-				// resync as the restore path below (#5544).
 				w.resyncWebviewDPIAfterMinimise()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
@@ -1668,47 +1682,50 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_RESTORED:
 			restoredFromMaximised := w.lastSizeWParam == w32.SIZE_MAXIMIZED
 			if restoredFromMaximised {
-				// Native caption drag from a maximised frameless window bypasses UnMaximise(),
-				// so we need to restore the saved constraints here before the next resize.
 				w.parent.restoreSavedSizeConstraintOptions()
 			}
 			if w.isMinimizing {
-				// While minimised the window is parked at (-32000,-32000),
-				// which on mixed-DPI systems can re-associate it with another
-				// monitor's DPI. Nothing corrects WebView2's rasterization
-				// scale on restore, so window.devicePixelRatio keeps the
-				// wrong monitor's value until a manual resize (#5544).
+				if w.dpiBeforeMinimise == 0 {
+					w.dpiBeforeMinimise, _ = w.DPI()
+				}
 				w.resyncWebviewDPIAfterMinimise()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
-			// Repaint the dark menubar only when leaving a maximized/snapped state.
-			// SIZE_RESTORED fires on every WM_SIZE during live drag-resize; gating on the
-			// previous state avoids per-frame invalidations and the associated flicker.
-			// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot guard this because keyboard snap
-			// (Win+Left) bypasses those messages entirely.
 			if restoredFromMaximised && w.menu != nil && w.menubarTheme != nil {
 				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE)
 			}
 		case w32.SIZE_MINIMIZED:
+			if !w.isMinimizing {
+				w.dpiBeforeMinimise, _ = w.DPI()
+			}
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
 		w.lastSizeWParam = wparam
 
-		if !(w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED) {
-			// If the window is frameless and minimizing, suppress the WebView2 resize.
-			// Without this, restoring has wrong dimensions during the animation.
-			// See https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+		doResize := func() {
 			width := int32(lparam & 0xFFFF)
 			height := int32((lparam >> 16) & 0xFFFF)
-			bounds := &edge.Rect{Left: 0, Top: 0, Right: width, Bottom: height}
+			bounds := &edge.Rect{
+				Left:   0,
+				Top:    0,
+				Right:  width,
+				Bottom: height,
+			}
 			InvokeSync(func() {
 				time.Sleep(1 * time.Nanosecond)
 				w.chromium.ResizeWithBounds(bounds)
+				w.resizePending.Store(0)
 				w.parent.emit(events.Windows.WindowDidResize)
 			})
+		}
+
+		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
+			// suppress WebView2 resize while minimizing
+		} else if w.resizePending.CompareAndSwap(0, 1) {
+			doResize()
 		}
 		return 0
 
@@ -1769,9 +1786,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds
-		// mode), so the rasterization scale must follow DPI changes manually.
-		w.resyncWebviewRasterizationScale()
+		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode), so
+		// the rasterization scale must follow DPI changes manually. Skip this while
+		// minimised, same reasoning as the SetWindowPos guard above: the DPI
+		// reported here belongs to whatever monitor the parked (-32000,-32000)
+		// position maps to, not the window's real monitor. A correct
+		// WM_DPICHANGED for the real monitor still arrives on restore if one is
+		// actually needed, and resyncWebviewDPIAfterMinimise() already handles
+		// that case explicitly.
+		if !w.isMinimizing {
+			w.resyncWebviewRasterizationScale()
+		}
 		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
 
@@ -1930,12 +1955,26 @@ func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 }
 
 // resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
-// state (whether it comes back as restored or maximised). If the rasterization
-// scale had drifted while the window was parked at (-32000,-32000), a scale
-// re-put alone does not make WebView2 re-lay out content whose bounds are
-// unchanged — the page keeps reporting sizes computed with the stale scale
-// until the bounds are re-asserted (#5544, reporter verification round 2).
+// state (whether it comes back as restored or maximised). It only touches
+// WebView2's rasterization scale when the DPI captured right before
+// minimising and the DPI on restore actually differ — e.g. the window was
+// minimised on one monitor and got remapped to a different one while
+// parked (#5544). For the overwhelmingly common case of minimising and
+// restoring on the same monitor/DPI, this must be a complete no-op: it
+// must not unconditionally call into WebView2's Controller3 APIs on every
+// single minimise/restore cycle, since that is what regressed ordinary
+// minimise/restore (content area staying blank behind the native frame,
+// sometimes crashing outright) even when DPI never changed.
 func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
+	if w.dpiBeforeMinimise == 0 {
+		return
+	}
+
+	dpiNow, _ := w.DPI()
+	if dpiNow == 0 || dpiNow == w.dpiBeforeMinimise {
+		return
+	}
+
 	if w.resyncWebviewRasterizationScale() {
 		w.chromium.Resize()
 	}
