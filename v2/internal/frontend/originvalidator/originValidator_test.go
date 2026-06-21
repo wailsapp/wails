@@ -14,12 +14,7 @@ func mustParseURL(rawURL string) *url.URL {
 }
 
 func TestWildcardPatternDoesNotCrossDomainBoundaries(t *testing.T) {
-	tests := []struct {
-		name           string
-		allowedOrigins string
-		origin         string
-		expected       bool
-	}{
+	tests := []originCase{
 		// Legitimate subdomain wildcard — should still work
 		{
 			name:           "subdomain wildcard matches subdomain",
@@ -93,6 +88,18 @@ func TestWildcardPatternDoesNotCrossDomainBoundaries(t *testing.T) {
 		},
 	}
 
+	runOriginCases(t, tests)
+}
+
+type originCase struct {
+	name           string
+	allowedOrigins string
+	origin         string
+	expected       bool
+}
+
+func runOriginCases(t *testing.T, tests []originCase) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			startURL := mustParseURL("https://wails.localhost")
@@ -104,4 +111,39 @@ func TestWildcardPatternDoesNotCrossDomainBoundaries(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestWildcardComponentBoundaries covers the regression cases requested in the
+// review of GHSA-47hv-j4px-h3c9: a '*' must be a complete origin component
+// (separator on BOTH sides) to be a wildcard; partial-label wildcards must not
+// expand; and wildcards must never cross host/port/path or userinfo boundaries.
+func TestWildcardComponentBoundaries(t *testing.T) {
+	runOriginCases(t, []originCase{
+		// Subdomain wildcard: matches exactly one subdomain label.
+		{"subdomain wildcard matches one label", "https://*.myapp.com", "https://api.myapp.com", true},
+		{"subdomain wildcard rejects nested suffix bypass", "https://*.myapp.com", "https://api.myapp.com.evil.com", false},
+		{"subdomain wildcard rejects userinfo bypass", "https://*.myapp.com", "https://api.myapp.com@evil.com", false},
+		{"subdomain wildcard rejects apex", "https://*.myapp.com", "https://myapp.com", false},
+		{"subdomain wildcard rejects multi-level", "https://*.myapp.com", "https://a.b.myapp.com", false},
+		{"subdomain wildcard rejects lookalike domain", "https://*.myapp.com", "https://api.notmyapp.com", false},
+
+		// Partial-label wildcards must NOT expand (treated literally => fail closed).
+		{"prefix partial wildcard rejects lookalike", "https://*myapp.com", "https://evilmyapp.com", false},
+		{"prefix partial wildcard rejects apex", "https://*myapp.com", "https://myapp.com", false},
+		{"infix partial wildcard rejects fill", "https://myapp.*com", "https://myapp.evilcom", false},
+		{"infix partial wildcard rejects single label", "https://myapp.*com", "https://myapp.xcom", false},
+		{"trailing partial wildcard rejects suffix", "https://myapp.com*", "https://myapp.community", false},
+		{"trailing partial wildcard rejects apex (fails closed)", "https://myapp.com*", "https://myapp.com", false},
+
+		// Port wildcard: complete component after ':'.
+		{"port wildcard matches a port", "https://myapp.com:*", "https://myapp.com:8080", true},
+		{"port wildcard does not cross into host", "https://myapp.com:*", "https://myapp.com:8080.evil.com", false},
+		{"port wildcard does not cross into path", "https://myapp.com:*", "https://myapp.com:8080/evil", false},
+		{"port wildcard requires a port", "https://myapp.com:*", "https://myapp.com", false},
+		{"port wildcard rejects userinfo bypass", "https://myapp.com:*", "https://myapp.com:x@evilcom", false},
+
+		// Multiple complete-component wildcards.
+		{"sub+tld wildcard matches", "https://*.myapp.*", "https://api.myapp.com", true},
+		{"sub+tld wildcard rejects nested suffix", "https://*.myapp.*", "https://api.myapp.com.evil.com", false},
+	})
 }
