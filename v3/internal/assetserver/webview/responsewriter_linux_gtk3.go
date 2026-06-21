@@ -112,10 +112,16 @@ func (rw *responseWriter) finishWithError(code int, err error) {
 	rw.wErr = err
 
 	msg := C.CString(err.Error())
-	gerr := C.g_error_new_literal(C.g_quark_from_string(msg), C.int(code), msg)
-	C.webkit_uri_scheme_request_finish_error(rw.req, gerr)
-	C.g_error_free(gerr)
-	C.free(unsafe.Pointer(msg))
+	defer C.free(unsafe.Pointer(msg))
+
+	// webkit_uri_scheme_request_finish_error touches the WebKit-owned request
+	// on the GTK main loop; this runs on an asset-server worker goroutine, so
+	// it must hop to the main thread. See mainthread_linux.go and issue #5631.
+	invokeOnMainSync(func() {
+		gerr := C.g_error_new_literal(C.g_quark_from_string(msg), C.int(code), msg)
+		C.webkit_uri_scheme_request_finish_error(rw.req, gerr)
+		C.g_error_free(gerr)
+	})
 }
 
 type nopCloser struct {
