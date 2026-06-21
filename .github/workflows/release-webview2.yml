@@ -1,6 +1,14 @@
 name: Release webview2
 
 on:
+  # Auto-release a new patch tag whenever webview2 source changes land on master,
+  # so v3 can always depend on a released version of any new webview2 API.
+  # Loop-safe: this pushes a tag (not a branch commit, so it won't re-trigger the
+  # branches filter), and the downstream bump-webview2-v3 only edits v3/**.
+  push:
+    branches: [master]
+    paths:
+      - 'webview2/**'
   workflow_dispatch:
     inputs:
       version:
@@ -10,6 +18,12 @@ on:
 
 permissions:
   contents: write
+
+# Serialise releases so two webview2 changes landing close together can't race on
+# computing/pushing the same next patch tag.
+concurrency:
+  group: release-webview2
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -41,8 +55,10 @@ jobs:
             if [ -z "$LAST_TAG" ]; then
               VERSION="v1.0.24"
             else
-              # Extract version number without webview2/ prefix
-              LAST_VERSION=${LAST_TAG#webview2/}
+              # Extract version number without the webview2/v prefix, so MAJOR
+              # is the bare number (e.g. 1) and not "v1" — otherwise the format
+              # string below would double the v and produce webview2/vv1.0.25.
+              LAST_VERSION=${LAST_TAG#webview2/v}
               # Increment patch version
               MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
               MINOR=$(echo $LAST_VERSION | cut -d. -f2)
