@@ -12,6 +12,11 @@ export async function checkDependencies(): Promise<DependencyStatus[]> {
   return response.json();
 }
 
+export async function checkMobileDependencies(ios: boolean, android: boolean): Promise<DependencyStatus[]> {
+  const response = await fetch(`${API_BASE}/dependencies/mobile?ios=${ios}&android=${android}`);
+  return response.json();
+}
+
 export async function getDockerStatus(): Promise<DockerStatus> {
   const response = await fetch(`${API_BASE}/docker/status`);
   return response.json();

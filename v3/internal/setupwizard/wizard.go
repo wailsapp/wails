@@ -41,8 +41,10 @@ type DependencyStatus struct {
 	Required       bool   `json:"required"`
 	Message        string `json:"message,omitempty"`
 	InstallCommand string `json:"installCommand,omitempty"`
+	ConfigCommand  string `json:"configCommand,omitempty"` // shell lines to add (e.g. export JAVA_HOME=...), shown with a Copy button
 	HelpURL        string `json:"helpUrl,omitempty"`
-	ImageBuilt     bool   `json:"imageBuilt"` // For Docker: whether wails-cross image exists
+	HelpLabel      string `json:"helpLabel,omitempty"` // OS-specific link text, e.g. "Get Xcode from the App Store"
+	ImageBuilt     bool   `json:"imageBuilt"`          // For Docker: whether wails-cross image exists
 }
 
 // DockerStatus represents Docker installation and image status
@@ -312,6 +314,7 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
 	mux.HandleFunc("/api/state", w.handleState)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
+	mux.HandleFunc("/api/dependencies/mobile", w.handleCheckMobileDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
 	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
 	mux.HandleFunc("/api/docker/status/stream", w.handleDockerStatusStream)
@@ -393,6 +396,15 @@ func (w *Wizard) handleCheckDependencies(rw http.ResponseWriter, r *http.Request
 	w.state.Dependencies = deps
 	w.stateMu.Unlock()
 
+	rw.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(deps)
+}
+
+// handleCheckMobileDependencies reports the toolchain status for the requested
+// mobile platforms, e.g. /api/dependencies/mobile?ios=true&android=true.
+func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	deps := w.checkMobileDependencies(q.Get("ios") == "true", q.Get("android") == "true")
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(deps)
 }
@@ -1095,6 +1107,8 @@ var allowedInstallers = map[string]bool{
 	"eopkg": true, "nix-env": true,
 	// macOS
 	"brew": true,
+	// Mobile toolchains: install SDK packages / simulator runtimes
+	"sdkmanager": true, "xcodebuild": true,
 	// Windows
 	"winget": true, "choco": true, "scoop": true,
 }
@@ -1530,17 +1544,23 @@ func getMacOSSigningIdentities() []string {
 	var identities []string
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
-		if strings.Contains(line, "\"") && strings.Contains(line, "Developer ID") {
-			start := strings.Index(line, "\"")
-			end := strings.LastIndex(line, "\"")
-			if start != -1 && end > start {
-				identity := line[start+1 : end]
-				if !seen[identity] {
-					seen[identity] = true
-					identities = append(identities, identity)
-				}
-			}
+		// Identity lines look like:  1) <40-hex-hash> "Apple Development: Name (TEAM)"
+		// Accept ALL code-signing identity types — Apple Development, Apple
+		// Distribution, Developer ID, Mac Developer, etc. (the `-p codesigning`
+		// policy already restricts the list to signing-capable certs). The
+		// trailing "N valid identities found" line has no quotes, so requiring a
+		// quoted name is enough to skip it.
+		start := strings.Index(line, "\"")
+		end := strings.LastIndex(line, "\"")
+		if start == -1 || end <= start {
+			continue
 		}
+		identity := line[start+1 : end]
+		if identity == "" || seen[identity] {
+			continue
+		}
+		seen[identity] = true
+		identities = append(identities, identity)
 	}
 
 	return identities

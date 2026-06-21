@@ -3,11 +3,13 @@ export interface DependencyStatus {
   installed: boolean;
   version?: string;
   path?: string;
-  status: 'installed' | 'not_installed' | 'needs_update' | 'checking';
+  status: 'installed' | 'not_installed' | 'needs_update' | 'needs_config' | 'checking';
   required: boolean;
   message?: string;
   installCommand?: string;
+  configCommand?: string;
   helpUrl?: string;
+  helpLabel?: string;
   imageBuilt?: boolean; // For Docker: whether wails-cross image exists
 }
 
