@@ -315,6 +315,7 @@ export default defineConfig({
               items: [
                 { label: "Project Structure", link: "/guides/dev/project-structure" },
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
+                { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/dev/testing" },
               ],
