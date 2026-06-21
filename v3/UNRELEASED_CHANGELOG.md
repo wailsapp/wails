@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix crash on Windows when restoring an app that was minimised long enough for WebView2 to suspend or its render/GPU process to be recycled. The minimise/restore DPI resync (#5544) now only touches the WebView2 controller when the window's DPI actually changed, avoiding fatal COM calls into a suspended controller on the common same-DPI restore (#5605)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
