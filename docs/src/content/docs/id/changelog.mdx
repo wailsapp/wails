@@ -31,6 +31,27 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 */
 ## [Belum Dirilis]
 
+## v3.0.0-alpha2.105 - 2026-06-21
+
+## Ditambahkan
+- Tambahkan `application.System` untuk deteksi platform runtime dari kode bersama: `System.IsMobile()` (iOS/Android), `System.IsDesktop()` (macOS/Windows/Linux), `System.IsServer()` (build tag `server`), dan `System.IsPlatform(application.PlatformMacOS|PlatformWindows|PlatformLinux|PlatformIOS|PlatformAndroid|PlatformServer)` untuk menguji target tunggal secara langsung. Dapat dikompilasi di setiap target sehingga Anda dapat bercabang tanpa build tag. Helper frontend yang sesuai (`System.IsMobile/IsDesktop/IsIOS/IsAndroid/...`) tersedia di `@wailsio/runtime`
+- Tambahkan panduan "Using Other Frontend Frameworks" yang menunjukkan cara memasukkan proyek Vite Anda sendiri ke `frontend/` (mencakup Solid, Preact, Lit, SvelteKit, Qwik, Angular, dll.)
+- Wizard `wails3 setup` sekarang memeriksa toolchain mobile (iOS/Android) — Xcode dan runtime iOS Simulator, JDK, Android SDK/NDK dan emulator — dengan instalasi satu klik dan perbaikan konfigurasi shell yang dapat disalin jika diperlukan
+- Proyek yang di-generate menyertakan `frontend/.npmrc` dengan `minimum-release-age` 7 hari untuk mengurangi paparan paket yang baru dipublikasikan (berpotensi compromised) (dihormati oleh pnpm dan bun; diabaikan tanpa efek oleh npm)
+
+## Diubah
+- Desain ulang semua starter template bawaan dengan tampilan hero neon-mountain baru (web, iOS dan Android)
+- **TypeScript sekarang menjadi default untuk starter template dan memiliki nama template dasar.** `wails3 init` (tanpa `-t`) membuat proyek TypeScript; `-t vanilla`, `-t react`, `-t vue` dan `-t svelte` adalah TypeScript, dengan varian JavaScript di `-t vanilla-js`, `-t react-js`, `-t vue-js` dan `-t svelte-js`. Template bawaan mendeklarasikan bahasanya dengan `typescript:` di `template.yaml`; template komunitas yang memakai suffix `-ts` tetap berfungsi sebagai fallback
+- Desain ulang wizard `wails3 setup` dengan tema neon "digital Wails" (frosted-glass vibrancy di atas latar gunung)
+
+## Diperbaiki
+- Perbaiki crash di Windows saat memulihkan aplikasi yang diminimalkan cukup lama hingga WebView2 suspend atau proses render/GPU-nya di-recycle. Resync DPI minimise/restore (#5544) sekarang hanya menyentuh controller WebView2 ketika DPI window benar-benar berubah, menghindari panggilan COM fatal ke controller yang suspend pada restore same-DPI yang umum (#5605)
+- Perbaiki crash native `SIGABRT`/`SIGSEGV` berulang (biasanya di dalam `g_object_unref` selama GTK main loop) pada aplikasi Linux jangka panjang dengan beban asset/media yang sering. Asset server menyelesaikan `WebKitURISchemeRequest` dari goroutine worker, memanggil fungsi WebKit2GTK yang tidak thread-safe di luar GTK main thread; penyelesaian (`webkit_uri_scheme_request_finish_with_response`/`finish_error`) sekarang berjalan di main thread. Melengkapi perbaikan parsial di #5566. Mempengaruhi build GTK3 dan GTK4/WebKitGTK 6.0 (#5631, #5557)
+- Perbaiki `fatal error: invalid pointer found on stack` intermiten di `setupSignalHandlers` pada Linux/GTK3. ID window yang diteruskan sebagai `user_data` signal disimpan di lokal Go `unsafe.Pointer`, sehingga garbage collector abort saat memindai nilai (non-pointer) selama stack copy. ID sekarang disimpan bertipe integer (`uintptr_t`) di sisi Go, back-porting ke jalur GTK3 legacy perbaikan yang sama #4958 terapkan ke jalur GTK4 (yang mengganti fungsi signal C ke `uintptr_t` untuk menghilangkan error `-race`/checkptr) (#5631)
+
+## Dihapus
+- Hapus starter template `react-swc`, `preact`, `lit`, `solid`, `qwik` dan `sveltekit` (beserta varian `-ts`-nya). Set bawaan yang didukung sekarang `vanilla`, `react`, `vue` dan `svelte` — masing-masing TypeScript secara default, dengan varian `-js` JavaScript. Framework lain masih dapat digunakan dengan [membawa frontend sendiri](https://v3.wails.io/id/guides/dev/frontend-frameworks) atau via custom template
+
 ## v3.0.0-alpha2.104 - 2026-06-18
 
 ## Diperbaiki
