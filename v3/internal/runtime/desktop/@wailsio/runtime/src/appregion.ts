@@ -10,6 +10,7 @@ The electron alternative for Go
 
 import { invoke } from "./system.js";
 import { whenReady } from "./utils.js";
+import { hasDOM } from "./environment.js";
 
 type NonClientRegionKind = "caption" | "minimize" | "maximize" | "close";
 
@@ -32,7 +33,9 @@ const runtimeConfigReadyEvent = "wails:runtime-config-ready";
 const validRegions = new Set<NonClientRegionKind>(["caption", "minimize", "maximize", "close"]);
 
 // Setup
-window._wails = window._wails || {};
+if (hasDOM) {
+    window._wails = window._wails || {};
+}
 
 let updatePending = false;
 let lastPayload = "";
@@ -223,6 +226,6 @@ function tryStartNonClientRegionTracking(): boolean {
     return true;
 }
 
-if (!tryStartNonClientRegionTracking()) {
+if (hasDOM && !tryStartNonClientRegionTracking()) {
     window.addEventListener(runtimeConfigReadyEvent, tryStartNonClientRegionTracking, { once: true });
 }
