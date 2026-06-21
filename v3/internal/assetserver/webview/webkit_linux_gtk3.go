@@ -44,35 +44,41 @@ func webkit_uri_scheme_request_get_http_headers(req *C.WebKitURISchemeRequest) h
 }
 
 func webkit_uri_scheme_request_finish(req *C.WebKitURISchemeRequest, code int, header http.Header, stream *C.GInputStream, streamLength int64) error {
-	resp := C.webkit_uri_scheme_response_new(stream, C.gint64(streamLength))
-	defer C.g_object_unref(C.gpointer(resp))
+	// Completing the request touches WebKit/libsoup objects owned by the GTK
+	// main loop, but this runs on an asset-server worker goroutine. WebKit2GTK
+	// is not thread-safe, so the whole sequence must hop to the main thread.
+	// See mainthread_linux.go and issue #5631.
+	invokeOnMainSync(func() {
+		resp := C.webkit_uri_scheme_response_new(stream, C.gint64(streamLength))
+		defer C.g_object_unref(C.gpointer(resp))
 
-	cReason := C.CString(http.StatusText(code))
-	C.webkit_uri_scheme_response_set_status(resp, C.guint(code), cReason)
-	C.free(unsafe.Pointer(cReason))
+		cReason := C.CString(http.StatusText(code))
+		C.webkit_uri_scheme_response_set_status(resp, C.guint(code), cReason)
+		C.free(unsafe.Pointer(cReason))
 
-	cMimeType := C.CString(header.Get(HeaderContentType))
-	C.webkit_uri_scheme_response_set_content_type(resp, cMimeType)
-	C.free(unsafe.Pointer(cMimeType))
+		cMimeType := C.CString(header.Get(HeaderContentType))
+		C.webkit_uri_scheme_response_set_content_type(resp, cMimeType)
+		C.free(unsafe.Pointer(cMimeType))
 
-	// Ownership of hdrs is transferred to the response by
-	// webkit_uri_scheme_response_set_http_headers (transfer full), so we must
-	// not unref it here — doing so frees the headers while WebKit/libsoup still
-	// reference them, crashing in soup_message_headers_iter_next on render.
-	hdrs := C.soup_message_headers_new(C.SOUP_MESSAGE_HEADERS_RESPONSE)
-	for name, values := range header {
-		cName := C.CString(name)
-		for _, value := range values {
-			cValue := C.CString(value)
-			C.soup_message_headers_append(hdrs, cName, cValue)
-			C.free(unsafe.Pointer(cValue))
+		// Ownership of hdrs is transferred to the response by
+		// webkit_uri_scheme_response_set_http_headers (transfer full), so we must
+		// not unref it here — doing so frees the headers while WebKit/libsoup still
+		// reference them, crashing in soup_message_headers_iter_next on render.
+		hdrs := C.soup_message_headers_new(C.SOUP_MESSAGE_HEADERS_RESPONSE)
+		for name, values := range header {
+			cName := C.CString(name)
+			for _, value := range values {
+				cValue := C.CString(value)
+				C.soup_message_headers_append(hdrs, cName, cValue)
+				C.free(unsafe.Pointer(cValue))
+			}
+			C.free(unsafe.Pointer(cName))
 		}
-		C.free(unsafe.Pointer(cName))
-	}
 
-	C.webkit_uri_scheme_response_set_http_headers(resp, hdrs)
+		C.webkit_uri_scheme_response_set_http_headers(resp, hdrs)
 
-	C.webkit_uri_scheme_request_finish_with_response(req, resp)
+		C.webkit_uri_scheme_request_finish_with_response(req, resp)
+	})
 	return nil
 }
 
