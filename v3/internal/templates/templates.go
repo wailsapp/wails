@@ -74,6 +74,28 @@ func GetDefaultTemplates() []TemplateData {
 	return defaultTemplates
 }
 
+// IsTypescript reports whether the named template produces a TypeScript project.
+//
+// Built-in templates declare this explicitly via `typescript:` in their
+// template.yaml (TypeScript now owns the bare framework name, e.g. `react`,
+// while JavaScript variants carry a `-js` suffix, e.g. `react-js`). For local
+// and remote templates that predate the flag we fall back to the historical
+// `-ts` suffix convention so community templates keep working.
+func IsTypescript(name string) bool {
+	if strings.HasSuffix(name, "-ts") {
+		return true
+	}
+	if strings.HasSuffix(name, "-js") {
+		return false
+	}
+	if ValidTemplateName(name) {
+		if tmpl, err := getInternalTemplate(name); err == nil {
+			return tmpl.Typescript
+		}
+	}
+	return false
+}
+
 // NormalizeBinaryName converts a project name into a valid binary/package name:
 // lowercased, with spaces replaced by dashes, and any remaining characters not
 // in [a-z0-9-] replaced by dashes, collapsing runs and trimming edges.
@@ -160,6 +182,7 @@ type BaseTemplate struct {
 	HelpURL      string `json:"helpurl"      yaml:"helpurl"      description:"The help url for the template"`
 	Version      string `json:"version"      yaml:"version"      description:"The version of the template" default:"v0.0.1"`
 	WailsVersion uint8  `json:"wailsVersion" yaml:"wailsVersion" description:"The Wails major version this template targets"`
+	Typescript   bool   `json:"typescript"   yaml:"typescript"   description:"Whether the template produces a TypeScript project"`
 	Dir          string `json:"-"            yaml:"-"            description:"The directory to generate the template" default:"."`
 	Frontend     string `json:"-"            yaml:"-"            description:"The frontend directory to migrate"`
 }
@@ -318,7 +341,7 @@ func Install(options *flags.Init) error {
 		}
 		localModulePath = filepath.ToSlash(relativePath + "/")
 	}
-	UseTypescript := strings.HasSuffix(options.TemplateName, "-ts")
+	UseTypescript := IsTypescript(options.TemplateName)
 
 	templateData := TemplateOptions{
 		Init:            options,
@@ -384,7 +407,7 @@ func Install(options *flags.Init) error {
 		language = "TypeScript"
 	}
 
-	framework := strings.TrimSuffix(options.TemplateName, "-ts")
+	framework := strings.TrimSuffix(strings.TrimSuffix(options.TemplateName, "-ts"), "-js")
 	if len(framework) > 0 {
 		framework = strings.ToUpper(framework[:1]) + framework[1:]
 	}

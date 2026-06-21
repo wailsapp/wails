@@ -24,37 +24,31 @@ html, body, #root {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: var(--bg-primary);
   color: white;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+html, body { background: var(--bg-primary); }
 
-/* Gradient text utility */
+/* Gradient text utility — neon red→pink, matching the starter templates. */
 .gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #ef4444 100%);
+  background: linear-gradient(135deg, #ff5a4d 0%, #ff2d72 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* Glass morphism card */
+/* The card is just a frame: NO backdrop-filter here, otherwise it would create
+   a backdrop root that stops the sidebar/content children from blurring the
+   mountain behind them (nested backdrop-filters don't stack). */
 .glass-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: transparent;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 70px 160px rgba(0, 0, 0, 0.8), 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
-/* Glass sidebar - blurred to show background through */
-.glass-sidebar {
-  background: rgba(5, 7, 12, 0.55);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border-right: 1px solid var(--glass-border);
-}
 
 /* Settings-style row */
 .settings-row {
@@ -171,20 +165,6 @@ html, body, #root {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: drawCheck 0.5s ease-out forwards;
-}
-
-/* Scrolling background animation */
-@keyframes scrollBackground {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-50%);
-  }
-}
-
-.scrolling-bg {
-  animation: scrollBackground 60s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

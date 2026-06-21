@@ -26,37 +26,14 @@ import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
 import MorphText from "@components/MorphText.astro";
 
 <style>{`
-  /* Row 1 - Fastest */
+  /* Hero background — the neon "digital Wales" mountain, full-bleed and fixed. */
   body::after {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
+    inset: 0;
     z-index: -1;
-    background:
-      url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm1.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 8250px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 8800px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 9350px center / auto 80% no-repeat;
-    animation: scroll-row1 40s linear infinite;
-    filter: blur(0.5px);
+    background: url('/digital_wales_master.webp') center center / cover no-repeat;
+    opacity: 0.35;
     pointer-events: none;
   }
   
@@ -75,87 +52,11 @@ import MorphText from "@components/MorphText.astro";
     pointer-events: none;
   }
   
-  /* Row 2 - Medium Speed */
-  html::after {
-    content: '';
-    position: fixed;
-    top: 33.33vh;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/tiny-rdm2.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm2.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 8250px center / auto 80% no-repeat;
-    animation: scroll-row2 25s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
-  
-  /* Row 3 - Slowest */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 66.66vh;
-    left: 0;
-    width: 200%;
-    height: 33.34vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/portfall.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 7150px center / auto 80% no-repeat;
-    animation: scroll-row3 50s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
   
   /* Hero padding */
   .hero {
     padding-top: 3rem !important;
     padding-bottom: 2rem !important;
-  }
-  
-  @keyframes scroll-row1 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row2 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row3 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
   }
   
   .small-buttons {
