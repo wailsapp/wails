@@ -1,0 +1,220 @@
+---
+title: Asset Server
+description: How Wails v3 serves and embeds your web assets in development and production
+sidebar:
+  order: 4
+---
+
+## Overview
+
+Every Wails application ships a **single native executable** that combines:
+
+1. Your *Go* backend
+2. A *Web* frontend (HTML + JS + CSS)
+
+The **Asset Server** is the glue that makes this possible.
+It has **two operating modes** that are selected at compile-time via Go build
+tags:
+
+| Mode | Tag | Purpose |
+|------|-----|---------|
+| **Development** | `//go:build !production` | Fast iteration with hot-reload |
+| **Production**  | `//go:build production`  | Zero-dependency, embedded assets |
+
+The implementation lives in
+`v3/internal/assetserver/` with clear file splits:
+
+```
+build_dev.go              # ⬅️ dev-only entrypoint (!production build tag)
+build_production.go       # ⬅️ production-only entrypoint (production build tag)
+assetserver.go            # Shared core
+assetserver_dev.go        # Dev proxy/disk handler
+assetserver_webview.go    # WebView-side adapter
+assetserver_darwin.go     # OS-specific helpers (also linux/windows variants)
+asset_fileserver.go       # Shared static file logic
+content_type_sniffer.go   # MIME type detection
+mimecache.go              # Cached MIME lookups
+ringqueue.go              # Tiny in-memory LRU
+options.go                # Configuration struct
+middleware.go             # http.Handler middleware type
+bundled_assetserver.go    # Hand-written wrapper around embedded bundles
+bundledassets/            # Embedded runtime JS assets
+```
+
+---
+
+## Development Mode
+
+### Lifecycle
+
+1. `wails3 dev` boots and **spawns your frontend dev server**
+   (Vite, SvelteKit, React-SWC …) by running the task defined in
+   `build/Taskfile.yml` (usually `npm run dev`).
+2. The CLI sets `WAILS_VITE_PORT` to the Wails dev port and
+   `FRONTEND_DEVSERVER_URL` to the **full** URL (`http://host:port` /
+   `https://host:port`) that points at the framework's running dev server.
+   See `internal/commands/dev.go`.
+3. The dev asset server (compiled in via `//go:build !production` in
+   `build_dev.go`) reads `FRONTEND_DEVSERVER_URL` through `GetDevServerURL()`
+   and reverse-proxies non-runtime traffic to it.
+4. Static files (`/assets/logo.svg`) can be **served directly from disk** via
+   `asset_fileserver.go` (for speed) while anything unknown is **proxied** to
+   the framework dev server, giving you *instant* hot-module replacement.
+
+```
+┌─────────┐  /wails/runtime.js     ┌─────────────┐
+│ Browser │ ── embedded runtime ──▶│   Runtime   │
+├─────────┤                        └─────────────┘
+│   JS    │  / (index.html)        proxy / -> Vite via FRONTEND_DEVSERVER_URL
+└─────────┘ ◀─────────────┐
+              AssetServer │
+                          ▼
+                   ┌────────────┐
+                   │  Vite Dev  │
+                   │   Server   │
+                   └────────────┘
+```
+
+### Features
+
+* **Live Reload** — Vite/SvelteKit/etc. inject HMR over WebSocket; the dev
+  asset server transparently proxies it.
+* **Source Map Support** — because assets are not bundled, your browser
+  devtools map errors back to original source.
+* **No Go Re-compile** — Only the frontend rebuilds; Go code stays running
+  until you change `.go` files.
+
+### Switching Frameworks
+
+The dev proxy is **framework-agnostic**. The Wails CLI publishes two env vars
+when launching your dev task:
+
+| Env var | Source | Meaning |
+|---------|--------|---------|
+| `WAILS_VITE_PORT` | `internal/commands/dev.go` (`wailsVitePort` constant) | Default dev port (9245 unless `--port` is passed) — your Vite config should respect this |
+| `FRONTEND_DEVSERVER_URL` | `internal/commands/dev.go` | Full URL Wails will proxy to; read in Go via `assetserver.GetDevServerURL()` (`build_dev.go`) |
+
+There is no `VITE_PORT`, `FRONTEND_DEV_PORT` or `WAILSDEV_VERBOSE` env var in
+the v3 tree.
+
+Add a new template → define its dev task → asset server just works.
+
+---
+
+## Production Mode
+
+When you run `wails3 build` the pipeline:
+
+1. Runs the frontend **production build** (`npm run build`) producing
+   `frontend/dist/**`.
+2. **Embeds** that directory into the app via `go:embed` in your application's
+   own package (typically `//go:embed all:frontend/dist` next to `main.go`).
+3. Compiles the Go binary with `-tags production` (forwarded through
+   `EXTRA_TAGS` by the Taskfile wrapper).
+
+`internal/assetserver/build_production.go` is the build-tag stub that swaps in
+the production code path. `internal/assetserver/bundled_assetserver.go` is
+**hand-written** — it wraps the runtime JS in `bundledassets/` and is not a
+generated file.
+
+### Request Handling
+
+The actual handler is `internal/assetserver/assetserver.go` /
+`asset_fileserver.go`. Conceptually:
+
+1. Try the embedded static assets at the requested path.
+2. Fall back to `index.html` for SPA routing.
+3. Sniff content-type if the extension is unknown (`content_type_sniffer.go`).
+4. Set sensible cache headers.
+
+* **MIME Detection** — extension-less files have their content type sniffed
+  from the first ~512 bytes (`content_type_sniffer.go`) and the result is
+  cached in `mimecache.go` / `ringqueue.go`.
+* **Security Headers** — disallows `file://` navigation and sets `nosniff`.
+
+Because everything is embedded, the shipped binary has **no external
+dependencies** (even on Windows).
+
+---
+
+## Bridging Dev ↔ Prod
+
+Both modes expose the **same public surface** from `pkg/application`'s point of
+view: an `AssetOptions` struct with a `Handler http.Handler`, plus middlewares
+and lifecycle wiring inside `internal/assetserver/`. The dev / production
+switch happens entirely through Go build tags, so application code is identical
+across the two modes.
+
+```go
+app := application.New(application.Options{
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assetsFS),
+    },
+})
+```
+
+---
+
+## How Frontend Frameworks Integrate
+
+### Templates
+
+Each shipped template (React, Vue, Svelte, Solid, Vanilla, …) contains:
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts` (or equivalent)
+
+Their Vite/equivalent config reads `WAILS_VITE_PORT` and binds the dev server
+to that port. The CLI then publishes the actual `FRONTEND_DEVSERVER_URL` for
+the in-app proxy to consume.
+
+Frameworks remain fully decoupled from Go:
+
+* No need to import any Wails JS SDK at build time — `/wails/runtime.js` is
+  served by the asset server at runtime.
+* Any framework with an HTTP dev server can plug in.
+
+---
+
+## Extending / Customising
+
+Need custom headers, auth, or gzip?
+
+1. Define a `middleware.Middleware` (alias for `func(http.Handler) http.Handler`,
+   declared in `internal/assetserver/middleware.go`).
+2. Wire it into your `application.AssetOptions` via the configuration
+   exposed by `internal/assetserver/options.go`.
+3. Behaviour is identical in dev and prod — there is no per-mode
+   middleware list.
+
+---
+
+## Key Source Files
+
+| File | Role |
+|------|------|
+| `build_dev.go` / `build_production.go` | Build-tag wrappers selecting dev vs prod |
+| `assetserver.go` / `asset_fileserver.go` | Core HTTP handler |
+| `assetserver_dev.go` | Reverse proxy to `FRONTEND_DEVSERVER_URL` |
+| `bundled_assetserver.go` | Hand-written wrapper around `bundledassets/` |
+| `options.go` | `application.AssetOptions`-facing config |
+| `mimecache.go` / `ringqueue.go` | MIME cache + small LRU |
+
+---
+
+## Gotchas & Debugging
+
+* **White Screen in Prod** — usually SPA routing: ensure your dev server
+  serves `index.html` for unknown paths and the embedded production handler's
+  fallback is reached.
+* **404 in Dev** — your Vite config isn't binding to `WAILS_VITE_PORT`, or the
+  CLI couldn't reach the dev server to populate `FRONTEND_DEVSERVER_URL`.
+* **Large Assets** — embedding bloats the binary. Serve big media from a
+  separate origin or stream it through a custom `http.Handler`.
+
+---
+
+You now know how the Wails **Asset Server** feeds your web code to the native
+window in both **development** and **production**.
+Master this layer and you can debug loading issues, add middlewares, or even
+swap in a completely different frontend tool-chain with confidence.

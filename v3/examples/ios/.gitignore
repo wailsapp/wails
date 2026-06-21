@@ -1,0 +1,9 @@
+.task
+bin
+frontend/dist
+frontend/node_modules
+build/linux/appimage/build
+build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+# Generated iOS Xcode overlay + Go archive wrapper (per-machine, contains absolute paths)
+build/ios/xcode/overlay.json
+build/ios/xcode/gen/

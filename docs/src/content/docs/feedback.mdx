@@ -1,0 +1,63 @@
+---
+title: Feedback
+description: How to provide feedback and report issues for Wails v3
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+We welcome (and encourage) your feedback! Please search for existing issues or
+discussions before creating new ones. Here are the different ways to contribute:
+
+<Tabs>
+  <TabItem label="Bugs" icon="error">
+
+    If you find a bug, please [open an issue](https://github.com/wailsapp/wails/issues/new/choose) on GitHub using the bug report template.
+
+    - Clearly describe the bug with a simple, reproducible example. If the docs are unclear about what _should_ happen, include that in the report.
+    - Include the output of `wails3 doctor` in your report.
+    - If the bug is behavior that does not align with current documentation, please also do the following:
+      - Update an existing example in the `v3/examples` directory, or create a new example that clearly demonstrates the issue.
+      - Open a [PR](https://github.com/wailsapp/wails/pulls) referencing the issue.
+
+    :::caution
+
+    _Remember_, unexpected behavior isn't necessarily a bug — it might just not do
+    what you expect. Use `Suggestions` for that.
+
+    :::
+
+    You're also welcome to discuss bugs in the [#v3](https://discord.gg/bdj28QNHmT) channel on Discord.
+
+  </TabItem>
+
+  <TabItem label="Fixes" icon="approve-check">
+
+    If you have a fix for a bug or an improvement to documentation, please:
+
+    - Open a pull request on the [Wails repository](https://github.com/wailsapp/wails) following the [contribution guidelines](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
+    - Reference any related issues in the PR description.
+
+  </TabItem>
+
+  <TabItem label="Suggestions" icon="puzzle" id="abc">
+
+    If you have a feature request or suggestion, please [start a discussion](https://github.com/wailsapp/wails/discussions) on GitHub.
+
+    - Clearly describe the feature and the problem it solves.
+    - Feel free to also discuss ideas in the [#v3](https://discord.gg/bdj28QNHmT) channel on Discord.
+
+  </TabItem>
+
+  <TabItem label="Upvoting" icon="star">
+
+    - Show support for issues and discussions using the :thumbsup: reaction on GitHub.
+    - Please _don't_ just add comments like "+1" or "me too".
+    - Do add a comment if you have something meaningful to contribute, such as "this bug also affects ARM builds" or "Another approach would be to...".
+
+  </TabItem>
+
+</Tabs>
+
+Known issues and work in progress can be found [here](https://github.com/orgs/wailsapp/projects/6).

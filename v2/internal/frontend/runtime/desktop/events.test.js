@@ -83,7 +83,7 @@ describe('EventsEmit', () => {
   it('should emit an event', () => {
     EventsEmit('a', 'one', 'two', 'three')
     expect(window.WailsInvoke).toBeCalledTimes(1);
-    const calledWith = window.WailsInvoke.calls[0][0];
+    const calledWith = window.WailsInvoke.mock.calls[0][0];
     expect(calledWith.slice(0, 2)).toBe('EE')
     expect(JSON.parse(calledWith.slice(2))).toStrictEqual({data: ["one", "two", "three"], name: "a"})
   })
@@ -113,7 +113,7 @@ describe('EventsOff', () => {
     expect(eventListeners['b']).toBeUndefined()
     expect(eventListeners['c']).not.toBeUndefined()
     expect(window.WailsInvoke).toBeCalledTimes(2);
-    expect(window.WailsInvoke.calls).toStrictEqual([['EXa'], ['EXb']]);
+    expect(window.WailsInvoke.mock.calls).toStrictEqual([['EXa'], ['EXb']]);
   })
 })
 
@@ -127,6 +127,45 @@ describe('EventsOffAll', () => {
     EventsOffAll()
     expect(eventListeners).toStrictEqual({})
     expect(window.WailsInvoke).toBeCalledTimes(3);
-    expect(window.WailsInvoke.calls).toStrictEqual([['EXa'], ['EXb'], ['EXc']]);
+    expect(window.WailsInvoke.mock.calls).toStrictEqual([['EXa'], ['EXb'], ['EXc']]);
+  })
+})
+
+describe('notifyListeners during dispatch (#4393)', () => {
+  it('keeps a listener removed via EventsOff inside its own callback', () => {
+    const cb = vi.fn(() => { EventsOff('selfoff') })
+    EventsOn('selfoff', cb)
+    EventsOn('selfoff', vi.fn()) // second listener: triggers the write-back path
+
+    EventsNotify(JSON.stringify({name: 'selfoff', data: {}}))
+    EventsNotify(JSON.stringify({name: 'selfoff', data: {}}))
+
+    expect(cb).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a canceller-removed listener removed when invoked mid-dispatch', () => {
+    let cancel
+    const cb = vi.fn(() => { cancel() })
+    cancel = EventsOn('cancelmid', cb)
+    EventsOn('cancelmid', vi.fn())
+
+    EventsNotify(JSON.stringify({name: 'cancelmid', data: {}}))
+    EventsNotify(JSON.stringify({name: 'cancelmid', data: {}}))
+
+    expect(cb).toHaveBeenCalledTimes(1)
+  })
+
+  it('retains a listener registered inside a callback during dispatch', () => {
+    const late = vi.fn()
+    const cb = vi.fn(() => { EventsOn('addduring', late) })
+    EventsOn('addduring', cb)
+
+    EventsNotify(JSON.stringify({name: 'addduring', data: {}}))
+    EventsNotify(JSON.stringify({name: 'addduring', data: {}}))
+
+    // `cb` fires on both dispatches; `late` was registered during the first
+    // dispatch and must survive to fire on the second.
+    expect(cb).toHaveBeenCalledTimes(2)
+    expect(late).toHaveBeenCalledTimes(1)
   })
 })
