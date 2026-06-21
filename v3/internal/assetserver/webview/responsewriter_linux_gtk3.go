@@ -9,6 +9,15 @@ package webview
 #include "webkit2/webkit2.h"
 #include "gio/gunixinputstream.h"
 
+// webview_asset_error_quark returns a stable GError domain for asset-server
+// failures. The string literal is static storage, so g_quark_from_static_string
+// interns it once and never leaks. Interning the per-request error message
+// instead (the previous behaviour) grew the global quark table unboundedly on
+// long-running apps, since GQuarks are never freed.
+static GQuark webview_asset_error_quark(void) {
+	return g_quark_from_static_string("wails-webview-assetserver");
+}
+
 */
 import "C"
 import (
@@ -118,7 +127,7 @@ func (rw *responseWriter) finishWithError(code int, err error) {
 	// on the GTK main loop; this runs on an asset-server worker goroutine, so
 	// it must hop to the main thread. See mainthread_linux.go and issue #5631.
 	invokeOnMainSync(func() {
-		gerr := C.g_error_new_literal(C.g_quark_from_string(msg), C.int(code), msg)
+		gerr := C.g_error_new_literal(C.webview_asset_error_quark(), C.int(code), msg)
 		C.webkit_uri_scheme_request_finish_error(rw.req, gerr)
 		C.g_error_free(gerr)
 	})
