@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from './types';
-import { checkDependencies, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
+import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
@@ -15,6 +15,8 @@ type OOBEStep =
   | 'docker-options'
   | 'sdk-license'
   | 'docker-setup'
+  | 'mobile-options'
+  | 'mobile-deps'
   | 'projects'
   | 'signing'
   | 'language-select'
@@ -32,7 +34,7 @@ type FrameworkTemplate = {
 };
 
 // Wizard stages for sidebar progress display
-type WizardStage = 'welcome' | 'dependencies' | 'platform' | 'identity' | 'templates' | 'complete';
+type WizardStage = 'welcome' | 'dependencies' | 'platform' | 'mobile' | 'identity' | 'templates' | 'complete';
 
 function getWizardStage(step: OOBEStep): WizardStage {
   switch (step) {
@@ -47,6 +49,9 @@ function getWizardStage(step: OOBEStep): WizardStage {
     case 'sdk-license':
     case 'docker-setup':
       return 'platform';
+    case 'mobile-options':
+    case 'mobile-deps':
+      return 'mobile';
     case 'projects':
     case 'signing':
       return 'identity';
@@ -63,7 +68,7 @@ function getWizardStage(step: OOBEStep): WizardStage {
 
 // Get stage index for progress tracking (1-6)
 function getStageIndex(stage: WizardStage): number {
-  const stages: WizardStage[] = ['welcome', 'dependencies', 'platform', 'identity', 'templates', 'complete'];
+  const stages: WizardStage[] = ['welcome', 'dependencies', 'platform', 'mobile', 'identity', 'templates', 'complete'];
   return stages.indexOf(stage) + 1;
 }
 
@@ -101,6 +106,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
     { key: 'welcome' as const, label: 'Welcome' },
     { key: 'dependencies' as const, label: 'Dependencies' },
     { key: 'platform' as const, label: 'Platform' },
+    { key: 'mobile' as const, label: 'Mobile' },
     { key: 'identity' as const, label: 'Projects' },
     { key: 'templates' as const, label: 'Templates' },
     { key: 'complete' as const, label: 'Complete' },
@@ -133,7 +139,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
 
   return (
     <aside
-      className="w-48 flex-shrink-0 bg-gray-100/80 dark:bg-transparent dark:glass-sidebar border-r border-gray-200 dark:border-transparent flex flex-col"
+      className="w-48 flex-shrink-0 bg-gray-100/50 dark:bg-[#0a0e16]/40 backdrop-blur-[50px] backdrop-saturate-[1.8] border-r border-gray-200 dark:border-white/10 flex flex-col"
       aria-label="Setup progress"
     >
       <div className="p-6 flex justify-center">
@@ -188,8 +194,8 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                       isCurrent
                         ? 'text-gray-900 dark:text-white'
                         : isCompleted
-                          ? 'text-green-700 dark:text-gray-400'
-                          : 'text-gray-400 dark:text-gray-600'
+                          ? 'text-green-700 dark:text-gray-200'
+                          : 'text-gray-400 dark:text-gray-300'
                     }`}
                   >
                     {stage.label}
@@ -439,7 +445,7 @@ function SplashPage({ onNext }: { onNext: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="flex items-center justify-center gap-2 mb-3">
+        <div className="flex items-center justify-center mb-3">
           <h1
             ref={headingRef}
             id="splash-title"
@@ -448,13 +454,6 @@ function SplashPage({ onNext }: { onNext: () => void }) {
           >
             Welcome to Wails
           </h1>
-          <span
-            className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-            role="status"
-            aria-label="This setup wizard is experimental"
-          >
-            Experimental
-          </span>
         </div>
         <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-8">
           Build beautiful cross-platform apps using Go and web technologies
@@ -1414,16 +1413,203 @@ function DockerSetupPage({
   );
 }
 
+// Platform glyphs. The Apple mark is already used for macOS on the Platform
+// step; the Android robot is Google's Material icon (Apache-2.0).
+function AppleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+    </svg>
+  );
+}
+function AndroidIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/>
+    </svg>
+  );
+}
+
+// Question step (mirrors the Platform step): opt into mobile, then configure.
+function MobileOptionsPage({ onYes, onSkip, onBack, canGoBack }: {
+  onYes: () => void; onSkip: () => void; onBack?: () => void; canGoBack?: boolean;
+}) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.3 }}
+      className="flex-1 flex flex-col items-center justify-center"
+    >
+      <div className="flex items-center gap-8 mb-8">
+        <AppleIcon className="w-12 h-12 text-gray-600 dark:text-gray-300" />
+        <AndroidIcon className="w-12 h-12 text-gray-600 dark:text-gray-300" />
+      </div>
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 text-center">
+        Compile to mobile?
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-md">
+        Wails can build native iOS and Android apps from the same codebase
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+        We'll check the toolchain for each platform — no signing certificates needed for the simulator/emulator
+      </p>
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3">
+          {canGoBack && onBack && (
+            <button onClick={onBack} className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Back
+            </button>
+          )}
+          <button onClick={onYes} className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors">
+            Yes, set this up
+          </button>
+        </div>
+        <button onClick={onSkip} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+          Not right now
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// A single dependency row with status icon, message, and one-click install.
+function MobileDepRow({ dep, busyName, onInstall }: {
+  dep: DependencyStatus; busyName: string | null; onInstall: (d: DependencyStatus) => void;
+}) {
+  const ok = dep.status === 'installed';
+  // "needs config" = present but not wired up (e.g. JDK off PATH, ANDROID_HOME
+  // unset). Show an orange dash, not a green check or a red X.
+  const needsConfig = dep.status === 'needs_config' || dep.status === 'needs_update';
+  const [copied, setCopied] = useState(false);
+  const copyConfig = () => {
+    if (!dep.configCommand) return;
+    navigator.clipboard.writeText(dep.configCommand);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="flex items-start gap-3 py-2.5 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0">
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${ok ? 'bg-green-500/20' : needsConfig ? 'bg-orange-500/20' : dep.required ? 'bg-red-500/20' : 'bg-amber-500/20'}`}>
+        {ok ? (
+          <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+        ) : needsConfig ? (
+          <svg className="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 12h14" /></svg>
+        ) : (
+          <svg className={`w-3 h-3 ${dep.required ? 'text-red-500' : 'text-amber-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {dep.name}
+          {ok && dep.version && <span className="text-gray-400 font-normal"> · {dep.version}</span>}
+          {!dep.required && <span className="text-gray-400 font-normal"> · optional</span>}
+        </div>
+        {dep.message && <p className="text-xs text-gray-500 mt-0.5">{dep.message}</p>}
+        {dep.configCommand && (
+          <div className="flex items-center gap-2 mt-1.5">
+            <code className="flex-1 min-w-0 text-[11px] leading-relaxed bg-gray-200 dark:bg-black/40 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded font-mono whitespace-pre overflow-x-auto">
+              {dep.configCommand}
+            </code>
+            <button type="button" onClick={copyConfig}
+              className="flex-shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+        )}
+        {/* Doc link only for genuinely-missing deps; needs_config shows the copy block above. */}
+        {dep.status === 'not_installed' && dep.helpUrl && !dep.installCommand && (
+          <a href={dep.helpUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-500 dark:text-blue-400 hover:text-blue-600 mt-1">
+            {dep.helpLabel || 'Install instructions'}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+        )}
+      </div>
+      {!ok && dep.installCommand && (
+        <button type="button" onClick={() => onInstall(dep)} disabled={busyName !== null}
+          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50">
+          {busyName === dep.name ? 'Installing…' : 'Install'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Tabbed iOS / Android toolchain config, one-click install where available.
+function MobileConfigPage({
+  isMac, activeTab, onTab, iosDeps, androidDeps, busyName, onInstall, onRecheck, onContinue, onBack, canGoBack,
+}: {
+  isMac: boolean;
+  activeTab: 'ios' | 'android';
+  onTab: (t: 'ios' | 'android') => void;
+  iosDeps: DependencyStatus[];
+  androidDeps: DependencyStatus[];
+  busyName: string | null;
+  onInstall: (dep: DependencyStatus) => void;
+  onRecheck: () => void;
+  onContinue: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
+}) {
+  const deps = activeTab === 'ios' ? iosDeps : androidDeps;
+  // A platform is "ready" once all its required tools are fully installed
+  // (off-PATH/needs_config doesn't count). "Continue" appears as soon as EITHER
+  // platform is ready — someone may only want iOS (or only Android), so don't
+  // require both. iOS only counts on a Mac.
+  const platformReady = (list: DependencyStatus[]) => {
+    const req = list.filter(d => d.required);
+    return req.length > 0 && req.every(d => d.status === 'installed');
+  };
+  const ready = (isMac && platformReady(iosDeps)) || platformReady(androidDeps);
+  const tabClass = (selected: boolean) =>
+    `flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all border-2 ${
+      selected
+        ? 'border-red-500 bg-red-500/10 text-gray-900 dark:text-white'
+        : 'border-transparent bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
+    }`;
+  return (
+    <PageTemplate
+      title="Mobile toolchain"
+      subtitle="Configure each platform. Targets the iOS Simulator and Android Emulator — no signing certificates required."
+      // When everything's set up, the primary action proceeds (like other pages);
+      // until then, the primary action re-checks and proceeding is "Skip for now".
+      primaryAction={ready ? onContinue : onRecheck}
+      primaryLabel={ready ? 'Continue' : 'Re-check'}
+      secondaryAction={ready ? onRecheck : onContinue}
+      secondaryLabel={ready ? 'Re-check' : 'Skip for now'}
+      onBack={onBack}
+      canGoBack={canGoBack}
+    >
+      <div className="flex gap-2 mb-4" role="tablist" aria-label="Mobile platforms">
+        <button type="button" role="tab" aria-selected={activeTab === 'ios'} onClick={() => onTab('ios')} className={tabClass(activeTab === 'ios')}>
+          <AppleIcon className="w-4 h-4" /> iOS
+        </button>
+        <button type="button" role="tab" aria-selected={activeTab === 'android'} onClick={() => onTab('android')} className={tabClass(activeTab === 'android')}>
+          <AndroidIcon className="w-4 h-4" /> Android
+        </button>
+      </div>
+
+      <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-4" role="tabpanel">
+        {activeTab === 'ios' && !isMac ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">iOS apps can only be built on macOS with Xcode. You can still target Android from this machine.</p>
+        ) : deps.length === 0 ? (
+          <p className="text-sm text-gray-500">Checking your toolchain…</p>
+        ) : (
+          deps.map(dep => <MobileDepRow key={dep.name} dep={dep} busyName={busyName} onInstall={onInstall} />)
+        )}
+      </div>
+    </PageTemplate>
+  );
+}
+
 // Available framework templates
 const FRAMEWORKS: FrameworkTemplate[] = [
   { id: 'vanilla', name: 'Vanilla', description: 'Plain JavaScript/TypeScript', color: '#f7df1e', icon: 'javascript' },
   { id: 'react', name: 'React', description: 'React with Vite', color: '#61dafb', icon: 'react' },
   { id: 'vue', name: 'Vue', description: 'Vue 3 with Vite', color: '#42b883', icon: 'vue' },
   { id: 'svelte', name: 'Svelte', description: 'Svelte with Vite', color: '#ff3e00', icon: 'svelte' },
-  { id: 'preact', name: 'Preact', description: 'Lightweight React alternative', color: '#673ab8', icon: 'preact' },
-  { id: 'lit', name: 'Lit', description: 'Web Components with Lit', color: '#324fff', icon: 'lit' },
-  { id: 'solid', name: 'Solid', description: 'Solid.js with Vite', color: '#2c4f7c', icon: 'solid' },
-  { id: 'qwik', name: 'Qwik', description: 'Qwik with Vite', color: '#18b6f6', icon: 'qwik' },
 ];
 
 function LanguageSelectPage({
@@ -1472,7 +1658,7 @@ function LanguageSelectPage({
           onClick={() => onSelect(false)}
           role="radio"
           aria-checked={!preferTypeScript}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             !preferTypeScript
               ? 'border-yellow-400 bg-yellow-400/10 shadow-lg shadow-yellow-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1489,7 +1675,7 @@ function LanguageSelectPage({
           onClick={() => onSelect(true)}
           role="radio"
           aria-checked={preferTypeScript}
-          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+          className={`w-40 h-48 rounded-xl p-5 flex flex-col items-center justify-center gap-3 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             preferTypeScript
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1569,7 +1755,7 @@ function BindingStylePage({
           onClick={() => onSelect(true)}
           role="radio"
           aria-checked={useInterfaces}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             useInterfaces
               ? 'border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -1593,7 +1779,7 @@ function BindingStylePage({
           onClick={() => onSelect(false)}
           role="radio"
           aria-checked={!useInterfaces}
-          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+          className={`w-56 shrink-0 rounded-xl p-4 flex flex-col items-start gap-2 transition-all border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
             !useInterfaces
               ? 'border-purple-400 bg-purple-400/10 shadow-lg shadow-purple-400/20'
               : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -1669,7 +1855,7 @@ function TemplateSelectPage({
       canGoBack={canGoBack}
     >
       <div
-        className="grid grid-cols-4 gap-3 max-w-2xl mx-auto p-1"
+        className="flex flex-col gap-3 max-w-md mx-auto"
         role="radiogroup"
         aria-label="Framework templates"
       >
@@ -1679,7 +1865,7 @@ function TemplateSelectPage({
             onClick={() => onSelect(framework.id)}
             role="radio"
             aria-checked={selectedFramework === framework.id}
-            className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all border-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+            className={`flex items-center gap-4 text-left rounded-xl p-4 transition-all border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
               selectedFramework === framework.id
                 ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
                 : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -1689,9 +1875,12 @@ function TemplateSelectPage({
               src={`/logos/${framework.id === 'vanilla' ? (preferTypeScript ? 'typescript' : 'javascript') : framework.icon}.svg`}
               alt=""
               aria-hidden="true"
-              className="w-12 h-12"
+              className="w-10 h-10 flex-shrink-0"
             />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">{framework.name}</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-gray-900 dark:text-white">{framework.name}</span>
+              <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">{framework.description}</span>
+            </span>
           </button>
         ))}
       </div>
@@ -1951,6 +2140,11 @@ export default function App() {
   const [preferTypeScript, setPreferTypeScript] = useState(true);
   const [selectedFramework, setSelectedFramework] = useState('vanilla');
   const [useInterfaces, setUseInterfaces] = useState(true);
+  const [mobileIosDeps, setMobileIosDeps] = useState<DependencyStatus[]>([]);
+  const [mobileAndroidDeps, setMobileAndroidDeps] = useState<DependencyStatus[]>([]);
+  const [mobileTab, setMobileTab] = useState<'ios' | 'android'>('ios');
+  const [mobileBusy, setMobileBusy] = useState<string | null>(null);
+  const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform || navigator.userAgent);
   const [showDockerToast, setShowDockerToast] = useState(false);
   const [prevDockerPullStatus, setPrevDockerPullStatus] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(() => {
@@ -2043,6 +2237,54 @@ export default function App() {
     navigateTo('cross-platform');
   };
 
+  // --- Mobile (iOS / Android) toolchain ---
+  // Check each platform separately so the tabs can show them independently.
+  const refreshMobileDeps = async () => {
+    const [ios, android] = await Promise.all([
+      isMac ? checkMobileDependencies(true, false) : Promise.resolve([]),
+      checkMobileDependencies(false, true),
+    ]);
+    setMobileIosDeps(ios);
+    setMobileAndroidDeps(android);
+  };
+
+  const handleMobileYes = () => {
+    setMobileTab(isMac ? 'ios' : 'android');
+    navigateTo('mobile-deps');
+  };
+
+  const handleMobileSkip = () => {
+    navigateTo('projects');
+  };
+
+  const handleMobileInstall = async (dep: DependencyStatus) => {
+    if (!dep.installCommand) return;
+    setMobileBusy(dep.name);
+    try {
+      await installDependency(dep.installCommand);
+    } catch {
+      // The re-check below will reflect whether it succeeded.
+    }
+    await refreshMobileDeps();
+    setMobileBusy(null);
+  };
+
+  const handleMobileRecheck = async () => {
+    await refreshMobileDeps();
+  };
+
+  const handleMobileContinue = () => {
+    navigateTo('projects');
+  };
+
+  // Check the mobile toolchain the moment we land on the config step.
+  useEffect(() => {
+    if (step === 'mobile-deps') {
+      refreshMobileDeps();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   const handleDepsMissingRetry = async () => {
     setStep('checking');
     const deps = await checkDependencies();
@@ -2072,7 +2314,7 @@ export default function App() {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    navigateTo('projects');
+    navigateTo('mobile-options');
   };
 
   const handleSDKLicenseAgree = async () => {
@@ -2085,14 +2327,14 @@ export default function App() {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    navigateTo('projects');
+    navigateTo('mobile-options');
   };
 
   const handleCrossPlatformSkip = async () => {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    navigateTo('projects');
+    navigateTo('mobile-options');
   };
 
   const handleDockerCheckAgain = async () => {
@@ -2120,14 +2362,14 @@ export default function App() {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    navigateTo('projects');
+    navigateTo('mobile-options');
   };
 
   const handleDockerSkip = async () => {
     const loadedDefaults = await getDefaults();
     setDefaults(loadedDefaults);
     setUseInterfaces(loadedDefaults.project?.useInterfaces ?? true);
-    navigateTo('projects');
+    navigateTo('mobile-options');
   };
 
   const handleProjectsNext = () => {
@@ -2159,11 +2401,12 @@ export default function App() {
   };
 
   const handleTemplateSelectNext = async () => {
-    const templateName = preferTypeScript && selectedFramework !== 'vanilla'
-      ? `${selectedFramework}-ts`
-      : preferTypeScript && selectedFramework === 'vanilla'
-        ? 'vanilla-ts'
-        : selectedFramework;
+    // TypeScript owns the bare template name (e.g. `react`); the JavaScript
+    // variant carries a `-js` suffix (e.g. `react-js`). All four frameworks
+    // ship both.
+    const templateName = preferTypeScript
+      ? selectedFramework
+      : `${selectedFramework}-js`;
 
     const updatedDefaults = {
       ...defaults,
@@ -2219,20 +2462,18 @@ export default function App() {
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors relative overflow-hidden">
-        {/* Scrolling background - shown on all pages */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="scrolling-bg w-full h-[200%] opacity-[0.08] dark:opacity-[0.06]">
-            <img src="/showcase/montage.png" alt="" className="w-full h-1/2 object-cover object-center" />
-            <img src="/showcase/montage.png" alt="" className="w-full h-1/2 object-cover object-center" />
-          </div>
-        </div>
+        {/* Digital Wales mountain backdrop — the glass card below blurs over it. */}
+        <div
+          className="absolute inset-0 bg-center bg-cover bg-no-repeat pointer-events-none opacity-50 dark:opacity-40"
+          style={{ backgroundImage: "url('/digital_wales_master.webp')" }}
+        />
 
         <div className="w-[75vw] max-w-[1200px] h-[75vh] max-h-[800px] glass-card rounded-2xl flex overflow-hidden relative z-10">
           {/* Sidebar */}
           <Sidebar currentStep={step} dockerStatus={dockerStatus} buildingDocker={backgroundDockerStarted && (buildingImage || dockerStatus?.pullStatus === 'pulling')} />
 
           {/* Content area - distinct from sidebar in dark mode */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white/50 dark:bg-white/[0.03] relative">
+          <div className="flex-1 flex flex-col min-w-0 bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
             <AnimatePresence>
               {showDockerToast && (
                 <motion.div
@@ -2307,6 +2548,31 @@ export default function App() {
                     onCheckAgain={handleDockerCheckAgain}
                     onContinueBackground={handleDockerContinueBackground}
                     onSkip={handleDockerSkip}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
+                  />
+                )}
+                {step === 'mobile-options' && (
+                  <MobileOptionsPage
+                    key="mobile-options"
+                    onYes={handleMobileYes}
+                    onSkip={handleMobileSkip}
+                    onBack={goBack}
+                    canGoBack={canGoBack}
+                  />
+                )}
+                {step === 'mobile-deps' && (
+                  <MobileConfigPage
+                    key="mobile-deps"
+                    isMac={isMac}
+                    activeTab={mobileTab}
+                    onTab={setMobileTab}
+                    iosDeps={mobileIosDeps}
+                    androidDeps={mobileAndroidDeps}
+                    busyName={mobileBusy}
+                    onInstall={handleMobileInstall}
+                    onRecheck={handleMobileRecheck}
+                    onContinue={handleMobileContinue}
                     onBack={goBack}
                     canGoBack={canGoBack}
                   />
