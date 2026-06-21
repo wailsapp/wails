@@ -1,0 +1,133 @@
+---
+title: Mengapa Wails?
+description: Pahami mengapa Wails adalah pilihan yang tepat untuk aplikasi desktop Anda
+sidebar:
+  order: 1
+---
+
+
+Wails menggabungkan **performa dan kesederhanaan Go** dengan **fleksibilitas UI web modern**, memungkinkan Anda membangun aplikasi desktop native yang indah dengan alat yang sudah Anda kenal.
+
+## Performa yang Dirasakan Pengguna
+
+**Aplikasi Wails:**
+- **~15MB binary** (vs 150MB Electron)
+- **~10MB memori baseline** (vs 100MB+ Electron)
+- **&lt;0,5s waktu startup** (vs 2-3s Electron)
+- **Rendering native** menggunakan WebView yang disediakan OS
+
+Pengguna merasakan aplikasi Anda sebagai cepat, ringan, dan profesional.
+
+## Pengalaman Pengembang
+
+**Tulis Sekali, Jalankan di Mana Saja:**
+- Satu codebase Go untuk Windows, macOS, dan Linux
+- Gunakan framework web apa pun (React, Vue, Svelte, vanilla JS)
+- Hot reload selama pengembangan
+- Binding TypeScript otomatis dari kode Go
+
+Rilis lebih cepat dengan lebih sedikit kode untuk dipelihara.
+
+## Fitur Siap Produksi
+
+**Semua yang Anda butuhkan:**
+- Beberapa jendela dengan lifecycle independen
+- Menu native (aplikasi, konteks, system tray)
+- Dialog file dengan UI native platform
+- Integrasi sistem (notifikasi, clipboard, shortcut keyboard)
+- Code signing dan packaging untuk semua platform
+
+Bangun aplikasi profesional, bukan prototipe.
+
+## Pengembangan Lebih Cepat
+
+- **Satu codebase, tiga platform** — Tulis sekali, build untuk Windows, macOS, dan Linux
+- **Gunakan keahlian yang ada** — Go untuk backend, HTML/CSS/JS untuk UI
+- **Umpan balik instan** — Hot reload selama pengembangan, waktu kompilasi dihitung dalam detik
+- **Binary kecil** — Aplikasi 15MB berarti build lebih cepat, unduhan lebih cepat, iterasi lebih cepat
+
+## Kapan Memilih Wails
+
+**Wails Cocok Untuk:**
+
+- **Aplikasi bisnis** (CRM, inventaris, dashboard, alat admin)
+- **Alat developer** (klien database, penguji API, alat deployment)
+- **Aplikasi produktivitas** (catatan, manajer tugas, pelacak waktu)
+- **Alat kreatif** (editor gambar, pemroses video, utilitas desain)
+- **Alat internal** (aplikasi khusus perusahaan, alat otomasi)
+
+## Kisah Sukses di Dunia Nyata
+
+:::tip[Aplikasi Produksi]
+Wails menggerakkan aplikasi nyata yang digunakan oleh ribuan pengguna:
+- **Alat manajemen database** dengan UI kompleks
+- **Dashboard keuangan** yang memproses data real-time
+- **Alat editing video** dengan performa native
+- **Utilitas pengembangan** yang digunakan tim engineering
+
+[Lihat showcase →](/community/showcase)
+:::
+
+## Cara Kerja Wails
+
+Berbeda dengan Electron yang membundel seluruh browser dan runtime Node.js, Wails mengambil pendekatan yang berbeda secara fundamental: kode Go Anda dikompilasi menjadi binary native, dan UI Anda berjalan di WebView bawaan sistem operasi. Arsitektur ini memberikan binary kecil, startup cepat, dan penggunaan memori rendah yang membuat aplikasi Wails terasa native.
+
+### Arsitektur
+
+Aplikasi Wails terdiri dari dua bagian utama yang berkomunikasi dengan mulus: backend Go yang menangani logika bisnis dan operasi sistem, serta frontend berbasis web untuk antarmuka pengguna. WebView yang disediakan OS merender UI Anda tanpa membundel browser, sementara lapisan binding menyediakan komunikasi type-safe antara Go dan JavaScript.
+
+<div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
+<div style="max-width: 600px;">
+
+```d2
+direction: down
+
+Application: {
+Go: "Go Backend" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+WebView: "Native WebView" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+
+    Frontend: "Your UI\n(React/Vue/etc)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+
+}
+Go <-> WebView: "Bindings & Events"
+}
+
+
+
+```
+
+</div>
+</div>
+
+Arsitektur sederhana ini memungkinkan kode JavaScript memanggil fungsi Go secara langsung (melalui binding otomatis), sementara Go dapat mengirim event dan data kembali ke frontend. Kedua lapisan berkomunikasi melalui jembatan in-memory yang efisien dengan overhead sub-milidetik.
+
+**Bagaimana Wails mencapai performa:**
+1. **Tanpa runtime yang dibundel** — Menggunakan binary Go yang dikompilasi
+2. **WebView native** — Mesin rendering yang disediakan OS
+3. **Jembatan Go ↔ JS langsung** — Komunikasi in-memory, tanpa overhead jaringan
+4. **Binary dikompilasi** — Startup instan, tanpa kompilasi JIT
+
+## Langkah Selanjutnya
+
+Sekarang setelah Anda memahami apa yang Wails tawarkan, mari siapkan lingkungan Anda:
+
+1. **Instal Wails** — Siapkan lingkungan pengembangan dalam 5 menit  
+   [Panduan Instalasi →](/id/quick-start/installation)
+
+2. **Bangun Aplikasi Pertama Anda** — Buat aplikasi yang berfungsi dan pahami dasar-dasarnya  
+   [Tutorial Aplikasi Pertama →](/id/quick-start/first-app)
+
+3. **Jelajahi Fitur** — Temukan apa yang Wails bisa lakukan untuk aplikasi Anda  
+   [Ringkasan Fitur →](/id/quick-start/next-steps)
+
+---
+
+**Masih ada pertanyaan?** Bergabunglah dengan [komunitas Discord](https://discord.gg/JDdSxwjhGf) kami dan tanyakan langsung ke tim.

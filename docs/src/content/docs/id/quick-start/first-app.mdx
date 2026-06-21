@@ -1,0 +1,272 @@
+---
+title: Aplikasi Pertama Anda
+description: Bangun aplikasi Wails yang berfungsi dalam 10 menit
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+Kita akan membangun aplikasi sapa sederhana yang mendemonstrasikan konsep inti Wails:
+- Backend Go yang mengelola logika
+- Frontend yang memanggil fungsi Go
+- Binding type-safe
+- Hot reload selama pengembangan
+
+**Waktu penyelesaian:** 10 menit
+
+:::tip[Tip Performa untuk Pengguna Windows 11]
+Pertimbangkan menggunakan [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) untuk menyimpan proyek Anda. Dev Drive dioptimalkan untuk beban kerja developer dan dapat meningkatkan waktu build serta kecepatan akses disk hingga 30% dibandingkan drive NTFS biasa.
+:::
+
+## Buat Proyek Anda
+
+<Steps>
+
+1. **Generate proyek**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+   Ini membuat proyek baru dengan template default Vanilla + Vite (HTML/CSS/TypeScript dengan bundler Vite).
+
+   :::tip[Template Lain]
+   Coba `-t react`, `-t vue`, atau `-t svelte` untuk framework pilihan Anda. Template ini menggunakan TypeScript secara default; untuk JavaScript biasa gunakan `-t vanilla-js` atau `-t react-js`.
+   Jalankan `wails3 init -l` untuk melihat semua template yang tersedia, atau
+   [bawa framework frontend Anda sendiri](/guides/dev/frontend-frameworks).
+   :::
+
+2. **Pahami struktur proyek**
+
+   ```
+   myapp/
+   ├── main.go              # Titik masuk aplikasi
+   ├── greetservice.go      # Layanan Greet
+   ├── frontend/            # Kode UI Anda
+   │   ├── index.html       # Titik masuk HTML
+   │   ├── src/
+   │   │   └── main.ts      # TypeScript frontend
+   │   ├── public/
+   │   │   └── style.css    # Styles
+   │   ├── package.json     # Dependensi frontend
+   │   ├── tsconfig.json    # Konfigurasi TypeScript
+   │   └── vite.config.ts   # Konfigurasi bundler Vite
+   ├── build/               # Konfigurasi build
+   └── Taskfile.yml         # Tugas build
+   ```
+
+3. **Jalankan aplikasi**
+
+   ```bash
+   wails3 dev
+   ```
+
+   :::note[Jalankan Pertama]
+   Jalankan pertama mungkin membutuhkan waktu lebih lama dari yang diharapkan karena menginstal dependensi frontend, menghasilkan binding, dll. Jalankan berikutnya jauh lebih cepat.
+   :::
+
+   Aplikasi terbuka menampilkan antarmuka sapa. Masukkan nama Anda dan klik "Greet" — backend Go memproses input Anda dan mengembalikan sapaan.
+
+</Steps>
+
+## Cara Kerjanya
+
+Mari pahami kode yang membuat ini berfungsi.
+
+### Backend Go
+
+Buka `greetservice.go`:
+
+```go title="greetservice.go"
+package main
+
+import (
+	"fmt"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+**Konsep utama:**
+
+1. **Service** — Struct Go dengan method yang diekspor
+2. **Method yang diekspor** — `Greet` diawali huruf kapital, sehingga tersedia untuk frontend
+3. **Logika sederhana** — Menerima nama, mengembalikan sapaan
+4. **Type safety** — Tipe input dan output didefinisikan
+
+:::tip[Memahami Service dan Binding]
+**Service** adalah modul Go mandiri yang mengekspos fungsionalitas ke frontend Anda. Ini hanyalah struct Go biasa dengan method yang diekspor yang Anda daftarkan di field `Services` konfigurasi aplikasi.
+
+**Binding** adalah SDK TypeScript/JavaScript otomatis yang memungkinkan frontend memanggil service ini. Saat Anda menjalankan `wails3 dev` atau `wails3 build`, Wails menganalisis service yang terdaftar dan menghasilkan binding type-safe di `frontend/bindings/`.
+
+Anggap service sebagai API backend Anda, dan binding sebagai library klien yang berkomunikasi dengannya.
+:::
+
+### Mendaftarkan Service
+
+Buka `main.go` dan temukan pendaftaran service:
+
+```go title="main.go" {4-6}
+err := application.New(application.Options{
+    Name: "myapp",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    // ... other options
+})
+```
+
+Ini mendaftarkan `GreetService` Anda ke Wails, sehingga semua method yang diekspor tersedia untuk frontend.
+
+### Frontend
+
+Buka `frontend/src/main.js`:
+
+```javascript title="frontend/src/main.js"
+import {GreetService} from "../bindings/changeme";
+
+window.greet = async () => {
+    const nameElement = document.getElementById('name');
+    const resultElement = document.getElementById('result');
+
+    const name = nameElement.value;
+    if (!name) {
+        return;
+    }
+
+    try {
+        const result = await GreetService.Greet(name);
+        resultElement.innerText = result;
+    } catch (err) {
+        console.error(err);
+    }
+};
+```
+
+**Konsep utama:**
+
+1. **Binding otomatis** — `GreetService` diimpor dari kode yang dihasilkan
+2. **Panggilan type-safe** — Nama method dan signature cocok dengan kode Go Anda
+3. **Async secara default** — Semua panggilan Go mengembalikan Promise
+4. **Penanganan error** — Error dari Go ditangkap di try/catch
+
+:::note[Di mana binding-nya?]
+Binding yang dihasilkan ada di `frontend/bindings/`. Dibuat otomatis saat Anda menjalankan `wails3 dev` atau `wails3 build`.
+
+**Jangan edit file ini secara manual** — akan diregenerasi setiap build.
+:::
+
+## Kustomisasi Aplikasi Anda
+
+Mari tambahkan fitur baru untuk memahami alur kerjanya.
+
+### Tambahkan Fitur "Greet Many"
+
+<Steps>
+
+1. **Tambahkan method ke GreetService**
+
+   Tambahkan ini ke `greetservice.go`:
+
+   ```go title="greetservice.go"
+   func (g *GreetService) GreetMany(names []string) []string {
+       greetings := make([]string, len(names))
+       for i, name := range names {
+           greetings[i] = fmt.Sprintf("Hello %s!", name)
+       }
+       return greetings
+   }
+   ```
+
+2. **Aplikasi akan rebuild otomatis**
+
+   Simpan file dan `wails3 dev` akan otomatis rebuild kode Go Anda dan me-restart aplikasi.
+
+   :::note[Auto-Rebuild]
+   Perubahan kode Go memicu rebuild otomatis dan restart. Perubahan frontend hot-reload tanpa restart.
+   :::
+
+3. **Gunakan di frontend**
+
+   Tambahkan ini ke `frontend/src/main.js`:
+
+   ```javascript title="frontend/src/main.js"
+   window.greetMany = async () => {
+       const names = ['Alice', 'Bob', 'Charlie'];
+       const greetings = await GreetService.GreetMany(names);
+       console.log(greetings);
+   };
+   ```
+
+   Buka konsol browser dan panggil `greetMany()` — Anda akan melihat array sapaan.
+
+</Steps>
+
+## Build untuk Produksi
+
+Saat Anda siap mendistribusikan aplikasi:
+
+```bash
+wails3 build
+```
+
+**Apa yang dilakukan ini:**
+- Mengompilasi kode Go dengan optimasi
+- Build frontend untuk produksi (minified)
+- Membuat executable native di `bin/`
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **Output:** `bin/myapp.exe`
+
+    Double-click untuk menjalankan. Tidak ada dependensi yang diperlukan (WebView2 sudah bagian dari Windows).
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Output:** `bin/myapp.app`
+
+    Seret ke folder Applications atau double-click untuk menjalankan.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Output:** `bin/myapp`
+
+    Jalankan dengan `./bin/myapp` atau buat file `.desktop` untuk launcher Anda.
+  </TabItem>
+</Tabs>
+
+:::tip[Build Cross-Platform]
+Ingin build untuk platform lain? Lihat [Build Cross-Platform →](/guides/build/cross-platform)
+:::
+
+## Yang telah kita pelajari
+
+**Struktur Proyek**
+- `main.go` untuk backend Go
+- `frontend/` untuk kode UI
+- `Taskfile.yml` untuk tugas build
+
+**Service**
+- Buat struct Go dengan method yang diekspor
+- Daftarkan dengan `application.NewService()`
+- Method otomatis tersedia di frontend
+
+**Binding**
+- Definisi TypeScript otomatis
+- Panggilan fungsi type-safe
+- Async secara default (Promise)
+
+**Alur Kerja Pengembangan**
+- `wails3 dev` untuk hot reload
+- Perubahan Go otomatis rebuild dan restart
+- Perubahan frontend hot-reload secara instan
+
+---
+
+**Ada pertanyaan?** Bergabunglah dengan [Discord](https://discord.gg/JDdSxwjhGf) dan tanyakan ke komunitas.

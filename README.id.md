@@ -1,9 +1,11 @@
+<h1 align="center">Wails</h1>
+
 <p align="center" style="text-align: center">
   <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-Erschaffe Desktop Anwendungen mit Go & Web Technologien.
+  Buat aplikasi desktop menggunakan Go & Teknologi Web.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -42,87 +44,91 @@ Erschaffe Desktop Anwendungen mit Go & Web Technologien.
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) · [Bahasa Indonesia](README.id.md)
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
+[Türkçe](README.tr.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
 </div>
 
-## Inhaltsverzeichnis
+## Daftar Isi
 
-- [Inhaltsverzeichnis](#inhaltsverzeichnis)
-- [Einführung](#einführung)
-- [Funktionen](#funktionen)
-  - [Roadmap](#roadmap)
-- [Loslegen](#loslegen)
-- [Sponsoren](#sponsoren)
+- [Daftar Isi](#daftar-isi)
+- [Pendahuluan](#pendahuluan)
+- [Fitur](#fitur)
+  - [Peta Jalan](#peta-jalan)
+- [Memulai](#memulai)
+- [Sponsor](#sponsor)
 - [FAQ](#faq)
-- [Sterne Überblick](#sterne-überblick)
-- [Mitwirkende](#mitwirkende)
-- [Lizenz](#lizenz)
-- [Inspiration](#inspiration)
+- [Stargazers dari Waktu ke Waktu](#stargazers-dari-waktu-ke-waktu)
+- [Kontributor](#kontributor)
+- [Lisensi](#lisensi)
+- [Inspirasi](#inspirasi)
 
-## Einführung
+## Pendahuluan
 
-Die herkömmliche Methode zur Bereitstellung von Web-Interfaces für Go ist über einen eingebauten Webserver. 
-Wails nutzt einen anderen Weg. Es kann sowohl Go-Code als auch ein Web-Frontend in eine einzige Datei bauen.
-Beigelieferte Werkzeuge übernehmen die Projekterstellung, den Kompilierungsprozess und das bauen.
-Du musst nur kreativ werden.
+Metode tradisional untuk menyediakan antarmuka web pada program Go adalah melalui server web bawaan. Wails menawarkan pendekatan yang berbeda: kemampuan untuk membungkus kode Go dan frontend web ke dalam satu binary. Alat-alat disediakan agar proses ini mudah bagi Anda dengan menangani pembuatan proyek, kompilasi, dan bundling. Yang perlu Anda lakukan hanya berkreasi!
 
-## Funktionen
+## Fitur
 
-- Nutze Standard Go für das Backend
-- Nutze eine Frontend Technologie mit der du dich bereits auskennst um dein UI zu bauen.
-- Erschaffe schnell und einfach Frontends mit vorgefertigten Vorlagen für deine Go-Programme
-- Nutze Javascript um Go Methoden aufzurufen
-- Automatisch generierte Typescript Definitionen für deine Go Strukturen und Methoden
-- Native Dialoge und Menüs
-- Native Dark-/Lightmode Unterstützung
-- Unterstützt moderne Transluzenz- und Milchglaseffekte
-- Vereinheitlichtes Eventsystem zwischen Go und Javascript
-- Leistungsstarkes CLI-Tool zum einfachen erstellen und bauen von Projekten
-- Multiplattformen
-- Nutze native Render-Engines - _keine eingebetteten Browser_!
+- Gunakan Go standar untuk backend
+- Gunakan teknologi frontend apa pun yang sudah Anda kenal untuk membangun UI
+- Buat frontend yang kaya dengan cepat untuk program Go Anda menggunakan template bawaan
+- Panggil metode Go dari Javascript dengan mudah
+- Definisi Typescript yang dihasilkan otomatis untuk struct dan metode Go Anda
+- Dialog & Menu Native
+- Dukungan mode Gelap / Terang native
+- Mendukung efek translucency modern dan "frosted window"
+- Sistem eventing terpadu antara Go dan Javascript
+- Alat CLI yang andal untuk membuat dan membangun proyek dengan cepat
+- Multiplatform
+- Menggunakan mesin rendering native - _tanpa browser embedded_!
 
-### Roadmap
+### Peta Jalan
 
-Die Projekt Roadmap kann [hier](https://github.com/wailsapp/wails/discussions/1484) gefunden werden. Bitte lies diese
-durch bevor du eine Idee vorschlägst
+Peta jalan proyek dapat ditemukan [di sini](https://github.com/wailsapp/wails/discussions/1484). Harap
+konsultasikan sebelum membuat permintaan peningkatan.
 
-## Loslegen
+## Memulai
 
-Die Installationsinstruktionen sind auf der [offiziellen Website](https://wails.io/docs/gettingstarted/installation).
+Wails memiliki dua versi aktif:
 
-## Sponsoren
+| Versi | Status | Instalasi | Dokumentasi |
+|---|---|---|---|
+| v2 | Stabil | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
+| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
 
-Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
+Petunjuk instalasi lengkap tersedia untuk [v2](https://wails.io/docs/gettingstarted/installation) dan [v3](https://v3.wails.io).
+
+## Sponsor
+
+Proyek ini didukung oleh orang-orang / perusahaan baik hati ini:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
-<p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
-</p>
+## Didukung Oleh
+
+[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
 
 ## FAQ
 
-- Ist das eine Alternative zu Electron?
+- Apakah ini alternatif Electron?
 
-  Hängt von deinen Anforderungen ab. Wails wurde entwickelt um das Go-Programmieren leicht zu machen und effiziente
-  Desktop-Anwendungen zu erstellen oder ein Frontend zu einer bestehenden Anwendung hinzuzufügen.
-  Wails bietet native Elemente wie Dialoge und Menüs und könnte somit als eine leichte effiziente Electron-Alternative
-  betrachtet werden.
+  Tergantung kebutuhan Anda. Wails dirancang agar programmer Go dapat dengan mudah membuat aplikasi desktop
+  ringan atau menambahkan frontend ke aplikasi yang sudah ada. Wails menawarkan elemen native seperti menu
+  dan dialog, sehingga dapat dianggap sebagai alternatif Electron yang ringan.
 
-- Für wen ist dieses projekt geeignet?
+- Proyek ini ditujukan untuk siapa?
 
-  Go Entwickler, die ein HTML/CSS/JS-Frontend in ihre Anwendung integrieren möchten, ohne einen Webserver zu erstellen und
-  einen Browser öffnen zu müssen, um dieses zu sehen
+  Programmer Go yang ingin mengemas frontend HTML/JS/CSS dengan aplikasi mereka, tanpa perlu membuat
+  server dan membuka browser untuk melihatnya.
 
-- Wie kam es zu diesem Namen?
+- Apa arti namanya?
 
-  Als ich WebView sah dachte ich "Was ich wirklich will, ist ein Werkzeug für die Erstellung von WebView Anwendungen so wie Rails für Ruby".
-  Also war es zunächst ein Wortspiel (Webview on Rails). Zufälligerweise ist es auch ein Homophon des englischen Namens des [Landes](https://en.wikipedia.org/wiki/Wales), aus dem ich komme. 
-  Also ist es dabei geblieben.
+  Ketika saya melihat WebView, saya berpikir "Yang benar-benar saya inginkan adalah alat untuk membangun aplikasi WebView, seperti Rails untuk
+  Ruby". Jadi awalnya ini permainan kata (Webview on Rails). Kebetulan juga homofon dengan
+  nama bahasa Inggris untuk [Negara](https://en.wikipedia.org/wiki/Wales) asal saya. Jadi namanya tetap dipakai.
 
-## Sterne Überblick
+## Stargazers dari Waktu ke Waktu
 
 <a href="https://star-history.com/#wailsapp/wails&Date">
   <picture>
@@ -132,18 +138,18 @@ Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
   </picture>
 </a>
 
-## Mitwirkende
+## Kontributor
 
-Die Liste der Mitwirkenden wird zu groß für diese Readme. All die fantastischen Menschen, die zu diesem 
-Projekt beigetragen haben, haben [hier](https://wails.io/credits#contributors) ihre eigene Seite.
+Daftar kontributor sudah terlalu panjang untuk readme! Semua orang luar biasa yang telah berkontribusi pada
+proyek ini memiliki halaman mereka sendiri [di sini](https://wails.io/credits#contributors).
 
-## Lizenz
+## Lisensi
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-## Inspiration
+## Inspirasi
 
-Dieses Projekt wurde hauptsächlich zu den folgenden Alben entwickelt
+Proyek ini sebagian besar dikodekan sambil mendengarkan album-album berikut:
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)

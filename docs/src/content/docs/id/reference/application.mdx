@@ -1,0 +1,506 @@
+---
+title: API Application
+description: Referensi lengkap untuk API Application
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Gambaran Umum
+
+`Application` adalah inti aplikasi Wails Anda. Mengelola window, service, event, dan menyediakan akses ke semua fitur platform.
+
+## Membuat Application
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "My awesome application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+## Metode Inti
+
+### Run()
+
+Memulai event loop aplikasi.
+
+```go
+func (a *App) Run() error
+```
+
+**Contoh:**
+
+```go
+err := app.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Mengembalikan:** Error jika startup gagal
+
+### Quit()
+
+Menutup aplikasi dengan graceful.
+
+```go
+func (a *App) Quit()
+```
+
+**Contoh:**
+
+```go
+// In a menu handler
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Config()
+
+Mengembalikan konfigurasi aplikasi.
+
+```go
+func (a *App) Config() Options
+```
+
+**Contoh:**
+
+```go
+config := app.Config()
+fmt.Println("App name:", config.Name)
+```
+
+## Manajemen Window
+
+### app.Window.New()
+
+Membuat webview window baru dengan opsi default.
+
+```go
+func (wm *WindowManager) New() *WebviewWindow
+```
+
+**Contoh:**
+
+```go
+window := app.Window.New()
+window.Show()
+```
+
+### app.Window.NewWithOptions()
+
+Membuat webview window baru dengan opsi kustom.
+
+```go
+func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
+```
+
+**Contoh:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Window",
+    Width:  800,
+    Height: 600,
+    BackgroundColour: application.NewRGB(255, 255, 255),
+})
+```
+
+### app.Window.GetByName()
+
+Mendapatkan window berdasarkan namanya. Mengembalikan window dan apakah ditemukan.
+
+```go
+func (wm *WindowManager) GetByName(name string) (Window, bool)
+```
+
+**Contoh:**
+
+```go
+if window, ok := app.Window.GetByName("main"); ok {
+    window.Show()
+}
+```
+
+### app.Window.GetAll()
+
+Mengembalikan semua window aplikasi.
+
+```go
+func (wm *WindowManager) GetAll() []Window
+```
+
+**Contoh:**
+
+```go
+windows := app.Window.GetAll()
+for _, window := range windows {
+    fmt.Println("Window:", window.Name())
+}
+```
+
+## Manager
+
+Application menyediakan akses ke berbagai manager melalui properti:
+
+```go
+app.Window       // Window management
+app.Menu         // Menu management
+app.Dialog       // Dialog management
+app.Event        // Event management
+app.Clipboard    // Clipboard operations
+app.Screen       // Screen information
+app.SystemTray   // System tray
+app.Browser      // Browser operations
+app.Env          // Environment variables
+app.ContextMenu  // Context-menu management
+app.KeyBinding   // Global keyboard shortcuts
+app.Logger       // *slog.Logger
+```
+
+### Contoh Penggunaan
+
+```go
+// Create window
+window := app.Window.New()
+
+// Show dialog
+app.Dialog.Info().SetMessage("Hello!").Show()
+
+// Copy to clipboard
+app.Clipboard.SetText("Copied text")
+
+// Get screens
+screens := app.Screen.GetAll()
+```
+
+## Manajemen Service
+
+### RegisterService()
+
+Mendaftarkan service ke aplikasi.
+
+```go
+func (a *App) RegisterService(service Service)
+```
+
+`RegisterService` tidak mengembalikan nilai; error inisialisasi service muncul via kegagalan `ServiceStartup` selama `app.Run()`.
+
+**Contoh:**
+
+```go
+type MyService struct {
+    app *application.App
+}
+
+func NewMyService(app *application.App) *MyService {
+    return &MyService{app: app}
+}
+
+// Register after app creation
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+## Manajemen Event
+
+### app.Event.Emit()
+
+Memancarkan event kustom. Mengembalikan `true` jika hook membatalkan emit.
+
+```go
+func (em *EventManager) Emit(name string, data ...any) bool
+```
+
+**Contoh:**
+
+```go
+// Emit event with data
+app.Event.Emit("user-logged-in", map[string]interface{}{
+    "username": "john",
+    "timestamp": time.Now(),
+})
+```
+
+### app.Event.On()
+
+Mendengarkan event kustom. Mengembalikan `func()` unsubscribe.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**Contoh:**
+
+```go
+app.Event.On("user-logged-in", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    username := data["username"].(string)
+    fmt.Println("User logged in:", username)
+})
+```
+
+### app.Event.OnApplicationEvent()
+
+Mendengarkan event siklus hidup aplikasi. Parameter `eventType` adalah `events.ApplicationEventType` (dari paket `events`).
+
+```go
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
+```
+
+**Contoh:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for app-started
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    fmt.Println("Application started")
+})
+
+// Application shutdown is NOT an event constant; register cleanup via:
+app.OnShutdown(func() {
+    fmt.Println("Application shutting down")
+})
+```
+
+## Metode Dialog
+
+Dialog diakses melalui manager `app.Dialog`. Lihat [API Dialog](/id/reference/dialogs/) untuk referensi lengkap.
+
+### Dialog Pesan
+
+```go
+// Information dialog
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed!").
+    Show()
+
+// Error dialog
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Something went wrong.").
+    Show()
+
+// Warning dialog
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### Dialog Pertanyaan
+
+Dialog pertanyaan menggunakan callback tombol untuk menangani respons pengguna:
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Continue?")
+
+yes := dialog.AddButton("Yes")
+yes.OnClick(func() {
+    // Handle yes
+})
+
+no := dialog.AddButton("No")
+no.OnClick(func() {
+    // Handle no
+})
+
+dialog.SetDefaultButton(yes)
+dialog.SetCancelButton(no)
+dialog.Show()
+```
+
+### Dialog File
+
+```go
+// Open file dialog
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+
+// Save file dialog
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save File").
+    SetFilename("document.pdf").
+    AddFilter("PDF", "*.pdf").
+    PromptForSingleSelection()
+
+// Folder selection (use OpenFile with directory options)
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+## Logger
+
+Aplikasi menyediakan structured logger:
+
+```go
+app.Logger.Info("Message", "key", "value")
+app.Logger.Error("Error occurred", "error", err)
+app.Logger.Debug("Debug info")
+app.Logger.Warn("Warning message")
+```
+
+**Contoh:**
+
+```go
+func (s *MyService) ProcessData(data string) error {
+    s.app.Logger.Info("Processing data", "length", len(data))
+    
+    if err := process(data); err != nil {
+        s.app.Logger.Error("Processing failed", "error", err)
+        return err
+    }
+    
+    s.app.Logger.Info("Processing complete")
+    return nil
+}
+```
+
+## Penanganan Raw Message
+
+Untuk aplikasi yang memerlukan kontrol langsung tingkat rendah atas komunikasi frontend-ke-backend, Wails menyediakan opsi `RawMessageHandler`. Ini melewati sistem binding standar.
+
+:::note
+Raw message hanya boleh digunakan sebagai upaya terakhir. Sistem binding standar sangat dioptimalkan dan cukup untuk hampir semua aplikasi. Hanya gunakan raw message jika Anda telah memprofil aplikasi dan mengonfirmasi bahwa binding adalah bottleneck.
+:::
+
+### RawMessageHandler
+
+`RawMessageHandler` adalah field pada `application.Options`, bukan metode. Runtime memanggilnya untuk setiap raw message yang dikirim dari frontend via `System.invoke()`.
+
+```go
+type Options struct {
+    // ... other fields ...
+    RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
+}
+```
+
+`OriginInfo` membawa `Origin`, `TopOrigin`, dan `IsMainFrame` (platform mengisi subset berbeda — lihat [Panduan Raw Messages](/id/guides/raw-messages) untuk matriks per platform).
+
+**Contoh:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+        // Handle the raw message
+        fmt.Printf("Received from %s (%s): %s\n", window.Name(), originInfo.Origin, message)
+
+        // You can respond using events
+        window.EmitEvent("response", processMessage(message))
+    },
+})
+```
+
+
+Untuk detail selengkapnya, lihat [Panduan Raw Messages](/id/guides/raw-messages).
+
+## Opsi Spesifik Platform
+
+### Opsi Windows
+
+Konfigurasi perilaku khusus Windows di level aplikasi:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        // WebView2 browser flags (apply to ALL windows)
+        EnabledFeatures:       []string{"msWebView2EnableDraggableRegions"},
+        DisabledFeatures:      []string{"msExperimentalFeature"},
+        AdditionalBrowserArgs: []string{"--remote-debugging-port=9222"},
+
+        // Other Windows options
+        WndClass:                      "MyAppClass",
+        WebviewUserDataPath:           "",  // Default: %APPDATA%\[BinaryName.exe]
+        WebviewBrowserPath:            "",  // Default: system WebView2
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+**Browser Flags:**
+- `EnabledFeatures` - Feature flag WebView2 untuk diaktifkan
+- `DisabledFeatures` - Feature flag WebView2 untuk dinonaktifkan
+- `AdditionalBrowserArgs` - Argumen command-line Chromium
+
+Lihat [Opsi Window - Opsi Windows Level Aplikasi](/id/features/windows/options#application-level-windows-options) untuk dokumentasi detail.
+
+### Opsi Mac
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Mac: application.MacOptions{
+        ActivationPolicy: application.ActivationPolicyRegular,
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+### Opsi Linux
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ProgramName:                   "my-app",
+        DisableQuitOnLastWindowClosed: false,
+    },
+})
+```
+
+## Contoh Application Lengkap
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+        Description: "A demo application",
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+    })
+
+    // Create main window
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:            "My App",
+        Width:            1024,
+        Height:           768,
+        MinWidth:         800,
+        MinHeight:        600,
+        BackgroundColour: application.NewRGB(255, 255, 255),
+        URL:              "http://wails.localhost/",
+    })
+
+    window.Center()
+    window.Show()
+
+    app.Run()
+}
+```

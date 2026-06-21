@@ -1,0 +1,260 @@
+---
+title: Pertanyaan yang Sering Diajukan
+description: Pertanyaan umum tentang Wails
+sidebar:
+  order: 99
+---
+
+## Umum
+
+### Apa itu Wails?
+
+Wails adalah framework untuk membangun aplikasi desktop menggunakan Go dan teknologi web. Wails menyediakan integrasi OS native sambil memungkinkan Anda membangun UI dengan HTML, CSS, dan JavaScript.
+
+### Bagaimana Wails dibandingkan dengan Electron?
+
+**Wails:**
+- ~10MB penggunaan memori
+- ~15MB ukuran binary
+- Performa native
+- Backend Go
+
+**Electron:**
+- ~100MB+ penggunaan memori
+- ~150MB+ ukuran binary
+- Overhead Chromium
+- Backend Node.js
+
+### Apakah Wails siap produksi?
+
+Ya! Wails v3 cocok untuk aplikasi produksi. Banyak perusahaan menggunakan Wails untuk aplikasi desktop mereka.
+
+### Platform apa saja yang didukung Wails?
+
+- Windows (7+)
+- macOS (10.13+)
+- Linux (GTK3)
+
+## Pengembangan
+
+### Apakah saya perlu tahu Go?
+
+Pengetahuan Go dasar membantu tetapi tidak wajib. Anda dapat memulai dengan layanan sederhana dan belajar seiring berjalannya.
+
+### Bisakah saya menggunakan framework frontend favorit saya?
+
+Ya! Wails bekerja dengan:
+- Vanilla JavaScript
+- React
+- Vue
+- Svelte
+- Framework apa pun yang menghasilkan HTML/CSS/JS
+
+### Bagaimana cara memanggil fungsi Go dari JavaScript?
+
+Gunakan binding:
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/changeme/service'
+const message = await Greet("World")
+```
+
+### Bisakah saya menggunakan TypeScript?
+
+Ya! Wails menghasilkan definisi TypeScript secara otomatis.
+
+### Bagaimana cara debug aplikasi saya?
+
+Gunakan dev tools browser Anda:
+- Klik kanan → Inspect Element
+- Atau aktifkan dev tools di opsi jendela
+
+## Build & Distribusi
+
+### Bagaimana cara build untuk produksi?
+
+```bash
+wails3 build
+```
+
+Aplikasi Anda akan berada di `bin/`.
+
+### Bisakah saya cross-compile?
+
+Ya! Build untuk platform lain:
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### Bagaimana cara membuat installer?
+
+Gunakan alat spesifik platform:
+- Windows: NSIS atau WiX
+- macOS: Buat DMG
+- Linux: Paket DEB/RPM
+
+Lihat [Panduan Installer](/guides/installers).
+
+### Bagaimana cara code sign aplikasi saya?
+
+**macOS:**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows:**
+Gunakan SignTool dengan sertifikat Anda.
+
+## Fitur
+
+### Bisakah saya membuat beberapa jendela?
+
+Ya! Wails v3 memiliki dukungan multi-window native:
+
+```go
+window1 := app.Window.New()
+window2 := app.Window.New()
+```
+
+### Apakah Wails mendukung system tray?
+
+Ya! Buat aplikasi system tray:
+
+```go
+tray := app.SystemTray.New()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### Bisakah saya menggunakan dialog native?
+
+Ya! Wails menyediakan dialog native:
+
+```go
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+### Apakah Wails mendukung auto-update?
+
+Ya — Wails v3 menyertakan self-updater bawaan (`app.Updater`) dengan provider yang dapat diganti untuk GitHub Releases, keygen.sh, dan Sparkle AppCast, verifikasi tanda tangan kriptografis, dan UI default yang dapat Anda tema atau ganti. Lihat panduan [In-App Updater](/guides/updater) dan tutorial [Self-Updating Wails App](/tutorials/04-self-update-a-wails-app).
+
+## Performa
+
+### Mengapa binary saya besar?
+
+Binary Go menyertakan runtime. Kurangi ukuran:
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### Bagaimana cara meningkatkan performa?
+
+- Paginasi dataset besar
+- Cache operasi yang mahal
+- Gunakan event untuk pembaruan
+- Optimalkan bundle frontend
+- Profil kode Anda
+
+Lihat [Panduan Performa](/guides/performance).
+
+### Apakah Wails mendukung hot reload?
+
+Ya! Gunakan mode dev:
+
+```bash
+wails3 dev
+```
+
+## Troubleshooting
+
+### Binding saya tidak berfungsi
+
+Regenerasi binding:
+
+```bash
+wails3 generate bindings
+```
+
+### Jendela tidak muncul
+
+Periksa apakah Anda memanggil `Show()`:
+
+```go
+window := app.Window.New()
+window.Show()  // Don't forget this!
+```
+
+### Event tidak terpicu
+
+Pastikan nama event cocok persis:
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Must match
+```
+
+### Build gagal
+
+Perbaikan umum:
+- Jalankan `go mod tidy`
+- Periksa konfigurasi `wails.json`
+- Verifikasi frontend build: `cd frontend && npm run build`
+- Perbarui Wails: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## Migrasi
+
+### Haruskah saya migrasi dari v2 ke v3?
+
+v3 menawarkan:
+- Performa lebih baik
+- Dukungan multi-window
+- API yang ditingkatkan
+- Pengalaman pengembang yang lebih baik
+
+Lihat [Panduan Migrasi](/migration/v2-to-v3).
+
+### Apakah v2 akan dipelihara?
+
+Ya, v2 akan menerima pembaruan kritis.
+
+### Bisakah saya menjalankan v2 dan v3 berdampingan?
+
+Ya, keduanya menggunakan path import yang berbeda.
+
+## Komunitas
+
+### Bagaimana cara mendapatkan bantuan?
+
+- [Komunitas Discord](https://discord.gg/JDdSxwjhGf)
+- [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+
+### Bagaimana cara berkontribusi?
+
+Lihat [Panduan Kontribusi](/contributing).
+
+### Di mana saya bisa menemukan contoh?
+
+- [Contoh Resmi](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Contoh Komunitas](https://github.com/topics/wails)
+
+## Masih Ada Pertanyaan?
+
+Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau [buka diskusi](https://github.com/wailsapp/wails/discussions).
