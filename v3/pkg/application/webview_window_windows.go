@@ -1607,13 +1607,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// Paint the background with the configured colour so that areas not yet
 		// covered by WebView2 during a resize show the correct colour instead of white.
 		if w.parent.options.BackgroundType == BackgroundTypeSolid {
-			col := w.parent.options.BackgroundColour
-			hdc := w32.HDC(wparam)
-			rc := w32.GetClientRect(w.hwnd)
-			colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
-			hbrush := w32.CreateSolidBrush(colorRef)
-			w32.FillRect(hdc, rc, hbrush)
-			w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			// GetClientRect returns nil for a window in a transient state (the
+			// same nil case already guarded in convertWindowToWebviewCoordinates),
+			// which minimise/restore transitions are especially prone to trigger.
+			// FillRect with a nil rect crashes, so guard before painting.
+			if rc := w32.GetClientRect(w.hwnd); rc != nil {
+				col := w.parent.options.BackgroundColour
+				hdc := w32.HDC(wparam)
+				colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
+				hbrush := w32.CreateSolidBrush(colorRef)
+				w32.FillRect(hdc, rc, hbrush)
+				w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			}
 		}
 		return 1
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function

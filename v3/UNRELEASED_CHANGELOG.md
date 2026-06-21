@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix crash on Windows when erasing the background during a minimise/restore transition: `GetClientRect` can return nil for a window in a transient state, and the solid-background paint passed it straight into `FillRect`. Now guarded, matching the existing nil-check in `convertWindowToWebviewCoordinates` (salvaged from #5635)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
