@@ -1,9 +1,7 @@
+//go:build ios
 // Minimal bootstrap: delegate comes from Go archive (WailsAppDelegate)
 #import <UIKit/UIKit.h>
 #include <stdio.h>
-
-// External Go initialization function from the c-archive (declare before use)
-extern void WailsIOSMain();
 
 int main(int argc, char * argv[]) {
     @autoreleasepool {
@@ -11,12 +9,14 @@ int main(int argc, char * argv[]) {
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
 
-        // Start Go runtime on a background queue to avoid blocking main thread/UI
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            WailsIOSMain();
-        });
-
-        // Run UIApplicationMain using WailsAppDelegate provided by the Go archive
+        // Call UIApplicationMain IMMEDIATELY and start NOTHING else here. Do not
+        // start the Go runtime yet: starting it concurrently with UIApplicationMain
+        // intermittently corrupts the FrontBoard launch handshake on a physical
+        // device, so the app delegate's didFinishLaunchingWithOptions never fires
+        // (blank cold launch / 0x8BADF00D). Instead, the WailsAppDelegate (provided
+        // by the Go archive) starts the Go runtime itself from
+        // didFinishLaunchingWithOptions — i.e. only AFTER UIKit has delivered the
+        // launch — so the runtime never races the launch handshake.
         return UIApplicationMain(argc, argv, nil, @"WailsAppDelegate");
     }
 }

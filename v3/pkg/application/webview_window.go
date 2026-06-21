@@ -11,16 +11,16 @@ import (
 
 	"encoding/json"
 
-	"github.com/leaanthony/u"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Enabled means the feature should be enabled
-var Enabled = u.True
+var Enabled = optional.True
 
 // Disabled means the feature should be disabled
-var Disabled = u.False
+var Disabled = optional.False
 
 var shouldSkipHideOnFocusLost = func() bool { return false }
 
@@ -176,6 +176,12 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	savedMinWidth    int
+	savedMinHeight   int
+	savedMaxWidth    int
+	savedMaxHeight   int
+	constraintsSaved bool
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -540,65 +546,63 @@ func (w *WebviewWindow) Resizable() bool {
 
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
-	w.options.MinWidth = minWidth
-	w.options.MinHeight = minHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if minHeight != 0 && currentHeight < minHeight {
 		newHeight = minHeight
-		w.options.Height = newHeight
 		newSize = true
 	}
 	if minWidth != 0 && currentWidth < minWidth {
 		newWidth = minWidth
-		w.options.Width = newWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MinWidth = minWidth
+		w.options.MinHeight = minHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMinSize(minWidth, minHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
 // SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
-	w.options.MaxWidth = maxWidth
-	w.options.MaxHeight = maxHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if maxHeight != 0 && currentHeight > maxHeight {
 		newHeight = maxHeight
-		w.options.Height = maxHeight
 		newSize = true
 	}
 	if maxWidth != 0 && currentWidth > maxWidth {
 		newWidth = maxWidth
-		w.options.Width = maxWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MaxWidth = maxWidth
+		w.options.MaxHeight = maxHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMaxSize(maxWidth, maxHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
@@ -1230,13 +1234,32 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		if !w.constraintsSaved {
+			w.savedMinWidth = w.options.MinWidth
+			w.savedMinHeight = w.options.MinHeight
+			w.savedMaxWidth = w.options.MaxWidth
+			w.savedMaxHeight = w.options.MaxHeight
+			w.constraintsSaved = true
+		}
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
 			w.impl.setMaxSize(0, 0)
 		}
 	})
+}
+
+func (w *WebviewWindow) restoreSavedSizeConstraintOptions() bool {
+	if !w.constraintsSaved {
+		return false
+	}
+	w.options.MinWidth = w.savedMinWidth
+	w.options.MinHeight = w.savedMinHeight
+	w.options.MaxWidth = w.savedMaxWidth
+	w.options.MaxHeight = w.savedMaxHeight
+	w.constraintsSaved = false
+	return true
 }
 
 func (w *WebviewWindow) EnableSizeConstraints() {
@@ -1244,10 +1267,11 @@ func (w *WebviewWindow) EnableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		w.restoreSavedSizeConstraintOptions()
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
 			w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
 		}
 	})

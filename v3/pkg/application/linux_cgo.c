@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #include "linux_cgo.h"
 
@@ -114,12 +114,37 @@ void install_signal_handlers(void) {
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
+    // NOTE: Do NOT add SA_ONSTACK to SIGUSR1. WebKit's JavaScriptCore uses
+    // SIGUSR1 to suspend/resume threads for conservative GC stack scanning.
+    // Once JSC installs its own SIGUSR1 handler it owns the signal (Go no
+    // longer handles it), and forcing SA_ONSTACK makes that handler run on
+    // Go's alternate signal stack, breaking GC thread synchronisation and
+    // freezing WebKit during idle collection. See issue #5527.
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif
 #if defined(SIGXFSZ)
     fix_signal(SIGXFSZ);
 #endif
+}
+
+// WebKit's JSC lazily installs signal handlers without SA_ONSTACK when
+// JavaScript first executes. This timer re-applies the fix every 50ms
+// for the first 5 seconds, covering the JSC initialization window.
+static gboolean install_signal_handlers_timeout(gpointer data) {
+    install_signal_handlers();
+    int *remaining = (int *)data;
+    (*remaining)--;
+    if (*remaining <= 0) {
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
+
+void schedule_signal_handler_fix(void) {
+    int *remaining = (int *)g_malloc(sizeof(int));
+    *remaining = 100;
+    g_timeout_add_full(G_PRIORITY_DEFAULT, 50, install_signal_handlers_timeout, remaining, g_free);
 }
 
 // ============================================================================
@@ -148,6 +173,18 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager) {
 
 void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
     g_signal_connect(widget, event, cb, (gpointer)data);
+}
+
+int is_user_media_permission_request(WebKitPermissionRequest *request) {
+    return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
+}
+
+int is_user_media_for_audio(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+int is_user_media_for_video(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
 }
 
 // ============================================================================
@@ -330,6 +367,32 @@ void menu_remove_item(GMenu *menu, gint position) {
 
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item) {
     g_menu_insert_item(menu, position, item);
+}
+
+static void on_context_menu_closed(GtkPopover *popover, gpointer user_data) {
+    // Unparent on the next main loop iteration so the popover finishes
+    // its close animation/cleanup before being removed from the widget tree.
+    g_idle_add_once((GSourceOnceFunc)gtk_widget_unparent, GTK_WIDGET(popover));
+}
+
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y) {
+    init_app_action_group();
+
+    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu_model));
+    gtk_widget_set_parent(popover, parent);
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+    gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+    // Ensure the menu actions resolve even if the parent's hierarchy does not
+    // already expose the "app" action group.
+    gtk_widget_insert_action_group(popover, "app", G_ACTION_GROUP(app_action_group));
+
+    GdkRectangle rect = { .x = x, .y = y, .width = 1, .height = 1 };
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+
+    g_signal_connect(popover, "closed", G_CALLBACK(on_context_menu_closed), NULL);
+
+    gtk_popover_popup(GTK_POPOVER(popover));
 }
 
 // ============================================================================

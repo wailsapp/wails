@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #ifndef LINUX_CGO_H
 #define LINUX_CGO_H
@@ -56,6 +56,7 @@ extern void handleNotifyState(GObject*, GParamSpec*, uintptr_t);
 extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
 extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
+extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
 extern void handleButtonPressed(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern void handleButtonReleased(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern gboolean handleKeyPressed(GtkEventControllerKey*, guint, guint, GdkModifierType, uintptr_t);
@@ -72,6 +73,12 @@ extern void onDropFiles(char**, gint, gint, uintptr_t);
 // Forward declaration for activate callback
 void activateLinux(gpointer data);
 
+// Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
+int is_user_media_permission_request(WebKitPermissionRequest *request);
+// Whether a user-media request needs the microphone / camera respectively.
+int is_user_media_for_audio(WebKitPermissionRequest *request);
+int is_user_media_for_video(WebKitPermissionRequest *request);
+
 // ============================================================================
 // Main thread dispatch
 // ============================================================================
@@ -83,6 +90,7 @@ void dispatchOnMainThread(unsigned int id);
 // ============================================================================
 
 void install_signal_handlers(void);
+void schedule_signal_handler_fix(void);
 
 // ============================================================================
 // Object data helpers
@@ -125,6 +133,7 @@ void set_action_state(const char *action_name, gboolean state);
 gboolean get_action_state(const char *action_name);
 void menu_remove_item(GMenu *menu, gint position);
 void menu_insert_item(GMenu *menu, gint position, GMenuItem *item);
+void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y);
 
 // ============================================================================
 // Window event controllers (GTK4 style)

@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
@@ -12,6 +13,13 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   site: "https://v3.wails.io",
+  vite: {
+    resolve: {
+      alias: {
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url))
+      }
+    }
+  },
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",
@@ -188,6 +196,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
@@ -282,6 +291,19 @@ export default defineConfig({
           ],
         },
 
+        // Mobile
+        {
+          label: "Mobile",
+          collapsed: true,
+          badge: { text: "Experimental", variant: "caution" },
+          items: [
+            { label: "Overview", link: "/guides/mobile" },
+            { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
+            { label: "iOS", link: "/guides/mobile/ios" },
+            { label: "Android", link: "/guides/mobile/android" },
+          ],
+        },
+
         // Guides - Task-oriented patterns (Netflix: When to use it, when not to use it)
         {
           label: "Guides",
@@ -293,6 +315,7 @@ export default defineConfig({
               items: [
                 { label: "Project Structure", link: "/guides/dev/project-structure" },
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
+                { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/dev/testing" },
               ],
