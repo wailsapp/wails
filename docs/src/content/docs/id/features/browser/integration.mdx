@@ -1,0 +1,511 @@
+---
+title: Integrasi Browser
+description: Buka URL dan file di browser web default pengguna
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails menyediakan integrasi browser sederhana melalui API BrowserManager, memungkinkan aplikasi Anda membuka URL dan file di browser web default pengguna. Ini berguna untuk membuka tautan eksternal, dokumentasi, atau file yang seharusnya ditangani oleh browser.
+
+## Mengakses Browser Manager
+
+Browser manager diakses melalui properti `Browser` pada instance aplikasi Anda:
+
+```go
+app := application.New(application.Options{
+    Name: "Browser Integration Demo",
+})
+
+// Access the browser manager
+browser := app.Browser
+```
+
+## Membuka URL
+
+### Buka URL Web
+
+Buka URL di browser web default pengguna:
+
+```go
+// Open a website
+err := app.Browser.OpenURL("https://wails.io")
+if err != nil {
+    app.Logger.Error("Failed to open URL", "error", err)
+}
+
+// Open specific pages
+err = app.Browser.OpenURL("https://github.com/wailsapp/wails")
+if err != nil {
+    app.Logger.Error("Failed to open GitHub", "error", err)
+}
+```
+
+### Buka URL Lokal
+
+Buka server development lokal atau resource jaringan lokal:
+
+```go
+// Open local development server
+err := app.Browser.OpenURL("http://localhost:3000")
+if err != nil {
+    app.Logger.Error("Failed to open local server", "error", err)
+}
+
+// Open network resource
+err = app.Browser.OpenURL("http://192.168.1.100:8080")
+if err != nil {
+    app.Logger.Error("Failed to open network resource", "error", err)
+}
+```
+
+## Membuka File
+
+### Buka File HTML
+
+Buka file HTML lokal di browser:
+
+```go
+// Open an HTML file
+err := app.Browser.OpenFile("/path/to/documentation.html")
+if err != nil {
+    app.Logger.Error("Failed to open HTML file", "error", err)
+}
+
+// Open generated reports
+reportPath := "/tmp/report.html"
+err = app.Browser.OpenFile(reportPath)
+if err != nil {
+    app.Logger.Error("Failed to open report", "error", err)
+}
+```
+
+### Buka Tipe File Lain
+
+Buka berbagai tipe file yang dapat ditangani browser:
+
+```go
+// Open PDF files
+err := app.Browser.OpenFile("/path/to/document.pdf")
+if err != nil {
+    app.Logger.Error("Failed to open PDF", "error", err)
+}
+
+// Open image files
+err = app.Browser.OpenFile("/path/to/image.png")
+if err != nil {
+    app.Logger.Error("Failed to open image", "error", err)
+}
+
+// Open text files
+err = app.Browser.OpenFile("/path/to/readme.txt")
+if err != nil {
+    app.Logger.Error("Failed to open text file", "error", err)
+}
+```
+
+## Kasus Penggunaan Umum
+
+### Bantuan dan Dokumentasi
+
+Sediakan akses mudah ke resource bantuan:
+
+```go
+// Create help menu
+func setupHelpMenu(app *application.App) {
+    menu := app.Menu.New()
+    helpMenu := menu.AddSubmenu("Help")
+    
+    helpMenu.Add("Online Documentation").OnClick(func(ctx *application.Context) {
+        err := app.Browser.OpenURL("https://docs.yourapp.com")
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Error").
+                SetMessage("Could not open documentation").
+                Show()
+        }
+    })
+    
+    helpMenu.Add("GitHub Repository").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    helpMenu.Add("Report Issue").OnClick(func(ctx *application.Context) {
+        app.Browser.OpenURL("https://github.com/youruser/yourapp/issues/new")
+    })
+}
+```
+
+### Tautan Eksternal dalam Konten
+
+Tangani tautan eksternal dari konten aplikasi Anda:
+
+```go
+func handleExternalLink(app *application.App, url string) {
+    // Validate the URL before opening
+    if !isValidURL(url) {
+        app.Logger.Warn("Invalid URL", "url", url)
+        return
+    }
+    
+    // Optionally confirm with user
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        err := app.Browser.OpenURL(url)
+        if err != nil {
+            app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func isValidURL(url string) bool {
+    parsed, err := url.Parse(url)
+    return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
+}
+```
+
+### Ekspor dan Lihat Laporan
+
+Buat dan buka laporan di browser:
+
+```go
+import (
+    "html/template"
+    "os"
+    "path/filepath"
+)
+
+func generateAndOpenReport(app *application.App, data interface{}) error {
+    // Create temporary file for the report
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "report.html")
+    
+    // Generate HTML report
+    tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Application Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .data { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>Generated: {{.Timestamp}}</p>
+    </div>
+    <div class="data">
+        <!-- Report content here -->
+        {{range .Items}}
+        <p>{{.}}</p>
+        {{end}}
+    </div>
+</body>
+</html>`
+    
+    // Write report to file
+    file, err := os.Create(reportPath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    t, err := template.New("report").Parse(tmpl)
+    if err != nil {
+        return err
+    }
+    
+    err = t.Execute(file, data)
+    if err != nil {
+        return err
+    }
+    
+    // Open in browser
+    return app.Browser.OpenFile(reportPath)
+}
+```
+
+### Alat Development
+
+Buka resource development selama development:
+
+```go
+func setupDevelopmentMenu(app *application.App) {
+    if !app.Env.Info().Debug {
+        return // Only show in debug mode
+    }
+    
+    menu := app.Menu.New()
+    devMenu := menu.AddSubmenu("Development")
+    
+    devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
+        // This would open browser devtools if available
+        window := app.Window.Current()
+        if window != nil {
+            window.OpenDevTools()
+        }
+    })
+    
+    devMenu.Add("View Source").OnClick(func(ctx *application.Context) {
+        // Open source code repository
+        app.Browser.OpenURL("https://github.com/youruser/yourapp")
+    })
+    
+    devMenu.Add("API Documentation").OnClick(func(ctx *application.Context) {
+        // Open local API docs
+        app.Browser.OpenURL("http://localhost:8080/docs")
+    })
+}
+```
+
+## Penanganan Error
+
+### Penanganan Error yang Graceful
+
+Selalu tangani error potensial saat membuka URL atau file:
+
+```go
+func openURLWithFallback(app *application.App, url string, fallbackMessage string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        app.Logger.Error("Failed to open URL", "url", url, "error", err)
+        
+        // Show fallback dialog with URL
+        dialog := app.Dialog.Info()
+        dialog.SetTitle("Unable to Open Link")
+        dialog.SetMessage(fmt.Sprintf("%s\n\nURL: %s", fallbackMessage, url))
+        dialog.Show()
+    }
+}
+
+// Usage
+openURLWithFallback(app, 
+    "https://docs.example.com", 
+    "Please open the following URL manually in your browser:")
+```
+
+### Umpan Balik Pengguna
+
+Berikan umpan balik saat operasi berhasil atau gagal:
+
+```go
+func openURLWithFeedback(app *application.App, url string) {
+    err := app.Browser.OpenURL(url)
+    if err != nil {
+        // Show error dialog
+        app.Dialog.Error().
+            SetTitle("Browser Error").
+            SetMessage(fmt.Sprintf("Could not open URL: %s", err.Error())).
+            Show()
+    } else {
+        // Optionally show success notification
+        app.Logger.Info("URL opened successfully", "url", url)
+    }
+}
+```
+
+## Pertimbangan Platform
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Di macOS:
+    
+    - Menggunakan perintah `open` untuk meluncurkan browser default
+    - Menghormati pengaturan browser default pengguna di System Preferences
+    - Dapat meminta permission jika aplikasi di-sandbox
+    - Menangani URL `file://` dengan benar untuk file lokal
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Di Windows:
+    
+    - Menggunakan Windows Shell API untuk membuka URL
+    - Menghormati pengaturan browser default di Windows Settings
+    - Menangani format path Windows dengan benar
+    - Dapat menampilkan peringatan keamanan untuk URL tidak tepercaya
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Di Linux:
+    
+    - Mencoba menggunakan `xdg-open` terlebih dahulu, fallback ke metode lain
+    - Perilaku bervariasi menurut desktop environment
+    - Menghormati variabel environment `BROWSER` jika disetel
+    - Dapat memerlukan paket tambahan di instalasi minimal
+    
+  </TabItem>
+</Tabs>
+
+## Praktik Terbaik
+
+1. **Selalu Tangani Error**: Operasi browser dapat gagal karena berbagai alasan:
+   ```go
+   if err := app.Browser.OpenURL(url); err != nil {
+       app.Logger.Error("Failed to open browser", "error", err)
+       // Provide fallback or user notification
+   }
+   ```
+
+2. **Validasi URL**: Pastikan URL well-formed sebelum membuka:
+   ```go
+   func isValidHTTPURL(str string) bool {
+       u, err := url.Parse(str)
+       return err == nil && (u.Scheme == "http" || u.Scheme == "https")
+   }
+   ```
+
+3. **Konfirmasi Pengguna**: Untuk tautan eksternal, pertimbangkan meminta izin pengguna:
+   ```go
+   // Show confirmation dialog before opening external links
+   confirmAndOpen(app, "https://external-site.com")
+   ```
+
+4. **Path File Aman**: Saat membuka file, pastikan path aman:
+   ```go
+   func openSafeFile(app *application.App, filename string) error {
+       // Ensure file exists and is readable
+       if _, err := os.Stat(filename); err != nil {
+           return err
+       }
+       return app.Browser.OpenFile(filename)
+   }
+   ```
+
+## Contoh Lengkap
+
+Berikut contoh lengkap yang menunjukkan berbagai pola integrasi browser:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Browser Integration Demo",
+    })
+
+    // Setup menu with browser actions
+    setupMenu(app)
+
+    // Create main window
+    window := app.Window.New()
+    window.SetTitle("Browser Integration")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func setupMenu(app *application.App) {
+    menu := app.Menu.New()
+    
+    // File menu
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("Generate Report").OnClick(func(ctx *application.Context) {
+        generateHTMLReport(app)
+    })
+    
+    // Help menu
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://docs.example.com")
+    })
+    helpMenu.Add("Support").OnClick(func(ctx *application.Context) {
+        openWithConfirmation(app, "https://support.example.com")
+    })
+    
+    app.Menu.Set(menu)
+}
+
+func openWithConfirmation(app *application.App, url string) {
+    dialog := app.Dialog.Question()
+    dialog.SetTitle("Open External Link")
+    dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
+    
+    dialog.AddButton("Open").OnClick(func() {
+        if err := app.Browser.OpenURL(url); err != nil {
+            showError(app, "Failed to open URL", err)
+        }
+    })
+    
+    dialog.AddButton("Cancel")
+    dialog.Show()
+}
+
+func generateHTMLReport(app *application.App) {
+    // Create temporary HTML file
+    tmpDir := os.TempDir()
+    reportPath := filepath.Join(tmpDir, "demo_report.html")
+    
+    html := `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { color: #333; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Application Report</h1>
+        <p>This is a sample report generated by the application.</p>
+    </div>
+    <div class="content">
+        <h2>Report Details</h2>
+        <p>This report was generated to demonstrate browser integration.</p>
+    </div>
+</body>
+</html>`
+    
+    err := os.WriteFile(reportPath, []byte(html), 0644)
+    if err != nil {
+        showError(app, "Failed to create report", err)
+        return
+    }
+    
+    // Open in browser
+    err = app.Browser.OpenFile(reportPath)
+    if err != nil {
+        showError(app, "Failed to open report", err)
+    }
+}
+
+func showError(app *application.App, message string, err error) {
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage(fmt.Sprintf("%s: %v", message, err)).
+        Show()
+}
+```
+
+:::tip[Pro Tip]
+Pertimbangkan menyediakan mekanisme fallback saat operasi browser gagal, seperti menyalin URL ke clipboard atau menampilkannya di dialog untuk dibuka manual.
+:::
+
+:::danger[Peringatan]
+Selalu validasi URL dan path file sebelum membukanya untuk mencegah masalah keamanan. Berhati-hatilah membuka URL dari pengguna tanpa validasi.
+:::

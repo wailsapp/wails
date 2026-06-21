@@ -1,0 +1,205 @@
+---
+title: Ikhtisar
+description: Temukan aplikasi yang dibangun dengan Wails
+sidebar:
+  order: 1
+---
+
+import { ShowcaseImage } from "starlight-showcases";
+import { Steps } from "@astrojs/starlight/components";
+
+:::tip[Lihat cara menambahkan proyek Anda]
+
+Lihat bagian
+[Cara menambahkan proyek saya di showcase](#cara-menambahkan-proyek-saya-di-showcase).
+
+:::
+
+<ShowcaseImage
+  entries={[
+    {
+      thumbnail: import("../../../../../assets/showcase-images/bboard.webp"),
+      href: "/id/community/showcase/bulletinboard",
+      title: "BulletinBoard",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/cfntracker.webp"),
+      href: "/id/community/showcase/cfntracker",
+      title: "CFN Tracker",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/clave.png"),
+      href: "/id/community/showcase/clave",
+      title: "Clave",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/emailit.webp"),
+      href: "/id/community/showcase/emailit",
+      title: "EmailIt",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/encrypteasy.webp"),
+      href: "/id/community/showcase/encrypteasy",
+      title: "EncryptEasy",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/esp-studio.png"),
+      href: "/id/community/showcase/espstudio",
+      title: "ESP Studio",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/filehound.webp"),
+      href: "/id/community/showcase/filehound",
+      title: "FileHound Export Utility",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/hiposter.webp"),
+      href: "/id/community/showcase/hiposter",
+      title: "hiposter",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/ltools.webp"),
+      href: "/id/community/showcase/ltools",
+      title: "LTools",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/mchat.png"),
+      href: "/id/community/showcase/mchat",
+      title: "Mchat",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/minecraft-mod-updater.webp"
+      ),
+      href: "/id/community/showcase/minecraftupdater",
+      title: "Minecraft Updater",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/minesweeper-xp.webp"
+      ),
+      href: "/id/community/showcase/minesweeper-xp",
+      title: "Minesweeper XP",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/modalfilemanager.webp"
+      ),
+      href: "/id/community/showcase/modalfilemanager",
+      title: "Modal File Manager",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/mollywallet.webp"),
+      href: "/id/community/showcase/mollywallet",
+      title: "Molly Wallet",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/october.webp"),
+      href: "/id/community/showcase/october",
+      title: "October",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/optimus.webp"),
+      href: "/id/community/showcase/optimus",
+      title: "Optimus",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/portfall.webp"),
+      href: "/id/community/showcase/portfall",
+      title: "Portfall",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/resizem.webp"),
+      href: "/id/community/showcase/resizem",
+      title: "Resizem",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/restic-browser-2.png"
+      ),
+      href: "/id/community/showcase/restic-browser",
+      title: "Restic Browser",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/riftshare-main.webp"
+      ),
+      href: "/id/community/showcase/riftshare",
+      title: "RiftShare",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/scriptbar.webp"),
+      href: "/id/community/showcase/scriptbar",
+      title: "ScriptBar",
+    },
+    {
+      thumbnail: import(
+        "../../../../../assets/showcase-images/snippetexpandergui-search-and-paste.png"
+      ),
+      href: "/id/community/showcase/snippetexpander",
+      title: "Snippet Expander",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/surge.png"),
+      href: "/id/community/showcase/surge",
+      title: "Surge",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/tiny-rdm1.webp"),
+      href: "/id/community/showcase/tinyrdm",
+      title: "Tiny RDM",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/wailsterm.webp"),
+      href: "/id/community/showcase/wailsterm",
+      title: "WailsTerm",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/wally.webp"),
+      href: "/id/community/showcase/wally",
+      title: "Wally",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/warmine1.png"),
+      href: "/id/community/showcase/warmine",
+      title: "WarMine",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/wombat.webp"),
+      href: "/id/community/showcase/wombat",
+      title: "Wombat",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/xensql-1.png"),
+      href: "/id/community/showcase/xensql",
+      title: "XenSQL",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/ytd.webp"),
+      href: "/id/community/showcase/ytd",
+      title: "Ytd",
+    },
+    {
+      thumbnail: import("../../../../../assets/showcase-images/packsmith-logo.webp"),
+      href: "/id/community/showcase/packsmith",
+      title: "Packsmith",
+    }
+  ]}
+/>
+
+## Cara menambahkan proyek saya di showcase
+
+<Steps>
+
+1. Fork repositori.
+2. Tambahkan gambar di folder `docs/src/assets/showcase-images`.
+3. Salin file `_template.md` di folder
+   `docs/src/content/docs/community/showcase`.
+4. Rename file yang disalin ke nama proyek Anda. (Nama tidak boleh diawali
+   dengan `_`)
+5. Perbarui title, image, link dan konten file.
+6. Tambahkan ke daftar di atas di
+   `docs/src/content/docs/community/showcase/index.mdx`.
+7. Kirim PR.
+
+</Steps>

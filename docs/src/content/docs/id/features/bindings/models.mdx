@@ -1,0 +1,732 @@
+---
+title: Model Data
+description: Bind struktur data kompleks antara Go dan JavaScript
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Binding Model Data
+
+Wails **secara otomatis menghasilkan class JavaScript/TypeScript** dari struct Go, memberikan type safety penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan binding, dan dapatkan model frontend bertipe penuh lengkap dengan constructor, anotasi tipe, dan komentar JSDoc.
+
+## Memulai Cepat
+
+**Struct Go:**
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+func (s *UserService) GetUser(id int) (*User, error) {
+    // Return user
+}
+```
+
+**Hasilkan:**
+
+```bash
+wails3 generate bindings
+```
+
+**JavaScript:**
+
+```javascript
+import { GetUser } from './bindings/changeme/userservice'
+import { User } from './bindings/changeme/models'
+
+const user = await GetUser(1)
+console.log(user.Name)  // Type-safe!
+```
+
+**Itu saja!** Type safety penuh melintasi bridge.
+
+## Mendefinisikan Model
+
+### Struct Dasar
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+export class Person {
+    /** @type {string} */
+    Name = ""
+    
+    /** @type {number} */
+    Age = 0
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source = {}) {
+        return new Person(source)
+    }
+}
+```
+
+### Dengan Tag JSON
+
+```go
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string} */
+    email = ""
+    
+    /** @type {Date} */
+    createdAt = new Date()
+    
+    constructor(source = {}) {
+        Object.assign(this, source)
+    }
+}
+```
+
+**Tag JSON mengontrol nama field** di JavaScript.
+
+### Dengan Komentar
+
+```go
+// User represents an application user
+type User struct {
+    // Unique identifier
+    ID int `json:"id"`
+    
+    // Full name of the user
+    Name string `json:"name"`
+    
+    // Email address (must be unique)
+    Email string `json:"email"`
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     * @type {number}
+     */
+    id = 0
+    
+    /**
+     * Full name of the user
+     * @type {string}
+     */
+    name = ""
+    
+    /**
+     * Email address (must be unique)
+     * @type {string}
+     */
+    email = ""
+}
+```
+
+**Komentar menjadi JSDoc!** IDE Anda menampilkannya.
+
+### Struct Bersarang
+
+```go
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Address Address `json:"address"`
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+export class Address {
+    /** @type {string} */
+    street = ""
+    
+    /** @type {string} */
+    city = ""
+    
+    /** @type {string} */
+    country = ""
+}
+
+export class User {
+    /** @type {number} */
+    id = 0
+    
+    /** @type {string} */
+    name = ""
+    
+    /** @type {Address} */
+    address = new Address()
+}
+```
+
+**Penggunaan:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    address: new Address({
+        street: "123 Main St",
+        city: "Springfield",
+        country: "USA"
+    })
+})
+```
+
+### Array dan Slice
+
+```go
+type Team struct {
+    Name    string   `json:"name"`
+    Members []string `json:"members"`
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+export class Team {
+    /** @type {string} */
+    name = ""
+    
+    /** @type {string[]} */
+    members = []
+}
+```
+
+**Penggunaan:**
+
+```javascript
+const team = new Team({
+    name: "Engineering",
+    members: ["Alice", "Bob", "Charlie"]
+})
+```
+
+### Map
+
+```go
+type Config struct {
+    Settings map[string]string `json:"settings"`
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+export class Config {
+    /** @type {Record<string, string>} */
+    settings = {}
+}
+```
+
+**Penggunaan:**
+
+```javascript
+const config = new Config({
+    settings: {
+        theme: "dark",
+        language: "en"
+    }
+})
+```
+
+## Pemetaan Tipe
+
+### Tipe Primitif
+
+| Tipe Go                                       | JavaScript/TypeScript |
+|-----------------------------------------------|-----------------------|
+| `string`                                      | `string`              |
+| `bool`                                        | `boolean`             |
+| `int`, `int8`, `int16`, `int32`, `int64`      | `number`              |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number`              |
+| `float32`, `float64`                          | `number`              |
+| `byte`                                        | `number`              |
+| `rune`                                        | `number`              |
+
+### Tipe Kompleks
+
+| Tipe Go               | JavaScript/TypeScript | Catatan                                                           |
+|-----------------------|-----------------------|-----------------------------------------------------------------|
+| `[]T`                 | `T[]`                 | -                                                               |
+| `[N]T`                | `T[]`                 | -                                                               |
+| `map[string]T`        | `{ [_: string]: T }`  | map dengan key string                                                |
+| `map[K]V`             | `{ [_ in K]?: V }`    | `K` non-string dirender sebagai mapped type, **bukan** JS `Map` |
+| `[]byte`              | `string`              | base64-encoded                                                  |
+| `struct`              | `class` / `interface` | dengan field                                                     |
+| `time.Time`           | `any`                 | diserialisasi sebagai string RFC3339Nano di runtime                     |
+| `*T`                  | `T \| null`           | pointer berarti nullable                                          |
+| `any` / `interface{}` | `any`                 | -                                                               |
+| `error`               | `any` / `Exception`   | Exception jika sebagai nilai return, selain itu any                           |
+
+### Tipe yang Tidak Didukung
+
+- `chan T` (channel)
+- `func()` (fungsi)
+- Interface kompleks (kecuali `interface{}`)
+- Field tidak diekspor (lowercase)
+
+## Menggunakan Model
+
+### Membuat Instance
+
+```javascript
+import { User } from './bindings/changeme/models'
+
+// Instance kosong
+const user1 = new User()
+
+// Dengan data
+const user2 = new User({
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com"
+})
+
+// Dari string JSON
+const user3 = User.createFrom('{"id":1,"name":"Alice"}')
+
+// Dari object
+const user4 = User.createFrom({ id: 1, name: "Alice" })
+```
+
+### Meneruskan ke Go
+
+```javascript
+import { CreateUser } from './bindings/changeme/userservice'
+import { User } from './bindings/changeme/models'
+
+const user = new User({
+    name: "Bob",
+    email: "bob@example.com"
+})
+
+const created = await CreateUser(user)
+console.log("Created user:", created.id)
+```
+
+### Menerima dari Go
+
+```javascript
+import { GetUser } from './bindings/changeme/userservice'
+
+const user = await GetUser(1)
+
+// user sudah instance User
+console.log(user.name)
+console.log(user.email)
+console.log(user.createdAt.toISOString())
+```
+
+### Memperbarui Model
+
+```javascript
+import { GetUser, UpdateUser } from './bindings/changeme/userservice'
+
+// Ambil user
+const user = await GetUser(1)
+
+// Modifikasi
+user.name = "Alice Smith"
+user.email = "alice.smith@example.com"
+
+// Simpan
+await UpdateUser(user)
+```
+
+## Dukungan TypeScript
+
+### TypeScript yang Dihasilkan
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Yang Dihasilkan:**
+
+```typescript
+/**
+ * User represents an application user
+ */
+export class User {
+    /**
+     * Unique identifier
+     */
+    id: number = 0
+    
+    /**
+     * Full name of the user
+     */
+    name: string = ""
+    
+    /**
+     * Email address (must be unique)
+     */
+    email: string = ""
+    
+    /**
+     * Account creation date
+     */
+    createdAt: Date = new Date()
+    
+    constructor(source: Partial<User> = {}) {
+        Object.assign(this, source)
+    }
+    
+    static createFrom(source: string | Partial<User> = {}): User {
+        const parsedSource = typeof source === 'string' 
+            ? JSON.parse(source) 
+            : source
+        return new User(parsedSource)
+    }
+}
+```
+
+### Penggunaan di TypeScript
+
+```typescript
+import { GetUser, CreateUser } from './bindings/changeme/userservice'
+import { User } from './bindings/changeme/models'
+
+async function example() {
+    // Buat user
+    const newUser = new User({
+        name: "Alice",
+        email: "alice@example.com"
+    })
+    
+    const created: User = await CreateUser(newUser)
+    
+    // Ambil user
+    const user: User = await GetUser(created.id)
+    
+    // Akses type-safe
+    console.log(user.name.toUpperCase())  // ✅ string method
+    console.log(user.id + 1)              // ✅ number operation
+    console.log(user.createdAt.getTime()) // ✅ Date method
+}
+```
+
+## Pola Lanjutan
+
+### Field Opsional
+
+```go
+type User struct {
+    ID       int     `json:"id"`
+    Name     string  `json:"name"`
+    Nickname *string `json:"nickname,omitempty"`
+}
+```
+
+**JavaScript:**
+
+```javascript
+const user = new User({
+    id: 1,
+    name: "Alice",
+    nickname: "Ally"  // Optional
+})
+
+// Periksa apakah diset
+if (user.nickname) {
+    console.log("Nickname:", user.nickname)
+}
+```
+
+### Enum
+
+Generator binding secara otomatis mendeteksi tipe bernama Go dengan konstanta dan menghasilkan enum TypeScript atau const object JavaScript — termasuk anggota `$zero` untuk nilai nol Go dan preservasi JSDoc penuh.
+
+```go
+type UserRole string
+
+const (
+    RoleAdmin UserRole = "admin"
+    RoleUser  UserRole = "user"
+    RoleGuest UserRole = "guest"
+)
+```
+
+**TypeScript yang Dihasilkan:**
+
+```typescript
+export enum UserRole {
+    $zero = "",
+    RoleAdmin = "admin",
+    RoleUser = "user",
+    RoleGuest = "guest",
+}
+```
+
+**Penggunaan:**
+
+```javascript
+import { User, UserRole } from './bindings/changeme/models'
+
+const admin = new User({
+    name: "Admin",
+    role: UserRole.RoleAdmin
+})
+```
+
+Untuk cakupan lengkap enum string, enum integer, type alias, enum paket yang diimpor, dan keterbatasan, lihat halaman khusus **[Enum](/id/features/bindings/enums)**.
+
+### Validasi
+
+```javascript
+class User {
+    validate() {
+        if (!this.name) {
+            throw new Error("Name is required")
+        }
+        if (!this.email.includes('@')) {
+            throw new Error("Invalid email")
+        }
+        return true
+    }
+}
+
+// Gunakan
+const user = new User({ name: "Alice", email: "alice@example.com" })
+user.validate()  // ✅
+
+const invalid = new User({ name: "", email: "invalid" })
+invalid.validate()  // ❌ Throws
+```
+
+### Serialisasi
+
+```javascript
+// Ke JSON
+const json = JSON.stringify(user)
+
+// Dari JSON
+const user = User.createFrom(json)
+
+// Ke plain object
+const obj = { ...user }
+
+// Dari plain object
+const user2 = new User(obj)
+```
+
+## Contoh Lengkap
+
+**Go:**
+
+```go
+package main
+
+import (
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type Address struct {
+    Street  string `json:"street"`
+    City    string `json:"city"`
+    Country string `json:"country"`
+}
+
+type User struct {
+    ID        int       `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    Address   Address   `json:"address"`
+    CreatedAt time.Time `json:"createdAt"`
+}
+
+type UserService struct {
+    users []User
+}
+
+func (s *UserService) GetAll() []User {
+    return s.users
+}
+
+func (s *UserService) GetByID(id int) (*User, error) {
+    for _, user := range s.users {
+        if user.ID == id {
+            return &user, nil
+        }
+    }
+    return nil, fmt.Errorf("user %d not found", id)
+}
+
+func (s *UserService) Create(user User) User {
+    user.ID = len(s.users) + 1
+    user.CreatedAt = time.Now()
+    s.users = append(s.users, user)
+    return user
+}
+
+func (s *UserService) Update(user User) error {
+    for i, u := range s.users {
+        if u.ID == user.ID {
+            s.users[i] = user
+            return nil
+        }
+    }
+    return fmt.Errorf("user %d not found", user.ID)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(&UserService{}),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { GetAll, GetByID, Create, Update } from './bindings/changeme/userservice'
+import { User, Address } from './bindings/changeme/models'
+
+class UserManager {
+    async loadUsers() {
+        const users = await GetAll()
+        this.renderUsers(users)
+    }
+    
+    async createUser(name, email, address) {
+        const user = new User({
+            name,
+            email,
+            address: new Address(address)
+        })
+        
+        try {
+            const created = await Create(user)
+            console.log("Created user:", created.id)
+            this.loadUsers()
+        } catch (error) {
+            console.error("Failed to create user:", error)
+        }
+    }
+    
+    async updateUser(id, updates) {
+        try {
+            const user = await GetByID(id)
+            Object.assign(user, updates)
+            await Update(user)
+            this.loadUsers()
+        } catch (error) {
+            console.error("Failed to update user:", error)
+        }
+    }
+    
+    renderUsers(users) {
+        const list = document.getElementById('users')
+        list.innerHTML = users.map(user => `
+            <div class="user">
+                <h3>${user.name}</h3>
+                <p>${user.email}</p>
+                <p>${user.address.city}, ${user.address.country}</p>
+                <small>Created: ${user.createdAt.toLocaleDateString()}</small>
+            </div>
+        `).join('')
+    }
+}
+
+const manager = new UserManager()
+manager.loadUsers()
+```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- **Gunakan tag JSON** - Kontrol nama field
+- **Tambahkan komentar** - Menjadi JSDoc
+- **Gunakan time.Time** - Dikonversi ke Date
+- **Validasi di sisi Go** - Jangan percaya frontend
+- **Jaga model sederhana** - Hanya sebagai container data
+- **Gunakan pointer untuk opsional** - `*string` untuk nullable
+
+### ❌ Jangan
+
+- **Jangan tambahkan metode ke struct Go** - Jaga sebagai data
+- **Jangan gunakan field tidak diekspor** - Tidak akan ter-bind
+- **Jangan gunakan interface kompleks** - Tidak didukung
+- **Jangan lupa tag JSON** - Nama field penting
+- **Jangan nest terlalu dalam** - Jaga tetap sederhana
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Binding Metode" icon="rocket">
+    Pelajari cara bind metode Go.
+    
+    [Pelajari Lebih Lanjut →](/id/features/bindings/methods)
+  </Card>
+
+  <Card title="Services" icon="puzzle">
+    Atur kode dengan service.
+    
+    [Pelajari Lebih Lanjut →](/id/features/bindings/services)
+  </Card>
+
+  <Card title="Praktik Terbaik" icon="approve-check">
+    Pola desain binding.
+    
+    [Pelajari Lebih Lanjut →](/id/features/bindings/best-practices)
+  </Card>
+
+  <Card title="Bridge Go-Frontend" icon="star">
+    Pahami mekanisme bridge.
+    
+    [Pelajari Lebih Lanjut →](/id/concepts/bridge)
+  </Card>
+</CardGrid>
+
+---
+
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

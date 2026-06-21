@@ -364,7 +364,7 @@ app := application.New(application.Options{
 
 Wails menyediakan sistem event yang memberi tahu Anda ketika sesuatu terjadi di aplikasi—window terbuka, aplikasi dimulai, perubahan tema, dan lainnya. Anda dapat mendengarkan event ini untuk bereaksi terhadap perubahan siklus hidup tanpa memblokir atau mencegatnya.
 
-Untuk event window, Anda juga dapat menggunakan `RegisterHook` alih-alih `OnWindowEvent` untuk mencegat dan membatalkan aksi—misalnya, mencegah window ditutup. Lihat [Window Hooks](#window-hooks-event-yang-dapat-dibatalkan) di bawah.
+Untuk event window, Anda juga dapat menggunakan `RegisterHook` alih-alih `OnWindowEvent` untuk mencegat dan membatalkan aksi—misalnya, mencegah window ditutup. Lihat [Window Hook](#window-hooks-event-yang-dapat-dibatalkan) di bawah.
 
 Untuk dokumentasi lengkap tentang sistem event, lihat [Panduan Event](/id/features/events/system).
 
@@ -412,7 +412,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-### Window Hooks (Event yang Dapat Dibatalkan)
+### Window Hook (Event yang Dapat Dibatalkan)
 
 Gunakan `RegisterHook` alih-alih `OnWindowEvent` ketika Anda perlu **membatalkan** event:
 

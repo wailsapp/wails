@@ -1,0 +1,293 @@
+---
+title: Referensi API
+description: Dokumentasi API lengkap untuk Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Tentang Referensi Ini
+
+Ini adalah referensi API lengkap untuk Wails v3. Dokumen ini mendokumentasikan setiap tipe, metode, dan opsi publik yang tersedia di framework.
+
+**Organisasi:**
+- [Application](/id/reference/application) - API inti aplikasi
+- [Window](/id/reference/window) - Pembuatan dan pengelolaan window
+- [Menu](/id/reference/menu) - Menu aplikasi, konteks, dan system tray
+- [Events](/id/reference/events) - Sistem event dan event bawaan
+- [Dialogs](/id/reference/dialogs) - Dialog file dan pesan
+- [Frontend Runtime](/id/reference/frontend-runtime) - API frontend runtime
+- [CLI](/id/reference/cli) - Antarmuka baris perintah
+
+## Konvensi API
+
+<details>
+<summary><strong>Konvensi API Go</strong> - Untuk pengembang yang baru mengenal Go</summary>
+
+#### Penamaan
+
+- **Tipe**: PascalCase (mis., `WebviewWindow`)
+- **Metode**: PascalCase (mis., `SetTitle()`)
+- **Opsi**: Struct PascalCase (mis., `WindowOptions`)
+- **Konstanta**: PascalCase (mis., `WindowStartStateMaximised`)
+
+#### Penanganan Error
+
+Sebagian besar metode yang dapat gagal mengembalikan `error` sebagai nilai kembalian terakhir. `app.Run()` memblokir hingga aplikasi keluar dan mengembalikan error startup jika ada:
+
+```go
+if err := app.Run(); err != nil {
+    log.Fatal(err)
+}
+```
+
+Konstruksi window tidak mengembalikan error — `app.Window.New()` mengembalikan `*WebviewWindow` secara langsung.
+
+#### Context
+
+Metode lifecycle service menerima `context.Context`:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // ctx dibatalkan saat aplikasi sedang dimatikan.
+    return nil
+}
+```
+
+Context lifetime aplikasi tersedia melalui `app.Context()`. Tidak ada `RunWithContext` — panggil `app.Run()`.
+
+#### Pola Opsi
+
+Konfigurasi menggunakan struct opsi:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Description: "A demo application",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+})
+```
+
+</details>
+
+### Konvensi API JavaScript
+
+#### Penamaan
+
+- **Fungsi**: camelCase (mis., `setTitle()`)
+- **Konstanta**: SCREAMING_SNAKE_CASE (mis., `WINDOW_EVENT_FOCUS`)
+
+#### Async secara Default
+
+Semua pemanggilan metode Go mengembalikan Promise:
+
+```javascript
+// Async/await (direkomendasikan)
+const result = await MyService.DoSomething()
+
+// Promise chain
+MyService.DoSomething()
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+```
+
+#### Penanganan Error
+
+Error Go menjadi exception JavaScript:
+
+```javascript
+try {
+    await MyService.MightFail()
+} catch (error) {
+    console.error('Go error:', error)
+}
+```
+
+#### Type Safety
+
+Definisi TypeScript dibuat secara otomatis:
+
+```typescript
+// Sepenuhnya bertipe
+import { Greet } from './bindings/GreetService'
+
+const message: string = await Greet("World")
+```
+
+## Struktur Paket
+
+```
+github.com/wailsapp/wails/v3/pkg/
+├── application/          # Paket aplikasi inti
+│   ├── application.go    # Tipe App
+│   ├── webview_window.go # Pengelolaan window
+│   ├── menu.go           # Tipe menu
+│   ├── event_manager.go  # Sistem event
+│   └── dialogs.go        # API dialog
+├── events/               # Konstanta event
+└── services/             # Service bawaan
+    ├── dock/             # macOS dock (termasuk dukungan badge)
+    ├── fileserver/       # Service file-server
+    ├── kvstore/          # Key/value store
+    ├── log/              # Service logging terstruktur
+    ├── notifications/    # Service notifikasi
+    └── sqlite/           # Service SQLite
+```
+
+## Path Import
+
+### Go
+
+```go
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+```
+
+### JavaScript
+
+```javascript
+// Binding yang dibuat otomatis
+import { MyMethod } from './bindings/MyService'
+
+// API runtime
+import { Events, Window } from '@wailsio/runtime'
+```
+
+## Referensi Tipe
+
+### Tipe Umum
+
+<Tabs syncKey="lang">
+  <TabItem label="Go" icon="seti:go">
+    ```go
+    // Application
+    type App struct { /* ... */ }
+    type Options struct { /* ... */ }
+
+    // Window
+    type WebviewWindow struct { /* ... */ } // mengimplementasikan antarmuka Window
+    type WebviewWindowOptions struct { /* ... */ }
+
+    // Menu
+    type Menu struct { /* ... */ }
+    type MenuItem struct { /* ... */ }
+
+    // Events — tidak ada tipe Event generik; event ditentukan tipenya berdasarkan sumber.
+    type ApplicationEvent struct { /* ... */ }
+    type WindowEvent struct { /* ... */ }
+    type CustomEvent struct { /* ... */ }
+    type EventListener struct { /* ... */ }
+
+    // Dialogs
+    type OpenFileDialogOptions struct { /* ... */ }
+    type SaveFileDialogOptions struct { /* ... */ }
+    ```
+  </TabItem>
+
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // Window runtime
+    interface WindowOptions {
+        title?: string
+        width?: number
+        height?: number
+        // ...
+    }
+    
+    // Events
+    type EventCallback = (data: any) => void
+    
+    // Bindings (dibuat otomatis)
+    export function MyMethod(arg: string): Promise<string>
+    ```
+  </TabItem>
+</Tabs>
+
+## Perbedaan Platform
+
+Beberapa API berperilaku berbeda di berbagai platform:
+
+| Fitur | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| **Menu Aplikasi** | Menu bar window | Menu bar global | Menu bar window |
+| **System Tray** | Notification area | Menu bar | System tray |
+| **Dock** | N/A | ✅ Tersedia | N/A |
+| **Dialog file** | Native | Native | Native (GTK) |
+| **Transparansi** | ✅ Penuh | ✅ Penuh | ⚠️ Terbatas |
+
+Perilaku khusus platform didokumentasikan di setiap bagian API.
+
+## Versioning
+
+Wails v3 mengikuti semantic versioning:
+
+- **Major** (v3.x.x): Perubahan breaking
+- **Minor** (v3.x.x): Fitur baru, kompatibel ke belakang
+- **Patch** (v3.x.x): Perbaikan bug, kompatibel ke belakang
+
+**Status saat ini:** Alpha (API stabil, penyempurnaan berkelanjutan)
+
+## Kebijakan Deprecation
+
+Ketika API di-deprecate:
+
+1. **Ditandai di dokumentasi** dengan pemberitahuan deprecation
+2. **Alternatif disediakan** dengan panduan migrasi
+3. **Dipertahankan selama 1 versi major** sebelum dihapus
+4. **Peringatan compiler** (jika memungkinkan)
+
+## Stabilitas API
+
+### API Stabil ✅
+
+API ini stabil dan aman untuk penggunaan produksi:
+
+- API aplikasi inti
+- Pengelolaan window
+- Sistem menu
+- Sistem event
+- Dialog file
+- Service bindings
+
+### API Tidak Stabil ⚠️
+
+API ini dapat berubah sebelum rilis final:
+
+- Beberapa opsi window lanjutan
+- Fitur khusus platform
+- Fitur eksperimental
+
+API tidak stabil ditandai dalam dokumentasi.
+
+## Mendapatkan Bantuan
+
+### Pertanyaan API
+
+1. **Periksa referensi ini** - Dokumentasi API lengkap
+2. **Periksa contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+3. **Cari di Discord** - [Server Discord](https://discord.gg/JDdSxwjhGf)
+4. **Tanya komunitas** - Channel #help di Discord
+
+### Melaporkan Masalah API
+
+Menemukan bug atau inkonsistensi?
+
+1. **Periksa issue yang ada** - [GitHub issues](https://github.com/wailsapp/wails/issues)
+2. **Buat laporan detail** - Sertakan kode, error, platform
+3. **Sediakan reproduksi** - Contoh minimal yang mendemonstrasikan masalah
+
+## Dokumentasi Terkait
+
+- [Tutorial](/id/tutorials/overview) - Belajar dengan membangun aplikasi nyata
+- [Panduan](/id/guides/architecture) - Panduan berorientasi tugas untuk skenario umum
+- [Fitur](/id/features/windows/basics) - Dokumentasi fitur per fitur
+- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples) - Contoh kode yang berfungsi di GitHub
+
+---
+
+**Jelajahi API:** Gunakan navigasi di sebelah kiri untuk mengeksplorasi API tertentu.
