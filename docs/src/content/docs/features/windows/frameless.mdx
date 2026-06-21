@@ -185,7 +185,7 @@ The video below shows a custom HTML/CSS title bar using native Windows hit testi
 Wails supports two Windows-specific mechanisms:
 
 - `app-region` through WebView2's native non-client region support
-- `--wails-app-region` through Wails runtime tracking for custom caption buttons
+- `--wails-non-client-region` through Wails runtime tracking for custom caption buttons
 
 ### Choosing a Mode
 
@@ -203,7 +203,7 @@ Choose based on what you need from Windows:
 
 That is the full scope of this mode today. It does not make custom minimize, maximize, or close buttons behave like native Windows caption buttons, and it does not enable Windows 11 Snap Assist / Snap Layouts for a custom maximize button. Use it when you need simple native app dragging without the extra machinery of `--wails-draggable`.
 
-`WebView2CompositionHosting` is for custom caption buttons with native behavior. Wails tracks DOM rectangles marked with `--wails-app-region`, maps them to Windows hit-test values such as `HTMINBUTTON`, `HTMAXBUTTON`, and `HTCLOSE`, and forwards mouse input back into the composition-hosted WebView2 surface. That is what allows a custom maximize button to participate in Windows 11 Snap Assist / Snap Layouts while keeping any visual design you choose.
+`WebView2CompositionHosting` is for custom caption buttons with native behavior. Wails tracks DOM rectangles marked with `--wails-non-client-region`, maps them to Windows hit-test values such as `HTMINBUTTON`, `HTMAXBUTTON`, and `HTCLOSE`, and forwards mouse input back into the composition-hosted WebView2 surface. That is what allows a custom maximize button to participate in Windows 11 Snap Assist / Snap Layouts while keeping any visual design you choose.
 
 Put another way: `NonClientRegionSupport` is WebView2-native CSS region support. `WebView2CompositionHosting` is Wails taking responsibility for host-owned composition and custom non-client hit testing.
 
@@ -256,7 +256,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Then mark each frontend region with `--wails-app-region`:
+Then mark each frontend region with `--wails-non-client-region`:
 
 ```html
 <div class="titlebar">
@@ -271,7 +271,7 @@ Then mark each frontend region with `--wails-app-region`:
 
 ```css
 .titlebar {
-    --wails-app-region: caption;
+    --wails-non-client-region: caption;
     height: 40px;
 }
 
@@ -287,19 +287,19 @@ Then mark each frontend region with `--wails-app-region`:
 }
 
 .window-button.minimize {
-    --wails-app-region: minimize;
+    --wails-non-client-region: minimize;
 }
 
 .window-button.maximize {
-    --wails-app-region: maximize;
+    --wails-non-client-region: maximize;
 }
 
 .window-button.close {
-    --wails-app-region: close;
+    --wails-non-client-region: close;
 }
 ```
 
-Supported `--wails-app-region` values:
+Supported `--wails-non-client-region` values:
 
 - `caption` - draggable caption area
 - `minimize` - native minimize button hit target
@@ -309,8 +309,6 @@ Supported `--wails-app-region` values:
 The Wails runtime observes DOM, style, size, scroll, and viewport changes, then sends region snapshots to the native window. Region geometry is measured in CSS pixels and converted to physical pixels for Windows hit testing.
 
 The visual design remains entirely yours. The regions only tell Windows what each rectangle means; the button shape, icon, color, spacing, hover styling, and layout still come from your frontend.
-
-For compatibility with earlier builds of this feature, Wails also accepts the legacy `--wails-non-client-region` property. New code should use `--wails-app-region`.
 
 ### Combining Both
 
