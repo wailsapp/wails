@@ -127,12 +127,6 @@ func Init(options *flags.Init) error {
 	}
 	term.Header("Init project")
 
-	// Check if the template is a typescript template
-	isTypescript := false
-	if strings.HasSuffix(options.TemplateName, "-ts") {
-		isTypescript = true
-	}
-
 	if options.ProjectName == "" {
 		return errors.New("please use the -n flag to specify a project name")
 	}
@@ -147,6 +141,12 @@ func Init(options *flags.Init) error {
 	} else {
 		applyGlobalDefaults(options, globalDefaults)
 	}
+
+	// Determine the binding language AFTER global defaults are applied: when no
+	// -t is given, applyGlobalDefaults may have just set options.TemplateName
+	// from the wizard's configured default template, and that must drive the
+	// TypeScript-vs-JavaScript bindings choice.
+	isTypescript := templates.IsTypescript(options.TemplateName)
 
 	if options.ModulePath == "" {
 		if options.Git == "" {
@@ -165,6 +165,13 @@ func Init(options *flags.Init) error {
 	err = os.Rename(filepath.Join(options.ProjectDir, "gitignore"), filepath.Join(options.ProjectDir, ".gitignore"))
 	if err != nil {
 		return err
+	}
+
+	// Rename frontend/npmrc to frontend/.npmrc. Dotfiles can't be embedded, so
+	// it ships without the leading dot. Optional, so failure is non-fatal.
+	npmrcSrc := filepath.Join(options.ProjectDir, "frontend", "npmrc")
+	if _, statErr := os.Stat(npmrcSrc); statErr == nil {
+		_ = os.Rename(npmrcSrc, filepath.Join(options.ProjectDir, "frontend", ".npmrc"))
 	}
 
 	// Generate build assets
