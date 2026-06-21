@@ -3,13 +3,9 @@ title: XenSQL
 description: Local-first SQL workbench with multi-database support and advanced query tooling
 ---
 
-<img src="../../../../assets/showcase-images/xensql-1.png?raw=true" width="100%" alt="XenSQL table editor with inline editing">
-<table>
-  <tr>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-2.png?raw=true" width="100%" alt="XenSQL query editor with table and column suggestions"></td>
-    <td align="center"><img src="../../../../assets/showcase-images/xensql-3.png?raw=true" width="100%" alt="XenSQL multiple transaction queries"></td>
-  </tr>
-</table>
+![XenSQL table editor with inline editing](../../../../assets/showcase-images/xensql-1.png)
+![XenSQL query editor with table and column suggestions](../../../../assets/showcase-images/xensql-2.png)
+![XenSQL multiple transaction queries](../../../../assets/showcase-images/xensql-3.png)
 
 **[XenSQL](https://github.com/Bare7a/XenSQL)** is a **fast, local-first SQL desktop workbench** built with **Go, Wails and React**. It brings together PostgreSQL, MySQL/MariaDB, and SQLite in one clean, native-feeling interface - with zero cloud, zero telemetry, and zero accounts.
 
