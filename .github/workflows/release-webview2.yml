@@ -55,8 +55,10 @@ jobs:
             if [ -z "$LAST_TAG" ]; then
               VERSION="v1.0.24"
             else
-              # Extract version number without webview2/ prefix
-              LAST_VERSION=${LAST_TAG#webview2/}
+              # Extract version number without the webview2/v prefix, so MAJOR
+              # is the bare number (e.g. 1) and not "v1" — otherwise the format
+              # string below would double the v and produce webview2/vv1.0.25.
+              LAST_VERSION=${LAST_TAG#webview2/v}
               # Increment patch version
               MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
               MINOR=$(echo $LAST_VERSION | cut -d. -f2)
