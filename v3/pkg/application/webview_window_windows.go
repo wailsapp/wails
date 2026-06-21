@@ -1947,17 +1947,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 // is the application's responsibility. It is a no-op when the controller is
 // unavailable or already in sync.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
-	// Guard the early-initialisation window: e.controller is assigned partway
-	// through controller creation, before COM setup completes, and calling in
-	// then is fatal. IsReady only covers that startup window — it does NOT
-	// detect a controller left unusable by a suspend or render/GPU process
-	// failure (the inited flag is never reset), so it is not what protects the
-	// #5605 restore path. That protection is the DPI-change gate in
+	// The #5605 restore crash is prevented by the DPI-change gate in
 	// resyncWebviewDPIAfterUnminimiseIfDPIChanged, which keeps us off the
-	// controller entirely when the DPI is unchanged.
-	if !w.chromium.IsReady() {
-		return false
-	}
+	// controller entirely when the DPI is unchanged. The GetController nil
+	// check below covers the early-initialisation / unavailable-controller
+	// window. (A chromium.IsReady() guard was considered, but that method is
+	// not in the released webview2 module v3 depends on, so it cannot be used
+	// here yet.)
 	controller := w.chromium.GetController()
 	if controller == nil {
 		return false
