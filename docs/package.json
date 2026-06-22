@@ -15,7 +15,7 @@
     "@astrojs/starlight": "0.38.4",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "astro": "^6.0.0",
+    "astro": "^6.4.8",
     "astro-d2": "^0.10.0",
     "framer-motion": "^11.14.4",
     "motion": "^11.14.4",
