@@ -2158,6 +2158,7 @@ export default function App() {
   });
   // Init mode (wails3 init -ui): undefined = still detecting, null = setup mode.
   const [initData, setInitData] = useState<InitData | null | undefined>(undefined);
+  const [initDetectError, setInitDetectError] = useState(false);
 
   const navigateTo = (newStep: OOBEStep) => {
     setStepHistory(prev => [...prev, step]);
@@ -2199,7 +2200,21 @@ export default function App() {
 
   // Detect init mode: the backend returns init data here, or null in setup mode.
   useEffect(() => {
-    getInit().then(setInitData).catch(() => setInitData(null));
+    // A fetch *failure* must not be treated as setup mode (null) — null is only a
+    // valid setup-mode signal when the request actually succeeds. Retry transient
+    // failures, then surface an error rather than silently picking the wrong flow.
+    let cancelled = false;
+    const detect = (attempt = 0) => {
+      getInit()
+        .then((d) => { if (!cancelled) setInitData(d); })
+        .catch(() => {
+          if (cancelled) return;
+          if (attempt < 4) setTimeout(() => detect(attempt + 1), 300);
+          else setInitDetectError(true);
+        });
+    };
+    detect();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -2467,6 +2482,17 @@ export default function App() {
     setPrevDockerPullStatus(dockerStatus?.pullStatus || null);
   }, [dockerStatus?.pullStatus, step]);
 
+  // Couldn't reach the server to detect the mode — show an error instead of
+  // silently rendering the wrong (setup) flow.
+  if (initDetectError) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] text-center p-8">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Couldn't reach the wizard server. Please reload the page.
+        </p>
+      </div>
+    );
+  }
   // Still detecting which mode we're in — avoid flashing the setup flow.
   if (initData === undefined) return null;
   // Project init wizard (wails3 init -ui).

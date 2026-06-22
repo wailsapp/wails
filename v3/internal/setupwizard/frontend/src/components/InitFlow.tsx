@@ -79,7 +79,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
     setForm((f) => ({
       ...f,
       templateName: resolveTemplate(framework, preferTS),
-      productName: f.productName && f.productName !== 'My Product' ? f.productName : name,
+      productName: f.productName.trim() ? f.productName : name,
       productDescription: f.productDescription.trim() ? f.productDescription : `A ${name} application`,
       productIdentifier: f.productIdentifier.trim() ? f.productIdentifier : slugIdentifier(name),
     }));
@@ -96,7 +96,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
       ...f,
       useInterfaces: data.useInterfaces,
       templateName: resolveTemplate(baseDefault, defaultTS),
-      productName: f.productName && f.productName !== 'My Product' ? f.productName : name,
+      productName: f.productName.trim() ? f.productName : name,
       productDescription: f.productDescription.trim() ? f.productDescription : `A ${name} application`,
       productIdentifier: f.productIdentifier.trim() ? f.productIdentifier : slugIdentifier(name),
     }));

@@ -246,6 +246,7 @@ type Wizard struct {
 	dockerBuildLogs string
 	dockerMu        sync.RWMutex
 	done            chan struct{}
+	doneOnce        sync.Once
 	shutdown        chan struct{}
 	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
@@ -563,7 +564,7 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(response)
 
-	close(w.done)
+	w.doneOnce.Do(func() { close(w.done) })
 }
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {

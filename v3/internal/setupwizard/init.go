@@ -89,15 +89,13 @@ func (w *Wizard) handleInitCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	result.Mode = "init"
-	w.initResult = &result
+
+	// Single-shot: only the first create request records the result and unblocks
+	// RunInit. Concurrent requests are no-ops (no result race, no double close).
+	w.doneOnce.Do(func() {
+		w.initResult = &result
+		close(w.done)
+	})
 
 	json.NewEncoder(rw).Encode(map[string]any{"success": true})
-
-	// Unblock RunInit (and Run's select on done).
-	select {
-	case <-w.done:
-		// already closed
-	default:
-		close(w.done)
-	}
 }

@@ -122,8 +122,14 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 // into options. options.ProjectName is left empty if the user closes the wizard
 // without creating.
 func runInitWizard(options *flags.Init) error {
-	globalDefaults, _ := defaults.Load()
-	applyGlobalDefaults(options, globalDefaults)
+	globalDefaults, err := defaults.Load()
+	if err != nil {
+		// Don't apply on a load failure — that could reset fields (e.g. flip
+		// UseInterfaces) from a half-loaded config.
+		term.Warningf("Could not load global defaults: %v\n", err)
+	} else {
+		applyGlobalDefaults(options, globalDefaults)
+	}
 
 	// With no -n provided, the name-derived seeds are bogus (e.g. "A  application").
 	// Clear them so the wizard derives sensible values from the entered name.
@@ -336,8 +342,15 @@ func writeProjectConfigYML(options *flags.Init) error {
 		// trailing comment. Anchored to start-of-line so it won't touch the
 		// commented ios: overrides.
 		re := regexp.MustCompile(`(?m)^(\s*` + regexp.QuoteMeta(key) + `:\s*")[^"]*(")`)
-		// Escape for YAML double-quotes, then for the regexp replacement template ($).
-		repl := strings.ReplaceAll(strings.ReplaceAll(val, `"`, `\"`), `$`, `$$`)
+		// Escape for a YAML double-quoted scalar — backslash first (so the escapes
+		// added next aren't doubled), then quotes; collapse newlines to keep it a
+		// single-line value; finally escape `$` for the regexp replacement template.
+		repl := val
+		repl = strings.ReplaceAll(repl, `\`, `\\`)
+		repl = strings.ReplaceAll(repl, `"`, `\"`)
+		repl = strings.ReplaceAll(repl, "\r", "")
+		repl = strings.ReplaceAll(repl, "\n", " ")
+		repl = strings.ReplaceAll(repl, `$`, `$$`)
 		content = re.ReplaceAllString(content, `${1}`+repl+`${2}`)
 	}
 
