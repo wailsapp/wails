@@ -78,10 +78,10 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Upgrade npm for Trusted Publishing
         # Trusted Publishing (OIDC) requires npm >= 11.5.1.
@@ -127,4 +127,7 @@ jobs:
         # Requires a Trusted Publisher to be configured for @wailsio/runtime on
         # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm publish --access public
+        # --tag latest: v3 ships prerelease (alpha.N) as the default dist-tag,
+        # matching the templates' "@wailsio/runtime": "latest" pin. npm >= 11
+        # requires an explicit --tag to publish a prerelease as latest.
+        run: npm publish --access public --tag latest
