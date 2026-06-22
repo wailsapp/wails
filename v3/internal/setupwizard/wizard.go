@@ -246,9 +246,15 @@ type Wizard struct {
 	dockerBuildLogs string
 	dockerMu        sync.RWMutex
 	done            chan struct{}
+	doneOnce        sync.Once
 	shutdown        chan struct{}
 	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
+
+	// Init-mode state. When initData is non-nil the wizard runs as the project
+	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
+	initData   *InitData
+	initResult *InitData
 }
 
 // New creates a new setup wizard
@@ -329,6 +335,8 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/signing/notarize/create", w.handleNotarizeCreate)
 	mux.HandleFunc("/api/signing/notarize/validate", w.handleNotarizeValidate)
+	mux.HandleFunc("/api/init", w.handleInit)
+	mux.HandleFunc("/api/init/create", w.handleInitCreate)
 	mux.HandleFunc("/api/signing/gpg/create", w.handleGPGCreate)
 	mux.HandleFunc("/api/signing/gpg/export", w.handleGPGExport)
 	mux.HandleFunc("/api/signing/windows/create-cert", w.handleWindowsCertCreate)
@@ -556,7 +564,7 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(response)
 
-	close(w.done)
+	w.doneOnce.Do(func() { close(w.done) })
 }
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {

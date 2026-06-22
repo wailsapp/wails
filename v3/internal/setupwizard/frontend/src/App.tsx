@@ -1,10 +1,11 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from './types';
-import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
+import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
+import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
+import InitFlow from './components/InitFlow';
 
 type OOBEStep =
   | 'splash'
@@ -2155,6 +2156,9 @@ export default function App() {
     }
     return 'dark';
   });
+  // Init mode (wails3 init -ui): undefined = still detecting, null = setup mode.
+  const [initData, setInitData] = useState<InitData | null | undefined>(undefined);
+  const [initDetectError, setInitDetectError] = useState(false);
 
   const navigateTo = (newStep: OOBEStep) => {
     setStepHistory(prev => [...prev, step]);
@@ -2193,6 +2197,25 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  // Detect init mode: the backend returns init data here, or null in setup mode.
+  useEffect(() => {
+    // A fetch *failure* must not be treated as setup mode (null) — null is only a
+    // valid setup-mode signal when the request actually succeeds. Retry transient
+    // failures, then surface an error rather than silently picking the wrong flow.
+    let cancelled = false;
+    const detect = (attempt = 0) => {
+      getInit()
+        .then((d) => { if (!cancelled) setInitData(d); })
+        .catch(() => {
+          if (cancelled) return;
+          if (attempt < 4) setTimeout(() => detect(attempt + 1), 300);
+          else setInitDetectError(true);
+        });
+    };
+    detect();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     init();
@@ -2458,6 +2481,24 @@ export default function App() {
     }
     setPrevDockerPullStatus(dockerStatus?.pullStatus || null);
   }, [dockerStatus?.pullStatus, step]);
+
+  // Couldn't reach the server to detect the mode — show an error instead of
+  // silently rendering the wrong (setup) flow.
+  if (initDetectError) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] text-center p-8">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Couldn't reach the wizard server. Please reload the page.
+        </p>
+      </div>
+    );
+  }
+  // Still detecting which mode we're in — avoid flashing the setup flow.
+  if (initData === undefined) return null;
+  // Project init wizard (wails3 init -ui).
+  if (initData && initData.mode === 'init') {
+    return <InitFlow data={initData} theme={theme} toggleTheme={toggleTheme} />;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

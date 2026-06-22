@@ -21,6 +21,7 @@ type Init struct {
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	SkipWarning        bool   `name:"s" description:"Skips the warning message when using remote templates"`
 	UseInterfaces      bool   `description:"Generate TypeScript interfaces instead of classes for bindings" default:"true"`
+	UI                 bool   `name:"ui" description:"Launch the interactive project setup wizard in the browser"`
 
 	TemplateFromDefaults      bool
 	UseInterfacesFromDefaults bool

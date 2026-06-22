@@ -129,6 +129,28 @@ export interface GpgKeyInfo {
   uid: string;
 }
 
+export interface InitTemplate {
+  name: string;
+  description: string;
+}
+
+export interface InitData {
+  mode: string;
+  projectName: string;
+  templateName: string;
+  productName: string;
+  productCompany: string;
+  productIdentifier: string;
+  productDescription: string;
+  productVersion: string;
+  productCopyright: string;
+  productComments: string;
+  useInterfaces: boolean;
+  baseDir: string;
+  templates: InitTemplate[];
+  defaultTemplate: string;
+}
+
 export interface DarwinSigningStatus {
   hasIdentity: boolean;
   identity?: string;
