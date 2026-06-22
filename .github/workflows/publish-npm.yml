@@ -57,6 +57,7 @@ jobs:
       contents: write
       actions: read
       pull-requests: read
+      id-token: write # Required for npm Trusted Publishing (OIDC) + provenance
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,6 +82,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Upgrade npm for Trusted Publishing
+        # Trusted Publishing (OIDC) requires npm >= 11.5.1.
+        run: |
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
@@ -114,9 +121,10 @@ jobs:
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           git push
 
-      - name: Publish npm package
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          package: v3/internal/runtime/desktop/@wailsio/runtime
-          access: public
-          token: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm package (Trusted Publishing / OIDC)
+        # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a
+        # short-lived publish credential. Provenance is attached automatically.
+        # Requires a Trusted Publisher to be configured for @wailsio/runtime on
+        # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm publish --access public
