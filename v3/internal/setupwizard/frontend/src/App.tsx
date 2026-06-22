@@ -2461,19 +2461,43 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors relative overflow-hidden">
-        {/* Digital Wales mountain backdrop — the glass card below blurs over it. */}
+      {/* Viewport-locked scroll container: when the card is bigger than the
+          window (below its minimum size) this scrolls in BOTH axes so nothing is
+          clipped. (A min-h-screen flex parent grows instead of scrolling, which
+          leaves horizontal overflow unreachable.) */}
+      <div className="fixed inset-0 overflow-auto bg-gray-50 dark:bg-[#0f0f0f] transition-colors">
+        {/* Digital Wales mountain backdrop — fixed so it stays put while the
+            content scrolls on very small windows. */}
         <div
-          className="absolute inset-0 bg-center bg-cover bg-no-repeat pointer-events-none opacity-50 dark:opacity-40"
+          className="fixed inset-0 bg-center bg-cover bg-no-repeat pointer-events-none opacity-50 dark:opacity-40"
           style={{ backgroundImage: "url('/digital_wales_master.webp')" }}
         />
 
-        <div className="w-[75vw] max-w-[1200px] h-[75vh] max-h-[800px] glass-card rounded-2xl flex overflow-hidden relative z-10">
+        {/* Wrapper is at least the viewport (min-w/h-full) but grows to the card
+            (w-fit) so the scroller above gets real overflow to scroll; centers the
+            card while it fits. */}
+        <div className="relative min-h-full min-w-full w-fit flex items-center justify-center p-4">
+        {/* The card keeps a fixed 3:2 aspect ratio (matching the 1200x800 max) at
+            every size, scaling to fit the viewport (whichever of width/height is
+            the tighter constraint) down to a minimum of 864x576. Below that it
+            holds size and the wrapper above scrolls. Inline styles so Tailwind's
+            purge can't drop the clamp/min() sizing. */}
+        <div
+          className="glass-card rounded-2xl flex overflow-hidden relative z-10"
+          style={{
+            aspectRatio: '3 / 2',
+            width: 'clamp(54rem, min(100vw - 2rem, (100vh - 2rem) * 1.5), 75rem)',
+          }}
+        >
           {/* Sidebar */}
           <Sidebar currentStep={step} dockerStatus={dockerStatus} buildingDocker={backgroundDockerStarted && (buildingImage || dockerStatus?.pullStatus === 'pulling')} />
 
-          {/* Content area - distinct from sidebar in dark mode */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
+          {/* Content area - distinct from sidebar in dark mode.
+              min-w keeps the content usable: the fixed-width sidebar never
+              squashes, so without a floor all shrink falls on the content. The
+              card's clamp() floor (44rem) = sidebar (12rem) + this 32rem, so the
+              content stops shrinking here and the whole card scrolls below that. */}
+          <div className="flex-1 flex flex-col min-w-[36rem] bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
             <AnimatePresence>
               {showDockerToast && (
                 <motion.div
@@ -2636,6 +2660,7 @@ export default function App() {
               </AnimatePresence>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </ThemeContext.Provider>
