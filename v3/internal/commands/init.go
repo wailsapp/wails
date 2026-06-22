@@ -13,6 +13,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/git"
+	"github.com/wailsapp/wails/v3/internal/setupwizard"
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
 )
@@ -116,6 +117,80 @@ func applyGlobalDefaults(options *flags.Init, globalDefaults defaults.GlobalDefa
 	options.UseInterfacesFromDefaults = true
 }
 
+// runInitWizard launches the browser-based project wizard, seeds it with the
+// global defaults + the available templates, and writes the user's choices back
+// into options. options.ProjectName is left empty if the user closes the wizard
+// without creating.
+func runInitWizard(options *flags.Init) error {
+	globalDefaults, _ := defaults.Load()
+	applyGlobalDefaults(options, globalDefaults)
+
+	// With no -n provided, the name-derived seeds are bogus (e.g. "A  application").
+	// Clear them so the wizard derives sensible values from the entered name.
+	if options.ProjectName == "" {
+		options.ProductDescription = ""
+		options.ProductIdentifier = ""
+	}
+
+	var initTemplates []setupwizard.InitTemplate
+	for _, t := range templates.GetDefaultTemplates() {
+		initTemplates = append(initTemplates, setupwizard.InitTemplate{Name: t.Name, Description: t.Description})
+	}
+
+	defaultTemplate := globalDefaults.GetTemplateName()
+	if defaultTemplate == "" {
+		defaultTemplate = options.TemplateName
+	}
+
+	baseDir, err := filepath.Abs(options.ProjectDir)
+	if err != nil {
+		baseDir = options.ProjectDir
+	}
+
+	productName := options.ProductName
+	if productName == "" || productName == "My Product" {
+		productName = options.ProjectName
+	}
+
+	data := setupwizard.InitData{
+		ProjectName:        options.ProjectName,
+		TemplateName:       defaultTemplate,
+		ProductName:        productName,
+		ProductCompany:     options.ProductCompany,
+		ProductIdentifier:  options.ProductIdentifier,
+		ProductDescription: options.ProductDescription,
+		ProductVersion:     options.ProductVersion,
+		ProductCopyright:   options.ProductCopyright,
+		ProductComments:    options.ProductComments,
+		UseInterfaces:      options.UseInterfaces,
+		BaseDir:            baseDir,
+		Templates:          initTemplates,
+		DefaultTemplate:    defaultTemplate,
+	}
+
+	result, err := setupwizard.NewInitWizard(data).RunInit()
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		// User closed the wizard without creating; signal via empty name.
+		options.ProjectName = ""
+		return nil
+	}
+
+	options.ProjectName = result.ProjectName
+	options.TemplateName = result.TemplateName
+	options.ProductName = result.ProductName
+	options.ProductCompany = result.ProductCompany
+	options.ProductIdentifier = result.ProductIdentifier
+	options.ProductDescription = result.ProductDescription
+	options.ProductVersion = result.ProductVersion
+	options.ProductCopyright = result.ProductCopyright
+	options.ProductComments = result.ProductComments
+	options.UseInterfaces = result.UseInterfaces
+	return nil
+}
+
 func Init(options *flags.Init) error {
 	if options.List {
 		term.Header("Available templates")
@@ -127,19 +202,36 @@ func Init(options *flags.Init) error {
 	}
 	term.Header("Init project")
 
+	// Interactive UI: collect the project name, template and config values in the
+	// browser wizard, then fall through to the normal scaffolding below. Runs
+	// before the project-name check because the wizard is where the name is set.
+	if options.UI {
+		if err := runInitWizard(options); err != nil {
+			return err
+		}
+		if options.ProjectName == "" {
+			// User closed the wizard without creating.
+			return nil
+		}
+	}
+
 	if options.ProjectName == "" {
 		return errors.New("please use the -n flag to specify a project name")
 	}
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
 
-	// Load and apply global defaults
-	globalDefaults, err := defaults.Load()
-	if err != nil {
-		// Log warning but continue - global defaults are optional
-		term.Warningf("Could not load global defaults: %v\n", err)
-	} else {
-		applyGlobalDefaults(options, globalDefaults)
+	// Load and apply global defaults. Skipped in UI mode: the wizard already
+	// seeded from defaults and the returned values are the user's explicit
+	// choices, which a second pass could clobber (e.g. vanilla -> default).
+	if !options.UI {
+		globalDefaults, err := defaults.Load()
+		if err != nil {
+			// Log warning but continue - global defaults are optional
+			term.Warningf("Could not load global defaults: %v\n", err)
+		} else {
+			applyGlobalDefaults(options, globalDefaults)
+		}
 	}
 
 	// Determine the binding language AFTER global defaults are applied: when no
@@ -156,7 +248,7 @@ func Init(options *flags.Init) error {
 		}
 	}
 
-	err = templates.Install(options)
+	err := templates.Install(options)
 	if err != nil {
 		return err
 	}
@@ -193,6 +285,16 @@ func Init(options *flags.Init) error {
 	if err != nil {
 		return err
 	}
+
+	// In UI mode the wizard is explicitly about the project config, so write the
+	// chosen values into build/config.yml itself (the generated assets already
+	// carry them; the source config.yml is otherwise a static copy).
+	if options.UI {
+		if err := writeProjectConfigYML(options); err != nil {
+			term.Warningf("Could not update build/config.yml: %v\n", err)
+		}
+	}
+
 	// Initialize git repository if URL is provided
 	if options.Git != "" {
 		err = initGitRepository(options.ProjectDir, options.Git)
@@ -204,6 +306,42 @@ func Init(options *flags.Init) error {
 		}
 	}
 	return nil
+}
+
+// writeProjectConfigYML rewrites the `info:` values in the freshly scaffolded
+// build/config.yml from the chosen options, preserving the file's comments. The
+// info keys map 1:1 onto the Product* fields.
+func writeProjectConfigYML(options *flags.Init) error {
+	path := filepath.Join(options.ProjectDir, "build", "config.yml")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	content := string(data)
+
+	values := map[string]string{
+		"companyName":       options.ProductCompany,
+		"productName":       options.ProductName,
+		"productIdentifier": options.ProductIdentifier,
+		"description":       options.ProductDescription,
+		"copyright":         options.ProductCopyright,
+		"comments":          options.ProductComments,
+		"version":           options.ProductVersion,
+	}
+	for key, val := range values {
+		if val == "" {
+			continue
+		}
+		// Replace only the quoted value on the `  key: "..."` line, keeping any
+		// trailing comment. Anchored to start-of-line so it won't touch the
+		// commented ios: overrides.
+		re := regexp.MustCompile(`(?m)^(\s*` + regexp.QuoteMeta(key) + `:\s*")[^"]*(")`)
+		// Escape for YAML double-quotes, then for the regexp replacement template ($).
+		repl := strings.ReplaceAll(strings.ReplaceAll(val, `"`, `\"`), `$`, `$$`)
+		content = re.ReplaceAllString(content, `${1}`+repl+`${2}`)
+	}
+
+	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 func printTemplates() error {
