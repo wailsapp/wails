@@ -503,7 +503,9 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     value={config.linux?.gpgKeyID || ''}
                     onChange={(e) => setConfig({
                       ...config,
-                      linux: { ...config.linux, gpgKeyID: e.target.value }
+                      // Clear the exported path when the key changes so it can't
+                      // mismatch the id (and the export prompt can re-appear).
+                      linux: { ...config.linux, gpgKeyID: e.target.value, gpgKeyPath: '' }
                     })}
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   >

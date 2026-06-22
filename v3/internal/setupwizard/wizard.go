@@ -1563,12 +1563,20 @@ func (w *Wizard) handleGPGCreate(rw http.ResponseWriter, r *http.Request) {
 			if keyPath != "" {
 				defs.Signing.Linux.GPGKeyPath = keyPath
 			}
-			_ = SaveGlobalDefaults(defs)
+			if err := SaveGlobalDefaults(defs); err != nil {
+				json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Key created but failed to save config: " + err.Error()})
+				return
+			}
 		}
 	}
 
 	json.NewEncoder(rw).Encode(map[string]any{"success": true, "keyID": keyID, "keyPath": keyPath})
 }
+
+// gpgKeyIDPattern matches a hex GPG key id or fingerprint (16–40 hex chars,
+// optional 0x prefix). keyID is used to build an export file path, so it is
+// validated against this allowlist to prevent path traversal.
+var gpgKeyIDPattern = regexp.MustCompile(`^(?:0x)?[A-Fa-f0-9]{16,40}$`)
 
 // exportGPGSecretKey writes the ASCII-armoured private (and public) key for keyID
 // into the signing output dir and returns the private key's path — the artifact
@@ -1576,6 +1584,11 @@ func (w *Wizard) handleGPGCreate(rw http.ResponseWriter, r *http.Request) {
 // is supplied over stdin so it never appears in the process list, and the private
 // file is written 0600.
 func exportGPGSecretKey(gpg, keyID, passphrase string) (string, error) {
+	// keyID flows into the export file path; reject anything that isn't a plain
+	// hex key id/fingerprint so it can't escape the signing directory.
+	if !gpgKeyIDPattern.MatchString(keyID) {
+		return "", fmt.Errorf("invalid GPG key id %q", keyID)
+	}
 	dir, err := signingOutputDir()
 	if err != nil {
 		return "", err
@@ -1663,7 +1676,10 @@ func (w *Wizard) handleGPGExport(rw http.ResponseWriter, r *http.Request) {
 	if defs, err := LoadGlobalDefaults(); err == nil {
 		defs.Signing.Linux.GPGKeyID = keyID
 		defs.Signing.Linux.GPGKeyPath = keyPath
-		_ = SaveGlobalDefaults(defs)
+		if err := SaveGlobalDefaults(defs); err != nil {
+			json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Key exported but failed to save config: " + err.Error()})
+			return
+		}
 	}
 
 	json.NewEncoder(rw).Encode(map[string]any{"success": true, "keyID": keyID, "keyPath": keyPath})
@@ -1749,7 +1765,10 @@ func (w *Wizard) handleWindowsCertCreate(rw http.ResponseWriter, r *http.Request
 
 	if defs, err := LoadGlobalDefaults(); err == nil {
 		defs.Signing.Windows.CertificatePath = pfxPath
-		_ = SaveGlobalDefaults(defs)
+		if err := SaveGlobalDefaults(defs); err != nil {
+			json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Certificate created but failed to save config: " + err.Error()})
+			return
+		}
 	}
 
 	json.NewEncoder(rw).Encode(map[string]any{

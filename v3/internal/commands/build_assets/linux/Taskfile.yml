@@ -194,7 +194,7 @@ tasks:
     cmds:
       # PGP_KEY is optional: if unset, `wails3 tool sign` falls back to the key
       # configured globally via `wails3 setup`.
-      - wails3 tool sign --input "{{.BIN_DIR}}/{{.APP_NAME}}*.deb" {{if .PGP_KEY}}--pgp-key {{.PGP_KEY}}{{end}} {{if .SIGN_ROLE}}--role {{.SIGN_ROLE}}{{end}}
+      - wails3 tool sign --input "{{.BIN_DIR}}/{{.APP_NAME}}*.deb" {{if .PGP_KEY}}--pgp-key "{{.PGP_KEY}}"{{end}} {{if .SIGN_ROLE}}--role "{{.SIGN_ROLE}}"{{end}}
 
   sign:rpm:
     summary: Signs the RPM package
@@ -206,7 +206,7 @@ tasks:
     deps:
       - task: create:rpm
     cmds:
-      - wails3 tool sign --input "{{.BIN_DIR}}/{{.APP_NAME}}*.rpm" {{if .PGP_KEY}}--pgp-key {{.PGP_KEY}}{{end}}
+      - wails3 tool sign --input "{{.BIN_DIR}}/{{.APP_NAME}}*.rpm" {{if .PGP_KEY}}--pgp-key "{{.PGP_KEY}}"{{end}}
 
   sign:packages:
     summary: Signs all Linux packages (DEB and RPM)
