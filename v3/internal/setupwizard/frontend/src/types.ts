@@ -124,6 +124,11 @@ export interface GlobalDefaults {
   signing?: SigningDefaults;
 }
 
+export interface GpgKeyInfo {
+  keyID: string;
+  uid: string;
+}
+
 export interface DarwinSigningStatus {
   hasIdentity: boolean;
   identity?: string;
@@ -131,6 +136,7 @@ export interface DarwinSigningStatus {
   hasNotarization: boolean;
   teamID?: string;
   configSource?: string;
+  rcodesignAvailable: boolean;
 }
 
 export interface WindowsSigningStatus {
@@ -139,15 +145,20 @@ export interface WindowsSigningStatus {
   hasSignTool: boolean;
   timestampServer?: string;
   configSource?: string;
+  osslsigncodeAvailable: boolean;
+  opensslAvailable: boolean;
 }
 
 export interface LinuxSigningStatus {
   hasGpgKey: boolean;
   gpgKeyID?: string;
   configSource?: string;
+  gpgAvailable: boolean;
+  gpgKeys?: GpgKeyInfo[];
 }
 
 export interface SigningStatus {
+  host: 'darwin' | 'windows' | 'linux';
   darwin: DarwinSigningStatus;
   windows: WindowsSigningStatus;
   linux: LinuxSigningStatus;

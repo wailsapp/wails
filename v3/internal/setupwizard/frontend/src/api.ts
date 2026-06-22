@@ -183,6 +183,43 @@ export async function createNotarizationProfile(data: {
   return response.json();
 }
 
+export async function createGPGKey(data: {
+  name: string;
+  email: string;
+  passphrase: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function exportGPGKey(data: {
+  keyID?: string;
+  passphrase?: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; needsPassphrase?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/export`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function createWindowsCert(data: {
+  commonName: string;
+  password: string;
+}): Promise<{ success: boolean; path?: string; selfSign?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/windows/create-cert`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
 export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
   const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
   return response.json();

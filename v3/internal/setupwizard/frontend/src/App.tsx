@@ -176,7 +176,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                         ? 'bg-green-500 text-white'
                         : isCurrent
                           ? 'bg-red-500 text-white'
-                          : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                          : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'
                     }`}
                     aria-hidden="true"
                   >
@@ -195,7 +195,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                         ? 'text-gray-900 dark:text-white'
                         : isCompleted
                           ? 'text-green-700 dark:text-gray-200'
-                          : 'text-gray-400 dark:text-gray-300'
+                          : 'text-gray-600 dark:text-gray-300'
                     }`}
                   >
                     {stage.label}
@@ -808,7 +808,7 @@ function CrossPlatformPage({
           <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-md">
             Wails can compile your app for Windows, macOS, and Linux from a single machine
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
             Requires Docker for cross-compilation
           </p>
 
@@ -1166,7 +1166,7 @@ function DockerSetupPage({
           </svg>
         </a>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-6 text-center max-w-xs">
+        <p className="text-xs text-gray-500 dark:text-gray-500 mb-6 text-center max-w-xs">
           After installing, come back and we'll continue setting up.
           Some platforms may require a reboot.
         </p>
@@ -1287,7 +1287,7 @@ function DockerSetupPage({
           </div>
         </div>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
           This may take several minutes
         </p>
 
@@ -1381,7 +1381,7 @@ function DockerSetupPage({
       <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-sm">
         Download the cross-compilation image to enable building for all platforms
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
         This will download ~800MB and may take several minutes
       </p>
 
@@ -1453,7 +1453,7 @@ function MobileOptionsPage({ onYes, onSkip, onBack, canGoBack }: {
       <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-md">
         Wails can build native iOS and Android apps from the same codebase
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
         We'll check the toolchain for each platform — no signing certificates needed for the simulator/emulator
       </p>
       <div className="flex flex-col items-center gap-2">
