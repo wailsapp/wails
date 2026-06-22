@@ -54,8 +54,13 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
   const resolveTemplate = (fw: string, ts: boolean) => (!ts && has(`${fw}-js`) ? `${fw}-js` : fw);
 
   const baseDefault = (data.defaultTemplate || data.templateName || 'vanilla').replace(/-js$/, '');
+  const defaultTS = !(data.defaultTemplate || data.templateName || '').endsWith('-js');
+  const defaultFwName = FRAMEWORKS.find((f) => f.id === baseDefault)?.name ?? 'Vanilla';
+  // Human-readable summary of the configured defaults, e.g. "React · TypeScript · Interfaces".
+  const defaultSummary = [defaultFwName, defaultTS ? 'TypeScript' : 'JavaScript', ...(defaultTS ? [data.useInterfaces ? 'Interfaces' : 'Classes'] : [])].join(' · ');
+
   const [framework, setFramework] = useState(FRAMEWORKS.some((f) => f.id === baseDefault) ? baseDefault : 'vanilla');
-  const [preferTS, setPreferTS] = useState(!(data.defaultTemplate || data.templateName || '').endsWith('-js'));
+  const [preferTS, setPreferTS] = useState(defaultTS);
 
   const [step, setStep] = useState<Step>('project');
   const [form, setForm] = useState<InitData>({ ...data });
@@ -81,6 +86,22 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
     setStep('details');
   };
   const advance = () => { (flow[flow.indexOf(step) + 1] === 'details') ? enterDetails() : goNext(); };
+
+  // Apply the configured global defaults and skip straight to Details.
+  const useGlobalDefaults = () => {
+    setFramework(baseDefault);
+    setPreferTS(defaultTS);
+    const name = form.projectName.trim();
+    setForm((f) => ({
+      ...f,
+      useInterfaces: data.useInterfaces,
+      templateName: resolveTemplate(baseDefault, defaultTS),
+      productName: f.productName && f.productName !== 'My Product' ? f.productName : name,
+      productDescription: f.productDescription.trim() ? f.productDescription : `A ${name} application`,
+      productIdentifier: f.productIdentifier.trim() ? f.productIdentifier : slugIdentifier(name),
+    }));
+    setStep('details');
+  };
 
   const create = async () => {
     setError(''); setCreating(true);
@@ -151,6 +172,13 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 truncate text-center">
                       Will be created in <code className="font-mono">{form.baseDir}/{form.projectName.trim() || 'my-app'}</code>
                     </p>
+                    <div className="mt-6 pt-5 border-t border-gray-200 dark:border-white/10 text-center">
+                      <button type="button" onClick={useGlobalDefaults} disabled={!form.projectName.trim()}
+                        className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Use global defaults
+                      </button>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{defaultSummary} — skips straight to details</p>
+                    </div>
                   </div>
                 </Page>
               )}
