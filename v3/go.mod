@@ -31,7 +31,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
-	github.com/wailsapp/wails/webview2 v1.0.24
+	github.com/wailsapp/wails/webview2 v1.0.25
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/sys v0.43.0
 	golang.org/x/term v0.42.0
@@ -126,7 +126,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
+	github.com/muesli/termenv v0.16.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
