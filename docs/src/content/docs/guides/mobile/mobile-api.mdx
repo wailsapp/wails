@@ -34,12 +34,18 @@ ordinary, platform-agnostic Go — no `//go:build` files of your own:
 // Works in any file, on any target.
 // On desktop this returns "" (no-op); on device it returns the real path.
 dbDir := application.Mobile.StoragePath()
+if dbDir == "" {
+    // Off-device, or the directory could not be created — handle accordingly.
+    return
+}
 db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
 ```
 
 `StoragePath()` returns the absolute path to the app's private files directory —
 `getFilesDir()` on Android, the Application Support directory on iOS — the
-recommended home for databases and other persistent files.
+recommended home for databases and other persistent files. It returns an empty
+string on desktop, and on iOS also if the directory cannot be created, so check
+for `""` before using it.
 
 <Aside type="note">
 Off-device (desktop builds) every `Mobile` method is a no-op and every query
