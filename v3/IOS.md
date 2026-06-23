@@ -127,6 +127,7 @@ both platforms (see the `mobile` example's `registerNativeFeatures`).
 | Proximity | `IOS.SetProximity(bool)` | → `common:proximity` |
 | Text-to-speech | `IOS.Speak(text)` / `IOS.StopSpeak()` | `AVSpeechSynthesizer` |
 | Storage info | `IOS.StorageJSON()` | `{free,total}` bytes |
+| Storage path | `IOS.StoragePath()` | Application Support dir (for databases & persistent files) |
 | Power / battery | `IOS.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `IOS.NetworkJSON()` | `{connected,type}` |
 | Keyboard insets | `IOS.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |

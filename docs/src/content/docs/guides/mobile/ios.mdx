@@ -125,7 +125,9 @@ application.IOS.SecureSet("token", "abc") // stored securely
 
 Query helpers return their results as JSON — `SafeAreaJSON()`, `AppInfoJSON()`,
 `PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`,
-`GetBrightness()`.
+`GetBrightness()`. `StoragePath()` returns the absolute path to the app's
+Application Support directory — a good home for databases and other persistent
+files (the iOS analog of Android's `getFilesDir()`).
 
 ### Events
 
