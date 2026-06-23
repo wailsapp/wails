@@ -473,8 +473,12 @@ func resolveIncludes(tf *ast.Taskfile, resolved map[string]*ast.Taskfile) error 
 			// Task-specific vars have higher priority and overwrite these defaults.
 			if len(tfResolved.Vars) > 0 {
 				merged := make(map[string]*ast.Var, len(tfResolved.Vars)+len(cloned.Vars))
+				// Deep-copy the included vars (consistent with Task.Clone) so the
+				// later in-place mutation by ResolveVars/ResolveAllVarShells can't
+				// leak across the tasks that share this included file.
 				for k, v := range tfResolved.Vars {
-					merged[k] = v
+					vClone := *v
+					merged[k] = &vClone
 				}
 				for k, v := range cloned.Vars {
 					merged[k] = v

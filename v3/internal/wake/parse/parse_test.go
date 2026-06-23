@@ -172,6 +172,15 @@ tasks:
 	// Task-level vars must take precedence over included file's top-level vars.
 	require.Contains(t, dockerTask.Vars, "OWN_VAR", "task-level vars must be retained")
 	require.Equal(t, "own-value", dockerTask.Vars["OWN_VAR"].Static)
+
+	// The injected vars must be deep-copied, not shared by pointer across cloned
+	// tasks: later in-place mutation (ResolveVars/ResolveAllVarShells) of one
+	// task's vars must not leak into the others that share the included file.
+	require.NotSame(t, buildTask.Vars["CROSS_IMAGE"], dockerTask.Vars["CROSS_IMAGE"],
+		"injected included vars must not be shared by pointer across cloned tasks")
+	buildTask.Vars["CROSS_IMAGE"].Static = "mutated"
+	require.Equal(t, "wails-cross", dockerTask.Vars["CROSS_IMAGE"].Static,
+		"mutating one cloned task's var must not affect another's")
 }
 
 func TestPopulateBuiltins(t *testing.T) {

@@ -205,16 +205,25 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	mergedVars := e.mergeVars(task, depVars)
-
-	if err := checkPreconditions(task, mergedVars); err != nil {
-		return err
+	// Preconditions can reference task/dep vars, so they need the merged map.
+	// Compute it lazily: tasks without preconditions that turn out to be
+	// up-to-date can skip the fixed-point expansion entirely.
+	var mergedVars map[string]*ast.Var
+	if len(task.Precondition) > 0 {
+		mergedVars = e.mergeVars(task, depVars)
+		if err := checkPreconditions(task, mergedVars); err != nil {
+			return err
+		}
 	}
 
 	if !e.Force && isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
 		e.reportPrunedCached(task)
 		return nil
+	}
+
+	if mergedVars == nil {
+		mergedVars = e.mergeVars(task, depVars)
 	}
 
 	// depRuns is shared across goroutines once the parallel dep fanout is
