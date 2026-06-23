@@ -632,6 +632,23 @@ const char* ios_storage_json(void) {
     return mfDup(json);
 }
 
+const char* ios_storage_path(void) {
+    NSArray<NSString *> *paths = NSSearchPathForDirectoriesInDomains(
+        NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    NSString *dir = paths.firstObject;
+    if (dir == nil) {
+        return mfDup(@"");
+    }
+    // Unlike Android's getFilesDir(), the Application Support directory is not
+    // created automatically. Ensure it exists so callers can open databases
+    // there immediately.
+    [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:nil];
+    return mfDup(dir);
+}
+
 // MARK: - Power / battery state
 
 const char* ios_power_json(void) {

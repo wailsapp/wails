@@ -1004,6 +1004,12 @@ public class WailsBridge {
         }
     }
 
+    /** Absolute path to the app's private internal files directory
+     *  (getFilesDir()), suitable for databases and other persistent files. */
+    public String getStoragePath() {
+        return activity.getFilesDir().getAbsolutePath();
+    }
+
     /** Battery/power state as {"level":0-1,"charging":bool,"lowPower":bool}. */
     public String getPowerJson() {
         try {
