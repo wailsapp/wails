@@ -125,6 +125,12 @@ forwarded to a matching method on the Java `WailsBridge` via JNI. They mirror
 the `application.IOS*` surface, so one event-driven layer drives both platforms
 (see the `mobile` example's `registerNativeFeatures`).
 
+For the subset of capabilities whose signature is identical on both platforms,
+`application.Mobile` provides one build-guarded entry point: it dispatches to
+`Android` on Android, `IOS` on iOS, and a no-op stub on desktop — so
+cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
+own `//go:build` split. Platform-specific calls stay on `Android` / `IOS`.
+
 | Capability | API | Notes |
 |---|---|---|
 | Share sheet | `Android.Share(json)` | `Intent.ACTION_SEND` |
