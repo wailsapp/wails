@@ -94,18 +94,30 @@ jobs:
         else
           INSERT="${ENTRY}"
         fi
-        awk -v ins="$INSERT" '
-          /^## Changed/ && !done { print; print ins; done=1; next }
-          { print }
-        ' v3/UNRELEASED_CHANGELOG.md > v3/UNRELEASED_CHANGELOG.md.tmp
-        mv v3/UNRELEASED_CHANGELOG.md.tmp v3/UNRELEASED_CHANGELOG.md
+        # Insert the notes under "## Changed". If that anchor is ever missing,
+        # append the section so the notes are never silently dropped.
+        if grep -q '^## Changed' v3/UNRELEASED_CHANGELOG.md; then
+          awk -v ins="$INSERT" '
+            /^## Changed/ && !done { print; print ins; done=1; next }
+            { print }
+          ' v3/UNRELEASED_CHANGELOG.md > v3/UNRELEASED_CHANGELOG.md.tmp
+          mv v3/UNRELEASED_CHANGELOG.md.tmp v3/UNRELEASED_CHANGELOG.md
+        else
+          printf '\n## Changed\n%s\n' "$INSERT" >> v3/UNRELEASED_CHANGELOG.md
+        fi
         git add v3/go.mod v3/go.sum v3/UNRELEASED_CHANGELOG.md
         if git diff --cached --quiet; then
           echo "No staged changes after bump — nothing to commit."
           exit 0
         fi
-        git commit -m "chore(v3): bump webview2 to ${LATEST}"
-        git push origin master
+        # Commit/push are best-effort too: a failure here must not block the v3
+        # release. Reset to the remote and continue on the current version.
+        if ! git commit -m "chore(v3): bump webview2 to ${LATEST}" || ! git push origin master; then
+          echo "::warning::webview2 sync commit/push failed; resetting and continuing without the bump"
+          git fetch origin master || true
+          git reset --hard origin/master || true
+          exit 0
+        fi
         echo "bumped=true" >> "$GITHUB_OUTPUT"
 
     - name: Check for existing release tag

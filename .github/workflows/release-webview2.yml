@@ -72,9 +72,18 @@ jobs:
       - name: Determine next version
         id: version
         if: steps.changes.outputs.changed == 'true'
+        env:
+          # Pass the dispatch input through env (never interpolate it directly
+          # into the shell) and validate it, so a crafted value can't inject
+          # commands into a step that runs with contents: write.
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            if [[ ! "$INPUT_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::version must match vMAJOR.MINOR.PATCH, e.g. v1.0.27"
+              exit 1
+            fi
+            VERSION="$INPUT_VERSION"
           else
             LAST_TAG="${{ steps.changes.outputs.last_tag }}"
             if [ -z "$LAST_TAG" ]; then
@@ -128,6 +137,7 @@ jobs:
           git push origin "webview2/${{ steps.version.outputs.version }}"
 
       - name: Create GitHub release
+        id: github_release
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,10 +151,15 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          if [ "${{ steps.changes.outputs.changed }}" = "true" ]; then
+          if [ "${{ steps.github_release.outcome }}" = "success" ]; then
             {
               echo "## 🚀 Released webview2 ${{ steps.version.outputs.version }}"
               echo "Changes since ${{ steps.changes.outputs.last_tag }}. The v3 nightly release will pick up the new tag."
+            } >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.changes.outputs.changed }}" = "true" ]; then
+            {
+              echo "## ❌ webview2 release failed"
+              echo "Changes were detected since ${{ steps.changes.outputs.last_tag }}, but the release did not complete — check the failed step above."
             } >> "$GITHUB_STEP_SUMMARY"
           else
             {
