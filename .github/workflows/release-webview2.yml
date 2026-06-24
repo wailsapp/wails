@@ -118,15 +118,28 @@ jobs:
         run: |
           LAST_TAG="${{ steps.changes.outputs.last_tag }}"
           VERSION="${{ steps.version.outputs.version }}"
+          # Drop internal-only commits (pipeline, chores, build/test plumbing)
+          # from the user-facing notes. The conventional-commit type is matched
+          # case-insensitively, tolerating an optional "(scope)" and breaking
+          # "!". Keep this set in sync with internalTypes in
+          # v3/scripts/auto-changelog.go. `|| true` so pipefail doesn't kill the
+          # step when grep filters everything out (no match -> exit 1).
+          INTERNAL_RE='^(ci|chore|build|test|style)(\([^)]*\))?!?:'
+          if [ -n "$LAST_TAG" ]; then
+            RANGE="${LAST_TAG}..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+          NOTES=$(git log --no-merges --pretty='%s' $RANGE -- webview2/ \
+            | grep -viE "$INTERNAL_RE" | sed 's/^/- /' | head -n 50 || true)
+          [ -z "$NOTES" ] && NOTES="- Maintenance release (no user-facing changes)."
           {
             echo "## webview2 ${VERSION}"
             echo ""
+            echo "$NOTES"
             if [ -n "$LAST_TAG" ]; then
-              git log --no-merges --pretty='- %s' "$LAST_TAG"..HEAD -- webview2/
               echo ""
               echo "**Full diff:** https://github.com/${{ github.repository }}/compare/${LAST_TAG}...webview2/${VERSION}"
-            else
-              git log --no-merges --pretty='- %s' HEAD -- webview2/ | head -n 50
             fi
           } > release-notes.md
           echo "----- generated release notes -----"

@@ -59,12 +59,10 @@ jobs:
     - name: Sync webview2 to latest release
       # Ensure v3 always releases against the newest released webview2 module.
       # Reads the latest webview2/v* tag; if v3/go.mod is behind, bumps it and
-      # folds the webview2 release notes into the v3 unreleased changelog (so
-      # they appear in the v3 release notes). Best-effort: a failure here must
-      # never block the v3 release — it just proceeds on the current version.
+      # adds a v3 changelog entry linking to the webview2 release notes (so they
+      # appear in the v3 release notes). Best-effort: a failure here must never
+      # block the v3 release — it just proceeds on the current version.
       id: webview2_sync
-      env:
-        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         set -e
         LATEST_TAG=$(git tag -l "webview2/v*" | sort -V | tail -n 1)
@@ -85,15 +83,14 @@ jobs:
           git checkout -- v3/go.mod v3/go.sum 2>/dev/null || true
           exit 0
         fi
-        # Fold the webview2 release notes into the v3 unreleased changelog.
-        NOTES=$(gh release view "webview2/${LATEST}" --repo "${{ github.repository }}" --json body -q .body 2>/dev/null || true)
-        ENTRY="- Bump \`webview2\` to ${LATEST}."
-        if [ -n "$NOTES" ]; then
-          BODY=$(printf '%s\n' "$NOTES" | sed '1{/^## /d;}' | sed '/^[[:space:]]*$/d' | sed 's/^/  /')
-          INSERT="${ENTRY}"$'\n'"${BODY}"
-        else
-          INSERT="${ENTRY}"
-        fi
+        # Reference the webview2 release notes by link rather than embedding
+        # them. Each webview2 release body uses its own heading style (some are
+        # hand-written with "### Fixes", others are flat auto-generated bullet
+        # lists), so inlining produced inconsistent, messy changelog entries. A
+        # single link is uniform and always points at the authoritative notes.
+        # The tag contains a slash ("webview2/vX.Y.Z"), so URL-encode it as %2F.
+        RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/webview2%2F${LATEST}"
+        INSERT="- Bump \`webview2\` to ${LATEST} ([release notes](${RELEASE_URL}))."
         # Insert the notes under "## Changed". If that anchor is ever missing,
         # append the section so the notes are never silently dropped.
         if grep -q '^## Changed' v3/UNRELEASED_CHANGELOG.md; then
