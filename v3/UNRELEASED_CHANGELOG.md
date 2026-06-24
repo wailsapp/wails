@@ -28,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix release-webview2 workflow to correctly handle go.sum files in [PR](https://github.com/wailsapp/wails/pull/5671) by @taliesin-ai
 - Fix Linux GTK4 menu updates by clearing and rebuilding the native menu in [PR](https://github.com/wailsapp/wails/pull/5659) by @taliesin-ai
 
 ## Deprecated
