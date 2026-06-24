@@ -19,6 +19,10 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
+- Bump `webview2` to v1.0.26.
+  ### Fixes
+  - **Recover from transient runtime COM errors instead of exiting** (#5658, #5580). `Chromium.errorCallback` previously called `os.Exit(1)` for *any* COM error, so a recoverable hiccup after startup killed the whole application. Runtime paths (`Resize`/`GetClientRect`, `Navigate`/`NavigateToString`, `Init`, `MessageReceived`, `PutZoomFactor`, `OpenDevToolsWindow`) now log and recover. In particular, a malformed/untrusted web message in `MessageReceived` is now dropped rather than taking the process down. This addresses the mixed-DPI monitor-crossing crash class (#5544, #5650). Environment/controller-creation paths remain fatal.
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.25...webview2/v1.0.26
 <!-- Changes in existing functionality -->
 
 ## Fixed
