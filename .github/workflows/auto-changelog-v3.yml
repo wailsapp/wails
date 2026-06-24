@@ -20,7 +20,9 @@ jobs:
 
     permissions:
       contents: write
-      models: read   # allow the built-in GITHUB_TOKEN to call GitHub Models inference
+      pull-requests: read   # GET /pulls/{n} and /pulls/{n}/files
+      issues: read          # GET /issues/{n}/comments (CodeRabbit summary)
+      models: read          # allow the built-in GITHUB_TOKEN to call GitHub Models inference
 
     steps:
     - name: Checkout master
