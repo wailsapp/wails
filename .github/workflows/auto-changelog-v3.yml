@@ -20,6 +20,7 @@ jobs:
 
     permissions:
       contents: write
+      models: read   # allow the built-in GITHUB_TOKEN to call GitHub Models inference
 
     steps:
     - name: Checkout master
@@ -67,7 +68,6 @@ jobs:
       if: steps.check.outputs.skip == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ steps.pr.outputs.number }}
       run: go run v3/scripts/auto-changelog.go
