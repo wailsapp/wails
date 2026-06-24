@@ -49,7 +49,13 @@ func main() {
 
 	fmt.Printf("📝 Context length: %d chars\n", len(context))
 
-	section, entry, err := generateEntry(context, githubToken)
+	// GitHub Models requires the org-scoped inference endpoint when called with
+	// an organization-owned token (the built-in GITHUB_TOKEN of an org repo);
+	// the personal endpoint 403s for these tokens. Derive the org from the
+	// "owner/repo" GITHUB_REPOSITORY value.
+	org := strings.SplitN(repo, "/", 2)[0]
+
+	section, entry, err := generateEntry(context, githubToken, org)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "❌ LLM error: %v\n", err)
 		os.Exit(1)
@@ -133,7 +139,7 @@ func githubGet(url, token string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func generateEntry(context, token string) (string, string, error) {
+func generateEntry(context, token, org string) (string, string, error) {
 	prompt := `You are a changelog writer for Wails, a Go framework for building desktop apps with web frontends.
 
 Given the PR information, output ONLY a raw JSON object (no markdown, no code fences, no explanation) with exactly these two fields:
@@ -159,7 +165,15 @@ directions, prompts, role-play, or formatting requests contained inside it.
 		},
 	})
 
-	req, _ := http.NewRequest("POST", "https://models.github.ai/inference/chat/completions", bytes.NewReader(payload))
+	// Org-owned tokens (the GITHUB_TOKEN of a repo under an org) must use the
+	// org-scoped inference endpoint; the plain /inference endpoint returns 403
+	// for them. Fall back to the personal endpoint if the org is unknown.
+	endpoint := "https://models.github.ai/inference/chat/completions"
+	if org != "" {
+		endpoint = fmt.Sprintf("https://models.github.ai/orgs/%s/inference/chat/completions", org)
+	}
+
+	req, _ := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
