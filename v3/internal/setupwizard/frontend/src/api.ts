@@ -183,6 +183,20 @@ export async function createNotarizationProfile(data: {
   return response.json();
 }
 
+export async function getInit(): Promise<import('./types').InitData | null> {
+  const response = await fetch(`${API_BASE}/init`);
+  return response.json();
+}
+
+export async function createProject(data: import('./types').InitData): Promise<{ success: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/init/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
 export async function createGPGKey(data: {
   name: string;
   email: string;

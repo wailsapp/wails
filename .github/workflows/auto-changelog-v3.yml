@@ -20,6 +20,8 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: read   # GET /pulls/{n} and /pulls/{n}/files
+      issues: read          # GET /issues/{n}/comments (CodeRabbit summary)
 
     steps:
     - name: Checkout master
@@ -27,7 +29,7 @@ jobs:
       with:
         ref: master
         fetch-depth: 0
-        token: ${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
 
     - name: Resolve PR number
       id: pr
@@ -82,4 +84,4 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add v3/UNRELEASED_CHANGELOG.md
         git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
-        git push https://x-access-token:${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
+        git push https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
