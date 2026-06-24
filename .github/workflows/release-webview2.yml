@@ -102,12 +102,17 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Releasing webview2 at version: $VERSION"
 
-      - name: Build and test webview2
+      - name: Build webview2 (cross-compile for Windows)
         if: steps.changes.outputs.changed == 'true'
         working-directory: webview2
+        env:
+          # webview2 is Windows-only code, so it can't build (or run tests) on
+          # the ubuntu runner natively — cross-compile for Windows as the gate.
+          GOOS: windows
         run: |
+          go mod download
           go build ./...
-          go test ./...
+          go vet ./...
 
       - name: Generate release notes
         if: steps.changes.outputs.changed == 'true'
