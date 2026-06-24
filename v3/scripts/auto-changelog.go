@@ -42,6 +42,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Internal-only PRs (CI, chores, build/test plumbing, secrets) are not
+	// user-facing and must not appear in the release notes. Detect them from
+	// the conventional-commit type in the PR title and skip — successfully, so
+	// the merge doesn't go red. A maintainer who *does* want an internal-typed
+	// PR in the changelog can add the entry to UNRELEASED_CHANGELOG.md in the PR
+	// itself; the workflow's "Check if changelog was updated" step then leaves
+	// it untouched, so this skip is never a silent data-loss trap.
+	if isInternalChange(pr.Title) {
+		fmt.Printf("ℹ️  PR title %q is an internal change — skipping changelog entry.\n", pr.Title)
+		return
+	}
+
 	context, err := fetchCodeRabbitSummary(repo, prNumber, githubToken)
 	if err != nil {
 		fmt.Printf("⚠️  Could not fetch CodeRabbit summary: %v — falling back to PR title\n", err)
@@ -132,6 +144,31 @@ func githubGet(url, token string) ([]byte, error) {
 		return nil, fmt.Errorf("GitHub API %s returned %d", url, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+// internalTypes are the conventional-commit types treated as internal: pipeline
+// changes, chores (incl. secret rotations and dependency bumps), and build/test
+// plumbing. These never reach the user-facing release notes. Keep this set in
+// sync with the skip filter in .github/workflows/release-webview2.yml.
+var internalTypes = map[string]bool{
+	"ci": true, "chore": true, "build": true, "test": true, "style": true,
+}
+
+// internalTitleRe captures the conventional-commit type from a PR title, e.g.
+// "ci(webview2): ..." -> "ci", "chore!: ..." -> "chore". Matching is anchored,
+// case-insensitive, and tolerant of an optional "(scope)" and breaking "!".
+var internalTitleRe = regexp.MustCompile(`^(?i)([a-z]+)(\([^)]*\))?!?:`)
+
+// isInternalChange reports whether a PR title denotes an internal-only change.
+// It fails open: a title without a recognised conventional-commit prefix (or
+// with a user-facing type like feat/fix/docs/perf/refactor) is NOT internal, so
+// we never drop a genuine change just because its title wasn't conventional.
+func isInternalChange(title string) bool {
+	m := internalTitleRe.FindStringSubmatch(strings.TrimSpace(title))
+	if m == nil {
+		return false
+	}
+	return internalTypes[strings.ToLower(m[1])]
 }
 
 func generateEntry(context, apiKey string) (string, string, error) {
