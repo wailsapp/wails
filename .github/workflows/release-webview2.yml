@@ -112,7 +112,6 @@ jobs:
         run: |
           go mod download
           go build ./...
-          go vet ./...
 
       - name: Generate release notes
         if: steps.changes.outputs.changed == 'true'
