@@ -1962,7 +1962,7 @@ func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
 //
 //export onButtonEvent
 func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
-	// Constants (defined here to be easier to use with purego)
+	// Constants defined here for readability
 	GdkButtonPress := C.GDK_BUTTON_PRESS     // 4
 	Gdk2ButtonPress := C.GDK_2BUTTON_PRESS   // 5 for double-click
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
@@ -2001,7 +2001,7 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 
 //export onMenuButtonEvent
 func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
-	// Constants (defined here to be easier to use with purego)
+	// Constants defined here for readability
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
 
 	windowId := uint(C.uint(data))
@@ -2293,7 +2293,6 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		C.free(unsafe.Pointer(nameStr))
 	}
 
-	// FIXME: This should be consolidated - duplicate exists in linux_purego.go
 	buildStringAndFree := func(s C.gpointer) string {
 		bytes := []byte{}
 		p := unsafe.Pointer(s)
