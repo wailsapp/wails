@@ -301,6 +301,7 @@ export default defineConfig({
             { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
             { label: "iOS", link: "/guides/mobile/ios" },
             { label: "Android", link: "/guides/mobile/android" },
+            { label: "Mobile API", link: "/guides/mobile/mobile-api" },
           ],
         },
 
