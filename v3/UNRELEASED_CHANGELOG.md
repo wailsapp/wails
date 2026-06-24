@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
+- Remove go vet from webview2 release workflow cross-compilation in [PR](https://github.com/wailsapp/wails/pull/5672) by @taliesin-ai
 - Update auto-changelog OpenRouter model to google/gemini-2.5-flash-lite in [PR](https://github.com/wailsapp/wails/pull/5670) by @taliesin-ai
 - Bump `webview2` to v1.0.26.
   ### Fixes
