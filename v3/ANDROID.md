@@ -151,7 +151,7 @@ own `//go:build` split. Platform-specific calls stay on `Android` / `IOS`.
 | Proximity | `Android.SetProximity(bool)` | → `common:proximity` |
 | Text-to-speech | `Android.Speak(text)` / `Android.StopSpeak()` | `TextToSpeech` |
 | Storage info | `Android.StorageJSON()` | `{free,total}` bytes (`StatFs`) |
-| Storage path | `Android.StoragePath()` | `getFilesDir()` (for databases & persistent files) |
+| Storage path | `Android.StoragePath()` | `getFilesDir()` (for databases & persistent files); `""` if unavailable |
 | Power / battery | `Android.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `Android.NetworkJSON()` | `{connected,type}` (`ConnectivityManager`) |
 | Keyboard insets | `Android.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |

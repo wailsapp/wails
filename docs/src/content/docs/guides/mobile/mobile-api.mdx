@@ -44,8 +44,8 @@ db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
 `StoragePath()` returns the absolute path to the app's private files directory —
 `getFilesDir()` on Android, the Application Support directory on iOS — the
 recommended home for databases and other persistent files. It returns an empty
-string on desktop, and on iOS also if the directory cannot be created, so check
-for `""` before using it.
+string on desktop, and on device if the directory is unavailable (on iOS, if it
+cannot be created), so check for `""` before using it.
 
 <Aside type="note">
 Off-device (desktop builds) every `Mobile` method is a no-op and every query
