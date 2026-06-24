@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -35,6 +36,82 @@ func TestExtract_StandardFile(t *testing.T) {
 	got := readFile(t, filepath.Join(dir, "hello.txt"))
 	if got != "hello world" {
 		t.Errorf("expected 'hello world', got %q", got)
+	}
+}
+
+func TestExtract_ShebangScriptBecomesExecutable(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
+	// Model the embedded reality that broke #5606: go:embed reports every file
+	// as 0444, so a script like gradlew arrives without an exec bit. Its
+	// executability has to be recovered from the shebang, not the source mode.
+	fsys := fstest.MapFS{
+		"gradlew": {Data: []byte("#!/usr/bin/env sh\nexit 0\n"), Mode: 0444},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "gradlew"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Assert on the executable bits rather than an exact mode: the umask can
+	// legitimately mask other permission bits, so 0755 is not guaranteed.
+	if info.Mode().Perm()&0111 == 0 {
+		t.Fatalf("expected shebang script to be executable, got mode %v", info.Mode().Perm())
+	}
+}
+
+func TestExtract_SourceExecBitPreserved(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
+	// Disk-based local/remote templates keep their real modes, so an executable
+	// binary without a shebang must stay executable after extraction.
+	fsys := fstest.MapFS{
+		"tool": {Data: []byte("\x7fELF not a script\n"), Mode: 0755},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "tool"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0111 == 0 {
+		t.Fatalf("expected executable source to stay executable, got mode %v", info.Mode().Perm())
+	}
+}
+
+func TestExtract_ReadOnlySourceModeStaysWritable(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits are not represented in file modes on Windows")
+	}
+	// Embedded filesystems frequently report read-only modes (e.g. 0444). The
+	// extracted file should still be writable (umask applied) and must not
+	// gain executable bits the source does not have.
+	fsys := fstest.MapFS{
+		"config.txt": {Data: []byte("data"), Mode: 0444},
+	}
+	td := New(fsys)
+	dir := t.TempDir()
+	if err := td.Extract(dir, nil); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(dir, "config.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0200 == 0 {
+		t.Fatalf("expected extracted file to be writable, got mode %v", info.Mode().Perm())
+	}
+	if info.Mode().Perm()&0111 != 0 {
+		t.Fatalf("expected extracted file to be non-executable, got mode %v", info.Mode().Perm())
 	}
 }
 
@@ -404,7 +481,6 @@ func TestExtract_CopyFileCloseFails(t *testing.T) {
 	}
 }
 
-
 // ---- resolveTarget: template parse error returns original path ----
 
 func TestResolveTarget_TemplateParseError(t *testing.T) {
@@ -527,12 +603,12 @@ func (d *callbackErrDir) ReadDir(n int) ([]fs.DirEntry, error) {
 
 type callbackErrFileInfo struct{}
 
-func (i *callbackErrFileInfo) Name() string      { return "." }
-func (i *callbackErrFileInfo) Size() int64       { return 0 }
-func (i *callbackErrFileInfo) Mode() fs.FileMode { return fs.ModeDir | 0755 }
+func (i *callbackErrFileInfo) Name() string       { return "." }
+func (i *callbackErrFileInfo) Size() int64        { return 0 }
+func (i *callbackErrFileInfo) Mode() fs.FileMode  { return fs.ModeDir | 0755 }
 func (i *callbackErrFileInfo) ModTime() time.Time { return time.Time{} }
-func (i *callbackErrFileInfo) IsDir() bool       { return true }
-func (i *callbackErrFileInfo) Sys() interface{}  { return nil }
+func (i *callbackErrFileInfo) IsDir() bool        { return true }
+func (i *callbackErrFileInfo) Sys() interface{}   { return nil }
 
 type callbackErrEntry struct{}
 

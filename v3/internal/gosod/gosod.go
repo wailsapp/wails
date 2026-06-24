@@ -165,6 +165,12 @@ func (t *TemplateDir) processTemplates(targetDir string, data interface{}) error
 		if err := w.Close(); err != nil {
 			return err
 		}
+		// Rendered scripts (e.g. the iOS build.sh.tmpl) lose any source mode the
+		// same way embedded standard files do, so recover executability from the
+		// rendered content's shebang.
+		if err := makeExecutableIfNeeded(target, 0); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -193,7 +199,7 @@ func (t *TemplateDir) copyFile(src, dst string) error {
 			log.Println("gosod: close source:", err)
 		}
 	}()
-	d, err := os.Create(dst)
+	d, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
@@ -201,5 +207,67 @@ func (t *TemplateDir) copyFile(src, dst string) error {
 		_ = d.Close()
 		return err
 	}
-	return d.Close()
+	if err := d.Close(); err != nil {
+		return err
+	}
+	var srcMode fs.FileMode
+	if info, err := s.Stat(); err == nil {
+		srcMode = info.Mode()
+	}
+	return makeExecutableIfNeeded(dst, srcMode)
+}
+
+// makeExecutableIfNeeded sets the executable bits on a freshly written file when
+// it is meant to be runnable. Two signals are used:
+//
+//   - the source FileMode already carries an exec bit (true for disk-based
+//     local/remote templates), or
+//   - the file content begins with a shebang ("#!").
+//
+// The shebang check is what actually restores executability for embedded scripts
+// such as Android's gradlew wrapper (#5606): go:embed reports every file as 0444,
+// so the source mode alone can never tell us the file was meant to be executable.
+// Exec bits are added only where a read bit is already present, so a restrictive
+// umask is still respected.
+func makeExecutableIfNeeded(path string, srcMode fs.FileMode) error {
+	executable := srcMode&0o111 != 0
+	if !executable {
+		hasShebang, err := startsWithShebang(path)
+		if err != nil {
+			return err
+		}
+		executable = hasShebang
+	}
+	if !executable {
+		return nil
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	mode := info.Mode().Perm()
+	mode |= (mode & 0o444) >> 2 // mirror each read bit into the matching exec bit
+	return os.Chmod(path, mode)
+}
+
+// startsWithShebang reports whether the file at path begins with "#!".
+func startsWithShebang(path string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Println("gosod: close for shebang check:", err)
+		}
+	}()
+	buf := make([]byte, 2)
+	n, err := io.ReadFull(f, buf)
+	if err == io.EOF || err == io.ErrUnexpectedEOF {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return n == 2 && buf[0] == '#' && buf[1] == '!', nil
 }

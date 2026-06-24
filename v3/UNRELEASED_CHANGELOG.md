@@ -27,6 +27,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve executable permissions when extracting v3 template assets, fixing generated Android `gradlew` scripts (#5606).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
