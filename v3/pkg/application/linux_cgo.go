@@ -357,6 +357,21 @@ func menuNew() pointer {
 	return pointer(C.g_menu_new())
 }
 
+func menuClear(menu *Menu) {
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	C.menu_clear((*C.GMenu)(impl.native))
+
+	menuItemCountersLock.Lock()
+	menuItemCounters[impl.native] = 0
+	menuItemCountersLock.Unlock()
+}
+
 func menuSetSubmenu(item *MenuItem, menu *Menu) {
 	if item.impl == nil || menu.impl == nil {
 		return
