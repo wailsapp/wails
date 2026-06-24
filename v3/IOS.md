@@ -107,6 +107,12 @@ capabilities as exported `application.IOS*` functions (guarded by
 `application.Android*` counterpart, so a single event-driven layer can drive
 both platforms (see the `mobile` example's `registerNativeFeatures`).
 
+For the subset of capabilities whose signature is identical on both platforms,
+`application.Mobile` provides one build-guarded entry point: it dispatches to
+`IOS` on iOS, `Android` on Android, and a no-op stub on desktop — so
+cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
+own `//go:build` split. Platform-specific calls stay on `IOS` / `Android`.
+
 | Capability | API | Notes |
 |---|---|---|
 | Share sheet | `IOS.Share(json)` | `UIActivityViewController` |
@@ -127,6 +133,7 @@ both platforms (see the `mobile` example's `registerNativeFeatures`).
 | Proximity | `IOS.SetProximity(bool)` | → `common:proximity` |
 | Text-to-speech | `IOS.Speak(text)` / `IOS.StopSpeak()` | `AVSpeechSynthesizer` |
 | Storage info | `IOS.StorageJSON()` | `{free,total}` bytes |
+| Storage path | `IOS.StoragePath()` | Application Support dir, created on first access (for databases & persistent files); `""` if it can't be created |
 | Power / battery | `IOS.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `IOS.NetworkJSON()` | `{connected,type}` |
 | Keyboard insets | `IOS.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |

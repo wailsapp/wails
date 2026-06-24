@@ -180,6 +180,11 @@ func (iosManager) StopSpeak() { C.ios_stop_speak() }
 // StorageJSON returns disk space as {"free":bytes,"total":bytes}.
 func (iosManager) StorageJSON() string { return cStr(C.ios_storage_json()) }
 
+// StoragePath returns the absolute path to the app's Application Support
+// directory, suitable for databases and other persistent files (the iOS analog
+// of Android's getFilesDir()). The directory is created if it does not yet exist.
+func (iosManager) StoragePath() string { return cStr(C.ios_storage_path()) }
+
 // PowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
 func (iosManager) PowerJSON() string { return cStr(C.ios_power_json()) }
 
