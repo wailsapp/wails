@@ -1,10 +1,11 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults } from './types';
-import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus } from './api';
+import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
+import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
+import InitFlow from './components/InitFlow';
 
 type OOBEStep =
   | 'splash'
@@ -176,7 +177,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                         ? 'bg-green-500 text-white'
                         : isCurrent
                           ? 'bg-red-500 text-white'
-                          : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                          : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'
                     }`}
                     aria-hidden="true"
                   >
@@ -195,7 +196,7 @@ function Sidebar({ currentStep, dockerStatus, buildingDocker }: {
                         ? 'text-gray-900 dark:text-white'
                         : isCompleted
                           ? 'text-green-700 dark:text-gray-200'
-                          : 'text-gray-400 dark:text-gray-300'
+                          : 'text-gray-600 dark:text-gray-300'
                     }`}
                   >
                     {stage.label}
@@ -808,7 +809,7 @@ function CrossPlatformPage({
           <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-md">
             Wails can compile your app for Windows, macOS, and Linux from a single machine
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
             Requires Docker for cross-compilation
           </p>
 
@@ -1166,7 +1167,7 @@ function DockerSetupPage({
           </svg>
         </a>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-6 text-center max-w-xs">
+        <p className="text-xs text-gray-500 dark:text-gray-500 mb-6 text-center max-w-xs">
           After installing, come back and we'll continue setting up.
           Some platforms may require a reboot.
         </p>
@@ -1287,7 +1288,7 @@ function DockerSetupPage({
           </div>
         </div>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
           This may take several minutes
         </p>
 
@@ -1381,7 +1382,7 @@ function DockerSetupPage({
       <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-sm">
         Download the cross-compilation image to enable building for all platforms
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
         This will download ~800MB and may take several minutes
       </p>
 
@@ -1453,7 +1454,7 @@ function MobileOptionsPage({ onYes, onSkip, onBack, canGoBack }: {
       <p className="text-gray-500 dark:text-gray-400 mb-2 text-center max-w-md">
         Wails can build native iOS and Android apps from the same codebase
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mb-8 text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-500 mb-8 text-center">
         We'll check the toolchain for each platform — no signing certificates needed for the simulator/emulator
       </p>
       <div className="flex flex-col items-center gap-2">
@@ -2155,6 +2156,9 @@ export default function App() {
     }
     return 'dark';
   });
+  // Init mode (wails3 init -ui): undefined = still detecting, null = setup mode.
+  const [initData, setInitData] = useState<InitData | null | undefined>(undefined);
+  const [initDetectError, setInitDetectError] = useState(false);
 
   const navigateTo = (newStep: OOBEStep) => {
     setStepHistory(prev => [...prev, step]);
@@ -2193,6 +2197,25 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  // Detect init mode: the backend returns init data here, or null in setup mode.
+  useEffect(() => {
+    // A fetch *failure* must not be treated as setup mode (null) — null is only a
+    // valid setup-mode signal when the request actually succeeds. Retry transient
+    // failures, then surface an error rather than silently picking the wrong flow.
+    let cancelled = false;
+    const detect = (attempt = 0) => {
+      getInit()
+        .then((d) => { if (!cancelled) setInitData(d); })
+        .catch(() => {
+          if (cancelled) return;
+          if (attempt < 4) setTimeout(() => detect(attempt + 1), 300);
+          else setInitDetectError(true);
+        });
+    };
+    detect();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     init();
@@ -2459,21 +2482,63 @@ export default function App() {
     setPrevDockerPullStatus(dockerStatus?.pullStatus || null);
   }, [dockerStatus?.pullStatus, step]);
 
+  // Couldn't reach the server to detect the mode — show an error instead of
+  // silently rendering the wrong (setup) flow.
+  if (initDetectError) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-[#0f0f0f] text-center p-8">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Couldn't reach the wizard server. Please reload the page.
+        </p>
+      </div>
+    );
+  }
+  // Still detecting which mode we're in — avoid flashing the setup flow.
+  if (initData === undefined) return null;
+  // Project init wizard (wails3 init -ui).
+  if (initData && initData.mode === 'init') {
+    return <InitFlow data={initData} theme={theme} toggleTheme={toggleTheme} />;
+  }
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f0f] flex items-center justify-center p-4 transition-colors relative overflow-hidden">
-        {/* Digital Wales mountain backdrop — the glass card below blurs over it. */}
+      {/* Viewport-locked scroll container: when the card is bigger than the
+          window (below its minimum size) this scrolls in BOTH axes so nothing is
+          clipped. (A min-h-screen flex parent grows instead of scrolling, which
+          leaves horizontal overflow unreachable.) */}
+      <div className="fixed inset-0 overflow-auto bg-gray-50 dark:bg-[#0f0f0f] transition-colors">
+        {/* Digital Wales mountain backdrop — fixed so it stays put while the
+            content scrolls on very small windows. */}
         <div
-          className="absolute inset-0 bg-center bg-cover bg-no-repeat pointer-events-none opacity-50 dark:opacity-40"
+          className="fixed inset-0 bg-center bg-cover bg-no-repeat pointer-events-none opacity-50 dark:opacity-40"
           style={{ backgroundImage: "url('/digital_wales_master.webp')" }}
         />
 
-        <div className="w-[75vw] max-w-[1200px] h-[75vh] max-h-[800px] glass-card rounded-2xl flex overflow-hidden relative z-10">
+        {/* Wrapper is at least the viewport (min-w/h-full) but grows to the card
+            (w-fit) so the scroller above gets real overflow to scroll; centers the
+            card while it fits. */}
+        <div className="relative min-h-full min-w-full w-fit flex items-center justify-center p-4">
+        {/* The card keeps a fixed 3:2 aspect ratio (matching the 1200x800 max) at
+            every size, scaling to fit the viewport (whichever of width/height is
+            the tighter constraint) down to a minimum of 864x576. Below that it
+            holds size and the wrapper above scrolls. Inline styles so Tailwind's
+            purge can't drop the clamp/min() sizing. */}
+        <div
+          className="glass-card rounded-2xl flex overflow-hidden relative z-10"
+          style={{
+            aspectRatio: '3 / 2',
+            width: 'clamp(54rem, min(100vw - 2rem, (100vh - 2rem) * 1.5), 75rem)',
+          }}
+        >
           {/* Sidebar */}
           <Sidebar currentStep={step} dockerStatus={dockerStatus} buildingDocker={backgroundDockerStarted && (buildingImage || dockerStatus?.pullStatus === 'pulling')} />
 
-          {/* Content area - distinct from sidebar in dark mode */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
+          {/* Content area - distinct from sidebar in dark mode.
+              min-w keeps the content usable: the fixed-width sidebar never
+              squashes, so without a floor all shrink falls on the content. The
+              card's clamp() floor (44rem) = sidebar (12rem) + this 32rem, so the
+              content stops shrinking here and the whole card scrolls below that. */}
+          <div className="flex-1 flex flex-col min-w-[36rem] bg-white/85 dark:bg-[#0a0e16]/85 backdrop-blur-[30px] backdrop-saturate-150 relative">
             <AnimatePresence>
               {showDockerToast && (
                 <motion.div
@@ -2636,6 +2701,7 @@ export default function App() {
               </AnimatePresence>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </ThemeContext.Provider>
