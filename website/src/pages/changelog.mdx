@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed wake (experimental `WAILS_USE_WAKE=true` build runner) running precondition `sh:` strings without template expansion, causing a spurious "garble is required for obfuscated builds" error on every build by @leaanthony
 - Fixed nil pointer crash in `application.Quit` when called before `Run` or after `Run` returned early [#5452](https://github.com/wailsapp/wails/issues/5452) by @c-tonneslan
+- Fixed v2 TypeScript model names for generic pointer type arguments so generated `App.d.ts` references match `models.ts` [#5160](https://github.com/wailsapp/wails/issues/5160) by @sjh9714
 
 ## v2.12.0 - 2026-03-26
 
