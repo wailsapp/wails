@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Bump `webview2` to v1.0.26: recover from transient runtime COM errors instead of exiting the process. Recoverable WebView2 COM failures after startup (resize/navigate/init/message handling) no longer crash the app, and a malformed web message is dropped rather than terminating the process. Fixes the mixed-DPI monitor-crossing crash class. (#5658, #5580, #5544, #5650)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
