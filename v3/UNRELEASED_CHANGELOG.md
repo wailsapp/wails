@@ -19,6 +19,9 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
+- Bump `webview2` to v1.0.27.
+  - ci(webview2): fix release build (cross-compile Windows + complete go.sum) (#5671)
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.26...webview2/v1.0.27
 - Remove go vet from webview2 release workflow cross-compilation in [PR](https://github.com/wailsapp/wails/pull/5672) by @taliesin-ai
 - Update auto-changelog OpenRouter model to google/gemini-2.5-flash-lite in [PR](https://github.com/wailsapp/wails/pull/5670) by @taliesin-ai
 - Bump `webview2` to v1.0.26.
