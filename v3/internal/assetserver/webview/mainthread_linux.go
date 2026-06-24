@@ -10,6 +10,17 @@ package webview
 
 extern void webviewMainThreadCallback(uintptr_t id);
 
+// webview_main_dispatch_enabled gates whether webview_invoke_on_main_sync may
+// schedule work onto the GTK main loop. It starts enabled and is cleared once
+// the loop has stopped (see webview_disable_main_dispatch). It is read and
+// written atomically because asset-server worker goroutines read it concurrently
+// with the shutdown path that clears it.
+static volatile gint webview_main_dispatch_enabled = 1;
+
+static void webview_disable_main_dispatch(void) {
+	g_atomic_int_set(&webview_main_dispatch_enabled, 0);
+}
+
 typedef struct {
 	uintptr_t id;
 	GMutex    mutex;
@@ -45,6 +56,17 @@ static gboolean webview_main_sync_trampoline(gpointer data) {
 // If the caller is already the main thread, g_main_context_invoke runs the
 // trampoline inline, so the wait completes immediately without deadlocking.
 static void webview_invoke_on_main_sync(uintptr_t id) {
+	// Once the GTK main loop has stopped there is nothing left to dispatch to: a
+	// scheduled source would never run and the worker would block here forever.
+	// The loop is also no longer iterating, so the cross-thread race that makes
+	// main-thread confinement necessary is gone — running the callback inline on
+	// the worker is safe at that point and lets in-flight asset requests drain
+	// during shutdown instead of wedging. See #5631 (review question 5).
+	if (!g_atomic_int_get(&webview_main_dispatch_enabled)) {
+		webviewMainThreadCallback(id);
+		return;
+	}
+
 	webviewMainSyncCall call;
 	call.id = id;
 	call.done = FALSE;
@@ -85,6 +107,16 @@ func invokeOnMainSync(fn func()) {
 	mainSyncMu.Unlock()
 
 	C.webview_invoke_on_main_sync(C.uintptr_t(id))
+}
+
+// DisableMainThreadDispatch marks the GTK main loop as stopped. After it is
+// called, invokeOnMainSync runs callbacks inline on the calling goroutine
+// instead of scheduling them onto the now-dead main loop, so asset-server
+// workers that complete a request during shutdown cannot block forever waiting
+// for a source that will never be serviced. The application layer calls this
+// once g_application_run has returned. See issue #5631.
+func DisableMainThreadDispatch() {
+	C.webview_disable_main_dispatch()
 }
 
 //export webviewMainThreadCallback
