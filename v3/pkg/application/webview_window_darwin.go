@@ -810,6 +810,15 @@ static void windowMinimise(void *window) {
 	[(WebviewWindow*)window miniaturize:nil];
 }
 
+// windowFlash requests user attention so the app's Dock icon bounces, drawing
+// the user back to a window that needs them. NSInformationalRequest bounces the
+// icon once; the request completes on its own, so disabling is a no-op.
+static void windowFlash(void *window, bool enabled) {
+	if (enabled) {
+		[NSApp requestUserAttention:NSInformationalRequest];
+	}
+}
+
 // zoom maximizes the window to the screen dimensions
 static void windowMaximise(void *window) {
 	[(WebviewWindow*)window zoom:nil];
@@ -1335,8 +1344,8 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *macosWebviewWindow) flash(_ bool) {
-	// Not supported on macOS
+func (w *macosWebviewWindow) flash(enabled bool) {
+	C.windowFlash(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) setSize(width, height int) {
