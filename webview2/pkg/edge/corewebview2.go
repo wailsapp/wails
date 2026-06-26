@@ -432,6 +432,18 @@ type ICoreWebView2Environment struct {
 	vtbl *iCoreWebView2EnvironmentVtbl
 }
 
+func (e *ICoreWebView2Environment) AddRef() uintptr {
+	ret, _, _ := e.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
+}
+
+func (e *ICoreWebView2Environment) Release() uintptr {
+	ret, _, _ := e.vtbl.Release.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
+}
+
 // CreateCoreWebView2Controller asynchronously creates a new WebView.
 func (e *ICoreWebView2Environment) CreateCoreWebView2Controller(parentWindow uintptr, handler *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler) error {
 	hr, _, _ := e.vtbl.CreateCoreWebView2Controller.Call(
