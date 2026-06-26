@@ -262,7 +262,10 @@ func (e *Chromium) Resize() {
 
 	bounds, err := w32.GetClientRect(e.hwnd)
 	if err != nil {
-		e.errorCallback(err)
+		// GetClientRect can fail transiently while the window is being torn
+		// down or reconfigured during DPI churn. Skipping a resize frame is
+		// recoverable; killing the process (errorCallback) is not.
+		log.Printf("[WebView2] Resize failed to get client rect: %v", err)
 		return
 	}
 
@@ -272,21 +275,23 @@ func (e *Chromium) Resize() {
 func (e *Chromium) Navigate(url string) {
 	err := e.webview.Navigate(url)
 	if err != nil {
-		e.errorCallback(err)
+		// A failed navigation is recoverable (the previous content stays
+		// visible); killing the process is not.
+		log.Printf("[WebView2] Navigate failed: %v", err)
 	}
 }
 
 func (e *Chromium) NavigateToString(content string) {
 	err := e.webview.NavigateToString(content)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] NavigateToString failed: %v", err)
 	}
 }
 
 func (e *Chromium) Init(script string) {
 	err := e.webview.AddScriptToExecuteOnDocumentCreated(script, nil)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] Init script registration failed: %v", err)
 	}
 }
 
@@ -506,13 +511,20 @@ func (e *Chromium) CursorChanged(sender *ICoreWebView2CompositionController, _ *
 func (e *Chromium) MessageReceived(sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs) uintptr {
 	message, err := args.TryGetWebMessageAsString()
 	if err != nil {
-		e.errorCallback(err)
+		// The web message originates from (potentially untrusted) page
+		// content. A malformed message must never be able to take the whole
+		// process down — drop it and keep running.
+		log.Printf("[WebView2] dropping malformed web message: %v", err)
+		return 0
 	}
 
 	if HasCapability(e.webview2RuntimeVersion, GetAdditionalObjects) {
 		obj, err := args.GetAdditionalObjects()
 		if err != nil {
-			e.errorCallback(err)
+			// Fall back to delivering the plain string message below rather
+			// than killing the process.
+			log.Printf("[WebView2] failed to read additional objects, delivering message without them: %v", err)
+			obj = nil
 		}
 
 		if obj != nil && e.MessageWithAdditionalObjectsCallback != nil {
@@ -527,7 +539,7 @@ func (e *Chromium) MessageReceived(sender *ICoreWebView2, args *ICoreWebView2Web
 
 	err = sender.PostWebMessageAsString(message)
 	if err != nil && !errors.Is(err, windows.ERROR_IO_PENDING) {
-		e.errorCallback(err)
+		log.Printf("[WebView2] PostWebMessageAsString failed: %v", err)
 	}
 	return 0
 }
@@ -721,14 +733,14 @@ func (e *Chromium) Focus() {
 func (e *Chromium) PutZoomFactor(zoomFactor float64) {
 	err := e.controller.PutZoomFactor(zoomFactor)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] PutZoomFactor failed: %v", err)
 	}
 }
 
 func (e *Chromium) OpenDevToolsWindow() {
 	err := e.webview.OpenDevToolsWindow()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] OpenDevToolsWindow failed: %v", err)
 	}
 }
 
