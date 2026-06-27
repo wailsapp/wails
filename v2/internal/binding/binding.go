@@ -25,10 +25,11 @@ type Bindings struct {
 
 	structsToGenerateTS map[string]map[string]interface{}
 	enumsToGenerateTS   map[string]map[string]interface{}
-	tsPrefix            string
-	tsSuffix            string
-	tsInterface         bool
-	obfuscate           bool
+	tsPrefix          string
+	tsSuffix          string
+	tsInterface       bool
+	obfuscate         bool
+	useNullableSlices bool
 }
 
 // NewBindings returns a new Bindings object
@@ -101,6 +102,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.WithUseNullableSlices(b.useNullableSlices)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
@@ -161,6 +163,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.WithUseNullableSlices(b.useNullableSlices)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 
@@ -325,6 +328,11 @@ func (b *Bindings) SetOutputType(outputType string) *Bindings {
 	if outputType == "interfaces" {
 		b.tsInterface = true
 	}
+	return b
+}
+
+func (b *Bindings) SetUseNullableSlices(v bool) *Bindings {
+	b.useNullableSlices = v
 	return b
 }
 
