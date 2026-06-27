@@ -185,6 +185,10 @@ export function Environment() {
     return window.runtime.Environment();
 }
 
+export function ProductInfo() {
+  return window.runtime.ProductInfo();
+}
+
 export function Quit() {
     window.runtime.Quit();
 }
