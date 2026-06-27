@@ -1,10 +1,10 @@
-//go:build linux
-// +build linux
+//go:build linux && !webkit_6
+// +build linux,!webkit_6
 
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
+#cgo pkg-config: gtk+-3.0
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
