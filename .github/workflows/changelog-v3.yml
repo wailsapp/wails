@@ -30,9 +30,9 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN || github.token }}
         
-    - name: Get validation script from master
+    - name: Get REAL validation script from v3-alpha
       run: |
-        echo "Fetching the validation script from master branch..."
+        echo "Fetching the REAL validation script from v3-alpha branch..."
         git fetch origin master
         git checkout origin/master -- v3/scripts/validate-changelog.go
         
@@ -121,9 +121,9 @@ jobs:
             echo "🔍 PR source branch: $BRANCH_NAME"
             echo "🔍 Head repository: $HEAD_REPO"
             
-            # Don't push if this is from a fork or if branch is master (main branch)
+            # Don't push if this is from a fork or if branch is v3-alpha (main branch)
             if [ "$HEAD_REPO" != "wails" ] || [ "$BRANCH_NAME" = "master" ]; then
-              echo "⚠️ Cannot push - either fork or master branch. Manual fix required."
+              echo "⚠️ Cannot push - either fork or direct v3-alpha branch. Manual fix required."
               echo "committed=false" >> $GITHUB_OUTPUT
               exit 0
             fi

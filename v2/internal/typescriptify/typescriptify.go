@@ -327,7 +327,11 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
 		}
 	}
-	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix))
+	fieldType := fmt.Sprintf("Record<%s, %s>", keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix)
+	if t.createInterface {
+		fieldType += " | null"
+	}
+	t.fields = append(t.fields, fmt.Sprintf("%s%s: %s;", t.indent, fieldName, fieldType))
 	if valueType.Kind() == reflect.Struct {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
 			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypePrefix+valueTypeName+valueTypeSuffix+t.suffix))
@@ -658,11 +662,12 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		result = "export " + result
 	}
 	builder := typeScriptClassBuilder{
-		types:     t.kinds,
-		indent:    t.Indent,
-		prefix:    t.Prefix,
-		suffix:    t.Suffix,
-		namespace: t.Namespace,
+		types:           t.kinds,
+		indent:          t.Indent,
+		prefix:          t.Prefix,
+		suffix:          t.Suffix,
+		namespace:       t.Namespace,
+		createInterface: t.CreateInterface,
 	}
 
 	for _, field := range fields {
@@ -846,6 +851,7 @@ type typeScriptClassBuilder struct {
 	constructorBody      []string
 	prefix, suffix       string
 	namespace            string
+	createInterface      bool
 }
 
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
@@ -863,7 +869,11 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
-			t.addField(fieldName, fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth)), false)
+			typ := fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth))
+			if t.createInterface {
+				typ += " | null"
+			}
+			t.addField(fieldName, typ, false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		}
@@ -936,7 +946,11 @@ func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field 
 		fieldType = field.Type.Elem().String()
 	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
-	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth)), false)
+	typ := fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth))
+	if t.createInterface {
+		typ += " | null"
+	}
+	t.addField(fieldName, typ, false)
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, t.prefix+fieldType+t.suffix))
 }
 

@@ -124,3 +124,44 @@ export namespace binding_test {
             }
 `,
 }
+
+var DeepElementsInterfacesTest = BindingTest{
+	name: "DeepElementsAsInterfaces",
+	structs: []interface{}{
+		&DeepElements{},
+	},
+	exemptions:  nil,
+	shouldError: false,
+	TsGenerationOptionsTest: TsGenerationOptionsTest{
+		TsOutputType: "interfaces",
+	},
+	want: `
+export namespace binding_test {
+            
+                export interface DeepMessage {
+                    Msg: string;
+                }
+                export interface DeepElements {
+                    Single: number[] | null;
+                    Double: string[][] | null;
+                    FourDouble: number[][] | null;
+                    DoubleFour: number[][] | null;
+                    Triple: number[][][] | null;
+                    SingleMap: Record<string, number> | null;
+                    SliceMap: Record<string, Array<number>> | null;
+                    DoubleSliceMap: Record<string, Array<Array<number>>> | null;
+                    ArrayMap: Record<string, Array<number>> | null;
+                    DoubleArrayMap1: Record<string, Array<Array<number>>> | null;
+                    DoubleArrayMap2: Record<string, Array<Array<number>>> | null;
+                    DoubleArrayMap3: Record<string, Array<Array<number>>> | null;
+                    OneStructs: DeepMessage[] | null;
+                    TwoStructs: DeepMessage[][] | null;
+                    ThreeStructs: DeepMessage[][][] | null;
+                    MapStructs: Record<string, Array<DeepMessage>> | null;
+                    MapTwoStructs: Record<string, Array<Array<DeepMessage>>> | null;
+                    MapThreeStructs: Record<string, Array<Array<Array<DeepMessage>>>> | null;
+                }
+            
+            }
+`,
+}

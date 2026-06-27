@@ -24,7 +24,7 @@ jobs:
       issues: read          # GET /issues/{n}/comments (CodeRabbit summary)
 
     steps:
-    - name: Checkout master
+    - name: Checkout v3-alpha
       uses: actions/checkout@v4
       with:
         ref: master

@@ -55,6 +55,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		Generics2Test,
 		IgnoredTest,
 		DeepElementsTest,
+		DeepElementsInterfacesTest,
 		// PR #4664: Enum ordering tests
 		EnumOrderingTest,
 		EnumElementOrderingTest,
