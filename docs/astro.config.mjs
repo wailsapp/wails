@@ -295,7 +295,6 @@ export default defineConfig({
         {
           label: "Experimental",
           collapsed: true,
-          badge: { text: "Experimental", variant: "caution" },
           items: [
             { label: "Overview", link: "/experimental" },
             { label: "Wake", link: "/experimental/wake" },
