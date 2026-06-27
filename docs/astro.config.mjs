@@ -305,6 +305,16 @@ export default defineConfig({
           ],
         },
 
+        // Experimental - opt-in experiments we're gathering feedback on
+        {
+          label: "Experimental",
+          collapsed: true,
+          items: [
+            { label: "Overview", link: "/experimental" },
+            { label: "Wake", link: "/experimental/wake" },
+          ],
+        },
+
         // Guides - Task-oriented patterns (Netflix: When to use it, when not to use it)
         {
           label: "Guides",

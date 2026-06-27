@@ -1,0 +1,75 @@
+---
+title: Experimental Features
+description: A home for in-progress experiments in Wails v3 — what they are, why they exist, and how to give feedback.
+sidebar:
+    label: Overview
+    order: 0
+    badge:
+        text: Experimental
+        variant: caution
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Here be experiments">
+Everything in this section is, by definition, an experiment. Features here are
+opt-in, off by default, and may change shape, get renamed, or be removed
+entirely between releases. Don't build anything load-bearing on them without
+being ready for churn.
+</Aside>
+
+## What "Experimental" means
+
+Wails ships experiments in the open. An experiment is an idea we think is
+promising enough to put in your hands early — but one we haven't fully
+committed to yet. We're publishing it *because* we want to learn from real use
+before deciding whether it becomes a permanent, supported part of Wails.
+
+That means a few things are true of everything in this section:
+
+- **It's opt-in.** Experiments never change the default behaviour of `wails3`.
+  You turn them on deliberately (usually with an environment variable or a
+  build flag), and with them off, nothing about your existing workflow
+  changes.
+- **It might not survive.** Some experiments graduate into stable features.
+  Others get reworked beyond recognition, or dropped. We'd rather try things
+  in public and learn fast than ship only what we're already certain about.
+- **The API isn't frozen.** Names, flags, defaults and behaviour can shift
+  between releases while an experiment is finding its shape. Release notes will
+  call out the changes, but don't expect the stability guarantees that stable
+  features carry.
+
+## We want your feedback
+
+This is the important part. Experiments live or die by what we hear back from
+people actually using them. If you try one of these, we genuinely want to know:
+
+- Did it work for your project? Where did it fall down?
+- Was it faster / clearer / nicer — or not worth the switch?
+- What would have to be true for you to use it by default?
+
+The most useful feedback is concrete: what you ran, what you expected, what
+actually happened. Each experiment has its own thread in the **Experiments**
+category on GitHub Discussions:
+
+<CardGrid>
+  <LinkCard
+    title="Experiments Discussions"
+    description="Find the thread for the experiment you're using and tell us how it worked out, what broke, or what's missing."
+    href="https://github.com/wailsapp/wails/discussions/categories/experiments"
+  />
+</CardGrid>
+
+## Current experiments
+
+<CardGrid>
+  <LinkCard
+    title="Wake"
+    description="An alternative, Wails-aware build runner for your existing Taskfiles. Faster incremental builds, structured output, parallel by default."
+    href="/experimental/wake"
+  />
+</CardGrid>
+
+<Aside type="note">
+As more experiments land, each gets its own page in this section.
+</Aside>
