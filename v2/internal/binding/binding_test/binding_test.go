@@ -46,6 +46,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		GeneratedJsEntityWithNestedStructInterfacesTest,
 		AnonymousSubStructTest,
 		AnonymousSubStructMultiLevelTest,
+		EmbeddedNamedStructJSONTagTest,
 		GeneratedJsEntityWithNestedStructTest,
 		EntityWithDiffNamespacesTest,
 		SpecialCharacterFieldTest,

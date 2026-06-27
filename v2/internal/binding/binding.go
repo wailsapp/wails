@@ -271,8 +271,18 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 
 	for i := 0; i < structType.NumField(); i++ {
 		field := structType.Field(i)
-		if field.Anonymous || !field.IsExported() {
+		if !field.IsExported() {
 			continue
+		}
+		if field.Anonymous {
+			jsonTag, hasTag := field.Tag.Lookup("json")
+			if !hasTag {
+				continue
+			}
+			jsonTagParts := strings.Split(jsonTag, ",")
+			if jsonTagParts[0] == "" || jsonTagParts[0] == "-" {
+				continue
+			}
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
