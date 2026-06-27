@@ -3,6 +3,7 @@ package exec
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,10 +23,15 @@ var cache = &runCache{
 
 func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 	for _, pc := range task.Precondition {
-		if pc.Sh == "" {
+		// Precondition `sh:` strings are Go templates just like cmds. They must
+		// be expanded against the task's resolved vars before running; otherwise
+		// a guard like `{{if eq .OBFUSCATED "true"}}command -v garble{{else}}true{{end}}`
+		// reaches the shell verbatim, fails to parse as a command, and surfaces
+		// the precondition's `msg:` as a spurious failure on every build.
+		sh := parse.ExpandTemplates(pc.Sh, vars)
+		if strings.TrimSpace(sh) == "" {
 			continue
 		}
-		sh := parse.ExpandTemplates(pc.Sh, vars)
 		c := platform.ShellCommand(sh)
 		if err := c.Run(); err != nil {
 			msg := parse.ExpandTemplates(pc.Msg, vars)

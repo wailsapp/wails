@@ -209,18 +209,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
-          - svelte
-          - svelte-ts
-          - vue
-          - vue-ts
-          - react
-          - react-ts
-          - preact
-          - preact-ts
-          - lit
-          - lit-ts
           - vanilla
-          - vanilla-ts
+          - vanilla-js
+          - react
+          - react-js
+          - vue
+          - vue-js
+          - svelte
+          - svelte-js
         go-version: [1.25]
     steps:
       - name: Checkout

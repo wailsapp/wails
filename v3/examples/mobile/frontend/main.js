@@ -29,7 +29,7 @@ function applyPlatform() {
         el.style.display = el.dataset.platform === platform ? "" : "none";
     });
     // .mobile-only blocks are shown on both iOS and Android (the Go side routes
-    // each native:* event to the matching platform bridge), hidden on desktop.
+    // each common:* event to the matching platform bridge), hidden on desktop.
     document.querySelectorAll(".mobile-only").forEach((el) => {
         el.style.display = isMobile ? "" : "none";
     });
@@ -339,80 +339,77 @@ $("btnToast")?.addEventListener("click", async () => {
 });
 
 // ---- Mobile features (iOS + Android) ------------------------------------
-// Each control emits a "native:*" event; the Go side routes it to the matching
-// platform bridge. Asynchronous results arrive back as "native:*" events.
-const logMobile = (msg) => show("mobileOut", msg);
+// Each control emits a "common:*" event; the Go side routes it to the matching
+// platform bridge. Asynchronous results arrive back as "common:*" events.
+const logMobile = (msg) => console.log("[mobile]", msg);
 
 $("btnShare")?.addEventListener("click", () => {
-    Events.Emit("native:share", {
+    Events.Emit("common:share", {
         text: "Check out Wails — the Go + Web framework for native apps.",
         url: "https://wails.io",
     });
-    logMobile("Opened share sheet");
+    show("outShare", "Opened share sheet");
 });
 
 $("btnOpenUrl")?.addEventListener("click", () => {
     const url = $("openUrl").value.trim();
     if (!url) return;
-    Events.Emit("native:openURL", { url });
-    logMobile("Opening " + url);
+    Events.Emit("common:openURL", { url });
+    show("outShare", "Opening " + url);
 });
 
 $("mfKeepAwake")?.addEventListener("change", (e) => {
-    Events.Emit("native:keepAwake", { enabled: e.target.checked });
-    logMobile("Keep awake: " + (e.target.checked ? "on" : "off"));
+    Events.Emit("common:keepAwake", { enabled: e.target.checked });
+    show("outScreen", "Keep awake: " + (e.target.checked ? "on" : "off"));
 });
 
 const mfTorch = $("mfTorch");
 mfTorch?.addEventListener("change", (e) => {
-    Events.Emit("native:torch", { enabled: e.target.checked });
+    Events.Emit("common:torch", { enabled: e.target.checked });
 });
-Events.On("native:torch", (e) => {
+Events.On("common:torch", (e) => {
     const d = eventValue(e) || {};
     if (d.available === false) {
         if (mfTorch) mfTorch.checked = false;
-        logMobile("Torch not available on this device");
+        show("outScreen", "Torch not available on this device");
     } else {
-        logMobile("Torch: " + (d.on ? "on" : "off"));
+        show("outScreen", "Torch: " + (d.on ? "on" : "off"));
     }
 });
 
 // Brightness (0-100 in the slider, 0-1 over the wire)
 const mfBrightness = $("mfBrightness");
 mfBrightness?.addEventListener("change", (e) => {
-    Events.Emit("native:setBrightness", { value: e.target.value / 100 });
-    logMobile("Brightness set to " + e.target.value + "%");
+    Events.Emit("common:setBrightness", { value: e.target.value / 100 });
+    show("outScreen", "Brightness set to " + e.target.value + "%");
 });
-$("btnGetBrightness")?.addEventListener("click", () => Events.Emit("native:getBrightness", {}));
-Events.On("native:brightness", (e) => {
+$("btnGetBrightness")?.addEventListener("click", () => Events.Emit("common:getBrightness", {}));
+Events.On("common:brightness", (e) => {
     const v = (eventValue(e) || {}).value;
     if (typeof v === "number" && v >= 0) {
         if (mfBrightness) mfBrightness.value = Math.round(v * 100);
-        logMobile("Brightness is " + Math.round(v * 100) + "%");
+        show("outScreen", "Brightness is " + Math.round(v * 100) + "%");
     }
 });
 
 // Safe-area insets + app info → metrics card
-$("btnSafeArea")?.addEventListener("click", () => Events.Emit("native:getSafeArea", {}));
-Events.On("native:safeArea", (e) => {
+$("btnSafeArea")?.addEventListener("click", () => Events.Emit("common:getSafeArea", {}));
+Events.On("common:safeArea", (e) => {
     renderKeyVals($("mobileMetrics"), eventValue(e));
-    logMobile("Safe-area insets updated");
 });
-$("btnAppInfo")?.addEventListener("click", () => Events.Emit("native:getAppInfo", {}));
-Events.On("native:appInfo", (e) => {
+$("btnAppInfo")?.addEventListener("click", () => Events.Emit("common:getAppInfo", {}));
+Events.On("common:appInfo", (e) => {
     renderKeyVals($("mobileMetrics"), eventValue(e));
-    logMobile("App info loaded");
 });
 
 // Orientation
 document.querySelectorAll("[data-orient]").forEach((btn) => {
     btn.addEventListener("click", () => {
-        Events.Emit("native:setOrientation", { mode: btn.dataset.orient });
-        logMobile("Orientation: " + btn.dataset.orient);
-        setTimeout(() => Events.Emit("native:getOrientation", {}), 400);
+        Events.Emit("common:setOrientation", { mode: btn.dataset.orient });
+        setTimeout(() => Events.Emit("common:getOrientation", {}), 400);
     });
 });
-Events.On("native:orientation", (e) => {
+Events.On("common:orientation", (e) => {
     const o = (eventValue(e) || {}).orientation;
     if (o) $("mfOrientation").textContent = o;
 });
@@ -421,172 +418,171 @@ Events.On("native:orientation", (e) => {
 document.querySelectorAll("[data-statusbar]").forEach((btn) => {
     btn.addEventListener("click", () => {
         const v = btn.dataset.statusbar;
-        if (v === "hidden") Events.Emit("native:setStatusBar", { hidden: true });
-        else if (v === "shown") Events.Emit("native:setStatusBar", { hidden: false });
-        else Events.Emit("native:setStatusBar", { style: v });
-        logMobile("Status bar: " + v);
+        if (v === "hidden") Events.Emit("common:setStatusBar", { hidden: true });
+        else if (v === "shown") Events.Emit("common:setStatusBar", { hidden: false });
+        else Events.Emit("common:setStatusBar", { style: v });
+        show("outStatusbar", "Status bar: " + v);
     });
 });
 
 // Biometric authentication
 $("btnBiometric")?.addEventListener("click", () => {
-    Events.Emit("native:authenticate", { reason: "Unlock the kitchen sink" });
-    logMobile("Requesting authentication…");
+    Events.Emit("common:authenticate", { reason: "Unlock the kitchen sink" });
+    show("outSecurity", "Requesting authentication…");
 });
-Events.On("native:biometric", (e) => {
+Events.On("common:biometric", (e) => {
     const d = eventValue(e) || {};
-    logMobile(d.ok ? "✓ Authenticated" : "✗ Authentication failed: " + (d.error || "unknown"));
+    show("outSecurity", d.ok ? "✓ Authenticated" : "✗ Authentication failed: " + (d.error || "unknown"));
 });
 
 // Local notification
 $("btnNotify")?.addEventListener("click", () => {
-    Events.Emit("native:notify", {
+    Events.Emit("common:notify", {
         title: "Wails Kitchen Sink",
         body: "This is a local notification 👋",
         delay: 2,
     });
-    logMobile("Scheduling notification…");
+    show("outSecurity", "Scheduling notification…");
 });
-Events.On("native:notification", (e) => {
+Events.On("common:notification", (e) => {
     const d = eventValue(e) || {};
-    logMobile(d.ok ? "Notification posted" + (d.scheduled ? " (in " + d.scheduled + "s)" : "")
+    if (d.presented) { show("outSecurity", "📬 Notification shown (foreground)"); return; }
+    if (d.tapped) { show("outSecurity", "👆 Notification tapped"); return; }
+    show("outSecurity", d.ok ? "Notification posted" + (d.scheduled ? " (in " + d.scheduled + "s)" : "")
                    : "Notification failed: " + (d.error || "denied"));
 });
 
 // Secure storage
 $("btnSecSet")?.addEventListener("click", () => {
-    Events.Emit("native:secureSet", { key: $("secKey").value, value: $("secVal").value });
-    logMobile("Saved '" + $("secKey").value + "' securely");
+    Events.Emit("common:secureSet", { key: $("secKey").value, value: $("secVal").value });
+    show("outSecure", "Saved '" + $("secKey").value + "' securely");
 });
 $("btnSecGet")?.addEventListener("click", () =>
-    Events.Emit("native:secureGet", { key: $("secKey").value }));
+    Events.Emit("common:secureGet", { key: $("secKey").value }));
 $("btnSecDel")?.addEventListener("click", () => {
-    Events.Emit("native:secureDelete", { key: $("secKey").value });
-    logMobile("Deleted '" + $("secKey").value + "'");
+    Events.Emit("common:secureDelete", { key: $("secKey").value });
+    show("outSecure", "Deleted '" + $("secKey").value + "'");
 });
-Events.On("native:secureValue", (e) => {
+Events.On("common:secureValue", (e) => {
     const d = eventValue(e) || {};
-    logMobile("Loaded '" + d.key + "' = " + (d.value ? "\"" + d.value + "\"" : "(empty)"));
+    show("outSecure", "Loaded '" + d.key + "' = " + (d.value ? "\"" + d.value + "\"" : "(empty)"));
 });
 
 // ---- Hardware: sensors & device capabilities ----------------------------
-const logHardware = (msg) => show("hardwareOut", msg);
+const logHardware = (msg) => console.log("[hardware]", msg);
 
 // Haptics
 document.querySelectorAll("[data-haptic2]").forEach((btn) => {
     btn.addEventListener("click", () => {
-        Events.Emit("native:haptic", { type: btn.dataset.haptic2 });
-        logHardware("Haptic: " + btn.dataset.haptic2);
+        Events.Emit("common:haptic", { type: btn.dataset.haptic2 });
+        show("outHaptics", "Haptic: " + btn.dataset.haptic2);
     });
 });
 
 // Location (one-shot)
 $("btnLocation")?.addEventListener("click", () => {
-    Events.Emit("native:getLocation", {});
-    logHardware("Requesting location…");
+    Events.Emit("common:getLocation", {});
+    show("outLocation", "Requesting location…");
 });
-Events.On("native:location", (e) => {
+Events.On("common:location", (e) => {
     const d = eventValue(e) || {};
     if (d.error) {
-        logHardware("Location error: " + d.error);
+        show("outLocation", "Location error: " + d.error);
     } else {
-        logHardware(`Location: ${d.lat?.toFixed(5)}, ${d.lng?.toFixed(5)} (±${Math.round(d.accuracy)}m)`);
+        show("outLocation", `Location: ${d.lat?.toFixed(5)}, ${d.lng?.toFixed(5)} (±${Math.round(d.accuracy)}m)`);
     }
 });
 
 // Accelerometer stream
 $("mfMotion")?.addEventListener("change", (e) => {
-    Events.Emit("native:watchMotion", { enabled: e.target.checked });
-    logHardware("Accelerometer: " + (e.target.checked ? "on" : "off"));
+    Events.Emit("common:watchMotion", { enabled: e.target.checked });
+    show("outMotion", "Accelerometer: " + (e.target.checked ? "on" : "off"));
 });
-Events.On("native:motion", (e) => {
+Events.On("common:motion", (e) => {
     const d = eventValue(e) || {};
     if (d.available === false) {
-        logHardware("Accelerometer not available");
+        show("outMotion", "Accelerometer not available");
         if ($("mfMotion")) $("mfMotion").checked = false;
         return;
     }
-    logHardware(`Motion  x:${d.x?.toFixed(2)}  y:${d.y?.toFixed(2)}  z:${d.z?.toFixed(2)}`);
+    show("outMotion", `Motion  x:${d.x?.toFixed(2)}  y:${d.y?.toFixed(2)}  z:${d.z?.toFixed(2)}`);
 });
 
 // Proximity
 $("mfProximity")?.addEventListener("change", (e) => {
-    Events.Emit("native:watchProximity", { enabled: e.target.checked });
-    logHardware("Proximity: " + (e.target.checked ? "watching" : "off"));
+    Events.Emit("common:watchProximity", { enabled: e.target.checked });
+    show("outMotion", "Proximity: " + (e.target.checked ? "watching" : "off"));
 });
-Events.On("native:proximity", (e) => {
+Events.On("common:proximity", (e) => {
     const d = eventValue(e) || {};
     if (d.available === false) {
-        logHardware("Proximity sensor not available");
+        show("outMotion", "Proximity sensor not available");
         if ($("mfProximity")) $("mfProximity").checked = false;
         return;
     }
-    logHardware("Proximity: " + (d.near ? "near" : "far"));
+    show("outMotion", "Proximity: " + (d.near ? "near" : "far"));
 });
 
 // Text-to-speech
 $("btnSpeak")?.addEventListener("click", () => {
-    Events.Emit("native:speak", { text: $("speakText").value });
-    logHardware("Speaking…");
+    Events.Emit("common:speak", { text: $("speakText").value });
+    show("outSpeech", "Speaking…");
 });
 $("btnStopSpeak")?.addEventListener("click", () => {
-    Events.Emit("native:stopSpeak", {});
-    logHardware("Speech stopped");
+    Events.Emit("common:stopSpeak", {});
+    show("outSpeech", "Speech stopped");
 });
 
 // Device state queries → metrics card
 const bytesToGB = (b) => (b / 1e9).toFixed(2) + " GB";
-$("btnStorage")?.addEventListener("click", () => Events.Emit("native:getStorage", {}));
-Events.On("native:storage", (e) => {
+$("btnStorage")?.addEventListener("click", () => Events.Emit("common:getStorage", {}));
+Events.On("common:storage", (e) => {
     const d = eventValue(e) || {};
     renderKeyVals($("hardwareMetrics"), {
         free: bytesToGB(d.free || 0),
         total: bytesToGB(d.total || 0),
         used: bytesToGB((d.total || 0) - (d.free || 0)),
     });
-    logHardware("Storage loaded");
 });
-$("btnPower")?.addEventListener("click", () => Events.Emit("native:getPower", {}));
-Events.On("native:power", (e) => {
+$("btnPower")?.addEventListener("click", () => Events.Emit("common:getPower", {}));
+Events.On("common:power", (e) => {
     const d = eventValue(e) || {};
     renderKeyVals($("hardwareMetrics"), {
         battery: typeof d.level === "number" && d.level >= 0 ? Math.round(d.level * 100) + "%" : "unknown",
         charging: !!d.charging,
         lowPowerMode: !!d.lowPower,
     });
-    logHardware("Power state loaded");
 });
-$("btnNetwork")?.addEventListener("click", () => Events.Emit("native:getNetwork", {}));
-Events.On("native:network", (e) => {
+$("btnNetwork")?.addEventListener("click", () => Events.Emit("common:getNetwork", {}));
+Events.On("common:network", (e) => {
     const d = eventValue(e) || {};
     renderKeyVals($("hardwareMetrics"), { connected: !!d.connected, type: d.type || "none" });
-    logHardware("Network status loaded");
 });
 
 // Keyboard insets
 $("mfKeyboard")?.addEventListener("change", (e) => {
-    Events.Emit("native:watchKeyboard", { enabled: e.target.checked });
-    logHardware("Keyboard watch: " + (e.target.checked ? "on" : "off"));
+    Events.Emit("common:watchKeyboard", { enabled: e.target.checked });
+    show("outKeyboard", "Keyboard watch: " + (e.target.checked ? "on" : "off"));
 });
-Events.On("native:keyboard", (e) => {
+Events.On("common:keyboard", (e) => {
     const d = eventValue(e) || {};
-    logHardware(`Keyboard ${d.visible ? "shown" : "hidden"} (height ${d.height || 0}px)`);
+    show("outKeyboard", `Keyboard ${d.visible ? "shown" : "hidden"} (height ${d.height || 0}px)`);
 });
 
 // Screen-capture protection / detection
 $("mfScreenProtect")?.addEventListener("change", (e) => {
-    Events.Emit("native:setScreenProtect", { enabled: e.target.checked });
-    logHardware("Screen protection: " + (e.target.checked ? "on" : "off"));
+    Events.Emit("common:setScreenProtect", { enabled: e.target.checked });
+    show("outKeyboard", "Screen protection: " + (e.target.checked ? "on" : "off"));
 });
-Events.On("native:screenCapture", (e) => {
+Events.On("common:screenCapture", (e) => {
     const d = eventValue(e) || {};
-    if (d.screenshot) logHardware("⚠ Screenshot detected");
-    else if (d.recording !== undefined) logHardware("Screen recording: " + (d.recording ? "active" : "inactive"));
-    else logHardware("Screen capture " + (d.protected ? "blocked (FLAG_SECURE)" : "allowed"));
+    if (d.screenshot) show("outKeyboard", "⚠ Screenshot detected");
+    else if (d.recording !== undefined) show("outKeyboard", "Screen recording: " + (d.recording ? "active" : "inactive"));
+    else show("outKeyboard", "Screen capture " + (d.protected ? "blocked (FLAG_SECURE)" : "allowed"));
 });
 
 // ---- Camera & background ------------------------------------------------
-const logCamera = (msg) => show("cameraOut", msg);
+const logCamera = (msg) => show("outCamera", msg);
 
 // Photo/Video pill tabs drive a single capture button and a switched preview
 // area: photos show in an <img>, recorded videos play back in a <video>.
@@ -621,15 +617,15 @@ document.querySelectorAll("#captureMode .pill-tab").forEach((t) =>
 
 $("btnCapture")?.addEventListener("click", () => {
     if (captureModeVal === "video") {
-        Events.Emit("native:captureVideo", {});
+        Events.Emit("common:captureVideo", {});
         logCamera("Opening camera (video)…");
     } else {
-        Events.Emit("native:capturePhoto", {});
+        Events.Emit("common:capturePhoto", {});
         logCamera("Opening camera…");
     }
 });
 
-Events.On("native:capture", (e) => {
+Events.On("common:capture", (e) => {
     const d = eventValue(e) || {};
     if (d.error) { logCamera("Capture error: " + d.error); return; }
     if (d.cancelled) { logCamera("Capture cancelled"); return; }
@@ -653,31 +649,31 @@ Events.On("native:capture", (e) => {
 // Foreground service (Android)
 $("mfForegroundService")?.addEventListener("change", (e) => {
     if (e.target.checked) {
-        Events.Emit("native:startForegroundService", {
+        Events.Emit("common:startForegroundService", {
             title: "Wails Kitchen Sink",
             text: "Background work running",
         });
     } else {
-        Events.Emit("native:stopForegroundService", {});
+        Events.Emit("common:stopForegroundService", {});
     }
 });
-Events.On("native:foregroundService", (e) => {
+Events.On("android:foregroundService", (e) => {
     const d = eventValue(e) || {};
-    if (d.error) logCamera("Foreground service error: " + d.error);
-    else logCamera("Foreground service: " + (d.running ? "running" : "stopped"));
+    if (d.error) show("outBg", "Foreground service error: " + d.error);
+    else show("outBg", "Foreground service: " + (d.running ? "running" : "stopped"));
 });
 
 // Background task window (iOS)
 $("btnBgTask")?.addEventListener("click", () => {
-    Events.Emit("native:beginBackgroundTask", { seconds: 20 });
-    logCamera("Requested a background-task window…");
+    Events.Emit("ios:beginBackgroundTask", { seconds: 20 });
+    show("outBg", "Requested a background-task window…");
 });
-Events.On("native:backgroundTask", (e) => {
+Events.On("ios:backgroundTask", (e) => {
     const d = eventValue(e) || {};
-    logCamera("Background task: " + (d.message || JSON.stringify(d)));
+    show("outBg", "Background task: " + (d.message || JSON.stringify(d)));
 });
 
 // Ask for the current orientation once the page is up.
-if (isMobile) setTimeout(() => Events.Emit("native:getOrientation", {}), 600);
+if (isMobile) setTimeout(() => Events.Emit("common:getOrientation", {}), 600);
 
 applyPlatform();

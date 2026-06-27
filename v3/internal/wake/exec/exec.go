@@ -205,9 +205,11 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	// Preconditions can reference task/dep vars, so they need the merged map.
-	// Compute it lazily: tasks without preconditions that turn out to be
-	// up-to-date can skip the fixed-point expansion entirely.
+	// Preconditions are templated against the task's resolved vars (their `sh:`
+	// guards reference vars like .OBFUSCATED), so they need the merged map and
+	// must run before the up-to-date short-circuit below. Compute the map
+	// lazily: tasks without preconditions that turn out to be up-to-date skip
+	// the fixed-point expansion entirely.
 	var mergedVars map[string]*ast.Var
 	if len(task.Precondition) > 0 {
 		mergedVars = e.mergeVars(task, depVars)

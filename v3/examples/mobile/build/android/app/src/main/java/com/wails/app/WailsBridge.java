@@ -475,7 +475,7 @@ public class WailsBridge {
     }
 
     /**
-     * Toggle the camera flash (torch). Emits "native:torch" with the resulting
+     * Toggle the camera flash (torch). Emits "common:torch" with the resulting
      * state and availability.
      */
     public void setTorch(final int enabled) {
@@ -492,17 +492,17 @@ public class WailsBridge {
                     }
                 }
                 if (flashId == null) {
-                    emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+                    emitEvent("common:torch", "{\"on\":false,\"available\":false}");
                     return;
                 }
                 cm.setTorchMode(flashId, enabled != 0);
                 torchOn = enabled != 0;
-                emitEvent("native:torch",
+                emitEvent("common:torch",
                         enabled != 0 ? "{\"on\":true,\"available\":true}"
                                      : "{\"on\":false,\"available\":true}");
             } catch (Exception e) {
                 Log.e(TAG, "setTorch failed", e);
-                emitEvent("native:torch", "{\"on\":false,\"available\":false}");
+                emitEvent("common:torch", "{\"on\":false,\"available\":false}");
             }
         });
     }
@@ -655,14 +655,14 @@ public class WailsBridge {
         try {
             JSONObject o = new JSONObject().put("ok", ok);
             if (error != null) o.put("error", error);
-            emitEvent("native:biometric", o.toString());
+            emitEvent("common:biometric", o.toString());
         } catch (Exception ignored) {
         }
     }
 
     /**
      * Show the BiometricPrompt (biometric or device credential). The outcome is
-     * emitted as "native:biometric" {ok, error}.
+     * emitted as "common:biometric" {ok, error}.
      */
     public void authenticate(final String reason) {
         mainHandler.post(() -> {
@@ -730,10 +730,10 @@ public class WailsBridge {
                         .setAutoCancel(true)
                         .build();
                 nm.notify((int) (System.currentTimeMillis() & 0x0fffffff), n);
-                emitEvent("native:notification", "{\"ok\":true}");
+                emitEvent("common:notification", "{\"ok\":true}");
             } catch (Exception e) {
                 Log.e(TAG, "postNotification failed", e);
-                emitEvent("native:notification", "{\"ok\":false}");
+                emitEvent("common:notification", "{\"ok\":false}");
             }
         });
     }
@@ -821,13 +821,13 @@ public class WailsBridge {
 
     private void emitLocationError(String msg) {
         try {
-            emitEvent("native:location", new JSONObject().put("error", msg).toString());
+            emitEvent("common:location", new JSONObject().put("error", msg).toString());
         } catch (Exception ignored) {
         }
     }
 
     /**
-     * Request a one-shot location fix. Emits "native:location"
+     * Request a one-shot location fix. Emits "common:location"
      * {lat,lng,accuracy} or {error}. Requests ACCESS_FINE_LOCATION on first use.
      */
     public void getLocation() {
@@ -877,7 +877,7 @@ public class WailsBridge {
 
     private void emitLocation(Location l) {
         try {
-            emitEvent("native:location", new JSONObject()
+            emitEvent("common:location", new JSONObject()
                     .put("lat", l.getLatitude())
                     .put("lng", l.getLongitude())
                     .put("accuracy", l.getAccuracy()).toString());
@@ -885,7 +885,7 @@ public class WailsBridge {
         }
     }
 
-    /** Start (1) / stop (0) accelerometer updates, streamed as "native:motion". */
+    /** Start (1) / stop (0) accelerometer updates, streamed as "common:motion". */
     public void setMotion(final int enabled) {
         motionWanted = enabled != 0;
         mainHandler.post(() -> {
@@ -894,14 +894,14 @@ public class WailsBridge {
             if (enabled != 0) {
                 if (accelListener != null) return;
                 Sensor accel = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-                if (accel == null) { emitEvent("native:motion", "{\"available\":false}"); return; }
+                if (accel == null) { emitEvent("common:motion", "{\"available\":false}"); return; }
                 accelListener = new SensorEventListener() {
                     @Override public void onSensorChanged(SensorEvent e) {
                         long now = System.currentTimeMillis();
                         if (now - lastMotionEmit < 100) return; // throttle to ~10 Hz
                         lastMotionEmit = now;
                         try {
-                            emitEvent("native:motion", new JSONObject()
+                            emitEvent("common:motion", new JSONObject()
                                     .put("x", e.values[0]).put("y", e.values[1])
                                     .put("z", e.values[2]).toString());
                         } catch (Exception ignored) {
@@ -917,7 +917,7 @@ public class WailsBridge {
         });
     }
 
-    /** Enable (1) / disable (0) the proximity sensor, reported as "native:proximity". */
+    /** Enable (1) / disable (0) the proximity sensor, reported as "common:proximity". */
     public void setProximity(final int enabled) {
         proximityWanted = enabled != 0;
         mainHandler.post(() -> {
@@ -926,12 +926,12 @@ public class WailsBridge {
             if (enabled != 0) {
                 if (proximityListener != null) return;
                 Sensor prox = sm.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-                if (prox == null) { emitEvent("native:proximity", "{\"available\":false}"); return; }
+                if (prox == null) { emitEvent("common:proximity", "{\"available\":false}"); return; }
                 final float max = prox.getMaximumRange();
                 proximityListener = new SensorEventListener() {
                     @Override public void onSensorChanged(SensorEvent e) {
                         boolean near = e.values[0] < max;
-                        emitEvent("native:proximity", "{\"near\":" + (near ? "true" : "false") + "}");
+                        emitEvent("common:proximity", "{\"near\":" + (near ? "true" : "false") + "}");
                     }
                     @Override public void onAccuracyChanged(Sensor s, int a) {}
                 };
@@ -957,7 +957,7 @@ public class WailsBridge {
                 if (proximityListener != null) { sm.unregisterListener(proximityListener); proximityListener = null; }
             }
             if (torchOn) {
-                setTorch(0); // turns the torch off, emits native:torch and clears torchOn
+                setTorch(0); // turns the torch off, emits common:torch and clears torchOn
             }
         });
     }
@@ -1002,6 +1002,13 @@ public class WailsBridge {
         } catch (Exception e) {
             return "{\"free\":0,\"total\":0}";
         }
+    }
+
+    /** Absolute path to the app's private internal files directory
+     *  (getFilesDir()), suitable for databases and other persistent files. */
+    public String getStoragePath() {
+        java.io.File dir = activity.getFilesDir();
+        return dir != null ? dir.getAbsolutePath() : "";
     }
 
     /** Battery/power state as {"level":0-1,"charging":bool,"lowPower":bool}. */
@@ -1055,7 +1062,7 @@ public class WailsBridge {
     }
 
     /**
-     * Watch (1) / unwatch (0) the soft keyboard, emitting "native:keyboard"
+     * Watch (1) / unwatch (0) the soft keyboard, emitting "common:keyboard"
      * {visible,height} (height in px) via an inset listener on the content view.
      */
     public void setKeyboardWatch(final int enabled) {
@@ -1087,7 +1094,7 @@ public class WailsBridge {
 
     private void emitKeyboard(boolean visible, int height) {
         try {
-            emitEvent("native:keyboard",
+            emitEvent("common:keyboard",
                     new JSONObject().put("visible", visible).put("height", height).toString());
         } catch (Exception ignored) {
         }
@@ -1095,7 +1102,7 @@ public class WailsBridge {
 
     /**
      * Toggle FLAG_SECURE (blocks screenshots & screen recording). Reports the new
-     * state as "native:screenCapture" {protected}.
+     * state as "common:screenCapture" {protected}.
      */
     public void setScreenProtect(final int enabled) {
         mainHandler.post(() -> {
@@ -1104,31 +1111,31 @@ public class WailsBridge {
             } else {
                 activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
             }
-            emitEvent("native:screenCapture",
+            emitEvent("common:screenCapture",
                     "{\"protected\":" + (enabled != 0 ? "true" : "false") + "}");
         });
     }
 
     // MARK: - Mobile features (Phase E: camera & background)
 
-    /** Capture a photo with the system camera. Result → "native:capture" event. */
+    /** Capture a photo with the system camera. Result → "common:capture" event. */
     public void capturePhoto(final String json) {
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).launchCameraCapture(false);
             } else {
-                emitEvent("native:capture", "{\"error\":\"camera unavailable\"}");
+                emitEvent("common:capture", "{\"error\":\"camera unavailable\"}");
             }
         });
     }
 
-    /** Capture a video with the system camera. Result → "native:capture" event. */
+    /** Capture a video with the system camera. Result → "common:capture" event. */
     public void captureVideo(final String json) {
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).launchCameraCapture(true);
             } else {
-                emitEvent("native:capture", "{\"error\":\"camera unavailable\"}");
+                emitEvent("common:capture", "{\"error\":\"camera unavailable\"}");
             }
         });
     }
@@ -1156,10 +1163,10 @@ public class WailsBridge {
                 i.putExtra("title", title);
                 i.putExtra("text", text);
                 ContextCompat.startForegroundService(activity, i);
-                emitEvent("native:foregroundService", "{\"running\":true}");
+                emitEvent("android:foregroundService", "{\"running\":true}");
             } catch (Exception e) {
                 Log.e(TAG, "startForegroundService failed", e);
-                emitEvent("native:foregroundService", "{\"running\":false,\"error\":\"failed to start\"}");
+                emitEvent("android:foregroundService", "{\"running\":false,\"error\":\"failed to start\"}");
             }
         });
     }
@@ -1169,7 +1176,7 @@ public class WailsBridge {
         mainHandler.post(() -> {
             try {
                 activity.stopService(new Intent(activity, WailsForegroundService.class));
-                emitEvent("native:foregroundService", "{\"running\":false}");
+                emitEvent("android:foregroundService", "{\"running\":false}");
             } catch (Exception e) {
                 Log.e(TAG, "stopForegroundService failed", e);
             }

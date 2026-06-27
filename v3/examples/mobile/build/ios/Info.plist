@@ -20,8 +20,11 @@
     <true/>
     <key>MinimumOSVersion</key>
     <string>15.0</string>
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
+    <key>UILaunchScreen</key>
+    <dict>
+        <key>UIColorName</key>
+        <string>LaunchBackground</string>
+    </dict>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
         <string>arm64</string>
@@ -55,6 +58,8 @@
     <string>Used to capture photos and video.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Used to record audio with video capture.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Used to demonstrate biometric authentication.</string>
 
     <key>NSHumanReadableCopyright</key>
     <string>© now, My Company</string>

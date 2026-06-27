@@ -3,11 +3,13 @@ export interface DependencyStatus {
   installed: boolean;
   version?: string;
   path?: string;
-  status: 'installed' | 'not_installed' | 'needs_update' | 'checking';
+  status: 'installed' | 'not_installed' | 'needs_update' | 'needs_config' | 'checking';
   required: boolean;
   message?: string;
   installCommand?: string;
+  configCommand?: string;
   helpUrl?: string;
+  helpLabel?: string;
   imageBuilt?: boolean; // For Docker: whether wails-cross image exists
 }
 
@@ -122,6 +124,33 @@ export interface GlobalDefaults {
   signing?: SigningDefaults;
 }
 
+export interface GpgKeyInfo {
+  keyID: string;
+  uid: string;
+}
+
+export interface InitTemplate {
+  name: string;
+  description: string;
+}
+
+export interface InitData {
+  mode: string;
+  projectName: string;
+  templateName: string;
+  productName: string;
+  productCompany: string;
+  productIdentifier: string;
+  productDescription: string;
+  productVersion: string;
+  productCopyright: string;
+  productComments: string;
+  useInterfaces: boolean;
+  baseDir: string;
+  templates: InitTemplate[];
+  defaultTemplate: string;
+}
+
 export interface DarwinSigningStatus {
   hasIdentity: boolean;
   identity?: string;
@@ -129,6 +158,7 @@ export interface DarwinSigningStatus {
   hasNotarization: boolean;
   teamID?: string;
   configSource?: string;
+  rcodesignAvailable: boolean;
 }
 
 export interface WindowsSigningStatus {
@@ -137,15 +167,20 @@ export interface WindowsSigningStatus {
   hasSignTool: boolean;
   timestampServer?: string;
   configSource?: string;
+  osslsigncodeAvailable: boolean;
+  opensslAvailable: boolean;
 }
 
 export interface LinuxSigningStatus {
   hasGpgKey: boolean;
   gpgKeyID?: string;
   configSource?: string;
+  gpgAvailable: boolean;
+  gpgKeys?: GpgKeyInfo[];
 }
 
 export interface SigningStatus {
+  host: 'darwin' | 'windows' | 'linux';
   darwin: DarwinSigningStatus;
   windows: WindowsSigningStatus;
   linux: LinuxSigningStatus;

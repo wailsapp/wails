@@ -10,6 +10,9 @@ vars:
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
+  # System-image ABI for the host, used in the "create an AVD" hint below.
+  ANDROID_ABI:
+    sh: '[ "$(uname -m)" = "arm64" ] && echo "arm64-v8a" || echo "x86_64"'
   # SDK location: $ANDROID_HOME / $ANDROID_SDK_ROOT, else the per-OS default
   # (macOS: ~/Library/Android/sdk, Linux/other: ~/Android/Sdk)
   SDK_ROOT:
@@ -32,17 +35,13 @@ tasks:
     summary: Creates a debug build of the application for Android
     deps:
       - task: common:go:mod:tidy
-      - task: generate:android:bindings
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
+      - task: generate:android:overlay
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
           PRODUCTION:
             ref: .PRODUCTION
-      - task: common:generate:icons
     cmds:
       - echo "Building Android app {{.APP_NAME}}..."
       - task: compile:go:shared
@@ -104,7 +103,7 @@ tasks:
         mkdir -p {{.BIN_DIR}}
         mkdir -p build/android/app/src/main/jniLibs/$JNI_DIR
 
-        go build -buildmode=c-shared {{.BUILD_FLAGS}} \
+        go build -buildmode=c-shared -overlay build/android/overlay.json {{.BUILD_FLAGS}} \
           -o build/android/app/src/main/jniLibs/$JNI_DIR/libwails.so
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
@@ -151,6 +150,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleDebug
         cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -163,9 +165,23 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
+
+  generate:android:overlay:
+    internal: true
+    summary: Generate Go build overlay that registers the Android main
+    sources:
+      - build/config.yml
+    generates:
+      - build/android/overlay.json
+      - build/android/gen/main_android.gen.go
+    cmds:
+      - wails3 android overlay:gen -out build/android/overlay.json -config build/config.yml
 
   generate:android:bindings:
     internal: true
@@ -200,12 +216,19 @@ tasks:
         AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
         if [ -z "$AVD_NAME" ]; then
           echo "No Android Virtual Devices found. Create one with:"
-          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
+          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{.ANDROID_ABI}}' --device pixel_7"
           exit 1
         fi
 
         echo "Starting emulator: $AVD_NAME"
-        "{{.EMULATOR}}" -avd "$AVD_NAME" -no-snapshot-load >/dev/null 2>&1 &
+        # Start the emulator daemonized so it outlives this task step. go-task's
+        # shell tracks background jobs by PID and reaps them when the command's
+        # interpreter finishes (which nohup/setsid alone don't prevent — the kill
+        # is direct), so a bare `emulator &` is gone before the later
+        # install/launch steps run. Launch it from a short-lived child shell that
+        # backgrounds the emulator and exits immediately: the emulator is then
+        # reparented to init/launchd and go-task's shell has no handle to reap it.
+        nohup sh -c "'{{.EMULATOR}}' -avd '$AVD_NAME' -no-snapshot-load </dev/null >/dev/null 2>&1 &" >/dev/null 2>&1
 
         # Wait for emulator to boot (max 120 seconds)
         echo "Waiting for emulator to boot..."
@@ -251,7 +274,7 @@ tasks:
   logs:
     summary: Stream Android logcat filtered to this app
     cmds:
-      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})"'
+      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})" || true'
 
   logs:all:
     summary: Stream all Android logcat (verbose)

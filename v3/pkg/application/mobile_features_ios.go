@@ -24,6 +24,16 @@ import (
 // Results that arrive asynchronously (e.g. a biometric prompt) are delivered
 // back to the frontend as custom events via iosEmitNativeEvent.
 
+// iosManager is the receiver for all iOS-specific native feature methods. The
+// package-level IOS singleton is the entry point: application.IOS.Haptic(...),
+// application.IOS.Share(...), and so on. It is only present on iOS builds; all
+// callers live in //go:build ios files.
+type iosManager struct{}
+
+// IOS exposes iOS-specific native capabilities (share sheet, haptics, biometrics,
+// secure storage, sensors, camera, and WKWebView runtime options).
+var IOS iosManager
+
 func cString(s string) (*C.char, func()) {
 	c := C.CString(s)
 	return c, func() { C.free(unsafe.Pointer(c)) }
@@ -31,27 +41,27 @@ func cString(s string) (*C.char, func()) {
 
 // --- Phase A: one-way actions -------------------------------------------------
 
-// IOSShare presents the native iOS share sheet (UIActivityViewController). The
+// Share presents the native iOS share sheet (UIActivityViewController). The
 // JSON payload may contain "text" and/or "url" keys.
-func IOSShare(jsonPayload string) {
+func (iosManager) Share(jsonPayload string) {
 	c, free := cString(jsonPayload)
 	defer free()
 	C.ios_share(c)
 }
 
-// IOSOpenURL opens the given URL in the system browser (Safari).
-func IOSOpenURL(url string) {
+// OpenURL opens the given URL in the system browser (Safari).
+func (iosManager) OpenURL(url string) {
 	c, free := cString(url)
 	defer free()
 	C.ios_open_url(c)
 }
 
-// IOSSetKeepAwake disables (true) or restores (false) the idle timer, keeping
+// SetKeepAwake disables (true) or restores (false) the idle timer, keeping
 // the screen on while the app is in the foreground.
-func IOSSetKeepAwake(enabled bool) { C.ios_set_keep_awake(C.bool(enabled)) }
+func (iosManager) SetKeepAwake(enabled bool) { C.ios_set_keep_awake(C.bool(enabled)) }
 
-// IOSSetTorch turns the device torch (flashlight) on or off.
-func IOSSetTorch(enabled bool) { C.ios_set_torch(C.bool(enabled)) }
+// SetTorch turns the device torch (flashlight) on or off.
+func (iosManager) SetTorch(enabled bool) { C.ios_set_torch(C.bool(enabled)) }
 
 // --- Phase B: state / query --------------------------------------------------
 
@@ -63,32 +73,32 @@ func cStr(p *C.char) string {
 	return C.GoString(p)
 }
 
-// IOSSafeAreaJSON returns the safe-area insets ({top,bottom,left,right}) in points.
-func IOSSafeAreaJSON() string { return cStr(C.ios_safe_area_json()) }
+// SafeAreaJSON returns the safe-area insets ({top,bottom,left,right}) in points.
+func (iosManager) SafeAreaJSON() string { return cStr(C.ios_safe_area_json()) }
 
-// IOSSetBrightness sets the screen brightness (0.0 - 1.0).
-func IOSSetBrightness(value float64) { C.ios_set_brightness(C.double(value)) }
+// SetBrightness sets the screen brightness (0.0 - 1.0).
+func (iosManager) SetBrightness(value float64) { C.ios_set_brightness(C.double(value)) }
 
-// IOSGetBrightness returns the current screen brightness (0.0 - 1.0).
-func IOSGetBrightness() float64 { return float64(C.ios_get_brightness()) }
+// GetBrightness returns the current screen brightness (0.0 - 1.0).
+func (iosManager) GetBrightness() float64 { return float64(C.ios_get_brightness()) }
 
-// IOSAppInfoJSON returns {name,version,build,bundleId} from the app bundle.
-func IOSAppInfoJSON() string { return cStr(C.ios_app_info_json()) }
+// AppInfoJSON returns {name,version,build,bundleId} from the app bundle.
+func (iosManager) AppInfoJSON() string { return cStr(C.ios_app_info_json()) }
 
-// IOSSetOrientation locks orientation to "portrait", "landscape" or "auto".
-func IOSSetOrientation(mode string) {
+// SetOrientation locks orientation to "portrait", "landscape" or "auto".
+func (iosManager) SetOrientation(mode string) {
 	c, free := cString(mode)
 	defer free()
 	C.ios_set_orientation(c)
 }
 
-// IOSGetOrientation returns the current interface orientation ("portrait" /
+// GetOrientation returns the current interface orientation ("portrait" /
 // "landscape" / "unknown").
-func IOSGetOrientation() string { return cStr(C.ios_get_orientation()) }
+func (iosManager) GetOrientation() string { return cStr(C.ios_get_orientation()) }
 
-// IOSSetStatusBar sets the status-bar style/visibility. JSON: {"style":"light|
+// SetStatusBar sets the status-bar style/visibility. JSON: {"style":"light|
 // dark|default","hidden":bool}.
-func IOSSetStatusBar(jsonPayload string) {
+func (iosManager) SetStatusBar(jsonPayload string) {
 	c, free := cString(jsonPayload)
 	defer free()
 	C.ios_set_status_bar(c)
@@ -96,24 +106,24 @@ func IOSSetStatusBar(jsonPayload string) {
 
 // --- Phase C: async results / permissions ------------------------------------
 
-// IOSBiometricAuthenticate triggers Face ID / Touch ID. The outcome is delivered
-// to the frontend as the "native:biometric" event {ok, error}.
-func IOSBiometricAuthenticate(reason string) {
+// BiometricAuthenticate triggers Face ID / Touch ID. The outcome is delivered
+// to the frontend as the "common:biometric" event {ok, error}.
+func (iosManager) BiometricAuthenticate(reason string) {
 	c, free := cString(reason)
 	defer free()
 	C.ios_biometric_authenticate(c)
 }
 
-// IOSPostNotification schedules a local notification. JSON: {"title","body",
+// PostNotification schedules a local notification. JSON: {"title","body",
 // "delay":seconds}.
-func IOSPostNotification(jsonPayload string) {
+func (iosManager) PostNotification(jsonPayload string) {
 	c, free := cString(jsonPayload)
 	defer free()
 	C.ios_post_notification(c)
 }
 
-// IOSSecureSet stores a value in the Keychain under key.
-func IOSSecureSet(key, value string) {
+// SecureSet stores a value in the Keychain under key.
+func (iosManager) SecureSet(key, value string) {
 	ck, freeK := cString(key)
 	defer freeK()
 	cv, freeV := cString(value)
@@ -121,15 +131,15 @@ func IOSSecureSet(key, value string) {
 	C.ios_secure_set(ck, cv)
 }
 
-// IOSSecureGet reads a Keychain value (empty if absent).
-func IOSSecureGet(key string) string {
+// SecureGet reads a Keychain value (empty if absent).
+func (iosManager) SecureGet(key string) string {
 	c, free := cString(key)
 	defer free()
 	return cStr(C.ios_secure_get(c))
 }
 
-// IOSSecureDelete removes a Keychain value.
-func IOSSecureDelete(key string) {
+// SecureDelete removes a Keychain value.
+func (iosManager) SecureDelete(key string) {
 	c, free := cString(key)
 	defer free()
 	C.ios_secure_delete(c)
@@ -137,73 +147,78 @@ func IOSSecureDelete(key string) {
 
 // --- Phase D: sensors & hardware ---------------------------------------------
 
-// IOSHaptic plays a haptic feedback pattern. type is one of impact-light,
+// Haptic plays a haptic feedback pattern. type is one of impact-light,
 // impact-medium, impact-heavy, success, warning, error, selection.
-func IOSHaptic(hapticType string) {
+func (iosManager) Haptic(hapticType string) {
 	c, free := cString(hapticType)
 	defer free()
 	C.ios_haptic(c)
 }
 
-// IOSGetLocation requests a one-shot location fix. The result is delivered to
-// the frontend as the "native:location" event {lat,lng,accuracy,error}.
-func IOSGetLocation() { C.ios_get_location() }
+// GetLocation requests a one-shot location fix. The result is delivered to
+// the frontend as the "common:location" event {lat,lng,accuracy,error}.
+func (iosManager) GetLocation() { C.ios_get_location() }
 
-// IOSSetMotion starts (true) or stops (false) accelerometer updates, streamed
-// to the frontend as "native:motion" {x,y,z} events.
-func IOSSetMotion(enabled bool) { C.ios_set_motion(C.bool(enabled)) }
+// SetMotion starts (true) or stops (false) accelerometer updates, streamed
+// to the frontend as "common:motion" {x,y,z} events.
+func (iosManager) SetMotion(enabled bool) { C.ios_set_motion(C.bool(enabled)) }
 
-// IOSSetProximity enables/disables the proximity sensor; changes arrive as
-// "native:proximity" {near} events.
-func IOSSetProximity(enabled bool) { C.ios_set_proximity(C.bool(enabled)) }
+// SetProximity enables/disables the proximity sensor; changes arrive as
+// "common:proximity" {near} events.
+func (iosManager) SetProximity(enabled bool) { C.ios_set_proximity(C.bool(enabled)) }
 
-// IOSSpeak speaks the given text via AVSpeechSynthesizer.
-func IOSSpeak(text string) {
+// Speak speaks the given text via AVSpeechSynthesizer.
+func (iosManager) Speak(text string) {
 	c, free := cString(text)
 	defer free()
 	C.ios_speak(c)
 }
 
-// IOSStopSpeak stops any in-progress speech.
-func IOSStopSpeak() { C.ios_stop_speak() }
+// StopSpeak stops any in-progress speech.
+func (iosManager) StopSpeak() { C.ios_stop_speak() }
 
-// IOSStorageJSON returns disk space as {"free":bytes,"total":bytes}.
-func IOSStorageJSON() string { return cStr(C.ios_storage_json()) }
+// StorageJSON returns disk space as {"free":bytes,"total":bytes}.
+func (iosManager) StorageJSON() string { return cStr(C.ios_storage_json()) }
 
-// IOSPowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
-func IOSPowerJSON() string { return cStr(C.ios_power_json()) }
+// StoragePath returns the absolute path to the app's Application Support
+// directory, suitable for databases and other persistent files (the iOS analog
+// of Android's getFilesDir()). The directory is created if it does not yet exist.
+func (iosManager) StoragePath() string { return cStr(C.ios_storage_path()) }
 
-// IOSNetworkJSON returns {"connected":bool,"type":"wifi|cellular|none"}.
-func IOSNetworkJSON() string { return cStr(C.ios_network_json()) }
+// PowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
+func (iosManager) PowerJSON() string { return cStr(C.ios_power_json()) }
 
-// IOSSetKeyboardWatch starts/stops emitting "native:keyboard" {visible,height}
+// NetworkJSON returns {"connected":bool,"type":"wifi|cellular|none"}.
+func (iosManager) NetworkJSON() string { return cStr(C.ios_network_json()) }
+
+// SetKeyboardWatch starts/stops emitting "common:keyboard" {visible,height}
 // events as the software keyboard shows and hides.
-func IOSSetKeyboardWatch(enabled bool) { C.ios_set_keyboard_watch(C.bool(enabled)) }
+func (iosManager) SetKeyboardWatch(enabled bool) { C.ios_set_keyboard_watch(C.bool(enabled)) }
 
-// IOSSetScreenProtect starts/stops screenshot & screen-recording detection,
-// reported as "native:screenCapture" events. (iOS cannot block screenshots, so
+// SetScreenProtect starts/stops screenshot & screen-recording detection,
+// reported as "common:screenCapture" events. (iOS cannot block screenshots, so
 // this is detection-only; on Android the same control sets FLAG_SECURE.)
-func IOSSetScreenProtect(enabled bool) { C.ios_set_screen_protect(C.bool(enabled)) }
+func (iosManager) SetScreenProtect(enabled bool) { C.ios_set_screen_protect(C.bool(enabled)) }
 
 // --- Phase E: camera & background --------------------------------------------
 
-// IOSCapturePhoto presents the camera to take a photo; the result is delivered
-// as the "native:capture" event {type:"photo",path,size,thumb}.
-func IOSCapturePhoto() { C.ios_capture_photo() }
+// CapturePhoto presents the camera to take a photo; the result is delivered
+// as the "common:capture" event {type:"photo",path,size,thumb}.
+func (iosManager) CapturePhoto() { C.ios_capture_photo() }
 
-// IOSCaptureVideo presents the camera to record a video; the result is delivered
-// as the "native:capture" event {type:"video",path,size}.
-func IOSCaptureVideo() { C.ios_capture_video() }
+// CaptureVideo presents the camera to record a video; the result is delivered
+// as the "common:capture" event {type:"video",path,size}.
+func (iosManager) CaptureVideo() { C.ios_capture_video() }
 
-// IOSBeginBackgroundTask opens a UIApplication background-task window so short
+// BeginBackgroundTask opens a UIApplication background-task window so short
 // work can finish after the app is backgrounded. iOS grants a limited amount of
-// time; the granted/remaining seconds are reported as the "native:backgroundTask"
+// time; the granted/remaining seconds are reported as the "ios:backgroundTask"
 // event. Sustained background execution requires a declared UIBackgroundMode.
-func IOSBeginBackgroundTask(seconds int) { C.ios_begin_background_task(C.int(seconds)) }
+func (iosManager) BeginBackgroundTask(seconds int) { C.ios_begin_background_task(C.int(seconds)) }
 
-// IOSEndBackgroundTask ends the background-task window opened by
-// IOSBeginBackgroundTask.
-func IOSEndBackgroundTask() { C.ios_end_background_task() }
+// EndBackgroundTask ends the background-task window opened by
+// BeginBackgroundTask.
+func (iosManager) EndBackgroundTask() { C.ios_end_background_task() }
 
 // iosEmitNativeEvent is called from the Objective-C bridge to deliver an
 // asynchronous result to the frontend as a custom event.

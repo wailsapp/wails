@@ -232,11 +232,21 @@ func replaceOnce(s, old, new string) string {
 
 var (
 	Frameworks = []string{
-		"vanilla", "vue", "react", "react-swc", "svelte", "sveltekit",
-		"preact", "lit", "solid", "qwik", "ios",
+		"vanilla", "react", "vue", "svelte", "ios",
 	}
 
 	Languages = []string{"JavaScript", "TypeScript"}
+
+	// frameworksWithJSVariant lists the frameworks that ship a JavaScript
+	// template alongside the default TypeScript one. TypeScript owns the bare
+	// name (e.g. `react`); the JavaScript variant carries a `-js` suffix
+	// (e.g. `react-js`). Frameworks not listed here are TypeScript-only.
+	frameworksWithJSVariant = map[string]bool{
+		"vanilla": true,
+		"react":   true,
+		"vue":     true,
+		"svelte":  true,
+	}
 )
 
 func IsValidFramework(f string) bool {
@@ -253,8 +263,11 @@ func (d *GlobalDefaults) GetTemplateName() string {
 	lang := d.Project.Language
 
 	if framework != "" && IsValidFramework(framework) {
-		if lang == "TypeScript" {
-			return framework + "-ts"
+		// TypeScript is the default and owns the bare framework name. Only some
+		// frameworks ship a JavaScript variant (suffixed `-js`); for the rest,
+		// a JavaScript preference falls back to the TypeScript (bare) template.
+		if lang == "JavaScript" && frameworksWithJSVariant[framework] {
+			return framework + "-js"
 		}
 		return framework
 	}

@@ -347,6 +347,24 @@ func menuAppend(parent *Menu, menu *MenuItem, hidden bool) {
 	}
 }
 
+// menuClear removes every item from the menu's native GMenu so that it can be
+// rebuilt from scratch on Menu.Update() (#5464). The per-menu append counter is
+// reset too, so rebuilt items get fresh 0-based positions (menuIndex is used by
+// menu_remove_item for hide/show). This mirrors the GTK3/purego menuClear.
+func menuClear(menu *Menu) {
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	C.g_menu_remove_all((*C.GMenu)(impl.native))
+	menuItemCountersLock.Lock()
+	delete(menuItemCounters, impl.native)
+	menuItemCountersLock.Unlock()
+}
+
 func menuBarNew() pointer {
 	gmenu := C.g_menu_new()
 	C.set_app_menu_model(gmenu)

@@ -291,6 +291,20 @@ export default defineConfig({
           ],
         },
 
+        // Mobile
+        {
+          label: "Mobile",
+          collapsed: true,
+          badge: { text: "Experimental", variant: "caution" },
+          items: [
+            { label: "Overview", link: "/guides/mobile" },
+            { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
+            { label: "iOS", link: "/guides/mobile/ios" },
+            { label: "Android", link: "/guides/mobile/android" },
+            { label: "Mobile API", link: "/guides/mobile/mobile-api" },
+          ],
+        },
+
         // Experimental - opt-in experiments we're gathering feedback on
         {
           label: "Experimental",
@@ -312,6 +326,7 @@ export default defineConfig({
               items: [
                 { label: "Project Structure", link: "/guides/dev/project-structure" },
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
+                { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/dev/testing" },
               ],
@@ -329,8 +344,6 @@ export default defineConfig({
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
                 { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
-                { label: "iOS", link: "/guides/build/ios" },
-                { label: "Android", link: "/guides/build/android" },
               ],
             },
             {

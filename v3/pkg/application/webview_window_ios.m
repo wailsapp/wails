@@ -5,6 +5,7 @@
 #import "../events/events_ios.h"
 #import "mobile_features_ios_internal.h"
 #import <stdlib.h>
+#import <os/log.h>
 extern void processApplicationEvent(unsigned int, void* data);
 extern void iosEmitNativeEvent(const char* name, const char* json);
 extern void processWindowEvent(unsigned int, unsigned int);
@@ -290,7 +291,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         NSString *json = [NSString stringWithFormat:
             @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
             (int)s.top, (int)s.bottom, (int)s.left, (int)s.right];
-        iosEmitNativeEvent("native:safeArea", [json UTF8String]);
+        iosEmitNativeEvent("common:safeArea", [json UTF8String]);
     }
 }
 - (void)enableNativeTabs:(BOOL)enabled {
@@ -455,8 +456,12 @@ void* ios_create_webview_with_id(unsigned int wailsID) {
         if (appDelegate.viewControllers.count == 1) {
             appDelegate.window.rootViewController = viewController;
         }
-        [viewController loadView];
-        [viewController viewDidLoad];
+        // Trigger the view to load exactly once, the UIKit-correct way. Calling
+        // -loadView and -viewDidLoad manually made UIKit ALSO load the view
+        // automatically, creating two WebViews/viewDidLoad passes: content loaded
+        // into one while the other (blank) was displayed → intermittent white
+        // screen on cold launch (force-quit + relaunch).
+        [viewController loadViewIfNeeded];
     };
     if ([NSThread isMainThread]) {
         createBlock();
@@ -512,8 +517,9 @@ void ios_console_log(const char* level, const char* message) {
     if (!message) return;
     NSString *lvl = level ? [NSString stringWithUTF8String:level] : @"log";
     NSString *msg = [NSString stringWithUTF8String:message];
-    // Mirror to system log for simctl visibility
-    NSLog(@"[ios_console_log][%@] %@", lvl, msg);
+    // Mirror to system log. Use %@ (NOT %{public}@) so message content is kept
+    // private/redacted in release builds — it can contain app/user data.
+    os_log(OS_LOG_DEFAULT, "[ios_console_log][%@] %@", lvl, msg);
     // Robustly encode message to avoid JS string escaping issues
     NSData *data = [msg dataUsingEncoding:NSUTF8StringEncoding];
     NSString *b64 = [data base64EncodedStringWithOptions:0];

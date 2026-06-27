@@ -107,30 +107,37 @@ capabilities as exported `application.IOS*` functions (guarded by
 `application.Android*` counterpart, so a single event-driven layer can drive
 both platforms (see the `mobile` example's `registerNativeFeatures`).
 
+For the subset of capabilities whose signature is identical on both platforms,
+`application.Mobile` provides one build-guarded entry point: it dispatches to
+`IOS` on iOS, `Android` on Android, and a no-op stub on desktop — so
+cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
+own `//go:build` split. Platform-specific calls stay on `IOS` / `Android`.
+
 | Capability | API | Notes |
 |---|---|---|
-| Share sheet | `IOSShare(json)` | `UIActivityViewController` |
-| Open URL externally | `IOSOpenURL(url)` | Opens in Safari |
-| Keep screen awake | `IOSSetKeepAwake(bool)` | Idle-timer toggle |
-| Torch / flashlight | `IOSSetTorch(bool)` | → `native:torch` event |
-| Safe-area insets | `IOSSafeAreaJSON()` | `{top,bottom,left,right}` |
-| Brightness | `IOSSetBrightness(0-1)` / `IOSGetBrightness()` | |
-| App info | `IOSAppInfoJSON()` | `{name,version,build,bundleId}` |
-| Orientation lock | `IOSSetOrientation("portrait\|landscape\|auto")` / `IOSGetOrientation()` | |
-| Status bar | `IOSSetStatusBar(json)` | style + visibility |
-| Biometrics | `IOSBiometricAuthenticate(reason)` | Face ID / Touch ID, passcode fallback → `native:biometric` |
-| Local notification | `IOSPostNotification(json)` | `UNUserNotificationCenter` |
-| Secure storage | `IOSSecureSet/Get/Delete` | Keychain |
-| Haptics | `IOSHaptic(type)` | impact / notification / selection |
-| Geolocation | `IOSGetLocation()` | one-shot → `native:location` (needs `NSLocationWhenInUseUsageDescription`) |
-| Accelerometer | `IOSSetMotion(bool)` | Core Motion stream → `native:motion` (needs `NSMotionUsageDescription`) |
-| Proximity | `IOSSetProximity(bool)` | → `native:proximity` |
-| Text-to-speech | `IOSSpeak(text)` / `IOSStopSpeak()` | `AVSpeechSynthesizer` |
-| Storage info | `IOSStorageJSON()` | `{free,total}` bytes |
-| Power / battery | `IOSPowerJSON()` | `{level,charging,lowPower}` |
-| Network status | `IOSNetworkJSON()` | `{connected,type}` |
-| Keyboard insets | `IOSSetKeyboardWatch(bool)` | → `native:keyboard {visible,height}` |
-| Screen-capture | `IOSSetScreenProtect(bool)` | Detects screenshots & recording (iOS can't block them) → `native:screenCapture` |
+| Share sheet | `IOS.Share(json)` | `UIActivityViewController` |
+| Open URL externally | `IOS.OpenURL(url)` | Opens in Safari |
+| Keep screen awake | `IOS.SetKeepAwake(bool)` | Idle-timer toggle |
+| Torch / flashlight | `IOS.SetTorch(bool)` | → `common:torch` event |
+| Safe-area insets | `IOS.SafeAreaJSON()` | `{top,bottom,left,right}` |
+| Brightness | `IOS.SetBrightness(0-1)` / `IOS.GetBrightness()` | |
+| App info | `IOS.AppInfoJSON()` | `{name,version,build,bundleId}` |
+| Orientation lock | `IOS.SetOrientation("portrait\|landscape\|auto")` / `IOS.GetOrientation()` | |
+| Status bar | `IOS.SetStatusBar(json)` | style + visibility |
+| Biometrics | `IOS.BiometricAuthenticate(reason)` | Face ID / Touch ID, passcode fallback → `common:biometric` |
+| Local notification | `IOS.PostNotification(json)` | `UNUserNotificationCenter` |
+| Secure storage | `IOS.SecureSet/Get/Delete` | Keychain |
+| Haptics | `IOS.Haptic(type)` | impact / notification / selection |
+| Geolocation | `IOS.GetLocation()` | one-shot → `common:location` (needs `NSLocationWhenInUseUsageDescription`) |
+| Accelerometer | `IOS.SetMotion(bool)` | Core Motion stream → `common:motion` (needs `NSMotionUsageDescription`) |
+| Proximity | `IOS.SetProximity(bool)` | → `common:proximity` |
+| Text-to-speech | `IOS.Speak(text)` / `IOS.StopSpeak()` | `AVSpeechSynthesizer` |
+| Storage info | `IOS.StorageJSON()` | `{free,total}` bytes |
+| Storage path | `IOS.StoragePath()` | Application Support dir, created on first access (for databases & persistent files); `""` if it can't be created |
+| Power / battery | `IOS.PowerJSON()` | `{level,charging,lowPower}` |
+| Network status | `IOS.NetworkJSON()` | `{connected,type}` |
+| Keyboard insets | `IOS.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |
+| Screen-capture | `IOS.SetScreenProtect(bool)` | Detects screenshots & recording (iOS can't block them) → `common:screenCapture` |
 
 Asynchronous results are delivered to the frontend as custom events
 (`iosEmitNativeEvent` → `globalApplication.Event.Emit`). Geolocation and motion

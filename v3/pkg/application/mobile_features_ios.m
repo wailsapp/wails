@@ -131,10 +131,10 @@ void ios_set_torch(bool enabled) {
         mfEnsureLifecycleObservers();
         extern void iosEmitNativeEvent(const char* name, const char* json);
         if (!mfApplyTorch(enabled ? YES : NO)) {
-            iosEmitNativeEvent("native:torch", "{\"on\":false,\"available\":false}");
+            iosEmitNativeEvent("common:torch", "{\"on\":false,\"available\":false}");
             return;
         }
-        iosEmitNativeEvent("native:torch", enabled ? "{\"on\":true,\"available\":true}"
+        iosEmitNativeEvent("common:torch", enabled ? "{\"on\":true,\"available\":true}"
                                                    : "{\"on\":false,\"available\":true}");
     });
 }
@@ -305,16 +305,16 @@ void ios_biometric_authenticate(const char* creason) {
         // Fall back to device passcode if biometrics are unavailable/unenrolled.
         policy = LAPolicyDeviceOwnerAuthentication;
         if (![ctx canEvaluatePolicy:policy error:&err]) {
-            mfEmit(@"native:biometric", @{@"ok": @NO,
+            mfEmit(@"common:biometric", @{@"ok": @NO,
                 @"error": err ? err.localizedDescription : @"biometrics unavailable"});
             return;
         }
     }
     [ctx evaluatePolicy:policy localizedReason:reason reply:^(BOOL success, NSError *error) {
         if (success) {
-            mfEmit(@"native:biometric", @{@"ok": @YES});
+            mfEmit(@"common:biometric", @{@"ok": @YES});
         } else {
-            mfEmit(@"native:biometric", @{@"ok": @NO,
+            mfEmit(@"common:biometric", @{@"ok": @NO,
                 @"error": error ? error.localizedDescription : @"failed"});
         }
     }];
@@ -322,7 +322,59 @@ void ios_biometric_authenticate(const char* creason) {
 
 // MARK: - Local notifications
 
+// By default iOS does NOT display a banner for a local notification while the
+// app that posted it is in the FOREGROUND — it is delivered silently to
+// Notification Center instead. To show it (and to react to taps) the app must
+// register a UNUserNotificationCenterDelegate. Apple requires the delegate be
+// set before the app finishes launching, so ios_notifications_init() is called
+// from the WailsAppDelegate's didFinishLaunchingWithOptions.
+@interface MFNotificationDelegate : NSObject <UNUserNotificationCenterDelegate>
+@end
+
+@implementation MFNotificationDelegate
+// Called when a notification fires while the app is in the foreground. Without
+// this returning presentation options, nothing is shown on screen.
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+    // Diagnostic: lets the frontend confirm this delegate is actually running on
+    // the device (i.e. the build includes the foreground-presentation fix).
+    mfEmit(@"common:notification", @{@"ok": @YES, @"presented": @YES});
+    if (@available(iOS 14.0, *)) {
+        completionHandler(UNNotificationPresentationOptionBanner
+                          | UNNotificationPresentationOptionList
+                          | UNNotificationPresentationOptionSound);
+    } else {
+        completionHandler(UNNotificationPresentationOptionAlert
+                          | UNNotificationPresentationOptionSound);
+    }
+}
+
+// Called when the user taps a delivered notification.
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void (^)(void))completionHandler {
+    mfEmit(@"common:notification", @{@"ok": @YES, @"tapped": @YES});
+    completionHandler();
+}
+@end
+
+static MFNotificationDelegate *g_mfNotificationDelegate = nil;
+
+void ios_notifications_init(void) {
+    mfRunOnMain(^{
+        if (g_mfNotificationDelegate == nil) {
+            g_mfNotificationDelegate = [[MFNotificationDelegate alloc] init];
+        }
+        [UNUserNotificationCenter currentNotificationCenter].delegate = g_mfNotificationDelegate;
+    });
+}
+
 void ios_post_notification(const char* json) {
+    // Defensive: make sure the foreground-presentation delegate is registered
+    // before we schedule, even if ios_notifications_init() wasn't called at
+    // launch (idempotent — just (re)assigns the singleton delegate).
+    ios_notifications_init();
     NSDictionary *opts = mfParseJSON(json);
     NSString *title = [opts[@"title"] isKindOfClass:[NSString class]] ? opts[@"title"] : @"Notification";
     NSString *body = [opts[@"body"] isKindOfClass:[NSString class]] ? opts[@"body"] : @"";
@@ -333,7 +385,7 @@ void ios_post_notification(const char* json) {
         (UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
         completionHandler:^(BOOL granted, NSError *error) {
             if (!granted) {
-                mfEmit(@"native:notification", @{@"ok": @NO,
+                mfEmit(@"common:notification", @{@"ok": @NO,
                     @"error": error ? error.localizedDescription : @"not authorized"});
                 return;
             }
@@ -347,9 +399,9 @@ void ios_post_notification(const char* json) {
                 requestWithIdentifier:[[NSUUID UUID] UUIDString] content:content trigger:trigger];
             [center addNotificationRequest:req withCompletionHandler:^(NSError *e) {
                 if (e) {
-                    mfEmit(@"native:notification", @{@"ok": @NO, @"error": e.localizedDescription});
+                    mfEmit(@"common:notification", @{@"ok": @NO, @"error": e.localizedDescription});
                 } else {
-                    mfEmit(@"native:notification", @{@"ok": @YES, @"scheduled": @(delay)});
+                    mfEmit(@"common:notification", @{@"ok": @YES, @"scheduled": @(delay)});
                 }
             }];
         }];
@@ -432,14 +484,14 @@ void ios_haptic(const char* ctype) {
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
     CLLocation *loc = locations.lastObject;
     if (!loc) return;
-    mfEmit(@"native:location", @{
+    mfEmit(@"common:location", @{
         @"lat": @(loc.coordinate.latitude),
         @"lng": @(loc.coordinate.longitude),
         @"accuracy": @(loc.horizontalAccuracy),
     });
 }
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
-    mfEmit(@"native:location", @{@"error": error ? error.localizedDescription : @"location failed"});
+    mfEmit(@"common:location", @{@"error": error ? error.localizedDescription : @"location failed"});
 }
 - (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager {
     if (@available(iOS 14.0, *)) {
@@ -447,7 +499,7 @@ void ios_haptic(const char* ctype) {
         if (s == kCLAuthorizationStatusAuthorizedWhenInUse || s == kCLAuthorizationStatusAuthorizedAlways) {
             [manager requestLocation];
         } else if (s == kCLAuthorizationStatusDenied || s == kCLAuthorizationStatusRestricted) {
-            mfEmit(@"native:location", @{@"error": @"location permission denied"});
+            mfEmit(@"common:location", @{@"error": @"location permission denied"});
         }
     }
 }
@@ -477,7 +529,7 @@ void ios_get_location(void) {
                    || status == kCLAuthorizationStatusAuthorizedAlways) {
             [g_mfLocationManager requestLocation];
         } else {
-            mfEmit(@"native:location", @{@"error": @"location permission denied"});
+            mfEmit(@"common:location", @{@"error": @"location permission denied"});
         }
     });
 }
@@ -496,13 +548,13 @@ void ios_set_motion(bool enabled) {
         }
         if (enabled) {
             if (!g_mfMotionManager.isAccelerometerAvailable) {
-                mfEmit(@"native:motion", @{@"available": @NO});
+                mfEmit(@"common:motion", @{@"available": @NO});
                 return;
             }
             [g_mfMotionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
                 withHandler:^(CMAccelerometerData *data, NSError *error) {
                     if (!data) return;
-                    mfEmit(@"native:motion", @{
+                    mfEmit(@"common:motion", @{
                         @"x": @(data.acceleration.x),
                         @"y": @(data.acceleration.y),
                         @"z": @(data.acceleration.z),
@@ -526,7 +578,7 @@ void ios_set_proximity(bool enabled) {
         if (enabled) {
             device.proximityMonitoringEnabled = YES;
             if (!device.proximityMonitoringEnabled) {
-                mfEmit(@"native:proximity", @{@"available": @NO});
+                mfEmit(@"common:proximity", @{@"available": @NO});
                 return;
             }
             if (g_mfProximityObserver == nil) {
@@ -534,7 +586,7 @@ void ios_set_proximity(bool enabled) {
                     addObserverForName:UIDeviceProximityStateDidChangeNotification
                     object:nil queue:[NSOperationQueue mainQueue]
                     usingBlock:^(NSNotification *note) {
-                        mfEmit(@"native:proximity", @{@"near": @([UIDevice currentDevice].proximityState)});
+                        mfEmit(@"common:proximity", @{@"near": @([UIDevice currentDevice].proximityState)});
                     }];
             }
         } else {
@@ -578,6 +630,29 @@ const char* ios_storage_json(void) {
     long long totalBytes = [attrs[NSFileSystemSize] longLongValue];
     NSString *json = [NSString stringWithFormat:@"{\"free\":%lld,\"total\":%lld}", freeBytes, totalBytes];
     return mfDup(json);
+}
+
+const char* ios_storage_path(void) {
+    NSArray<NSString *> *paths = NSSearchPathForDirectoriesInDomains(
+        NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    NSString *dir = paths.firstObject;
+    if (dir == nil) {
+        return mfDup(@"");
+    }
+    // Unlike Android's getFilesDir(), the Application Support directory is not
+    // created automatically. Ensure it exists so callers can open databases
+    // there immediately. If creation fails, return "" rather than a path that
+    // isn't there (createDirectoryAtPath succeeds when the directory already
+    // exists, so this is not an error on subsequent calls).
+    NSError *err = nil;
+    BOOL ok = [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                                       withIntermediateDirectories:YES
+                                                        attributes:nil
+                                                             error:&err];
+    if (!ok) {
+        return mfDup(@"");
+    }
+    return mfDup(dir);
 }
 
 // MARK: - Power / battery state
@@ -637,14 +712,14 @@ void ios_set_keyboard_watch(bool enabled) {
                         CGRect frame = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
                         CGFloat screenH = [UIScreen mainScreen].bounds.size.height;
                         CGFloat height = MAX(0, screenH - frame.origin.y);
-                        mfEmit(@"native:keyboard", @{@"visible": @(height > 0), @"height": @((int)height)});
+                        mfEmit(@"common:keyboard", @{@"visible": @(height > 0), @"height": @((int)height)});
                     }];
             }
             if (g_mfKeyboardHideObs == nil) {
                 g_mfKeyboardHideObs = [nc addObserverForName:UIKeyboardWillHideNotification
                     object:nil queue:[NSOperationQueue mainQueue]
                     usingBlock:^(NSNotification *note) {
-                        mfEmit(@"native:keyboard", @{@"visible": @NO, @"height": @0});
+                        mfEmit(@"common:keyboard", @{@"visible": @NO, @"height": @0});
                     }];
             }
         } else {
@@ -666,7 +741,7 @@ static id g_mfCapturedObs = nil;
 static void mfEmitCaptured(void) {
     BOOL captured = NO;
     if (@available(iOS 11.0, *)) captured = [UIScreen mainScreen].isCaptured;
-    mfEmit(@"native:screenCapture", @{@"recording": @(captured), @"protected": @NO});
+    mfEmit(@"common:screenCapture", @{@"recording": @(captured), @"protected": @NO});
 }
 
 void ios_set_screen_protect(bool enabled) {
@@ -677,7 +752,7 @@ void ios_set_screen_protect(bool enabled) {
                 g_mfScreenshotObs = [nc addObserverForName:UIApplicationUserDidTakeScreenshotNotification
                     object:nil queue:[NSOperationQueue mainQueue]
                     usingBlock:^(NSNotification *note) {
-                        mfEmit(@"native:screenCapture", @{@"screenshot": @YES, @"protected": @NO});
+                        mfEmit(@"common:screenCapture", @{@"screenshot": @YES, @"protected": @NO});
                     }];
             }
             if (@available(iOS 11.0, *)) {
@@ -712,7 +787,7 @@ static void mfHandleEnterBackground(void) {
     }
     if (g_mfTorchOn && mfApplyTorch(NO)) {
         extern void iosEmitNativeEvent(const char* name, const char* json);
-        iosEmitNativeEvent("native:torch", "{\"on\":false,\"available\":true}");
+        iosEmitNativeEvent("common:torch", "{\"on\":false,\"available\":true}");
     }
 }
 
@@ -723,7 +798,7 @@ static void mfHandleEnterForeground(void) {
         [g_mfMotionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue]
             withHandler:^(CMAccelerometerData *data, NSError *error) {
                 if (!data) return;
-                mfEmit(@"native:motion", @{
+                mfEmit(@"common:motion", @{
                     @"x": @(data.acceleration.x),
                     @"y": @(data.acceleration.y),
                     @"z": @(data.acceleration.z),
@@ -784,7 +859,7 @@ static MFCameraDelegate *g_mfCameraDelegate = nil; // retained while the picker 
         // Stream the clip from the temp dir via the wails:// scheme handler (Range
         // support, any length) rather than inlining it as a data URL.
         NSString *streamUrl = [@"/__capture__/" stringByAppendingString:[dst lastPathComponent]];
-        mfEmit(@"native:capture", @{@"type": @"video", @"path": dst,
+        mfEmit(@"common:capture", @{@"type": @"video", @"path": dst,
                                     @"size": @(size), @"streamUrl": streamUrl});
     } else {
         UIImage *image = info[UIImagePickerControllerOriginalImage];
@@ -796,13 +871,13 @@ static MFCameraDelegate *g_mfCameraDelegate = nil; // retained while the picker 
                                           @"size": @(jpeg.length)} mutableCopy];
         NSString *thumb = mfImageThumbnailDataURL(image);
         if (thumb) payload[@"thumb"] = thumb;
-        mfEmit(@"native:capture", payload);
+        mfEmit(@"common:capture", payload);
     }
     g_mfCameraDelegate = nil;
 }
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
-    mfEmit(@"native:capture", @{@"cancelled": @YES});
+    mfEmit(@"common:capture", @{@"cancelled": @YES});
     g_mfCameraDelegate = nil;
 }
 @end
@@ -810,13 +885,31 @@ static MFCameraDelegate *g_mfCameraDelegate = nil; // retained while the picker 
 static void mfPresentCamera(BOOL video) {
     mfRunOnMain(^{
         if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-            mfEmit(@"native:capture", @{@"error": @"camera not available (e.g. simulator)"});
+            mfEmit(@"common:capture", @{@"error": @"camera not available (e.g. simulator)"});
             return;
         }
         UIImagePickerController *picker = [[UIImagePickerController alloc] init];
         picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-        picker.mediaTypes = video ? @[@"public.movie"] : @[@"public.image"];
-        if (video) picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
+
+        // Photos use the picker's default media type (public.image), which never
+        // throws. Video requires explicitly opting into public.movie — but
+        // -setMediaTypes: throws an uncaught NSException ("No available types for
+        // source 1") when the camera doesn't currently offer movie capture. That
+        // happens on the iOS Simulator, whose camera reports an empty media-type
+        // list regardless of authorization. Guard it so a missing video type
+        // degrades to a graceful error instead of a SIGABRT. Real devices list
+        // public.movie and record normally.
+        if (video) {
+            @try {
+                picker.mediaTypes = @[@"public.movie"];
+                picker.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
+            } @catch (NSException *ex) {
+                mfEmit(@"common:capture", @{@"error":
+                    @"video recording isn't available from this camera (the iOS Simulator camera can't record video — use a physical device)"});
+                return;
+            }
+        }
+
         g_mfCameraDelegate = [[MFCameraDelegate alloc] init];
         picker.delegate = g_mfCameraDelegate;
         [mfTopViewController() presentViewController:picker animated:YES completion:nil];
@@ -845,11 +938,11 @@ void ios_begin_background_task(int seconds) {
         mfEndBgTask();
         g_mfBgTask = [[UIApplication sharedApplication] beginBackgroundTaskWithName:@"wails.bgtask"
             expirationHandler:^{
-                mfEmit(@"native:backgroundTask", @{@"message": @"expired"});
+                mfEmit(@"ios:backgroundTask", @{@"message": @"expired"});
                 mfEndBgTask();
             }];
         if (g_mfBgTask == UIBackgroundTaskInvalid) {
-            mfEmit(@"native:backgroundTask", @{@"message": @"unavailable"});
+            mfEmit(@"ios:backgroundTask", @{@"message": @"unavailable"});
             return;
         }
         g_mfBgTaskActive = YES;
@@ -857,12 +950,12 @@ void ios_begin_background_task(int seconds) {
         NSString *msg = remaining > 1e8
             ? @"started (full time while in foreground)"
             : [NSString stringWithFormat:@"started (~%.0fs remaining)", remaining];
-        mfEmit(@"native:backgroundTask", @{@"message": msg, @"granted": @(seconds)});
+        mfEmit(@"ios:backgroundTask", @{@"message": msg, @"granted": @(seconds)});
         int secs = seconds > 0 ? seconds : 20;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)secs * NSEC_PER_SEC),
             dispatch_get_main_queue(), ^{
                 if (g_mfBgTaskActive) {
-                    mfEmit(@"native:backgroundTask", @{@"message": @"finished"});
+                    mfEmit(@"ios:backgroundTask", @{@"message": @"finished"});
                     mfEndBgTask();
                 }
             });

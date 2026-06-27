@@ -94,9 +94,13 @@ extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_dat
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
 // exported below (end)
 
-static void signal_connect(void *widget, char *event, void *cb, void* data) {
-   // g_signal_connect is a macro and can't be called directly
-   g_signal_connect(widget, event, cb, data);
+static void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
+   // g_signal_connect is a macro and can't be called directly.
+   // data carries a window ID (not a real pointer); it is passed as the
+   // gpointer user_data value itself and recovered by the handlers as a
+   // uintptr_t. Keeping it integer-typed on the Go side avoids the GC
+   // scanning it as a stack pointer. See issue #5631.
+   g_signal_connect(widget, event, cb, (gpointer)data);
 }
 
 static WebKitWebView* webkit_web_view(GtkWidget *webview) {
@@ -433,15 +437,15 @@ static void on_drag_leave(GtkWidget *widget, GdkDragContext *context, guint time
 }
 
 // Set up drag and drop handlers for external file drops with hover effects
-static void enableDND(GtkWidget *widget, gpointer data)
+static void enableDND(GtkWidget *widget, uintptr_t data)
 {
     // Core handlers for file drop
-    g_signal_connect(G_OBJECT(widget), "drag-data-received", G_CALLBACK(on_drag_data_received), data);
-    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop), data);
+    g_signal_connect(G_OBJECT(widget), "drag-data-received", G_CALLBACK(on_drag_data_received), (gpointer)data);
+    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop), (gpointer)data);
 
     // Hover effect handlers - return FALSE for internal drags to let WebKit handle them
-    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion), data);
-    g_signal_connect(G_OBJECT(widget), "drag-leave", G_CALLBACK(on_drag_leave), data);
+    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion), (gpointer)data);
+    g_signal_connect(G_OBJECT(widget), "drag-leave", G_CALLBACK(on_drag_leave), (gpointer)data);
 }
 
 // Block external file drops - consume the events to prevent WebKit from navigating to files
@@ -468,10 +472,10 @@ static gboolean on_drag_motion_blocked(GtkWidget *widget, GdkDragContext *contex
 }
 
 // Set up handlers that block external file drops while allowing internal HTML5 drag-and-drop
-static void disableDND(GtkWidget *widget, gpointer data)
+static void disableDND(GtkWidget *widget, uintptr_t data)
 {
-    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop_blocked), data);
-    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion_blocked), data);
+    g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(on_drag_drop_blocked), (gpointer)data);
+    g_signal_connect(G_OBJECT(widget), "drag-motion", G_CALLBACK(on_drag_motion_blocked), (gpointer)data);
 }
 
 // Store/retrieve an unsigned integer as a GObject data pointer without allocating memory.
@@ -635,7 +639,7 @@ func appRun(app pointer) error {
 
 	signal := C.CString("activate")
 	defer C.free(unsafe.Pointer(signal))
-	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, nil)
+	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
@@ -654,7 +658,7 @@ func appDestroy(application pointer) {
 func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
 	c := NewCalloc()
 	defer c.Free()
-	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
+	winID := C.uintptr_t(w.parent.ID())
 	C.signal_connect(unsafe.Pointer(menu), c.String("button-release-event"), C.onMenuButtonEvent, winID)
 }
 
@@ -1129,15 +1133,14 @@ func (w *linuxWebviewWindow) close() {
 }
 
 func (w *linuxWebviewWindow) enableDND() {
-	// Pass window ID as pointer value (not pointer to ID) - same pattern as other signal handlers
-	winID := unsafe.Pointer(uintptr(w.parent.id))
-	C.enableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
+	// Pass the window ID as the gpointer user_data value itself (not a pointer
+	// to it) using an integer type, so the Go GC never scans it. See #5631.
+	C.enableDND((*C.GtkWidget)(w.webview), C.uintptr_t(w.parent.id))
 }
 
 func (w *linuxWebviewWindow) disableDND() {
 	// Block external file drops while allowing internal HTML5 drag-and-drop
-	winID := unsafe.Pointer(uintptr(w.parent.id))
-	C.disableDND((*C.GtkWidget)(w.webview), C.gpointer(winID))
+	C.disableDND((*C.GtkWidget)(w.webview), C.uintptr_t(w.parent.id))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
@@ -1810,7 +1813,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	c := NewCalloc()
 	defer c.Free()
 
-	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
+	winID := C.uintptr_t(w.parent.ID())
 
 	// Set up the window close event
 	wv := unsafe.Pointer(w.webview)
@@ -1821,7 +1824,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), C.handleConfigureEvent, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
-	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
+	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
 	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
@@ -1959,7 +1962,7 @@ func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
 //
 //export onButtonEvent
 func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
-	// Constants (defined here to be easier to use with purego)
+	// Constants defined here for readability
 	GdkButtonPress := C.GDK_BUTTON_PRESS     // 4
 	Gdk2ButtonPress := C.GDK_2BUTTON_PRESS   // 5 for double-click
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
@@ -1998,7 +2001,7 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 
 //export onMenuButtonEvent
 func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
-	// Constants (defined here to be easier to use with purego)
+	// Constants defined here for readability
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
 
 	windowId := uint(C.uint(data))
@@ -2290,7 +2293,6 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		C.free(unsafe.Pointer(nameStr))
 	}
 
-	// FIXME: This should be consolidated - duplicate exists in linux_purego.go
 	buildStringAndFree := func(s C.gpointer) string {
 		bytes := []byte{}
 		p := unsafe.Pointer(s)
