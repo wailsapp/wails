@@ -1,0 +1,1581 @@
+---
+title: Catatan Perubahan
+description: Riwayat versi dan catatan rilis untuk Wails v3
+---
+
+
+Legenda:
+-  - macOS
+- ⊞ - Windows
+- 🐧 - Linux
+
+/*--
+Semua perubahan penting pada proyek ini akan didokumentasikan dalam file ini.
+
+Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+dan proyek ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+- `Added` untuk fitur baru.
+- `Changed` untuk perubahan pada fungsionalitas yang ada.
+- `Deprecated` untuk fitur yang akan segera dihapus.
+- `Removed` untuk fitur yang sudah dihapus.
+- `Fixed` untuk perbaikan bug.
+- `Security` jika ada kerentanan.
+
+*/
+
+/*
+  ** JANGAN PERBARUI FILE INI **
+  Pembaruan harus ditambahkan ke `v3/UNRELEASED_CHANGELOG.md`
+  Terima kasih!
+*/
+## [Belum Dirilis]
+
+## v3.0.0-alpha2.105 - 2026-06-21
+
+## Ditambahkan
+- Tambahkan `application.System` untuk deteksi platform runtime dari kode bersama: `System.IsMobile()` (iOS/Android), `System.IsDesktop()` (macOS/Windows/Linux), `System.IsServer()` (build tag `server`), dan `System.IsPlatform(application.PlatformMacOS|PlatformWindows|PlatformLinux|PlatformIOS|PlatformAndroid|PlatformServer)` untuk menguji target tunggal secara langsung. Dapat dikompilasi di setiap target sehingga Anda dapat bercabang tanpa build tag. Helper frontend yang sesuai (`System.IsMobile/IsDesktop/IsIOS/IsAndroid/...`) tersedia di `@wailsio/runtime`
+- Tambahkan panduan "Using Other Frontend Frameworks" yang menunjukkan cara memasukkan proyek Vite Anda sendiri ke `frontend/` (mencakup Solid, Preact, Lit, SvelteKit, Qwik, Angular, dll.)
+- Wizard `wails3 setup` sekarang memeriksa toolchain mobile (iOS/Android) — Xcode dan runtime iOS Simulator, JDK, Android SDK/NDK dan emulator — dengan instalasi satu klik dan perbaikan konfigurasi shell yang dapat disalin jika diperlukan
+- Proyek yang di-generate menyertakan `frontend/.npmrc` dengan `minimum-release-age` 7 hari untuk mengurangi paparan paket yang baru dipublikasikan (berpotensi compromised) (dihormati oleh pnpm dan bun; diabaikan tanpa efek oleh npm)
+
+## Diubah
+- Desain ulang semua starter template bawaan dengan tampilan hero neon-mountain baru (web, iOS dan Android)
+- **TypeScript sekarang menjadi default untuk starter template dan memiliki nama template dasar.** `wails3 init` (tanpa `-t`) membuat proyek TypeScript; `-t vanilla`, `-t react`, `-t vue` dan `-t svelte` adalah TypeScript, dengan varian JavaScript di `-t vanilla-js`, `-t react-js`, `-t vue-js` dan `-t svelte-js`. Template bawaan mendeklarasikan bahasanya dengan `typescript:` di `template.yaml`; template komunitas yang memakai suffix `-ts` tetap berfungsi sebagai fallback
+- Desain ulang wizard `wails3 setup` dengan tema neon "digital Wails" (frosted-glass vibrancy di atas latar gunung)
+
+## Diperbaiki
+- Perbaiki crash di Windows saat memulihkan aplikasi yang diminimalkan cukup lama hingga WebView2 suspend atau proses render/GPU-nya di-recycle. Resync DPI minimise/restore (#5544) sekarang hanya menyentuh controller WebView2 ketika DPI window benar-benar berubah, menghindari panggilan COM fatal ke controller yang suspend pada restore same-DPI yang umum (#5605)
+- Perbaiki crash native `SIGABRT`/`SIGSEGV` berulang (biasanya di dalam `g_object_unref` selama GTK main loop) pada aplikasi Linux jangka panjang dengan beban asset/media yang sering. Asset server menyelesaikan `WebKitURISchemeRequest` dari goroutine worker, memanggil fungsi WebKit2GTK yang tidak thread-safe di luar GTK main thread; penyelesaian (`webkit_uri_scheme_request_finish_with_response`/`finish_error`) sekarang berjalan di main thread. Melengkapi perbaikan parsial di #5566. Mempengaruhi build GTK3 dan GTK4/WebKitGTK 6.0 (#5631, #5557)
+- Perbaiki `fatal error: invalid pointer found on stack` intermiten di `setupSignalHandlers` pada Linux/GTK3. ID window yang diteruskan sebagai `user_data` signal disimpan di lokal Go `unsafe.Pointer`, sehingga garbage collector abort saat memindai nilai (non-pointer) selama stack copy. ID sekarang disimpan bertipe integer (`uintptr_t`) di sisi Go, back-porting ke jalur GTK3 legacy perbaikan yang sama #4958 terapkan ke jalur GTK4 (yang mengganti fungsi signal C ke `uintptr_t` untuk menghilangkan error `-race`/checkptr) (#5631)
+
+## Dihapus
+- Hapus starter template `react-swc`, `preact`, `lit`, `solid`, `qwik` dan `sveltekit` (beserta varian `-ts`-nya). Set bawaan yang didukung sekarang `vanilla`, `react`, `vue` dan `svelte` — masing-masing TypeScript secara default, dengan varian `-js` JavaScript. Framework lain masih dapat digunakan dengan [membawa frontend sendiri](https://v3.wails.io/id/guides/dev/frontend-frameworks) atau via custom template
+
+## v3.0.0-alpha2.104 - 2026-06-18
+
+## Diperbaiki
+- Perbaiki an iOS crash (SIGABRT) ketika method layanan Go yang terikat mengembalikan string kosong. Penulis respons aset iOS melindungi pointer body dengan `buf != nil` alih-alih panjangnya, sehingga body dengan panjang nol membuat `&buf[0]` panic; sekarang melindungi berdasarkan panjang, sesuai dengan penulis desktop
+
+## v3.0.0-alpha2.103 - 2026-06-15
+
+## Diubah
+- Pindahkan fitur native iOS dan Android ke platform manager: panggil melalui `application.IOS.*` and `application.Android.*` (e.g. `application.IOS.Haptic("medium")`, `application.Android.Share(payload)`) alih-alih `application.IOS*`/`application.Android*` fungsi bebas (#5602)
+- Ganti nama event mobile bridge: event cross-platform sekarang menggunakan the `common:*` prefix (e.g. `common:haptic`, `common:location`) and event eksklusif platform menggunakan `ios:*` / `android:*` (e.g. `ios:backgroundTask`, `android:foregroundService`); the `native:*` prefix tidak lagi digunakan (#5602)
+
+## v3.0.0-alpha.102 - 2026-06-14
+
+## Ditambahkan
+- Tambahkan eksperimental `wails3 setup` wizard untuk setup proyek interaktif dan pemeriksaan dependency
+- Tambahkan `--json` flag ke `wails3 doctor` untuk output yang dapat dibaca mesin
+- Tambahkan signing status bagian ke `wails3 doctor` perintah
+
+## Diperbaiki
+- Perbaiki npm detection di Linux to check PATH in addition to package manager
+
+## v3.0.0-alpha.101 - 2026-06-13
+
+## Ditambahkan
+- iOS: dialog pesan native (UIAlertController) and dialog buka file/files/direktori (UIDocumentPickerViewController); save dialogs mengembalikan error eksplisit
+- iOS: dukungan clipboard via UIPasteboard
+- iOS: metrik layar nyata via UIScreen (points, pixels, scale, safe-area work area)
+- iOS: build perangkat (`IOS_PLATFORM=device`), identitas code-signing / provisioning profile / dukungan entitlements, `.ipa` packaging, and `deploy-device` via devicectl
+- iOS: versi iOS minimum yang dapat dikonfigurasi (`ios.minIOSVersion` in build/config.yml)
+- iOS: `wails3 doctor` reports Xcode and iOS SDK availability di macOS
+- iOS: event sistem — battery, network, theme, screen-lock and low-memory muncul sebagai `events.IOS.*` and platform-neutral `events.Common.*` event aplikasi
+- iOS: jembatan fitur mobile native (exported `application.IOS*`) — share sheet, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (Face ID/Touch ID), local notifications and Keychain secure storage
+- iOS: sensor & perangkat keras — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and screen-capture detection
+- iOS: dokumentasi (IOS.md and a docs-site panduan)
+- Android: dialog pesan native (AlertDialog) and open file/files dialogs (Storage Access Framework, imported as cache copies); open-directory and save dialogs mengembalikan error eksplisit
+- Android: dukungan clipboard via ClipboardManager
+- Android: metrik layar nyata via WindowMetrics/DisplayMetrics (dp, pixels, scale, system-bar work area)
+- Android: haptics (`Android.Haptics.Vibrate`), device info (`Android.Device.Info`) and toast (`Android.Toast.Show`) runtime methods
+- Android: typed lifecycle events (`events.Android.*`, generated from events.txt) with `ActivityCreated` mapped to `Common.ApplicationStarted`
+- Android: pipeline build menghasilkan APK debug dan release (`android:run`, `android:package`, `android:package:fat`); release signing via debug keystore secara default atau keystore nyata melalui `ANDROID_KEYSTORE_*` env vars
+- Android: `wails3 doctor` melaporkan Android SDK, NDK dan JDK
+- Android: event sistem — battery, network, theme, screen-lock and low-memory muncul sebagai `events.Android.*` and platform-neutral `events.Common.*` event aplikasi
+- Android: jembatan fitur mobile native (exported `application.Android*`) — share, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (BiometricPrompt), local notifications and EncryptedSharedPreferences secure storage
+- Android: sensor & perangkat keras — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and FLAG_SECURE screen-capture blocking
+- Android: dokumentasi (ANDROID.md and a docs-site panduan)
+- Example: the `mobile` kitchen sink mendapat tab Mobile dan Hardware yang mendemonstrasikan the native feature bridge di iOS dan Android (pill tabs wrap ke beberapa baris)
+- Mobile: battery — the accelerometer, proximity sensor, torch and the example's periodic clock dijeda saat aplikasi di-background dan dipulihkan saat kembali (Android menjaga proses berjalan di background, and the torch adalah state perangkat keras yang persist di iOS), and Android system-event receivers hanya didaftarkan saat aplikasi di foreground
+- iOS: capture kamera — `application.IOSCapturePhoto`/`IOSCaptureVideo` (UIImagePickerController → a `native:capture` event with a base64 thumbnail)
+- iOS: eksekusi background — `application.IOSBeginBackgroundTask`/`IOSEndBackgroundTask` (a UIApplication jendela background-task) and a configurable `ios.backgroundModes` (build/config.yml) yang men-templating `UIBackgroundModes` ke Info.plist yang dihasilkan
+- Android: capture kamera — `application.AndroidCapturePhoto`/`AndroidCaptureVideo` (system camera via FileProvider → a `native:capture` event)
+- Android: foreground service — `application.AndroidStartForegroundService`/`AndroidStopForegroundService` (a `WailsForegroundService` dengan notifikasi ongoing menjaga proses tetap hidup untuk pekerjaan background jangka panjang)
+- Example: a Camera tab demonstrating photo/video capture and eksekusi background (foreground service on Android, jendela background-task on iOS)
+
+## Diperbaiki
+- Perbaiki `getUserMedia` selalu gagal dengan `NotAllowedError` di Linux: WebKitGTK menolak permintaan izin yang tidak ditangani siapapun, and the `permission-request` signal tidak terhubung. Camera/microphone sekarang ditangani melalui `WebviewWindowOptions.Permissions` map (`map[PermissionType]Permission`), dihormati di Linux (WebKitGTK) dan Windows (WebView2). On Linux, yang tidak memiliki prompt native, camera/microphone default ke allowed (memulihkan `getUserMedia`) dan dapat dimatikan dengan `PermissionDeny` (#5552)
+- iOS: `GOOS=ios` compile lagi (exported `events.IOS`, mobile method-name stubs) and build production-tagged compile (perbaikan build-tag di pkg/application and several services)
+- iOS: Go→JS event dan ExecJS sekarang berfungsi — the page tidak lagi dimuat dua kali saat startup and the `wails:runtime:ready` handshake tidak lagi bisa hilang
+- iOS: `ApplicationDidFinishLaunching`/`ApplicationStarted` tidak lagi race app startup; menghapus sleep startup 2 detik yang tetap
+- iOS: fixed a kebocoran C-string pada setiap eksekusi JavaScript Go→JS
+- iOS: `hasListeners` sekarang mencerminkan registrasi listener nyata
+- iOS: framework debug logging dikompilasi keluar dari build production
+- Android: `GOOS=android` compile lagi — defined `events.Android`, removed the out-of-bounds `events_android.go` listener array, added the mobile method-name stub, and stopped desktop-Linux files (`linux_cgo.*`, `events_linux.*`, `environment_linux.go`) leaking into Android builds
+- Android: JS→Go bindings sekarang berfungsi — the WebView tidak dapat mengirimkan `fetch()` body POST ke `shouldInterceptRequest`, sehingga panggilan runtime dirutekan melalui a JavascriptInterface transport (`nativeHandleRuntimeCall`) alih-alih crash pada request body nil
+- Android: `Screens.*` panggilan runtime mengembalikan data nyata — the ScreenManager sekarang diisi saat startup (tidak pernah di-wire, sehingga `GetAll` mengembalikan nil)
+- Android: framework debug logging dikompilasi keluar dari build production and dirutekan melalui logcat di bawah tag `Wails` di build debug
+- Android: real `hasListeners` registry, penanganan referensi/exception JNI, and a siklus hidup halaman single-load (tanpa navigasi ganda)
+- Perbaiki `wails3 generate bindings` failing with "Access is denied" di Windows when the Vite dev server is running, dengan mensinkronkan file yang dihasilkan ke direktori output alih-alih rename di atasnya (#5515)
+- Perbaiki intermittent fatal crash di macOS when reading screen information after a display change: the screen id and name menyimpan pointer ke `UTF8String` buffer yang dapat dibebaskan sebelum Go menyalinnya (use-after-free). String sekarang `strdup`'d dan dibebaskan setelah konversi, and enumerasi layar berjalan di autorelease pool eksplisit sehingga tidak lagi bocor saat dipanggil dari goroutine Go (#5556)
+- Perbaiki intermittent SIGSEGV di Linux saat assetserver menutup `WebKitURISchemeRequest`: yang terakhir `g_object_unref` berjalan di goroutine assetserver, memfinalisasi WebKit GObject di luar thread utama GTK. Unref sekarang di-marshal ke konteks utama GTK via `g_main_context_invoke` (#5557)
+
+## v3.0.0-alpha.100 - 2026-06-13
+
+## Ditambahkan
+- Perluas `MacWebviewPreferences` dengan tambahan WKWebView opsi konfigurasi: `EnableAutoplayWithoutUserAction`, `AllowsAirPlayForMediaPlayback`, `AllowsMagnification`, `JavaScriptCanOpenWindowsAutomatically`, `MinimumFontSize`, and `ApplicationNameForUserAgent` (#5549)
+
+## Diperbaiki
+- Perbaiki `wails3 generate bindings` failing with "Access is denied" di Windows when the Vite dev server is running, dengan mensinkronkan file yang dihasilkan ke direktori output alih-alih rename di atasnya (#5561)
+- Perbaiki JS resize events not firing for frameless windows di Linux; fix deteksi edge scrollbar untuk window frameless (#5368)
+- Perbaiki updater di Windows gagal dengan "invalid cross-device link" saat direktori temp berada di volume berbeda dari direktori instalasi (#5560)
+
+## v3.0.0-alpha.99 - 2026-06-10
+
+## Diperbaiki
+- Perbaiki `wails3 generate bindings` failing with "Access is denied" di Windows when the Vite dev server is running, dengan mensinkronkan file yang dihasilkan ke direktori output alih-alih rename di atasnya (#5515)
+
+## v3.0.0-alpha.98 - 2026-06-03
+
+## Diperbaiki
+- Perbaiki WebKit UI freeze di Linux when idle (e.g. with the inspector open) dengan tidak lagi memaksa `SA_ONSTACK` on `SIGUSR1`, yang merusak sinkronisasi thread GC JavaScriptCore (#5527)
+
+## v3.0.0-alpha.97 - 2026-05-31
+
+## Ditambahkan
+- Tambahkan halaman debugging dan bekerja dengan `runtime/trace`
+
+## Diubah
+- Hapus some tidak perlu `_ "embed"` import membersihkan kode sedikit
+
+## Diperbaiki
+- Perbaiki minimum width/height constraints not enforced after window unmaximise di Windows (#4593)
+- Perbaiki mouse click-through dalam mode fullscreen dengan opsi window Frameless + Transparent (#4408)
+
+## v3.0.0-alpha.96 - 2026-05-25
+
+## Ditambahkan
+- Tambahkan Garble dukungan obfuscation ([#4563](https://github.com/wailsapp/wails/issues/4563)): ID method binding yang stabil, plumbing build/Taskfile (`build --obfuscated --garbleargs`, `generate bindings -obfuscated`), and tag struct JSON pada setiap payload runtime-facing (`EnvironmentInfo`, `OSInfo`, `Screen`, `Rect`, `Point`, `Size`, `Capabilities`) sehingga format wire bertahan dari penggantian nama field exported Garble.
+
+## v3.0.0-alpha.95 - 2026-05-20
+
+## Ditambahkan
+- Tambahkan missing halaman struktur proyek
+
+## Diubah
+- Docs: Ubah menjadi beberapa diagram di halaman arsitektur menggunakan sequence diagram untuk tampilan lebih bersih
+- Docs: Sertakan catatan tentang installing D2 sebagai prasyarat untuk menjalankan
+
+## Diperbaiki
+- Perbaiki `wails3 generate appimage` on the GTK4 default: the bundler now detects the GTK stack from the binary before searching for runtime files, so it picks `libwebkitgtkinjectedbundle.so` (under `webkitgtk-6.0/`) for GTK4 builds and `libwebkit2gtkinjectedbundle.so` (under `webkit2gtk-4.1/`) for `-tags gtk3` builds. The `.relr.dyn` probe also checks `libgtk-4.so.1` so stripping is correctly disabled on modern toolchains regardless of stack. (#5475)
+- Perbaiki `wails3 generate appimage` failing when invoked with a relative `-builddir`: the bundler now resolves `-binary`, `-icon`, `-desktopfile`, `-builddir` and `-outputdir` to absolute paths up-front so the mid-flow `s.CD` doesn't break the AppRun download goroutine or the post-copy `ldd` probe.
+- Perbaiki `wails3 generate appimage` failing to move yang terakhir AppImage to `-outputdir` when the desktop `Name=` field doesn't match the binary basename: the bundler now forces linuxdeploy's appimage plugin (via the `OUTPUT` env var) to write the AppImage to `<binary>-<arch>.AppImage` instead of the name derived from the desktop file.
+- Perbaiki `events.Common.ApplicationStarted`, `Common.ThemeChanged`, `Common.SystemWillSleep` and `Common.SystemDidWake` not firing di Linux after the GTK4 + WebKitGTK 6.0 stack was promoted to the default in alpha.93. The new default `application_linux.go` `run()` wasn't calling `setupCommonEvents()` (which forwards `Linux.*` events to their `Common.*` counterparts) or `monitorPowerEvents()`. The DBus power-monitor helper is now shared between the GTK3 and GTK4 build paths via `application_linux_dbus.go`. (#5474)
+
+## v3.0.0-alpha.94 - 2026-05-19
+
+## Diperbaiki
+- Perbaiki `events.Common.ApplicationStarted`, `Common.ThemeChanged`, `Common.SystemWillSleep` and `Common.SystemDidWake` not firing di Linux after the GTK4 + WebKitGTK 6.0 stack was promoted to the default in alpha.93. The new default `application_linux.go` `run()` wasn't calling `setupCommonEvents()` (which forwards `Linux.*` events to their `Common.*` counterparts) or `monitorPowerEvents()`. The DBus power-monitor helper is now shared between the GTK3 and GTK4 build paths via `application_linux_dbus.go`. (#5474)
+
+## v3.0.0-alpha.93 - 2026-05-17
+
+## Ditambahkan
+- Tambahkan `XDG_SESSION_TYPE` to `wails3 doctor` output di Linux oleh @leaanthony
+
+## Diperbaiki
+- Perbaiki window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) oleh @leaanthony
+- Perbaiki GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) oleh @leaanthony
+- Perbaiki "not enough memory" error when initializing drag and drop di Windows (#4701) oleh @overlordtm
+- Perbaiki race condition in mainthread callback store using incorrect RLock for map deletion (Linux, macOS, iOS) (#4424) oleh @leaanthony
+- Perbaiki variable handling when passing perintah-line arguments to tasks. CLI variables specified as KEY=VALUE pairs are now properly initialized and propagated throughout task execution.
+- Perbaiki NSWindowZoomButton conflict di macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
+- Perbaiki a cluster of pre-existing bugs in the legacy GTK3 build path (`-tags gtk3`) surfaced by CodeRabbit on #5463: file-association launches no longer skip startup handlers; `getTheme` is bounds- and type-safe; `appName` no longer frees GLib-owned memory; `clipboardGet` no longer leaks the `gchar*` returned by GTK; `Calloc` now uses pointer receivers (and `NewCalloc` returns `*Calloc`) so the pool actually tracks allocations; `zoomOut` uses the reciprocal of `zoomInFactor` instead of a negative multiplier that clamped to 1.0; `execJS` reuses the preallocated empty world-name instead of leaking a `C.CString("")` per call; a development `fmt.Println` was removed from `menuItem.setAccelerator`. Menyelesaikan #5465.
+- Perbaiki the same `Calloc` value-receiver leak in the default GTK4 build path (`linux_cgo.go`): pointer receivers + `NewCalloc() *Calloc` so per-window `c.String(...)` allocations are actually tracked and freed.
+
+## v3.0.0-alpha.92 - 2026-05-15
+
+## Ditambahkan
+- Modifikasi the Taskfiles to allow control of frontend package manager used via `PACKAGE_MANAGER` option 
+- Enrich template data with `{{.Opn}}` and `{{.Cls}}` to make writing Taskfile templates more predictable
+
+## Diubah
+- Modifikasi a couple of the existing Taskfiles to make use of `{{.Opn}} and {{.Cls}}`
+
+## Diperbaiki
+- Perbaiki `concurrent map read and map write` runtime fatal in `linuxSystemTray` when the tray menu is updated while the panel reads it.
+- Use `log` instead of `fmt` for WebView2 error and stack trace output so messages aren't lost when the app runs without an attached console di Windows.
+
+## v3.0.0-alpha.91 - 2026-05-12
+
+## Diubah
+- Perbarui sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5414) oleh @github-actions[bot]
+- **BREAKING (macOS):** Normalise the macOS coordinate system so `GetScreens`, `Position`, and `SetPosition` all use the same space — logical points, Y-down, with `(0,0)` at the top-left of the primary screen. This matches Windows, GTK and the public APIs of Electron and the web. Screens physically above the primary now report negative `Bounds.Y` (previously positive), and `Position()`/`SetPosition()` values are now in logical points instead of `points × primaryScale`. Round-tripping `Position()` → `SetPosition()` is preserved; absolute values logged from earlier alpha builds or hand-computed workarounds (e.g. multiplying by `primaryScale` or flipping Y against a screen height) will need to be updated. Menyelesaikan [#5117](https://github.com/wailsapp/wails/issues/5117).
+
+## Diperbaiki
+- Defensively validate DBus signal name and body length to prevent panics in [PR](https://github.com/wailsapp/wails/pull/5416) oleh @leaanthony
+- Perbaiki memory safety issue in GTK menu handling di Linux in [PR](https://github.com/wailsapp/wails/pull/5363) oleh @leaanthony
+- Detect NVIDIA GPUs and disable DMA-BUF renderer di Linux in [PR](https://github.com/wailsapp/wails/pull/5295) oleh @leaanthony
+- Perbaiki `SetPosition` cross-screen Y conversion di macOS: use primary screen height as global reference so windows land at the correct position on monitors that are vertically offset from the primary display in [#5117](https://github.com/wailsapp/wails/issues/5117)
+- Perbaiki git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) oleh @wayneforrest
+- Perbaiki a family of Windows systray `SetMenu` crashes caused by a broken `DestroyMenu` syscall that was passing four arguments instead of one, so every call returned FALSE and freed nothing. Also release HMENU and HBITMAP handles (including those allocated at runtime via `MenuItem.SetBitmap`) on menu rebuilds, reset stale checkbox/radio maps in `Win32Menu.Update`, and drop a redundant `Update()` call in `systemtray.updateMenu` that doubled allocations. Long-running systray apps no longer leak GDI/USER objects on each menu rebuild.
+
+## v3.0.0-alpha.90 - 2026-05-11
+
+## Ditambahkan
+- Tambahkan configurable application name for WKWebView User-Agent di macOS in [PR](https://github.com/wailsapp/wails/pull/5261) oleh @vinhvoit225
+- Adds indirect dependency github.com/coder/websocket to gin-service example in [PR](https://github.com/wailsapp/wails/pull/5400) oleh @taliesin-ai
+- Tambahkan deep equality comparison support to build assets tests in [PR](https://github.com/wailsapp/wails/pull/5402) oleh @leaanthony
+
+## Diubah
+- Consolidate build output into assets directory in [PR](https://github.com/wailsapp/wails/pull/5401) oleh @taliesin-ai
+- Perbarui sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) oleh @github-actions[bot]
+
+## Diperbaiki
+- Use notification object for macOS single-instance message in [PR](https://github.com/wailsapp/wails/pull/5289) oleh @overlordtm
+- Batch Windows callbacks to prevent promise loss under heavy load in [PR](https://github.com/wailsapp/wails/pull/5383) oleh @taliesin-ai
+
+## v3.0.0-alpha.89 - 2026-05-10
+
+## Ditambahkan
+- Tambahkan go_test_results job to aggregate Go test results in [PR](https://github.com/wailsapp/wails/pull/5316) oleh @leaanthony
+
+## Diubah
+- Conditionally split large RPC payloads into chunked POST requests in [PR](https://github.com/wailsapp/wails/pull/5369) oleh @leaanthony
+- Upgrade Vite from 5.x.x to 8.0.0 across all frontend templates in [PR](https://github.com/wailsapp/wails/pull/5386) oleh @leaanthony
+- Migrate Vite dev server port configuration to environment variables in [PR](https://github.com/wailsapp/wails/pull/5365) oleh @leaanthony
+- Configure Vite dev server to bind to 127.0.0.1 in all templates in [PR](https://github.com/wailsapp/wails/pull/5361) oleh @leaanthony
+- Perbarui sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) oleh @github-actions[bot]
+
+## Diperbaiki
+- Sanitize Info.plist template stubs during build-assets update in [PR](https://github.com/wailsapp/wails/pull/5312) oleh @leaanthony
+- Perbaiki stale state in macOS menus by applying the menu item mutators (`setMenuItemChecked()`, `setMenuItemLabel()`, `setMenuItemDisabled()`, `setMenuItemHidden()`, `setMenuItemTooltip()`) synchronously on the main thread, eliminating the `dispatch_async` race that left menus rendering the previous state when reopened quickly (#5002)
+- Ignore *_test.go files in dev mode to prevent tidak perlu rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) oleh @leaanthony
+- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) oleh @wucm667
+- Use lastSizeWParam to gate menubar redraws di Windows in [PR](https://github.com/wailsapp/wails/pull/5382) oleh @taliesin-ai
+
+## v3.0.0-alpha.88 - 2026-05-09
+
+## Diubah
+- Switch HiddenOnTaskbar to use WS_EX_TOOLWINDOW in [PR](https://github.com/wailsapp/wails/pull/5371) oleh @leaanthony
+- Reorder dependencies and remove webview2 replace directive in go.mod in [PR](https://github.com/wailsapp/wails/pull/5370) oleh @atterpac
+- Perbarui sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5358) oleh @github-actions[bot]
+
+## Diperbaiki
+- Hapus generic indirection aliases and consolidate map key types in [PR](https://github.com/wailsapp/wails/pull/5331) oleh @fbbdev
+
+## Dihapus
+- Delete PR-master workflow, removing dokumentasi, Go tests, and skip tests in [PR](https://github.com/wailsapp/wails/pull/5377) oleh @leaanthony
+
+## v3.0.0-alpha.87 - 2026-05-07
+
+## Ditambahkan
+- Tambahkan Korean dokumentasi for Wails v3 in [PR](https://github.com/wailsapp/wails/pull/5352) oleh @leaanthony
+- Tambahkan French dokumentasi for installation and quick start in [PR](https://github.com/wailsapp/wails/pull/5354) oleh @leaanthony
+- Tambahkan Portuguese dokumentasi for quick start, concepts, and community in [PR](https://github.com/wailsapp/wails/pull/5355) oleh @leaanthony
+
+## v3.0.0-alpha.86 - 2026-05-06
+
+## Ditambahkan
+- Tambahkan French dokumentasi localization in [PR](https://github.com/wailsapp/wails/pull/5328) oleh @leaanthony
+- Tambahkan German locale to Astro dokumentasi site in [PR](https://github.com/wailsapp/wails/pull/5343) oleh @leaanthony
+
+## Diubah
+- Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) oleh @leaanthony
+- Perbarui various Windows related files for WebView2 in [PR](https://github.com/wailsapp/wails/pull/5317) oleh @leaanthony
+
+## Diperbaiki
+- Split dialog dispatch between GTK3 and GTK4 for Linux in [PR](https://github.com/wailsapp/wails/pull/5340) oleh @leaanthony
+- Ensure dialog callbacks execute on the GTK thread, fixing segfaults in [PR](https://github.com/wailsapp/wails/pull/5339) oleh @leaanthony
+
+## v3.0.0-alpha.85 - 2026-05-05
+
+## Ditambahkan
+- Tambahkan PR template URL to the repository in [PR](https://github.com/wailsapp/wails/pull/5179) oleh @leaanthony
+- Tambahkan German dokumentasi for Wails v3 in [PR](https://github.com/wailsapp/wails/pull/5330) oleh @leaanthony
+
+## v3.0.0-alpha.84 - 2026-05-03
+
+## Ditambahkan
+- Tambahkan option to disable Escape key exiting fullscreen di macOS in [PR](https://github.com/wailsapp/wails/pull/5307) oleh @leaanthony
+- Tambahkan option to disable Escape key exiting fullscreen di macOS in [PR](https://github.com/wailsapp/wails/pull/5310) oleh @leaanthony
+- Adds Pausa community showcase dokumentasi in [PR](https://github.com/wailsapp/wails/pull/5288) oleh @yuseferi
+
+## Diubah
+- Perbarui sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5308) oleh @github-actions[bot]
+- Perbarui icon generation perintah to handle unsupported platforms in [PR](https://github.com/wailsapp/wails/pull/5309) oleh @leaanthony
+- Replace boolean fullscreen API with tri-state ButtonState, implement platform bindings in [PR](https://github.com/wailsapp/wails/pull/5224) oleh @leaanthony
+
+## Diperbaiki
+- Guard WebView2 focus operations against nil controller state in [PR](https://github.com/wailsapp/wails/pull/5315) oleh @leaanthony
+- Perbarui GitHub Actions workflow to correctly reference PR base branch in [PR](https://github.com/wailsapp/wails/pull/5313) oleh @leaanthony
+- Ignore *_test.go files in dev mode to prevent tidak perlu rebuilds in [PR](https://github.com/wailsapp/wails/pull/5203) oleh @leaanthony
+- Prevent Menu.Update() segfault when app is not running in [PR](https://github.com/wailsapp/wails/pull/5291) oleh @wucm667
+
+## v3.0.0-alpha.83 - 2026-05-02
+
+## Ditambahkan
+- Tambahkan InstallScope flag and build option for machine/user install in [PR](https://github.com/wailsapp/wails/pull/5094) oleh @symball
+- Tambahkan no-op SetScreen method to BrowserWindow to satisfy Window interface in [PR](https://github.com/wailsapp/wails/pull/5294) oleh @leaanthony
+
+## Diperbaiki
+- Detect NVIDIA GPUs and disable DMA-BUF renderer di Linux in [PR](https://github.com/wailsapp/wails/pull/5295) oleh @leaanthony
+- Perbaiki git PR template to point to the correct feedback URL in [PR](https://github.com/wailsapp/wails/pull/5109) oleh @wayneforrest
+- Perbaiki a family of Windows systray `SetMenu` crashes caused by a broken `DestroyMenu` syscall that was passing four arguments instead of one, so every call returned FALSE and freed nothing. Also release HMENU and HBITMAP handles (including those allocated at runtime via `MenuItem.SetBitmap`) on menu rebuilds, reset stale checkbox/radio maps in `Win32Menu.Update`, and drop a redundant `Update()` call in `systemtray.updateMenu` that doubled allocations. Long-running systray apps no longer leak GDI/USER objects on each menu rebuild.
+
+## v3.0.0-alpha.82 - 2026-05-01
+
+## Diperbaiki
+- Perbaiki desktop file generation to correctly handle the desktop name in [PR](https://github.com/wailsapp/wails/pull/5232) oleh @leaanthony
+
+## v3.0.0-alpha.81 - 2026-04-30
+
+## Diubah
+- Adjust nightly release schedule to 15:00 UTC in [PR](https://github.com/wailsapp/wails/pull/5286) oleh @leaanthony
+
+## Diperbaiki
+- Perbaiki halved Screen Bounds, WorkArea, and Size values on Retina Macs -  (#5168)
+
+## v3.0.0-alpha.80 - 2026-04-29
+
+## Diubah
+- Perbarui dokumentasi dependencies and content collection loaders in [PR](https://github.com/wailsapp/wails/pull/5285) oleh @leaanthony
+
+## v3.0.0-alpha.79 - 2026-04-29
+
+## Ditambahkan
+- Grant actions: write permission to trigger-release job in [PR](https://github.com/wailsapp/wails/pull/5270) oleh @leaanthony
+
+## Diubah
+- Release task defaults to master branch and updates changelog wording in [PR](https://github.com/wailsapp/wails/pull/5283) oleh @leaanthony
+- Perbarui auto-changelog workflow to use the latest version in [PR](https://github.com/wailsapp/wails/pull/5282) oleh @leaanthony
+- Improve workflow efficiency by adding path filters and removing dead workflows in [PR](https://github.com/wailsapp/wails/pull/5280) oleh @leaanthony
+- Perbarui dokumentasi to reference master branch for example links in [PR](https://github.com/wailsapp/wails/pull/5274) oleh @leaanthony
+- Perbarui dokumentasi and examples for v3 in [PR](https://github.com/wailsapp/wails/pull/5272) oleh @leaanthony
+
+## Diperbaiki
+- Enhance reverse proxy with retry logic and IPv4 forcing for development in [PR](https://github.com/wailsapp/wails/pull/5265) oleh @AkagiYui
+- Rewrite unreleased changelog trigger workflow in [PR](https://github.com/wailsapp/wails/pull/5281) oleh @leaanthony
+
+## Dihapus
+- Hapus shell test scripts for various testing purposes in [PR](https://github.com/wailsapp/wails/pull/5267) oleh @leaanthony
+- Delete v3-alpha dokumentasi deployment workflow and CNAME record in [PR](https://github.com/wailsapp/wails/pull/5266) oleh @leaanthony
+
+
+### Ditambahkan
+
+- Tambahkan Frontend Routing entry to the sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5196) oleh @leaanthony
+- Tambahkan frontend routing panduan with framework-specific recommendations in [PR](https://github.com/wailsapp/wails/pull/5185) oleh @leaanthony
+- Tambahkan support for modal sheets (macOS)
+- Bumped ghw version for better Apple device support oleh @leaanthony (#4977)
+- Tambahkan `GetBadge` method to the dock service
+- Tambahkan `-tags` flag ke `wails3 build` perintah for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+- Tambahkan dokumentasi for automatic enum generation in binding generator, including dedicated Enums page and sidebar navigation (#4972)
+- Tambahkan `-tags` flag ke `wails3 build` perintah for passing custom Go build tags (e.g., `wails3 build -tags gtk4`) (#4957)
+- Tambahkan Web API examples in `v3/examples/web-apis/` demonstrating 41 browser APIs including Storage (localStorage, sessionStorage, IndexedDB, Cache API), Network (Fetch, WebSocket, XMLHttpRequest, EventSource, Beacon), Media (Canvas, WebGL, Web Audio, MediaDevices, MediaRecorder, Speech Synthesis), Device (Geolocation, Clipboard, Fullscreen, Device Orientation, Vibration, Gamepad), Performance (Performance API, Mutation Observer, Intersection/Resize Observer), UI (Web Components, Pointer Events, Selection, Dialog, Drag and Drop), and more
+- Tambahkan WebView API compatibility checker example (`v3/examples/webview-api-check/`) that tests 200+ browser APIs across platforms
+- Tambahkan `internal/libpath` package for finding native library paths di Linux with parallel search, caching, and support for Flatpak/Snap/Nix
+- **WIP:** Add eksperimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
+- Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
+- Tambahkan how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` oleh @AbdelhadiSeddar
+- Tambahkan `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows di Windows/Linux to inherit the application menu set via `app.Menu.Set()` oleh @leaanthony
+- Tambahkan support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS) (#4934) oleh @wimaha
+- Tambahkan eksperimental server mode for headless/web deployments (`-tags server`). Enables running Wails apps as HTTP servers without native GUI dependencies. Build with `wails3 task build:server`. See `examples/server` for details.
+- Tambahkan `internal/libpath` package for finding native library paths di Linux with parallel search, caching, and support for Flatpak/Snap/Nix
+- Tambahkan `CollectionBehavior` option to `MacWindow` for controlling window behavior across macOS Spaces and fullscreen (#4756) oleh @leaanthony
+- Tambahkan unit tests for pkg/application oleh @leaanthony
+- Tambahkan custom protocol support to MSIX packaging oleh @leaanthony
+- Tambahkan desktop environment detection on linux [PR #4797](https://github.com/wailsapp/wails/pull/4797)
+- Tambahkan `Window.Print()` method to JavaScript runtime for triggering print dialog from frontend (#4290) oleh @leaanthony
+- Tambahkan `XDG_SESSION_TYPE` to `wails3 doctor` output di Linux oleh @leaanthony
+- Tambahkan additional WebKit2 load-change events for Linux: `WindowLoadStarted`, `WindowLoadRedirected`, `WindowLoadCommitted`, `WindowLoadFinished` (#3896) oleh @leaanthony
+- Tambahkan `XDG_SESSION_TYPE` to `wails3 doctor` output di Linux oleh @leaanthony
+- Generate `.desktop` file during Linux build, not just packaging (#4575)
+- Tambahkan Linux runtime dependencies dokumentasi with distro-specific package names and nfpm packaging examples (#4339) oleh @leaanthony
+- Tambahkan NVIDIA driver version info to `wails3 doctor` output di Linux oleh @leaanthony
+- Tambahkan origin to raw message handler oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4710)
+- Tambahkan universal link support for macOS oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4712)
+- Refactor binding transport layer oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
+- Tambahkan aria-label identifiers to the helloworld templates so that the example app can be easily tested by Appium test clients oleh @chinenual in [PR](https://github.com/wailsapp/wails/pull/4760)
+- Tambahkan origin to raw message handler oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4710)
+- Tambahkan universal link support for macOS oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4712)
+- Refactor binding transport layer oleh @APshenkin in [PR](https://github.com/wailsapp/wails/pull/4702)
+- Typed Events oleh @fbbdev and @ianvs in [#4633](https://github.com/wailsapp/wails/pull/4633)
+- Tambahkan `systray-clock` example showing a headless tray with live tooltip updates (#4653).
+- Tambahkan NSIS Protocol template for Windows oleh @Tolfx in #4510
+- Tambahkan tests for build-assets oleh @Tolfx in #4510
+- macOS: Shows native window controls in the menu bar in [#4588](https://github.com/wailsapp/wails/pull/4588) oleh @nidib
+- Tambahkan macOS Dock service to hide/show app icon in the dock @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4451)
+- Tambahkan macOS Dock service to hide/show app icon in the dock @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4451)
+- Tambahkan native Liquid Glass effect support for macOS with NSGlassEffectView (macOS 15.0+) and NSVisualEffectView fallback, including comprehensive material customization options oleh @leaanthony in [#4534](https://github.com/wailsapp/wails/pull/4534)
+- Browser URL Sanitisation oleh @leaanthony in [#4500](https://github.dev/wailsapp/wails/pull/4500). Based on [#4484](https://github.com/wailsapp/wails/pull/4484) oleh @APShenkin.
+- Tambahkan Content Protection di Windows/Mac by [@leaanthony](https://github.com/leaanthony) based on the original work of [@Taiterbase](https://github.com/Taiterbase) in this [PR](https://github.com/wailsapp/wails/pull/4241)
+- Tambahkan support for passing CLI variables to Task commands through `wails3 build` and `wails3 package` aliases (#4422) oleh @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4488)
+- Support for dropzones with event sourcing dropped element data [@atterpac](https://github.com/atterpac) in [#4318](https://github.com/wailsapp/wails/pull/4318)
+- Tambahkan `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional perintah line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Tambahkan Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature oleh @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+- Tambahkan `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional perintah line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
+- Tambahkan Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature oleh @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+- Tambahkan Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+- Tambahkan Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+- Windows dark theme menus + menubar. By @leaanthony in [a29b4f0861b1d0a700e9eb213c6f1076ec40efd5](https://github.com/wailsapp/wails/commit/a29b4f0861b1d0a700e9eb213c6f1076ec40efd5)
+- Rename built-in services for clearer JS/TS bindings oleh @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4405)
+- `app.Env.GetAccentColor` to get the accent color of a user's system. Works on MacOS. by [@etesam913](https://github.com/etesam913)
+- Tambahkan `window.ToggleFrameless()` api by [@atterpac](https://github.com/atterpac) in [#4137](https://github.com/wailsapp/wails/pull/4137)
+- Tambahkan distribution-specific build dependencies for Linux oleh @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+- Tambahkan bindings panduan oleh @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+- **Organized Testing Infrastructure**: Moved Docker test files to dedicated `test/docker/` directory with optimized images and enhanced build reliability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- **Improved Resource Management Patterns**: Added proper event handler cleanup and context-aware goroutine management in examples by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+- Tambahkan diagnostics bagian ke `wails doctor` by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan window to context when calling a service method by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan `window-call` example to demonstrate how to know which window is calling a service by [@leaanthony](https://github.com/leaanthony)
+- New Menu panduan by [@leaanthony](https://github.com/leaanthony)
+- Better panic handling by [@leaanthony](https://github.com/leaanthony)
+- New Menu panduan by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan doc comments for Service API by [@fbbdev](https://github.com/fbbdev) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Tambahkan function `application.NewServiceWithOptions` to initialise services dengan tambahan configuration by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Improved menu control by [@FalcoG](https://github.com/FalcoG) and [@leaanthony](https://github.com/leaanthony) in [#4031](https://github.com/wailsapp/wails/pull/4031)
+- More dokumentasi by [@leaanthony](https://github.com/leaanthony)
+- Support cancellation of events in standard event listeners by [@leaanthony](https://github.com/leaanthony)
+- Systray `Hide`, `Show` and `Destroy` support by [@leaanthony](https://github.com/leaanthony)
+- Systray `SetTooltip` support by [@leaanthony](https://github.com/leaanthony). Original idea by [@lujihong](https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304)
+- Report package path in binding generator warnings about unsupported types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan binding generator support for generic aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan binding generator support for `omitzero` JSON flag by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Tambahkan binding generator tests for Go 1.24 features by [@fbbdev](https://github.com/fbbdev) in [#4068](https://github.com/wailsapp/wails/pull/4068)
+- Tambahkan support for macOS 15 "Sequoia" to `OSInfo.Branding` for improved OS version detection in [#4065](https://github.com/wailsapp/wails/pull/4065)
+- Tambahkan `PostShutdown` hook for running custom code after the shutdown process completes by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Tambahkan `FatalError` struct to support detection of fatal errors in custom error handlers by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Standardise and document service startup and shutdown order by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Tambahkan test harness for application startup/shutdown sequence and service startup/shutdown tests by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Tambahkan `RegisterService` method for registering services after the application has been created by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Tambahkan `MarshalError` field in application and service options for custom error handling in binding calls by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Tambahkan cancellable promise wrapper that propagates cancellation requests through promise chains by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Tambahkan the ability to tie binding call cancellation to an `AbortSignal` by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Support `data-wml-*` attributes for WML alongside the usual `wml-*` attributes by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan `Configure` method on all services for late configuration/dynamic reconfiguration by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `fileserver` service sends a 503 Service Unavailable response when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `kvstore` service provides an in-memory key-value store by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan `Load` method on `kvstore` service to reload data from file after config changes by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan `Clear` method on `kvstore` service to delete all keys by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan type `Level` in `log` service to provide JS-side log-level constants by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan `Log` method on `log` service to specify log-level dynamically by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `sqlite` service provides an in-memory DB by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Tambahkan prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in this [PR](https://github.com/wailsapp/wails/pull/3537)
+- Perbaiki auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
+- Tambahkan `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan Notification support by [@popaprozac](https://github.com/popaprozac) in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
+- Tambahkan `wails3 tool version` for semantic version bumping by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan badging support for macOS dan Windows by [@popaprozac](https://github.com/popaprozac) in [#](https://github.com/wailsapp/wails/pull/4234)
+- Tambahkan support for registered/strictly-typed events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
+- Tambahkan the ability to register hooks for custom events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
+- `app.OpenFileManager(path string, selectFile bool)` to open the system file manager to the path `path` with optional highlighting via `selectFile` by [@Krzysztofz01](https://github.com/Krzysztofz01) [@rcalixte](https://github.com/rcalixte)
+- New `-git` flag for `wails3 init` perintah by [@leaanthony](https://github.com/leaanthony)
+- New `wails3 generate webview2bootstrapper` perintah by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan `init()` method in runtime to allow manual initialisation of the runtime by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan `WindowDidMoveDebounceMS` option to Window's WindowOptions by [@leaanthony](https://github.com/leaanthony)
+- Tambahkan Single Instance feature by [@leaanthony](https://github.com/leaanthony). Based on the [v2 PR](https://github.com/wailsapp/wails/pull/2951) oleh @APshenkin.
+- `wails3 generate template` perintah by [@leaanthony](https://github.com/leaanthony)
+- `wails3 releasenotes` perintah by [@leaanthony](https://github.com/leaanthony)
+- `wails3 update cli` perintah by [@leaanthony](https://github.com/leaanthony)
+- `-clean` option for `wails3 generate bindings` perintah by [@leaanthony](https://github.com/leaanthony)
+- Allow for aarch64 (arm64) AppImage Linux builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+- Tambahkan hyperlink for sponsor oleh @ansxuman in [#3958](https://github.com/wailsapp/wails/pull/3958)
+- Support of linux packaging of deb,rpm, and arch linux packager builds by
+- Tambahkan Support for darwin universal builds and packages by
+- Events dokumentasi to the website by
+- Templates for sveltekit and sveltekit-ts that are set for non-SSR development
+- Perbarui build assets using new `wails3 update build-assets` perintah by
+- Example to test the HTML Drag and Drop API by
+- File Association support by [leaanthony](https://github.com/leaanthony) in
+- New `wails3 generate runtime` perintah by
+- New `InitialPosition` option to specify if the window should be centered or
+- Tambahkan `Path` & `Paths` methods to `application` package by
+- Tambahkan `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options
+- Tambahkan the ability to retrieve the window calling a service method by
+- Tambahkan `EnabledFeatures` and `DisabledFeatures` options for Webview2 by
+- ⊞ New DIP system for Enhanced High DPI Monitor Support by
+- ⊞ Window class name option by [windom](https://github.com/windom/) in
+- Services have been expanded to provide plugin functionality. By
+- 🐧 WindowDidMove / WindowDidResize events in
+- ⊞ WindowDidResize event in
+-  add Event ApplicationShouldHandleReopen to be able to handle dock
+-  add getPrimaryScreen/getScreens to impl oleh @tmclane in
+-  add option for showing the toolbar in fullscreen mode di macOS by
+- 🐧 add onKeyPress logic to convert linux keypress into an accelerator
+- 🐧 add task `run:linux` by
+- Export `SetIcon` method by [@almas-x](https://github.com/almas-x) in
+- Improve `OnShutdown` by [@almas-x](https://github.com/almas-x) in
+- Restore `ToggleMaximise` method in `Window` interface by
+- Tambahkan more information to `Environment()`. By @leaanthony in
+- Expose the `WebviewWindow.IsFocused` method on the `Window` interface by
+- Support multiple space-separated trigger events in the WML system by
+- Tambahkan ESM exports from the bundled JS runtime script by
+- Tambahkan binding generator flag for using the bundled JS runtime script instead of
+- Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger)
+- Tambahkan flag `-port` to dev perintah and support environment variable
+- Tambahkan tests for bound method calls by
+- ⊞ add `SetIgnoreMouseEvents` for already created window by
+-  Add ability to set a window's stacking level (order) by
+
+### Diperbaiki
+
+- Perbaiki halved `Screen.Bounds`, `WorkArea`, and `Size` on Retina Macs by converting NSScreen point values to device pixels in the `Physical*` fields, and populate top-level `Screen.X`/`Y` so multi-monitor touching detection and work-area placement are correct in [PR](https://github.com/wailsapp/wails/pull/5168) oleh @wayneforrest
+- Perbaiki data race in ScreenManager that causes WebKit DisplayLink deadlock on display configuration change (e.g. external monitor hot-plug during sleep/wake)
+- Directly sets CFBundleIconName to appicon when Assets.car exists in [PR](https://github.com/wailsapp/wails/pull/5154) oleh @symball
+- Perbaiki `wails3 doctor` reporting incorrect WebKitGTK packages on Fedora, openSUSE, Arch, and NixOS — 4.0 fallback entries have been removed since v3 requires the 4.1 API at compile time (#5071)
+- Perbaiki openSUSE webkit2gtk doctor package name (`webkit2gtk4_1-devel` → `webkit2gtk3-devel`, the correct openSUSE package name) (#5071)
+- Perbaiki `Unexpected token '<'` error when `/wails/custom.js` is missing in desktop dev mode. Added explicit 404 handler for `/wails/custom.js` and case-insensitive `Content-Type` validation in `loadOptionalScript` to prevent HTML SPA fallbacks from being injected as JavaScript. ([#5068](https://github.com/wailsapp/wails/issues/5068))
+- Perbaiki system tray menu highlight state di macOS - icon now shows selected state when menu is open (#4910)
+- Perbaiki system tray attached window appearing behind other windows di macOS - now uses proper popup window level (#4910)
+- Perbaiki incorrect `@wailsio/runtime` import examples across dokumentasi (#4989)
+- Perbaiki frameless window cannot be minimized on darwin (#4294)
+- Perbaiki 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50-100k+ files with heavy dependencies like MUI), especially slow di Windows/NTFS (#4939)
+- Perbaiki GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
+- Perbaiki dock badge methods consistency di macOS
+- Perbaiki `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)
+- Perbaiki window shaking/jitter when resizing from top corners with `InvisibleTitleBarHeight` enabled, by skipping drag initiation near window edges (#4960)
+- Perbaiki generation of mapped types with enum keys in JS/TS bindings (#4437) oleh @fbbdev
+- Perbaiki file drag-and-drop di Windows not working at non-100% display scaling
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Windows
+- Perbaiki file drop coordinates being in wrong pixel space di Windows (physical vs CSS pixels)
+- Perbaiki file drag-and-drop di Linux not working reliably with hover effects
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Linux
+- Perbaiki window show/hide di Linux/GTK4 sometimes memulihkan to minimized state by using `gtk_window_present()` (#4957)
+- Perbaiki window position get/set di Linux/GTK4 always returning 0,0 by adding X11-conditional support via `XTranslateCoordinates`/`XMoveWindow` (#4957)
+- Perbaiki max window size not being enforced di Linux/GTK4 by adding signal-based size clamping to replace removed `gtk_window_set_geometry_hints` (#4957)
+- Perbaiki DPI scaling di Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
+- Perbaiki menu items duplicating when creating new windows di Linux/GTK4
+- Perbaiki generation of mapped types with enum keys in JS/TS bindings (#4437) oleh @fbbdev
+- Perbaiki file drag-and-drop di Windows not working at non-100% display scaling
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Windows
+- Perbaiki file drop coordinates being in wrong pixel space di Windows (physical vs CSS pixels)
+- Perbaiki file drag-and-drop di Linux not working reliably with hover effects
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Linux
+- Perbaiki DPI scaling di Linux/GTK4 by implementing proper PhysicalBounds calculation and fractional scaling support via `gdk_monitor_get_scale` (GTK 4.14+)
+- Perbaiki menu items duplicating when creating new windows di Linux/GTK4
+- Perbaiki generation of mapped types with enum keys in JS/TS bindings (#4437) oleh @fbbdev
+- Perbaiki "ghost windows" issue di macOS caused by not accessing AppKit APIs from the Main Thread in App.Window.Current() (#4947) oleh @wimaha
+- Perbaiki HTML `<input type="file">` not working di macOS by implementing WKUIDelegate runOpenPanelWithParameters (#4862)
+- Perbaiki native file drag-and-drop not working when using `@wailsio/runtime` npm module di macOS/Linux (#4953) oleh @leaanthony
+- Perbaiki binding generation for cross-package type aliases (#4578) oleh @fbbdev
+- Perbaiki OpenFileDialog crash di Linux due to GTK thread safety violation (#3683) oleh @ddmoney420
+- Perbaiki SIGSEGV crash when calling `Focus()` on a hidden or destroyed window (#4890) oleh @ddmoney420
+- Perbaiki potential panic when setting empty icon or bitmap di Linux (#4923) oleh @ddmoney420
+- Perbaiki ErrorDialog crash when called from service binding di macOS (#3631) oleh @leaanthony
+- Make menus to be displayed di Windows OS in `v3\examples\dialogs` oleh @ndianabasi
+- Perbaiki race condition causing TypeError during page reload (#4872) oleh @ddmoney420
+- Perbaiki incorrect output from binding generator tests by removing global state in the `Collector.IsVoidAlias()` method (#4941) oleh @fbbdev
+- Perbaiki `<input type="file">` file picker not working di macOS (#4862) oleh @leaanthony
+- Perbaiki `Position()` and `SetPosition()` using inconsistent coordinate systems di macOS, causing window position drift when saving/memulihkan state (#4816) oleh @leaanthony
+- Perbaiki SetProcessDpiAwarenessContext "Access is denied" error when DPI awareness is already set via application manifest (#4803)
+- Perbarui the docs page for keyboard shortcuts and corrects the type of the callback parameter for `KeyBinding.Add` oleh @ndianabasi
+- Perbaiki dokumentasi regarding generating custom binding, must use `-d String` instead of `-o String`
+- Perbaiki menu not clearing children on `menu.Update()`
+- Perbaiki outdated Manager API references in dokumentasi (31 files updated to use new pattern like `app.Window.New()`, `app.Event.Emit()`, etc.) oleh @leaanthony
+- Perbaiki Linux crash on panic in JS-bound Go methods due to WebKit overriding signal handlers (#3965) oleh @leaanthony
+- Perbaiki SaveFileDialog.SetFilename() having no effect di Linux (#4841) oleh @samstanier
+- Perbaiki drop coordinates showing as undefined in drag-n-drop example
+- Perbaiki macOS app bundle creation failing when APP_NAME contains spaces (brace expansion issue)
+- Perbaiki index out of bounds panic di Windows when calling service methods (revert goccy/go-json)
+- Perbaiki file drag-and-drop di Windows not working at non-100% display scaling
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Windows
+- Perbaiki file drop coordinates being in wrong pixel space di Windows (physical vs CSS pixels)
+- Perbaiki file drag-and-drop di Linux not working reliably with hover effects
+- Perbaiki HTML5 internal drag-and-drop being broken when file drop was enabled di Linux
+- Perbarui all commands in Taskfile.yml files for all operating systems to accommodate spaces in variables such as `APP_NAME` oleh @ndianabasi
+- Perbaiki perintah argument error when executing 'build:universal:lipo:go' task di Linux oleh @wux1an
+- Perbaiki Docker error "undefined symbol: ___ubsan_handle_xxxxxxx" when running 'wails3 build GOOS=darwin GOARCH=arm64' di Linux oleh @wux1an
+- Consolidate custom protocol dokumentasi and add Universal Links sections oleh @leaanthony
+- Perbaiki Windows systray menu crash when clicking icon repeatedly by adding guard against concurrent TrackPopupMenuEx calls (#4151) oleh @leaanthony
+- Prevent app crashing when calling systray.Run() before app.Run() oleh @leaanthony
+- Perbaiki crash di macOS when toggling window visibility via Hide()/Show() with ApplicationShouldTerminateAfterLastWindowClosed enabled (#4389) oleh @leaanthony
+- Perbaiki memory leak in context menus di macOS dan Windows when repeatedly opening menus (#4012) oleh @leaanthony
+- Perbaiki context menu native resources not being reused di macOS, causing fresh menu creation on each display (#4012) oleh @leaanthony
+- Perbaiki macOS dock icon click not showing hidden windows when app started with `Hidden: true` (#4583) oleh @leaanthony
+- Perbaiki macOS print dialog not opening due to incorrect window pointer type in CGO call (#4290) oleh @leaanthony
+- Perbaiki window menu crash on Wayland caused by appmenu-gtk-module accessing unrealized window (#4769) oleh @leaanthony
+- Perbaiki GTK application crash when app name contains invalid characters (spaces, parentheses, etc.) oleh @leaanthony
+- Perbaiki "not enough memory" error when initializing drag and drop di Windows (#4701) oleh @overlordtm
+- Perbaiki file explorer opening wrong directory di Linux due to incorrect URI escaping (#4397) oleh @leaanthony
+- Perbaiki AppImage build failure on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+) by auto-detecting `.relr.dyn` ELF sections and disabling stripping (#4642) oleh @leaanthony
+- Perbaiki `wails doctor` falsely reporting webkit packages as installed on Fedora/DNF-based systems (#4457) oleh @leaanthony
+- Perbaiki default `config.yml` would run `wails3 dev` with a production build oleh @mbaklor
+- Perbaiki iOS service stubs causing build failures due to non-existent package import oleh @leaanthony
+- Perbaiki structured logging in debug/info methods causing "no formatting directives" errors oleh @leaanthony
+- Hapus temporary debug print statements accidentally included from mobile platform merge oleh @leaanthony
+- Perbaiki WebKitGTK crash on Wayland with NVIDIA GPUs (Error 71 Protocol error) by auto-disabling DMA-BUF renderer oleh @leaanthony
+- Resolve alpha value being ignored in `application.WebviewWindowOptions.BackgroundColour` di Linux ([#4722](https://github.com/wailsapp/wails/pull/4722), @BradHacker)
+- Perbaiki Windows systray icon not defaulting to application icon when no custom icon is provided (#4704)
+- Track `HICON` ownership so only user-created handles are destroyed, preventing Explorer recycling crashes (#4653).
+- Release the Windows system-theme listener and retained tray icons during destroy to stop leaking goroutines and device contexts (#4653).
+- Truncate tray tooltips at 127 UTF-16 units to avoid corrupting surrogate pairs and multi-byte glyphs (#4653).
+- Perbaiki Windows package task failure (#4667)
+- Perbaiki Linux appimage appicon variable in Linux taskfile [PR #4644](https://github.com/wailsapp/wails/pull/4644)
+- Perbaiki Windows build error caused by go-webview2 v1.0.22 signature change (#4513, #4645)
+- Perbaiki Linux appimage appicon variable in Linux taskfile [PR #4644](https://github.com/wailsapp/wails/pull/4644)
+- Perbaiki linux desktop.tmpl protocol range, by removing `<.Info.Protocol>` to `<.Protocol>` oleh @Tolfx in #4510
+- Perbaiki redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) oleh @Etesam913
+- Perbaiki systray menu updates di Linux [#4604](https://github.com/wailsapp/wails/issues/4604) by [@JackDoan](https://github.com/JackDoan)
+- Perbaiki the white window appearing di Windows when creating a hidden window oleh @leaanthony in [#4612](https://github.com/wailsapp/wails/pull/4612)
+- Perbaiki notifications package import path in dokumentasi oleh @rxliuli in [#4617](https://github.com/wailsapp/wails/pull/4617)
+- Perbaiki drag-and-drop not working when using npm package @wailsio/runtime (#4489) oleh @leaanthony in #4616
+- Windows: Flicker of window at start and hidden windows being shown incorrectly in [PR](https://github.com/wailsapp/wails/pull/4600) oleh @leaanthony.
+- Perbaiki Wayland window size maximising issues (https://github.com/wailsapp/wails/issues/4429) by [@samstanier](https://github.com/samstanier)
+- Perbaiki Wayland window size maximising issues (https://github.com/wailsapp/wails/issues/4429) by [@samstanier](https://github.com/samstanier)
+- Perbaiki redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) oleh @Etesam913
+- Perbaiki issue where AssetServer can crash on MacOS in [#4576](https://github.com/wailsapp/wails/pull/4576) oleh @jghiloni
+- Perbaiki compilation issue when building with NextJs. Fixed in [#4585](https://github.com/wailsapp/wails/pull/4585) oleh @rev42
+- Perbaiki pipelines for nightly release in [#4597](https://github.com/wailsapp/wails/pull/4597) oleh @riadafridishibly
+- Perbaiki redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) oleh @Etesam913
+- Perbaiki issue where AssetServer can crash on MacOS in [#4576](https://github.com/wailsapp/wails/pull/4576) oleh @jghiloni
+- Perbaiki compilation issue when building with NextJs. Fixed in [#4585](https://github.com/wailsapp/wails/pull/4585) oleh @rev42
+- Perbaiki pipelines for nightly release in [#4597](https://github.com/wailsapp/wails/pull/4597) oleh @riadafridishibly
+- Perbaiki redefinition error for liquid glass demo in [#4542](https://github.com/wailsapp/wails/pull/4542) oleh @Etesam913
+- Perbaiki SetBackgroundColour di Windows oleh @PPTGamer in [PR](https://github.com/wailsapp/wails/pull/4492)
+- Perbarui docs to reflect changes from Manager API Refactoring oleh @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+- Perbaiki Linux .desktop file appicon variable in Linux taskfile [PR #4477](https://github.com/wailsapp/wails/pull/4477)
+- Perbarui docs to reflect changes from Manager API Refactoring oleh @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
+- Perbaiki Windows nil pointer dereference bug reported in [#4456](https://github.com/wailsapp/wails/issues/4456) oleh @leaanthony in [#4460](https://github.com/wailsapp/wails/pull/4460)
+- Tambahkan support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled oleh @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Perbaiki Vite server not being cleaned up when build fails (#4403)
+- Perbaiki panic when closing or cancelling a `SaveFileDialog` on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/4284) oleh @hkhere
+- Perbaiki HTML level drag and drop di Windows by [@mbaklor](https://github.com/mbaklor) in [#4259](https://github.com/wailsapp/wails/pull/4259)
+- Tambahkan support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
+- Fixes issue where onClick didn't work for menu items initially set as disabled oleh @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
+- Perbaiki Vite server not being cleaned up when build fails (#4403)
+- Perbaiki notification parsing di Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
+- Perbaiki doctor perintah to check for Windows SDK dependencies by [@kodumulo](https://github.com/kodumulo) in [#4390](https://github.com/wailsapp/wails/issues/4390)
+- Perbaiki nil pointer dereference in processURLRequest for Mac by [@etesam913](https://github.com/etesam913) in [#4366](https://github.com/wailsapp/wails/pull/4366)
+- Perbaiki a linux bug preventing filtered dialogs by [@bh90210](https://github.com/bh90210) in [#4287](https://github.com/wailsapp/wails/pull/4287)
+- Perbaiki Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
+- Perbarui the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+- Window ID skip issue by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki nil menu issue when calling RegisterContextMenu by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki dependency cycles in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- Perbaiki use-before-define errors in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- Pass build flags to binding generator by [@fbbdev](https://github.com/fbbdev) in [#4023](https://github.com/wailsapp/wails/pull/4023)
+- Ubah paths in windows Taskfile to forward slashes to ensure it works on non-Windows platforms by [@leaanthony](https://github.com/leaanthony)
+- Mac + Mac JS events now fixed by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki event deadlock for macOS by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki a `Parameter incorrect` error in Window initialisation di Windows when HTML provided but no JS by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki size of response prefix used for content type sniffing in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Perbaiki handling of non-404 responses on root index path in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Perbaiki undefined behaviour in binding generator when testing properties of generic types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki binding generator output for models when underlying type has not the same properties as named wrapper by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki binding generator output for map key types and preprocessing by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki binding generator output for structs that implement marshaler interfaces by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki detection of type cycles involving generic types in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki invalid references to unexported models in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Perbaiki non-React templates failing to display Hello World footer when using light system colour scheme by [@marcus-crane](https://github.com/marcus-crane) in [#4056](https://github.com/wailsapp/wails/pull/4056)
+- Perbaiki hidden menu items di macOS by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki handling and formatting of errors in message processors by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Fixed skipped service shutdown when quitting application by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Ensure menu updates occur on the main thread by [@leaanthony](https://github.com/leaanthony)
+- The dragging and resizing mechanism is now more robust and matches expected platform behaviour more closely by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Perbaiki [#4097](https://github.com/wailsapp/wails/issues/4097) Webpack/angular discards runtime init code by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Perbaiki initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
+- Perbaiki assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
+- Perbaiki icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Perbaiki `fullscreen`, `unfullscreen`, `unminimise` and `unmaximise` events not being emitted by [@oSethoum](https://github.com/osethoum) in [#4130](https://github.com/wailsapp/wails/pull/4130)
+- Perbaiki NSIS Error because of incorrect prefix on default version in config by [@robin-samuel](https://github.com/robin-samuel) in [#4126](https://github.com/wailsapp/wails/pull/4126)
+- Perbaiki Dialogs runtime function returning escaped paths di Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Perbaiki Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Perbaiki input issue with macOS by [@leaanthony](https://github.com/leaanthony).
+- Perbaiki Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
+- Perbaiki transparency issue for frameless windows by [@leaanthony](https://github.com/leaanthony) based on work oleh @kron.
+- Perbaiki focus calls when window is disabled or minimised by [@leaanthony](https://github.com/leaanthony) based on work oleh @kron.
+- Perbaiki system trays not showing after taskbar restarts by [@leaanthony](https://github.com/leaanthony) based on work oleh @kron.
+- Perbaiki fallbackResponseWriter not implementing Flush() in [#4245](https://github.com/wailsapp/wails/pull/4245)
+- Perbaiki fallbackResponseWriter not implementing Flush() by [@superDingda] in [#4236](https://github.com/wailsapp/wails/issues/4236)
+- Perbaiki macOS window close with pending async Go-bound function call crashes by [@joshhardy](https://github.com/joshhardy) in [#4354](https://github.com/wailsapp/wails/pull/4354)
+- Perbaiki Windows Efficiency mode startup race condition by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki Windows icon handle cleanup by [@leaanthony](https://github.com/leaanthony).
+- Perbaiki `OpenFileManager` di Windows by [@PPTGamer](https://github.com/PPTGamer) in [#4375](https://github.com/wailsapp/wails/pull/4375).
+- Perbaiki min/max width options for linux oleh @atterpac in [#3979](https://github.com/wailsapp/wails/pull/3979)
+- Typescript templates types definitions via npm version bump oleh @atterpac in [#3966](https://github.com/wailsapp/wails/pull/3966)
+- Perbaiki Sveltekit template CSS referance oleh @atterpac in [#3945](https://github.com/wailsapp/wails/pull/3945)
+- Ensure key callbacks in window run() are called on the main thread by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki dialog directory chooser examples by [@leaanthony](https://github.com/leaanthony)
+- Created new Chinese error page when index.html is missing by [@leaanthony](https://github.com/leaanthony)
+-  Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
+-  Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+-  Improved window destroying logic by [@leaanthony](https://github.com/leaanthony)
+-  Fix window position logic when attached to system trays by [@leaanthony](https://github.com/leaanthony)
+-  Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki event handling by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki window shutdown logic by [@leaanthony](https://github.com/leaanthony)
+- Common taskfile now defaults to generating Typescript bindings for Typescript templates by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki Close application on WM_CLOSE message when no windows are open/systray only by [@mmalcek](https://github.com/mmalcek) in [#3990](https://github.com/wailsapp/wails/pull/3990)
+- Perbaiki garble build oleh @5aaee9 in [#3192](https://github.com/wailsapp/wails/pull/3192)
+- Perbaiki windows nsis builds by [@leaanthony](https://github.com/leaanthony)
+- Perbaiki deadlock in Linux dialog for multiple selections caused by unclosed
+- Perbaiki cross-platform cleanup for .syso files during Windows build by
+- Perbaiki amd64 appimage compile oleh @atterpac in
+- Perbaiki build assets update oleh @ansxuman in
+- Perbaiki Linux systray `OnClick` and `OnRightClick` implementation oleh @atterpac
+- Perbaiki `AlwaysOnTop` not working on Mac by
+-  Fixed `application.NewEditMenu` including a duplicate
+- 🐧 Fixed aarch64 compilation
+- ⊞ Fixed radio group menu items by
+- Perbaiki error on building runnable .app on MacOS when 'name' and 'outputfilename'
+- Perbaiki bug with usage of customEventProcessor in drag-n-drop example by
+- 🐧 Fixed linux compile error introduced by IgnoreMouseEvents addition by
+- ⊞ Fixed syso icon file generation bug by
+- 🐧 Fix to run natively in wayland incorporated from
+- Do not bind internal service methods in
+- ⊞ Fixed system tray startup panic in
+- Do not bind internal service methods in
+- ⊞ Fixed system tray startup panic in
+- Major menu item refactor and event handling. Mainly improves macOS for now. By
+- Perbaiki tests after plugins and event refactor in
+- ⊞ Fixed `Failed to unregister class Chrome_WidgetWin_0` warning. By
+- Module issues
+- Perbaiki resize event messaging by [atterpac](https://github.com/atterpac) in
+- 🐧Fixed theme handling error on NixOS by
+- Perbaiki cross volume project install for windows by
+- Perbaiki react template css to show footer by
+- Perbaiki zombie processes when working in devmode by updating to latest refresh
+- Perbaiki appimage webkit file sourcing by [Atterpac](https://github.com/atterpac)
+- Perbaiki Doctor apt package verify by [Atterpac](https://github.com/Atterpac) in
+- Perbaiki application frozen when quit (Darwin) oleh @5aaee9 in
+- Perbaiki background colours of examples di Windows by
+- Perbaiki default context menus by [mmghv](https://github.com/mmghv) in
+- Perbaiki hex values for arrow keys on Darwin by
+- Set drag-n-drop for windows to working. Added by
+- Perbaiki bug for linux in doctor in the event user doesn't have proper drivers
+- Perbaiki dpi scaling on start up (windows). Changed by [@almas-x](https://github.com/almas-x) in
+- Perbaiki replace line in `go.mod` to use relative paths. Fixes Windows paths with
+- Perbaiki MacOS systray click handling when no attached window by
+- Perbaiki failing Windows build due to unknown option by
+- Perbaiki crash on windows left clicking the systray icon when not having an
+- Perbaiki wrong baseURL when open window twice oleh @5aaee9 in PR
+- Perbaiki ordering of if branches in `WebviewWindow.Restore` method by
+- Correctly compute `startURL` across multiple `GetStartURL` invocations when
+- Perbaiki the JS type of the `Screen` struct to match its Go counterpart by
+- Perbaiki the `WML.Reload` method to ensure proper cleanup of registered event
+- Perbaiki custom context menu closing immediately on linux by
+- Perbaiki the output path and extension of model files produced by the binding
+- Perbaiki the import paths of model files in JS code produced by the binding
+- Perbaiki drag-n-drop on some linux distros by
+- Perbaiki missing task for macOS when using `wails3 task dev` by
+- Perbaiki registering events causing a nil map assignment by
+- Perbaiki unmarshaling of bound method parameters by
+- Perbaiki handling of multiple return values from bound methods by
+- Perbaiki doctor detection of npm that is not installed with system package manager
+- Perbaiki missing MicrosoftEdgeWebview2Setup.exe. Thanks to
+- Perbaiki random crash on linux due to window ID handling oleh @leaanthony. Based on
+- Perbaiki systemTray.setIcon crashing di Linux by
+- Perbaiki Ensure Window Frame is Applied on First Call in `setFrameless` Function on
+
+### Diubah
+
+- **BREAKING**: Map keys in generated JS/TS bindings are now marked optional to accurately reflect Go map semantics. Map value access in Typescript now returns `T | undefined` instead of `T`, requiring null checks or assertions (#4943) by `@fbbdev`
+- Ubah the use of `Event` into `Events` according to changes in `@wailsio/runtime` and appropriate function calls in the docs in `Features/Events/Event System` oleh @AbdelhadiSeddar
+- Move `EnabledFeatures`, `DisabledFeatures`, and `AdditionalBrowserArgs` from per-window options to application-level `Options.Windows` (#4559) oleh @leaanthony
+- Perbarui the README for the `Drag N Drop` example and highlights that `Internal Drag and Drop` is demonstrated with the example @ndianabasi
+- Replace various debug logs from Info to Debug (oleh @mbaklor)
+- **BREAKING:** Rename `EnableDragAndDrop` to `EnableFileDrop` in window options
+- **BREAKING:** Rename `DropZoneDetails` to `DropTargetDetails` in event context
+- **BREAKING:** Rename `DropZoneDetails()` method to `DropTargetDetails()` on `WindowEventContext`
+- **BREAKING:** Remove `WindowDropZoneFilesDropped` event, use `WindowFilesDropped` instead
+- **BREAKING:** Change HTML attribute from `data-wails-dropzone` to `data-file-drop-target`
+- **BREAKING:** Change CSS hover class from `wails-dropzone-hover` to `file-drop-target-active`
+- **BREAKING:** Remove `DragEffect`, `OnEnterEffect`, `OnOverEffect` options from Windows (were part of removed IDropTarget)
+- Switch to goccy/go-json for all runtime JSON processing (method bindings, events, webview requests, notifications, kvstore), improving performance by 21-63% and reducing memory allocations by 40-60%
+- Optimize BoundMethod struct layout and cache isVariadic flag ke reduce per-call overhead
+- Use stack-allocated argument buffer for methods with `<=8` arguments to avoid heap allocations
+- Optimize result collection in method calls to avoid slice allocation for single return values
+- Use sync.Map for MIME type cache to improve concurrent performance
+- Use buffer pool for HTTP transport request body reading
+- Lazily allocate CloseNotify channel in content type sniffer to reduce per-request allocations
+- Hapus debug CSS logging from asset server
+- Expand MIME type extension map to cover 50+ common web formats (fonts, audio, video, etc.)
+- Perbarui the dokumentasi for Window `X/Y` options @ruhuang2001
+- Perbarui the `Frontend Runtime` dokumentasi by adding more options for generating frontend bindings oleh @ndianabasi
+- Perbarui the dokumentasi page for Wails v3 Asset Server oleh @ndianabasi
+- **BREAKING**: Remove package-level dialog functions (`application.InfoDialog()`, `application.QuestionDialog()`, etc.). Use the `app.Dialog` manager instead: `app.Dialog.Info()`, `app.Dialog.Question()`, `app.Dialog.Warning()`, `app.Dialog.Error()`, `app.Dialog.OpenFile()`, `app.Dialog.SaveFile()`
+- Perbarui dialogs dokumentasi to match actual API: use `app.Dialog.*`, `AddButton()` with callbacks (not `SetTombol()`), `SetDefaultButton(*Button)` (not string), `AddFilter()` (not `SetFilters()`), `SetFilename()` (not `SetDefaultFilename()`), and `app.Dialog.OpenFile().CanChooseDirectories(true)` for folder selection
+- **BREAKING**: Production builds are now the default. To create dev builds, set `DEV=true` in your Taskfiles. Generate a new project for examples oleh @leaanthony
+- When emitting a custom event with zero or one data argument, the data value will be assigned directly to the Data field without wrapping it in a slice by [@fbbdev](https://github.com/fbbdev) in [#4633](https://github.com/wailsapp/wails/pull/4633)
+- Windows trays now honor `SystemTray.Show()`/`Hide()` by toggling `NIS_HIDDEN`, so apps can truly disappear and return (#4653).
+- Tray registration reuses resolved icons, sets `NOTIFYICON_VERSION_4` once, and enables `NIF_SHOWTIP` so tooltips recover after Explorer restarts (#4653).
+- macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
+- macOS: Use `visibleFrame` instead of `frame` for window centering to exclude menu bar and dock areas
+- When running `wails3 update build-assets` with the `-config` parameter, values set via the `-product*` parameters are
+- `window.NativeWindowHandle()` -> `window.NativeWindow()` oleh @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Refactor internal window handling oleh @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Hapus `application.WindowIDKey` and `application.WindowNameKey` (replaced by `application.WindowKey`) by [@leaanthony](https://github.com/leaanthony)
+- ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, class fields of fixed-length array types are now initialized with their expected length instead of being empty by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
+- ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
+- `application.NewService` does not accept options as an optional parameter anymore (use `application.NewServiceWithOptions` instead) by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Hapus `nanoid` dependency by [@leaanthony](https://github.com/leaanthony)
+- Perbarui Window example for mica/acrylic/tabbed window styles by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Hapus ESLint from templates by by [@IanVS](https://github.com/IanVS) in [#4059](https://github.com/wailsapp/wails/pull/4059)
+- Perbarui copyright date to 2025 by [@IanVS](https://github.com/IanVS) in [#4037](https://github.com/wailsapp/wails/pull/4037)
+- Tambahkan docs for event.Sender by [@IanVS](https://github.com/IanVS) in [#4075](https://github.com/wailsapp/wails/pull/4075)
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
+- `ServiceStartup` hooks are now invoked when `App.Run` is called, not in `application.New` by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- `ServiceStartup` errors are now returned from `App.Run` instead of terminating the process by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Binding and dialog calls from JS now reject with error objects instead of strings by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Improved systray menu positioning di Windows by [@leaanthony](https://github.com/leaanthony)
+- The JS runtime has been ported to TypeScript by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime initialises as soon as it is imported, no need to wait for the window to load by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime does not export an init method anymore. A side effects import can be used to initialise it by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Bound methods now return a `CancellablePromise` that rejects with a `CancelError` if cancelled. The actual result of the call is discarded by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac](https://github.com/popaprozac) in [#4171](https://github.com/wailsapp/wails/pull/4171)
+- Moved build assets to platform specific directories by [@leaanthony](https://github.com/leaanthony)
+- Moved and renamed Taskfiles to platform specific directories by [@leaanthony](https://github.com/leaanthony)
+- Created a much better experience when `index.html` is missing by [@leaanthony](https://github.com/leaanthony)
+- [Windows] Improved performance of minimise and restore by [@leaanthony](https://github.com/leaanthony). Based on original [PR](https://github.com/wailsapp/wails/pull/3955) by [562589540](https://github.com/562589540)
+- Hapus `ShouldClose` option (Register a hook for events.Common.WindowClosing instead) by [@leaanthony](https://github.com/leaanthony)
+- [Windows] Reduced flicker when opening a window by [@leaanthony](https://github.com/leaanthony)
+- Hapus `Window.Destroy` as this was intended to be an internal function by [@leaanthony](https://github.com/leaanthony)
+- Renamed `WindowClose` events to `WindowClosing` by [@leaanthony](https://github.com/leaanthony)
+- Frontend builds now use vite environment "development" or "production" depending on build type by [@leaanthony](https://github.com/leaanthony)
+- Perbarui to go-webview2 v1.19 by [@leaanthony](https://github.com/leaanthony)
+- Ensure fork of taskfile is used oleh @leaanthony
+- Perbarui fork of Taskfile to fix version issues when installing using
+- Using fork of Taskfile to fix version issues when installing using
+- `service.OnStartup` now shutdowns the application on error and runs
+- Refactored systray click messaging to better align with user interactions by
+- Asset embed to include `all:frontend/dist` to support frameworks that generate
+- Taskfile refactor by [leaanthony](https://github.com/leaanthony) in
+- Upgrade to `go-webview2` v1.0.16 by
+- Perbaiki `Screen` type to include `ID` not `Id` by
+- Perbarui `go.mod.tmpl` wails version to support `application.ServiceOptions` by
+- Perbaiki service name determination by [windom](https://github.com/windom/) in
+- mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
+- Consolidated dev config into `config.yml` by
+- Systray dialog now defaults to the application icon if available (Windows) by
+- Better reporting of GPU + Memory for macOS by
+- Hapus `WebviewGpuIsDisabled` and `EnableFraudulentWebsiteWarnings`
+- Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` ->
+- Perbaiki for Events API di Linux by [TheGB0077](https://github.com/TheGB0077) in
+- [CI] improvements to actions & enable to run actions also in forks and
+- Renamed `AbsolutePosition()` to `Position()` by
+- Perbarui linux webkit dependency to webkit2gtk-4.1 over webkitgtk2-4.0 to
+- The bundled JS runtime script is now an ESM module: script tags importing it
+- The `@wailsio/runtime` package does not publish its API on the `window.wails`
+- The Window API module `@wailsio/runtime/src/window` now exposes the containing
+- The JS window API has been updated to match the current Go `WebviewWindow`
+- The binding generator now uses calls by ID by default. The `-id` CLI option
+- New binding code layout: output files were previously organised in folders
+- The struct field `application.Options.Bind` has been renamed to
+- New syntax for binding services: service instances must now be wrapped in a
+- Disable spinner on Non-Terminal or CI Environment by
+
+### Dihapus
+
+- **BREAKING**: Remove `EnabledFeatures`, `DisabledFeatures`, and `AdditionalLaunchArgs` from per-window `WindowsWindow` options. Use application-level `Options.Windows.EnabledFeatures`, `Options.Windows.DisabledFeatures`, and `Options.Windows.AdditionalBrowserArgs` instead. These flags apply globally to the shared WebView2 environment (#4559) oleh @leaanthony
+- Hapus native `IDropTarget` implementation di Windows in favor of JavaScript-based approach (matches v2 behavior)
+- Hapus github.com/wailsapp/mimetype dependency in favor of expanded extension map + stdlib http.DetectContentType, reducing binary size by ~1.2MB
+- Hapus gopkg.in/ini.v1 dependency by implementing minimal .desktop file parser for Linux file explorer, saving ~45KB
+- Hapus samber/lo from runtime code by using Go 1.21+ stdlib slices package and minimal internal helpers, saving ~310KB
+- Hapus debug printf statements from Darwin URL scheme handler (#4834)
+- **BREAKING**: Remove `linux:WindowLoadChanged` event - use `linux:WindowLoadFinished` instead for detecting when WebView has finished loading (#3896) oleh @leaanthony
+
+### Breaking Changes
+
+- **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- `app.NewWebviewWindow()` → `app.Window.New()`
+- `app.CurrentWindow()` → `app.Window.Current()`
+- `app.GetAllWindows()` → `app.Window.GetAll()`
+- `app.WindowByName()` → `app.Window.GetByName()`
+- `app.EmitEvent()` → `app.Event.Emit()`
+- `app.OnApplicationEvent()` → `app.Event.OnApplicationEvent()`
+- `app.OnWindowEvent()` → `app.Event.OnWindowEvent()`
+- `app.SetApplicationMenu()` → `app.Menu.SetApplicationMenu()`
+- `app.OpenFileDialog()` → `app.Dialog.OpenFile()`
+- `app.SaveFileDialog()` → `app.Dialog.SaveFile()`
+- `app.MessageDialog()` → `app.Dialog.Message()`
+- `app.InfoDialog()` → `app.Dialog.Info()`
+- `app.WarningDialog()` → `app.Dialog.Warning()`
+- `app.ErrorDialog()` → `app.Dialog.Error()`
+- `app.QuestionDialog()` → `app.Dialog.Question()`
+- `app.NewSystemTray()` → `app.SystemTray.New()`
+- `app.GetSystemTray()` → `app.SystemTray.Get()`
+- `app.ShowContextMenu()` → `app.ContextMenu.Show()`
+- `app.RegisterKeybinding()` → `app.KeyBinding.Register()`
+- `app.UnregisterKeybinding()` → `app.KeyBinding.Unregister()`
+- `app.GetPrimaryScreen()` → `app.Screen.GetPrimary()`
+- `app.GetAllScreens()` → `app.Screen.GetAll()`
+- `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
+- `app.Environment()` → `app.Env.GetAll()`
+- `app.ClipboardGetText()` → `app.Clipboard.Text()`
+- `app.ClipboardSetText()` → `app.Clipboard.SetText()`
+- Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
+- Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
+- The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
+## v3.0.0-alpha.78 - 2026-04-21
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.77 - 2026-04-18
+
+## Diperbaiki
+
+## v3.0.0-alpha.76 - 2026-04-17
+
+## Diperbaiki
+
+## v3.0.0-alpha.75 - 2026-04-16
+
+## Diperbaiki
+
+## v3.0.0-alpha.74 - 2026-03-01
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.73 - 2026-02-27
+
+## Diperbaiki
+
+## v3.0.0-alpha.72 - 2026-02-16
+
+## Diperbaiki
+
+## v3.0.0-alpha.71 - 2026-02-10
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.70 - 2026-02-09
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.69 - 2026-02-08
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.68 - 2026-02-07
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.67 - 2026-02-04
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.66 - 2026-02-03
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## Dihapus
+
+## v3.0.0-alpha.65 - 2026-02-01
+
+## Ditambahkan
+
+## v3.0.0-alpha.64 - 2026-01-26
+
+## Ditambahkan
+
+## v3.0.0-alpha.63 - 2026-01-25
+
+## Diperbaiki
+
+## v3.0.0-alpha.62 - 2026-01-22
+
+## Diperbaiki
+
+## v3.0.0-alpha.61 - 2026-01-20
+
+## Diperbaiki
+
+## v3.0.0-alpha.60 - 2026-01-14
+
+## Diperbaiki
+
+## v3.0.0-alpha.59 - 2026-01-11
+
+## Diubah
+
+## v3.0.0-alpha.58 - 2026-01-09
+
+## Diperbaiki
+
+## v3.0.0-alpha.57 - 2026-01-05
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.56 - 2026-01-04
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## Dihapus
+
+## v3.0.0-alpha.55 - 2026-01-02
+
+## Diubah
+
+## Diperbaiki
+
+## Dihapus
+
+## v3.0.0-alpha.54 - 2025-12-29
+
+## Ditambahkan
+
+## Diperbaiki
+
+## Dihapus
+
+## v3.0.0-alpha.53 - 2025-12-27
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.52 - 2025-12-26
+
+## Diperbaiki
+
+## v3.0.0-alpha.51 - 2025-12-23
+
+## Diperbaiki
+
+## v3.0.0-alpha.50 - 2025-12-21
+
+## Diubah
+
+## v3.0.0-alpha.49 - 2025-12-18
+
+## Diubah
+
+## v3.0.0-alpha.48 - 2025-12-16
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.47 - 2025-12-15
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.46 - 2025-12-14
+
+## Ditambahkan
+
+## Dihapus
+
+## v3.0.0-alpha.45 - 2025-12-13
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.44 - 2025-12-12
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.43 - 2025-12-11
+
+## Ditambahkan
+
+## v3.0.0-alpha.42 - 2025-12-10
+
+## Ditambahkan
+
+## v3.0.0-alpha.41 - 2025-11-23
+
+## Diperbaiki
+
+## v3.0.0-alpha.40 - 2025-11-13
+
+## Diperbaiki
+
+## v3.0.0-alpha.39 - 2025-11-12
+
+## Ditambahkan
+
+## Diubah
+
+## v3.0.0-alpha.38 - 2025-11-04
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.37 - 2025-11-02
+
+## Diperbaiki
+
+## v3.0.0-alpha.36 - 2025-10-15
+
+## Diperbaiki
+
+## v3.0.0-alpha.35 - 2025-10-14
+
+## Diperbaiki
+
+## v3.0.0-alpha.34 - 2025-10-06
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.33 - 2025-10-04
+
+## Diperbaiki
+
+## v3.0.0-alpha.32 - 2025-10-02
+
+## Diperbaiki
+
+## v3.0.0-alpha.31 - 2025-09-27
+
+## Diperbaiki
+
+## v3.0.0-alpha.30 - 2025-09-26
+
+## Diperbaiki
+
+## v3.0.0-alpha.29 - 2025-09-25
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.29 - 2025-09-25
+
+## Ditambahkan
+
+## Diubah
+
+## Diperbaiki
+
+## v3.0.0-alpha.27 - 2025-09-07
+
+## Diperbaiki
+
+
+## v3.0.0-alpha.26 - 2025-08-24
+
+## Ditambahkan
+
+## v3.0.0-alpha.25 - 2025-08-16
+
+## Diubah
+  no longer ignored, and override the config value.
+
+## v3.0.0-alpha.24 - 2025-08-13
+
+## Ditambahkan
+
+## v3.0.0-alpha.23 - 2025-08-11
+
+## Diperbaiki
+
+## v3.0.0-alpha.22 - 2025-08-10
+
+## Ditambahkan
+
+## Diubah
++ Fix extra-broad Linux package dependencies, fix outdated RPM dependencies.
+
+## v3.0.0-alpha.21 - 2025-08-07
+
+## Diperbaiki
+
+## v3.0.0-alpha.20 - 2025-08-06
+
+## Diperbaiki
+
+## v3.0.0-alpha.19 - 2025-08-05
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.18 - 2025-08-03
+
+## Ditambahkan
+
+## Diperbaiki
+
+## v3.0.0-alpha.17 - 2025-07-31
+
+## Diperbaiki
+
+## v3.0.0-alpha.16 - 2025-07-25
+
+## Ditambahkan
+
+## v3.0.0-alpha.15 - 2025-07-25
+
+## Ditambahkan
+
+## v3.0.0-alpha.14 - 2025-07-25
+
+## Ditambahkan
+
+## v3.0.0-alpha.12 - 2025-07-15
+
+### Ditambahkan
+
+### Diperbaiki
+
+
+## v3.0.0-alpha.11 - 2025-07-12
+
+## Ditambahkan
+
+## v3.0.0-alpha.10 - 2025-07-06
+
+### Breaking Changes
+
+### Ditambahkan
+
+
+### Diperbaiki
+
+
+### Diubah
+
+
+## v3.0.0-alpha.9 - 2025-01-13
+
+### Ditambahkan
+
+
+### Diperbaiki
+
+
+### Diubah
+
+
+## v3.0.0-alpha.8.3 - 2024-12-07
+
+### Diubah
+
+
+## v3.0.0-alpha.8.2 - 2024-12-07
+
+### Diubah
+
+  `go install` oleh @leaanthony
+
+## v3.0.0-alpha.8.1 - 2024-12-07
+
+### Diubah
+
+  `go install` oleh @leaanthony
+
+## v3.0.0-alpha.8 - 2024-12-06
+
+### Ditambahkan
+
+  @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
+  [ansxuman](https://github.com/ansxuman) in
+  [#3902](https://github.com/wailsapp/wails/pull/3902)
+  [atterpac](https://github.com/atterpac) in
+  [#3867](https://github.com/wailsapp/wails/pull/3867)
+  by [atterpac](https://github.com/atterpac) in
+  [#3829](https://github.com/wailsapp/wails/pull/3829)
+  [leaanthony](https://github.com/leaanthony)
+  [FerroO2000](https://github.com/FerroO2000) in
+  [#3856](https://github.com/wailsapp/wails/pull/3856)
+  [#3873](https://github.com/wailsapp/wails/pull/3873)
+  [leaanthony](https://github.com/leaanthony)
+  positioned at the given X/Y location by
+  [leaanthony](https://github.com/leaanthony) in
+  [#3885](https://github.com/wailsapp/wails/pull/3885)
+  [ansxuman](https://github.com/ansxuman) and
+  [leaanthony](https://github.com/leaanthony) in
+  [#3823](https://github.com/wailsapp/wails/pull/3823)
+  by [leaanthony](https://github.com/leaanthony) in
+  [#3766](https://github.com/wailsapp/wails/pull/3766)
+  [leaanthony](https://github.com/leaanthony) in
+  [#3888](https://github.com/wailsapp/wails/pull/3888)
+  [leaanthony](https://github.com/leaanthony).
+-
+
+### Diubah
+
+  `service.OnShutdown`for any prior services that started oleh @atterpac in
+  [#3920](https://github.com/wailsapp/wails/pull/3920)
+  @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
+  subfolders oleh @atterpac in
+  [#3887](https://github.com/wailsapp/wails/pull/3887)
+  [#3748](https://github.com/wailsapp/wails/pull/3748)
+  [leaanthony](https://github.com/leaanthony)
+  [etesam913](https://github.com/etesam913) in
+  [#3778](https://github.com/wailsapp/wails/pull/3778)
+  [northes](https://github.com/northes) in
+  [#3836](https://github.com/wailsapp/wails/pull/3836)
+  [#3827](https://github.com/wailsapp/wails/pull/3827)
+  [leaanthony](https://github.com/leaanthony)
+  [@leaanthony](https://github.com/leaanthony)
+  [@leaanthony](https://github.com/leaanthony)
+  (superseded by `EnabledFeatures` and `DisabledFeatures` options) by
+  [leaanthony](https://github.com/leaanthony)
+
+### Diperbaiki
+
+  channel variable oleh @michael-freling in
+  [#3925](https://github.com/wailsapp/wails/pull/3925)
+  [ansxuman](https://github.com/ansxuman) in
+  [#3924](https://github.com/wailsapp/wails/pull/3924)
+  [#3898](https://github.com/wailsapp/wails/pull/3898)
+  [#3901](https://github.com/wailsapp/wails/pull/3901)
+  in [#3886](https://github.com/wailsapp/wails/pull/3886)
+  [leaanthony](https://github.com/leaanthony) in
+  [#3841](https://github.com/wailsapp/wails/pull/3841)
+  `PasteAndMatchStyle` role in the edit menu on Darwin by
+  [johnmccabe](https://github.com/johnmccabe) in
+  [#3839](https://github.com/wailsapp/wails/pull/3839)
+  [#3840](https://github.com/wailsapp/wails/issues/3840) in
+  [#3854](https://github.com/wailsapp/wails/pull/3854) by
+  [kodflow](https://github.com/kodflow)
+  [@leaanthony](https://github.com/leaanthony)
+  are different. oleh @nickisworking in
+  [#3789](https://github.com/wailsapp/wails/pull/3789)
+
+## v3.0.0-alpha.7 - 2024-09-18
+
+### Ditambahkan
+
+  [mmghv](https://github.com/mmghv) in
+  [#3665](https://github.com/wailsapp/wails/pull/3665)
+  [#3682](https://github.com/wailsapp/wails/pull/3682)
+  [atterpac](https://github.com/atterpac) and
+  [leaanthony](https://github.com/leaanthony) in
+  [#3570](https://github.com/wailsapp/wails/pull/3570)
+
+### Diubah
+
+  Event Aplikasi `OnWindowEvent` -> Window Events, by
+  [leaanthony](https://github.com/leaanthony)
+  [#3734](https://github.com/wailsapp/wails/pull/3734)
+  branches prefixed with `v3/` or `v3-` by
+  [stendler](https://github.com/stendler) in
+  [#3747](https://github.com/wailsapp/wails/pull/3747)
+
+### Diperbaiki
+
+  [etesam913](https://github.com/etesam913) in
+  [#3742](https://github.com/wailsapp/wails/pull/3742)
+  [atterpac](https://github.com/atterpac) in
+  [#3721](https://github.com/wailsapp/wails/pull/3721)
+  [atterpac](https://github.com/atterpac) in
+  [#3675](https://github.com/wailsapp/wails/pull/3675)
+  [#1811](https://github.com/wailsapp/wails/pull/1811) in
+  [#3614](https://github.com/wailsapp/wails/pull/3614) by
+  [@stendler](https://github.com/stendler)
+  [#3720](https://github.com/wailsapp/wails/pull/3720) by
+  [leaanthony](https://github.com/leaanthony)
+  [#3693](https://github.com/wailsapp/wails/issues/3693) by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+  [#3720](https://github.com/wailsapp/wails/pull/3720) by
+  [leaanthony](https://github.com/leaanthony)
+  [#3693](https://github.com/wailsapp/wails/issues/3693) by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+  [leaanthony](https://github.com/leaanthony)
+  [#3746](https://github.com/wailsapp/wails/pull/3746) by
+  [@stendler](https://github.com/stendler)
+  [leaanthony](https://github.com/leaanthony)
+
+## v3.0.0-alpha.6 - 2024-07-30
+
+### Diperbaiki
+
+
+## v3.0.0-alpha.5 - 2024-07-30
+
+### Ditambahkan
+
+  [#3580](https://github.com/wailsapp/wails/pull/3580)
+  [#3580](https://github.com/wailsapp/wails/pull/3580)
+  icon click oleh @5aaee9 in [#2991](https://github.com/wailsapp/wails/pull/2991)
+  [#2618](https://github.com/wailsapp/wails/pull/2618)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3282](https://github.com/wailsapp/wails/pull/3282)
+  @[Atterpac](https://github.com/Atterpac)
+  in[#3022](https://github.com/wailsapp/wails/pull/3022])
+  [@marcus-crane](https://github.com/marcus-crane) in
+  [#3146](https://github.com/wailsapp/wails/pull/3146)
+  [PR](https://github.com/wailsapp/wails/pull/3147)
+  [PR](https://github.com/wailsapp/wails/pull/3189)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3281](https://github.com/wailsapp/wails/pull/3281)
+  [aba82cc](https://github.com/wailsapp/wails/commit/aba82cc52787c97fb99afa58b8b63a0004b7ff6c)
+  based on [PR](https://github.com/wailsapp/wails/pull/2044) oleh @Mai-Lapyst
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  the npm package by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+  in [#3354](https://github.com/wailsapp/wails/pull/3354)
+  `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in
+  [#3429](https://github.com/wailsapp/wails/pull/3429)
+  [@abichinger](https://github.com/abichinger) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+  [@bruxaodev](https://github.com/bruxaodev) in
+  [#3667](https://github.com/wailsapp/wails/pull/3667)
+  [@OlegGulevskyy](https://github.com/OlegGulevskyy) in
+  [#3674](https://github.com/wailsapp/wails/pull/3674)
+
+### Diperbaiki
+
+  [#3606](https://github.com/wailsapp/wails/pull/3606)
+  [tmclane](https://github.com/tmclane) in
+  [#3515](https://github.com/wailsapp/wails/pull/3515)
+  [atterpac](https://github.com/atterac) in
+  [#3512](https://github.com/wailsapp/wails/pull/3512)
+  [atterpac](https://github.com/atterpac) in
+  [#3477](https://github.com/wailsapp/wails/pull/3477)
+  by [Atterpac](https://github.com/atterpac) in
+  [#3320](https://github.com/wailsapp/wails/pull/3320).
+  in [#3306](https://github.com/wailsapp/wails/pull/3306).
+  [#2972](https://github.com/wailsapp/wails/pull/2972).
+  [#2982](https://github.com/wailsapp/wails/pull/2982)
+  [mmghv](https://github.com/mmghv) in
+  [#2750](https://github.com/wailsapp/wails/pull/2750).
+  [#2753](https://github.com/wailsapp/wails/pull/2753).
+  [jaybeecave](https://github.com/jaybeecave) in
+  [#3052](https://github.com/wailsapp/wails/pull/3052).
+  [@pylotlight](https://github.com/pylotlight) in
+  [PR](https://github.com/wailsapp/wails/pull/3039)
+  installed. Added by [@pylotlight](https://github.com/pylotlight) in
+  [PR](https://github.com/wailsapp/wails/pull/3032)
+  [PR](https://github.com/wailsapp/wails/pull/3145)
+  spaces - @leaanthony.
+  [thomas-senechal](https://github.com/thomas-senechal) in PR
+  [#3207](https://github.com/wailsapp/wails/pull/3207)
+  [thomas-senechal](https://github.com/thomas-senechal) in PR
+  [#3208](https://github.com/wailsapp/wails/pull/3208)
+  attached window [tw1nk](https://github.com/tw1nk) in PR
+  [#3271](https://github.com/wailsapp/wails/pull/3271)
+  [#3273](https://github.com/wailsapp/wails/pull/3273)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3279](https://github.com/wailsapp/wails/pull/3279)
+  `FRONTEND_DEVSERVER_URL` is present.
+  [#3299](https://github.com/wailsapp/wails/pull/3299)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  listeners by [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  [@abichinger](https://github.com/abichinger) in
+  [#3330](https://github.com/wailsapp/wails/pull/3330)
+  generator by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+  generator by [@fbbdev](https://github.com/fbbdev) in
+  [#3334](https://github.com/wailsapp/wails/pull/3334)
+  [@abichinger](https://github.com/abichinger) in
+  [#3346](https://github.com/wailsapp/wails/pull/3346)
+  [@hfoxy](https://github.com/hfoxy) in
+  [#3417](https://github.com/wailsapp/wails/pull/3417)
+  [@hfoxy](https://github.com/hfoxy) in
+  [#3426](https://github.com/wailsapp/wails/pull/3426)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3431](https://github.com/wailsapp/wails/pull/3431)
+  by [@pekim](https://github.com/pekim) in
+  [#3458](https://github.com/wailsapp/wails/pull/3458)
+  [@robin-samuel](https://github.com/robin-samuel).
+  PR [#3466](https://github.com/wailsapp/wails/pull/3622) by
+  [@5aaee9](https://github.com/5aaee9).
+  [@windom](https://github.com/windom/) in
+  [#3636](https://github.com/wailsapp/wails/pull/3636).
+  Windows by [@bruxaodev](https://github.com/bruxaodev/) in
+  [#3691](https://github.com/wailsapp/wails/pull/3691).
+
+### Diubah
+
+  [mmghv](https://github.com/mmghv) in
+  [#3611](https://github.com/wailsapp/wails/pull/3611)
+  support Ubuntu 24.04 LTS by [atterpac](https://github.com/atterpac) in
+  [#3461](https://github.com/wailsapp/wails/pull/3461)
+  must have the `type="module"` attribute. By
+  [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  object, and does not start the WML system. This has been done to improve
+  encapsulation. The WML system can be started manually if desired by calling
+  the new `WML.Enable` method. The bundled JS runtime script still performs both
+  operations automatically. By [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  window object as a default export. It is not possible anymore to import
+  individual methods through ESM named or namespace import syntax.
+  API. Some methods have changed name or prototype, specifically: `Screen`
+  becomes `GetScreen`; `GetZoomLevel`/`SetZoomLevel` become `GetZoom`/`SetZoom`;
+  `GetZoom`, `Width` and `Height` now return values directly instead of wrapping
+  them within objects. By [@fbbdev](https://github.com/fbbdev) in
+  [#3295](https://github.com/wailsapp/wails/pull/3295)
+  has been removed. Use the `-names` CLI option to switch back to calls by name.
+  By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+  named after their containing package; now full Go import paths are used,
+  including the module path. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+  `application.Options.Services`. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+  call to `application.NewService`. By [@fbbdev](https://github.com/fbbdev) in
+  [#3468](https://github.com/wailsapp/wails/pull/3468)
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory) in
+  [#3574](https://github.com/wailsapp/wails/pull/3574)

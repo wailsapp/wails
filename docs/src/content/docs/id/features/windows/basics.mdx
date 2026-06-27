@@ -1,0 +1,619 @@
+---
+title: Dasar-dasar Window
+description: Membuat dan mengelola window aplikasi di Wails
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Manajemen Window
+
+Wails menyediakan **API manajemen window terpadu** yang berfungsi di semua platform. Buat window, kendalikan perilakunya, dan kelola beberapa window dengan kontrol penuh atas pembuatan, tampilan, perilaku, dan siklus hidup.
+
+## Memulai Cepat
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create a window
+    window := app.Window.New()
+    
+    // Configure it
+    window.SetTitle("Hello Wails")
+    window.SetSize(800, 600)
+    window.Center()
+    
+    // Show it
+    window.Show()
+
+    app.Run()
+}
+```
+
+**Itu saja!** Anda sudah memiliki window lintas platform.
+
+## Membuat Window
+
+### Window Dasar
+
+Cara paling sederhana untuk membuat window:
+
+```go
+window := app.Window.New()
+```
+
+**Yang Anda dapatkan:**
+- Ukuran default (800x600)
+- Judul default (nama aplikasi)
+- WebView siap untuk frontend Anda
+- Tampilan native platform
+
+### Window dengan Opsi
+
+Buat window dengan konfigurasi kustom:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My Application",
+    Width:  1200,
+    Height: 800,
+    X:      100,   // Position from left
+    Y:      100,   // Position from top
+    AlwaysOnTop: false,
+    Frameless: false,
+    Hidden: false,
+    MinWidth: 400,
+    MinHeight: 300,
+    MaxWidth: 1920,
+    MaxHeight: 1080,
+})
+```
+
+**Opsi umum:**
+
+| Opsi | Tipe | Deskripsi |
+|--------|------|-------------|
+| `Title` | `string` | Judul window |
+| `Width` | `int` | Lebar window dalam piksel |
+| `Height` | `int` | Tinggi window dalam piksel |
+| `X` | `int` | Posisi X (dari kiri) |
+| `Y` | `int` | Posisi Y (dari atas) |
+| `AlwaysOnTop` | `bool` | Jaga window di atas window lain |
+| `Frameless` | `bool` | Hapus title bar dan border |
+| `Hidden` | `bool` | Mulai dalam keadaan tersembunyi |
+| `MinWidth` | `int` | Lebar minimum |
+| `MinHeight` | `int` | Tinggi minimum |
+| `MaxWidth` | `int` | Lebar maksimum |
+| `MaxHeight` | `int` | Tinggi maksimum |
+
+**Lihat [Opsi Window](/id/features/windows/options) untuk daftar lengkap.**
+
+### Window Bernama
+
+Berikan nama pada window agar mudah diambil kembali:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:  "main-window",
+    Title: "Main Application",
+})
+
+// Later, find it by name
+if mainWindow, ok := app.Window.GetByName("main-window"); ok {
+    mainWindow.Show()
+}
+```
+
+**Kasus penggunaan:**
+- Beberapa window (main, settings, about)
+- Mencari window dari bagian kode yang berbeda
+- Komunikasi antar window
+
+## Mengendalikan Window
+
+### Tampilkan dan Sembunyikan
+
+```go
+// Show window
+window.Show()
+
+// Hide window
+window.Hide()
+
+// Check if visible
+if window.IsVisible() {
+    fmt.Println("Window is visible")
+}
+```
+
+**Kasus penggunaan:**
+- Splash screen (tampilkan, lalu sembunyikan)
+- Window pengaturan (sembunyikan saat tidak diperlukan)
+- Window popup (tampilkan sesuai permintaan)
+
+### Posisi dan Ukuran
+
+```go
+// Set size
+window.SetSize(1024, 768)
+
+// Set position
+window.SetPosition(100, 100)
+
+// Centre on screen
+window.Center()
+
+// Get current size
+width, height := window.Size()
+
+// Get current position
+x, y := window.Position()
+```
+
+**Sistem koordinat:**
+- (0, 0) adalah sudut kiri atas layar utama
+- X positif ke kanan
+- Y positif ke bawah
+
+### Status Window
+
+```go
+// Minimise
+window.Minimise()
+
+// Maximise
+window.Maximise()
+
+// Fullscreen
+window.Fullscreen()
+
+// Restore to normal
+window.Restore()
+
+// Check state
+if window.IsMinimised() {
+    fmt.Println("Window is minimised")
+}
+
+if window.IsMaximised() {
+    fmt.Println("Window is maximised")
+}
+
+if window.IsFullscreen() {
+    fmt.Println("Window is fullscreen")
+}
+```
+
+**Transisi status:**
+
+```
+Normal ←→ Minimised
+Normal ←→ Maximised
+Normal ←→ Fullscreen
+```
+
+### Judul dan Tampilan
+
+```go
+// Set title
+window.SetTitle("My Application - Document.txt")
+
+// Set background colour — RGBA value (helper for RGB)
+window.SetBackgroundColour(application.NewRGBA(0, 0, 0, 255))
+
+// Set always on top
+window.SetAlwaysOnTop(true)
+
+// Set resizable
+window.SetResizable(false)
+```
+
+### Menutup Window
+
+```go
+// Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().
+window.Close()
+```
+
+Tidak ada metode `window.Destroy()` di v3 — gunakan `Close()` dan dengarkan dengan `OnWindowEvent` (tidak dapat dibatalkan) atau hook dengan `RegisterHook` (dapat memanggil `e.Cancel()` untuk menjaga window tetap terbuka).
+
+## Mencari Window
+
+### Berdasarkan Nama
+
+```go
+if window, ok := app.Window.GetByName("settings"); ok {
+    window.Show()
+}
+```
+
+### Berdasarkan ID
+
+Setiap window memiliki ID unik:
+
+```go
+id := window.ID()
+fmt.Printf("Window ID: %d\n", id)
+
+// Find by ID
+if found, ok := app.Window.GetByID(id); ok {
+    found.Focus()
+}
+```
+
+### Window Saat Ini
+
+Dapatkan window yang sedang fokus:
+
+```go
+current := app.Window.Current()
+if current != nil {
+    current.SetTitle("Active Window")
+}
+```
+
+### Semua Window
+
+Dapatkan semua window:
+
+```go
+windows := app.Window.GetAll()
+fmt.Printf("Total windows: %d\n", len(windows))
+
+for _, w := range windows {
+    fmt.Printf("Window: %s (ID: %d)\n", w.Name(), w.ID())
+}
+```
+
+## Siklus Hidup Window
+
+### Pembuatan
+
+```go
+app.Window.OnCreate(func(window application.Window) {
+    fmt.Printf("Window created: %s\n", window.Name())
+
+    // Configure new windows
+    window.SetMinSize(400, 300)
+})
+```
+
+### Penutupan
+
+Untuk mencegah window ditutup, gunakan `RegisterHook` dengan event `WindowClosing`:
+
+```go
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
+    }
+})
+```
+
+**Penting:** `RegisterHook` mencegat event close sebelum terjadi. Panggil `event.Cancel()` untuk mencegah window ditutup. Ini berfungsi untuk penutupan yang dipicu pengguna (mengklik tombol X).
+
+### Penghancuran
+
+Untuk melakukan cleanup saat window ditutup, gunakan `OnWindowEvent` dengan event `WindowClosing`:
+
+```go
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    fmt.Println("Window is closing")
+    // Cleanup resources
+})
+```
+
+## Beberapa Window
+
+### Membuat Beberapa Window
+
+```go
+// Main window
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "main",
+    Title:  "Main Application",
+    Width:  1200,
+    Height: 800,
+})
+
+// Settings window
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Name:   "settings",
+    Title:  "Settings",
+    Width:  600,
+    Height: 400,
+    Hidden: true,  // Start hidden
+})
+
+// Show settings when needed
+settingsWindow.Show()
+```
+
+### Komunikasi Antar Window
+
+Window dapat berkomunikasi via event:
+
+```go
+// In main window
+app.Event.Emit("data-updated", map[string]interface{}{
+    "value": 42,
+})
+
+// In settings window
+app.Event.On("data-updated", func(event *application.CustomEvent) {
+    data := event.Data.(map[string]interface{})
+    value := data["value"].(int)
+    fmt.Printf("Received: %d\n", value)
+})
+```
+
+**Lihat [Event](/id/features/events/system) untuk selengkapnya.**
+
+### Window Parent-Child
+
+`WebviewWindowOptions` tidak memiliki field `Parent`. Buat child sebagai window normal dan lampirkan ke parent sebagai sheet modal:
+
+```go
+// Create child window
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Child Window",
+})
+
+// Attach to the parent — presents as a sheet on macOS.
+mainWindow.AttachModal(childWindow)
+```
+
+**Perilaku:**
+- Child tetap di atas parent.
+- Child bersifat modal — memblokir interaksi dengan parent.
+
+**Dukungan platform:**
+- **macOS:** Dukungan penuh (ditampilkan sebagai sheet).
+- **Windows:** Tidak didukung.
+- **Linux:** Tidak didukung.
+
+## Fitur Spesifik Platform
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **Fitur khusus Windows:**
+    
+    ```go
+    // Flash taskbar button
+    window.Flash(true)  // Start flashing
+    window.Flash(false) // Stop flashing
+
+    // Trigger Windows 11 Snap Assist (Win+Z)
+    window.SnapAssist()
+    ```
+
+    Tidak ada `SetIcon` per-window — ikon aplikasi diatur pada app via `app.SetIcon([]byte)` (atau untuk ikon window khusus Linux, field `application.LinuxWindow.Icon` saat pembuatan window).
+    
+    **Snap Assist:**
+    Menampilkan opsi layout snap Windows 11 untuk window.
+    
+    **Kedip taskbar:**
+    Berguna untuk notifikasi saat window diminimalkan.
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Fitur khusus macOS:**
+
+    ```go
+    // Transparent title bar
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
+        },
+    })
+    ```
+
+    **Tipe backdrop:**
+    - `MacBackdropNormal` - Window standar
+    - `MacBackdropTranslucent` - Latar belakang transparan
+    - `MacBackdropTransparent` - Sepenuhnya transparan
+
+    **Collection behavior:**
+    Kendalikan bagaimana window berperilaku di seluruh Spaces:
+    - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Terlihat di semua Spaces
+    - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat menutupi aplikasi fullscreen
+
+    **Fullscreen native:**
+    Fullscreen macOS membuat Space baru (virtual desktop).
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Fitur khusus Linux:**
+
+    ```go
+    // Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Linux: application.LinuxWindow{
+            Icon: iconBytes,
+        },
+    })
+    ```
+
+    **Catatan desktop environment:**
+    - GNOME: Dukungan penuh
+    - KDE Plasma: Dukungan penuh
+    - XFCE: Dukungan parsial
+    - Lainnya: Bervariasi
+
+    **Tiling window manager (Hyprland, Sway, i3, dll.):**
+    - `Minimise()` dan `Maximise()` mungkin tidak berfungsi seperti yang diharapkan — WM mengontrol geometri window
+    - Permintaan `SetSize()` dan `SetPosition()` bersifat advisory dan mungkin diabaikan
+    - `Fullscreen()` umumnya berfungsi seperti yang diharapkan
+    - Beberapa WM tidak mendukung always-on-top
+  </TabItem>
+</Tabs>
+
+## Pola Umum
+
+### Splash Screen
+
+```go
+// Create splash screen
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Loading...",
+    Width:     400,
+    Height:    300,
+    Frameless: true,
+    AlwaysOnTop: true,
+})
+
+// Show splash
+splash.Show()
+
+// Initialise application
+time.Sleep(2 * time.Second)
+
+// Hide splash, show main window
+splash.Close()
+mainWindow.Show()
+```
+
+### Window Pengaturan
+
+```go
+var settingsWindow *application.WebviewWindow
+
+func showSettings() {
+    if settingsWindow == nil {
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
+            Name:   "settings",
+            Title:  "Settings",
+            Width:  600,
+            Height: 400,
+        })
+    }
+    
+    settingsWindow.Show()
+    settingsWindow.Focus()
+}
+```
+
+### Konfirmasi Sebelum Menutup
+
+```go
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    if hasUnsavedChanges() {
+        // Show dialog
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
+    }
+})
+```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- **Beri nama window penting** - Lebih mudah ditemukan nanti
+- **Atur ukuran minimum** - Cegah layout yang tidak dapat digunakan
+- **Pusatkan window** - UX lebih baik daripada posisi acak
+- **Tangani event close** - Cegah kehilangan data
+- **Uji di semua platform** - Perilaku bervariasi
+- **Gunakan ukuran yang sesuai** - Pertimbangkan berbagai ukuran layar
+
+### ❌ Jangan
+
+- **Jangan buat terlalu banyak window** - Membingungkan pengguna
+- **Jangan lupa menutup window** - Memory leak
+- **Jangan hardcode posisi** - Ukuran layar berbeda-beda
+- **Jangan abaikan perbedaan platform** - Uji secara menyeluruh
+- **Jangan blokir UI thread** - Gunakan goroutine untuk operasi panjang
+
+## Pemecahan Masalah
+
+### Window Tidak Muncul
+
+**Kemungkinan penyebab:**
+1. Window dibuat dalam keadaan tersembunyi
+2. Window di luar layar
+3. Window berada di belakang window lain
+
+**Solusi:**
+
+```go
+window.Show()
+window.Center()
+window.Focus()
+```
+
+### Ukuran Window Salah
+
+**Penyebab:** Skala DPI di Windows/Linux
+
+**Solusi:**
+
+```go
+// Wails handles DPI automatically
+// Just use logical pixels
+window.SetSize(800, 600)
+```
+
+### Window Langsung Tertutup
+
+**Penyebab:** Aplikasi keluar saat window terakhir ditutup
+
+**Solusi:**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: false,
+    },
+})
+```
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Opsi Window" icon="seti:config">
+    Referensi lengkap untuk semua opsi window.
+    
+    [Pelajari Selengkapnya →](/id/features/windows/options)
+  </Card>
+
+  <Card title="Beberapa Window" icon="laptop">
+    Pola untuk aplikasi multi-window.
+    
+    [Pelajari Selengkapnya →](/id/features/windows/multiple)
+  </Card>
+
+  <Card title="Window Tanpa Frame" icon="star">
+    Buat chrome window kustom.
+    
+    [Pelajari Selengkapnya →](/id/features/windows/frameless)
+  </Card>
+
+  <Card title="Event Window" icon="rocket">
+    Tangani event siklus hidup window.
+    
+    [Pelajari Selengkapnya →](/id/features/windows/events)
+  </Card>
+</CardGrid>
+
+---
+
+**Pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh window](https://github.com/wailsapp/wails/tree/master/v3/examples).

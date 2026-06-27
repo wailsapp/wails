@@ -1,0 +1,465 @@
+---
+title: Standar Coding
+description: Gaya kode, konvensi, dan praktik terbaik untuk Wails v3
+---
+
+## Gaya Kode dan Konvensi
+
+Mengikuti standar coding yang konsisten membuat codebase lebih mudah dibaca, dipelihara, dan dikontribusikan.
+
+## Standar Kode Go
+
+### Format Kode
+
+Gunakan alat format Go standar:
+
+```bash
+# Format semua kode
+gofmt -w .
+
+# Gunakan goimports untuk organisasi import
+goimports -w .
+```
+
+**Wajib:** Semua kode Go harus lulus `gofmt` dan `goimports` sebelum commit.
+
+### Konvensi Penamaan
+
+**Paket:**
+- Huruf kecil, satu kata jika memungkinkan
+- `package application`, `package events`
+- Hindari underscore atau mixed caps
+
+**Nama Exported:**
+- PascalCase untuk tipe, fungsi, konstanta
+- `type WebviewWindow struct`, `func NewApplication()`
+
+**Nama Unexported:**
+- camelCase untuk tipe, fungsi, variabel internal
+- `type windowImpl struct`, `func createWindow()`
+
+**Interface:**
+- Dinamai berdasarkan perilaku: `Reader`, `Writer`, `Handler`
+- Interface satu method: nama dengan akhiran `-er`
+
+```go
+// Baik
+type Closer interface {
+    Close() error
+}
+
+// Hindari
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### Penanganan Error
+
+**Selalu periksa error:**
+
+```go
+// Baik
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// Buruk - mengabaikan error
+result, _ := doSomething()
+```
+
+**Gunakan error wrapping:**
+
+```go
+// Wrap error untuk memberikan konteks
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**Buat tipe error kustom jika diperlukan:**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### Komentar dan Dokumentasi
+
+**Komentar paket:**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**Deklarasi exported:**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**Komentar implementasi:**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### Struktur Fungsi dan Method
+
+**Jaga fungsi tetap fokus:**
+
+```go
+// Baik - single responsibility
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// Buruk - melakukan terlalu banyak
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 operasi lagi
+}
+```
+
+**Gunakan early return:**
+
+```go
+// Baik
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// Hindari nesting yang dalam
+```
+
+### Concurrency
+
+**Gunakan context untuk pembatalan:**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**Lindungi state bersama dengan mutex:**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**Hindari goroutine leak:**
+
+```go
+// Baik - goroutine memiliki kondisi keluar
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Keluar bersih
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### Testing
+
+**Penamaan file test:**
+
+```go
+// Implementasi: window.go
+// Tes: window_test.go
+```
+
+**Table-driven test:**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## Standar JavaScript/TypeScript
+
+### Format Kode
+
+Gunakan Prettier untuk format konsisten:
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### Konvensi Penamaan
+
+**Variabel dan fungsi:**
+- camelCase: `const userName = "John"`
+
+**Class dan tipe:**
+- PascalCase: `class WindowManager`
+
+**Konstanta:**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**Gunakan tipe eksplisit:**
+
+```typescript
+// Baik
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// Hindari implicit any
+function process(data) {  // Buruk
+    return data
+}
+```
+
+**Definisikan interface:**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## Format Pesan Commit
+
+Gunakan [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Tipe:**
+- `feat`: Fitur baru
+- `fix`: Perbaikan bug
+- `docs`: Perubahan dokumentasi
+- `refactor`: Refactoring kode
+- `test`: Menambah atau memperbarui tes
+- `chore`: Tugas maintenance
+
+**Contoh:**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## Panduan Pull Request
+
+### Sebelum Submit
+
+- [ ] Kode lulus `gofmt` dan `goimports`
+- [ ] Semua tes lulus (`go test ./...`)
+- [ ] Kode baru memiliki tes
+- [ ] Dokumentasi diperbarui jika diperlukan
+- [ ] Pesan commit mengikuti konvensi
+- [ ] Tidak ada konflik merge dengan `master`
+
+### Template Deskripsi PR
+
+```markdown
+## Description
+Deskripsi singkat tentang apa yang dilakukan PR ini.
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+Bagaimana ini diuji?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+## Proses Code Review
+
+### Sebagai Reviewer
+
+- Bersikap konstruktif dan hormat
+- Fokus pada kualitas kode, bukan preferensi pribadi
+- Jelaskan mengapa perubahan disarankan
+- Setujui setelah puas
+
+### Sebagai Author
+
+- Tanggapi semua komentar
+- Minta klarifikasi jika diperlukan
+- Lakukan perubahan yang diminta atau jelaskan mengapa tidak
+- Terbuka terhadap feedback
+
+## Praktik Terbaik
+
+### Performa
+
+- Hindari optimisasi prematur
+- Profil sebelum mengoptimalkan
+- Gunakan benchmark untuk kode kritis performa
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### Keamanan
+
+- Validasi semua input pengguna
+- Sanitasi data sebelum ditampilkan
+- Gunakan `crypto/rand` untuk data acak
+- Jangan pernah log informasi sensitif
+
+### Dokumentasi
+
+- Dokumentasikan API exported
+- Sertakan contoh dalam dokumentasi
+- Perbarui docs saat mengubah API
+- Jaga README tetap mutakhir
+
+## Kode Spesifik Platform
+
+### Penamaan File
+
+```
+window.go           // Interface umum
+window_darwin.go    // Implementasi macOS
+window_windows.go   // Implementasi Windows
+window_linux.go     // Implementasi Linux
+```
+
+### Build Tags
+
+```go
+//go:build darwin
+
+package application
+
+// Kode spesifik macOS
+```
+
+## Linting
+
+Jalankan linter sebelum commit:
+
+```bash
+# golangci-lint (direkomendasikan)
+golangci-lint run
+
+# Linter individual
+go vet ./...
+staticcheck ./...
+```
+
+## Pertanyaan?
+
+Jika Anda tidak yakin tentang standar apa pun:
+- Periksa kode yang ada untuk contoh
+- Tanya di [Discord](https://discord.gg/JDdSxwjhGf)
+- Buka diskusi di GitHub

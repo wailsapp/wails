@@ -1,0 +1,136 @@
+---
+title: Instalasi
+description: Instal Wails dan siapkan lingkungan pengembangan Anda
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+## Platform yang Didukung
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (dapat dideploy ke macOS 10.13+)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (distribusi Linux lain mungkin juga berfungsi!)
+
+## Dependensi
+
+Wails memiliki sejumlah dependensi umum yang diperlukan sebelum instalasi.
+
+<Aside type="tip">
+Setelah menginstal CLI Wails, Anda dapat menjalankan `wails3 setup` untuk memeriksa dan membantu menginstal dependensi ini secara otomatis.
+</Aside>
+
+<Tabs>
+  <TabItem label="Go (Minimal 1.24)" icon="seti:go">
+
+    Unduh Go dari [Halaman Unduhan Go](https://go.dev/dl/).
+
+    Pastikan Anda mengikuti [petunjuk instalasi Go resmi](https://go.dev/doc/install). Anda juga perlu memastikan bahwa variabel lingkungan `PATH` mencakup path ke direktori `~/go/bin`. Mulai ulang terminal Anda dan lakukan pemeriksaan berikut:
+
+    - Periksa Go terinstal dengan benar: `go version`
+    - Periksa `~/go/bin` ada di variabel PATH Anda
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (Opsional)" icon="seti:npm">
+
+    Meskipun Wails tidak mewajibkan npm terinstal, npm diperlukan oleh sebagian besar template bawaan.
+
+    Unduh installer node terbaru dari [Halaman Unduhan Node](https://nodejs.org/en/download/). Sebaiknya gunakan rilis terbaru karena itulah yang umumnya kami uji.
+
+    Jalankan `npm --version` untuk memverifikasi.
+
+      :::note
+      Jika Anda lebih suka package manager selain npm, silakan gunakan. Anda perlu memperbarui Taskfile proyek agar menggunakannya.
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## Dependensi Spesifik Platform
+
+Anda juga perlu menginstal dependensi spesifik platform:
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    Wails mewajibkan xcode command line tools terinstal. Ini dapat dilakukan dengan menjalankan:
+
+    ```sh
+    xcode-select --install
+    ```
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    Wails mewajibkan [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) terinstal. Hampir semua instalasi Windows sudah memilikinya. Anda dapat memeriksa dengan perintah `wails doctor`.
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    Linux memerlukan alat build `gcc` standar plus `gtk4` dan `webkitgtk-6.0`. Jalankan <code>wails3 doctor</code> setelah instalasi untuk melihat cara menginstal dependensi. Stack GTK3 / WebKit2GTK 4.1 legacy masih tersedia via `-tags gtk3` (lihat [Linux Packaging - Dukungan GTK3 Legacy](/id/guides/build/linux#legacy-gtk3-support)) hingga v3.1. Jika distro/package manager Anda tidak didukung, beri tahu kami di discord.
+
+  </TabItem>
+
+</Tabs>
+
+## Instalasi
+
+Untuk menginstal CLI Wails menggunakan Go Modules, jalankan perintah berikut:
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+Jika Anda ingin menginstal versi development terbaru, jalankan perintah berikut:
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+Saat menggunakan versi development, semua proyek yang dihasilkan akan menggunakan direktif [replace](https://go.dev/ref/mod#go-mod-file-replace) Go untuk memastikan proyek menggunakan versi development Wails.
+
+## Langkah Selanjutnya
+
+Setelah menginstal CLI, jalankan wizard setup untuk mengonfigurasi lingkungan pengembangan Anda:
+
+```shell
+wails3 setup
+```
+
+<Aside type="caution" title="Eksperimental">
+Wizard setup masih baru dan terutama diuji di Linux. Jika Anda menemui masalah, silakan [laporkan](https://github.com/wailsapp/wails/issues/4904) dan gunakan langkah instalasi dependensi manual di bawah.
+</Aside>
+
+Wizard setup akan:
+- Memeriksa dan membantu menginstal dependensi platform
+- Mengonfigurasi default proyek (info penulis, prefix bundle ID)
+- Opsional menyiapkan Docker untuk build lintas platform
+- Mengonfigurasi code signing (jika diperlukan)
+
+Lihat [Panduan Setup](/id/getting-started/setup) untuk detail selengkapnya.
+
+## Instalasi Dependensi Manual
+
+Jika Anda lebih suka menginstal dependensi secara manual, atau jika wizard setup tidak berfungsi di sistem Anda, ikuti petunjuk spesifik platform di atas lalu jalankan:
+
+```shell
+wails3 doctor
+```
+
+Ini akan memeriksa apakah dependensi yang benar sudah terinstal dan memberi saran tentang apa yang masih kurang.
+
+## Perintah `wails3` tampaknya hilang?
+
+Jika sistem Anda melaporkan perintah `wails3` hilang, periksa hal berikut:
+
+- Pastikan Anda telah mengikuti `panduan instalasi Go` di atas dengan benar dan direktori `go/bin` ada di variabel lingkungan `PATH`.
+- Tutup/buka ulang terminal saat ini untuk mengambil variabel `PATH` yang baru.
