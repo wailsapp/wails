@@ -17,7 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add experimental Wake documentation with sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5613) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
