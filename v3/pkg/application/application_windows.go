@@ -402,6 +402,18 @@ func setupDPIAwareness() error {
 
 func newPlatformApp(app *App) *windowsApp {
 
+	// Force WebView2 visual hosting before any WebView2 environment is
+	// initialised. This is the documented Microsoft workaround for the
+	// "DPI-context-change hang" — most commonly seen when the Microsoft
+	// Remote Desktop iOS client provisions a Retina-optimised virtual
+	// monitor mid-session and every subsequent WebView2 controller call
+	// blocks the UI thread for ~2 s on synchronous DComp re-marshal.
+	// See WindowsOptions.UseVisualHosting for the full rationale.
+	if app.options.Windows.UseVisualHosting {
+		_ = os.Setenv("COREWEBVIEW2_FORCED_HOSTING_MODE",
+			"COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL")
+	}
+
 	err := setupDPIAwareness()
 	if err != nil {
 		app.handleError(err)
