@@ -1,0 +1,286 @@
+---
+title: Erstellen benutzerdefinierter Vorlagen
+description: Erfahren Sie, wie Sie Ihre eigenen Wails v3-Vorlagen erstellen und anpassen
+sidebar:
+    order: 50
+---
+
+Dieser Leitfaden führt Sie durch den Prozess der Erstellung einer benutzerdefinierten Vorlage für Wails v3.
+
+## Warum sollte ich eine benutzerdefinierte Vorlage erstellen?
+
+Wails bietet eine Reihe von vorkonfigurierten Vorlagen, mit denen Sie Ihre Anwendung schnell zum Laufen bringen können. Wenn Sie jedoch eine stärker angepasste Einrichtung benötigen, können Sie Ihre eigene Vorlage erstellen, die Ihren Anforderungen entspricht. Diese kann dann mit der Wails-Community geteilt werden, damit andere sie nutzen können.
+
+### 1. Generieren einer Vorlage
+
+Um eine benutzerdefinierte Vorlage zu erstellen, können Sie den Befehl `wails generate template` verwenden:
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+Dies erstellt ein neues Verzeichnis namens "mytemplate" in Ihrem aktuellen Verzeichnis.
+
+Der Befehl `wails3 generate template` unterstützt die folgenden Optionen:
+
+| Option         | Beschreibung                                       | Standardwert        |
+|----------------|----------------------------------------------------|---------------------|
+| `-name`        | Der Name Ihrer Vorlage (erforderlich)              | -                   |
+| `-frontend`    | Pfad zu einem vorhandenen Frontend-Verzeichnis     | -                   |
+| `-author`      | Der Autor der Vorlage                              | -                   |
+| `-description` | Eine Beschreibung der Vorlage                      | -                   |
+| `-helpurl`     | URL zur Dokumentation der Vorlage                  | -                   |
+| `-dir`         | Verzeichnis, in dem die Vorlage generiert wird     | Aktuelles Verzeichnis |
+| `-version`     | Version der Vorlage                                | v0.0.1              |
+
+Um beispielsweise eine Vorlage mit allen Optionen zu erstellen:
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+  :::tip
+  Die Verwendung der Option `-frontend` kopiert ein vorhandenes Web-Frontend-Projekt in die Vorlage.
+  :::
+
+### 2. Konfigurieren der Vorlagen-Metadaten
+
+Wenn Sie die Vorlagenkonfiguration bei der Generierung nicht angegeben haben, können Sie die Datei `template.json` im Vorlagenverzeichnis aktualisieren:
+
+```json5
+{
+  "name": "Your Template Name",          // Anzeigename Ihrer Vorlage
+  "shortname": "template-shortname",     // Wird bei der Referenzierung Ihrer Vorlage verwendet
+  "author": "Your Name",                 // Autor der Vorlage
+  "description": "Template description", // Beschreibung der Vorlage
+  "helpurl": "https://your-docs.com",    // URL zur Dokumentation
+  "version": "v0.0.1",                   // Version der Vorlage
+  "schema": 3                            // Muss für Wails v3 auf 3 bleiben
+}
+```
+:::caution
+Das Feld `schema` muss für die Kompatibilität mit Wails v3 auf `3` festgelegt bleiben.
+:::
+
+### 3. Einrichten der Build-Aufgaben
+
+Im Verzeichnis `build` befindet sich `Taskfile.yml`, in dem Sie den Build-Prozess Ihrer Vorlage definieren können.
+Diese Datei verwendet [Task](https://taskfile.dev) zur Build-Automatisierung. Die wichtigsten Schritte sind:
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    sources:
+      - "**/*"
+    generates:
+      - dist/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build -q
+
+
+```
+
+### 4. Frontend-Einrichtung
+
+Wenn Sie beim Generieren der Vorlage `-frontend` nicht verwendet haben, müssen Sie Frontend-Dateien zu Ihrer Vorlage hinzufügen.
+
+Es gibt verschiedene Möglichkeiten, Ihr Frontend einzurichten: von Grund auf neu oder unter Verwendung eines vorhandenen Frameworks.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+Jetzt, wo die Frontend-Dateien vorhanden sind, aktualisieren Sie `common/Taskfile.yml` mit den entsprechenden Befehlen:
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  Für dieses Beispiel müssen die Standard-Aufgaben nicht aktualisiert werden, da sie die Standardbefehle `npm install` und `npm run build` verwenden.
+  :::
+
+### 5. Konfigurieren der Go-Anwendung
+
+Die Standarddateien im Vorlagenverzeichnis reichen aus, um Benutzer starten zu können. Möglicherweise möchten Sie jedoch zusätzliche Funktionalität bereitstellen, um die Fähigkeiten Ihrer Vorlage zu demonstrieren. Der beste Weg dazu ist, `main.go.tmpl` in `main.go` umzubenennen und sie wie jede andere Go-Datei zu bearbeiten. Sobald Sie fertig sind, benennen Sie sie vor dem Committen Ihrer Änderungen wieder in `main.go.tmpl` um. Wenn es Ihnen nichts ausmacht, keine templatisierte `main.go`-Dateie zu haben (die Standardvorlage injiziert den Projektnamen in das Feld `Name` der Anwendung), können Sie diesen Schritt überspringen.----------------------|------------------------------------|------------------------------------|
+| `Name`               | Der Name des Projekts              | `"MyApp"`                          |
+| `BinaryName`         | Der Name der generierten Binärdatei| `"myapp"`                          |
+| `ProductName`        | Der Produktname                    | `"My Application"`                 |
+| `ProductDescription` | Beschreibung des Produkts          | `"An awesome application"`         |
+| `ProductVersion`     | Version des Produkts               | `"1.0.0"`                          |
+| `ProductCompany`     | Firmenname                         | `"My Company Ltd"`                 |
+| `ProductCopyright`   | Urheberrechtsinformationen         | `"Copyright 2024 My Company Ltd"`  |
+| `ProductComments`    | Zusätzliche Produktkommentare      | `"Built with Wails"`               |
+| `ProductIdentifier`  | Eindeutige Produktkennung          | `"com.mycompany.myapp"`            |
+| `Typescript`         | Ob TypeScript verwendet wird       | `true` oder `false`                |
+| `WailsVersion`       | Die verwendete Wails-Version       | `"3.0.0"`                          |
+
+Sie können diese Variablen in Ihren Vorlagendateien unter Verwendung der Go-Vorlagensyntax verwenden:
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    Das Templating kann auf jede Datei in Ihrer Vorlage angewendet werden, sogar auf HTML-Dateien, solange der Dateiname `.tmpl` enthält.
+    :::
+
+### 6. Testen Ihrer Vorlage
+
+Um Ihre Vorlage zu testen:
+
+1. Generieren Sie ein Projekt mit Ihrer Vorlage: `wails3 init -n testproject -t path/to/your/template`
+2. Führen Sie `wails3 build` aus, um den Produktionsbuild zu generieren und stellen Sie sicher, dass die Binärdatei im Verzeichnis `bin` korrekt ausgeführt wird.
+3. Führen Sie `wails3 dev` aus, um den Entwicklungsserver zu starten.
+4. Testen Sie, ob Änderungen am Frontend-Code in der Anwendung widergespiegelt werden.
+5. Testen Sie, ob Änderungen am Go-Code den Build und die Neustart der Anwendung auslösen.
+
+### 7. Teilen Ihrer Vorlage
+
+Sobald Ihre Vorlage bereit ist, können Sie sie mit der Community teilen, indem Sie sie auf GitHub hosten. So geht's:
+
+1. Erstellen Sie ein neues GitHub-Repository für Ihre Vorlage.
+2. Laden Sie Ihren Vorlagen-Code in das Repository hoch.
+3. Kennzeichnen Sie Ihre Releases mit semantischer Versionierung (z. B. v1.0.0).
+
+Benutzer können Ihre Vorlage dann direkt von GitHub über die HTTPS-URL verwenden:
+
+```bash
+wails3 init -n myapp -t https://github.com/yourusername/your-template
+```
+
+Sie können auch eine bestimmte Version über das URL-Format angeben:
+
+```bash
+# Verwenden Sie ein bestimmtes Versionstag
+wails3 init -n myapp -t https://github.com/yourusername/your-template/releases/tag/v1.0.0
+
+# Verwenden Sie einen bestimmten Branch
+wails3 init -n myapp -t https://github.com/yourusername/your-template/tree/main
+```
+
+Um Ihre Vorlage vor dem Teilen zu testen:
+
+1. Laden Sie Ihre Änderungen auf GitHub hoch.
+2. Erstellen Sie ein neues Testprojekt mit der HTTPS-URL:
+   ```bash
+   wails3 init -n testapp -t https://github.com/yourusername/your-template
+   ```
+3. Überprüfen Sie, ob alle Dateien korrekt generiert wurden.
+4. Testen Sie den Build- und Entwicklungsworkflow wie im Abschnitt zum Testen beschrieben.
+
+    :::note
+    Stellen Sie sicher, dass Ihr Repository öffentlich ist, wenn andere Ihre Vorlage verwenden sollen.
+    :::
+
+Für weitere Informationen besuchen Sie die [Wails-Dokumentation](https://wails.io)
+
+
+## Best Practices
+
+Lassen Sie uns über einige wichtige Praktiken sprechen, die dazu beitragen werden, Ihre Vorlage nützlicher und wartbarer zu machen. Hier sind die Hauptbereiche, auf die Sie sich konzentrieren sollten:
+
+1. **Machen Sie Ihre Vorlage leicht verständlich**
+   - Schreiben Sie eine klare, hilfreiche README.md, die Benutzer schnell in die Startphase bringt.
+   - Fügen Sie Kommentare in Ihren Konfigurationsdateien hinzu, um das "Warum" hinter Ihren Entscheidungen zu erklären.
+   - Zeigen Sie Beispiele für gängige Anpassungen – Benutzer lieben es, reale Anwendungsfälle zu sehen!
+
+2. **Halten Sie die Abhängigkeiten glücklich**
+   - Bleiben Sie bei Ihren Updates für Frontend-Pakete auf dem Laufenden.
+   - Legen Sie spezifische Versionen in der package.json fest, um Überraschungen zu vermeiden.
+   - Informieren Sie Benutzer im Voraus darüber, was sie installiert haben müssen.
+
+3. **Lieben Sie Ihre Vorlage**
+   - Halten Sie sie mit regelmäßigen Updates frisch.
+   - Testen Sie sie gründlich, bevor Sie sie teilen.
+   - Teilen Sie sie mit der Wails-Community – wir würden gerne sehen, was Sie erstellen!

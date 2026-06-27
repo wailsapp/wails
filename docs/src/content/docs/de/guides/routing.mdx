@@ -1,0 +1,109 @@
+---
+title: Frontend-Routing
+description: Verwendung von Frontend-Routing in Ihrer Wails-Anwendung
+sidebar:
+  order: 35
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Frontend-Routing ist eine beliebte Methode zum Wechseln von Ansichten in einer Single-Page-Anwendung.
+Dieser Leitfaden behandelt empfohlene Ansätze für verschiedene Frontend-Frameworks bei der Verwendung von Wails.
+
+
+<Tabs syncKey="framework">
+    <TabItem label="Vue" icon="seti:vue">
+
+Der empfohlene Ansatz für das Routing in Vue ist der [Hash-Modus](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+
+```javascript
+import { createRouter, createWebHashHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+});
+```
+
+Der Hash-Modus verwendet den URL-Hash, um verschiedene Ansichten darzustellen, und vermeidet Probleme mit der Wails-Laufzeitumgebung, die durch das hash-basierte URL-Format das Routing nicht stört.
+
+    </TabItem>
+    <TabItem label="Angular" icon="seti:angular">
+
+Der empfohlene Ansatz für das Routing in Angular ist [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#%5Fhashlocationstrategy):
+
+```typescript
+RouterModule.forRoot(routes, { useHash: true });
+```
+
+Die Verwendung von hash-basierten URLs stellt sicher, dass das Routing auf allen Plattformen korrekt mit der Fensterbehandlung von Wails funktioniert.
+
+    </TabItem>
+    <TabItem label="React" icon="seti:react">
+
+Der empfohlene Ansatz für das Routing in React ist [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+
+```jsx
+import ReactDOM from "react-dom/client";
+import { HashRouter, Routes, Route } from "react-router-dom";
+
+ReactDOM.createRoot(root).render(
+  <HashRouter basename={"/"}>
+    {/* Der Rest Ihrer App kommt hier hin */}
+    <Routes>
+      <Route path="/" element={<Page0 />} />
+      <Route path="/page1" element={<Page1 />} />
+      <Route path="/page2" element={<Page2 />} />
+      {/* mehr... */}
+    </Routes>
+  </HashRouter>
+);
+```
+
+HashRouter verwendet URL-Hashes anstelle von Pfaden, was mit Wails auf allen Plattformen zuverlässig funktioniert.
+
+    </TabItem>
+    <TabItem label="Svelte" icon="seti:svelte">
+
+Der empfohlene Ansatz für das Routing in Svelte ist [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
+```
+
+svelte-spa-router unterstützt hash-basiertes Routing und ist damit kompatibel mit Wails-Anwendungen.
+
+    </TabItem>
+</Tabs>
+
+## Warum Hash-Routing?
+
+Wails bindet Ihr Frontend in ein natives WebView-Fenster ein. Die Verwendung von hash-basiertem Routing (#/page statt /page)
+vermeidet Konflikte mit:
+
+- dem internen Routing der Wails-Laufzeitumgebung
+- der nativen URL-Behandlung von Fenstern auf verschiedenen Plattformen
+- Produktions-Assets, die von Nicht-Stamm-Pfaden bereitgestellt werden
+
+## Fehlerbehebung
+
+Wenn Sie Probleme mit dem Frontend-Routing in Produktionsbuilds haben:
+
+- Stellen Sie sicher, dass Ihr Frontend-Build-Tool für das **Hash-Modus**-Routing konfiguriert ist
+- Fügen Sie bei Vite-basierten Projekten `base: "./"` zu Ihrer `vite.config.js` hinzu
+- Überprüfen Sie, ob Ihre `index.html` den Fallback für das SPA-Routing korrekt behandelt

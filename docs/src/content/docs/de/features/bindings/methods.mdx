@@ -1,0 +1,410 @@
+---
+title: Method Bindings
+description: Rufen Sie Go-Methoden von JavaScript aus mit Typsicherheit auf
+sidebar:
+  order: 1
+---
+
+import { FileTree, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Typsichere Go-JavaScript-Bindings
+
+Wails **generiert automatisch typsichere JavaScript/TypeScript-Bindings** für Ihre Go-Methoden. Schreiben Sie Go-Code, führen Sie einen Befehl aus und erhalten Sie vollständig typisierte Frontend-Funktionen ohne HTTP-Overhead, ohne manuelle Arbeit und ohne Boilerplate-Code.
+
+## Schnellstart
+
+**1. Go-Service schreiben:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+```
+
+**2. Service registrieren:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**3. Bindings generieren:**
+
+```bash
+wails3 generate bindings
+```
+
+**4. In JavaScript verwenden:**
+
+```javascript
+import { Greet } from './bindings/myapp/greetservice'
+
+const message = await Greet("World")
+console.log(message)  // "Hello, World!"
+```
+
+**Das war's!** Typsichere Aufrufe von Go zu JavaScript.
+
+## Erstellen von Services
+
+### Basis-Service
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type CalculatorService struct{}
+
+func (c *CalculatorService) Add(a, b int) int {
+    return a + b
+}
+
+func (c *CalculatorService) Subtract(a, b int) int {
+    return a - b
+}
+
+func (c *CalculatorService) Multiply(a, b int) int {
+    return a * b
+}
+
+func (c *CalculatorService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+**Registrieren:**
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&CalculatorService{}),
+    },
+})
+```
+
+**Wichtige Punkte:**
+- Nur **exportierte Methoden** (PascalCase) werden gebunden
+- Methoden können Werte oder `(value, error)` zurückgeben
+- Services sind **Singletons** (eine Instanz pro Anwendung)
+
+### Service mit Zustand
+
+```go
+type CounterService struct {
+    count int
+    mu    sync.Mutex
+}
+
+func (c *CounterService) Increment() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+    return c.count
+}
+
+func (c *CounterService) Decrement() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+    return c.count
+}
+
+func (c *CounterService) GetCount() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+func (c *CounterService) Reset() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count = 0
+}
+```
+
+**Wichtig:** Services werden über alle Fenster hinweg geteilt. Verwenden Sie Mutexes für Thread-Sicherheit.
+
+### Service mit Abhängigkeiten
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func NewDatabaseService(db *sql.DB) *DatabaseService {
+    return &DatabaseService{db: db}
+}
+
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    return &user, err
+}
+```
+
+**Mit Abhängigkeiten registrieren:**
+
+```go
+db, _ := sql.Open("sqlite3", "app.db")
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(NewDatabaseService(db)),
+    },
+})
+```
+
+## Generieren von Bindings
+
+### Basis-Generierung
+
+```bash
+wails3 generate bindings
+```
+
+**Ausgabe:**
+
+```
+INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
+INFO  Output directory: /myproject/frontend/bindings
+```
+
+**Generierte Struktur:**
+
+<FileTree>
+- frontend/bindings
+  - myapp
+    - calculatorservice.js
+    - counterservice.js
+    - databaseservice.js
+    - index.js
+</FileTree>
+
+### TypeScript-Generierung
+
+```bash
+wails3 generate bindings -ts
+```
+
+**Generiert `.ts`-Dateien** mit vollständigen TypeScript-Typen.
+
+### Benutzerdefiniertes Ausgabeverzeichnis
+
+```bash
+wails3 generate bindings -d ./src/bindings
+```
+
+### Watch-Modus (Entwicklung)
+
+```bash
+wails3 dev
+```
+
+**Regeneriert Bindings automatisch**, wenn sich der Go-Code ändert.
+
+## Verwenden von Bindings
+
+### JavaScript
+
+**Generiertes Binding:**
+
+```javascript
+// frontend/bindings/myapp/calculatorservice.js
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {Promise<number>}
+ */
+export function Add(a, b) {
+    return window.wails.Call('CalculatorService.Add', a, b)
+}
+```
+
+**Verwendung:**
+
+```javascript
+import { Add, Subtract, Multiply, Divide } from './bindings/myapp/calculatorservice'
+
+// Einfache Aufrufe
+const sum = await Add(5, 3)        // 8
+const diff = await Subtract(10, 4)  // 6
+const product = await Multiply(7, 6) // 42
+
+// Fehlerbehandlung
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Error:", error)  // "division by zero"
+}
+```
+
+### TypeScript
+
+**Generiertes Binding:**
+
+```typescript
+// frontend/bindings/myapp/calculatorservice.ts
+
+export function Add(a: number, b: number): Promise<number>
+export function Subtract(a: number, b: number): Promise<number>
+export function Multiply(a: number, b: number): Promise<number>
+export function Divide(a: number, b: number): Promise<number>
+```
+
+**Verwendung:**
+
+```typescript
+import { Add, Divide } from './bindings/myapp/calculatorservice'
+
+const sum: number = await Add(5, 3)
+
+try {
+    const result = await Divide(10, 0)
+} catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error(error.message)
+    }
+}
+```
+
+**Vorteile:**
+- Vollständige Typprüfung
+- IDE-Autovervollständigung
+- Fehler zur Kompilierzeit
+- Besseres Refactoring
+
+### Index-Dateien
+
+**Generierter Index:**
+
+```javascript
+// frontend/bindings/myapp/index.js
+
+export * as CalculatorService from './calculatorservice.js'
+export * as CounterService from './counterservice.js'
+export * as DatabaseService from './databaseservice.js'
+```
+
+**Vereinfachte Imports:**
+
+```javascript
+import { CalculatorService } from './bindings/myapp'
+
+const sum = await CalculatorService.Add(5, 3)
+```
+
+## Typzuordnung
+
+### Primitive Typen
+
+| Go-Typ | JavaScript/TypeScript |
+|---------|----------------------|
+| `string` | `string` |
+| `bool` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
+| `byte` | `number` |
+| `rune` | `number` |
+
+### Komplexe Typen
+
+| Go-Typ | JavaScript/TypeScript |
+|---------|----------------------|
+| `[]T` | `T[]` |
+| `[N]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `map[K]V` | `Map<K, V>` |
+| `struct` | `class` (mit Feldern) |
+| `time.Time` | `Date` |
+| `*T` | `T` (Zeiger transparent) |
+| `interface{}` | `any` |
+| `error` | Exception (geworfen) |
+
+### Nicht unterstützte Typen
+
+Diese Typen **können** nicht über die Brücke übertragen werden:
+- `chan T` (Channels)
+- `func()` (Funktionen)
+- Komplexe Interfaces (außer `interface{}`)
+- Nicht exportierte Felder (Kleinbuchstaben)
+
+**Umgehungslösung:** Verwenden Sie IDs oder Handles:
+
+```go
+// ❌ Kann Datei-Handle nicht zurückgeben
+func OpenFile(path string) (*os.File, error)
+
+// ✅ Gibt stattdessen Datei-ID zurück
+var files = make(map[string]*os.File)
+
+func OpenFile(path string) (string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return "", err
+    }
+    id := generateID()
+    files[id] = file
+    return id, nil
+}
+
+func ReadFile(id string) ([]byte, error) {
+    file := files[id]
+    return io.ReadAll(file)
+}
+
+func CloseFile(id string) error {
+    file := files[id]
+    delete(files, id)
+    return file.Close()
+}
+```
+
+## Fehlerbehandlung
+
+### Go-Seite
+
+```go
+func (d *DatabaseService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, errors.New("invalid user ID")
+    }
+    
+    var user User
+    err := d.db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&user)
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("user %d not found", id)
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return &user, nil
+}
+```
+
+### JavaScript-Seite
+
+```javascript
+import { GetUser } from './bindings/myapp/databaseservice'
+
+try {
+    const user = await GetUser(123)
+    console.log("User:", user)
+} catch (error) {
+    console.error("Error:", error)
+    // Error: "user 123 not found"
+}
+```---
+
+**Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder schauen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.

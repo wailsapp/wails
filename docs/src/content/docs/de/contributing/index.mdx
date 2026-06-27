@@ -1,0 +1,94 @@
+---
+title: Technischer Überblick
+description: Hochrangige Architektur und Roadmap zum Wails v3-Codebase
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Willkommen zur technischen Dokumentation von Wails v3
+
+Dieser Abschnitt handelt **nicht** von Community-Richtlinien oder wie man einen Pull-Request erstellt.
+Stattdessen taucht er tief ein in die **Art und Weise, wie Wails v3 gebaut ist**, damit Sie sich schnell
+im Codebase zurechtfinden und mit Vertrauen an der Codeentwicklung arbeiten können.
+
+Egal, ob Sie planen, die Laufzeit zu patchen, die CLI zu erweitern, neue Templates zu erstellen oder
+einfach die Interna zu verstehen, die folgenden Seiten bieten den technischen
+Kontext, den Sie benötigen.
+
+---
+
+## Hochrangige Architektur
+
+<CardGrid>
+  <Card title="Go Backend" icon="seti:go">
+    Das Herzstück jeder Wails-App ist Go-Code, der zu einer nativen ausführbaren Datei kompiliert wird.
+    Er übernimmt die Anwendungslogik, die Systemintegration und performancekritische
+    Operationen.
+  </Card>
+
+  <Card title="Web-Frontend" icon="seti:html">
+    Die UI wird mit Standard-Webtechnologien (React, Vue, Svelte, Vanilla, …) geschrieben
+    und von einem leichtgewichtigen System-WebView gerendert (WebKit auf Linux/macOS, WebView2 auf
+    Windows).
+  </Card>
+
+  <Card title="Brückenschicht" icon="puzzle">
+    Eine speicherlose, im Speicher befindliche Brücke ermöglicht **Go⇄JavaScript**-Aufrufe mit automatischer
+    Typkonvertierung, Ereignisweitergabe und Fehlerweiterleitung.
+  </Card>
+
+  <Card title="CLI & Tooling" icon="terminal">
+    `wails3` orchestriert die Projekterstellung, den Live-Reload-Dev-Server, das Asset-Bündeln,
+    die Cross-Kompilierung und das Packaging (deb, rpm, AppImage, msi, dmg…).
+  </Card>
+</CardGrid>
+
+---
+
+## Architektonischer Überblick
+
+**Wails v3 – End-to-End-Flow**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[End-to-End-Flow-Diagramm-Platzhalter]**
+
+
+Das Diagramm zeigt den **End-to-End-Flow**:
+
+1. Die **CLI** steuert die Generierung, den Dev-Server, die Kompilierung und das Packaging.  
+2. Das **Binding-System** erzeugt Klebecode, der es dem **Web-Frontend** ermöglicht, in das **Go-Backend** aufzurufen.  
+3. Während der Entwicklung proxyt der **Asset-Server** zum Framework-Dev-Server; in der Produktion werden eingebettete Dateien ausgeliefert.  
+4. zur Laufzeit verwaltet das **Desktop-Runtime** Fenster und OS-APIs, während die **Bridge** Nachrichten zwischen Go und JavaScript transportiert.
+
+---
+
+## Was diese Dokumentation abdeckt
+
+| Thema | Warum es wichtig ist |
+| ----- | -------------- |
+| **Codebase-Layout** | Karte der `/v3`-Verzeichnisse und wie Module interagieren. |
+| **Runtime-Internals** | Fenster-Management, System-APIs, Nachrichtenprozessor und Platform-Shims. |
+| **Asset- & Dev-Server** | Wie Web-Assets im Dev-Betrieb ausgeliefert und in der Produktion eingebettet werden. |
+| **Build- & Packaging-Pipeline** | Taskfile-basierter Workflow, plattformübergreifende Kompilierung und Installer-Generierung. |
+| **Binding-System** | Statische Analyse-Pipeline, die typsichere Go⇄TS-Bindings generiert. |
+| **Template-System** | Generator-Architektur, die `wails init -t <framework>` antreibt. |
+| **Testing & CI** | Unit-/Integrationstest-Harness, GitHub Actions, Hinweise zum Race-Detector. |
+| **Erweitern von Wails** | Hinzufügen von Services, Templates oder CLI-Unterbefehlen. |
+
+Jede nachfolgende Seite geht tiefer in diese Bereiche ein, mit konkreten Codebeispielen,
+Diagrammen und Verweisen auf die relevanten Quelldateien.
+
+---
+
+:::note
+Voraussetzungen: Sie sollten mit **Go 1.25+**, grundlegendem TypeScript
+und modernen Frontend-Build-Tools vertraut sein. Wenn Sie neu in Go sind, betrachten Sie es als empfehlenswert, zuerst den offiziellen Tour durchzuarbeiten.
+:::
+
+Viel Spaß beim Erkunden — und willkommen in den Wails v3-Internals!
