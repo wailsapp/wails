@@ -8,7 +8,8 @@ The next steps to complete the template are:
 
   1. Complete the fields in the `template.json` file.
      - It is really important to ensure `helpurl` is valid as this is where users of the template will be directed for help.
-  2. Update `README.md`.
+  2. Update `README.md` accordingly.
+     - Ensure that you replace `your-template-url` with the URL of your template's git repository.
   3. Edit `wails.json` and ensure all fields are correct, especially:
      - `wailsjsdir` - path to generate wailsjs modules
      - `frontend:install` - The command to install your frontend dependencies
