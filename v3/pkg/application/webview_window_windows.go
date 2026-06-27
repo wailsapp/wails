@@ -782,24 +782,32 @@ func (w *windowsWebviewWindow) centerOnScreen(screen *Screen) {
 	w.setPosition(x, y)
 }
 
-// Get window position relative to the screen WorkArea on which it is
+// Get window position in physical pixels relative to the PhysicalWorkArea of the screen it is on.
 func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	screen, _ := w.getScreen()
-	pos := screen.absoluteToRelativeDipPoint(w.bounds().Origin())
-	// Relative to WorkArea origin
-	pos.X -= (screen.WorkArea.X - screen.X)
-	pos.Y -= (screen.WorkArea.Y - screen.Y)
-	return pos.X, pos.Y
+	physBounds := w.physicalBounds()
+	if screen == nil {
+		return physBounds.X, physBounds.Y
+	}
+	return physBounds.X - screen.PhysicalWorkArea.X, physBounds.Y - screen.PhysicalWorkArea.Y
 }
 
-// Set window position relative to the screen WorkArea on which it is
+// Set window position using physical pixel coordinates relative to the PhysicalWorkArea of the
+// screen the window is on. Physical pixels match Win32 APIs (e.g. GetCursorPos) and avoid DPI
+// scaling errors at non-100% display scaling factors.
 func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 	screen, _ := w.getScreen()
-	pos := screen.relativeToAbsoluteDipPoint(Point{X: x, Y: y})
-	// Relative to WorkArea origin
-	pos.X += (screen.WorkArea.X - screen.X)
-	pos.Y += (screen.WorkArea.Y - screen.Y)
-	w.setPosition(pos.X, pos.Y)
+	physBounds := w.physicalBounds()
+	if screen == nil {
+		w.setPhysicalBounds(Rect{X: x, Y: y, Width: physBounds.Width, Height: physBounds.Height})
+		return
+	}
+	w.setPhysicalBounds(Rect{
+		X:      screen.PhysicalWorkArea.X + x,
+		Y:      screen.PhysicalWorkArea.Y + y,
+		Width:  physBounds.Width,
+		Height: physBounds.Height,
+	})
 }
 
 func (w *windowsWebviewWindow) destroy() {
