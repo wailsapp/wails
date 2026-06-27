@@ -30,31 +30,40 @@ Taskfiles do not change.**
 ## Why it exists
 
 Both Wake and the Task runtime are compiled into `wails3` — neither needs a
-separate binary install. They differ in what they're *for*:
+separate binary install. The difference is that Wake **understands the domain**.
+A general-purpose runner executes whatever steps a Taskfile lists, in the order
+it's told. Wake knows what a Wails build actually *is* — the frontend bundle
+gets embedded into the binary, the binary gets packaged into platform-specific
+artefacts, icons and bindings are generated alongside — and uses that knowledge
+to optimise the build in ways a generic runner can't.
 
-- **Tailored to the Wails build pipeline.** Wake knows the shape of a Wails
-  build: the frontend bundle gets embedded into the binary, the binary gets
-  packaged into platform-specific artefacts, and icons and bindings are
-  generated alongside. It surfaces those as first-class concepts — the final
-  binary shows up as a labelled artefact at the end of the run rather than
-  being inferred from `generates:` globs.
+- **It only does the work a build actually needs.** Wake tracks the real inputs
+  and outputs of each step itself. For a Go build that's the module graph plus
+  the outputs of the steps it depends on, so when nothing relevant has changed
+  it skips the compiler and linker entirely instead of re-running them. A
+  general-purpose runner can only skip a step when the Taskfile has spelled out,
+  up front, exactly which files to watch; Wake works it out from what it already
+  knows about the build. On a no-op rebuild that's roughly **~20 ms (Wake) vs
+  ~316 ms (Task)**. Cold builds land at the same wall time — they're dominated
+  by `npm install`, Vite and the Go compiler.
 
-- **Faster incremental builds.** Task only skips a task when its Taskfile
-  declares `sources:`/`generates:`. The Wails templates don't declare those for
-  `go build` / `go mod tidy`, so Task re-runs the Go compiler and linker on
-  *every* build. Wake derives those inputs itself from the Go module graph and
-  skips the subprocess when nothing changed. On a no-op rebuild this is roughly
-  **~20 ms (Wake) vs ~316 ms (Task)**. Cold builds land at the same wall time —
-  they're dominated by `npm install`, Vite and the Go compiler.
+- **It knows what can run at the same time.** Because Wake understands which
+  steps are independent, it runs them in parallel by default and the verdict
+  line reports the speedup it earned. Opt out with `WAKE_SERIAL=true` when
+  interleaved output from sibling steps would muddle an investigation.
 
-- **Structured output.** Wake renders through wails3's own reporter: one row per
-  planned step, live status, a colour-coded phase breakdown at the end, and
-  clickable `file:line` links inside failure panels. `NO_COLOR` and non-TTY
-  environments (CI logs) degrade cleanly.
+- **Structured output controlled by wails3.** Wake renders through wails3's own
+  reporter: one row per planned step, live status, a colour-coded phase
+  breakdown at the end, and clickable `file:line` links inside failure panels.
+  `NO_COLOR` and non-TTY environments (CI logs) degrade cleanly.
 
-- **Parallel by default.** A task's `deps:` are evaluated concurrently rather
-  than sequentially, and the verdict line reports the speedup it earned. Opt out
-  with `WAKE_SERIAL=true`.
+- **Built in, so it can grow with Wails.** Because Wake is part of `wails3`
+  rather than a third-party tool, new build capabilities can be layered on
+  directly — there's no waiting on a separate project to implement them. That
+  also opens the door to running cross-platform scripts and tooling natively
+  where a Taskfile today shells out to the `wails3` binary (spawning a process
+  per call). Folding that work in-process trims the overhead and means more
+  speedups to come.
 
 ## Enabling Wake
 
