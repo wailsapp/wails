@@ -1,0 +1,564 @@
+---
+title: 自动更新
+description: 使用 Wails v3 实现应用程序自动更新
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+# 自动更新
+
+Wails v3 提供了一个内置的更新器系统，支持自动检查更新、下载和安装。更新器包括对二进制增量更新（补丁）的支持，以实现最小的下载大小。
+
+<CardGrid>
+  <Card title="自动检查" icon="rocket">
+    配置后台定期更新检查
+  </Card>
+  <Card title="增量更新" icon="down-caret">
+    仅下载发生变化的部分，使用 bsdiff 补丁
+  </Card>
+  <Card title="跨平台" icon="laptop">
+    适用于 macOS、Windows 和 Linux
+  </Card>
+  <Card title="安全" icon="approve-check">
+    SHA256 校验和及可选签名验证
+  </Card>
+</CardGrid>
+
+## 快速开始
+
+将更新器服务添加到您的应用程序中：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func main() {
+    // 创建更新器服务
+    updater, err := application.CreateUpdaterService(
+        "1.0.0", // 当前版本
+        application.WithUpdateURL("https://updates.example.com/myapp/"),
+        application.WithCheckInterval(24 * time.Hour),
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Services: []application.Service{
+            application.NewService(updater),
+        },
+    })
+
+    // ... 应用程序的其余部分
+    app.Run()
+}
+```
+
+然后在您的前端中使用它：
+
+```typescript title="App.tsx"
+import { updater } from './bindings/myapp';
+
+async function checkForUpdates() {
+  const update = await updater.CheckForUpdate();
+
+  if (update) {
+    console.log(`可用新版本: ${update.version}`);
+    console.log(`发布说明: ${update.releaseNotes}`);
+
+    // 下载并安装
+    await updater.DownloadAndApply();
+  }
+}
+```
+
+## 配置选项
+
+更新器支持各种配置选项：
+
+```go
+updater, err := application.CreateUpdaterService(
+    "1.0.0",
+    // 必需：托管更新清单的 URL
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+
+    // 可选：每 24 小时自动检查更新
+    application.WithCheckInterval(24 * time.Hour),
+
+    // 可选：允许预发布版本
+    application.WithAllowPrerelease(true),
+
+    // 可选：更新通道（stable, beta, canary）
+    application.WithChannel("stable"),
+
+    // 可选：要求签名更新
+    application.WithRequireSignature(true),
+    application.WithPublicKey("your-ed25519-public-key"),
+)
+```
+
+## 更新清单格式
+
+在您的服务器上托管一个 `update.json` 文件：
+
+```json title="update.json"
+{
+  "version": "1.2.0",
+  "release_date": "2025-01-15T00:00:00Z",
+  "release_notes": "## 新功能\n\n- 功能 A\n- 错误修复 B",
+  "platforms": {
+    "macos-arm64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-arm64.tar.gz",
+      "size": 12582912,
+      "checksum": "sha256:abc123...",
+      "patches": [
+        {
+          "from": "1.1.0",
+          "url": "https://updates.example.com/myapp/patches/1.1.0-to-1.2.0-macos-arm64.patch",
+          "size": 14336,
+          "checksum": "sha256:def456..."
+        }
+      ]
+    },
+    "macos-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-macos-amd64.tar.gz",
+      "size": 13107200,
+      "checksum": "sha256:789xyz..."
+    },
+    "windows-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-windows-amd64.zip",
+      "size": 14680064,
+      "checksum": "sha256:ghi789..."
+    },
+    "linux-amd64": {
+      "url": "https://updates.example.com/myapp/myapp-1.2.0-linux-amd64.tar.gz",
+      "size": 11534336,
+      "checksum": "sha256:jkl012..."
+    }
+  },
+  "minimum_version": "1.0.0",
+  "mandatory": false
+}
+```
+
+### 平台键
+
+| 平台 | 键 |
+|----------|-----|
+| macOS (Apple Silicon) | `macos-arm64` |
+| macOS (Intel) | `macos-amd64` |
+| Windows (64 位) | `windows-amd64` |
+| Linux (64 位) | `linux-amd64` |
+| Linux (ARM64) | `linux-arm64` |
+
+## 前端 API
+
+更新器暴露的方法会自动绑定到您的前端：
+
+### TypeScript 类型
+
+```typescript
+interface UpdateInfo {
+  version: string;
+  releaseDate: Date;
+  releaseNotes: string;
+  size: number;
+  patchSize?: number;
+  mandatory: boolean;
+  hasPatch: boolean;
+}
+
+interface Updater {
+  // 获取当前应用程序版本
+  GetCurrentVersion(): string;
+
+  // 检查是否有可用更新
+  CheckForUpdate(): Promise<UpdateInfo | null>;
+
+  // 下载更新（发出进度事件）
+  DownloadUpdate(): Promise<void>;
+
+  // 应用下载的更新（重启应用）
+  ApplyUpdate(): Promise<void>;
+
+  // 在一次调用中下载并应用
+  DownloadAndApply(): Promise<void>;
+
+  // 获取当前状态：idle, checking, available, downloading, ready, installing, error
+  GetState(): string;
+
+  // 获取可用更新信息
+  GetUpdateInfo(): UpdateInfo | null;
+
+  // 获取最后一个错误消息
+  GetLastError(): string;
+
+  // 重置更新器状态
+  Reset(): void;
+}
+```
+
+### 进度事件
+
+监听下载进度事件：
+
+```typescript
+import { Events } from '@wailsio/runtime';
+
+Events.On('updater:progress', (data) => {
+  console.log(`已下载: ${data.downloaded} / ${data.total}`);
+  console.log(`进度: ${data.percentage.toFixed(1)}%`);
+  console.log(`速度: ${(data.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s`);
+});
+```
+
+## 完整示例
+
+这里有一个带有 React 组件的完整示例：
+
+```tsx title="UpdateChecker.tsx"
+import { useState, useEffect } from 'react';
+import { updater } from './bindings/myapp';
+import { Events } from '@wailsio/runtime';
+
+interface Progress {
+  downloaded: number;
+  total: number;
+  percentage: number;
+  bytesPerSecond: number;
+}
+
+export function UpdateChecker() {
+  const [checking, setChecking] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 监听进度事件
+    const cleanup = Events.On('updater:progress', (data: Progress) => {
+      setProgress(data);
+    });
+
+    // 挂载时检查更新
+    checkForUpdates();
+
+    return () => cleanup();
+  }, []);
+
+  async function checkForUpdates() {
+    setChecking(true);
+    setError(null);
+
+    try {
+      const info = await updater.CheckForUpdate();
+      setUpdateInfo(info);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function downloadAndInstall() {
+    setDownloading(true);
+    setError(null);
+
+    try {
+      await updater.DownloadAndApply();
+      // 应用程序将自动重启
+    } catch (err) {
+      setError(err.message);
+      setDownloading(false);
+    }
+  }
+
+  if (checking) {
+    return <div>正在检查更新...</div>;
+  }
+
+  if (error) {
+    return (
+      <div>
+        <p>错误: {error}</p>
+        <button onClick={checkForUpdates}>重试</button>
+      </div>
+    );
+  }
+
+  if (!updateInfo) {
+    return (
+      <div>
+        <p>您已是最新版本！(v{updater.GetCurrentVersion()})</p>
+        <button onClick={checkForUpdates}>再次检查</button>
+      </div>
+    );
+  }
+
+  if (downloading) {
+    return (
+      <div>
+        <p>正在下载更新...</p>
+        {progress && (
+          <div>
+            <progress value={progress.percentage} max={100} />
+            <p>{progress.percentage.toFixed(1)}%</p>
+            <p>{(progress.bytesPerSecond / 1024 / 1024).toFixed(2)} MB/s</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+``````jsx
+  return (
+    <div>
+      <h3>Update Available!</h3>
+      <p>Version {updateInfo.version} is available</p>
+      <p>Size: {updateInfo.hasPatch
+        ? `${(updateInfo.patchSize / 1024).toFixed(0)} KB (patch)`
+        : `${(updateInfo.size / 1024 / 1024).toFixed(1)} MB`}
+      </p>
+      <div dangerouslySetInnerHTML={{ __html: updateInfo.releaseNotes }} />
+      <button onClick={downloadAndInstall}>Download & Install</button>
+      <button onClick={() => setUpdateInfo(null)}>Skip</button>
+    </div>
+  );
+}
+```
+
+## 更新策略
+
+### 启动时检查
+
+```go
+func (a *App) OnStartup(ctx context.Context) {
+    // Check for updates after a short delay
+    go func() {
+        time.Sleep(5 * time.Second)
+        info, err := a.updater.CheckForUpdate()
+        if err == nil && info != nil {
+            // Emit event to frontend
+            application.Get().EmitEvent("update-available", info)
+        }
+    }()
+}
+```
+
+### 后台检查
+
+配置自动后台检查：
+
+```go
+updater, _ := application.CreateUpdaterService(
+    "1.0.0",
+    application.WithUpdateURL("https://updates.example.com/myapp/"),
+    application.WithCheckInterval(6 * time.Hour), // Check every 6 hours
+)
+```
+
+### 手动检查菜单项
+
+```go
+menu := application.NewMenu()
+menu.Add("Check for Updates...").OnClick(func(ctx *application.Context) {
+    info, err := updater.CheckForUpdate()
+    if err != nil {
+        application.InfoDialog().SetMessage("Error checking for updates").Show()
+        return
+    }
+    if info == nil {
+        application.InfoDialog().SetMessage("You're up to date!").Show()
+        return
+    }
+    // Show update dialog...
+})
+```
+
+## 增量更新（补丁）
+
+增量更新（补丁）允许用户仅下载版本之间的更改，从而大幅减少下载大小。
+
+### 工作原理
+
+1. 构建新版本时，从之前的版本生成补丁
+2. 在服务器上托管补丁和完整更新
+3. 更新器在有可用补丁时自动下载补丁
+4. 如果补丁失败，则回退到完整下载
+
+### 生成补丁
+
+补丁使用 `bsdiff` 算法生成。你需要 `bsdiff` 工具：
+
+```bash
+# Install bsdiff (macOS)
+brew install bsdiff
+
+# Install bsdiff (Ubuntu/Debian)
+sudo apt-get install bsdiff
+
+# Generate a patch
+bsdiff old-binary new-binary patch.bsdiff
+```
+
+### 补丁文件命名
+
+在更新目录中组织你的补丁：
+
+```
+updates/
+├── update.json
+├── myapp-1.2.0-macos-arm64.tar.gz
+├── myapp-1.2.0-windows-amd64.zip
+└── patches/
+    ├── 1.0.0-to-1.2.0-macos-arm64.patch
+    ├── 1.1.0-to-1.2.0-macos-arm64.patch
+    ├── 1.0.0-to-1.2.0-windows-amd64.patch
+    └── 1.1.0-to-1.2.0-windows-amd64.patch
+```
+
+<Aside type="tip">
+保留最近几个版本的补丁。非常旧版本的用户将自动下载完整更新。
+</Aside>
+
+## 托管更新
+
+### 静态文件托管
+
+更新可以托管在任何静态文件服务器上：
+
+- **Amazon S3** / **Cloudflare R2**
+- **Google Cloud Storage**
+- **GitHub Releases**
+- **任何 CDN 或 Web 服务器**
+
+S3 存储桶结构示例：
+
+```
+s3://my-updates-bucket/myapp/
+├── stable/
+│   ├── update.json
+│   ├── myapp-1.2.0-macos-arm64.tar.gz
+│   └── patches/
+│       └── 1.1.0-to-1.2.0-macos-arm64.patch
+└── beta/
+    └── update.json
+```
+
+### CORS 配置
+
+如果在不同域上托管，请配置 CORS：
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET"],
+      "AllowedHeaders": ["*"]
+    }
+  ]
+}
+```
+
+## 安全性
+
+### 校验和验证
+
+所有下载都会根据清单中的 SHA256 校验和进行验证：
+
+```json
+{
+  "checksum": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+```
+
+### 签名验证
+
+为了增加安全性，启用签名验证：
+
+<Steps>
+1. **生成密钥对**：
+   ```bash
+   # Generate Ed25519 key pair
+   openssl genpkey -algorithm Ed25519 -out private.pem
+   openssl pkey -in private.pem -pubout -out public.pem
+   ```
+
+2. **签署你的更新清单**：
+   ```bash
+   openssl pkeyutl -sign -inkey private.pem -in update.json -out update.json.sig
+   ```
+
+3. **配置更新器**：
+   ```go
+   updater, _ := application.CreateUpdaterService(
+       "1.0.0",
+       application.WithUpdateURL("https://updates.example.com/myapp/"),
+       application.WithRequireSignature(true),
+       application.WithPublicKey("MCowBQYDK2VwAyEA..."), // Base64-encoded public key
+   )
+   ```
+</Steps>
+
+## 最佳实践
+
+### 应该做
+
+- 在部署前彻底测试更新
+- 保留以前的版本以进行回滚
+- 向用户显示发行说明
+- 允许用户跳过非强制性更新
+- 对所有下载使用 HTTPS
+- 在应用更新前验证校验和
+- 优雅地处理错误
+
+### 不应该做
+
+- 在不警告的情况下强制立即重启
+- 跳过校验和验证
+- 在用户进行重要工作时中断用户
+- 立即删除以前的版本
+- 忽略更新失败
+
+## 故障排除
+
+### 未找到更新
+
+- 验证清单 URL 是否正确
+- 检查平台键是否匹配（例如 `macos-arm64`）
+- 确保清单中的版本更新
+
+### 下载失败
+
+- 检查网络连接
+- 验证下载 URL 是否可访问
+- 如果是跨域，检查 CORS 配置
+
+### 补丁失败
+
+- 更新器会自动回退到完整下载
+- 确保系统上可用 `bspatch`
+- 验证补丁校验和是否正确
+
+### 应用程序无法重启
+
+- 在 macOS 上，确保应用已正确签名
+- 在 Windows 上，检查文件锁定
+- 在 Linux 上，验证文件权限
+
+## 后续步骤
+
+- [代码签名](/zh-cn/guides/build/signing) - 签署你的更新
+- [创建安装程序](/zh-cn/guides/installers) - 打包你的应用程序
+- [CI/CD 集成](/guides/ci-cd) - 自动化你的发布流程

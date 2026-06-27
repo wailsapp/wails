@@ -1,0 +1,367 @@
+---
+title: 入门指南
+description: 如何开始为 Wails v3 做出贡献
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## 欢迎，贡献者！
+
+感谢您对为 Wails 做出贡献的兴趣！本指南将帮助您完成首次贡献。
+
+## 前置条件
+
+在开始之前，请确保您已具备：
+
+- **Go 1.25+**（[下载](https://go.dev/dl/)）
+- **Node.js 20+** 和 **npm**（[下载](https://nodejs.org/)）
+- 已配置 GitHub 账户的 **Git**
+- 对 Go 和 JavaScript/TypeScript 的基本熟悉
+
+### 平台特定要求
+
+**macOS：**
+- Xcode Command Line Tools：`xcode-select --install`
+
+**Windows：**
+- 建议使用 MSYS2 或类似的类 Unix 环境
+- WebView2 运行时（通常在 Windows 11 上预装）
+
+**Linux：**
+- `gcc`、`pkg-config`、`libgtk-3-dev`、`libwebkit2gtk-4.0-dev`
+- 通过以下命令安装：`sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev`（Debian/Ubuntu）
+
+## 贡献流程概览
+
+典型的贡献工作流遵循以下步骤：
+
+1. **Fork 并克隆** - 创建 Wails 仓库的副本
+2. **环境配置** - 构建 Wails CLI 并验证您的环境
+3. **创建分支** - 为您的更改创建功能分支
+4. **开发** - 按照我们的编码标准进行更改
+5. **测试** - 运行测试以确保一切正常
+6. **提交** - 使用清晰、规范的提交信息提交代码
+7. **提交 PR** - 提交拉取请求以供审查
+8. **迭代** - 回应反馈并进行调整
+9. **合并** - 一旦获得批准，您的更改将成为 Wails 的一部分！
+
+## 分步指南
+
+选择您的贡献类型：
+
+<Tabs>
+<TabItem label="Bug 修复">
+
+<Steps>
+
+1. **查找或报告 Bug**
+
+   - 检查 [GitHub Issues](https://github.com/wailsapp/wails/issues) 中是否已报告该 Bug
+   - 如果未报告，请创建一个包含复现步骤的新 Issue
+   - 在开始工作前等待确认
+
+2. **Fork 并克隆**
+
+   在 [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) Fork 仓库
+
+   克隆您的 Fork：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **构建并验证**
+
+   构建 Wails 并验证您能否复现该 Bug：
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # 复现 Bug 以理解其成因
+   ```
+
+4. **创建 Bug 修复分支**
+
+   为您的修复创建分支：
+   ```bash
+   git checkout -b fix/issue-123-window-crash
+   ```
+
+5. **修复 Bug**
+
+   - 进行修复 Bug 所需的最小更改
+   - 不要重构无关代码
+   - 添加或更新测试以防止回归
+
+   ```bash
+   # 进行您的更改
+   # 在 *_test.go 文件中添加测试
+   ```
+
+6. **测试您的修复**
+
+   运行测试以确保修复有效：
+   ```bash
+   go test ./...
+
+   # 测试特定包
+   go test ./pkg/application -v
+
+   # 使用竞态检测器运行
+   go test ./... -race
+   ```
+
+7. **提交您的修复**
+
+   使用清晰的提交信息提交：
+   ```bash
+   git commit -m "fix: prevent window crash when closing during initialization
+
+   Fixes #123"
+   ```
+
+8. **提交拉取请求**
+
+   推送并创建 PR：
+   ```bash
+   git push origin fix/issue-123-window-crash
+   ```
+
+   在您的 PR 描述中：
+   - 解释 Bug 及其根本原因
+   - 描述您的修复方案
+   - 引用 Issue：“Fixes #123”
+   - 包含修复前后的行为对比
+
+9. **回应反馈**
+
+   处理审查意见并根据需要更新您的 PR。
+
+</Steps>
+
+</TabItem>
+<TabItem label="功能增强">
+
+<Steps>
+
+1. **讨论功能**
+
+   - 打开 [GitHub Discussion](https://github.com/wailsapp/wails/discussions) 或 Issue
+   - 描述您想要添加的内容及原因
+   - 在实施前等待维护者的反馈
+   - 确保其符合 Wails 的目标
+
+2. **Fork 并克隆**
+
+   在 [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) Fork 仓库
+
+   克隆您的 Fork：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **配置开发环境**
+
+   构建 Wails 并验证您的环境：
+   ```bash
+   cd v3
+   go build -o ../wails3 ./cmd/wails3
+
+   # 运行测试以确保一切正常
+   go test ./...
+   ```
+
+4. **创建功能分支**
+
+   创建一个描述性的分支：
+   ```bash
+   git checkout -b feat/window-transparency-support
+   ```
+
+5. **实现功能**
+
+   - 遵循我们的 [编码标准](/zh-cn/contributing/standards)
+   - 保持更改专注于该功能
+   - 编写清晰、有文档的代码
+   - 添加全面的测试
+
+   ```bash
+   # 示例：添加新的窗口方法
+   # 1. 添加到 window.go 接口
+   # 2. 在平台文件 (darwin, windows, linux) 中实现
+   # 3. 添加测试
+   # 4. 更新文档
+   ```
+
+6. **彻底测试**
+
+   测试您的功能：
+   ```bash
+   # 单元测试
+   go test ./pkg/application -v
+
+   # 集成测试 - 创建一个测试应用
+   cd ..
+   ./wails3 init -n feature-test
+   cd feature-test
+   # 使用新功能添加代码
+   ../wails3 dev
+   ```
+
+7. **记录您的功能**
+
+   - 为所有公共 API 添加文档字符串
+   - 更新 `/docs` 中的相关文档
+   - 如有必要，添加示例
+
+8. **使用规范提交**
+
+   使用规范提交（conventional commits）：
+   ```bash
+   git commit -m "feat: add window transparency support
+
+   - Add SetTransparent() method to Window API
+   - Implement for macOS, Windows, and Linux
+   - Add tests and documentation
+
+   Closes #456"
+   ```
+
+9. **提交拉取请求**
+
+   推送并创建 PR：
+   ```bash
+   git push origin feat/window-transparency-support
+   ```
+
+   在您的 PR 中：
+   - 描述功能及使用场景
+   - 展示示例或截图
+   - 列出任何破坏性更改
+   - 引用相关的 Discussion/Issue
+
+10. **根据审查结果迭代**
+
+    维护者可能会要求更改。请保持耐心和协作精神。
+
+</Steps>
+
+</TabItem>
+<TabItem label="文档">
+
+<Steps>
+
+1. **识别文档需求**
+
+   - 在使用 Wails 时发现文档过时？
+   - 注意到缺少示例或解释？
+   - 想要修复拼写错误或提高清晰度？
+   - 查看 [文档 Issues](https://github.com/wailsapp/wails/labels/documentation)
+
+2. **Fork 并克隆**
+
+   在 [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork) Fork 仓库
+
+   克隆您的 Fork：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/wails.git
+   cd wails
+   git remote add upstream https://github.com/wailsapp/wails.git
+   ```
+
+3. **配置文档环境**
+
+   文档位于 `/docs`，使用 Astro 构建：
+   ```bash
+   cd docs
+   npm install
+   npm run dev
+   ```
+
+   打开 http://localhost:4321/ 以实时预览更改。
+
+4. **创建文档分支**
+
+   为您的更改创建分支：
+   ```bash
+   git checkout -b docs/improve-window-api-examples
+   ```
+
+5. **进行更改**
+
+   文档文件位于 `/docs/src/content/docs/`：
+   ```bash
+   # 编辑 MDX 文件
+   # 在浏览器中检查预览
+   # 确保格式正确
+   ```
+
+   **最佳实践：**
+   - 使用清晰、简洁的语言
+   - 包含实用的代码示例
+   - 添加指向相关章节的链接
+   - 检查拼写和语法
+   - 测试所有代码示例
+
+6. **验证您的更改**
+
+   检查实时预览并确保：
+   - 链接正常工作
+   - 代码示例准确无误
+   - 格式正确渲染
+   - 没有损坏的图片或引用
+
+7. **提交文档更改**
+
+   使用清晰的提交信息提交：
+   ```bash
+   git commit -m "docs: add practical examples to Window API guide
+
+   - Add window positioning examples
+   - Include common patterns section
+   - Fix broken links to Event API"
+   ```
+
+8. **提交拉取请求**
+
+   推送并创建 PR：
+   ```bash
+   git push origin docs/improve-window-api-examples
+   ```在你的 PR 中：
+- 描述你改进的文档内容
+- 解释这些更改如何帮助用户
+- 如果涉及视觉变更，请附上截图
+
+9. **处理评审反馈**
+
+文档相关的 PR 通常审查和合并速度很快！
+
+</Steps>
+
+</TabItem>
+</Tabs>
+
+## 寻找可处理的问题
+
+- 查找 [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue) 标签
+- 查看 [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted) 问题
+- 浏览 [开放问题](https://github.com/wailsapp/wails/issues) 并申请认领
+
+## 获取帮助
+
+- **Discord：** 加入 [Wails Discord](https://discord.gg/JDdSxwjhGf)
+- **讨论区：** 在 [GitHub Discussions](https://github.com/wailsapp/wails/discussions) 发帖
+- **问题：** 如果发现 bug 或有疑问，请提交 Issue
+
+## 行为准则
+
+保持尊重、建设性和欢迎的态度。我们正在构建一个友好的社区，致力于共同创建优秀的软件。
+
+## 下一步
+
+- 设置你的 [开发环境](/zh-cn/contributing/setup)
+- 阅读我们的 [编码规范](/zh-cn/contributing/standards)
+- 探索 [技术文档](/zh-cn/contributing)

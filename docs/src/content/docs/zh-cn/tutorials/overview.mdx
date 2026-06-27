@@ -1,0 +1,84 @@
+---
+title: 教程
+description: 通过构建应用程序来学习 Wails
+sidebar:
+  label: 概述
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+通过构建完整应用程序来教授 Wails 概念的逐步教程。每个教程都包含可运行的代码、解释以及实用模式。
+
+:::tip[新手？]
+在开始教程之前，请先完成 [Go Tour](https://go.dev/tour/)。
+:::
+
+### 二维码服务
+
+<Image src={qr1} alt="QR Code Example" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+通过构建二维码生成器来学习 Wails 服务的基础知识。本教程将引导你了解将应用程序逻辑组织为可重用服务的核心概念。
+
+**你将学到：**
+- 如何创建和构建 Wails 服务
+- 管理外部 Go 依赖项
+- 将 Go 方法绑定到前端
+- 在 Go 和 JavaScript 之间传递数据
+- 组织代码以提高可维护性
+
+**适合人群：** 希望理解服务架构的 Wails 初学者
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-cn/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">开始学习</LinkButton>
+</div>
+
+---
+
+### 待办事项列表
+
+<Image src={todoApp} alt="TODO List Application" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+构建一个具有美观现代界面的完整待办事项列表应用程序。这个动手实践的教程通过一个使用原生 JavaScript 的实际应用程序，教你掌握核心的 Wails 模式。
+
+**你将学到：**
+- 基于服务的架构与线程安全的状态管理
+- CRUD 操作（创建、读取、更新、删除）
+- Go 与 JavaScript 之间的类型安全绑定
+- 在不增加框架复杂性的情况下构建现代 UI
+- 正确的错误处理和验证模式
+
+**完成时间：** 约 20 分钟
+
+**适合人群：** 你的第一个完整 Wails 应用程序——非常适合在增加框架复杂性之前理解基础知识
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-cn/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">开始学习</LinkButton>
+</div>
+
+---
+
+### 笔记
+
+<Image src={notesApp} alt="Notes Application" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+构建一个类似 Apple Notes 的应用程序，具备原生文件对话框和自动保存功能。本教程演示了桌面特定功能，如文件操作、原生对话框以及专业的 UI 模式。
+
+**你将学到：**
+- 原生文件对话框（保存、打开、信息）
+- 基于 JSON 的数据持久化
+- 防抖自动保存模式
+- 专业的双列桌面布局
+- 在 Go 中处理文件系统操作
+
+**完成时间：** 约 30 分钟
+
+**适合人群：** 学习桌面特定功能，如文件操作和本机操作系统对话框
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/zh-cn/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">开始学习</LinkButton>
+</div>

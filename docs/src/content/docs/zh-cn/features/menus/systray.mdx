@@ -1,0 +1,380 @@
+---
+title: 系统托盘菜单
+description: 为您的应用程序添加系统托盘（通知区域）集成
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 系统托盘菜单
+
+Wails 提供**统一的系统托盘 API**，可在所有平台上运行。创建带有菜单的托盘图标，附加窗口，并通过原生平台行为处理点击事件，适用于后台应用程序、服务和快速访问工具。
+{/* VISUAL PLACEHOLDER: System Tray Comparison
+Description: Three screenshots showing the same Wails system tray icon on:
+1. Windows - Notification area (bottom-right)
+2. macOS - Menu bar (top-right) with label
+3. Linux (GNOME) - Top bar
+All showing the same icon and menu structure
+Style: Clean screenshots with arrows pointing to tray icon, menu expanded
+*/}
+
+## 快速入门
+
+```go
+package main
+
+import (
+    _ "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets/icon.png
+var icon []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Tray App",
+    })
+
+    // Create system tray
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetLabel("My App")
+
+    // Add menu
+    menu := app.NewMenu()
+    menu.Add("Show").OnClick(func(ctx *application.Context) {
+        // Show main window
+    })
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    systray.SetMenu(menu)
+
+    // Create hidden window
+    window := app.Window.New()
+    window.Hide()
+
+    app.Run()
+}
+```
+
+**结果：** 在所有平台上显示带有菜单的系统托盘图标。
+
+## 创建系统托盘
+
+### 基本系统托盘
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+
+// Set icon
+systray.SetIcon(iconBytes)
+
+// Set label (macOS) / tooltip (Windows)
+systray.SetLabel("My Application")
+```
+
+### 使用图标
+
+图标应嵌入到代码中：
+
+```go
+import _ "embed"
+
+//go:embed assets/icon.png
+var icon []byte
+
+//go:embed assets/icon-dark.png
+var iconDark []byte
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    systray := app.SystemTray.New()
+    systray.SetIcon(icon)
+    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    
+    app.Run()
+}
+```
+
+**图标要求：**
+
+| 平台 | 尺寸 | 格式 | 备注 |
+|----------|------|--------|-------|
+| **Windows** | 16x16 或 32x32 | PNG, ICO | 通知区域 |
+| **macOS** | 18x18 到 22x22 | PNG | 菜单栏，建议使用模板图标 |
+| **Linux** | 22x22 到 48x48 | PNG, SVG | 因桌面环境而异 |
+
+### 模板图标 (macOS)
+
+模板图标可自动适应亮色/暗色模式：
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+**模板图标指南：**
+- 仅使用黑色和透明色
+- 在暗色模式下，黑色会变为白色
+- 文件名以 `Template` 为后缀：`iconTemplate.png`
+- [设计指南](https://bjango.com/articles/designingmenubarextras/)
+
+## 添加菜单
+
+系统托盘菜单的工作方式类似于应用程序菜单：
+
+```go
+menu := app.NewMenu()
+
+// Add items
+menu.Add("Open").OnClick(func(ctx *application.Context) {
+    showMainWindow()
+})
+
+menu.AddSeparator()
+
+menu.AddCheckbox("Start at Login", false).OnClick(func(ctx *application.Context) {
+    enabled := ctx.ClickedMenuItem().Checked()
+    setStartAtLogin(enabled)
+})
+
+menu.AddSeparator()
+
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Set menu
+systray.SetMenu(menu)
+```
+
+**所有菜单项类型**，请参阅 [菜单参考](/zh-cn/features/menus/reference)。
+
+## 附加窗口
+
+将窗口附加到托盘图标以实现自动显示/隐藏：
+
+```go
+// Create window
+window := app.Window.New()
+
+// Attach to tray
+systray.AttachWindow(window)
+
+// Configure behaviour
+systray.SetWindowOffset(10)  // Pixels from tray icon
+systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+```
+
+**行为：**
+- 窗口初始状态为隐藏
+- **左键单击托盘图标** → 切换窗口可见性
+- **右键单击托盘图标** → 显示菜单（如果已设置）
+- 窗口定位在托盘图标附近
+
+**示例：弹出窗口**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Quick Access",
+    Width:  300,
+    Height: 400,
+    Frameless: true,  // No title bar
+    AlwaysOnTop: true,  // Stay on top
+})
+
+systray.AttachWindow(window)
+systray.SetWindowOffset(5)
+```
+
+## 点击事件处理
+
+处理托盘图标点击事件：
+
+```go
+systray := app.SystemTray.New()
+
+// Left click
+systray.OnClick(func() {
+    fmt.Println("Tray icon clicked")
+})
+
+// Right click
+systray.OnRightClick(func() {
+    fmt.Println("Tray icon right-clicked")
+})
+
+// Double click
+systray.OnDoubleClick(func() {
+    fmt.Println("Tray icon double-clicked")
+})
+
+// Mouse enter/leave
+systray.OnMouseEnter(func() {
+    fmt.Println("Mouse entered tray icon")
+})
+
+systray.OnMouseLeave(func() {
+    fmt.Println("Mouse left tray icon")
+})
+```
+
+**平台支持：**
+
+| 事件 | Windows | macOS | Linux |
+|-------|---------|-------|-------|
+| OnClick | ✅ | ✅ | ✅ |
+| OnRightClick | ✅ | ✅ | ✅ |
+| OnDoubleClick | ✅ | ✅ | ⚠️ 因平台而异 |
+| OnMouseEnter | ✅ | ✅ | ⚠️ 因平台而异 |
+| OnMouseLeave | ✅ | ✅ | ⚠️ 因平台而异 |
+
+## 动态更新
+
+动态更新托盘图标和菜单：
+
+### 更改图标
+
+```go
+var isActive bool
+
+func updateTrayIcon() {
+    if isActive {
+        systray.SetIcon(activeIcon)
+        systray.SetLabel("Active")
+    } else {
+        systray.SetIcon(inactiveIcon)
+        systray.SetLabel("Inactive")
+    }
+}
+```
+
+### 更新菜单
+
+```go
+var isPaused bool
+
+pauseMenuItem := menu.Add("Pause")
+
+pauseMenuItem.OnClick(func(ctx *application.Context) {
+    isPaused = !isPaused
+    
+    if isPaused {
+        pauseMenuItem.SetLabel("Resume")
+    } else {
+        pauseMenuItem.SetLabel("Pause")
+    }
+    
+    menu.Update()  // Important!
+})
+```
+
+:::caution[始终调用 Update()]
+更改菜单状态后，**请调用 `menu.Update()`**。请参阅 [菜单参考](/features/menus/reference#enabled-state)。
+:::
+
+### 重建菜单
+
+对于重大更改，重建整个菜单：
+
+```go
+func rebuildTrayMenu(status string) {
+    menu := app.NewMenu()
+    
+    // Status-specific items
+    switch status {
+    case "syncing":
+        menu.Add("Syncing...").SetEnabled(false)
+        menu.Add("Pause Sync").OnClick(pauseSync)
+    case "synced":
+        menu.Add("Up to date ✓").SetEnabled(false)
+        menu.Add("Sync Now").OnClick(startSync)
+    case "error":
+        menu.Add("Sync Error").SetEnabled(false)
+        menu.Add("Retry").OnClick(retrySync)
+    }
+    
+    menu.AddSeparator()
+    menu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    systray.SetMenu(menu)
+}
+```----------|--------|--------|-------|
+| **Windows** | ✅ | ✅ | 完全可用 - 图标在通知区域中显示/消失 |
+| **macOS** | ✅ | ✅ | 菜单栏项目显示/隐藏 |
+| **Linux** | ✅ | ✅ | 因桌面环境而异 |
+
+**使用场景：**
+- 根据用户偏好临时隐藏托盘图标
+- 无头模式，仅在需要时显示托盘图标
+- 根据应用程序状态切换可见性
+
+**示例 - 条件托盘可见性：**
+
+```go
+func (t *TrayApp) setTrayVisibility(visible bool) {
+    if visible {
+        t.systray.Show()
+    } else {
+        t.systray.Hide()
+    }
+}
+
+// 仅在可用更新时显示托盘
+func (t *TrayApp) checkForUpdates() {
+    if hasUpdates {
+        t.systray.Show()
+        t.systray.SetLabel("Update Available")
+    } else {
+        t.systray.Hide()
+    }
+}
+```
+
+## 清理
+
+完成后销毁托盘图标：
+
+```go
+// 在 OnShutdown 中
+app := application.New(application.Options{
+    OnShutdown: func() {
+        if systray != nil {
+            systray.Destroy()
+        }
+    },
+})
+```
+
+**重要：** 始终在关闭时销毁系统托盘以释放资源。
+
+## 最佳实践
+
+### ✅ 应该做
+
+- **在 macOS 上使用模板图标** - 适配深色模式
+- **保持标签简短** - 最多 3-5 个字符
+- **在 Windows 上提供工具提示** - 帮助用户识别您的应用
+- **在所有平台上测试** - 行为可能因平台而异
+- **适当处理点击事件** - 左键用于主要操作，右键用于菜单
+- **根据状态更新图标** - 视觉反馈很重要
+- **在关闭时销毁** - 释放资源
+
+### ❌ 不应该做
+
+- **不要使用大图标** - 遵循平台指南
+- **不要使用长标签** - 会被截断
+- **不要忘记深色模式** - 在 macOS 深色模式下测试
+- **不要阻塞点击处理程序** - 保持快速响应
+- **不要忘记 menu.Update()** - 在更改菜单状态后调用
+- **不要假设托盘支持** - 某些 Linux 桌面环境不支持---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [系统托盘示例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)。

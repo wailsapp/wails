@@ -1,0 +1,931 @@
+---
+title: 前端运行时
+description: 用于前端集成的 Wails JavaScript 运行时包
+sidebar:
+  order: 1
+---
+
+Wails 前端运行时是 Wails 应用程序的标准库。它提供了许多可在应用程序中使用的功能，包括：
+
+- 窗口管理
+- 对话框
+- 浏览器集成
+- 剪贴板
+- 菜单
+- 系统信息
+- 事件
+- 上下文菜单
+- 屏幕
+- WML（Wails 标记语言）
+
+运行时是 Go 与前端之间集成所必需的。有两种集成运行时的方式：
+
+- 使用 `@wailsio/runtime` 包
+- 使用预构建的捆绑包
+
+## 使用 npm 包
+
+`@wailsio/runtime` 包是一个 JavaScript 包，提供从前端访问 Wails 运行时的功能。它被所有标准模板使用，是将运行时集成到应用程序中的推荐方式。通过使用 `@wailsio/runtime` 包，您只会包含您使用的运行时部分。
+
+该包可在 npm 上获取，并可通过以下命令安装：
+
+```shell
+npm install --save @wailsio/runtime
+```
+
+## 使用预构建的捆绑包
+
+某些项目不使用 JavaScript 打包器，可能更倾向于使用预构建的运行时捆绑版本。可以使用以下命令在本地生成此版本：
+
+```shell
+wails3 generate runtime
+```
+
+该命令将在当前目录中输出 `runtime.js`（和 `runtime.debug.js`）文件。此文件是一个 ES 模块，可以像 npm 包一样被您的应用程序脚本导入，但 API 也导出到了全局 window 对象，因此对于更简单的应用程序，您可以按如下方式使用它：
+
+```html
+<html>
+    <head>
+        <script type="module" src="./runtime.js"></script>
+        <script>
+            window.onload = function () {
+                wails.Window.SetTitle("A new window title");
+            }
+        </script>
+    </head>
+    <!--- ... -->
+</html>
+```
+
+:::caution
+重要的是要在加载运行时的 `<script>` 标签中包含 `type="module"` 属性，并在调用 API 之前等待页面完全加载，
+因为带有 `type="module"` 属性的脚本是异步运行的。
+:::
+
+## 初始化
+
+除了 API 函数外，运行时还提供对上下文菜单和窗口拖动的支持。
+这些功能只有在运行时初始化之后才能按预期工作。
+即使您不使用 API，也请确保在前端代码中的某个位置包含一个副作用导入语句：
+
+```javascript
+import "@wailsio/runtime";
+```
+
+您的打包器应检测到副作用的存在，并将所有必需的初始化代码包含在构建中。
+
+:::note
+如果您更喜欢预构建的捆绑包，添加如上所示的脚本标签即可。
+:::
+
+## 用于类型化事件的 Vite 插件
+
+运行时包含一个 Vite 插件，可在开发期间为类型化事件启用 HMR（热模块替换）支持。
+
+### 设置
+
+将插件添加到您的 `vite.config.ts` 中：
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+### 优势
+
+- **自动重载**：当您运行 `wails3 generate bindings` 时，事件绑定会自动重新生成和重载
+- **开发模式**：与 `wails3 dev` 无缝配合，实现即时更新
+- **类型安全**：完整的 TypeScript 支持，包括自动补全和类型检查
+
+### 与事件注册配合使用
+
+在 Go 中注册您的事件：
+
+```go
+type UserData struct {
+    ID   string
+    Name string
+}
+
+func init() {
+    application.RegisterEvent[UserData]("user-updated")
+}
+```
+
+生成绑定：
+
+```bash
+wails3 generate bindings
+
+# 或者，包含 TypeScript 定义
+wails3 generate bindings -ts
+
+# 更多选项，请参阅：
+wails3 generate bindings -help
+```
+
+在前端中使用类型化事件：
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserUpdated } from './bindings/events'
+
+// 具有自动补全功能的类型安全事件
+Events.Emit(UserUpdated({
+    ID: "123",
+    Name: "John Doe"
+}))
+```
+
+## API 参考
+
+运行时按模块组织，每个模块提供特定的功能。仅导入您需要的内容：
+
+```javascript
+import { Events, Window, Clipboard } from '@wailsio/runtime'
+```
+
+### Events
+
+用于 Go 和 JavaScript 之间通信的事件系统。
+
+#### On()
+
+为事件注册回调函数。
+
+```typescript
+function On(eventName: string, callback: (event: WailsEvent) => void): () => void
+function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**返回：** 取消订阅函数
+
+**示例：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 基本事件监听
+const unsubscribe = Events.On('user-logged-in', (event) => {
+    console.log('User:', event.data.username)
+})
+
+// 使用类型化事件 (TypeScript)
+import { UserLogin } from './bindings/events'
+
+Events.On(UserLogin, (event) => {
+    // event.data 的类型为 UserLoginData
+    console.log('User:', event.data.username)
+})
+
+// 稍后：unsubscribe()
+```
+
+#### Once()
+
+注册仅运行一次的回调函数。
+
+```typescript
+function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
+function Once<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
+```
+
+**示例：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once('app-ready', () => {
+    console.log('App initialized')
+})
+```
+
+#### Emit()
+
+向 Go 后端或其他窗口发送事件。
+
+```typescript
+function Emit(name: string, data?: any): Promise<boolean>
+function Emit<T>(event: Event<T>): Promise<boolean>
+```
+
+**返回：** 如果事件被取消则解析为 `true`，否则解析为 `false` 的 Promise
+
+**示例：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 基本事件发送
+const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
+
+// 使用类型化事件 (TypeScript)
+import { UserLogin } from './bindings/events'
+
+const cancelled = await Events.Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+if (cancelled) {
+    console.log('Login was cancelled by a hook')
+}
+```
+
+:::note
+返回值指示事件是否被钩子取消。大多数事件无法被取消，将始终返回 `false`。
+:::
+
+#### Off()
+
+移除事件监听器。
+
+```typescript
+function Off(...eventNames: string[]): void
+```
+
+**示例：**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off('user-logged-in', 'user-logged-out')
+```
+
+#### OffAll()
+
+移除所有事件监听器。
+
+```typescript
+function OffAll(): void
+```
+
+### Window
+
+窗口管理方法。默认导出是当前窗口。
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 当前窗口
+await Window.SetTitle('New Title')
+await Window.Center()
+
+// 获取另一个窗口
+const otherWindow = Window.Get('secondary')
+await otherWindow.Show()
+```
+
+#### 可见性
+
+**Show()** - 显示窗口
+
+```typescript
+function Show(): Promise<void>
+```
+
+**Hide()** - 隐藏窗口
+
+```typescript
+function Hide(): Promise<void>
+```
+
+**Close()** - 关闭窗口
+
+```typescript
+function Close(): Promise<void>
+```
+
+#### 大小和位置
+
+**SetSize(width, height)** - 设置窗口大小
+
+```typescript
+function SetSize(width: number, height: number): Promise<void>
+```
+
+**Size()** - 获取窗口大小
+
+```typescript
+function Size(): Promise<{ width: number, height: number }>
+```
+
+**SetPosition(x, y)** - 设置绝对位置
+
+```typescript
+function SetPosition(x: number, y: number): Promise<void>
+```
+
+**Position()** - 获取绝对位置
+
+```typescript
+function Position(): Promise<{ x: number, y: number }>
+```
+
+**Center()** - 居中窗口
+
+```typescript
+function Center(): Promise<void>
+```
+
+**示例：**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 调整大小并居中
+await Window.SetSize(800, 600)
+await Window.Center()
+```// 获取当前窗口大小
+const { width, height } = await Window.Size()
+```
+
+#### 窗口状态
+
+**Minimise()** - 最小化窗口
+
+```typescript
+function Minimise(): Promise<void>
+```
+
+**Maximise()** - 最大化窗口
+
+```typescript
+function Maximise(): Promise<void>
+```
+
+**Fullscreen()** - 进入全屏模式
+
+```typescript
+function Fullscreen(): Promise<void>
+```
+
+**Restore()** - 从最小化/最大化/全屏状态恢复
+
+```typescript
+function Restore(): Promise<void>
+```
+
+**IsMinimised()** - 检查是否已最小化
+
+```typescript
+function IsMinimised(): Promise<boolean>
+```
+
+**IsMaximised()** - 检查是否已最大化
+
+```typescript
+function IsMaximised(): Promise<boolean>
+```
+
+**IsFullscreen()** - 检查是否处于全屏模式
+
+```typescript
+function IsFullscreen(): Promise<boolean>
+```
+
+#### 窗口属性
+
+**SetTitle(title)** - 设置窗口标题
+
+```typescript
+function SetTitle(title: string): Promise<void>
+```
+
+**Name()** - 获取窗口名称
+
+```typescript
+function Name(): Promise<string>
+```
+
+**SetBackgroundColour(r, g, b, a)** - 设置背景颜色
+
+```typescript
+function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
+```
+
+**SetAlwaysOnTop(alwaysOnTop)** - 保持窗口置顶
+
+```typescript
+function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
+```
+
+**SetResizable(resizable)** - 设置窗口是否可调整大小
+
+```typescript
+function SetResizable(resizable: boolean): Promise<void>
+```
+
+#### 焦点与屏幕
+
+**Focus()** - 聚焦窗口
+
+```typescript
+function Focus(): Promise<void>
+```
+
+**IsFocused()** - 检查窗口是否处于焦点状态
+
+```typescript
+function IsFocused(): Promise<boolean>
+```
+
+**GetScreen()** - 获取窗口所在的屏幕
+
+```typescript
+function GetScreen(): Promise<Screen>
+```
+
+#### 内容
+
+**Reload()** - 重新加载页面
+
+```typescript
+function Reload(): Promise<void>
+```
+
+**ForceReload()** - 强制重新加载页面（清除缓存）
+
+```typescript
+function ForceReload(): Promise<void>
+```
+
+#### 缩放
+
+**SetZoom(level)** - 设置缩放级别
+
+```typescript
+function SetZoom(level: number): Promise<void>
+```
+
+**GetZoom()** - 获取缩放级别
+
+```typescript
+function GetZoom(): Promise<number>
+```
+
+**ZoomIn()** - 放大
+
+```typescript
+function ZoomIn(): Promise<void>
+```
+
+**ZoomOut()** - 缩小
+
+```typescript
+function ZoomOut(): Promise<void>
+```
+
+**ZoomReset()** - 将缩放重置为 100%
+
+```typescript
+function ZoomReset(): Promise<void>
+```
+
+#### 打印
+
+**Print()** - 打开原生打印对话框
+
+```typescript
+function Print(): Promise<void>
+```
+
+**示例：**
+
+```javascript
+import { Window } from '@wailsio/runtime'
+
+// 为当前窗口打开打印对话框
+await Window.Print()
+```
+
+**注意：** 这会打开原生操作系统的打印对话框，允许用户选择打印机设置并打印当前窗口内容。与可能在 WebView 中不起作用的 `window.print()` 不同，此方法使用原生平台打印 API。
+
+### 剪贴板
+
+剪贴板操作。
+
+#### SetText()
+
+设置剪贴板文本。
+
+```typescript
+function SetText(text: string): Promise<void>
+```
+
+**示例：**
+
+```javascript
+import { Clipboard } from '@wailsio/runtime'
+
+await Clipboard.SetText('Hello from Wails!')
+```
+
+#### Text()
+
+获取剪贴板文本。
+
+```typescript
+function Text(): Promise<string>
+```
+
+**示例：**
+
+```javascript
+import { Clipboard } from '@wailsio/runtime'
+
+const clipboardText = await Clipboard.Text()
+console.log('剪贴板:', clipboardText)
+```
+
+### 系统
+
+用于与后端直接通信的低级系统方法。
+
+#### invoke()
+
+直接向后端发送原始消息。这绕过了标准绑定系统，并由应用程序选项中的 `RawMessageHandler` 处理。
+
+```typescript
+function invoke(message: any): void
+```
+
+**示例：**
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+// 向后端发送原始消息
+System.invoke('my-custom-message')
+
+// 以 JSON 格式发送结构化数据
+System.invoke(JSON.stringify({ action: 'update', value: 42 }))
+```
+
+:::caution
+这是一个无返回值的“发送即忘”函数。请使用事件来接收后端的响应。
+:::
+
+更多详情，请参阅 [原始消息指南](/zh-cn/guides/raw-messages)。
+
+### 应用程序
+
+应用程序级别的方法。
+
+#### Show()
+
+显示所有应用程序窗口。
+
+```typescript
+function Show(): Promise<void>
+```
+
+#### Hide()
+
+隐藏所有应用程序窗口。
+
+```typescript
+function Hide(): Promise<void>
+```
+
+#### Quit()
+
+退出应用程序。
+
+```typescript
+function Quit(): Promise<void>
+```
+
+**示例：**
+
+```javascript
+import { Application } from '@wailsio/runtime'
+
+// 添加退出按钮
+document.getElementById('quit-btn').addEventListener('click', async () => {
+    await Application.Quit()
+})
+```
+
+### 浏览器
+
+在默认浏览器中打开 URL。
+
+#### OpenURL()
+
+在系统浏览器中打开 URL。
+
+```typescript
+function OpenURL(url: string | URL): Promise<void>
+```
+
+**示例：**
+
+```javascript
+import { Browser } from '@wailsio/runtime'
+
+await Browser.OpenURL('https://wails.io')
+```
+
+### 屏幕
+
+屏幕信息与管理。
+
+#### GetAll()
+
+获取所有屏幕。
+
+```typescript
+function GetAll(): Promise<Screen[]>
+```
+
+#### GetPrimary()
+
+获取主屏幕。
+
+```typescript
+function GetPrimary(): Promise<Screen>
+```
+
+#### GetCurrent()
+
+获取当前活动屏幕。
+
+```typescript
+function GetCurrent(): Promise<Screen>
+```
+
+**Screen 接口：**
+
+```typescript
+interface Screen {
+    ID: string
+    Name: string
+    ScaleFactor: number
+    X: number
+    Y: number
+    Size: { Width: number, Height: number }
+    Bounds: { X: number, Y: number, Width: number, Height: number }
+    WorkArea: { X: number, Y: number, Width: number, Height: number }
+    IsPrimary: boolean
+    Rotation: number
+}
+```
+
+**示例：**
+
+```javascript
+import { Screens } from '@wailsio/runtime'
+
+// 列出所有屏幕
+const screens = await Screens.GetAll()
+screens.forEach(screen => {
+    console.log(`${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+
+// 获取主屏幕
+const primary = await Screens.GetPrimary()
+console.log('主屏幕:', primary.Name)
+```
+
+### 对话框
+
+来自 JavaScript 的原生操作系统对话框。
+
+#### Info()
+
+显示信息对话框。
+
+```typescript
+function Info(options: MessageDialogOptions): Promise<string>
+```
+
+**示例：**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+await Dialogs.Info({
+    Title: '成功',
+    Message: '操作成功完成！'
+})
+```
+
+#### Error()
+
+显示错误对话框。
+
+```typescript
+function Error(options: MessageDialogOptions): Promise<string>
+```
+
+#### Warning()
+
+显示警告对话框。
+
+```typescript
+function Warning(options: MessageDialogOptions): Promise<string>
+```
+
+#### Question()
+
+显示带有自定义按钮的问题对话框。
+
+```typescript
+function Question(options: QuestionDialogOptions): Promise<string>
+```
+
+**示例：**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+const result = await Dialogs.Question({
+    Title: '确认删除',
+    Message: '您确定要删除此文件吗？',
+    Buttons: [
+        { Label: '删除', IsDefault: false },
+        { Label: '取消', IsDefault: true }
+    ]
+})
+
+if (result === 'Delete') {
+    // 删除文件
+}
+```
+
+#### OpenFile()
+
+显示文件打开对话框。
+
+```typescript
+function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
+```
+
+**示例：**
+
+```javascript
+import { Dialogs } from '@wailsio/runtime'
+
+const file = await Dialogs.OpenFile({
+    Title: '选择图片',
+    Filters: [
+        { DisplayName: '图片', Pattern: '*.png;*.jpg;*.jpeg' },
+        { DisplayName: '所有文件', Pattern: '*.*' }
+    ]
+})
+
+if (file) {
+    console.log('已选择:', file)
+}
+```
+
+#### SaveFile()
+
+显示文件保存对话框。
+
+```typescript
+function SaveFile(options: SaveFileDialogOptions): Promise<string>
+```
+
+### WML (Wails 标记语言)
+
+WML 为常见操作提供声明式属性。将属性添加到 HTML 元素：
+
+#### 属性
+
+**wml-event** - 点击时触发事件
+
+```html<button wml-event="save-clicked">保存</button>
+```
+
+**wml-window** - 调用窗口方法
+
+```html
+<button wml-window="Close">关闭窗口</button>
+<button wml-window="Minimise">最小化</button>
+```
+
+**wml-target-window** - 指定 wml-window 的目标窗口
+
+```html
+<button wml-window="Show" wml-target-window="settings">
+    显示设置
+</button>
+```
+
+**wml-openurl** - 在浏览器中打开 URL
+
+```html
+<a href="#" wml-openurl="https://wails.io">访问 Wails</a>
+```
+
+**wml-confirm** - 在操作前显示确认对话框
+
+```html
+<button wml-window="Close" wml-confirm="Are you sure you want to close?">
+    关闭
+</button>
+```
+
+**示例：**
+
+```html
+<div>
+    <button wml-event="save-clicked">保存</button>
+    <button wml-window="Minimise">最小化</button>
+    <button wml-window="Close" wml-confirm="Close window?">关闭</button>
+    <a href="#" wml-openurl="https://github.com/wailsapp/wails">GitHub</a>
+</div>
+```
+
+## 完整示例
+
+```javascript
+import { Events, Window, Clipboard, Dialogs, Screens } from '@wailsio/runtime'
+
+// 监听来自 Go 的事件
+Events.On('data-updated', (event) => {
+    console.log('Data:', event.data)
+    updateUI(event.data)
+})
+
+// 窗口管理
+document.getElementById('center-btn').addEventListener('click', async () => {
+    await Window.Center()
+})
+
+document.getElementById('fullscreen-btn').addEventListener('click', async () => {
+    const isFullscreen = await Window.IsFullscreen()
+    if (isFullscreen) {
+        await Window.UnFullscreen()
+    } else {
+        await Window.Fullscreen()
+    }
+})
+
+// 剪贴板操作
+document.getElementById('copy-btn').addEventListener('click', async () => {
+    await Clipboard.SetText('Copied from Wails!')
+})
+
+// 带确认的对话框
+document.getElementById('delete-btn').addEventListener('click', async () => {
+    const result = await Dialogs.Question({
+        Title: 'Confirm',
+        Message: 'Delete this item?',
+        Buttons: [
+            { Label: 'Delete' },
+            { Label: 'Cancel', IsDefault: true }
+        ]
+    })
+
+    if (result === 'Delete') {
+        await Events.Emit('delete-item', { id: currentItemId })
+    }
+})
+
+// 屏幕信息
+const screens = await Screens.GetAll()
+console.log(`Detected ${screens.length} screen(s)`)
+screens.forEach(screen => {
+    console.log(`- ${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
+})
+```
+
+## 最佳实践
+
+### ✅ 建议
+
+- **按需导入** - 仅导入所需内容
+- **处理 Promise** - 所有方法均返回 Promise
+- **对简单操作使用 WML** - 比 JavaScript 更简洁
+- **检查返回值** - 尤其是对话框的返回值
+- **取消事件订阅** - 完成后清理
+
+### ❌ 避免
+
+- **不要忘记 await** - 大多数方法是异步的
+- **不要阻塞 UI** - 正确使用 async/await
+- **不要忽略错误** - 始终处理拒绝（rejections）
+
+## TypeScript 支持
+
+运行时包含完整的 TypeScript 定义：
+
+```typescript
+import { Events, Window } from '@wailsio/runtime'
+
+Events.On('custom-event', (event) => {
+    // TypeScript 知道 event.data, event.name, event.sender
+    console.log(event.data)
+})
+
+// 所有方法均有完整的类型定义
+const size: { width: number, height: number } = await Window.Size()
+```

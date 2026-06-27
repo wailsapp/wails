@@ -1,0 +1,215 @@
+---
+title: 测试与持续集成
+description: Wails v3 如何通过单元测试、集成套件、竞态检测以及 GitHub Actions CI 来确保质量。
+sidebar:
+  order: 9
+---
+
+强大的桌面框架需要坚如磐石的测试。  
+Wails v3 采用**分层策略**：
+
+| 层级 | 目标 | 工具 |
+|-------|--|-|
+| 单元测试 | 为孤立函数提供快速反馈 | `go test ./...` |
+| 集成/示例测试 | 跨包验证完整功能 | 示例应用 + 无头模式断言 |
+| 竞态检测 | 捕获运行时和桥接中的数据竞态 | `go test -race`, `wails3 dev -race` |
+| CI 矩阵 | 在每个 PR 上实现跨操作系统信心 | GitHub Actions |
+
+本文档解释了**测试的位置**、**如何运行它们**以及**CI 中发生的情况**。
+
+---
+
+## 1. 目录约定
+
+```
+v3/
+├── internal/.../_test.go     # 内部包的单元测试
+├── pkg/.../_test.go          # 公共 API 测试
+├── examples/...              # 示例应用同时作为集成测试
+├── tasks/events/...          # 在 CI 中运行的生成代码测试
+└── pkg/application/RACE.md   # 竞态测试指南及已知安全抑制
+```
+
+指南：
+
+* **将单元测试保持在代码旁边** (`foo.go` ↔ `foo_test.go`)
+* 对 `pkg/` 包使用**黑盒风格** (`package application_test`)
+* 集成辅助工具放在 `internal/testutil/` (共享 mock、fixtures)
+
+---
+
+## 2. 单元测试
+
+### 编写测试
+
+```go
+func TestColourParseHex(t *testing.T) {
+    c, err := colour.Parse("#FF00FF")
+    require.NoError(t, err)
+    assert.Equal(t, 255, c.R)
+}
+```
+
+建议：
+
+* 使用 [`stretchr/testify`](https://github.com/stretchr/testify) – 已作为 vendor 导入。
+* 对分支遵循**表格驱动**风格。
+* 在需要时，通过构建标签 (`_test_windows.go` 等) 模拟平台差异。
+
+### 本地运行
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Taskfile 快捷方式：
+
+```
+task test          # 与上述相同 + vet + lint
+```
+
+---
+
+## 3. 集成与示例测试
+
+`v3/examples/` 下的每个文件夹都是一个**独立的应用**。  
+三种技术将它们转化为测试：
+
+| 技术 | 文件 | 检查内容 |
+|------|---|------|
+| 示例内的 `go test ./...` | `*_test.go` 在无头模式下启动 `wails dev` | 构建与启动 |
+| CLI 黄金测试 | `internal/commands/appimage_test.go` | 生成的工件哈希 |
+| 脚本化 e2e | `tasks/events/generate.go` | 生成启动示例的 Go 代码，断言运行时日志 |
+
+全部运行：
+
+```
+task integration
+```
+
+> 无头模式在 Linux 运行器上使用 **Xvfb**；macOS 和 Windows 以最小化模式启动。
+
+---
+
+## 4. 竞态检测
+
+数据竞态在 GUI 运行时中是致命的。
+
+### 专用文档
+
+请参阅 `v3/pkg/application/RACE.md` 获取：
+
+* 已知的良性竞态及其抑制理由
+* 如何解释跨越 Cgo 边界的堆栈跟踪
+
+### 本地竞态套件
+
+```
+go test -race ./...
+```
+
+或者
+
+```
+wails3 dev -race
+```
+
+*后者使用竞态标志重新构建运行时并启动演示窗口。  
+关闭窗口；任何竞态将在退出后打印。*
+
+CI 在每个 PR 上对 **linux/amd64** (最快) 运行竞态套件。
+
+---
+
+## 5. GitHub Actions 工作流
+
+### 5.1 `build-and-test-v3.yml`
+
+位置：`.github/workflows/build-and-test-v3.yml`
+
+关键特性：
+
+* 针对 `os: [ubuntu-latest, windows-latest, macos-latest]` 的**矩阵**
+* 缓存 Go 和 npm 依赖以加速
+* 步骤：
+  1. `setup-go` @ 1.25
+  2. `go vet ./...`
+  3. `go test ./... -v -coverprofile=cover.out`
+  4. 构建 CLI + 示例应用 (`wails3 build -skip-package`)
+  5. 将覆盖率上传至 Codecov
+* Ubuntu 上的条件**竞态**作业：
+  ```yaml
+  - name: Race Detector
+    if: matrix.os == 'ubuntu-latest'
+    run: go test -race ./...
+  ```
+
+### 5.2 静态分析
+
+* `semgrep.yml` – 安全/lint 扫描 (`.github/workflows/semgrep.yml`)
+* `qodana.yaml` – JetBrains Qodana 云检查 (PR 中可选)
+
+### 5.3 发布流水线
+
+`runtime.yml` 在标签推送时构建并将 JS 运行时发布到 npm；超出测试范围，但被构建矩阵引用。
+
+---
+
+## 6. 本地 CI 一致性
+
+通过 Taskfile 运行**完全相同**的 CI 任务集：
+
+```
+task ci
+```
+
+它执行：
+
+1. `lint` (golangci-lint, govet)
+2. `test` (单元测试 + 竞态)
+3. `integration`
+4. `build` (针对主机平台)
+
+---
+
+## 7. 故障排除失败的测试
+
+| 症状 | 可能原因 | 修复 |
+|---------|-----|-|
+| **`runtime_darwin.go` 中的竞态** | 忘记锁定 `mainthread.Call` | 使用 `mainthread.Sync` 辅助工具 |
+| **Windows 无头模式挂起** | 控制台窗口等待输入 | 传递 `-verbose` 并确保没有对话框打开 |
+| **CI 示例构建失败** | 模板更改但未升级示例依赖 | `task update-examples` 重新生成锁文件 |
+| **Coverpkg 错误** | 集成测试导入 `main` | 切换至构建标签 `//go:build integration` |
+
+---
+
+## 8. 添加新测试
+
+1. **单元测试** – 创建 `*_test.go`，运行 `go test ./...`
+2. **集成测试** – 更新或添加示例应用 + 测试夹具
+3. **CI** – 提交；工作流自动发现测试  
+   如果是特定于操作系统的，添加跳过标签：
+
+```go
+//go:build !windows
+```
+
+---
+
+## 9. 关键文件映射
+
+| 内容 | 路径 |
+|------|------|
+| 单元测试示例 | `internal/colour/colour_test.go` |
+| 集成夹具 | `internal/commands/appimage_test.go` |
+| 竞态指南 | `pkg/application/RACE.md` |
+| Taskfile 测试目标 | `v3/Taskfile.yaml` |
+| CI 工作流 | `.github/workflows/build-and-test-v3.yml` |
+
+---
+
+质量在 Wails v3 中不是事后考虑的事项。  
+通过单元测试、集成套件、竞态检测以及跨平台 CI
+矩阵，你可以自信地贡献，知道你的更改在我们支持的每个操作系统上都能通过。  
+祝测试愉快！

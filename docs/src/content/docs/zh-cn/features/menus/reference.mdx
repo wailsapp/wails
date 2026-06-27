@@ -1,0 +1,359 @@
+---
+title: 菜单参考
+description: 菜单项类型、属性和方法的完整参考
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 菜单参考
+
+菜单项类型、属性和动态行为的完整参考。构建专业的、响应式的菜单，支持复选框、单选按钮组、分隔符和动态更新。
+
+## 菜单项类型
+
+### 常规菜单项
+
+最常见的类型——显示文本并触发操作：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**用途：** 命令、操作、打开窗口
+
+### 复选框
+
+可切换状态的菜单项，具有选中/未选中状态：
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = 初始选中
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**用途：** 布尔设置、功能开关、视图选项
+
+**重要：** 选中状态会在点击时自动切换。
+
+### 单选按钮组
+
+互斥选项——只能选择一个：
+
+```go
+menu.AddRadio("Small", true)   // true = 初始选中
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**用途：** 互斥选择（大小、主题、模式）
+
+**分组工作原理：**
+- 相邻的单选按钮项会自动形成一个组
+- 选择其中一个会取消选中组中的其他项
+- 使用分隔符或常规项分隔不同的组
+
+**包含多个组的示例：**
+
+```go
+// 组 1：大小
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// 组 2：主题
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### 子菜单
+
+用于组织的嵌套菜单结构：
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // 处理点击
+})
+submenu.Add("Submenu Item 2")
+```
+
+**用途：** 分组相关项、减少杂乱
+
+**嵌套限制：** 大多数平台支持 2-3 层嵌套。避免更深的嵌套。
+
+### 分隔符
+
+菜单项之间的视觉分隔线：
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**用途：** 在视觉上分组相关项
+
+**最佳实践：** 不要以分隔符开始或结束菜单。
+
+## 菜单项属性
+
+### 标签 (Label)
+
+菜单项显示的文本：
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// 获取当前标签
+label := menuItem.Label()
+```
+
+**动态标签：**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // 在 Windows 上很重要！
+    
+    // 执行更新检查
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 启用状态
+
+控制菜单项是否可交互：
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // 变灰，无法点击
+
+// 稍后启用它
+menuItem.SetEnabled(true)
+menu.Update()  // 重要：在更改启用状态后调用此方法！
+
+// 检查当前状态
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Windows 菜单行为]
+在 Windows 上，当菜单状态更改时，需要重建菜单。**在启用/禁用菜单项后始终调用 `menu.Update()`**，特别是如果该项是在禁用状态下创建的。
+
+**原因：** Windows 菜单在更新时会从头重建。如果不调用 `Update()`，点击处理器将无法正确触发。
+:::
+
+**示例：动态启用/禁用**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // 初始禁用
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// 当选择更改时
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // 在 Windows 上至关重要！
+}
+```
+
+**常见模式：根据条件启用**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// 在状态更改时调用
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### 选中状态
+
+对于复选框和单选按钮项，控制或查询其选中状态：
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// 查询状态
+isChecked := checkbox.Checked()
+```
+
+**自动切换：** 复选框在点击时会自动切换。你不需要在点击处理器中调用 `SetChecked()`。
+
+**手动控制：**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// 与外部状态同步
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### 快捷键 (Accelerators)
+
+为菜单项添加键盘快捷键：
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**快捷键格式：**
+- `CmdOrCtrl` - macOS 上的 Cmd，Windows/Linux 上的 Ctrl
+- `Shift`, `Alt`, `Option` - 修饰键
+- `A-Z`, `0-9` - 字母/数字键
+- `F1-F12` - 功能键
+- `Enter`, `Space`, `Backspace` 等 - 特殊键
+
+**示例：**
+
+```go
+"CmdOrCtrl+S"           // 保存
+"CmdOrCtrl+Shift+S"     // 另存为
+"CmdOrCtrl+W"           // 关闭窗口
+"CmdOrCtrl+Q"           // 退出
+"F5"                    // 刷新
+"CmdOrCtrl+,"           // 偏好设置 (macOS 惯例)
+"Alt+F4"                // 关闭 (Windows 惯例)
+```
+
+**平台特定的快捷键：**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### 工具提示 (Tooltip)
+
+为菜单项添加悬停文本（平台支持情况各异）：
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**平台支持：**
+- **Windows:** ✅ 支持
+- **macOS:** ❌ 不支持（工具提示不是菜单的标准功能）
+- **Linux:** ⚠️ 取决于桌面环境
+
+### 隐藏状态
+
+隐藏菜单项而不删除它们：
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // 隐藏
+
+// 在调试版本中显示
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**用途：** 调试选项、功能标志、条件功能
+
+## 事件处理
+
+### OnClick 处理器
+
+在菜单项被点击时执行代码：
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // 处理点击
+    fmt.Println("Clicked!")
+})
+```
+
+**Context 提供：**
+- `ctx.ClickedMenuItem()` - 被点击的菜单项
+- 窗口上下文（如果来自窗口菜单）
+- 应用程序上下文
+
+**示例：在处理器中访问菜单项**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### 多个处理器
+
+你可以设置多个处理器（最后一个生效）：
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// 这替换了第一个处理器
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**最佳实践：** 只设置一次处理器，如有需要则在内部使用条件逻辑。
+
+## 动态菜单
+
+### 更新菜单项
+
+**黄金法则：** 在更改菜单状态后始终调用 `menu.Update()`。
+
+```go
+// ✅ 正确
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ 错误（尤其在 Windows 上）
+menuItem.SetEnabled(true)
+// 忘记调用 Update() - 点击处理器可能无法工作！
+```
+
+**为什么这很重要：****有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [菜单示例](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)。

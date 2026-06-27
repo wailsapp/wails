@@ -1,0 +1,463 @@
+---
+title: 编码规范
+description: Wails v3 的代码风格、约定和最佳实践
+---
+
+## 代码风格与约定
+
+遵循一致的编码规范可以使代码库更易于阅读、维护和贡献。
+
+## Go 代码规范
+
+### 代码格式化
+
+使用标准的 Go 格式化工具：
+
+```bash
+# 格式化所有代码
+gofmt -w .
+
+# 使用 goimports 进行导入组织
+goimports -w .
+```
+
+**要求：** 所有 Go 代码在提交前必须通过 `gofmt` 和 `goimports` 检查。
+
+### 命名约定
+
+**包名：**
+- 小写，尽可能使用单个单词
+- `package application`，`package events`
+- 避免使用下划线或混合大小写
+
+**导出名称：**
+- 类型、函数、常量使用 PascalCase
+- `type WebviewWindow struct`，`func NewApplication()`
+
+**非导出名称：**
+- 内部类型、函数、变量使用 camelCase
+- `type windowImpl struct`，`func createWindow()`
+
+**接口：**
+- 按行为命名：`Reader`、`Writer`、`Handler`
+- 单方法接口：名称以 `-er` 后缀结尾
+
+```go
+// 推荐
+type Closer interface {
+    Close() error
+}
+
+// 避免
+type CloseInterface interface {
+    Close() error
+}
+```
+
+### 错误处理
+
+**始终检查错误：**
+
+```go
+// 推荐
+result, err := doSomething()
+if err != nil {
+    return fmt.Errorf("failed to do something: %w", err)
+}
+
+// 错误 - 忽略错误
+result, _ := doSomething()
+```
+
+**使用错误包装：**
+
+```go
+// 包装错误以提供上下文
+if err := validate(); err != nil {
+    return fmt.Errorf("validation failed: %w", err)
+}
+```
+
+**在需要时创建自定义错误类型：**
+
+```go
+type ValidationError struct {
+    Field string
+    Value string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid value %q for field %q", e.Value, e.Field)
+}
+```
+
+### 注释与文档
+
+**包注释：**
+
+```go
+// Package application provides the core Wails application runtime.
+//
+// It handles window management, event dispatching, and service lifecycle.
+package application
+```
+
+**导出声明：**
+
+```go
+// NewApplication creates a new Wails application with the given options.
+//
+// The application must be started with Run() or RunWithContext().
+func NewApplication(opts Options) *Application {
+    // ...
+}
+```
+
+**实现注释：**
+
+```go
+// processEvent handles incoming events from the runtime.
+// It dispatches to registered handlers and manages event lifecycle.
+func (a *Application) processEvent(event *Event) {
+    // Validate event before processing
+    if event == nil {
+        return
+    }
+
+    // Find and invoke handlers
+    // ...
+}
+```
+
+### 函数与方法结构
+
+**保持函数职责单一：**
+
+```go
+// 推荐 - 单一职责
+func (w *Window) setTitle(title string) {
+    w.title = title
+    w.updateNativeTitle()
+}
+
+// 错误 - 做了太多事情
+func (w *Window) updateEverything() {
+    w.setTitle(w.title)
+    w.setSize(w.width, w.height)
+    w.setPosition(w.x, w.y)
+    // ... 20 more operations
+}
+```
+
+**使用早期返回：**
+
+```go
+// 推荐
+func validate(input string) error {
+    if input == "" {
+        return errors.New("empty input")
+    }
+
+    if len(input) > 100 {
+        return errors.New("input too long")
+    }
+
+    return nil
+}
+
+// 避免深层嵌套
+```
+
+### 并发
+
+**使用 context 进行取消：**
+
+```go
+func (a *Application) RunWithContext(ctx context.Context) error {
+    select {
+    case <-ctx.Done():
+        return ctx.Err()
+    case <-a.done:
+        return nil
+    }
+}
+```
+
+**使用互斥锁保护共享状态：**
+
+```go
+type SafeCounter struct {
+    mu    sync.Mutex
+    count int
+}
+
+func (c *SafeCounter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+```
+
+**避免 goroutine 泄漏：**
+
+```go
+// 推荐 - goroutine 有退出条件
+func (a *Application) startWorker(ctx context.Context) {
+    go func() {
+        for {
+            select {
+            case <-ctx.Done():
+                return  // Clean exit
+            case work := <-a.workChan:
+                a.process(work)
+            }
+        }
+    }()
+}
+```
+
+### 测试
+
+**测试文件命名：**
+
+```go
+// 实现文件: window.go
+// 测试文件: window_test.go
+```
+
+**表格驱动测试：**
+
+```go
+func TestValidate(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        wantErr bool
+    }{
+        {"empty input", "", true},
+        {"valid input", "hello", false},
+        {"too long", strings.Repeat("a", 101), true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := validate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+## JavaScript/TypeScript 规范
+
+### 代码格式化
+
+使用 Prettier 进行一致的格式化：
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+### 命名约定
+
+**变量和函数：**
+- camelCase: `const userName = "John"`
+
+**类和类型：**
+- PascalCase: `class WindowManager`
+
+**常量：**
+- UPPER_SNAKE_CASE: `const MAX_RETRIES = 3`
+
+### TypeScript
+
+**使用显式类型：**
+
+```typescript
+// 推荐
+function greet(name: string): string {
+    return `Hello, ${name}`
+}
+
+// 避免隐式 any
+function process(data) {  // 错误
+    return data
+}
+```
+
+**定义接口：**
+
+```typescript
+interface WindowOptions {
+    title: string
+    width: number
+    height: number
+}
+
+function createWindow(options: WindowOptions): void {
+    // ...
+}
+```
+
+## 提交信息格式
+
+使用 [Conventional Commits](https://www.conventionalcommits.org/)：
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**类型：**
+- `feat`: 新功能
+- `fix`: 修复 bug
+- `docs`: 文档更改
+- `refactor`: 代码重构
+- `test`: 添加或更新测试
+- `chore`: 维护任务
+
+**示例：**
+
+```
+feat(window): add SetAlwaysOnTop method
+
+Implement SetAlwaysOnTop for keeping windows above others.
+Adds platform implementations for macOS, Windows, and Linux.
+
+Closes #123
+```
+
+```
+fix(events): prevent event handler memory leak
+
+Event listeners were not being properly cleaned up when
+windows were closed. This adds explicit cleanup in the
+window destructor.
+```
+
+## 拉取请求指南
+
+### 提交前
+
+- [ ] 代码通过 `gofmt` 和 `goimports` 检查
+- [ ] 所有测试通过 (`go test ./...`)
+- [ ] 新代码包含测试
+- [ ] 如有需要，更新文档
+- [ ] 提交信息遵循约定
+- [ ] 与 `master` 分支无合并冲突
+
+### PR 描述模板
+
+```markdown
+## Description
+Brief description of what this PR does.
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+How was this tested?
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+```
+
+## 代码审查流程
+
+### 作为审查者
+
+- 建设性且尊重他人
+- 关注代码质量，而非个人偏好
+- 解释建议更改的原因
+- 满意后批准
+
+### 作为作者
+
+- 回复所有评论
+- 如有需要，请求澄清
+- 进行要求的更改或解释不更改的原因
+- 保持开放心态接受反馈
+
+## 最佳实践
+
+### 性能
+
+- 避免过早优化
+- 在优化前进行剖析
+- 对性能关键代码使用基准测试
+
+```go
+func BenchmarkProcess(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        process(testData)
+    }
+}
+```
+
+### 安全
+
+- 验证所有用户输入
+- 在显示前清理数据
+- 对随机数据使用 `crypto/rand`
+- 永远不要记录敏感信息
+
+### 文档
+
+- 记录导出的 API
+- 在文档中包含示例
+- 更改 API 时更新文档
+- 保持 README 文件最新
+
+## 平台特定代码
+
+### 文件命名
+
+```
+window.go           // 通用接口
+window_darwin.go    // macOS 实现
+window_windows.go   // Windows 实现
+window_linux.go     // Linux 实现
+```
+
+### 构建标签
+
+```go
+//go:build darwinpackage application
+
+// macOS-specific code
+```
+
+## 代码检查
+
+在提交代码前运行代码检查工具：
+
+```bash
+# golangci-lint (推荐)
+golangci-lint run
+
+# 单独的检查工具
+go vet ./...
+staticcheck ./...
+```
+
+## 有疑问？
+
+如果您对任何规范不确定：
+- 查看现有代码以获取示例
+- 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问
+- 在 GitHub 上发起讨论

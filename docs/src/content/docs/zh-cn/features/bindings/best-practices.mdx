@@ -1,0 +1,365 @@
+---
+title: 绑定最佳实践
+description: Go-JavaScript 绑定的设计模式与最佳实践
+sidebar:
+  order: 4
+---
+
+## 绑定最佳实践
+
+遵循**经过验证的模式**进行绑定设计，以创建清晰、高性能且安全的绑定。本指南涵盖 API 设计原则、性能优化、安全模式、错误处理以及可维护应用程序的测试策略。
+
+## API 设计原则
+
+### 1. 单一职责
+
+每个服务应只有一个明确的目的：
+
+```go
+// ❌ 糟糕：上帝对象
+type AppService struct {
+    // 处理所有事情
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ 良好：专注的服务
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. 清晰的命名
+
+使用描述性、以动作为导向的名称：
+
+```go
+// ❌ 糟糕：名称不明确
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ 良好：清晰的名称
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. 一致的返回类型
+
+始终显式返回错误：
+
+```go
+// ❌ 糟糕：不一致的错误处理
+func (s *Service) GetData() interface{}  // 如何处理错误？
+func (s *Service) SaveData(data string)  // 静默失败？
+
+// ✅ 良好：显式错误
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. 输入验证
+
+在 Go 端验证所有输入：
+
+```go
+// ❌ 糟糕：无验证
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ 良好：先验证
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // 验证邮箱
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // 验证密码
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // 哈希密码
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## 性能模式
+
+### 1. 批量操作
+
+通过批量处理减少桥接调用：
+
+```go
+// ❌ 糟糕：N 次调用
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N 次桥接调用
+}
+
+// ✅ 良好：1 次调用
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 次桥接调用
+```
+
+### 2. 分页
+
+不要返回巨大的数据集：
+
+```go
+// ❌ 糟糕：返回所有数据
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // 可能有数百万条
+}
+
+// ✅ 良好：分页
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // 验证
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // 获取总数
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // 获取分页数据
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. 缓存
+
+缓存昂贵的操作：
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // 检查缓存
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // 获取数据
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 缓存数据
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // 设置过期时间
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. 使用事件进行流式传输
+
+使用事件进行数据流式传输：
+
+```go
+// ❌ 糟糕：轮询
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript 轮询
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ 良好：事件
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // 计算行数
+    for scanner.Scan() {
+        total++
+    }
+    
+    // 处理
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // 发出进度
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript 监听
+OnEvent("progress", (data) => {
+    updateProgress(data.percent)
+})
+```
+
+## 安全模式
+
+### 1. 输入清理
+
+始终清理用户输入：
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // 清理
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // 验证长度
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. 身份验证
+
+保护敏感操作：
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // 创建会话
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {---
+
+**有问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

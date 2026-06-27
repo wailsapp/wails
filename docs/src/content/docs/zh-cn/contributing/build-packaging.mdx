@@ -1,0 +1,197 @@
+---
+title: 构建与打包流水线
+description: 运行 `wails3 build` 时幕后发生了什么，如何生成交叉平台二进制文件，以及如何为每个操作系统生成安装程序。
+sidebar:
+  order: 6
+---
+
+`wails3 build` 是一个**单命令**，它驱动一个_多阶段_流水线：
+
+1. **前端生产构建** (Vite / React / …)  
+2. **资源嵌入**到 Go 源码中  
+3. **原生编译**目标操作系统/架构  
+4. **后处理** (图标注入、版本信息、代码签名)  
+5. **打包**成分发制品 (AppImage, DMG, MSI, …)
+
+本文档将跟随每个阶段，展示代码所在位置，并解释如何自定义或调试它。
+
+---
+
+## 1. 入口点：`internal/commands/build-assets.go`
+
+```
+wails3 build                 # cmd/wails3/main.go
+└─ internal/commands.Build() # build-assets.go
+```
+
+高层任务被委托给 **Taskfile** 目标，以便相同的逻辑在 CI 或本地环境中运行。
+
+| 阶段 | Taskfile 目标 | Go 实现 |
+|-------|---------|----|
+| 前端构建 | `frontend:build` | `internal/commands/task.go` |
+| 嵌入资源   | `embed:assets`  | 生成的 `bundled_assetserver.go` |
+| Go 编译     | `build:go`      | `tool_buildinfo.go`, `tool_package.go` |
+| 打包        | `package:*`     | `internal/packager`, `internal/commands/*` |
+
+---
+
+## 2. 前端生产构建
+
+1. CLI 切换到 `frontend/` 目录并执行项目 `Taskfile.yml` 中找到的 `build` 任务（默认为 `npm run build`）。
+2. 输出写入 `frontend/dist/`。
+3. 生成**内容哈希**清单 (`manifest.json`)，以便开箱即用地实现缓存破坏（cache-busting）。
+
+如果任务失败，流水线将提前中止，并返回你的构建工具的退出代码。
+
+---
+
+## 3. 嵌入资源
+
+实现在 `internal/assetserver/build_production.go` 中：
+
+* 遍历 `frontend/dist` 并生成一个 `go:embed` 文件
+  `bundled_assetserver.go`（被 git 忽略）。
+* 添加 `production` 构建标签。
+
+结果：最终的二进制文件包含每个 HTML/JS/CSS 字节，因此可执行文件是自包含的。
+
+---
+
+## 4. 原生编译
+
+### 构建标志
+
+| 标志 | 用途 |
+|------|--|
+| `-tags production` | 选择生产环境资源服务器和运行时存根 |
+| `-ldflags "-s -w"` | 剥离符号表和 DWARF（减小二进制文件大小） |
+| `-X internal/buildinfo.BuildTime=$(date)` | 嵌入可复现的元数据 |
+
+`internal/commands/tool_buildinfo.go` 收集版本、git 提交和构建时间，然后使用 `go build -ldflags` 注入它们。
+
+### 交叉编译矩阵
+
+| 操作系统 | 架构 | 构建标签 | CGO | 备注 |
+|----|--|-----------|-----|----|
+| Windows | amd64 / arm64 | `windows` | 为 WebView2 启用 cgo | 通过 `internal/commands/syso.go` 生成 `.syso` |
+| macOS   | amd64 / arm64 | `darwin`  | 启用 cgo (Objective-C) | 提供代码签名和公证任务 |
+| Linux   | amd64 / arm64 | `linux`   | 纯 Go (webkit 选项)   | CGO 构建需要 GTK/WebKitGTK 头文件 |
+
+`wails3 build -platform darwin/arm64` 覆盖 GOOS/GOARCH。  
+如果主机需要 CGO 但无法编译目标平台（例如从 Linux 构建 Windows），CLI 将回退到 **Docker** 镜像 (`ghcr.io/wailsapp/cross-compiler`)。
+
+---
+
+## 5. 后处理
+
+### 图标与资源
+
+* **Windows** – `syso.go` 将你的 PNG/ICO 合并到一个 `.syso` 文件中，`go build` 会自动链接它。 还写入 `manifest.xml` 以启用高 DPI 支持。
+* **macOS** – `icons.go` 将 `icon.png` 转换为 `.icns`，并注入到
+  `MyApp.app/Contents/Resources` 中。
+* **Linux** – `.desktop` 文件由每个打包器后端生成在 `/usr/share/applications` 中。
+
+### 代码签名（可选）
+
+* macOS: `codesign` + `xcrun altool --notarize-app`
+* Windows: `signtool.exe`
+* Linux: 不常见（仓库 GPG 由外部处理）
+
+Task 目标：`sign:mac`, `sign:windows`。
+
+---
+
+## 6. 打包后端
+
+### Linux
+
+| 制品 | 代码路径 | 工具 |
+|------|---------|---|
+| **AppImage** (默认) | `internal/commands/appimage.go` | `linuxdeploy` + `linuxdeploy-plugin-gtk` |
+| **deb / rpm / pacman** | `internal/packager` | `fpm` (通过 Go 调用) |
+
+标志：
+
+```
+wails3 build -package deb   # 生成 myapp_1.0.0_amd64.deb
+wails3 build -package rpm
+```
+
+### macOS
+
+* **DMG** – `internal/commands/packager.go` 调用 `appdmg` 生成一个拖放安装程序。
+* **ZIP** – 如果缺少 `appdmg` 时的回退方案。
+* 自动设置 CFBundle 标识符和版本 plist。
+
+### Windows
+
+* **MSI** – `internal/commands/packager.go` 包装 **WiX** candle 和 light 工具。  
+  Heat 自动从构建的 `.exe` 生成组件树。
+
+额外资源：
+
+* `internal/commands/windows_resources/` 包含模板化的 **.wxs** 片段。
+* 版本信息通过 `rsrc` 工具注入。
+
+---
+
+## 7. 构建制品布局
+
+构建成功后，CLI 会打印：
+
+```
+build/bin/
+├── myapp-linux-amd64
+└── myapp-linux-amd64.AppImage
+
+build/package/
+└── myapp_1.0.0_amd64.deb
+```
+
+具体文件取决于 `-platform` 和 `-package` 标志。
+
+---
+
+## 8. 自定义流水线
+
+| 需求 | 方法 |
+|------|------|
+| 在构建前运行 linter | 在 **Taskfile.yml** 中添加 `lint` 任务，并使 `build` 依赖于它。 |
+| 额外的链接器标志 | `wails3 build -ldflags "-H windowsgui"` |
+| 跳过打包 | `wails3 build -skip-package` (保留原始二进制文件)。 |
+| 使用自己的打包器 | 实现 `internal/packager/<name>.go`，在 `packager.go` 中注册。 |
+
+所有 Taskfile 目标都使用由 CLI 导出的环境变量，因此你可以在自定义任务中引用诸如 `$WAILS_VERSION` 或 `$WAILS_PLATFORM` 之类的值。
+
+---
+
+## 9. 故障排除
+
+| 症状 | 可能原因 | 解决方法 |
+|---------|-------|----|
+| **`ld: framework not found WebKit` (mac)** | 缺少 Xcode CLI 工具 | `xcode-select --install` |
+| **生产构建中窗口空白** | 前端构建失败或 SPA 路由问题 | 检查 `frontend/dist/index.html` 是否存在，并设置了 `History API Fallback`。 |
+| **`wixl` not found** (Linux MSI 交叉构建) | Docker 镜像中未安装 WiX 工具集 | 使用 `--docker` 构建或手动安装 WiX。 |
+| **重复符号 `_WinMain`** | 混合使用了 `windowsgui` 标志和 syso | 移除自定义 `-ldflags` 或让 Wails 管理资源。 |
+
+详细模式：`wails3 build -verbose` 会转储执行的每个命令。
+
+---
+
+## 10. 关键源码映射
+
+| 关注点 | 文件 |
+|---------|----|
+| Task 运行器胶水代码 | `internal/commands/task_wrapper.go` |
+| 构建调度器 | `internal/commands/build-assets.go` |
+| AppImage 构建器 | `internal/commands/appimage.go` |
+| 通用打包器接口 | `internal/packager/packager.go` |
+| Windows 资源生成器 | `internal/commands/syso.go` |
+| 构建信息注入器 | `internal/commands/tool_buildinfo.go` |
+| 版本常量 | `internal/version/version.go` |
+
+在追踪构建失败时，请保留此表格以备查阅。
+
+---
+
+你现在拥有了从**源代码**到**安装程序**的全貌。凭借这些知识，你可以调整流水线、添加新的打包目标，或自信地调试交叉编译问题。祝发布顺利！

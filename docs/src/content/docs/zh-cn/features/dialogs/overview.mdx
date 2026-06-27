@@ -1,0 +1,376 @@
+---
+title: 对话框概览
+description: 在应用程序中显示原生系统对话框
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## 原生对话框
+
+Wails 提供**原生系统对话框**，支持所有平台：消息对话框（信息、警告、错误、询问）、文件对话框（打开、保存、文件夹），以及具有平台原生外观和行为的自定义对话框窗口。
+
+## 快速开始
+
+```go
+// Information dialog
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+
+// Question dialog with button callbacks
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+
+// File open dialog
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForSingleSelection()
+```
+
+**就是这样！** 使用最少的代码即可实现原生对话框。
+
+## 访问对话框
+
+通过 `app.Dialog` 管理器访问对话框：
+
+```go
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+```
+
+## 对话框类型
+
+### 信息对话框
+
+显示简单消息：
+
+```go
+app.Dialog.Info().
+    SetTitle("Welcome").
+    SetMessage("Welcome to our application!").
+    Show()
+```
+
+**使用场景：**
+- 成功消息
+- 信息性通知
+- 完成确认
+
+### 警告对话框
+
+显示警告：
+
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+**使用场景：**
+- 非关键性警告
+- 弃用通知
+- 谨慎提示
+
+### 错误对话框
+
+显示错误：
+
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+**使用场景：**
+- 错误消息
+- 失败通知
+- 异常处理
+
+### 询问对话框
+
+向用户提问并通过按钮回调处理响应：
+
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm Delete").
+    SetMessage("Are you sure you want to delete this file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    deleteFile()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)
+dialog.SetCancelButton(cancelBtn)
+dialog.Show()
+```
+
+**使用场景：**
+- 确认操作
+- 是/否问题
+- 多项选择
+
+## 文件对话框
+
+### 打开文件对话框
+
+选择要打开的文件：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    openFile(path)
+}
+```
+
+**多选：**
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err == nil {
+    for _, path := range paths {
+        processFile(path)
+    }
+}
+```
+
+### 保存文件对话框
+
+选择保存位置：
+
+```go
+path, err := app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    AddFilter("Text Files", "*.txt").
+    AddFilter("All Files", "*.*").
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    saveFile(path)
+}
+```
+
+### 选择文件夹对话框
+
+使用启用目录选择的打开文件对话框选择目录：
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err == nil && path != "" {
+    exportToFolder(path)
+}
+```
+
+## 对话框选项
+
+### 标题和消息
+
+```go
+dialog := app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("Operation completed successfully!")
+```
+
+### 按钮
+
+**简单对话框的默认按钮：**
+
+信息、警告和错误对话框显示默认的“确定”按钮：
+
+```go
+app.Dialog.Info().
+    SetMessage("Done!").
+    Show()
+```
+
+**询问对话框的自定义按钮：**
+
+使用 `AddButton()` 添加按钮，它返回一个 `*Button`，您可以使用回调进行配置：
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Choose action")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    discardChanges()
+})
+
+cancel := dialog.AddButton("Cancel")
+// No callback needed - just dismisses dialog
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+**默认和取消按钮：**
+
+使用 `SetDefaultButton()` 指定哪个按钮被高亮显示并通过 Enter 键触发。
+使用 `SetCancelButton()` 指定哪个按钮通过 Escape 键触发。
+
+```go
+dialog := app.Dialog.Question().
+    SetMessage("Delete file?")
+
+deleteBtn := dialog.AddButton("Delete")
+deleteBtn.OnClick(func() {
+    performDelete()
+})
+
+cancelBtn := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelBtn)  // Safe option highlighted by default
+dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
+dialog.Show()
+```
+
+### 窗口附加
+
+将对话框附加到特定窗口：
+
+```go
+dialog := app.Dialog.Info().
+    SetMessage("Window-specific message").
+    AttachToWindow(window)
+
+dialog.Show()
+```
+
+**行为：**
+- 对话框出现在父窗口中心
+- 显示对话框时父窗口被禁用
+- 对话框随父窗口移动（macOS）
+
+## 平台行为
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **macOS 对话框：**
+    
+    - 原生 NSAlert 外观
+    - 跟随系统主题（浅色/深色）
+    - 支持键盘导航
+    - 标准快捷键（⌘. 用于取消）
+    - 内置无障碍功能
+    - 附加到窗口时以 Sheet 样式显示
+    
+    **示例：**
+    ```go
+    // Appears as sheet on macOS
+    dialog := app.Dialog.Question().
+        SetMessage("Save changes?").
+        AttachToWindow(window)
+    dialog.AddButton("Yes")
+    dialog.AddButton("No")
+    dialog.Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Windows 对话框：**
+    
+    - 原生 TaskDialog 外观
+    - 跟随系统主题
+    - 支持键盘导航
+    - 标准快捷键（Esc 用于取消）
+    - 内置无障碍功能
+    - 模态显示于父窗口
+    
+    **示例：**
+    ```go
+    // Modal dialog on Windows
+    app.Dialog.Error().
+        SetTitle("Error").
+        SetMessage("Operation failed").
+        Show()
+    ```
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Linux 对话框：**
+    
+    - GTK 对话框外观
+    - 跟随桌面主题
+    - 支持键盘导航
+    - 桌面环境集成
+    - 因桌面环境（GNOME、KDE 等）而异
+    
+    **示例：**
+    ```go
+    // GTK dialog on Linux
+    app.Dialog.Info().
+        SetMessage("Update complete").
+        Show()
+    ```
+  </TabItem>
+</Tabs>
+
+## 常见模式
+
+### 在破坏性操作前确认
+
+```go
+func deleteFile(app *application.App, path string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage(fmt.Sprintf("Delete %s?", filepath.Base(path)))
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        if err := os.Remove(path); err != nil {
+            app.Dialog.Error().
+                SetTitle("Delete Failed").
+                SetMessage(err.Error()).
+                Show()
+        }
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    dialog.SetDefaultButton(cancelBtn)
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问，或查看 [对话框示例](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs)。

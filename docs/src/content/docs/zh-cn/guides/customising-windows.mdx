@@ -1,0 +1,120 @@
+---
+title: 自定义 Wails 中的窗口
+description: 自定义 Wails 应用程序中的窗口外观和行为
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+适用平台: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails 提供了用于控制窗口控件外观和功能的 API。此功能在 Windows 和 macOS 上可用，但在 Linux 上不可用。
+
+## 设置窗口按钮状态
+
+按钮状态由 `ButtonState` 枚举定义：
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: 按钮已启用且可见。
+- `ButtonDisabled`: 按钮可见但已禁用（灰色显示）。
+- `ButtonHidden`: 按钮在标题栏中隐藏。
+
+按钮状态可以在创建窗口时设置，也可以在运行时设置。
+
+### 在创建窗口时设置按钮状态
+
+在创建新窗口时，您可以使用 `WebviewWindowOptions` 结构体设置按钮的初始状态：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+在上面的示例中，最小化按钮被隐藏，最大化按钮处于非活动状态（灰色显示），而关闭按钮处于活动状态。
+
+### 在运行时设置按钮状态
+
+您还可以通过 `Window` 接口上的以下方法在运行时更改按钮状态：
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### 平台差异
+
+按钮状态功能在 Windows 和 macOS 上的行为略有不同：
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| 禁用最小化/最大化/关闭 | 禁用最小化/最大化/关闭 | 禁用最小化/最大化/关闭 |
+| 隐藏最小化            | 禁用最小化             | 隐藏最小化按钮         |
+| 隐藏最大化            | 禁用最大化             | 隐藏最大化按钮         |
+| 隐藏关闭              | 隐藏所有控件           | 隐藏关闭按钮           |
+
+注意：在 Windows 上，无法单独隐藏最小化/最大化按钮。但是，禁用两者将隐藏这两个控件，仅显示关闭按钮。
+
+### 控制窗口样式 (Windows)
+
+要控制 Windows 上标题栏的样式，您可以使用 `WebviewWindowOptions` 结构体中的 `ExStyle` 字段：
+
+示例：
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+其他影响窗口扩展样式（Extended Style）的选项将被此设置覆盖：
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

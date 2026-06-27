@@ -1,0 +1,91 @@
+---
+title: Wails v3 架构
+description: Wails v3 内部各个组件的深入图解与说明
+sidebar:
+  order: 1
+---
+
+Wails v3 是一个**全栈桌面框架**，由 Go 运行时、JavaScript 桥接层、基于任务驱动的命令行工具链以及一系列模板组成，让你能够利用现代 Web 技术构建并发布原生应用程序。
+
+本页通过四张图表展示*整体概览*：
+
+1. **整体架构** – 各子系统如何连接  
+2. **运行时流程** – JS 调用 Go 以及反向调用时发生的情况  
+3. **开发环境与生产环境** – 资产服务器的两种模式  
+4. **平台实现** – 操作系统特定代码的位置  
+
+---
+
+## 1 · 整体架构
+
+**Wails v3 – 高层级技术栈**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[高层级技术栈图表占位符]**
+
+---
+
+## 2 · 运行时调用流程
+
+**运行时 – JavaScript ⇄ Go 调用路径**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[运行时调用流程图表占位符]**
+
+关键点：
+
+* **无 HTTP / IPC** – 桥接层使用原生 WebView 的内存通道  
+* **方法 ID** – 确定性的 FNV 哈希算法使 Go 端能够实现 O(1) 查找  
+* **Promises** – 错误以拒绝（rejection）形式传播，包含堆栈信息和错误码
+
+---
+
+## 3 · 开发环境与生产环境的资产流程
+
+**开发环境 ↔ 生产环境 资产服务器**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[资产流程图表占位符]**
+
+* 在**开发环境**中，服务器将未知路径代理到框架的热重载服务器，并从磁盘提供静态资产。  
+* 在**生产环境**中，相同的 API 由 `go:embed` 支持，生成零依赖的二进制文件。
+
+---
+
+## 4 · 平台特定的运行时拆分
+
+**各操作系统运行时文件**
+
+{/*
+TODO: Fix D2 diagram generation (triple quotes for multi-line strings) or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[平台拆分图表占位符]**
+
+每个功能都遵循以下模式：
+
+1. `pkg/application` 中的**通用接口**  
+2. `pkg/application/messageprocessor_*.go` 中的**消息处理器**入口  
+3. 在 `internal/runtime/*.go` 下按操作系统划分的**实现**，并通过构建标签进行保护  
+
+如果在某个操作系统上缺少某项功能，应返回 `ErrCapability` 并通过 `internal/capabilities` 注册可用性。
+
+---
+
+## 总结
+
+这些图表概述了**代码的位置**、**数据的流动方式**以及**各层级的职责归属**。  
+在探索后续详细页面时，请随时参考这些图表——它们是你理解 Wails v3 源码树的地图。

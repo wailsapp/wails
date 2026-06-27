@@ -1,0 +1,508 @@
+---
+title: 应用程序菜单
+description: 为您的桌面应用程序创建原生菜单栏
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 问题所在
+
+专业的桌面应用程序需要菜单栏——文件、编辑、视图、帮助。但菜单在各平台上的工作方式各不相同：
+- **macOS**：屏幕顶部的全局菜单栏
+- **Windows**：窗口标题栏中的菜单栏
+- **Linux**：因桌面环境而异
+
+手动构建符合各平台要求的菜单既繁琐又容易出错。
+
+## Wails 的解决方案
+
+Wails 提供了一个**统一的 API**，可自动创建平台原生的菜单。编写一次代码，即可在所有平台上获得原生行为。
+
+{/* VISUAL PLACEHOLDER: Menu Bar Comparison
+Description: Three screenshots side-by-side showing the same Wails menu on:
+1. macOS - Global menu bar at top of screen with app name
+2. Windows - Menu bar in window title bar
+3. Linux (GNOME) - Menu bar in window
+All showing identical menu structure: File, Edit, View, Tools, Help
+Style: Clean screenshots with subtle borders, labels indicating platform
+*/}
+
+## 快速开始
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create menu
+    menu := app.NewMenu()
+
+    // Add standard menus (platform-appropriate)
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)  // macOS only
+    }
+    menu.AddRole(application.FileMenu)
+    menu.AddRole(application.EditMenu)
+    menu.AddRole(application.WindowMenu)
+    menu.AddRole(application.HelpMenu)
+
+    // Set the application menu
+    app.Menu.Set(menu)
+
+    // Create window with UseApplicationMenu to inherit the menu on Windows/Linux
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    app.Run()
+}
+```
+
+**就是这样！** 您现在拥有了带有标准项的平台原生菜单。`UseApplicationMenu` 选项确保 Windows 和 Linux 窗口无需额外代码即可显示菜单。
+
+## 创建菜单
+
+### 基本菜单创建
+
+```go
+// Create a new menu
+menu := app.NewMenu()
+
+// Add a top-level menu
+fileMenu := menu.AddSubmenu("File")
+
+// Add menu items
+fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+    // Handle New
+})
+
+fileMenu.Add("Open").OnClick(func(ctx *application.Context) {
+    // Handle Open
+})
+
+fileMenu.AddSeparator()
+
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### 设置菜单
+
+**推荐方法** — 使用 `UseApplicationMenu` 以实现跨平台一致性：
+
+```go
+// Set the application menu once
+app.Menu.Set(menu)
+
+// Create windows that inherit the menu on Windows/Linux
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    UseApplicationMenu: true,  // Window uses the app menu
+})
+```
+
+这种方法：
+- 在 **macOS** 上：菜单出现在屏幕顶部（标准行为）
+- 在 **Windows/Linux** 上：每个带有 `UseApplicationMenu: true` 的窗口都会显示应用菜单
+
+**平台特定细节：**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **全局菜单栏**（每个应用程序一个）：
+
+    ```go
+    app.Menu.Set(menu)
+    ```
+
+    菜单出现在屏幕顶部，即使所有窗口都关闭也会持续存在。`UseApplicationMenu` 选项在 macOS 上无效，因为所有应用程序都使用全局菜单。
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **每窗口菜单栏**：
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    每个窗口可以有自己的菜单，也可以继承应用菜单。菜单出现在窗口的标题栏中。
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **每窗口菜单栏**（通常情况）：
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    行为因桌面环境而异。某些环境（如 Unity）支持全局菜单。
+  </TabItem>
+</Tabs>
+
+:::tip[简化跨平台菜单]
+使用 `UseApplicationMenu: true` 可以消除对平台特定代码的需求，例如：
+```go
+// Old approach - no longer needed
+if runtime.GOOS == "darwin" {
+    app.Menu.Set(menu)
+} else {
+    window.SetMenu(menu)
+}
+```
+:::
+
+**每窗口自定义菜单：**
+
+如果窗口需要与应用菜单不同的菜单，请直接设置：
+
+```go
+window.SetMenu(customMenu)  // Overrides UseApplicationMenu
+```
+
+## 菜单角色
+
+Wails 提供了**预定义的菜单角色**，可自动创建符合平台要求的菜单结构。
+
+### 可用角色
+
+| 角色 | 描述 | 平台说明 |
+|------|-------------|----------------|
+| `AppMenu` | 包含关于、偏好设置、退出的应用菜单 | **仅限 macOS** |
+| `FileMenu` | 文件操作（新建、打开、保存等） | 所有平台 |
+| `EditMenu` | 文本编辑（撤销、重做、剪切、复制、粘贴） | 所有平台 |
+| `WindowMenu` | 窗口管理（最小化、缩放等） | 所有平台 |
+| `HelpMenu` | 帮助和信息 | 所有平台 |
+
+### 使用角色
+
+```go
+menu := app.NewMenu()
+
+// macOS: Add application menu
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)
+}
+
+// All platforms: Add standard menus
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+menu.AddRole(application.WindowMenu)
+menu.AddRole(application.HelpMenu)
+```
+
+**您将获得：**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **AppMenu**（带应用名称）：
+    - 关于 [应用名称]
+    - 偏好设置... (⌘,)
+    - ---
+    - 服务
+    - ---
+    - 隐藏 [应用名称] (⌘H)
+    - 隐藏其他 (⌥⌘H)
+    - 显示全部
+    - ---
+    - 退出 [应用名称] (⌘Q)
+
+    **FileMenu**：
+    - 新建 (⌘N)
+    - 打开... (⌘O)
+    - ---
+    - 关闭窗口 (⌘W)
+
+    **EditMenu**：
+    - 撤销 (⌘Z)
+    - 重做 (⇧⌘Z)
+    - ---
+    - 剪切 (⌘X)
+    - 复制 (⌘C)
+    - 粘贴 (⌘V)
+    - 全选 (⌘A)
+
+    **WindowMenu**：
+    - 最小化 (⌘M)
+    - 缩放
+    - ---
+    - 全部前置
+
+    **HelpMenu**：
+    - [应用名称] 帮助
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **FileMenu**：
+    - 新建 (Ctrl+N)
+    - 打开... (Ctrl+O)
+    - ---
+    - 退出 (Alt+F4)
+
+    **EditMenu**：
+    - 撤销 (Ctrl+Z)
+    - 重做 (Ctrl+Y)
+    - ---
+    - 剪切 (Ctrl+X)
+    - 复制 (Ctrl+C)
+    - 粘贴 (Ctrl+V)
+    - 全选 (Ctrl+A)
+
+    **WindowMenu**：
+    - 最小化
+    - 最大化
+
+    **HelpMenu**：
+    - 关于 [应用名称]
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    与 Windows 类似，但键盘快捷键可能因桌面环境而异。
+  </TabItem>
+</Tabs>
+
+### 自定义角色菜单
+
+向角色菜单添加项目：
+
+```go
+fileMenu := menu.AddRole(application.FileMenu)
+
+// Add custom items
+fileMenu.Add("Import...").OnClick(handleImport)
+fileMenu.Add("Export...").OnClick(handleExport)
+```## 自定义菜单
+
+为应用程序特定功能创建自己的菜单：
+
+```go
+// Add a custom top-level menu
+toolsMenu := menu.AddSubmenu("Tools")
+
+// Add items
+toolsMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+    showSettingsWindow()
+})
+
+toolsMenu.AddSeparator()
+
+// Add checkbox
+toolsMenu.AddCheckbox("Dark Mode", false).OnClick(func(ctx *application.Context) {
+    isDark := ctx.ClickedMenuItem().Checked()
+    setTheme(isDark)
+})
+
+// Add radio group
+toolsMenu.AddRadio("Small", true).OnClick(handleFontSize)
+toolsMenu.AddRadio("Medium", false).OnClick(handleFontSize)
+toolsMenu.AddRadio("Large", false).OnClick(handleFontSize)
+
+// Add submenu
+advancedMenu := toolsMenu.AddSubmenu("Advanced")
+advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
+```
+
+**有关更多菜单项类型**，请参阅 [菜单参考](/zh-cn/features/menus/reference)。
+
+## 动态菜单
+
+根据应用程序状态更新菜单：
+
+### 启用/禁用项
+
+```go
+var saveMenuItem *application.MenuItem
+
+func createMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    saveMenuItem = fileMenu.Add("Save")
+    saveMenuItem.SetEnabled(false)  // Initially disabled
+    saveMenuItem.OnClick(handleSave)
+    
+    app.SetMenu(menu)
+}
+
+func onDocumentChanged() {
+    saveMenuItem.SetEnabled(hasUnsavedChanges())
+    menu.Update()  // Important!
+}
+```
+
+:::caution[始终调用 menu.Update()]
+更改菜单状态（启用/禁用、标签、选中）后，**始终调用 `menu.Update()`**。这在 Windows 上尤其关键，因为菜单会被重新构建。
+
+有关详细信息，请参阅 [菜单参考](/features/menus/reference#enabled-state)。
+:::
+
+### 更改标签
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()
+    
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### 重建菜单
+
+对于重大更改，重建整个菜单：
+
+```go
+func rebuildFileMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("New").OnClick(handleNew)
+    fileMenu.Add("Open").OnClick(handleOpen)
+    
+    // Add recent files dynamically
+    if hasRecentFiles() {
+        recentMenu := fileMenu.AddSubmenu("Open Recent")
+        for _, file := range getRecentFiles() {
+            filePath := file  // Capture for closure
+            recentMenu.Add(filepath.Base(file)).OnClick(func(ctx *application.Context) {
+                openFile(filePath)
+            })
+        }
+        recentMenu.AddSeparator()
+        recentMenu.Add("Clear Recent").OnClick(clearRecentFiles)
+    }
+    
+    fileMenu.AddSeparator()
+    fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    app.SetMenu(menu)
+}
+```
+
+## 从菜单控制窗口
+
+菜单项可以控制窗口：
+
+```go
+viewMenu := menu.AddSubmenu("View")
+
+// Toggle fullscreen
+viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
+    window := app.GetWindowByName("main")
+    window.SetFullscreen(!window.IsFullscreen())
+})
+
+// Zoom controls
+viewMenu.Add("Zoom In").SetAccelerator("CmdOrCtrl++").OnClick(func(ctx *application.Context) {
+    // Increase zoom
+})
+
+viewMenu.Add("Zoom Out").SetAccelerator("CmdOrCtrl+-").OnClick(func(ctx *application.Context) {
+    // Decrease zoom
+})
+
+viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *application.Context) {
+    // Reset zoom
+})
+```
+
+**获取活动窗口：**
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    window := application.ContextWindow(ctx)
+    // Use window
+})
+```
+
+## 平台特定注意事项
+
+### macOS
+
+**菜单栏行为：**
+- 出现在**屏幕顶部**（全局）
+- 所有窗口关闭时仍然存在
+- 第一个菜单**始终是应用程序菜单**
+- 对标准项使用 `menu.AddRole(application.AppMenu)`
+
+**标准位置：**
+- **关于**：应用程序菜单
+- **偏好设置**：应用程序菜单 (⌘,)
+- **退出**：应用程序菜单 (⌘Q)
+- **帮助**：帮助菜单
+
+**示例：**
+
+```go
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)  // Adds About, Preferences, Quit
+    
+    // Don't add Quit to File menu on macOS
+    // Don't add About to Help menu on macOS
+}
+```
+
+### Windows
+
+**菜单栏行为：**
+- 出现在**窗口标题栏**中
+- 每个窗口都有自己的菜单
+- 没有应用程序菜单
+
+**标准位置：**
+- **退出**：文件菜单 (Alt+F4)
+- **设置**：工具或编辑菜单
+- **关于**：帮助菜单
+
+**示例：**
+
+```go
+if runtime.GOOS == "windows" {
+    fileMenu := menu.AddRole(application.FileMenu)
+    // Exit is added automatically
+    
+    helpMenu := menu.AddRole(application.HelpMenu)
+    // About is added automatically
+}
+```
+
+### Linux
+
+**菜单栏行为：**
+- 通常是每个窗口（类似于 Windows）
+- 某些桌面环境支持全局菜单（Unity、带有扩展的 GNOME）
+- 外观因桌面环境而异
+
+**最佳实践：** 遵循 Windows 惯例，并在目标桌面环境上进行测试。---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [菜单示例](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)。

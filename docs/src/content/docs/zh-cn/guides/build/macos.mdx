@@ -1,0 +1,145 @@
+---
+title: macOS 打包
+description: 将你的 Wails 应用打包为适用于 macOS 分发的格式
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## 应用包
+
+将你的应用打包为标准 macOS `.app` 包：
+
+```bash
+wails3 package GOOS=darwin
+```
+
+这将创建 `bin/<AppName>.app`，其中包含：
+- 编译后的二进制文件位于 `Contents/MacOS/`
+- 应用图标位于 `Contents/Resources/`（来自 `icons.icns` 或，如果存在，则来自资源目录 `Assets.car`）
+- 包含应用元数据的 `Info.plist`
+
+### 通用二进制文件
+
+为 Apple Silicon 和 Intel Mac 构建：
+
+```bash
+wails3 task darwin:package:universal
+```
+
+这将创建一个在两种架构上都能原生运行的单一 `.app`。通用二进制文件可以在任何平台上构建——在 Linux 和 Windows 上，会自动使用 `wails3 tool lipo`。
+
+## 自定义包
+
+编辑 `build/darwin/Info.plist` 来自定义：
+
+- 包标识符 (`CFBundleIdentifier`)
+- 应用名称和版本
+- 最低 macOS 版本
+- 文件关联
+- URL 方案
+
+应用图标是从 `build/` 目录中的资源生成的。使用 `generate:icons` 任务：
+
+```bash
+wails3 task generate:icons
+```
+
+这会使用 `build/appicon.png` 生成 `darwin/icons.icns` 和 `windows/icon.ico`。在 macOS 上，你还可以提供 `build/appicon.icon`（Icon Composer 格式）：该任务会传递 `-iconcomposerinput appicon.icon -macassetdir darwin`，从而从 `.icon` 文件生成 `Assets.car` 和 `darwin/icons.icns`（在非 macOS 平台上跳过）。当存在 `Assets.car` 时，运行 `update:build-assets` 任务以相应地更新 `Info.plist` 和 `CFBundleIconName`：
+
+```bash
+wails3 task update:build-assets
+```
+
+要从 `build/` 目录手动运行图标命令：
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## 代码签名
+
+为你的应用签名以便分发：
+
+```bash
+# 使用包装器（自动检测平台）
+wails3 sign GOOS=darwin
+
+# 或直接使用任务
+wails3 task darwin:sign
+```
+
+在 `build/darwin/Taskfile.yml` 中配置签名：
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### 公证
+
+对于通过 Mac App Store 之外渠道分发的应用，Apple 要求公证：
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+首先，存储你的凭据：
+
+```bash
+wails3 signing credentials \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password" \
+  --profile "my-notarize-profile"
+```
+
+在 `build/darwin/Taskfile.yml` 中配置：
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+详见 [应用签名](/zh-cn/guides/build/signing)。
+
+## DMG 安装器
+
+创建用于分发的 DMG 磁盘映像：
+
+```bash
+wails3 task darwin:create:dmg
+```
+
+<Aside type="tip">
+通过编辑 `build/darwin/dmg/` 资源来自定义 DMG 背景和布局。
+</Aside>
+
+## 故障排除
+
+### “应用已损坏，无法打开”
+
+应用未签名。要么使用 Developer ID 证书对其进行签名，要么用户可以绕过 Gatekeeper：
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### 公证失败
+
+常见问题：
+- **凭据无效**：重新运行 `wails3 signing credentials`
+- **需要加固运行时**：如有必要，确保权限包含 `com.apple.security.cs.allow-unsigned-executable-memory`
+- **缺少时间戳**：签名过程应自动包含时间戳
+
+### 交叉编译的应用无法运行
+
+交叉编译的 macOS 二进制文件未签名。传输到 Mac 并在测试前进行签名：
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

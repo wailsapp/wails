@@ -1,0 +1,220 @@
+---
+title: 模板系统
+description: Wails v3 如何生成新项目、模板的组织方式以及如何构建您自己的模板。
+sidebar:
+  order: 7
+---
+
+Wails 附带了一个**模板系统**，允许 `wails3 init` 为**任何**现代前端框架（React、Svelte、Vue、Solid、原生
+JS …）生成一个即用的项目。
+
+本文涵盖：
+
+1. 模板目录结构
+2. CLI 如何选择和渲染模板
+3. 逐步创建新模板
+4. 更新或覆盖现有模板
+5. 故障排除和最佳实践
+
+---
+
+## 1. 模板的位置
+
+```
+v3/
+└── internal/templates/
+    ├── _common/           # 复制到每个项目的文件 (main.go, .gitignore)
+    ├── base/              # 仅后端“纯 Go”模板
+    ├── react/             # React + Vite
+    ├── react-ts/
+    ├── svelte/
+    ├── vue/
+    ├── ... (其他)
+    └── templates.go       # 注册表 + 辅助函数
+```
+
+* **`_common/`** – 通用样板代码（Go 模块、Taskfile、README 存根、
+  VS Code 设置）。
+* **框架文件夹** – 包含 **frontend/** 和任何特定于堆栈的配置。
+* 文件夹名称与传递给 CLI 的**模板 ID** 匹配
+  （`wails3 init -t react-ts`）。
+
+> 整个目录通过 `go:embed` 编译到 CLI 二进制文件中，因此用户
+> 可以离线生成项目。
+
+---
+
+## 2. `wails3 init` 如何使用模板
+
+调用链：
+
+```
+cmd/wails3/init.go
+       │
+       ▼
+internal/commands/init.go  ← 解析标志、目标目录
+       │
+       ▼
+internal/templates.Load()  ← templates.go
+       │
+       ▼
+Template.CopyTo(dest)      ← 文件系统复制 + 文本替换
+```
+
+### 替换
+
+用 `{{ }}` 包裹的占位符在复制时会被替换：
+
+| 占位符 | 示例 | 来源 |
+|-------------|---------|--------|
+| `{{ProjectName}}` | `myapp` | CLI 标志/目录名 |
+| `{{ModulePath}}`  | `github.com/me/myapp` | 如果提供了 `--module` |
+| `{{WailsVersion}}`| `v3.0.0` | 编译常量 |
+
+您可以添加**任何**占位符；只需确保它在
+`internal/commands/init.go` 中获得一个值即可。
+
+### 复制后钩子
+
+每个模板都可以附带一个包含 `deps` 任务的 **Taskfile**。
+复制后，CLI 运行：
+
+```
+task --taskfile Taskfile.yml deps
+```
+
+典型工作：
+
+* `go mod tidy`
+* `npm install`
+* git init 和初始提交（可选）
+
+钩子行为在 `_common/Taskfile.yml` 中定义，但可以按模板覆盖。
+
+---
+
+## 3. 创建新模板
+
+> 示例：添加 **Qwik-TS** 模板
+
+### 3.1 文件夹和 ID
+
+```
+internal/templates/qwik-ts/
+```
+
+文件夹名称 = 模板 ID。保持 **kebab-case**（短横线命名法）。
+
+### 3.2 最小文件集
+
+```
+qwik-ts/
+├── README.md              # 在 CLI 中使用 -list 显示
+├── frontend/              # 您的 Web 项目
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── Taskfile.yml           # deps 和开发任务
+└── go/                    # 可选的额外 Go 文件
+```
+
+从复制 `react-ts` 并删除不需要的文件开始。
+
+### 3.3 更新占位符
+
+搜索/替换：
+
+* `myapp` → `{{ProjectName}}`
+* `github.com/you/myapp` → `{{ModulePath}}`
+
+### 3.4 注册（可选）
+
+如果文件夹存在，**templates.go 会通过 `embed` 自动检测它**。
+仅当您需要进行**自定义验证**时才添加显式代码：
+
+```go
+func (t *Template) Validate() error {
+    // 检查此模板的 Node ≥ 20
+}
+```
+
+### 3.5 测试
+
+```bash
+wails3 init -n demo -t qwik-ts
+cd demo
+wails3 dev
+```
+
+确保：
+
+* 开发服务器启动
+* `wailsjs` 绑定生成
+* 热重载工作
+
+---
+
+## 4. 修改现有模板
+
+1. 编辑 `internal/templates/<id>/` 下的文件。
+2. 运行 `go generate ./v3/...` **或** 仅运行 `go run ./v3/cmd/wails3 –help`；
+   embed 指令会自动重新编译。
+3. 更新 `frontend/package.json` 和 `Taskfile.yml` 中的**依赖版本**。
+4. 更新模板内的 `README.md` — 用户通过  
+   `wails3 init -t react --help` 看到它。
+
+### 常见调整
+
+| 任务 | 位置 |
+|------|-------|
+| 更改开发服务器端口 | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
+| 添加环境变量 | 相同的 Taskfile 或 `.env` |
+| 替换 JS 包管理器 | 在 Taskfile 中将 `npm` 切换为 `pnpm` |
+
+---
+
+## 5. 模板编写技巧
+
+* **保持前端通用** – 避免引用 Wails 特定的全局变量；运行时
+  会自动注入。
+* **无编译产物** – 通过 `.tmplignore` 排除 `node_modules`、`dist`、`.DS_Store`。
+* **记录先决条件** – Node 版本、额外的 CLI 工具等。
+* **避免破坏性更改** – 如果重构很大，请创建一个*新*的模板 ID。
+
+---
+
+## 6. 故障排除
+
+| 症状 | 原因 | 修复 |
+|---------|-------|-----|
+| `unknown template id` | 文件夹名称不匹配 | 检查 `wails3 init -list` |
+| 占位符未替换 | `Data` 映射中缺少条目 | 编辑 `internal/commands/init.go` |
+| 开发服务器打开空白页 | 错误的 `DevPort` 环境变量 | 确保 Taskfile 将端口回显到 stdout |
+| 前端在生产环境中构建失败 | 忘记 vite `base` 路径 | 在 `vite.config.ts` 中设置 `base: "./"` |
+
+向 `wails3 init` 添加 `--verbose` 以打印每个复制的文件和替换。
+
+---
+
+## 7. 关键源文件映射
+
+| 文件 | 职责 |
+|------|----------------|
+| `internal/templates/templates.go` | 嵌入模板文件系统，返回 `[]Template` |
+| `internal/templates/<id>/**` | 实际的模板内容 |
+| `internal/commands/init.go` | CLI 粘合剂：选择模板、填充占位符 |
+| `internal/commands/generate_template.go` | 将实时项目*导出*回模板的实用程序（对更新很有用） |
+
+---
+
+## 8. 回顾
+
+* 模板位于 **`internal/templates/`** 中并嵌入到 CLI 中。
+* `wails3 init -t <id>` 复制 `_common` + 选定的模板，执行
+  替换，然后运行 **deps** Taskfile 钩子。
+* 创建模板就像**创建文件夹**、添加文件以及
+  使用占位符一样简单。
+* 该系统是**可扩展**且**自包含**的 — 非常适合与团队或社区共享
+  自定义堆栈。
+
+祝您模板编写愉快！

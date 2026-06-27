@@ -1,0 +1,397 @@
+---
+title: 枚举类型
+description: 从 Go 常量自动生成枚举类型
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 枚举绑定
+
+Wails v3 绑定生成器 **会自动检测 Go 常量类型并生成 TypeScript 枚举或 JavaScript const 对象**。无需注册，无需配置——只需在 Go 中定义类型和常量，生成器将处理其余部分。
+
+:::note
+与 Wails v2 不同，**无需调用 `EnumBind`** 或手动注册枚举。生成器会自动从源代码中发现它们。
+:::
+
+## 快速入门
+
+**在 Go 中定义带有常量的命名类型：**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**在结构体或服务方法中使用该类型：**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**生成绑定：**
+
+```bash
+wails3 generate bindings
+```
+
+生成器输出将报告枚举数量以及模型数量：
+
+```
+3 Enums, 5 Models
+```
+
+**在前端中使用：**
+
+```javascript
+import { Ticket, Status } from './bindings/myapp/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**就是这样！** 枚举类型在 Go 和 JavaScript/TypeScript 中均受到强制约束。
+
+## 定义枚举
+
+Wails 中的枚举是一个**命名类型**，具有基础基本类型，并结合该类型的**常量声明**。
+
+### 字符串枚举
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**生成的 TypeScript：**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**生成的 JavaScript：**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### 整数枚举
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**生成的 TypeScript：**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### 类型别名枚举
+
+Go 类型别名（`=`）也可以使用，但会生成略有不同的输出——一个类型定义加上一个 const 对象，而不是原生的 TypeScript `enum`：
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**生成的 TypeScript：**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**生成的 JavaScript：**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**命名类型**（`type Title string`）会生成带有 `$zero` 成员的原生 TypeScript `enum` 声明。
+**类型别名**（`type Age = int`）会生成不带 `$zero` 的 `type` + `const` 命名空间对。
+:::
+
+## `$zero` 值
+
+每个命名类型枚举都包含一个特殊的 `$zero` 成员，表示基础类型的 **Go 零值**：
+
+| 基础类型 | `$zero` 值 |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+当结构体字段使用枚举类型且未提供值时，构造函数默认使用 `$zero`：
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+这确保了在生成类时的类型安全初始化——枚举字段永远不会是 `undefined`。当生成 TypeScript 接口（使用 `-i` 参数）时，没有构造函数，字段可以像往常一样缺失。
+
+## 在结构体中使用枚举
+
+当结构体字段具有枚举类型时，生成的代码**保留该类型**，而不是回退到基本类型：
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**生成的 TypeScript：**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+`Title` 字段被键入为 `Title`，而不是 `string`。这使您的 IDE 能够对枚举值进行完整的自动补全和类型检查。
+
+## 来自导入包的枚举
+
+单独包中定义的枚举完全受支持。它们会生成到相应的包目录中：
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+`Title` 枚举在 `services` 模型文件中生成，导入路径会自动解析：
+
+```typescript
+// bindings/myapp/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## 枚举方法
+
+您可以在 Go 中为枚举类型添加方法。这些不会影响绑定生成，但可提供有用的服务端功能：
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+无论类型上是否存在 Go 方法，生成的枚举都是相同的。
+
+## 注释和文档
+
+生成器将 Go 注释保留为生成输出中的 JSDoc：
+
+- **类型注释**成为枚举的文档注释
+- **常量组注释**成为部分分隔符
+- **单个常量注释**成为成员文档注释
+- **行内注释**在可能的情况下被保留
+
+这意味着当您将鼠标悬停在枚举值上时，IDE 将显示文档。
+
+## 支持的基础类型
+
+绑定生成器支持具有以下 Go 基础类型的枚举：
+
+| Go 类型 | 作为枚举工作 |
+|---------|:---:|
+| `string` | 是 |
+| `int`, `int8`, `int16`, `int32`, `int64` | 是 |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | 是 |
+| `float32`, `float64` | 是 |
+| `byte` (`uint8`) | 是 |
+| `rune` (`int32`) | 是 |
+| `bool` | 是 |
+| `complex64`, `complex128` | 否 |---
+
+**有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

@@ -1,0 +1,736 @@
+---
+title: 事件 API
+description: 事件 API 的完整参考文档
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 概述
+
+事件 API 提供了用于发射和监听事件的方法，从而实现应用程序不同部分之间的通信。
+
+**事件类型：**
+- **应用程序事件** - 应用程序生命周期事件（启动、关闭）
+- **窗口事件** - 窗口状态变化（聚焦、失焦、调整大小）
+- **自定义事件** - 用户定义的事件，用于特定于应用程序的通信
+
+**通信模式：**
+- **Go 到前端** - 从 Go 发射事件，在 JavaScript 中监听
+- **前端到 Go** - 不直接支持（请改用服务绑定）
+- **前端到前端** - 通过 Go 或本地运行时事件
+- **窗口到窗口** - 定向到特定窗口或广播到所有窗口
+
+## 事件方法 (Go)
+
+### app.Event.Emit()
+
+向所有窗口发射自定义事件。
+
+```go
+func (em *EventManager) Emit(name string, data ...interface{})
+```
+
+**参数：**
+- `name` - 事件名称
+- `data` - 随事件发送的可选数据
+
+**示例：**
+```go
+// 发射简单事件
+app.Event.Emit("user-logged-in")
+
+// 发射带数据的事件
+app.Event.Emit("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+
+// 发射多个值
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+在 Go 中监听自定义事件。
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**参数：**
+- `name` - 要监听的事件名称
+- `callback` - 当事件发射时调用的函数
+
+**返回：** 用于移除事件监听器的清理函数
+
+**示例：**
+```go
+// 监听事件
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// 稍后，移除监听器
+cleanup()
+```
+
+### 特定窗口的事件
+
+向特定窗口发射事件：
+
+```go
+// 向特定窗口发射
+window.EmitEvent("notification", "Hello from Go!")
+
+// 向所有窗口发射
+app.Event.Emit("global-update", data)
+```
+
+## 事件方法 (前端)
+
+### On()
+
+监听来自 Go 的事件。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On(eventName, callback)
+```
+
+**参数：**
+- `eventName` - 要监听的事件名称
+- `callback` - 接收到事件时调用的函数
+
+**返回：** 清理函数
+
+**示例：**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 监听事件
+const cleanup = Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// 稍后，移除监听器
+cleanup()
+```
+
+### Once()
+
+监听单次事件发生。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once(eventName, callback)
+```
+
+**示例：**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// 仅监听首次发生
+Events.Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // 这只会触发一次
+})
+```
+
+### Off()
+
+移除事件监听器。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Off(eventName, callback)
+```
+
+**示例：**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+const handler = (data) => {
+    console.log('Event received:', data)
+}
+
+// 开始监听
+Events.On('my-event', handler)
+
+// 停止监听
+Events.Off('my-event', handler)
+```
+
+### OffAll()
+
+移除某个事件的所有监听器。
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.OffAll(eventName)
+```
+
+**示例：**
+```javascript
+// 移除此事件的所有监听器
+OffAll('data-updated')
+```
+
+## 应用程序事件
+
+### app.Event.OnApplicationEvent()
+
+监听应用程序生命周期事件。
+
+```go
+func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+```
+
+**事件类型：**
+- `EventApplicationStarted` - 应用程序已启动
+- `EventApplicationShutdown` - 应用程序正在关闭
+- `EventApplicationDebug` - 调试事件（仅限开发模式）
+
+**示例：**
+```go
+// 处理应用程序启动
+app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+    // 初始化资源
+})
+
+// 处理应用程序关闭
+app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application shutting down")
+    // 清理资源，保存状态
+    database.Close()
+    saveSettings()
+})
+```
+
+## 窗口事件
+
+### OnWindowEvent()
+
+监听特定于窗口的事件。
+
+```go
+func (w *Window) OnWindowEvent(eventType WindowEventType, callback func(*WindowEvent)) func()
+```
+
+**事件类型：**
+- `EventWindowFocus` - 窗口获得焦点
+- `EventWindowBlur` - 窗口失去焦点
+- `EventWindowClose` - 窗口正在关闭
+- `EventWindowResize` - 窗口已调整大小
+- `EventWindowMove` - 窗口已移动
+
+**示例：**
+```go
+// 处理窗口聚焦
+window.OnWindowEvent(application.EventWindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 处理窗口调整大小
+window.OnWindowEvent(application.EventWindowResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+## 常见模式
+
+这些模式展示了在真实应用程序中使用事件的经过验证的方法。每种模式都解决了 Go 后端和前端之间特定的通信挑战，帮助你构建响应迅速、结构良好的应用程序。
+
+### 请求/响应模式
+
+当你希望通知前端后端操作已完成（例如数据获取、文件处理或后台任务完成后）时使用此模式。服务绑定直接返回数据，而事件提供额外的通知以进行 UI 更新，例如显示提示消息或刷新列表。
+
+**Go：**
+
+```go
+// 服务方法
+type DataService struct {
+    app *application.Application
+}
+
+func (s *DataService) FetchData(query string) ([]Item, error) {
+    items := fetchFromDatabase(query)
+
+    // 完成后发射事件
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
+        "query": query,
+        "count": len(items),
+    })
+
+    return items, nil
+}
+```
+
+**JavaScript：**
+
+```javascript
+import { FetchData } from './bindings/DataService'
+import { Events } from '@wailsio/runtime'
+
+// 监听完成事件
+Events.On('data-fetched', (data) => {
+    console.log(`Fetched ${data.count} items for query: ${data.query}`)
+    showNotification(`Found ${data.count} results`)
+})
+
+// 调用服务方法
+const items = await FetchData("search term")
+displayItems(items)
+```### 进度更新
+
+适用于长时间运行的操作，如文件上传、批处理、大量数据导入或视频编码。在操作期间发射进度事件，以更新用户界面中的进度条、状态文本或步骤指示器，为用户提供实时反馈。
+
+**Go:**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        // Process file
+        processFile(file)
+
+        // Emit progress event
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    s.app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Update progress bar
+Events.On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+// Handle completion
+Events.Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+    setTimeout(() => hideProgressBar(), 2000)
+})
+```
+
+### 多窗口通信
+
+非常适合具有多个窗口的应用程序，如设置面板、仪表板或文档查看器。广播事件以同步所有窗口之间的状态（主题更改、用户偏好），或向特定窗口发送定向事件以进行窗口特定的更新。
+
+**Go:**
+
+```go
+// Broadcast to all windows
+app.Event.Emit("theme-changed", "dark")
+
+// Send to specific window
+preferencesWindow.EmitEvent("settings-updated", settings)
+
+// Window-specific listener
+window1.OnEvent("request-data", func(e *application.CustomEvent) {
+    // Only this window will receive this event
+    window1.EmitEvent("data-response", data)
+})
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Listen in any window
+Events.On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### 状态同步
+
+当需要保持前端和后端状态同步时使用，例如用户会话、应用程序配置或协作功能。当后端状态发生变化时，发射事件以更新所有已连接的前端，确保应用程序的一致性。
+
+**Go:**
+
+```go
+type StateService struct {
+    app   *application.Application
+    state map[string]interface{}
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value interface{}) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Notify all windows
+    s.app.Event.Emit("state-updated", map[string]interface{}{
+        "key":   key,
+        "value": value,
+    })
+}
+
+func (s *StateService) GetState(key string) interface{} {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.state[key]
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { GetState } from './bindings/StateService'
+
+// Keep local state in sync
+let localState = {}
+
+Events.On('state-updated', async (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+
+// Initialize state
+const initialState = await GetState("all")
+localState = initialState
+```
+
+### 事件驱动通知
+
+最适合显示用户反馈，如成功确认、错误警报或信息消息。与其从服务中直接调用 UI 代码，不如发射通知事件，由前端统一处理，从而轻松更改通知样式或添加通知历史等功能。
+
+**Go:**
+
+```go
+type NotificationService struct {
+    app *application.Application
+}
+
+func (s *NotificationService) Success(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "success",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Error(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "error",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Info(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "info",
+        "message": message,
+    })
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Unified notification handler
+Events.On('notification', (data) => {
+    const toast = document.createElement('div')
+    toast.className = `toast toast-${data.type}`
+    toast.textContent = data.message
+
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.classList.add('fade-out')
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+})
+```
+
+## 完整示例
+
+**Go:**
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type EventDemoService struct {
+    app *application.Application
+    mu  sync.Mutex
+}
+
+func NewEventDemoService(app *application.Application) *EventDemoService {
+    service := &EventDemoService{app: app}
+
+    // Listen for custom events
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        app.Logger.Info("User action received", "data", data)
+    })
+
+    return service
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]interface{}{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]interface{}{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    // Handle application lifecycle
+    app.Event.OnApplicationEvent(application.EventApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application shutting down...")
+    })
+
+    // Register service
+    service := NewEventDemoService(app)
+    app.RegisterService(application.NewService(service))
+
+    // Create window
+    window := app.Window.New()
+
+    // Handle window events
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Task events
+Events.On('task-started', () => {
+    console.log('Task started...')
+    document.getElementById('status').textContent = 'Running...'
+})
+
+Events.On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+    console.log(`Step ${data.step} of ${data.total}`)
+})
+
+Events.Once('task-completed', (data) => {
+    console.log('Task completed!', data.message)
+    document.getElementById('status').textContent = data.message
+})
+
+// Broadcast events
+Events.On('broadcast', (message) => {
+    console.log('Broadcast:', message)
+    alert(message)
+})
+
+// Window state events
+Events.On('window-state', (state) => {
+    console.log('Window is now:', state)
+    document.body.dataset.windowState = state
+})
+
+// Trigger long task-------|-------|-------|---------|
+| `ApplicationOpenedWithFile` | 使用文件打开应用程序 | 当通过文件关联启动应用程序时 | 否 |
+| `ApplicationStarted` | 应用程序已完成启动 | 应用程序初始化完成且应用程序就绪后 | 否 |
+| `ApplicationLaunchedWithUrl` | 通过 URL 启动应用程序 | 当通过 URL 方案启动应用程序时 | 否 |
+| `ThemeChanged` | 系统主题更改 | 当操作系统在浅色/深色模式之间切换时 | 否 |
+
+**用法：**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application ready!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // 更新应用程序主题
+})
+```
+
+### 窗口事件
+
+| 事件 | 描述 | 发射时机 | 可取消 |
+|-------|-------|-------|---------|
+| `WindowClosing` | 窗口即将关闭 | 窗口关闭前（用户点击 X、调用 Close()） | 是 |
+| `WindowDidMove` | 窗口移动到新位置 | 窗口位置更改后（防抖） | 否 |
+| `WindowDidResize` | 窗口已调整大小 | 窗口大小更改后 | 否 |
+| `WindowDPIChanged` | 窗口 DPI 缩放更改 | 在具有不同 DPI 的显示器之间移动时（Windows） | 否 |
+| `WindowFilesDropped` | 通过原生操作系统拖放拖放文件 | 从操作系统将文件拖放到窗口后 | 否 |
+| `WindowFocus` | 窗口获得焦点 | 当窗口变为活动状态时 | 否 |
+| `WindowFullscreen` | 窗口进入全屏 | 调用 Fullscreen() 或用户进入全屏后 | 否 |
+| `WindowHide` | 窗口已隐藏 | 调用 Hide() 或窗口被遮挡后 | 否 |
+| `WindowLostFocus` | 窗口失去焦点 | 当窗口变为非活动状态时 | 否 |
+| `WindowMaximise` | 窗口已最大化 | 调用 Maximise() 或用户最大化后 | 是 (macOS) |
+| `WindowMinimise` | 窗口已最小化 | 调用 Minimise() 或用户最小化后 | 是 (macOS) |
+| `WindowRestore` | 窗口从最小/最大状态恢复 | 调用 Restore() 后（主要在 Windows 上） | 否 |
+| `WindowRuntimeReady` | Wails 运行时已加载并就绪 | JavaScript 运行时初始化完成时 | 否 |
+| `WindowShow` | 窗口变为可见 | 调用 Show() 或窗口变为可见后 | 否 |
+| `WindowUnFullscreen` | 窗口退出全屏 | 调用 UnFullscreen() 或用户退出全屏后 | 否 |
+| `WindowUnMaximise` | 窗口退出最大化状态 | 调用 UnMaximise() 或用户取消最大化后 | 是 (macOS) |
+| `WindowUnMinimise` | 窗口退出最小化状态 | 调用 UnMinimise()/Restore() 或用户恢复后 | 是 (macOS) |
+| `WindowZoomIn` | 窗口内容缩放增加 | 调用 ZoomIn() 后（主要在 macOS 上） | 是 (macOS) |
+| `WindowZoomOut` | 窗口内容缩放减少 | 调用 ZoomOut() 后（主要在 macOS 上） | 是 (macOS) |
+| `WindowZoomReset` | 窗口内容缩放重置为 100% | 调用 ZoomReset() 后（主要在 macOS 上） | 是 (macOS) |
+| `WindowDropZoneFilesDropped` | 文件拖放到 JS 定义的放置区域 | 当文件拖放到具有放置区域的元素上时 | 否 |
+
+**用法：**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// 监听窗口事件
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// 取消窗口关闭
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    result, _ := app.Dialog.Question().
+        SetMessage("Close window?").
+        SetButtons("Yes", "No").
+        Show()
+
+    if result == "No" {
+        e.Cancel() // 阻止关闭
+    }
+})
+
+// 等待运行时就绪
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime ready, safe to emit events to frontend")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**重要注意事项：**
+
+- **WindowRuntimeReady** 至关重要 —— 在向前端发射事件之前等待此事件
+- **WindowDidMove** 和 **WindowDidResize** 是防抖的（默认 50 毫秒），以防止事件泛滥
+- **可取消事件** 可以通过在 `RegisterHook()` 处理程序中调用 `event.Cancel()` 来阻止
+- **WindowFilesDropped** 用于原生操作系统文件拖放；**WindowDropZoneFilesDropped** 用于基于 Web 的放置区域
+- 某些事件是特定于平台的（例如，Windows 上的 WindowDPIChanged，macOS 上主要用于缩放事件）
+
+## 事件命名约定
+
+```go
+// 好 —— 描述性且具体
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// 差 —— 模糊且不清晰
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
+```
+
+## 性能注意事项
+
+### 高频事件防抖
+
+```go
+type Service struct {
+    app            *application.Application
+    lastEmit       time.Time
+    debounceWindow time.Duration
+}
+
+func (s *Service) EmitWithDebounce(event string, data interface{}) {
+    now := time.Now()
+    if now.Sub(s.lastEmit) < s.debounceWindow {
+        return // 跳过此发射
+    }
+
+    s.app.Event.Emit(event, data)
+    s.lastEmit = now
+}
+```
+
+### 事件节流
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+let lastUpdate = 0
+const throttleMs = 100
+
+Events.On('high-frequency-event', (data) => {
+    const now = Date.now()
+    if (now - lastUpdate < throttleMs) {
+        return // 跳过此更新
+    }
+
+    processUpdate(data)
+    lastUpdate = now
+})
