@@ -34,6 +34,7 @@ void ios_set_proximity(bool enabled);       // proximity sensor → "common:prox
 void ios_speak(const char* text);           // text-to-speech
 void ios_stop_speak(void);
 const char* ios_storage_json(void);         // {"free":bytes,"total":bytes}
+const char* ios_storage_path(void);         // absolute path to the app's Application Support directory
 const char* ios_power_json(void);           // {"level":0-1,"charging":bool,"lowPower":bool}
 const char* ios_network_json(void);         // {"connected":bool,"type":"wifi|cellular|none"}
 void ios_set_keyboard_watch(bool enabled);  // keyboard insets → "common:keyboard" {visible,height}
