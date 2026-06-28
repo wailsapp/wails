@@ -125,6 +125,12 @@ forwarded to a matching method on the Java `WailsBridge` via JNI. They mirror
 the `application.IOS*` surface, so one event-driven layer drives both platforms
 (see the `mobile` example's `registerNativeFeatures`).
 
+For the subset of capabilities whose signature is identical on both platforms,
+`application.Mobile` provides one build-guarded entry point: it dispatches to
+`Android` on Android, `IOS` on iOS, and a no-op stub on desktop — so
+cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
+own `//go:build` split. Platform-specific calls stay on `Android` / `IOS`.
+
 | Capability | API | Notes |
 |---|---|---|
 | Share sheet | `Android.Share(json)` | `Intent.ACTION_SEND` |
@@ -145,6 +151,7 @@ the `application.IOS*` surface, so one event-driven layer drives both platforms
 | Proximity | `Android.SetProximity(bool)` | → `common:proximity` |
 | Text-to-speech | `Android.Speak(text)` / `Android.StopSpeak()` | `TextToSpeech` |
 | Storage info | `Android.StorageJSON()` | `{free,total}` bytes (`StatFs`) |
+| Storage path | `Android.StoragePath()` | `getFilesDir()` (for databases & persistent files); `""` if unavailable |
 | Power / battery | `Android.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `Android.NetworkJSON()` | `{connected,type}` (`ConnectivityManager`) |
 | Keyboard insets | `Android.SetKeyboardWatch(bool)` | → `common:keyboard {visible,height}` |

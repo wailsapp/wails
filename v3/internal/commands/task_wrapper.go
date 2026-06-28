@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildwarnings"
@@ -21,7 +22,36 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
+const (
+	// mcpEnvVar enables the MCP service build tag when set to a truthy value.
+	mcpEnvVar = "WAILS_MCP"
+	// mcpBuildTag is the Go build tag that compiles in the MCP service.
+	mcpBuildTag = "mcp"
+)
+
+// envTags returns the build tags implied by environment variables.
+func envTags() []string {
+	var tags []string
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(mcpEnvVar))) {
+	case "1", "true", "on", "yes":
+		tags = append(tags, mcpBuildTag)
+	}
+	return tags
+}
+
+// mergeTags appends extra tags to a comma-separated tag list, skipping duplicates.
+func mergeTags(tags string, extra ...string) string {
+	existing := strings.Split(tags, ",")
+	for _, tag := range extra {
+		if !slices.Contains(existing, tag) {
+			existing = append(existing, tag)
+		}
+	}
+	return strings.Trim(strings.Join(existing, ","), ",")
+}
+
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
 	}
