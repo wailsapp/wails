@@ -75,6 +75,8 @@ var (
 	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
+	procRegisterHotKey                = moduser32.NewProc("RegisterHotKey")
+	procUnregisterHotKey              = moduser32.NewProc("UnregisterHotKey")
 	procRegisterWindowMessageA        = moduser32.NewProc("RegisterWindowMessageA")
 	procCopyRect                      = moduser32.NewProc("CopyRect")
 	procEqualRect                     = moduser32.NewProc("EqualRect")
@@ -545,6 +547,29 @@ func PostMessage(hwnd HWND, msg uint32, wParam, lParam uintptr) bool {
 
 func WaitMessage() bool {
 	ret, _, _ := procWaitMessage.Call()
+	return ret != 0
+}
+
+// RegisterHotKey registers a system-wide hot key. When the hot key is pressed a
+// WM_HOTKEY message (with wParam set to id) is posted to the message queue of
+// the thread that owns hwnd. fsModifiers is a combination of MOD_* flags and vk
+// is a virtual-key code.
+// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey
+func RegisterHotKey(hwnd HWND, id int, fsModifiers uint, vk uint) bool {
+	ret, _, _ := procRegisterHotKey.Call(
+		uintptr(hwnd),
+		uintptr(id),
+		uintptr(fsModifiers),
+		uintptr(vk))
+	return ret != 0
+}
+
+// UnregisterHotKey releases a hot key previously registered with RegisterHotKey.
+// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-unregisterhotkey
+func UnregisterHotKey(hwnd HWND, id int) bool {
+	ret, _, _ := procUnregisterHotKey.Call(
+		uintptr(hwnd),
+		uintptr(id))
 	return ret != 0
 }
 
