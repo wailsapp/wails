@@ -118,7 +118,7 @@ Because of these differences, always check the error returned by `Register` and 
 
     Global shortcuts use the Carbon Event Manager's hot key API. This is the standard mechanism for system-wide hot keys on macOS and does not require Accessibility permission.
 
-    Hot keys are bound to physical key positions, so a shortcut maps to the key in the standard ANSI/QWERTY position on non-QWERTY layouts.
+    Letter shortcuts are layout aware. The Carbon API binds to physical key positions, so Wails translates a letter to the key that produces it on your active keyboard layout (via `UCKeyTranslate`). `Cmd+A` therefore lands on the key labelled **A** on AZERTY, QWERTZ, Dvorak and similar layouts, rather than the QWERTY position. Digits, punctuation and named keys (arrows, function keys, and so on) use their fixed physical position. The binding is resolved when the shortcut is registered; if you switch keyboard layout while the application is running, existing letter shortcuts keep the physical key they were originally bound to.
 
     :::caution[Hide shortcuts and `ApplicationShouldTerminateAfterLastWindowClosed`]
     `window.Hide()` uses `orderOut:` on macOS, which makes the window non-visible. AppKit treats the last non-visible window as closed, so if you set `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` and use a global shortcut to hide your only window, the application will quit instead of staying in the background. Leave that option unset (the default) when you rely on a hide/show hotkey, so the window can be hidden and summoned back later.
