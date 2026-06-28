@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 - Add global (system-wide) keyboard shortcuts via `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Shortcuts fire even when the application is not focused. Implemented natively per platform with no third party dependencies: Carbon hot keys on macOS, `RegisterHotKey` on Windows, `XGrabKey` on X11, and the XDG Desktop Portal global shortcuts interface on Wayland.
 - Add built-in MCP server: a Model Context Protocol server that starts automatically when the application is built with the `mcp` tag, letting LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. No user code required: the `mcp` tag is added automatically by `wails3 build`/`wails3 dev` when `WAILS_MCP=1` is set. Configured entirely via environment variables (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+- Global shortcuts on macOS are now keyboard-layout aware: letter accelerators bind to the labelled key on non-QWERTY layouts (AZERTY, QWERTZ, Dvorak, ...) via `UCKeyTranslate`, instead of the fixed QWERTY physical position.
 
 ## Changed
 <!-- Changes in existing functionality -->
