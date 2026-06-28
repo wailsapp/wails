@@ -295,7 +295,6 @@ export default defineConfig({
         {
           label: "Mobile",
           collapsed: true,
-          badge: { text: "Experimental", variant: "caution" },
           items: [
             { label: "Overview", link: "/guides/mobile" },
             { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
@@ -312,6 +311,7 @@ export default defineConfig({
           items: [
             { label: "Overview", link: "/experimental" },
             { label: "Wake", link: "/experimental/wake" },
+            { label: "LLM Control (MCP)", link: "/guides/mcp-service" },
           ],
         },
 
@@ -371,7 +371,7 @@ export default defineConfig({
               label: "Advanced Topics",
               collapsed: true,
               items: [
-                { label: "Server Build", link: "/guides/server-build", badge: { text: "Experimental", variant: "caution" } },
+                { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
                 { label: "Panic Handling", link: "/guides/advanced/panic-handling" },
