@@ -31,6 +31,10 @@ func withWatchdog(t *testing.T, d time.Duration, name string, body func()) {
 // against a real GLib main loop, covering the shutdown race CodeRabbit flagged on
 // #5668: the enabled-check must be serialized with scheduling so a worker either
 // dispatches onto the live loop or runs inline, never blocking on a dead loop.
+//
+// The subtests run in order and share the process-global dispatch-enabled flag:
+// DisableRaceDoesNotDeadlock flips it off permanently, and InlineAfterDisable
+// depends on that, so the subtests are not independently runnable via -run.
 func TestMainThreadDispatch(t *testing.T) {
 	// Drive a real GLib main loop on a dedicated, locked OS thread.
 	loopStopped := make(chan struct{})
@@ -124,4 +128,18 @@ func TestMainThreadDispatch(t *testing.T) {
 
 	testQuitMainLoop()
 	<-loopStopped
+}
+
+// TestWebkitRequestBodyZeroLengthRead guards the io.Reader contract fix from
+// #5668: a zero-length read must return (0, nil) and must not dereference &p[0]
+// or the stream. The nil stream here would crash if the early return regressed,
+// so no GTK runtime is needed.
+func TestWebkitRequestBodyZeroLengthRead(t *testing.T) {
+	b := &webkitRequestBody{}
+	for _, p := range [][]byte{nil, {}, make([]byte, 0)} {
+		n, err := b.Read(p)
+		if n != 0 || err != nil {
+			t.Fatalf("Read(len=%d) = (%d, %v), want (0, nil)", len(p), n, err)
+		}
+	}
 }
