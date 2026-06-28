@@ -346,19 +346,20 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Window      *WindowManager
-	ContextMenu *ContextMenuManager
-	KeyBinding  *KeyBindingManager
-	Browser     *BrowserManager
-	Env         *EnvironmentManager
-	Dialog      *DialogManager
-	Event       *EventManager
-	Menu        *MenuManager
-	Screen      *ScreenManager
-	Clipboard   *ClipboardManager
-	SystemTray  *SystemTrayManager
-	Autostart   *AutostartManager
-	Updater     *updater.Updater
+	Window         *WindowManager
+	ContextMenu    *ContextMenuManager
+	KeyBinding     *KeyBindingManager
+	Browser        *BrowserManager
+	Env            *EnvironmentManager
+	Dialog         *DialogManager
+	Event          *EventManager
+	Menu           *MenuManager
+	Screen         *ScreenManager
+	Clipboard      *ClipboardManager
+	SystemTray     *SystemTrayManager
+	Autostart      *AutostartManager
+	GlobalShortcut *GlobalShortcutManager
+	Updater        *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -509,6 +510,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
+	a.GlobalShortcut = newGlobalShortcutManager(a)
 	a.Updater = updater.New(newUpdaterHost(a))
 }
 
@@ -643,6 +645,9 @@ func (a *App) Run() error {
 		a.runLock.Lock()
 		a.running = true
 		a.runLock.Unlock()
+
+		// Bind any global shortcuts that were registered before the app started.
+		a.GlobalShortcut.flushPending()
 
 		// No need to hold the lock here because
 		//   - a.pendingRun may only change while a.running is false.
@@ -820,6 +825,12 @@ func (a *App) cleanup() {
 	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
+	}
+	// Release any global shortcuts the application registered with the OS.
+	if a.GlobalShortcut != nil {
+		if err := a.GlobalShortcut.UnregisterAll(); err != nil {
+			a.handleError(err)
+		}
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
