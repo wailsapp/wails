@@ -34,7 +34,7 @@ func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 		}
 		c := platform.ShellCommand(sh)
 		if err := c.Run(); err != nil {
-			msg := pc.Msg
+			msg := parse.ExpandTemplates(pc.Msg, vars)
 			if msg == "" {
 				msg = fmt.Sprintf("precondition failed: %q", sh)
 			}
