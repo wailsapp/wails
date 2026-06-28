@@ -3,9 +3,16 @@ title: LLM Control (MCP)
 description: Let LLM agents test and control your app via the Model Context Protocol
 sidebar:
   order: 11
+  badge:
+    text: Experimental
+    variant: caution
 ---
 
 import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimental Feature">
+The built-in MCP server is experimental and the API may change in future releases.
+</Aside>
 
 Wails v3 has a built-in [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
 server that lets LLM agents — Claude Code, IDE assistants, or any MCP client — inspect,
@@ -269,7 +276,7 @@ Run it with:
 
 ```shell
 cd v3/examples/mcp
-WAILS_MCP=1 go run -tags mcp .
+go run -tags mcp .
 ```
 
 Then connect Claude Code or any MCP client to `http://127.0.0.1:9099/mcp` and ask it to
