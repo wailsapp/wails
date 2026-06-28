@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Global Shortcuts Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #e6e6e6;
+            background-color: #191919;
+            margin: 0;
+            padding: 24px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #9a9a9a; margin: 0 0 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #2c2c2c; font-size: 14px; }
+        th { color: #9a9a9a; font-weight: 500; }
+        kbd {
+            background: #2c2c2c; border-radius: 4px; padding: 2px 7px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+        }
+        .count { color: #00a4db; font-variant-numeric: tabular-nums; }
+        #log {
+            background: #111; border: 1px solid #2c2c2c; border-radius: 8px;
+            padding: 12px; height: 180px; overflow-y: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+        }
+        #log .line { padding: 2px 0; }
+        #log .ts { color: #6a6a6a; }
+        .hint { color: #9a9a9a; font-size: 13px; margin-top: 14px; }
+    </style>
+</head>
+<body>
+    <h1>Global Shortcuts Demo</h1>
+    <p class="sub">These shortcuts fire system-wide. Switch focus to another application and try them.</p>
+
+    <table>
+        <thead><tr><th>Shortcut</th><th>Action</th><th>Times fired</th></tr></thead>
+        <tbody>
+            <tr><td><kbd id="k-show"></kbd></td><td>Show &amp; focus this window</td><td class="count" id="c-show">0</td></tr>
+            <tr><td><kbd id="k-hide"></kbd></td><td>Hide this window</td><td class="count" id="c-hide">0</td></tr>
+            <tr><td><kbd id="k-ping"></kbd></td><td>Log a ping (no window change)</td><td class="count" id="c-ping">0</td></tr>
+        </tbody>
+    </table>
+
+    <div id="log"></div>
+    <p class="hint">After hiding the window, press the show shortcut from any application to bring it back.</p>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const counts = { show: 0, hide: 0, ping: 0 };
+
+    function log(name, accelerator) {
+        const ts = new Date().toLocaleTimeString();
+        const el = document.getElementById("log");
+        const line = document.createElement("div");
+        line.className = "line";
+        line.innerHTML = `<span class="ts">${ts}</span> &nbsp;${accelerator} &rarr; <b>${name}</b>`;
+        el.prepend(line);
+        if (counts[name] !== undefined) {
+            counts[name]++;
+            document.getElementById("c-" + name).textContent = counts[name];
+        }
+    }
+
+    // The backend emits "shortcut" with {name, accelerator} whenever a global
+    // shortcut fires.
+    wails.Events.On("shortcut", (ev) => {
+        const d = ev.data || ev;
+        log(d.name, d.accelerator);
+    });
+
+    // The backend sends the resolved accelerator strings on startup so the UI
+    // shows the right keys for this platform.
+    wails.Events.On("shortcuts:registered", (ev) => {
+        const d = ev.data || ev;
+        if (d.show) document.getElementById("k-show").textContent = d.show;
+        if (d.hide) document.getElementById("k-hide").textContent = d.hide;
+        if (d.ping) document.getElementById("k-ping").textContent = d.ping;
+    });
+</script>
+</body>
+</html>

@@ -257,6 +257,13 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+	case w32.WM_HOTKEY:
+		// A global shortcut fired. wParam holds the id we passed to
+		// RegisterHotKey. Route it to the global shortcut manager.
+		if app := globalApplication; app != nil && app.GlobalShortcut != nil {
+			app.GlobalShortcut.dispatch(int(wParam))
+		}
+		return 0
 	case wmTaskbarCreated:
 		if m.restartingTaskbar.Load() {
 			break
