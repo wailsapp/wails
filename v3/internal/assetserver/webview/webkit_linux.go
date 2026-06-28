@@ -126,12 +126,14 @@ func (r *webkitRequestBody) Read(p []byte) (int, error) {
 		return 0, io.ErrClosedPipe
 	}
 
-	var content unsafe.Pointer
-	var contentLen int
-	if p != nil {
-		content = unsafe.Pointer(&p[0])
-		contentLen = len(p)
+	// io.Reader allows a zero-length read; taking &p[0] on an empty slice would
+	// panic, so return early before touching the backing array.
+	if len(p) == 0 {
+		return 0, nil
 	}
+
+	content := unsafe.Pointer(&p[0])
+	contentLen := len(p)
 
 	var n C.gsize
 	var gErr *C.GError
