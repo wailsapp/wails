@@ -591,6 +591,9 @@ func (m *mcpServer) mcpWindowControl(args map[string]any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
+		if values[0] <= 0 || values[1] <= 0 {
+			return nil, errors.New("action set_size requires positive width and height")
+		}
 		window.SetSize(values[0], values[1])
 	case "set_position":
 		values, err := requireNumbers("x", "y")
@@ -617,7 +620,11 @@ func (m *mcpServer) mcpWindowControl(args map[string]any) (any, error) {
 		}
 		window.SetZoom(zoom)
 	case "set_always_on_top":
-		window.SetAlwaysOnTop(mcpArgBool(args, "always_on_top"))
+		val, ok := args["always_on_top"].(bool)
+		if !ok {
+			return nil, errors.New("action set_always_on_top requires a boolean argument \"always_on_top\"")
+		}
+		window.SetAlwaysOnTop(val)
 	default:
 		return nil, fmt.Errorf("unknown action: %s", action)
 	}

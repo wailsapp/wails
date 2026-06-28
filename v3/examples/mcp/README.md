@@ -2,7 +2,7 @@
 
 A playground application that an LLM can test and control through the
 [Model Context Protocol](https://modelcontextprotocol.io) using the
-`mcp` service (`v3/pkg/services/mcp`).
+built-in MCP server (`v3/pkg/application`, enabled with `-tags mcp`).
 
 The page contains a counter, a text input wired to a bound Go method,
 a drag & drop area and a scrollable list — one widget for each MCP tool
@@ -30,8 +30,7 @@ Without the tag the service is a no-op stub and the app behaves normally.
 ## Connecting a client
 
 The server listens on `http://127.0.0.1:9099/mcp` (streamable HTTP).
-Configure the port with `mcp.Config.Port` or the `WAILS_MCP_PORT`
-environment variable at runtime.
+Configure the port with the `WAILS_MCP_PORT` environment variable.
 
 For Claude Code:
 

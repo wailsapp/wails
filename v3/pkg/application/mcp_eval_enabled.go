@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -29,8 +30,17 @@ type mcpEvalResult struct {
 }
 
 // callbackURL returns the URL the in-page script POSTs evaluation results to.
+// Wildcard bind addresses (0.0.0.0, ::) are normalised to localhost so the
+// URL is reachable from within the webview.
 func (m *mcpServer) callbackURL() string {
-	return fmt.Sprintf("http://%s/eval-result", m.addr)
+	host, port, err := net.SplitHostPort(m.addr)
+	if err != nil {
+		return fmt.Sprintf("http://%s/eval-result", m.addr)
+	}
+	if host == "0.0.0.0" || host == "::" || host == "" {
+		host = "localhost"
+	}
+	return fmt.Sprintf("http://%s/eval-result", net.JoinHostPort(host, port))
 }
 
 // eval runs JavaScript in the window and waits for its result. The body is

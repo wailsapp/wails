@@ -34,7 +34,7 @@ The MCP server is compiled into your application only when the **`mcp` build tag
 present. Without the tag the server code is completely absent from the binary — no
 runtime overhead, no open ports, no attack surface.
 
-When the tag is present the server starts automatically inside `application.New()`,
+When the tag is present the server starts automatically inside `App.Run()`,
 binds to `127.0.0.1:9099` by default, and logs its endpoint. No user code is required.
 
 ## Tutorial

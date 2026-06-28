@@ -79,11 +79,14 @@ func TestMCPToolsList(t *testing.T) {
 	if !ok || len(tools) == 0 {
 		t.Fatalf("expected non-empty tools list, got %v", result)
 	}
-	// Verify all 16 expected tools are present.
+	// Verify the registry exposes exactly the expected 16 tools.
 	names := make(map[string]bool)
 	for _, tool := range tools {
 		toolMap, _ := tool.(map[string]any)
 		if name, ok := toolMap["name"].(string); ok {
+			if names[name] {
+				t.Errorf("tool %q duplicated in tools/list", name)
+			}
 			names[name] = true
 		}
 	}
@@ -93,6 +96,9 @@ func TestMCPToolsList(t *testing.T) {
 		"mouse_move", "mouse_click", "mouse_drag", "mouse_scroll",
 		"keyboard_type", "keyboard_press",
 		"call_bound_method", "emit_event", "wait_for_event", "screenshot_dom",
+	}
+	if len(tools) != len(expected) {
+		t.Errorf("expected exactly %d tools, got %d", len(expected), len(tools))
 	}
 	for _, name := range expected {
 		if !names[name] {

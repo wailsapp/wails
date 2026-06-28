@@ -392,38 +392,45 @@
             dragSource.dispatchEvent(new DragEvent('dragstart', mouseInit(start.x, start.y, { dataTransfer })));
         }
 
-        // Resolve the destination after pressing, in case the press changed layout.
-        const end = await resolveTarget(to);
-        const distance = Math.hypot(end.x - start.x, end.y - start.y);
-        const duration = opts.duration > 0 ? opts.duration : Math.min(1200, Math.max(300, distance * 1.8));
+        try {
+            // Resolve the destination after pressing, in case the press changed layout.
+            const end = await resolveTarget(to);
+            const distance = Math.hypot(end.x - start.x, end.y - start.y);
+            const duration = opts.duration > 0 ? opts.duration : Math.min(1200, Math.max(300, distance * 1.8));
 
-        const begin = performance.now();
-        for (;;) {
-            await nextFrame();
-            const progress = Math.min(1, (performance.now() - begin) / duration);
-            const eased = easeInOutCubic(progress);
-            const cx = Math.round(start.x + (end.x - start.x) * eased);
-            const cy = Math.round(start.y + (end.y - start.y) * eased);
-            placeCursor(cx, cy);
-            const over = moveEvents(cx, cy);
-            if (html5) {
-                over.dispatchEvent(new DragEvent('dragover', mouseInit(cx, cy, { dataTransfer })));
+            const begin = performance.now();
+            for (;;) {
+                await nextFrame();
+                const progress = Math.min(1, (performance.now() - begin) / duration);
+                const eased = easeInOutCubic(progress);
+                const cx = Math.round(start.x + (end.x - start.x) * eased);
+                const cy = Math.round(start.y + (end.y - start.y) * eased);
+                placeCursor(cx, cy);
+                const over = moveEvents(cx, cy);
+                if (html5) {
+                    over.dispatchEvent(new DragEvent('dragover', mouseInit(cx, cy, { dataTransfer })));
+                }
+                if (progress >= 1) break;
             }
-            if (progress >= 1) break;
-        }
 
-        const dropTarget = elementAt(end.x, end.y);
-        if (html5) {
-            dropTarget.dispatchEvent(new DragEvent('drop', mouseInit(end.x, end.y, { dataTransfer })));
-            dragSource.dispatchEvent(new DragEvent('dragend', mouseInit(end.x, end.y, { dataTransfer })));
+            const dropTarget = elementAt(end.x, end.y);
+            if (html5) {
+                dropTarget.dispatchEvent(new DragEvent('drop', mouseInit(end.x, end.y, { dataTransfer })));
+                dragSource.dispatchEvent(new DragEvent('dragend', mouseInit(end.x, end.y, { dataTransfer })));
+            }
+            state.buttons = 0;
+            pressCursor(false);
+            firePointer('pointerup', dropTarget, end.x, end.y, { button: 0, detail: 1 });
+            fireMouse('mouseup', dropTarget, end.x, end.y, { button: 0, detail: 1 });
+            ripple(end.x, end.y, 'rgba(16,185,129,0.95)');
+            await sleep(50);
+            return { from: describe(dragSource), to: describe(dropTarget) };
+        } finally {
+            if (state.buttons !== 0) {
+                state.buttons = 0;
+                pressCursor(false);
+            }
         }
-        state.buttons = 0;
-        pressCursor(false);
-        firePointer('pointerup', dropTarget, end.x, end.y, { button: 0, detail: 1 });
-        fireMouse('mouseup', dropTarget, end.x, end.y, { button: 0, detail: 1 });
-        ripple(end.x, end.y, 'rgba(16,185,129,0.95)');
-        await sleep(50);
-        return { from: describe(dragSource), to: describe(dropTarget) };
     }
 
     function findScrollable(el, deltaX, deltaY) {
@@ -668,12 +675,16 @@
 
     const SKIP_TAGS = new Set(['script', 'style', 'link', 'meta', 'noscript', 'template', 'head']);
 
-    function outline(el, depth, maxDepth) {
+    const SNAPSHOT_NODE_BUDGET = 2000;
+
+    function outline(el, depth, maxDepth, budget) {
+        if (budget.count >= budget.max) return null;
         if (!el || SKIP_TAGS.has(el.tagName.toLowerCase())) return null;
         const rect = el.getBoundingClientRect();
         const inViewport = rect.bottom > 0 && rect.top < window.innerHeight &&
             rect.right > 0 && rect.left < window.innerWidth;
         if (!inViewport || rect.width === 0 || rect.height === 0) return null;
+        budget.count++;
         const node = {
             tag: el.tagName.toLowerCase(),
             bounds: [Math.round(rect.x), Math.round(rect.y), Math.round(rect.width), Math.round(rect.height)],
@@ -690,7 +701,8 @@
         if (depth < maxDepth) {
             const children = [];
             for (const child of el.children) {
-                const childNode = outline(child, depth + 1, maxDepth);
+                if (budget.count >= budget.max) break;
+                const childNode = outline(child, depth + 1, maxDepth, budget);
                 if (childNode) children.push(childNode);
             }
             if (children.length) node.children = children;
@@ -699,6 +711,7 @@
     }
 
     function snapshot(maxDepth) {
+        const budget = { count: 0, max: SNAPSHOT_NODE_BUDGET };
         return {
             url: location.href,
             title: document.title,
@@ -706,7 +719,7 @@
             scroll: { x: Math.round(window.scrollX), y: Math.round(window.scrollY) },
             focused: describe(document.activeElement !== document.body ? document.activeElement : null),
             cursor: { x: state.x, y: state.y },
-            tree: outline(document.body, 0, maxDepth > 0 ? maxDepth : 12),
+            tree: outline(document.body, 0, maxDepth > 0 ? maxDepth : 12, budget),
         };
     }
 

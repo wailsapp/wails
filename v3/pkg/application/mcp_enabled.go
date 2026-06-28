@@ -69,9 +69,10 @@ func startMCPServer(a *App) error {
 		}
 		port = p
 	}
-	if port <= 0 {
-		port = 0 // ask the OS for a free port
+	if port < 0 {
+		return fmt.Errorf("invalid %s value: must be 0 (free port) or a positive port number, got %d", mcpPortEnvVar, port)
 	}
+	// port == 0 means ask the OS for a free port
 
 	evalTimeout := mcpDefaultTimeout
 	if env := os.Getenv(mcpTimeoutEnvVar); env != "" {
@@ -108,7 +109,13 @@ func startMCPServer(a *App) error {
 	mux.HandleFunc("/eval-result", server.handleEvalResult)
 	mux.HandleFunc("/", server.handleStatus)
 
-	server.httpServer = &http.Server{Handler: mux}
+	server.httpServer = &http.Server{
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	go func() {
 		if err := server.httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			server.logger.Error("mcp: server error", "error", err)

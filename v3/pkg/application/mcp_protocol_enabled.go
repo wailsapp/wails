@@ -120,6 +120,10 @@ func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
 		mcpWriteJSON(w, http.StatusBadRequest, mcpErrorResponse(nil, mcpCodeParseError, "parse error: %v", parseErr))
 		return
 	}
+	if batch && len(requests) == 0 {
+		mcpWriteJSON(w, http.StatusBadRequest, mcpErrorResponse(nil, mcpCodeInvalidRequest, "invalid request: empty batch"))
+		return
+	}
 
 	var responses []*mcpJSONRPCResponse
 	for _, req := range requests {
@@ -168,6 +172,9 @@ func mcpWriteJSON(w http.ResponseWriter, status int, value any) {
 // notifications, which receive no response.
 func (m *mcpServer) handleMessage(req *mcpJSONRPCRequest) *mcpJSONRPCResponse {
 	isNotification := len(req.ID) == 0 || string(req.ID) == "null"
+	if isNotification || strings.HasPrefix(req.Method, "notifications/") {
+		return nil
+	}
 
 	switch req.Method {
 	case "initialize":
@@ -212,15 +219,9 @@ func (m *mcpServer) handleMessage(req *mcpJSONRPCRequest) *mcpJSONRPCResponse {
 		return mcpResultResponse(req.ID, map[string]any{"tools": tools})
 
 	case "tools/call":
-		if isNotification {
-			return nil
-		}
 		return m.handleToolCall(req)
 
 	default:
-		if strings.HasPrefix(req.Method, "notifications/") || isNotification {
-			return nil
-		}
 		return mcpErrorResponse(req.ID, mcpCodeMethodNotFound, "method not found: %s", req.Method)
 	}
 }
