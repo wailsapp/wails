@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix frontend bindings error always parses as text by @mbaklor
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

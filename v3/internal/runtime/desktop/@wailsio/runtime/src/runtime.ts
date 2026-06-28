@@ -141,7 +141,13 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         response = await fetch(url, { method: 'POST', headers, body: bodyStr });
     }
     if (!response.ok) {
-        throw new Error(await response.text());
+
+      const ct = response.headers.get("Content-Type");
+      if (ct?.includes("application/json")) {
+          const json = await response.json();
+          throw new Error(json.message);
+      }
+      throw new Error(await response.text());
     }
 
     if ((response.headers.get("Content-Type")?.indexOf("application/json") ?? -1) !== -1) {
