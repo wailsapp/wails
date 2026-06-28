@@ -31,14 +31,6 @@ Browse S3 like a file manager. Preview objects, inspect metadata and versions, a
 
 ![Kira's S3 object browser with object preview and metadata](../../../../assets/showcase-images/kira_screenshot_5.png)
 
-Stay on the keyboard. The `Cmd+K` command palette jumps to any account, region, or action in a couple of keystrokes.
-
-![Kira's Cmd+K command palette](../../../../assets/showcase-images/kira_screenshot_9.png)
-
-Make it your own. Install `.kext` extension bundles — from a local file or a link — to add custom action buttons backed by small Go scripts, so team-specific workflows live right next to the built-in ones.
-
-![Kira installing a .kext extension bundle](../../../../assets/showcase-images/kira_screenshot_13.png)
-
 Distributed as a signed, notarized `.dmg` for macOS.
 
 [Visit Kira](https://kira.thiennguyen.dev) | [Read the docs](https://docs.kira.thiennguyen.dev)
