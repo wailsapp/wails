@@ -20,19 +20,27 @@ ARG GARBLE_VERSION=v0.16.0
 
 # Install base tools, GCC, and GTK/WebKit dev packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl xz-utils nodejs npm pkg-config gcc libc6-dev \
+    curl xz-utils python3 nodejs npm pkg-config gcc libc6-dev \
     libgtk-3-dev libwebkit2gtk-4.1-dev \
     libgtk-4-dev libwebkitgtk-6.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN go install mvdan.cc/garble@${GARBLE_VERSION}
 
-# Install Zig - automatically selects correct binary for host architecture
+# Install Zig - automatically selects correct binary for host architecture.
+# The SHA-256 is fetched from Zig's official download manifest and verified
+# before extraction to protect against MITM or corrupted downloads.
 ARG ZIG_VERSION=0.14.0
 RUN ZIG_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch64" ;; *) echo "x86_64" ;; esac) && \
-    curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" \
-    | tar -xJ -C /opt \
-    && ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
+    ZIG_FILE="zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" && \
+    curl -fSL "https://ziglang.org/download/${ZIG_VERSION}/${ZIG_FILE}" -o "/tmp/${ZIG_FILE}" && \
+    EXPECTED=$(curl -fsSL "https://ziglang.org/download/index.json" | \
+        python3 -c "import json,sys; d=json.load(sys.stdin); print(d[sys.argv[1]][sys.argv[2]+'-linux']['shasum'])" \
+        "${ZIG_VERSION}" "${ZIG_ARCH}") && \
+    echo "${EXPECTED}  /tmp/${ZIG_FILE}" | sha256sum -c - && \
+    tar -xJ -f "/tmp/${ZIG_FILE}" -C /opt && \
+    rm "/tmp/${ZIG_FILE}" && \
+    ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
 
 # Download macOS SDK (required for darwin targets)
 ARG MACOS_SDK_VERSION=14.5

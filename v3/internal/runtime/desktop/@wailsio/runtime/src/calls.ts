@@ -13,7 +13,11 @@ import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { nanoid } from "./nanoid.js";
 
 // Setup
-window._wails = window._wails || {};
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    window._wails = window._wails || {};
+}
 
 type PromiseResolvers = Omit<CancellablePromiseWithResolvers<any>, "promise" | "oncancelled">
 

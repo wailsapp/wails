@@ -42,7 +42,7 @@ The following variables are available inside `.tmpl` files:
 | `{{.ProductCompany}}` | Company / author name                          |
 | `{{.ProductIdentifier}}` | Reverse-DNS product identifier              |
 | `{{.ProductCopyright}}` | Copyright string                             |
-| `{{.Typescript}}`   | `true` if the template name ends in `-ts`        |
+| `{{.Typescript}}`   | `true` for TypeScript templates — declared via `typescript: true` in `template.yaml` (built-in TS templates) or a `-ts` name suffix (community templates) |
 | `{{.Opn}}`          | Literal `{{` — use inside templates to avoid parsing errors |
 | `{{.Cls}}`          | Literal `}}` — use inside templates to avoid parsing errors |
 

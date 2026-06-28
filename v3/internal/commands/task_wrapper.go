@@ -3,8 +3,10 @@ package commands
 import (
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
@@ -20,7 +22,36 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
+const (
+	// mcpEnvVar enables the MCP service build tag when set to a truthy value.
+	mcpEnvVar = "WAILS_MCP"
+	// mcpBuildTag is the Go build tag that compiles in the MCP service.
+	mcpBuildTag = "mcp"
+)
+
+// envTags returns the build tags implied by environment variables.
+func envTags() []string {
+	var tags []string
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(mcpEnvVar))) {
+	case "1", "true", "on", "yes":
+		tags = append(tags, mcpBuildTag)
+	}
+	return tags
+}
+
+// mergeTags appends extra tags to a comma-separated tag list, skipping duplicates.
+func mergeTags(tags string, extra ...string) string {
+	existing := strings.Split(tags, ",")
+	for _, tag := range extra {
+		if !slices.Contains(existing, tag) {
+			existing = append(existing, tag)
+		}
+	}
+	return strings.Trim(strings.Join(existing, ","), ",")
+}
+
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
 	}
@@ -45,6 +76,23 @@ func wrapTask(action string, otherArgs []string) error {
 	// Match the banner other wails3 commands print; the footer is restored by
 	// leaving DisableFooter at its default so printFooter runs on exit.
 	term.Header(title(action))
+
+	// Create a per-invocation warnings file so subprocess commands (e.g.
+	// wails3 tool has-cc) can append deprecation notices that we collect
+	// and print after the task finishes.
+	if f, err := os.CreateTemp("", "wails-build-warnings-*"); err == nil {
+		f.Close()
+		prev, hadPrev := os.LookupEnv(buildwarnings.EnvVar)
+		os.Setenv(buildwarnings.EnvVar, f.Name())
+		defer func() {
+			buildwarnings.FlushAndPrint()
+			if hadPrev {
+				os.Setenv(buildwarnings.EnvVar, prev)
+			} else {
+				os.Unsetenv(buildwarnings.EnvVar)
+			}
+		}()
+	}
 
 	goos := os.Getenv("GOOS")
 	if goos == "" {

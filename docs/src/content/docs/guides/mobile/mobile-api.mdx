@@ -1,0 +1,110 @@
+---
+title: Mobile API
+description: The cross-platform application.Mobile manager — one build-guarded entry point for the native mobile capabilities shared by iOS and Android
+sidebar:
+  order: 5
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimental Feature">
+Mobile support is experimental and may change in future releases.
+</Aside>
+
+Native mobile capabilities are exposed two ways:
+
+- **Per-platform managers** — `application.IOS` (in `//go:build ios` files) and
+  `application.Android` (in `//go:build android` files). Use these for anything
+  platform-specific. See the [iOS](/guides/mobile/ios) and
+  [Android](/guides/mobile/android) references for the full per-platform surface.
+- **`application.Mobile`** — a single, build-guarded manager covering the subset
+  of capabilities that behave identically on both platforms. Use this when you
+  want one code path that compiles and runs everywhere.
+
+## `application.Mobile`
+
+`application.Mobile` dispatches to `IOS` on iOS, to `Android` on Android, and to
+a no-op stub on desktop. Because it has no build constraint, you can call it from
+ordinary, platform-agnostic Go — no `//go:build` files of your own:
+
+```go
+// Works in any file, on any target.
+// On desktop this returns "" (no-op); on device it returns the real path.
+dbDir := application.Mobile.StoragePath()
+if dbDir == "" {
+    // Off-device, or the directory could not be created — handle accordingly.
+    return
+}
+db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
+```
+
+`StoragePath()` returns the absolute path to the app's private files directory —
+`getFilesDir()` on Android, the Application Support directory on iOS — the
+recommended home for databases and other persistent files. It returns an empty
+string on desktop, and on device if the directory is unavailable (on iOS, if it
+cannot be created), so check for `""` before using it.
+
+<Aside type="note">
+Off-device (desktop builds) every `Mobile` method is a no-op and every query
+returns its zero value (`""` for strings). This is what lets cross-platform code
+call `application.Mobile.*` unconditionally. When you need a real path on
+desktop too, branch on the platform and fall back to `os.UserConfigDir()` or
+similar.
+</Aside>
+
+## Capabilities
+
+The `Mobile` manager exposes the capabilities whose signatures are identical on
+iOS and Android:
+
+| Capability | API | Notes |
+|---|---|---|
+| Share sheet | `Mobile.Share(json)` | `{text, url}` |
+| Open URL externally | `Mobile.OpenURL(url)` | System browser |
+| Keep screen awake | `Mobile.SetKeepAwake(bool)` | |
+| Torch / flashlight | `Mobile.SetTorch(bool)` | → `common:torch` |
+| Safe-area insets | `Mobile.SafeAreaJSON()` | `{top,bottom,left,right}` |
+| App info | `Mobile.AppInfoJSON()` | `{name,version,build,bundleId}` |
+| Orientation lock | `Mobile.SetOrientation(mode)` | `portrait` / `landscape` / `auto` |
+| Status bar | `Mobile.SetStatusBar(json)` | style + visibility |
+| Storage info | `Mobile.StorageJSON()` | `{free,total}` bytes |
+| Storage path | `Mobile.StoragePath()` | App-private files directory |
+| Power / battery | `Mobile.PowerJSON()` | `{level,charging,lowPower}` |
+| Network status | `Mobile.NetworkJSON()` | `{connected,type}` |
+| Biometrics | `Mobile.BiometricAuthenticate(reason)` | → `common:biometric` |
+| Secure storage | `Mobile.SecureGet(key)` / `Mobile.SecureDelete(key)` | Keychain / `EncryptedSharedPreferences` |
+| Geolocation | `Mobile.GetLocation()` | one-shot → `common:location` |
+| Haptics | `Mobile.Haptic(type)` | impact / notification / selection |
+| Accelerometer | `Mobile.SetMotion(bool)` | → `common:motion` |
+| Proximity | `Mobile.SetProximity(bool)` | → `common:proximity` |
+| Text-to-speech | `Mobile.Speak(text)` / `Mobile.StopSpeak()` | |
+| Keyboard insets | `Mobile.SetKeyboardWatch(bool)` | → `common:keyboard` |
+| Screen-capture | `Mobile.SetScreenProtect(bool)` | → `common:screenCapture` |
+| Camera | `Mobile.CapturePhoto()` / `Mobile.CaptureVideo()` | → `common:capture` |
+
+Asynchronous results arrive as `common:*` events, exactly as with the
+per-platform managers — see [Events](/guides/mobile/ios#events) for the payloads.
+
+## What stays platform-specific
+
+Capabilities that differ in shape between iOS and Android are **not** on
+`Mobile`; call them through `application.IOS` / `application.Android` from a
+build-tagged file:
+
+| Concern | iOS | Android |
+|---|---|---|
+| Brightness (set) | `IOS.SetBrightness(0.0-1.0)` | `Android.SetBrightness(0-100)` |
+| Brightness / orientation (get) | `IOS.GetBrightness()` / `IOS.GetOrientation()` | `Android.BrightnessJSON()` / `Android.OrientationJSON()` |
+| Local notification | `IOS.PostNotification(json)` | `Android.Notify(json)` |
+| Secure store (write) | `IOS.SecureSet(key, value)` | `Android.SecureSet(json)` |
+| Background execution | `IOS.BeginBackgroundTask` / `EndBackgroundTask` | `Android.StartForegroundService` / `StopForegroundService` |
+
+<Aside type="tip">
+The `MobileManager` interface is the contract behind `application.Mobile`.
+Because both platform managers must satisfy it, any method listed above is
+guaranteed to keep an identical signature on iOS and Android — if they ever
+drift, the platform build fails to compile.
+</Aside>
