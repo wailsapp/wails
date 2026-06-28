@@ -1810,7 +1810,20 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			w.resyncWebviewRasterizationScale()
+			if w.resyncWebviewRasterizationScale() {
+				// A scale re-put alone does not make WebView2 re-lay out content
+				// whose bounds are unchanged — the page keeps reporting sizes
+				// computed with the stale scale until the bounds are re-asserted.
+				// Dragging across a mixed-DPI boundary (e.g. 150%→100%) hits this:
+				// content renders shrunk, then disappears, until restart (#5677).
+				// Mirror the un-minimise path (resyncWebviewDPIAfterMinimise, #5544)
+				// and re-assert the bounds. Gating on the resync return value keeps
+				// this off an unavailable controller (#5605): a true return is proof
+				// PutRasterizationScale just succeeded, so the controller is live.
+				// chromium.Resize() reads w32.GetClientRect, the real pixel
+				// dimensions, not the stale options size.
+				w.chromium.Resize()
+			}
 			// Track the new DPI so the un-minimise comparison stays accurate.
 			if dpi, _ := w.DPI(); dpi != 0 {
 				w.lastKnownDPI = dpi
