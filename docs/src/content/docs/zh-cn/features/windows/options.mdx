@@ -419,7 +419,7 @@ Maximised: true,
 **平台：** 所有平台
 
 ```go
-BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
+BackgroundColour: application.RGBA{R: 0, G: 0, B: 0, A: 255},
 ```
 
 **用途：** 内容加载前的窗口背景颜色。
@@ -432,10 +432,10 @@ BackgroundColour: application.RGBA{R: 0, G: 0, H: 0, A: 255},
 **示例：**
 
 ```go
-// 深色主题
+// Dark theme
 BackgroundColour: application.RGBA{R: 30, G: 30, B: 30, A: 255},
 
-// 浅色主题```go
+// Light theme
 BackgroundColour: application.RGBA{R: 255, G: 255, B: 255, A: 255},
 ```
 
@@ -998,6 +998,6 @@ func main() {
     window.Show()
     app.Run()
 }
-```---
+```
 
 **有问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

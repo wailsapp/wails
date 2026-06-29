@@ -312,7 +312,11 @@ app := application.New(application.Options{
         // Save application state
         saveState()
 
-        // Close connections------|------|
+        // Close connections
+```
+
+| 平台 | 最后一个窗口关闭时的默认行为 |
+|------|------------------------------|
 | macOS | 应用程序保持运行（菜单栏保留） |
 | Windows | 应用程序退出 |
 | Linux | 应用程序退出 |

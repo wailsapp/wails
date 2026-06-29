@@ -312,7 +312,11 @@ type UserLoginData struct {
 type MonitorStats struct {
     CPUUsage    float64
     MemoryUsage float64
-}-------|-------|------|
+}
+```
+
+| 事件 | 描述 | 用途 |
+|------|------|------|
 | `common:ApplicationStarted` | 应用程序已完全启动 | 初始化应用，加载保存的状态 |
 | `common:WindowRuntimeReady` | Wails 运行时已就绪 | 开始进行 Wails API 调用 |
 | `common:ThemeChanged` | 系统主题已更改 | 更新应用外观 |

@@ -420,7 +420,9 @@ func (d *MessageDialog) SetMessage(message string) *MessageDialog
 
 ```go
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
-```#### AddButton()
+```
+
+#### AddButton()
 
 向对话框添加一个按钮并返回用于配置的按钮实例。
 
@@ -769,7 +771,10 @@ func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
 
 - GTK 系统上使用 GTK 对话框
 - Qt 系统上使用 Qt 对话框
-- 与桌面环境相匹配--------|------|------|-------|
+- 与桌面环境相匹配
+
+| 选项 | GTK3 (`-tags gtk3`) | GTK4 (默认) | 备注 |
+|------|---------------------|-------------|------|
 | `ShowHiddenFiles()` | ✅ 有效 | ❌ 无效 | 用户通过对话框的 UI 切换控件（Ctrl+H 或菜单）控制 |
 | `CanCreateDirectories()` | ✅ 有效 | ❌ 无效 | 在 portal 中始终启用 |
 | `ResolvesAliases()` | ✅ 有效 | ❌ 无效 | Portal 处理符号链接解析 |

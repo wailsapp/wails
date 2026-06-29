@@ -294,7 +294,9 @@ fileMenu := menu.AddRole(application.FileMenu)
 // Add custom items
 fileMenu.Add("Import...").OnClick(handleImport)
 fileMenu.Add("Export...").OnClick(handleExport)
-```## 自定义菜单
+```
+
+## 自定义菜单
 
 为应用程序特定功能创建自己的菜单：
 
@@ -503,6 +505,5 @@ if runtime.GOOS == "windows" {
 - 某些桌面环境支持全局菜单（Unity、带有扩展的 GNOME）
 - 外观因桌面环境而异
 
-**最佳实践：** 遵循 Windows 惯例，并在目标桌面环境上进行测试。---
-
+**最佳实践：** 遵循 Windows 惯例，并在目标桌面环境上进行测试。
 **有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [菜单示例](https://github.com/wailsapp/wails/tree/master/v3/examples/menu)。

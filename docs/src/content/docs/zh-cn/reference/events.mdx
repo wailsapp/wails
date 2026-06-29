@@ -292,7 +292,9 @@ Events.On('data-fetched', (data) => {
 // 调用服务方法
 const items = await FetchData("search term")
 displayItems(items)
-```### 进度更新
+```
+
+### 进度更新
 
 适用于长时间运行的操作，如文件上传、批处理、大量数据导入或视频编码。在操作期间发射进度事件，以更新用户界面中的进度条、状态文本或步骤指示器，为用户提供实时反馈。
 
@@ -598,7 +600,11 @@ Events.On('window-state', (state) => {
     document.body.dataset.windowState = state
 })
 
-// Trigger long task-------|-------|-------|---------|
+// Trigger long task
+```
+
+| 事件 | 描述 | 触发时机 | 可取消 |
+|------|------|----------|--------|
 | `ApplicationOpenedWithFile` | 使用文件打开应用程序 | 当通过文件关联启动应用程序时 | 否 |
 | `ApplicationStarted` | 应用程序已完成启动 | 应用程序初始化完成且应用程序就绪后 | 否 |
 | `ApplicationLaunchedWithUrl` | 通过 URL 启动应用程序 | 当通过 URL 方案启动应用程序时 | 否 |

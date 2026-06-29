@@ -299,7 +299,11 @@ WORKDIR /app
 RUN apk add --no-cache git
 COPY . .
 RUN go mod tidy
-RUN go build -tags server -ldflags="-s -w" -o server .------|------|------|
+RUN go build -tags server -ldflags="-s -w" -o server .
+```
+
+| 变量 | 描述 | 默认值 |
+|------|------|--------|
 | `WAILS_SERVER_HOST` | 要绑定的网络接口 | `localhost` |
 | `WAILS_SERVER_PORT` | 要监听的端口 | `8080` |
 

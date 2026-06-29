@@ -5,6 +5,8 @@ sidebar:
     order: 50
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 本指南将引导您完成为 Wails v3 创建自定义模板的过程。
 
 ## 我为什么要制作自定义模板？
@@ -112,8 +114,6 @@ tasks:
 
 有多种方法可以设置前端：从头开始或使用现有框架。
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 <Tabs>
   <TabItem label="Start from Scratch">
     If you want to start from scratch, you can create your frontend project just like you would for any web application. 
@@ -179,7 +179,10 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ### 5. 配置 Go 应用程序
 
-模板目录中的默认文件足以让用户开始使用。但是，您可能希望提供一些额外的功能来展示模板的能力。最好的方法是将 `main.go.tmpl` 重命名为 `main.go` 并像编辑其他 Go 文件一样编辑它。完成后，在提交更改之前，请确保将其重命名为 `main.go.tmpl`。如果您不关心拥有模板化的 `main.go` 文件（默认模板会将项目名称注入到应用程序的 `Name` 字段中），您可以跳过此步骤。----------------------|--------------------------------|-------------------------------------|
+模板目录中的默认文件足以让用户开始使用。但是，您可能希望提供一些额外的功能来展示模板的能力。最好的方法是将 `main.go.tmpl` 重命名为 `main.go` 并像编辑其他 Go 文件一样编辑它。完成后，在提交更改之前，请确保将其重命名为 `main.go.tmpl`。如果您不关心拥有模板化的 `main.go` 文件（默认模板会将项目名称注入到应用程序的 `Name` 字段中），您可以跳过此步骤。
+
+| 变量 | 描述 | 示例 |
+|------|------|------|
 | `Name`               | 项目名称                       | `"MyApp"`                           |
 | `BinaryName`         | 生成的二进制文件名称           | `"myapp"`                           |
 | `ProductName`        | 产品名称                       | `"My Application"`                  |

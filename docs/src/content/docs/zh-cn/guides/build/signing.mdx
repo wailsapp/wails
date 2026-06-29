@@ -267,7 +267,10 @@ Apple 要求所有分发的应用程序都必须经过公证。
 
 - 代码签名证书（来自 DigiCert、Sectigo 等）
 - 用于原生签名：已安装 Windows SDK（用于 signtool.exe）
-- 用于跨平台：仅需证书文件------|------|------|
+- 用于跨平台：仅需证书文件
+
+| 变量 | 是否必需 | 描述 |
+|------|----------|------|
 | `SIGN_CERTIFICATE` | 二选一 | .pfx/.p12 证书文件路径 |
 | `SIGN_THUMBPRINT` | 二选一 | Windows 证书存储中的证书指纹 |
 | `TIMESTAMP_SERVER` | 否 | 时间戳服务器 URL（默认：http://timestamp.digicert.com） |
@@ -541,7 +544,11 @@ name: Build and Sign (Cross-Platform)
 
 on:
   push:
-    tags: ['v*']------|------|
+    tags: ['v*']
+```
+
+| 标志 | 描述 |
+|------|------|
 | `--input` | 要签名的文件路径 |
 | `--output` | 输出路径 (可选，默认为原地覆盖) |
 | `--verbose` | 启用详细输出 |

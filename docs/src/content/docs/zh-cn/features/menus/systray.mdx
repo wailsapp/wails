@@ -307,7 +307,10 @@ func rebuildTrayMenu(status string) {
     
     systray.SetMenu(menu)
 }
-```----------|--------|--------|-------|
+```
+
+| 平台 | Hide() | Show() | 备注 |
+|------|--------|--------|------|
 | **Windows** | ✅ | ✅ | 完全可用 - 图标在通知区域中显示/消失 |
 | **macOS** | ✅ | ✅ | 菜单栏项目显示/隐藏 |
 | **Linux** | ✅ | ✅ | 因桌面环境而异 |
@@ -375,6 +378,5 @@ app := application.New(application.Options{
 - **不要忘记深色模式** - 在 macOS 深色模式下测试
 - **不要阻塞点击处理程序** - 保持快速响应
 - **不要忘记 menu.Update()** - 在更改菜单状态后调用
-- **不要假设托盘支持** - 某些 Linux 桌面环境不支持---
-
+- **不要假设托盘支持** - 某些 Linux 桌面环境不支持
 **有问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问，或查看 [系统托盘示例](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)。
