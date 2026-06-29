@@ -24,7 +24,7 @@ func (g *GreetService) Greet(name string) string {
     return g.prefix + name + "!"
 }
 
-// Daftarkan
+// Register
 app := application.New(application.Options{
     Services: []application.Service{
         application.NewService(NewGreetService("Hello, ")),
@@ -153,17 +153,17 @@ Dipanggil saat aplikasi dimulai:
 func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     u.logger.Info("UserService starting up")
     
-    // Inisialisasi resource
+    // Initialise resources
     if err := u.db.Ping(); err != nil {
         return fmt.Errorf("database not available: %w", err)
     }
     
-    // Jalankan migrasi
+    // Run migrations
     if err := u.runMigrations(); err != nil {
         return fmt.Errorf("migrations failed: %w", err)
     }
     
-    // Mulai task background
+    // Start background tasks
     go u.backgroundSync(ctx)
     
     return nil
@@ -190,12 +190,12 @@ Dipanggil saat aplikasi dimatikan:
 func (u *UserService) ServiceShutdown() error {
     u.logger.Info("UserService shutting down")
     
-    // Tutup database
+    // Close database
     if err := u.db.Close(); err != nil {
         return fmt.Errorf("failed to close database: %w", err)
     }
     
-    // Bersihkan resource
+    // Cleanup resources
     u.cleanup()
     
     return nil
@@ -230,19 +230,19 @@ func NewDatabaseService(logger *slog.Logger) *DatabaseService {
 func (d *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     d.logger.Info("Starting database service")
     
-    // Buka database
+    // Open database
     db, err := sql.Open("sqlite3", "app.db")
     if err != nil {
         return fmt.Errorf("failed to open database: %w", err)
     }
     d.db = db
     
-    // Uji koneksi
+    // Test connection
     if err := db.Ping(); err != nil {
         return fmt.Errorf("database not available: %w", err)
     }
     
-    // Mulai cleanup background
+    // Start background cleanup
     ctx, cancel := context.WithCancel(ctx)
     d.cancel = cancel
     go d.periodicCleanup(ctx)
@@ -253,12 +253,12 @@ func (d *DatabaseService) ServiceStartup(ctx context.Context, options applicatio
 func (d *DatabaseService) ServiceShutdown() error {
     d.logger.Info("Shutting down database service")
     
-    // Batalkan task background
+    // Cancel background tasks
     if d.cancel != nil {
         d.cancel()
     }
     
-    // Tutup database
+    // Close database
     if d.db != nil {
         if err := d.db.Close(); err != nil {
             return fmt.Errorf("failed to close database: %w", err)
@@ -316,7 +316,7 @@ func (f *FileService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     http.FileServer(http.Dir(f.root)).ServeHTTP(w, r)
 }
 
-// Daftarkan dengan route
+// Register with route
 app := application.New(application.Options{
     Services: []application.Service{
         application.NewServiceWithOptions(&FileService{root: "./files"}, application.ServiceOptions{
@@ -461,7 +461,7 @@ func NewEmailService(smtp *smtp.Client, logger *slog.Logger) *EmailService {
     }
 }
 
-// Daftarkan
+// Register
 smtpClient := createSMTPClient()
 logger := slog.Default()
 
@@ -491,7 +491,7 @@ func (n *NotificationService) Notify(message string) {
     // pkg/services/notifications and call notifier.SendNotification(...).
 }
 
-// Daftarkan setelah app dibuat
+// Register after app creation
 app := application.New(application.Options{})
 app.RegisterService(application.NewService(NewNotificationService(app)))
 ```
@@ -511,7 +511,7 @@ func NewOrderService(userService *UserService, emailService *EmailService) *Orde
     }
 }
 
-// Daftarkan berurutan
+// Register in order
 userService := &UserService{}
 emailService := &EmailService{}
 orderService := NewOrderService(userService, emailService)
@@ -654,14 +654,14 @@ func NewUserService(logger *slog.Logger) *UserService {
 func (u *UserService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     u.logger.Info("Starting UserService")
     
-    // Buka database
+    // Open database
     db, err := sql.Open("sqlite3", "users.db")
     if err != nil {
         return fmt.Errorf("failed to open database: %w", err)
     }
     u.db = db
     
-    // Buat tabel
+    // Create table
     _, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -693,7 +693,7 @@ func (u *UserService) ServiceShutdown() error {
 }
 
 func (u *UserService) GetUser(id int) (*User, error) {
-    // Periksa cache terlebih dahulu
+    // Check cache first
     u.mu.RLock()
     if user, ok := u.cache[id]; ok {
         u.mu.RUnlock()
@@ -715,7 +715,7 @@ func (u *UserService) GetUser(id int) (*User, error) {
         return nil, fmt.Errorf("database error: %w", err)
     }
     
-    // Perbarui cache
+    // Update cache
     u.mu.Lock()
     u.cache[id] = &user
     u.mu.Unlock()
@@ -741,7 +741,7 @@ func (u *UserService) CreateUser(name, email string) (*User, error) {
         CreatedAt: time.Now(),
     }
     
-    // Perbarui cache
+    // Update cache
     u.mu.Lock()
     u.cache[int(id)] = user
     u.mu.Unlock()

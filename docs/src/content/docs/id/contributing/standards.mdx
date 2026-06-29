@@ -14,10 +14,10 @@ Mengikuti standar coding yang konsisten membuat codebase lebih mudah dibaca, dip
 Gunakan alat format Go standar:
 
 ```bash
-# Format semua kode
+# Format all code
 gofmt -w .
 
-# Gunakan goimports untuk organisasi import
+# Use goimports for import organization
 goimports -w .
 ```
 
@@ -43,12 +43,12 @@ goimports -w .
 - Interface satu method: nama dengan akhiran `-er`
 
 ```go
-// Baik
+// Good
 type Closer interface {
     Close() error
 }
 
-// Hindari
+// Avoid
 type CloseInterface interface {
     Close() error
 }
@@ -59,20 +59,20 @@ type CloseInterface interface {
 **Selalu periksa error:**
 
 ```go
-// Baik
+// Good
 result, err := doSomething()
 if err != nil {
     return fmt.Errorf("failed to do something: %w", err)
 }
 
-// Buruk - mengabaikan error
+// Bad - ignoring errors
 result, _ := doSomething()
 ```
 
 **Gunakan error wrapping:**
 
 ```go
-// Wrap error untuk memberikan konteks
+// Wrap errors to provide context
 if err := validate(); err != nil {
     return fmt.Errorf("validation failed: %w", err)
 }
@@ -134,25 +134,25 @@ func (a *Application) processEvent(event *Event) {
 **Jaga fungsi tetap fokus:**
 
 ```go
-// Baik - single responsibility
+// Good - single responsibility
 func (w *Window) setTitle(title string) {
     w.title = title
     w.updateNativeTitle()
 }
 
-// Buruk - melakukan terlalu banyak
+// Bad - doing too much
 func (w *Window) updateEverything() {
     w.setTitle(w.title)
     w.setSize(w.width, w.height)
     w.setPosition(w.x, w.y)
-    // ... 20 operasi lagi
+    // ... 20 more operations
 }
 ```
 
 **Gunakan early return:**
 
 ```go
-// Baik
+// Good
 func validate(input string) error {
     if input == "" {
         return errors.New("empty input")
@@ -165,7 +165,7 @@ func validate(input string) error {
     return nil
 }
 
-// Hindari nesting yang dalam
+// Avoid deep nesting
 ```
 
 ### Concurrency
@@ -201,13 +201,13 @@ func (c *SafeCounter) Increment() {
 **Hindari goroutine leak:**
 
 ```go
-// Baik - goroutine memiliki kondisi keluar
+// Good - goroutine has exit condition
 func (a *Application) startWorker(ctx context.Context) {
     go func() {
         for {
             select {
             case <-ctx.Done():
-                return  // Keluar bersih
+                return  // Clean exit
             case work := <-a.workChan:
                 a.process(work)
             }
@@ -221,8 +221,8 @@ func (a *Application) startWorker(ctx context.Context) {
 **Penamaan file test:**
 
 ```go
-// Implementasi: window.go
-// Tes: window_test.go
+// Implementation: window.go
+// Tests: window_test.go
 ```
 
 **Table-driven test:**
@@ -281,13 +281,13 @@ Gunakan Prettier untuk format konsisten:
 **Gunakan tipe eksplisit:**
 
 ```typescript
-// Baik
+// Good
 function greet(name: string): string {
     return `Hello, ${name}`
 }
 
-// Hindari implicit any
-function process(data) {  // Buruk
+// Avoid implicit any
+function process(data) {  // Bad
     return data
 }
 ```
@@ -360,7 +360,7 @@ window destructor.
 
 ```markdown
 ## Description
-Deskripsi singkat tentang apa yang dilakukan PR ini.
+Brief description of what this PR does.
 
 ## Type of Change
 - [ ] Bug fix
@@ -369,7 +369,7 @@ Deskripsi singkat tentang apa yang dilakukan PR ini.
 - [ ] Documentation update
 
 ## Testing
-Bagaimana ini diuji?
+How was this tested?
 
 ## Checklist
 - [ ] Tests pass
@@ -428,10 +428,10 @@ func BenchmarkProcess(b *testing.B) {
 ### Penamaan File
 
 ```
-window.go           // Interface umum
-window_darwin.go    // Implementasi macOS
-window_windows.go   // Implementasi Windows
-window_linux.go     // Implementasi Linux
+window.go           // Common interface
+window_darwin.go    // macOS implementation
+window_windows.go   // Windows implementation
+window_linux.go     // Linux implementation
 ```
 
 ### Build Tags
@@ -441,7 +441,7 @@ window_linux.go     // Implementasi Linux
 
 package application
 
-// Kode spesifik macOS
+// macOS-specific code
 ```
 
 ## Linting
@@ -449,10 +449,10 @@ package application
 Jalankan linter sebelum commit:
 
 ```bash
-# golangci-lint (direkomendasikan)
+# golangci-lint (recommended)
 golangci-lint run
 
-# Linter individual
+# Individual linters
 go vet ./...
 staticcheck ./...
 ```

@@ -165,8 +165,8 @@ func handleExternalLink(app *application.App, url string) {
     dialog.Show()
 }
 
-func isValidURL(url string) bool {
-    parsed, err := url.Parse(url)
+func isValidURL(rawURL string) bool {
+    parsed, err := url.Parse(rawURL)
     return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
 }
 ```
@@ -361,7 +361,7 @@ func openURLWithFeedback(app *application.App, url string) {
    }
    ```
 
-2. **Validasi URL**: Pastikan URL well-formed sebelum membuka:
+2. **Validate URLs**: Ensure URLs are well-formed before opening:
    ```go
    func isValidHTTPURL(str string) bool {
        u, err := url.Parse(str)
@@ -369,13 +369,13 @@ func openURLWithFeedback(app *application.App, url string) {
    }
    ```
 
-3. **Konfirmasi Pengguna**: Untuk tautan eksternal, pertimbangkan meminta izin pengguna:
+3. **User Confirmation**: For external links, consider asking user permission:
    ```go
    // Show confirmation dialog before opening external links
    confirmAndOpen(app, "https://external-site.com")
    ```
 
-4. **Path File Aman**: Saat membuka file, pastikan path aman:
+4. **Secure File Paths**: When opening files, ensure paths are safe:
    ```go
    func openSafeFile(app *application.App, filename string) error {
        // Ensure file exists and is readable
@@ -386,9 +386,9 @@ func openURLWithFeedback(app *application.App, url string) {
    }
    ```
 
-## Contoh Lengkap
+## Complete Example
 
-Berikut contoh lengkap yang menunjukkan berbagai pola integrasi browser:
+Here's a complete example showing various browser integration patterns:
 
 ```go
 package main

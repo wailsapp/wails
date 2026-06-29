@@ -18,17 +18,17 @@ Pendaftaran berlaku pada **login berikutnya**, bukan segera.
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
 
-// Daftarkan agar diluncurkan saat login
+// Register to launch at login
 if err := app.Autostart.Enable(); err != nil {
     app.Logger.Error("autostart enable failed", "error", err)
 }
 
-// Hentikan peluncuran saat login
+// Stop launching at login
 if err := app.Autostart.Disable(); err != nil {
     app.Logger.Error("autostart disable failed", "error", err)
 }
 
-// Periksa status
+// Check status
 enabled, err := app.Autostart.IsEnabled()
 ```
 
@@ -123,21 +123,21 @@ func (m *AutostartManager) Status() (AutostartStatus, error)
     Exec=<executable> <arguments>
     ```
 
-    Field `Exec` di-escape sesuai [spesifikasi Desktop Entry freedesktop.org](https://specifications.freedesktop.org/desktop-entry-spec/) — karakter reserved (``"``, `` ` ``, `$`, `\\`) di-escape dengan backslash dan nilai di-quote ganda saat berisi whitespace.
+    The `Exec` field is escaped per the [freedesktop.org Desktop Entry spec](https://specifications.freedesktop.org/desktop-entry-spec/) — reserved characters (``"``, `` ` ``, `$`, `\\`) are backslash-escaped and the value is double-quoted when it contains whitespace.
 
-    `Status().Strategy` mengembalikan `AutostartStrategyXDGAutostart`.
+    `Status().Strategy` returns `AutostartStrategyXDGAutostart`.
   </TabItem>
 
   <TabItem label="iOS / Android / server" icon="information">
-    Tidak didukung. Semua metode mengembalikan `ErrAutostartNotSupported`. Gunakan `errors.Is(err, application.ErrAutostartNotSupported)` untuk mendeteksinya dengan bersih:
+    Not supported. All methods return `ErrAutostartNotSupported`. Use `errors.Is(err, application.ErrAutostartNotSupported)` to detect this cleanly:
 
     ```go
     if err := app.Autostart.Enable(); err != nil {
         if errors.Is(err, application.ErrAutostartNotSupported) {
-            // sembunyikan toggle di UI
+            // hide the toggle in the UI
             return
         }
-        // kegagalan nyata — tampilkan ke pengguna
+        // real failure — surface it
     }
     ```
   </TabItem>
@@ -145,30 +145,30 @@ func (m *AutostartManager) Status() (AutostartStatus, error)
 
 ## Identifier
 
-Jika `Options.Identifier` kosong, default di-derive dari nama aplikasi Anda:
+If `Options.Identifier` is empty, a default is derived from your app's name:
 
-| Platform | Identifier default |
+| Platform | Default identifier |
 |---|---|
-| macOS (bundled) | Bundle identifier aplikasi, mis. `com.example.MyApp` |
-| macOS (unbundled) | `wails.autostart.<slug>`, di mana `<slug>` di-derive dari `application.Options.Name` |
-| Windows | Slug dari `application.Options.Name` (lowercase, non-`A-Za-z0-9._-` dihapus, spasi menjadi dash) |
-| Linux | Slug yang sama dengan Windows |
+| macOS (bundled) | The app's bundle identifier, e.g. `com.example.MyApp` |
+| macOS (unbundled) | `wails.autostart.<slug>`, where `<slug>` is derived from `application.Options.Name` |
+| Windows | Slug of `application.Options.Name` (lowercase, non-`A-Za-z0-9._-` stripped, spaces become dashes) |
+| Linux | Same slug as Windows |
 
-Identifier harus cocok dengan `^[A-Za-z0-9._-]+$` dan tidak lebih dari 200 karakter. Bentuk reverse-DNS direkomendasikan untuk macOS (sesuai cara Label launchd ditulis secara konvensional).
+Identifiers must match `^[A-Za-z0-9._-]+$` and be no longer than 200 characters. Reverse-DNS form is recommended for macOS (it matches how launchd Labels are conventionally written).
 
-Saat `AutostartOptions.Identifier` ditimpa, identifier yang sama digunakan ulang sebagai nama nilai registry di Windows dan nama file `.desktop` di Linux, sehingga satu string mengidentifikasi pendaftaran lintas platform.
+When `AutostartOptions.Identifier` is overridden, the same identifier is reused as the registry value name on Windows and the `.desktop` filename on Linux, so a single string identifies the registration cross-platform.
 
-## Deteksi Stale
+## Stale Detection
 
-`Disable()` dan `Status()` menemukan pendaftaran dengan **mencocokkan path executable terdaftar terhadap `os.Executable()` (diselesaikan melalui symlink apa pun)**, bukan dengan mencari identifier. Artinya:
+`Disable()` and `Status()` locate the registration by **matching the registered executable path against `os.Executable()` (resolved through any symlinks)**, not by looking up the identifier. This means:
 
-- **Mengubah identifier antar rilis aman.** Pendaftaran lama masih dapat ditemukan oleh `Status()` dan dibersihkan oleh `Disable()` — selama path executable sama.
-- **Salinan kedua aplikasi di path berbeda tidak akan menimpa pendaftaran yang pertama.** Setiap lokasi binary dilacak secara independen.
-- **Instalasi symlink (Homebrew, Scoop) stabil.** `filepath.EvalSymlinks` diterapkan ke `os.Executable()` sebelum pencocokan, sehingga upgrade Homebrew yang menukar target tidak meninggalkan entri terputus.
+- **Changing the identifier between releases is safe.** The old registration is still discoverable by `Status()` and cleaned up by `Disable()` — as long as the executable path is the same.
+- **A second copy of the app at a different path won't clobber the first's registration.** Each binary location is tracked independently.
+- **Symlinked installs (Homebrew, Scoop) are stable.** `filepath.EvalSymlinks` is applied to `os.Executable()` before matching, so a Homebrew upgrade that swaps the target doesn't strand the entry.
 
-Yang *tidak* tercakup: jika pengguna memindahkan atau mengganti nama binary ke path yang tidak terkait, pendaftaran lama menjadi yatim (menunjuk ke file yang sudah tidak ada). Aplikasi yang diinstal dari path instalasi stabil tidak perlu khawatir tentang ini; aplikasi yang dikirim sebagai binary portable single-file harus memanggil `Disable()` sebelum memindahkan dirinya, atau selalu meluncur melalui symlink stabil.
+What this does *not* cover: if the user moves or renames the binary to an unrelated path, the old registration becomes orphaned (it points at the now-missing file). Apps that ship from a stable install path don't need to worry about this; apps shipped as portable single-file binaries should call `Disable()` before moving themselves, or always launch through a stable symlink.
 
-## Contoh
+## Example
 
 ```go
 package main

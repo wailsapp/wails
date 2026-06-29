@@ -314,20 +314,20 @@ const config = new Config({
 ```javascript
 import { User } from './bindings/changeme/models'
 
-// Instance kosong
+// Empty instance
 const user1 = new User()
 
-// Dengan data
+// With data
 const user2 = new User({
     id: 1,
     name: "Alice",
     email: "alice@example.com"
 })
 
-// Dari string JSON
+// From JSON string
 const user3 = User.createFrom('{"id":1,"name":"Alice"}')
 
-// Dari object
+// From object
 const user4 = User.createFrom({ id: 1, name: "Alice" })
 ```
 
@@ -353,7 +353,7 @@ import { GetUser } from './bindings/changeme/userservice'
 
 const user = await GetUser(1)
 
-// user sudah instance User
+// user is already a User instance
 console.log(user.name)
 console.log(user.email)
 console.log(user.createdAt.toISOString())
@@ -364,14 +364,14 @@ console.log(user.createdAt.toISOString())
 ```javascript
 import { GetUser, UpdateUser } from './bindings/changeme/userservice'
 
-// Ambil user
+// Get user
 const user = await GetUser(1)
 
-// Modifikasi
+// Modify
 user.name = "Alice Smith"
 user.email = "alice.smith@example.com"
 
-// Simpan
+// Save
 await UpdateUser(user)
 ```
 
@@ -430,7 +430,7 @@ import { GetUser, CreateUser } from './bindings/changeme/userservice'
 import { User } from './bindings/changeme/models'
 
 async function example() {
-    // Buat user
+    // Create user
     const newUser = new User({
         name: "Alice",
         email: "alice@example.com"
@@ -438,10 +438,10 @@ async function example() {
     
     const created: User = await CreateUser(newUser)
     
-    // Ambil user
+    // Get user
     const user: User = await GetUser(created.id)
     
-    // Akses type-safe
+    // Type-safe access
     console.log(user.name.toUpperCase())  // ✅ string method
     console.log(user.id + 1)              // ✅ number operation
     console.log(user.createdAt.getTime()) // ✅ Date method
@@ -469,7 +469,7 @@ const user = new User({
     nickname: "Ally"  // Optional
 })
 
-// Periksa apakah diset
+// Check if set
 if (user.nickname) {
     console.log("Nickname:", user.nickname)
 }
@@ -528,7 +528,7 @@ class User {
     }
 }
 
-// Gunakan
+// Use
 const user = new User({ name: "Alice", email: "alice@example.com" })
 user.validate()  // ✅
 
@@ -539,16 +539,16 @@ invalid.validate()  // ❌ Throws
 ### Serialisasi
 
 ```javascript
-// Ke JSON
+// To JSON
 const json = JSON.stringify(user)
 
-// Dari JSON
+// From JSON
 const user = User.createFrom(json)
 
-// Ke plain object
+// To plain object
 const obj = { ...user }
 
-// Dari plain object
+// From plain object
 const user2 = new User(obj)
 ```
 
@@ -560,6 +560,7 @@ const user2 = new User(obj)
 package main
 
 import (
+    "fmt"
     "time"
     "github.com/wailsapp/wails/v3/pkg/application"
 )

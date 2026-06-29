@@ -114,7 +114,7 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
     files := event.Context().DroppedFiles()
     details := event.Context().DropTargetDetails()
     
-    // Kirim ke frontend
+    // Send to frontend
     app.Event.Emit("files-dropped", map[string]any{
         "files":   files,
         "target":  details.ElementID,
@@ -156,7 +156,7 @@ Jika Anda ingin file dapat di-drop di mana saja di aplikasi, tambahkan atribut k
 
 ```html
 <body data-file-drop-target>
-    <!-- Konten aplikasi Anda -->
+    <!-- Your app content -->
 </body>
 ```
 
@@ -185,22 +185,22 @@ Untuk membedakannya di handler zona drop HTML Anda, periksa apakah drag berisi f
 
 ```javascript
 zone.addEventListener('dragenter', (e) => {
-    // Lewati drag file eksternal - Wails menanganinya
+    // Skip external file drags - Wails handles these
     if (e.dataTransfer?.types.includes('Files')) {
         return;
     }
-    // Tangani drag HTML5 internal
+    // Handle internal HTML5 drags
     zone.classList.add('drag-over');
 });
 
 zone.addEventListener('drop', (e) => {
-    // Lewati drop file eksternal - Wails menanganinya
+    // Skip external file drops - Wails handles these
     if (e.dataTransfer?.types.includes('Files')) {
         return;
     }
     e.preventDefault();
     zone.classList.remove('drag-over');
-    // Tangani drop internal
+    // Handle internal drop
 });
 ```
 
