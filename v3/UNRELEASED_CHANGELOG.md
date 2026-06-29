@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent crash when closing window with pending async calls in [PR](https://github.com/wailsapp/wails/pull/4435) by @leaanthony
 - Prevent window activation when opening hidden apps on Windows in [PR](https://github.com/wailsapp/wails/pull/5249) by @leaanthony
 - Ensure WebKit request metadata, response completion, and body stream handling run on the GTK main thread in [PR](https://github.com/wailsapp/wails/pull/5668) by @taliesin-ai
 - Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
