@@ -1,6 +1,6 @@
-# NixOS FontSize Bug
+# Bug taille de la police dans NixOS
 
-NixOS/Wayland can cause a bug where the `font-size` css property doesn't affect the rendered page. To fix this add the following to your devShell.
+NixOS/Wayland peut causer un bogue où la propriété `font-size` css n'affecte pas la page gérée correctement. Pour corriger cela, ajoutez ce qui suit à votre devShell.
 
 ```shell
     shellHook = with pkgs; ''

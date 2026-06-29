@@ -1,0 +1,61 @@
+---
+title: フィードバック
+description: Wails v3に対するフィードバックの提供方法と問題の報告方法
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+あなたのフィードバックを歓迎し、積極的に促しています！新しいIssueやディスカッションを作成する前に、既存のものを検索してください。フィードバックを提供する方法は以下の通りです。
+
+<Tabs>
+  <TabItem label="バグ" icon="error">
+
+    バグを見つけた場合は、GitHubのバグレポートテンプレートを使用して[Issueを開いて](https://github.com/wailsapp/wails/issues/new/choose)ください。
+
+    - バグの内容を明確に記述し、再現可能な簡単な例を含めてください。ドキュメントで_何が起こるべきか_が不明確な場合は、その旨をレポートに含めてください。
+    - `wails doctor` の実行結果をレポートに含めてください。
+    - バグが現在のドキュメントと一致しない動作（例：ウィンドウが適切にリサイズされない）である場合は、以下の手順に従ってください：
+      - `v3/examples` ディレクトリ内の既存の例を更新するか、問題が明確に示されるように新しい例を作成してください。
+      - 関連するIssueを参照した[PR](https://github.com/wailsapp/wails/pulls)を開いてください。
+
+    :::caution
+
+    _覚えておいてください_、予期せぬ動作が必ずしもバグであるとは限りません。単に期待通りに動作していないだけかもしれません。その場合は`Suggestions`を使用してください。
+
+    :::
+
+    バグについてDiscordの[#v3](https://discord.gg/bdj28QNHmT)チャンネルで気軽に議論することもできます。
+
+  </TabItem>
+
+  <TabItem label="修正" icon="approve-check">
+
+    バグの修正やドキュメントの改善がある場合は、以下の手順に従ってください：
+
+    - [コントリビューションガイドライン](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)に従って、[Wailsリポジトリ](https://github.com/wailsapp/wails)でプルリクエストを開いてください。
+    - PRの説明に関連するIssueを参照してください。
+
+  </TabItem>
+
+  <TabItem label="提案" icon="puzzle" id="abc">
+
+    機能のリクエストや提案がある場合は、GitHubで[ディスカッションを開始](https://github.com/wailsapp/wails/discussions)してください。
+
+    - 機能とそれが解決する問題を明確に記述してください。
+    - Discordの[#v3](https://discord.gg/bdj28QNHmT)チャンネルでアイデアを議論することも歓迎します。
+
+  </TabItem>
+
+  <TabItem label="高評価" icon="star">
+
+    - GitHubのIssueやディスカッションで :thumbsup: リアクションを使用してサポートを示してください。
+    - 「+1」や「私も」といったコメントは_追加しないでください_。
+    - 「このバグはARMビルドにも影響します」や「別のアプローチとしては...」など、意味のある追加情報がある場合はコメントしてください。
+
+  </TabItem>
+
+</Tabs>
+
+既知の問題のリストと進行中の作業は[こちら](https://github.com/orgs/wailsapp/projects/6)で確認できます。

@@ -1,0 +1,161 @@
+on:
+  push:
+    branches: ['master']
+    paths:
+      - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      - '.github/workflows/publish-npm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-npm-v3
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: Detect committed changes
+    if: github.event_name != 'workflow_dispatch'
+    outputs:
+      changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: 'true'
+
+      - name: Detect committed package.json changes
+        id: package-json-changes
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
+        with:
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/package.json
+            v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json
+
+      - name: Detect committed source changes
+        if: >-
+          steps.package-json-changes.outputs.any_modified != 'true'
+        id: source-changes
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
+        with:
+          files: |
+            v3/internal/runtime/Taskfile.yaml
+            v3/internal/runtime/desktop/@wailsio/compiled/main.js
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
+            v3/internal/runtime/desktop/@wailsio/runtime/src/**
+            v3/pkg/events/events.txt
+            v3/tasks/events/**
+
+  rebuild_and_publish:
+    name: Rebuild and publish
+    needs: [detect]
+    if: >-
+      !failure() && !cancelled()
+      && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      pull-requests: read
+      id-token: write # Required for npm Trusted Publishing (OIDC) + provenance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'master'
+          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+
+      - name: Configure git
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Upgrade npm for Trusted Publishing
+        # Trusted Publishing (OIDC) requires npm >= 11.5.1.
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Install dependencies
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npx --yes esbuild@latest --version
+
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Build bundled runtime
+        working-directory: v3
+        run: task runtime:build
+
+      - name: Test+Build npm package
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm test
+          npm run build
+
+      - name: Verify generated artifacts
+        # Fail the publish if (re)generation did not produce the expected
+        # outputs — both the npm package payload (dist/, gitignored, what gets
+        # published) and the tracked bundled runtime that is committed back to
+        # master below. A missing/empty file here means a silent build failure.
+        working-directory: v3
+        run: |
+          set -euo pipefail
+          required=(
+            "internal/assetserver/bundledassets/runtime.js"
+            "internal/assetserver/bundledassets/runtime.debug.js"
+            "internal/runtime/desktop/@wailsio/runtime/dist/runtime.js"
+          )
+          for f in "${required[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::expected generated artifact missing or empty: v3/$f"
+              exit 1
+            fi
+          done
+          echo "All expected runtime artifacts were generated."
+
+      - name: Bump version
+        id: bump-version
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit regenerated runtime + version bump
+        # Commit ALL regenerated tracked files back to master, not just the
+        # version bump: the bundled runtime (internal/assetserver/bundledassets),
+        # generated events (v3/pkg/events/events.go) and TypeDoc output all come
+        # from `task runtime:build` and must stay in sync with the published
+        # package. dist/ is gitignored, so `git add -A` will not commit it.
+        run: |
+          git add -A
+          echo "Files committed back to master:"
+          git status --short
+          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
+          git push
+
+      - name: Publish npm package (Trusted Publishing / OIDC)
+        # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a
+        # short-lived publish credential. Provenance is attached automatically.
+        # Requires a Trusted Publisher to be configured for @wailsio/runtime on
+        # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        # --tag latest: v3 ships prerelease (alpha.N) as the default dist-tag,
+        # matching the templates' "@wailsio/runtime": "latest" pin. npm >= 11
+        # requires an explicit --tag to publish a prerelease as latest.
+        run: npm publish --access public --tag latest

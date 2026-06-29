@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --wails-red: #ef4444;
+  --wails-red-dark: #dc2626;
+  --wails-red-light: #f87171;
+  --wails-blue: #1d63ed;
+  --wails-blue-dark: #1554d0;
+  --wails-blue-light: #3b7dff;
+  --bg-primary: #05070b;
+  --bg-secondary: #0a0e16;
+  --bg-tertiary: #0f1420;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: white;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html, body { background: var(--bg-primary); }
+
+/* Gradient text utility — neon red→pink, matching the starter templates. */
+.gradient-text {
+  background: linear-gradient(135deg, #ff5a4d 0%, #ff2d72 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass morphism card */
+/* The card is just a frame: NO backdrop-filter here, otherwise it would create
+   a backdrop root that stops the sidebar/content children from blurring the
+   mountain behind them (nested backdrop-filters don't stack). */
+.glass-card {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 70px 160px rgba(0, 0, 0, 0.8), 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Settings-style row */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.12s ease;
+}
+.settings-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.dark .settings-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.settings-row + .settings-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+.dark .settings-row + .settings-row {
+  border-top: 1px solid var(--glass-border);
+}
+
+/* Settings group container */
+.settings-group {
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+  overflow: hidden;
+}
+.dark .settings-group {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--glass-border) inset;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Subtle grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(239, 68, 68, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(239, 68, 68, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Radial glow */
+.radial-glow {
+  background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Thin scrollbar for compact areas */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Button hover effect */
+.btn-primary {
+  @apply bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold
+         py-3 px-8 rounded-xl shadow-lg transition-all duration-300
+         hover:scale-105 hover:shadow-xl hover:shadow-red-500/30
+         active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-transparent border border-gray-600 text-gray-300 font-medium
+         py-3 px-8 rounded-xl transition-all duration-300
+         hover:border-gray-500 hover:text-white hover:bg-gray-800/50;
+}
+
+/* Status badge animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Draw check animation for success */
+.check-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawCheck 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin):not(.spinner), *:not(.animate-spin):not(.spinner)::before, *:not(.animate-spin):not(.spinner)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.settings-row:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: -2px;
+}

@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -50,6 +51,7 @@ type Options struct {
 	SkipModTidy       bool                 //  Skip mod tidy before compile
 	IgnoreFrontend    bool                 // Indicates if the frontend does not need building
 	IgnoreApplication bool                 // Indicates if the application does not need building
+	InstallScope      string               // "machine" (default) or "user"
 	OutputFile        string               // Override the output filename
 	BinDirectory      string               // Directory to use to write the built applications
 	CleanBinDirectory bool                 // Indicates if the bin output directory should be cleaned before building
@@ -140,6 +142,12 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		cleanup, err := SyncFrontendDistToEmbedTarget(options)
+		if err != nil {
+			return "", err
+		}
+		defer cleanup()
 	}
 
 	compileBinary := ""
@@ -158,6 +166,84 @@ func Build(options *Options) (string, error) {
 
 	}
 	return compileBinary, nil
+}
+
+// SyncFrontendDistToEmbedTarget copies the built frontend assets from the
+// custom frontend:dir/dist into the embed target directory (usually
+// frontend/dist) so the //go:embed directive finds them. It returns a cleanup
+// function that restores the embed target to just a .gitkeep placeholder after
+// the build, keeping the working tree clean. The cleanup runs even on error.
+func SyncFrontendDistToEmbedTarget(options *Options) (func(), error) {
+	noop := func() {}
+
+	projectData := options.ProjectData
+	if projectData == nil {
+		return noop, nil
+	}
+
+	frontendDir := projectData.GetFrontendDir()
+	defaultFrontendDir := filepath.Join(projectData.Path, "frontend")
+
+	absFrontendDir, err := filepath.Abs(frontendDir)
+	if err != nil {
+		return noop, nil
+	}
+	absDefaultFrontendDir, err := filepath.Abs(defaultFrontendDir)
+	if err != nil {
+		return noop, nil
+	}
+
+	if absFrontendDir == absDefaultFrontendDir {
+		return noop, nil
+	}
+
+	embedDetails, err := staticanalysis.GetEmbedDetails(projectData.Path)
+	if err != nil {
+		return noop, nil
+	}
+
+	if len(embedDetails) == 0 {
+		return noop, nil
+	}
+
+	frontendDistDir := filepath.Join(frontendDir, "dist")
+	if !fs.DirExists(frontendDistDir) {
+		return noop, nil
+	}
+
+	var syncedDirs []string
+	for _, detail := range embedDetails {
+		if filepath.Ext(detail.EmbedPath) != "" {
+			continue
+		}
+		if filepath.Base(detail.EmbedPath) != "dist" {
+			continue
+		}
+		embedDistDir := detail.GetFullPath()
+		absEmbedDistDir, _ := filepath.Abs(embedDistDir)
+		absFrontendDistDir, _ := filepath.Abs(frontendDistDir)
+		if absEmbedDistDir == absFrontendDistDir {
+			continue
+		}
+		os.RemoveAll(embedDistDir)
+		if err := fs.CopyDir(frontendDistDir, embedDistDir); err != nil {
+			return noop, fmt.Errorf("failed to copy frontend build output to embed target %s: %w", embedDistDir, err)
+		}
+		syncedDirs = append(syncedDirs, embedDistDir)
+	}
+
+	cleanup := func() {
+		for _, dir := range syncedDirs {
+			os.RemoveAll(dir)
+			os.MkdirAll(dir, 0755)
+			gitkeep := filepath.Join(dir, ".gitkeep")
+			if _, err := os.Stat(gitkeep); os.IsNotExist(err) {
+				os.WriteFile(gitkeep, []byte{}, 0644)
+			}
+		}
+	}
+
+	return cleanup, nil
 }
 
 func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
@@ -353,6 +439,16 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
+		}
+		pterm.Println("Done.")
+	}
+
+	if runtime.GOOS == "darwin" && options.Platform == "darwin" {
+		// On macOS, self-sign the .app bundle so notifications work
+		printBulletPoint("Self-signing application: ")
+		cmd := exec.Command("/usr/bin/codesign", "--force", "--deep", "--sign", "-", options.CompiledBinary)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return "", fmt.Errorf("codesign failed: %v – %s", err, out)
 		}
 		pterm.Println("Done.")
 	}

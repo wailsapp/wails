@@ -1,0 +1,188 @@
+---
+title: Build Desktop Apps with Go
+description: "Native desktop applications using Go and web technologies"
+banner:
+    content: |
+        Wails v3 is in ALPHA. <a href="https://wails.io">v2 docs</a>
+template: splash
+hero:
+  tagline: Build beautiful, performant applications using Go and modern web technologies. One codebase. Three platforms. No browsers.*
+  image:
+    dark: ../../assets/wails-logo-dark.svg
+    light: ../../assets/wails-logo-light.svg
+    alt: Wails Logo
+  actions:
+    - text: Get Started
+      link: /quick-start/installation
+      icon: right-arrow
+      variant: primary
+    - text: View Tutorial
+      link: /tutorials/03-notes-vanilla
+      icon: open-book
+      variant: secondary
+---
+{/* Updated 2025-11-23 */}
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import MorphText from "@components/MorphText.astro";
+
+<style>{`
+  /* Hero background — the neon "digital Wales" mountain, full-bleed and fixed. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: url('/digital_wales_master.webp') center center / cover no-repeat;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  
+  /* Gradient overlay - highest z-index */
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(to bottom, var(--sl-color-bg) 0%, transparent 15%, transparent 85%, var(--sl-color-bg) 100%),
+      linear-gradient(to right, var(--sl-color-bg) 0%, transparent 10%, transparent 90%, var(--sl-color-bg) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  
+  /* Hero padding */
+  .hero {
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  .small-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .small-buttons a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    text-decoration: none;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-gray-5);
+    transition: all 0.2s;
+  }
+  
+  .small-buttons a:hover {
+    background: var(--sl-color-gray-5);
+    border-color: var(--sl-color-accent);
+  }
+  
+  /* Round card corners and add translucent blur effect */
+  .card {
+    border-radius: 12px;
+    background: rgba(var(--sl-color-gray-6-rgb), 0.6) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+`}</style>
+
+<MorphText />
+
+## Quickstart
+
+```bash
+# 1. Install the Wails CLI
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 2. Run the setup wizard (experimental)
+wails3 setup
+```
+
+Then you're ready for your first project:
+
+```bash
+wails3 init -n myapp -t vanilla
+cd myapp && wails3 dev
+```
+
+**Your application is now running** with hot reload and type-safe Go-to-JS bindings.
+
+<p style="font-size: 0.875rem; color: var(--sl-color-gray-3); margin-top: 0.5rem;">Having issues with <code>wails3 setup</code>? See the <a href="/quick-start/installation">manual installation guide</a>.</p>
+
+
+## Your desktop app is already a mobile app
+
+```bash
+wails3 task ios:run      # run your existing app on iOS Simulator
+wails3 task android:run  # run your existing app on Android Emulator
+```
+
+**Zero changes to your Go code.** The same `main.go`, the same services, the same frontend — Wails compiles it for iOS and Android automatically. Platform-specific features (haptics, native dialogs, safe areas) are there when you want them, but you don't need them to ship.
+
+[Mobile docs →](/guides/mobile)
+
+---
+
+## Why Wails?
+
+<CardGrid>
+  <Card title="Performance That Users Notice" icon="rocket">
+    - ~15MB binaries vs Electron's 150MB
+    - ~10MB baseline memory vs 100MB+
+    - &lt;0.5s startup time vs 2-3s
+    - Native rendering using OS WebView
+    - No bundled browser overhead
+  </Card>
+  
+  <Card title="Developer Experience" icon="setting">
+    - One Go codebase for all platforms
+    - Any web framework - React, Vue, Svelte
+    - Hot reload during development
+    - Auto-generated bindings to easily call Go from Javascript
+    - In-memory IPC. No network ports
+  </Card>
+  
+  <Card title="Production Ready" icon="approve-check">
+    - Multiple windows with lifecycles
+    - Native menus and system tray
+    - Platform-native file dialogs
+    - System integration and shortcuts
+    - Code signing and packaging tools
+  </Card>
+  
+  <Card title="Desktop & Mobile" icon="laptop">
+    - Windows, macOS, Linux, iOS, Android
+    - Same codebase, zero rewrites
+    - Native WebView on every platform
+    - No open ports, no localhost server
+    - Platform features available when needed
+  </Card>
+</CardGrid>
+
+
+
+
+## Next Steps
+
+Next: [Build a complete application](/tutorials/03-notes-vanilla), browse [examples](https://github.com/wailsapp/wails/tree/master/v3/examples), or check the [API reference](/reference/application). Migrating from v2? See the [upgrade guide](/migration/v2-to-v3).
+
+
+:::note[Production Ready]
+Wails v3 is in **ALPHA**. The API is *reasonably* stable, and applications are running in production. We're refining documentation and tooling before the final release.
+:::
+
+<Card title="Support Wails Development" icon="heart">
+  Wails is free and open source, built by developers for developers. If Wails helps you build amazing applications, consider supporting its continued development.
+
+  Your sponsorship helps maintain the project, improve documentation, and develop new features that benefit the entire community.
+
+  [Become a Sponsor →](https://github.com/sponsors/leaanthony)
+</Card>
+

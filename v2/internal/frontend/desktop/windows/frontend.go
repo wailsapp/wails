@@ -70,6 +70,12 @@ type Frontend struct {
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// Pending JS callbacks are batched to avoid saturating WebView2's
+	// ExecuteScript queue under heavy concurrent Go->JS call load.
+	callbackMu      sync.Mutex
+	pendingCallbacks []string
+	drainScheduled  bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -529,7 +535,7 @@ func (f *Frontend) setupChromium() {
 			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.Messages != nil {
 				messages = f.frontendOptions.Windows.Messages
 			}
-			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
+			winc.Errorf(f.mainWindow, "%s", messages.WebView2ProcessCrash)
 			os.Exit(-1)
 		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
 			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
@@ -620,7 +626,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	payload, err := json.Marshal(notification)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		return
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
@@ -698,13 +704,13 @@ var edgeMap = map[string]uintptr{
 func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	topSource, err := sender.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
 		return
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		f.logger.Error("Unable to get source from args: %s", err.Error())
 		return
 	}
 
@@ -717,7 +723,7 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -747,7 +753,7 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 			edge := edgeMap[sl[1]]
 			err := f.startResize(edge)
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -759,13 +765,13 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	topSource, err := sender.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
 		return
 	}
 
 	senderSource, err := args.GetSource()
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		f.logger.Error("Unable to get source from args: %s", err.Error())
 		return
 	}
 
@@ -780,7 +786,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		}
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -788,7 +794,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 
 		count, err := objs.GetCount()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -835,7 +841,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 func (f *Frontend) validBindingOrigin(source string) bool {
 	origin, err := f.originValidator.GetOriginFromURL(source)
 	if err != nil {
-		f.logger.Error(fmt.Sprintf("Error parsing source URL %s: %v", source, err.Error()))
+		f.logger.Error("Error parsing source URL %s: %v", source, err.Error())
 		return false
 	}
 	allowed := f.originValidator.IsOriginAllowed(origin)
@@ -849,7 +855,7 @@ func (f *Frontend) validBindingOrigin(source string) bool {
 func (f *Frontend) dispatchMessage(message string) {
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		f.Callback(result)
 		return
 	}
@@ -871,9 +877,52 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
-	})
+	script := `window.wails.Callback(` + string(escaped) + `);`
+
+	f.callbackMu.Lock()
+	f.pendingCallbacks = append(f.pendingCallbacks, script)
+	shouldSchedule := !f.drainScheduled
+	if shouldSchedule {
+		f.drainScheduled = true
+	}
+	f.callbackMu.Unlock()
+
+	if shouldSchedule {
+		if !f.mainWindow.Invoke(f.drainCallbacks) {
+			// PostMessage failed (queue full or HWND invalid). Reset the flag so the
+			// next incoming callback can try to schedule a fresh drain.
+			f.callbackMu.Lock()
+			f.drainScheduled = false
+			f.callbackMu.Unlock()
+			f.logger.Warning("Invoke: PostMessage failed -- pending WebView2 callbacks may be delayed")
+		}
+	}
+}
+
+// drainCallbacks is called on the UI thread by the Invoke mechanism.
+// It flushes all accumulated callbacks in a single ExecuteScript call,
+// preventing WebView2 queue saturation under high concurrent load.
+func (f *Frontend) drainCallbacks() {
+	f.callbackMu.Lock()
+	scripts := f.pendingCallbacks
+	f.pendingCallbacks = nil
+	f.drainScheduled = false // allow re-scheduling before we release the lock
+	f.callbackMu.Unlock()
+
+	if len(scripts) == 0 {
+		return
+	}
+
+	totalLen := 0
+	for _, s := range scripts {
+		totalLen += len(s)
+	}
+	var sb strings.Builder
+	sb.Grow(totalLen)
+	for _, s := range scripts {
+		sb.WriteString(s)
+	}
+	f.chromium.Eval(sb.String())
 }
 
 func (f *Frontend) startDrag() error {

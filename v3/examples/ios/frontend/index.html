@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/style.css"/>
+
+    <title>Wails App</title>
+</head>
+<body>
+<div class="container">
+    <div>
+        <a data-wml-openURL="https://wails.io">
+            <img src="/wails.png" class="logo" alt="Wails logo"/>
+        </a>
+        <a data-wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+            <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+        </a>
+    </div>
+    <h1>Wails + Javascript</h1>
+    <div class="card mobile-pane">
+        <div class="result">Demo Screens</div>
+        <div class="p-mobile-tabs-content">
+          <!-- Screen 1: Bindings -->
+          <div class="p-mobile-tabs--content active" id="screen-bindings">
+            <div class="result" id="result">Please enter your name below 👇</div>
+            <div class="input-box" id="input">
+                <input class="input" id="name" type="text" autocomplete="off"/>
+                <button class="p-btn p-prim-col" onclick="doGreet()">Greet</button>
+            </div>
+          </div>
+
+          <!-- Screen 2: Go Runtime -->
+          <div class="p-mobile-tabs--content" id="screen-go">
+            <div class="input-box">
+              <label><input type="checkbox" id="goScrollEnabled" checked onchange="setGoToggle('ios:setScrollEnabled', this.checked)"> Scroll Enabled (Go)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="goBounceEnabled" checked onchange="setGoToggle('ios:setBounceEnabled', this.checked)"> Bounce Enabled (Go)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="goIndicatorsEnabled" checked onchange="setGoToggle('ios:setScrollIndicatorsEnabled', this.checked)"> Scroll Indicators (Go)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="goNavGesturesEnabled" onchange="setGoToggle('ios:setBackForwardGesturesEnabled', this.checked)"> Back/Forward Gestures (Go)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="goLinkPreviewEnabled" checked onchange="setGoToggle('ios:setLinkPreviewEnabled', this.checked)"> Link Preview (Go)</label>
+            </div>
+            <div class="input-box">
+                <input class="input" id="uaInputGo" type="text" placeholder="Custom User Agent"/>
+                <button class="p-btn" onclick="emitGo('ios:setCustomUserAgent', {ua: document.getElementById('uaInputGo').value})">Set UA (Go)</button>
+            </div>
+          </div>
+
+          <!-- Screen 3: JS Runtime -->
+          <div class="p-mobile-tabs--content" id="screen-js">
+            <div class="input-box">
+                <button class="p-btn" onclick="doHaptic('light')">Haptic: Light</button>
+                <button class="p-btn" onclick="doHaptic('medium')">Haptic: Medium</button>
+                <button class="p-btn" onclick="doHaptic('heavy')">Haptic: Heavy</button>
+                <button class="p-btn p-prim-col" onclick="getDeviceInfo();">Get Device Info</button>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="jsScrollEnabled" checked onchange="setJsToggle('Scroll.SetEnabled', this.checked)"> Scroll Enabled (JS)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="jsBounceEnabled" checked onchange="setJsToggle('Scroll.SetBounceEnabled', this.checked)"> Bounce Enabled (JS)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="jsIndicatorsEnabled" checked onchange="setJsToggle('Scroll.SetIndicatorsEnabled', this.checked)"> Scroll Indicators (JS)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="jsNavGesturesEnabled" onchange="setJsToggle('Navigation.SetBackForwardGesturesEnabled', this.checked)"> Back/Forward Gestures (JS)</label>
+            </div>
+            <div class="input-box">
+              <label><input type="checkbox" id="jsLinkPreviewEnabled" checked onchange="setJsToggle('Links.SetPreviewEnabled', this.checked)"> Link Preview (JS)</label>
+            </div>
+            <div class="input-box">
+                <input class="input" id="uaInputJs" type="text" placeholder="Custom User Agent"/>
+                <button class="p-btn" onclick="iosJsSet('UserAgent.Set', {ua: document.getElementById('uaInputJs').value})">Set UA</button>
+            </div>
+            <pre id="deviceInfo" style="white-space: pre-wrap; word-break: break-word;"></pre>
+          </div>
+
+        </div>
+    </div>
+    <div class="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p id="time">Listening for Time event...</p></div>
+    </div>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
+</html>

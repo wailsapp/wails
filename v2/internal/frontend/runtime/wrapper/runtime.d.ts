@@ -247,3 +247,84 @@ export function CanResolveFilePaths(): boolean;
 
 // Resolves file paths for an array of files
 export function ResolveFilePaths(files: File[]): void
+
+// Notification types
+export interface NotificationOptions {
+    id: string;
+    title: string;
+    subtitle?: string; // macOS and Linux only
+    body?: string;
+    categoryId?: string;
+    data?: { [key: string]: any };
+}
+
+export interface NotificationAction {
+    id?: string;
+    title?: string;
+    destructive?: boolean; // macOS-specific
+}
+
+export interface NotificationCategory {
+    id?: string;
+    actions?: NotificationAction[];
+    hasReplyField?: boolean;
+    replyPlaceholder?: string;
+    replyButtonTitle?: string;
+}
+
+// [InitializeNotifications](https://wails.io/docs/reference/runtime/notification#initializenotifications)
+// Initializes the notification service for the application.
+// This must be called before sending any notifications.
+export function InitializeNotifications(): Promise<void>;
+
+// [CleanupNotifications](https://wails.io/docs/reference/runtime/notification#cleanupnotifications)
+// Cleans up notification resources and releases any held connections.
+export function CleanupNotifications(): Promise<void>;
+
+// [IsNotificationAvailable](https://wails.io/docs/reference/runtime/notification#isnotificationavailable)
+// Checks if notifications are available on the current platform.
+export function IsNotificationAvailable(): Promise<boolean>;
+
+// [RequestNotificationAuthorization](https://wails.io/docs/reference/runtime/notification#requestnotificationauthorization)
+// Requests notification authorization from the user (macOS only).
+export function RequestNotificationAuthorization(): Promise<boolean>;
+
+// [CheckNotificationAuthorization](https://wails.io/docs/reference/runtime/notification#checknotificationauthorization)
+// Checks the current notification authorization status (macOS only).
+export function CheckNotificationAuthorization(): Promise<boolean>;
+
+// [SendNotification](https://wails.io/docs/reference/runtime/notification#sendnotification)
+// Sends a basic notification with the given options.
+export function SendNotification(options: NotificationOptions): Promise<void>;
+
+// [SendNotificationWithActions](https://wails.io/docs/reference/runtime/notification#sendnotificationwithactions)
+// Sends a notification with action buttons. Requires a registered category.
+export function SendNotificationWithActions(options: NotificationOptions): Promise<void>;
+
+// [RegisterNotificationCategory](https://wails.io/docs/reference/runtime/notification#registernotificationcategory)
+// Registers a notification category that can be used with SendNotificationWithActions.
+export function RegisterNotificationCategory(category: NotificationCategory): Promise<void>;
+
+// [RemoveNotificationCategory](https://wails.io/docs/reference/runtime/notification#removenotificationcategory)
+// Removes a previously registered notification category.
+export function RemoveNotificationCategory(categoryId: string): Promise<void>;
+
+// [RemoveAllPendingNotifications](https://wails.io/docs/reference/runtime/notification#removeallpendingnotifications)
+// Removes all pending notifications from the notification center.
+export function RemoveAllPendingNotifications(): Promise<void>;
+
+// [RemovePendingNotification](https://wails.io/docs/reference/runtime/notification#removependingnotification)
+// Removes a specific pending notification by its identifier.
+export function RemovePendingNotification(identifier: string): Promise<void>;
+
+// [RemoveAllDeliveredNotifications](https://wails.io/docs/reference/runtime/notification#removealldeliverednotifications)
+// Removes all delivered notifications from the notification center.
+export function RemoveAllDeliveredNotifications(): Promise<void>;
+
+// [RemoveDeliveredNotification](https://wails.io/docs/reference/runtime/notification#removedeliverednotification)
+// Removes a specific delivered notification by its identifier.
+export function RemoveDeliveredNotification(identifier: string): Promise<void>;
+
+// [RemoveNotification](https://wails.io/docs/reference/runtime/notification#removenotification)
+// Removes a notification by its identifier (cross-platform convenience function).
+export function RemoveNotification(identifier: string): Promise<void>;

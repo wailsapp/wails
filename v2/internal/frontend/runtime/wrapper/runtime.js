@@ -240,3 +240,59 @@ export function CanResolveFilePaths() {
 export function ResolveFilePaths(files) {
     return window.runtime.ResolveFilePaths(files);
 }
+
+export function InitializeNotifications() {
+    return window.runtime.InitializeNotifications();
+}
+
+export function CleanupNotifications() {
+    return window.runtime.CleanupNotifications();
+}
+
+export function IsNotificationAvailable() {
+    return window.runtime.IsNotificationAvailable();
+}
+
+export function RequestNotificationAuthorization() {
+    return window.runtime.RequestNotificationAuthorization();
+}
+
+export function CheckNotificationAuthorization() {
+    return window.runtime.CheckNotificationAuthorization();
+}
+
+export function SendNotification(options) {
+    return window.runtime.SendNotification(options);
+}
+
+export function SendNotificationWithActions(options) {
+    return window.runtime.SendNotificationWithActions(options);
+}
+
+export function RegisterNotificationCategory(category) {
+    return window.runtime.RegisterNotificationCategory(category);
+}
+
+export function RemoveNotificationCategory(categoryId) {
+    return window.runtime.RemoveNotificationCategory(categoryId);
+}
+
+export function RemoveAllPendingNotifications() {
+    return window.runtime.RemoveAllPendingNotifications();
+}
+
+export function RemovePendingNotification(identifier) {
+    return window.runtime.RemovePendingNotification(identifier);
+}
+
+export function RemoveAllDeliveredNotifications() {
+    return window.runtime.RemoveAllDeliveredNotifications();
+}
+
+export function RemoveDeliveredNotification(identifier) {
+    return window.runtime.RemoveDeliveredNotification(identifier);
+}
+
+export function RemoveNotification(identifier) {
+    return window.runtime.RemoveNotification(identifier);
+}
