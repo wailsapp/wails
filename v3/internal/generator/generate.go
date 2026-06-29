@@ -1,11 +1,15 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/tools/go/packages"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
@@ -26,6 +30,20 @@ type Generator struct {
 
 	collector *collect.Collector
 	renderer  *render.Renderer
+
+	// Default output dir for the obfuscated bindings file, plus any
+	// auto-detection error to surface only when -obfuscated-output is unset.
+	mainPackageDir    string
+	mainPackageDirErr error
+
+	// dirToPkgPath maps a loaded package's source directory to its import path.
+	// Used so the obfuscated bindings file can elide the self-import when a
+	// service lives in the same package as the metadata file.
+	dirToPkgPath map[string]string
+
+	// Binding-ID registrations gathered during the per-package pass.
+	obfuscatedMu            sync.Mutex
+	obfuscatedRegistrations []bindingIDRegistration
 
 	logger    *ErrorReport
 	scheduler scheduler
@@ -127,6 +145,13 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}
 
+	if generator.options.Obfuscated {
+		generator.dirToPkgPath = buildDirToPkgPath(pkgs)
+		if generator.options.ObfuscatedOutput == "" {
+			generator.mainPackageDir, generator.mainPackageDirErr = findUniqueMainPackageDir(pkgs)
+		}
+	}
+
 	// Panic on repeated calls.
 	if generator.collector != nil {
 		panic("Generate() must not be called more than once on the same receiver")
@@ -202,6 +227,10 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	// Wait until all models and indices have been generated.
 	generator.scheduler.Wait()
 
+	if generator.options.Obfuscated {
+		generator.generateBindingIDMetadataAggregate()
+	}
+
 	// Populate stats.
 	generator.logger.Statusf("Collecting stats...")
 	for info := range generator.collector.Iterate {
@@ -216,14 +245,19 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	return
 }
 
-// generateModelsIndexIncludes schedules generation of public/private model files,
-// included files and, if allowed by the options,
-// of an index file for the given package.
+// generateModelsIndexIncludes schedules generation of public/private model
+// files, included files and, if allowed by the options, of an index file for
+// the given package. Also records the package's binding-ID registrations when
+// obfuscation is enabled.
 func (generator *Generator) generateModelsIndexIncludes(pkg *collect.PackageInfo) {
 	index := pkg.Index(generator.options.TS)
 
 	// info.Index implies info.Collect: goroutines spawned below
 	// can access package information freely.
+
+	if generator.options.Obfuscated {
+		generator.recordObfuscatedRegistrations(index)
+	}
 
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
@@ -242,7 +276,8 @@ func (generator *Generator) generateModelsIndexIncludes(pkg *collect.PackageInfo
 	}
 }
 
-// validateFileNames validates user-provided filenames.
+// validateFileNames validates user-provided filenames and rejects
+// incompatible flag combinations.
 func (generator *Generator) validateFileNames() error {
 	switch {
 	case generator.options.ModelsFilename == "":
@@ -259,9 +294,51 @@ func (generator *Generator) validateFileNames() error {
 
 	case !generator.options.NoIndex && generator.options.ModelsFilename == generator.options.IndexFilename:
 		return fmt.Errorf("models and package indexes cannot share the same filename")
+
+	case generator.options.Obfuscated && generator.options.UseNames:
+		return fmt.Errorf("obfuscated bindings cannot use name-based calls")
 	}
 
 	return nil
+}
+
+var (
+	errNoMainPackage        = errors.New("no `package main` found among loaded packages")
+	errAmbiguousMainPackage = errors.New("multiple `package main` directories found among loaded packages")
+)
+
+// findUniqueMainPackageDir returns the source directory of the unique loaded
+// `package main`, or a sentinel error when zero or multiple were found.
+func findUniqueMainPackageDir(pkgs []*packages.Package) (string, error) {
+	var dir string
+	for _, pkg := range pkgs {
+		if pkg.Name != "main" || len(pkg.GoFiles) == 0 {
+			continue
+		}
+		candidate := filepath.Dir(pkg.GoFiles[0])
+		if dir != "" && dir != candidate {
+			return "", errAmbiguousMainPackage
+		}
+		dir = candidate
+	}
+	if dir == "" {
+		return "", errNoMainPackage
+	}
+	return dir, nil
+}
+
+// buildDirToPkgPath snapshots a directory→import-path map for every loaded
+// package. Used by the obfuscated bindings emitter to detect when the metadata
+// file lives in the same package as a service and elide the self-import.
+func buildDirToPkgPath(pkgs []*packages.Package) map[string]string {
+	out := make(map[string]string, len(pkgs))
+	for _, pkg := range pkgs {
+		if len(pkg.GoFiles) == 0 || pkg.PkgPath == "" {
+			continue
+		}
+		out[filepath.Dir(pkg.GoFiles[0])] = pkg.PkgPath
+	}
+	return out
 }
 
 // scheduler provides an implementation of the [collect.Scheduler] interface.

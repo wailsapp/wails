@@ -10,6 +10,8 @@ on:
   workflow_dispatch: {}
 
 name: PR Checks (master)
+permissions:
+  contents: read
 
 jobs:
   check_docs:
@@ -130,3 +132,47 @@ jobs:
           echo "Skipping tests for sponsor update branch"
           echo "This is an automated update of the sponsors image."
         continue-on-error: true
+
+  # Aggregate job that satisfies the "Run Go Tests" branch protection required check.
+  # Matrix jobs report as "Run Go Tests (os, version)" — no single check with the bare
+  # name is ever posted, so the requirement is never fulfilled without this fan-in job.
+  go_test_results:
+    name: Run Go Tests
+    if: >
+      always() &&
+      github.repository == 'wailsapp/wails' &&
+      (
+        github.event.pull_request.head.ref == 'update-sponsors' ||
+        (
+          github.event.pull_request.head.ref != 'update-sponsors' &&
+          (
+            github.event_name == 'workflow_dispatch' ||
+            (
+              github.event.pull_request.base.ref == 'master' &&
+              (
+                github.event_name == 'pull_request' ||
+                (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+              )
+            )
+          )
+        )
+      )
+    needs: [test_go, skip_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          test_result="${{ needs.test_go.result }}"
+          skip_result="${{ needs.skip_tests.result }}"
+          branch="${{ github.event.pull_request.head.ref }}"
+
+          if [[ "$test_result" == "success" ]]; then
+            exit 0
+          fi
+
+          if [[ "$branch" == "update-sponsors" && "$skip_result" == "success" ]]; then
+            exit 0
+          fi
+
+          echo "Go tests result: $test_result"
+          echo "Skip tests result: $skip_result"
+          exit 1

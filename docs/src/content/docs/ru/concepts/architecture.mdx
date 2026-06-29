@@ -323,6 +323,333 @@ Shutdown: "Shutdown" {
     shape: rectangle
   }
   
-  Save: "Save State" {---
+  Save: "Save State" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Create
+Init.Create -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> Run.Events
+Run.Events -> Run.Messages
+Run.Messages -> Run.Render
+Run.Render -> Run.Events: "Loop"
+Run.Events -> Shutdown.Cleanup: "Quit signal"
+Shutdown.Cleanup -> Shutdown.Save
+Shutdown.Save -> End
+```
+
+**Lifecycle hooks:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    
+    // Called before windows are created
+    OnStartup: func(ctx context.Context) {
+        // Initialise database, load config, etc.
+    },
+    
+    // Called when app is about to quit
+    OnShutdown: func() {
+        // Save state, close connections, etc.
+    },
+})
+```
+
+[Learn more about lifecycle →](/concepts/lifecycle)
+
+## Build Process
+
+Understanding how Wails builds your application:
+
+```d2
+direction: down
+
+Source: "Source Code" {
+  Go: "Go Code\n(main.go, services)" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+}
+
+Build: "Build Process" {
+  AnalyseGo: "Analyse Go Code" {
+    shape: rectangle
+  }
+  
+  GenerateBindings: "Generate Bindings" {
+    shape: rectangle
+  }
+  
+  BuildFrontend: "Build Frontend" {
+    shape: rectangle
+  }
+  
+  CompileGo: "Compile Go" {
+    shape: rectangle
+  }
+  
+  Embed: "Embed Assets" {
+    shape: rectangle
+  }
+}
+
+Output: "Output" {
+  Binary: "Native Binary\n(myapp.exe/.app)" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Source.Go -> Build.AnalyseGo
+Build.AnalyseGo -> Build.GenerateBindings: "Extract types"
+Build.GenerateBindings -> Source.Frontend: "TypeScript bindings"
+Source.Frontend -> Build.BuildFrontend: "Compile (Vite/webpack)"
+Build.BuildFrontend -> Build.Embed: "Bundled assets"
+Source.Go -> Build.CompileGo
+Build.CompileGo -> Build.Embed
+Build.Embed -> Output.Binary
+```
+
+**Build steps:**
+
+1. **Analyse Go code**
+   - Scan services for exported methods
+   - Extract parameter and return types
+   - Generate method signatures
+
+2. **Generate TypeScript bindings**
+   - Create `.ts` files for each service
+   - Include full type definitions
+   - Add JSDoc comments
+
+3. **Build frontend**
+   - Run your bundler (Vite, webpack, etc.)
+   - Minify and optimise
+   - Output to `frontend/dist/`
+
+4. **Compile Go**
+   - Compile with optimisations (`-ldflags="-s -w"`)
+   - Include build metadata
+   - Platform-specific compilation
+
+5. **Embed assets**
+   - Embed frontend files into Go binary
+   - Compress assets
+   - Create single executable
+
+**Result:** A single native executable with everything embedded.
+
+[Learn more about building →](/guides/build/building)
+
+## Development vs Production
+
+Wails behaves differently in development and production:
+
+<Tabs syncKey="mode">
+  <TabItem label="Development (wails3 dev)" icon="seti:config">
+    **Characteristics:**
+    - **Hot reload**: Frontend changes reload instantly
+    - **Source maps**: Debug with original source
+    - **DevTools**: Browser DevTools available
+    - **Logging**: Verbose logging enabled
+    - **External frontend**: Served from dev server (Vite)
+
+    **How it works:**
+    ```d2
+    direction: right
+    
+    WailsApp: "Wails App" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+    
+    DevServer: "Vite Dev Server\n(localhost:5173)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+    
+    WebView: "WebView" {
+      shape: rectangle
+      style.fill: "#6B7280"
+    }
+    
+    WailsApp -> DevServer: "Proxy requests"
+    DevServer -> WebView: "Serve with HMR"
+    WebView -> WailsApp: "Call Go methods"
+    ```
+
+    **Benefits:**
+    - Instant feedback on changes
+    - Full debugging capabilities
+    - Faster iteration
+  </TabItem>
+
+  <TabItem label="Production (wails3 build)" icon="rocket">
+    **Characteristics:**
+    - **Embedded assets**: Frontend built into binary
+    - **Optimised**: Minified, compressed
+    - **No DevTools**: Disabled by default
+    - **Minimal logging**: Errors only
+    - **Single file**: Everything in one executable
+
+    **How it works:**
+    ```d2
+    direction: right
+    
+    Binary: "Single Binary\n(myapp.exe)" {
+      GoCode: "Compiled Go" {
+        shape: rectangle
+        style.fill: "#00ADD8"
+      }
+      
+      Assets: "Embedded Assets\n(HTML/CSS/JS)" {
+        shape: rectangle
+        style.fill: "#8B5CF6"
+      }
+    }
+    
+    WebView: "WebView" {
+      shape: rectangle
+      style.fill: "#6B7280"
+    }
+    
+    Binary.Assets -> WebView: "Serve from memory"
+    WebView -> Binary.GoCode: "Call Go methods"
+    ```
+
+    **Benefits:**
+    - Single file distribution
+    - Smaller size (minified)
+    - Better performance
+    - No external dependencies
+  </TabItem>
+</Tabs>
+
+## Memory Model
+
+Understanding memory usage helps you build efficient applications.
+
+{/* VISUAL PLACEHOLDER: Memory Diagram
+Description: Memory layout diagram showing:
+1. Go Heap (services, application state)
+2. WebView Memory (DOM, JavaScript heap)
+3. Shared Memory (bridge communication)
+4. Arrows showing data flow between regions
+5. Annotations for zero-copy optimisations
+Style: Technical diagram with memory regions as boxes, clear labels, size indicators
+*/}
+
+**Memory regions:**
+
+1. **Go Heap**
+   - Your services and application state
+   - Managed by Go garbage collector
+   - Typically 5-10MB for simple apps
+
+2. **WebView Memory**
+   - DOM, JavaScript heap, CSS
+   - Managed by WebView's engine
+   - Typically 10-20MB for simple apps
+
+3. **Bridge Memory**
+   - Message buffers for communication
+   - Minimal overhead (\<1MB)
+   - Zero-copy for large data where possible
+
+**Optimisation tips:**
+- **Avoid large data transfers**: Pass IDs, fetch details on demand
+- **Use events for updates**: Don't poll from frontend
+- **Stream large files**: Don't load entirely into memory
+- **Clean up listeners**: Remove event listeners when done
+
+[Learn more about performance →](/guides/performance)
+
+## Security Model
+
+Wails provides a secure-by-default architecture:
+
+```d2
+direction: down
+
+Frontend: "Frontend (Untrusted)" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Bridge: "Wails Bridge (Validation)" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+Backend: "Backend (Trusted)" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Frontend -> Bridge: "Call method"
+Bridge -> Bridge: "Validate:\n- Method exists?\n- Types correct?\n- Access allowed?"
+Bridge -> Backend: "Execute if valid"
+Backend -> Bridge: "Return result"
+Bridge -> Frontend: "Send response"
+```
+
+**Security features:**
+
+1. **Method whitelisting**
+   - Only exported methods are callable
+   - Private methods are inaccessible
+   - Explicit service registration required
+
+2. **Type validation**
+   - Arguments checked against Go types
+   - Invalid types rejected
+   - Prevents injection attacks
+
+3. **No eval()**
+   - Frontend can't execute arbitrary Go code
+   - Only predefined methods callable
+   - No dynamic code execution
+
+4. **Context isolation**
+   - Each window has its own context
+   - Services can check caller context
+   - Permissions per window possible
+
+**Best practices:**
+- **Validate user input** in Go (don't trust frontend)
+- **Use context** for authentication/authorisation
+- **Sanitise file paths** before file operations
+- **Rate limit** expensive operations
+
+[Learn more about security →](/guides/security)
+
+## Next Steps
+
+**Application Lifecycle** - Understand startup, shutdown, and lifecycle hooks  
+[Learn More →](/concepts/lifecycle)
+
+**Go-Frontend Bridge** - Deep dive into how the bridge works  
+[Learn More →](/concepts/bridge)
+
+**Build System** - Understand how Wails builds your application  
+[Learn More →](/concepts/build-system)
+
+**Start Building** - Apply what you've learned in a tutorial
+[Tutorials →](/tutorials/03-notes-vanilla)
+
+---
 
 **Вопросы об архитектуре?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [справочник API](/reference/overview).

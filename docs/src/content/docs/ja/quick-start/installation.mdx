@@ -268,7 +268,110 @@ wails3 doctor  # インストールの確認
        ```powershell
        npm --version
        ```
-     </TabItem>#### Go のバージョンが古すぎます
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **オプション1: 公式インストーラー**
+       [nodejs.org](https://nodejs.org/) からダウンロード
+
+       **オプション2: Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **確認:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **オプション1: NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **オプション2: パッケージマネージャー**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **確認:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[代替パッケージマネージャー]
+   `pnpm`、`yarn`、または`bun`をお好みですか？問題ありません！プロジェクトの`Taskfile.yml`を更新して、お好みのツールを使用するようにしてください。
+   :::
+
+</Steps>
+
+## トラブルシューティング
+
+#### `wails3`コマンドが見つからない
+
+**原因：** `~/go/bin`（Windowsの場合は`%USERPROFILE%\go\bin`）がPATHに含まれていません。
+
+**解決策：**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. 「環境変数」を開く（スタートメニューで検索）
+    2. 「ユーザー変数」の`Path`を見つける
+    3. 「編集」→「新規」をクリック
+    4. 追加：`C:\Users\YourName\go\bin`（YourNameを置き換える）
+    5. すべてのダイアログで「OK」をクリック
+    6. **ターミナルを再起動**
+
+    **確認:**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    `~/.zshrc`（macOS）または`~/.bashrc`（Linux）に追加：
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    再読み込み：
+    ```bash
+    source ~/.zshrc  # または ~/.bashrc
+    ```
+
+    **確認:**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+---
+
+#### `wails3 doctor`で依存関係の不足が報告される
+
+**Linux：** 出力にインストールが必要なパッケージが正確に表示されます。例：
+```
+❌ webkit2gtk が見つかりません
+   インストール方法：sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows：** WebView2が見つからない場合：
+- [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) からダウンロード
+- または最初のアプリ実行時に自動的にインストールされます
+
+**macOS：** Xcodeツールが見つからない場合：
+```bash
+xcode-select --install
+```
+---
+#### Go のバージョンが古すぎます
 
 Wails v3 には Go 1.25+ が必要です。それより古いバージョンをお使いの場合:
 

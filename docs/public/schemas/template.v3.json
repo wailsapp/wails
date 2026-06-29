@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://v3.wails.io/schemas/template.v3.json",
+  "title": "Wails v3 Template",
+  "description": "Metadata for a Wails v3 template (template.yaml)",
+  "type": "object",
+  "required": ["name", "shortname", "wailsVersion"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "Display name of the template",
+      "type": "string",
+      "minLength": 1
+    },
+    "shortname": {
+      "description": "Short identifier used in the CLI (e.g. 'react', 'vanilla-ts')",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "author": {
+      "description": "Author of the template",
+      "type": "string"
+    },
+    "description": {
+      "description": "Short description of the template shown in the CLI",
+      "type": "string"
+    },
+    "helpurl": {
+      "description": "URL to documentation or a help page for this template",
+      "type": "string",
+      "format": "uri"
+    },
+    "version": {
+      "description": "Version of the template (semver, e.g. v1.0.0)",
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+.*$"
+    },
+    "wailsVersion": {
+      "description": "Wails major version this template targets. Must be 3.",
+      "type": "integer",
+      "const": 3
+    }
+  }
+}

@@ -92,24 +92,24 @@ tasks:
       GOARCH: amd64
 
   test:example:linux:
-    summary: Build example for Linux (pass BUILD_TAGS env var to add -tags, e.g. BUILD_TAGS=gtk4)
+    summary: Build example for Linux (pass BUILD_TAGS env var to add -tags, e.g. BUILD_TAGS=gtk3)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux (${BUILD_TAGS:-GTK3})"
+      - echo "Building example {{.DIR}} for Linux (${BUILD_TAGS:-GTK4})"
       - go mod tidy
       - go build ${BUILD_TAGS:+-tags $BUILD_TAGS} -o "testbuild-{{.DIR}}-linux"
 
-  test:example:linux:gtk4:
-    summary: Build example for Linux with GTK4 (experimental, opt-in via -tags gtk4)
+  test:example:linux:gtk3:
+    summary: Build example for Linux with GTK3 (legacy, opt-in via -tags gtk3)
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
     cmds:
-      - echo "Building example {{.DIR}} for Linux (GTK4 experimental)"
+      - echo "Building example {{.DIR}} for Linux (GTK3 legacy)"
       - go mod tidy
-      - go build -tags gtk4 -o "testbuild-{{.DIR}}-linux-gtk4"
+      - go build -tags gtk3 -o "testbuild-{{.DIR}}-linux-gtk3"
 
   test:example:linux:docker:arm64:
     summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
@@ -280,11 +280,11 @@ tasks:
     cmds:
       - echo "Testing template generation (core templates)..."
       - task: install
-      - echo "Testing lit template generation..."
-      - rm -rf ./test-template-lit && wails3 init -n test-template-lit -t lit
-      - mkdir -p ./test-template-lit/frontend/dist && touch ./test-template-lit/frontend/dist/.keep
-      - cd ./test-template-lit && go mod tidy && go build
-      - rm -rf ./test-template-lit
+      - echo "Testing vanilla template generation..."
+      - rm -rf ./test-template-vanilla && wails3 init -n test-template-vanilla -t vanilla
+      - mkdir -p ./test-template-vanilla/frontend/dist && touch ./test-template-vanilla/frontend/dist/.keep
+      - cd ./test-template-vanilla && go mod tidy && go build
+      - rm -rf ./test-template-vanilla
       - echo "Testing react template generation..."
       - rm -rf ./test-template-react && wails3 init -n test-template-react -t react
       - mkdir -p ./test-template-react/frontend/dist && touch ./test-template-react/frontend/dist/.keep
@@ -328,9 +328,6 @@ tasks:
         events-bug
         file-association
         frameless
-        gin-example
-        gin-routing
-        gin-service
         hide-window
         ignore-mouse
         keybindings
@@ -365,7 +362,7 @@ tasks:
         vars:
           DIR: "{{.ITEM}}"
         platforms: [linux]
-      # GTK4 example builds are handled in CI via: BUILD_TAGS=gtk4 task test:examples
+      # GTK3 legacy example builds are handled in CI via: BUILD_TAGS=gtk3 task test:examples
       - for: { var: EXAMPLEDIRS }
         task: test:example:windows
         vars:
@@ -397,30 +394,30 @@ tasks:
       - echo "✅ All tests completed successfully"
 
   sanity:
-    summary: Quick compilation sanity check for key examples (GTK3 default + GTK4 opt-in)
+    summary: Quick compilation sanity check for key examples (GTK4 default + GTK3 opt-in)
     platforms:
       - linux
     cmds:
-      - echo "🔍 Running quick sanity check (GTK3 - default)..."
+      - echo "🔍 Running quick sanity check (GTK4 - default)..."
       - cd examples/menu && go build -o /dev/null .
       - cd examples/window && go build -o /dev/null .
       - cd examples/events && go build -o /dev/null .
       - cd examples/plain && go build -o /dev/null .
       - cd examples/dialogs-basic && go build -o /dev/null .
-      - echo "✅ GTK3 sanity check passed"
-      - task: sanity:gtk4
+      - echo "✅ GTK4 sanity check passed"
+      - task: sanity:gtk3
 
-  sanity:gtk4:
-    summary: Quick compilation sanity check for GTK4 (experimental, opt-in via -tags gtk4)
+  sanity:gtk3:
+    summary: Quick compilation sanity check for GTK3 (legacy, opt-in via -tags gtk3)
     platforms:
       - linux
     cmds:
-      - echo "🔍 Running GTK4 sanity check..."
-      - cd examples/menu && go build -tags gtk4 -o /dev/null .
-      - cd examples/window && go build -tags gtk4 -o /dev/null .
-      - cd examples/events && go build -tags gtk4 -o /dev/null .
-      - cd examples/plain && go build -tags gtk4 -o /dev/null .
-      - echo "✅ GTK4 sanity check passed"
+      - echo "🔍 Running GTK3 legacy sanity check..."
+      - cd examples/menu && go build -tags gtk3 -o /dev/null .
+      - cd examples/window && go build -tags gtk3 -o /dev/null .
+      - cd examples/events && go build -tags gtk3 -o /dev/null .
+      - cd examples/plain && go build -tags gtk3 -o /dev/null .
+      - echo "✅ GTK3 legacy sanity check passed"
 
   build:server:
     summary: Build an application in server mode (no GUI, HTTP server only)

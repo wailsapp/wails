@@ -17,12 +17,17 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add feedback section to MCP service guide in [PR](https://github.com/wailsapp/wails/pull/5694) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Ensure WebKit request metadata, response completion, and body stream handling run on the GTK main thread in [PR](https://github.com/wailsapp/wails/pull/5668) by @taliesin-ai
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix WebView2 content shrinking then disappearing after dragging a window across mixed-DPI monitors on Windows by re-asserting the controller bounds in the `WM_DPICHANGED` handler, mirroring the un-minimise DPI resync (#5677)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -8,7 +8,7 @@ import (
 
 	"unsafe"
 
-	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
@@ -102,8 +102,8 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
+	_, _, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(0, 0, int(float64(width)*scaleFactor), int(float64(height)*scaleFactor))
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -163,20 +163,8 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 }
 
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
-	// Get current screen for window
-	_, _, monitorwidth, monitorheight, _ := w.getCurrentMonitorGeometry()
-	if monitorwidth == -1 {
-		monitorwidth = 1920
-	}
-	if monitorheight == -1 {
-		monitorheight = 1080
-	}
-	if maxWidth == 0 {
-		maxWidth = monitorwidth
-	}
-	if maxHeight == 0 {
-		maxHeight = monitorheight
-	}
+	// Setting geometry hints as opposed to hard limits based on physical size of the monitor
+	// using the monitor size as limits breaks when monitors are not scaled to 100%
 	windowSetGeometryHints(w.window, minWidth, minHeight, maxWidth, maxHeight)
 }
 
@@ -396,6 +384,8 @@ func (w *linuxWebviewWindow) run() {
 		// Inject runtime core and EnableFileDrop flag together
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		js += fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", w.parent.options.Frameless)
+		js += fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", !w.parent.options.DisableResize)
 		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
@@ -427,13 +417,16 @@ func (w *linuxWebviewWindow) print() error {
 }
 
 func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
-	// Parse acceleratorString
-	// accelerator, err := parseAccelerator(acceleratorString)
-	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %w", err)
-	// 	return
-	// }
-	w.parent.processKeyBinding(acceleratorString)
+	if !w.parent.processKeyBinding(acceleratorString) {
+		// No registered binding: apply built-in editing command fallbacks so that
+		// standard shortcuts work even in fresh projects without an Edit menu.
+		switch acceleratorString {
+		case "Ctrl+Z":
+			w.undo()
+		case "Ctrl+Shift+Z":
+			w.redo()
+		}
+	}
 }
 
 // SetMinimiseButtonState is unsupported on Linux
