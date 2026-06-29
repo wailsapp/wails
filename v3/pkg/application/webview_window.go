@@ -1041,6 +1041,11 @@ func (w *WebviewWindow) destroy() {
 		return
 	}
 
+	// Cancel all pending async calls for this window
+	if globalApplication.messageProcessor != nil {
+		globalApplication.messageProcessor.CancelWindowCalls(w.id)
+	}
+
 	// Cancel the callbacks
 	for _, cancelFunc := range w.cancellers {
 		cancelFunc()
