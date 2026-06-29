@@ -277,15 +277,24 @@ tasks:
     summary: Builds a Docker image for server mode deployment
     desc: |
       Creates a minimal Docker image containing the production server binary.
-      The image is based on distroless for security and small size. The
+      Defaults to a pure-Go static binary on a distroless/static base. The
       production frontend is built first so the embedded assets are current.
-      Usage: task build:docker [TAG=myapp:latest]
+
+      Usage: task build:docker [TAG=myapp:latest] [CGO_ENABLED=1] [GO_IMAGE=...] [RUNTIME_IMAGE=...]
+      For CGO apps, set CGO_ENABLED=1 with libc-compatible builder/runtime images, e.g.:
+        task build:docker CGO_ENABLED=1 GO_IMAGE=golang:bookworm RUNTIME_IMAGE=gcr.io/distroless/base-debian12
     deps:
       # Build the production frontend so frontend/dist (embedded by the Go build
       # inside the image) is present and current in the Docker build context.
       - task: build:frontend
     cmds:
-      - docker build -t {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}} -f build/docker/Dockerfile.server .
+      - >-
+        docker build
+        --build-arg CGO_ENABLED={{.Opn}}.CGO_ENABLED | default "0"{{.Cls}}
+        --build-arg GO_IMAGE={{.Opn}}.GO_IMAGE | default "golang:alpine"{{.Cls}}
+        --build-arg RUNTIME_IMAGE={{.Opn}}.RUNTIME_IMAGE | default "gcr.io/distroless/static-debian12"{{.Cls}}
+        -t {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}}
+        -f build/docker/Dockerfile.server .
     vars:
       TAG: "{{.Opn}}.TAG{{.Cls}}"
     preconditions:
