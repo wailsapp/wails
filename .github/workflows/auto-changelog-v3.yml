@@ -22,7 +22,6 @@ jobs:
       contents: write
       pull-requests: read   # GET /pulls/{n} and /pulls/{n}/files
       issues: read          # GET /issues/{n}/comments (CodeRabbit summary)
-      models: read          # allow the built-in GITHUB_TOKEN to call GitHub Models inference
 
     steps:
     - name: Checkout master
@@ -30,7 +29,7 @@ jobs:
       with:
         ref: master
         fetch-depth: 0
-        token: ${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
 
     - name: Resolve PR number
       id: pr
@@ -70,6 +69,7 @@ jobs:
       if: steps.check.outputs.skip == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ steps.pr.outputs.number }}
       run: go run v3/scripts/auto-changelog.go
@@ -83,5 +83,11 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add v3/UNRELEASED_CHANGELOG.md
+        # The auto-fill step intentionally writes nothing for internal-only PRs
+        # (ci/chore/build/test/style). Skip cleanly so the merge doesn't go red.
+        if git diff --cached --quiet; then
+          echo "ℹ️ No changelog entry to commit (internal PR or no change) — skipping."
+          exit 0
+        fi
         git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
-        git push https://x-access-token:${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
+        git push https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
