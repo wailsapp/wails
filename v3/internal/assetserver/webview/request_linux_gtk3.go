@@ -54,7 +54,14 @@ type request struct {
 }
 
 func (r *request) URL() (string, error) {
-	return C.GoString(C.webkit_uri_scheme_request_get_uri(r.req)), nil
+	// Reading the URI touches the WebKit-owned request on the GTK main loop;
+	// this runs on a worker goroutine, so it must hop to the main thread.
+	// See mainthread_linux.go and issue #5631.
+	var uri string
+	invokeOnMainSync(func() {
+		uri = C.GoString(C.webkit_uri_scheme_request_get_uri(r.req))
+	})
+	return uri, nil
 }
 
 func (r *request) Method() (string, error) {
