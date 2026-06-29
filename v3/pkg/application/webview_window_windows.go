@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
@@ -2667,15 +2667,6 @@ func (w *windowsWebviewWindow) disableRedrawWithCallback(callback func()) {
 	callback()
 	w.enableRedraw()
 
-}
-
-func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
-	var err error
-	var result w32.HICON
-	if result = w32.LoadIconWithResourceID(instance, resId); result == 0 {
-		err = fmt.Errorf("cannot load icon from resource with id %v", resId)
-	}
-	return result, err
 }
 
 func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
