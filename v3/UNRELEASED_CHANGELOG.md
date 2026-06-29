@@ -17,7 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `DisableMenu` option to `WindowsWindow` to disable the menu bar on Windows (#4273)
 
 ## Changed
 - Update the `Frontend Runtime` documentation by adding more options for generating frontend bindings by @ndianabasi
