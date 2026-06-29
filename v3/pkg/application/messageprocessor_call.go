@@ -68,6 +68,12 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		}()
 
 		ambiguousID := false
+		// Calls may originate from windowless transports, so the window may be nil.
+		var windowID uint
+		hasWindow := window != nil
+		if hasWindow {
+			windowID = window.ID()
+		}
 		func() {
 			m.l.Lock()
 			defer m.l.Unlock()
@@ -76,6 +82,12 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 				ambiguousID = true
 			} else {
 				m.runningCalls[*callID] = cancel
+				if hasWindow {
+					if m.windowCalls[windowID] == nil {
+						m.windowCalls[windowID] = make(map[string]bool)
+					}
+					m.windowCalls[windowID][*callID] = true
+				}
 			}
 		}()
 
@@ -87,6 +99,14 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			m.l.Lock()
 			defer m.l.Unlock()
 			delete(m.runningCalls, *callID)
+			if hasWindow {
+				if windowCalls, exists := m.windowCalls[windowID]; exists {
+					delete(windowCalls, *callID)
+					if len(windowCalls) == 0 {
+						delete(m.windowCalls, windowID)
+					}
+				}
+			}
 		}()
 		defer cancel()
 
