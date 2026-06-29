@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Server mode now has a first-class production build, consistent with the desktop build tasks (#5693). `task build:server` builds a production binary by default (`-tags server,production`, `-trimpath`, stripped), and accepts `DEV=true` (development server), `OBFUSCATED=true` (garble) and `EXTRA_TAGS`. `task run:server` runs a development server. `Dockerfile.server` / `task build:docker` now build the production server statically (`CGO_ENABLED=0`, `-tags server,production`) and build the production frontend first.
 
 ## Fixed
 <!-- Bug fixes -->

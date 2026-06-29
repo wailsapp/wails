@@ -18,8 +18,11 @@ RUN sed -i '/^replace/d' go.mod || true
 # Download dependencies
 RUN go mod tidy
 
-# Build the server binary
-RUN go build -tags server -ldflags="-s -w" -o server .
+# Build the production server binary.
+# - server,production tags: HTTP server mode with production code paths (no dev
+#   logger/asset middleware), matching the desktop production build.
+# - CGO_ENABLED=0: fully static binary, required by the distroless/static base.
+RUN CGO_ENABLED=0 go build -tags server,production -trimpath -buildvcs=false -ldflags="-s -w" -o server .
 
 # Runtime stage - minimal image
 FROM gcr.io/distroless/static-debian12
