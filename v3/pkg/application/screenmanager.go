@@ -25,34 +25,34 @@ func newScreenManager(app *App) *ScreenManager {
 }
 
 type Screen struct {
-	ID               string  // A unique identifier for the display
-	Name             string  // The name of the display
-	ScaleFactor      float32 // The scale factor of the display (DPI/96)
-	X                int     // The x-coordinate of the top-left corner of the rectangle
-	Y                int     // The y-coordinate of the top-left corner of the rectangle
-	Size             Size    // The size of the display
-	Bounds           Rect    // The bounds of the display
-	PhysicalBounds   Rect    // The physical bounds of the display (before scaling)
-	WorkArea         Rect    // The work area of the display
-	PhysicalWorkArea Rect    // The physical work area of the display (before scaling)
-	IsPrimary        bool    // Whether this is the primary display
-	Rotation         float32 // The rotation of the display
+	ID               string  `json:"ID"`               // A unique identifier for the display
+	Name             string  `json:"Name"`             // The name of the display
+	ScaleFactor      float32 `json:"ScaleFactor"`      // The scale factor of the display (DPI/96)
+	X                int     `json:"X"`                // The x-coordinate of the top-left corner of the rectangle
+	Y                int     `json:"Y"`                // The y-coordinate of the top-left corner of the rectangle
+	Size             Size    `json:"Size"`             // The size of the display
+	Bounds           Rect    `json:"Bounds"`           // The bounds of the display
+	PhysicalBounds   Rect    `json:"PhysicalBounds"`   // The physical bounds of the display (before scaling)
+	WorkArea         Rect    `json:"WorkArea"`         // The work area of the display
+	PhysicalWorkArea Rect    `json:"PhysicalWorkArea"` // The physical work area of the display (before scaling)
+	IsPrimary        bool    `json:"IsPrimary"`        // Whether this is the primary display
+	Rotation         float32 `json:"Rotation"`         // The rotation of the display
 }
 
 type Rect struct {
-	X      int
-	Y      int
-	Width  int
-	Height int
+	X      int `json:"X"`
+	Y      int `json:"Y"`
+	Width  int `json:"Width"`
+	Height int `json:"Height"`
 }
 
 type Point struct {
-	X int
-	Y int
+	X int `json:"X"`
+	Y int `json:"Y"`
 }
 type Size struct {
-	Width  int
-	Height int
+	Width  int `json:"Width"`
+	Height int `json:"Height"`
 }
 
 type Alignment int

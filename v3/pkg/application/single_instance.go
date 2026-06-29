@@ -175,8 +175,16 @@ func decrypt(key [32]byte, encrypted string) ([]byte, error) {
 
 // notifyFirstInstance sends data to the first instance of the application
 func (m *singleInstanceManager) notifyFirstInstance() error {
+	args := os.Args
+	// On macOS, URL-scheme launches deliver the URL via NSAppleEventManager
+	// (kAEGetURL), not via argv.  Capture it here before we exit so the first
+	// instance receives the URL in SecondInstanceData.Args — matching the
+	// Windows/Linux behaviour where the URL is already in argv.
+	if url := captureLaunchURL(); url != "" {
+		args = append(args, url)
+	}
 	data := SecondInstanceData{
-		Args:           os.Args,
+		Args:           args,
 		WorkingDir:     getCurrentWorkingDir(),
 		AdditionalData: m.options.AdditionalData,
 	}

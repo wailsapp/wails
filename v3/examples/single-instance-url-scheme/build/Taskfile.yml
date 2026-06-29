@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  go:mod:tidy:
+    internal: true
+    cmds:
+      - go mod tidy
