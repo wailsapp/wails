@@ -24,7 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix NSWindowZoomButton conflict on macOS: `MaximiseButtonState` and `FullscreenButtonState` now apply the more restrictive state at both startup and runtime; neither setter can silently override the other (#5319)
-- Fix crash when closing window with pending async Go-bound function calls (#4353)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
