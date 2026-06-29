@@ -421,7 +421,16 @@ export default defineConfig({
         {
           label: "Troubleshooting",
           collapsed: true,
-          autogenerate: { directory: "troubleshooting" },
+          items: [
+            { label: "Syso files on macOS", link: "/troubleshooting/mac-syso" },
+            {
+              label: "Windows",
+              collapsed: true,
+              items: [
+                { label: "RDP Issues", link: "/troubleshooting/windows/rdp" },
+              ],
+            },
+          ],
         },
 
         // Community & Resources

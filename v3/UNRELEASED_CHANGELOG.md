@@ -17,16 +17,24 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add global (system-wide) keyboard shortcuts via `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Shortcuts fire even when the application is not focused. Implemented natively per platform with no third party dependencies: Carbon hot keys on macOS, `RegisterHotKey` on Windows, `XGrabKey` on X11, and the XDG Desktop Portal global shortcuts interface on Wayland.
-- Add built-in MCP server: a Model Context Protocol server that starts automatically when the application is built with the `mcp` tag, letting LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. No user code required: the `mcp` tag is added automatically by `wails3 build`/`wails3 dev` when `WAILS_MCP=1` is set. Configured entirely via environment variables (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+- Add code samples to EventsEmit documentation in [PR](https://github.com/wailsapp/wails/pull/5026) by @iamhabbeboy
+- Add Windows WebView2 visual hosting option in [PR](https://github.com/wailsapp/wails/pull/5380) by @MerIijn
+- Add Klustr to community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5536) by @SametKUM
+- Add Kira to community showcase with new pages and changelog entry in [PR](https://github.com/wailsapp/wails/pull/5685) by @thiennguyen93
+- Add feedback section to MCP service guide in [PR](https://github.com/wailsapp/wails/pull/5694) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Server mode now has a first-class production build, consistent with the desktop build tasks (#5693). `task build:server` builds a production binary by default (`-tags server,production`, `-trimpath`, stripped), and accepts `DEV=true` (development server), `OBFUSCATED=true` (garble) and `EXTRA_TAGS`. `task run:server` runs a development server. `Dockerfile.server` / `task build:docker` build the production server (`-tags server,production`) and the production frontend first; the image defaults to a pure-Go static build on distroless/static, with `CGO_ENABLED`, `GO_IMAGE` and `RUNTIME_IMAGE` exposed as overridable build args for CGO apps.
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent crash when closing window with pending async calls in [PR](https://github.com/wailsapp/wails/pull/4435) by @leaanthony
+- Prevent window activation when opening hidden apps on Windows in [PR](https://github.com/wailsapp/wails/pull/5249) by @leaanthony
+- Ensure WebKit request metadata, response completion, and body stream handling run on the GTK main thread in [PR](https://github.com/wailsapp/wails/pull/5668) by @taliesin-ai
 - Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
 - Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix WebView2 content shrinking then disappearing after dragging a window across mixed-DPI monitors on Windows by re-asserting the controller bounds in the `WM_DPICHANGED` handler, mirroring the un-minimise DPI resync (#5677)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
