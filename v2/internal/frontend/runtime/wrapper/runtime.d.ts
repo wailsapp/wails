@@ -32,6 +32,15 @@ export interface EnvironmentInfo {
     arch: string;
 }
 
+// ProductBuildInfo contains product information from the original wails.json file
+export interface ProductBuildInfo {
+  productName: string;
+  productVersion: string;
+  companyName: string;
+  copyright: string;
+  comments: string;
+}
+
 // [EventsEmit](https://wails.io/docs/reference/runtime/events#eventsemit)
 // emits the given event. Optional data may be passed with the event.
 // This will trigger any event listeners.
@@ -213,6 +222,9 @@ export function BrowserOpenURL(url: string): void;
 // [Environment](https://wails.io/docs/reference/runtime/intro#environment)
 // Returns information about the environment
 export function Environment(): Promise<EnvironmentInfo>;
+
+// Returns product information from the original wails.json file
+export function ProductInfo(): Promise<ProductBuildInfo>;
 
 // [Quit](https://wails.io/docs/reference/runtime/intro#quit)
 // Quits the application.
