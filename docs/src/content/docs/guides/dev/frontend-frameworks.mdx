@@ -1,0 +1,168 @@
+---
+title: Using Other Frontend Frameworks
+description: How to use a framework that doesn't have a built-in template by dropping your own Vite project into the frontend directory
+sidebar:
+  order: 5
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Wails ships built-in starter templates for a deliberately small set of frameworks:
+
+| Template          | Language   |
+| ----------------- | ---------- |
+| `vanilla`         | TypeScript (default) |
+| `vanilla-js`      | JavaScript |
+| `react`           | TypeScript |
+| `react-js`        | JavaScript |
+| `vue`             | TypeScript |
+| `svelte`          | TypeScript |
+
+That doesn't mean those are your only options. The frontend of a Wails app is **just a
+web project** — anything that builds to static HTML/CSS/JS will work. If your framework
+of choice (Solid, Preact, Lit, Qwik, SvelteKit, Angular, …) doesn't have a template, you
+can scaffold it yourself in a couple of minutes.
+
+## How the `frontend/` directory is used
+
+Wails does not care which framework lives in `frontend/`. It only relies on a small,
+framework-agnostic contract:
+
+- **`frontend/dist/` is what ships.** `main.go` embeds the built frontend with
+  `//go:embed all:frontend/dist` and serves it from the asset server. Your build must
+  output a static bundle to `frontend/dist/` (Vite's default output directory).
+- **The build is driven by `frontend/package.json`.** During `wails3 build`, Wails runs
+  the frontend's `build` script; during `wails3 dev` it runs `dev` and proxies the Vite
+  dev server for hot reload.
+- **Bindings are generated into `frontend/bindings/`.** Wails inspects your registered Go
+  services and writes a type-safe SDK there. You import from it like any other module:
+
+  ```js
+  import { GreetService } from "./bindings/changeme";
+  ```
+
+- **The dev server runs on a fixed port.** `wails3 dev` proxies Vite on the port in
+  `WAILS_VITE_PORT` (default `9245`), so set `server.port` to it with `strictPort: true`.
+  This is ordinary Vite config — no Wails plugin is involved.
+- **Optional — typed custom events.** The built-in templates also register the
+  `@wailsio/runtime/plugins/vite` plugin. It's only needed if you use *typed* custom
+  events: it injects your generated event-type definitions into the runtime and makes the
+  build fail until bindings have been generated. If you only use the string-based
+  `Events.On("time", …)` API, you can leave it out.
+
+Everything else — components, routing, state, styling — is entirely up to your framework.
+
+## Scaffold any framework with Vite
+
+The fastest path is to start from a built-in template (so you get `main.go`, the
+`Taskfile`, build assets and a working Go service), then replace `frontend/` with a fresh
+Vite project for your framework.
+
+<Steps>
+
+1. **Create a project from the default template**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+2. **Replace `frontend/` with a Vite app for your framework**
+
+   Vite can scaffold most frameworks with a single command. Pick a template:
+
+   ```bash
+   # From the project root — e.g. Solid, Preact, Lit, Svelte, Vue, React, Vanilla
+   rm -rf frontend
+   npm create vite@latest frontend -- --template solid
+   ```
+
+   Swap `solid` for any Vite template: `preact`, `lit`, `svelte`, `vue`, `react`,
+   `vanilla`, or their `-ts` variants (`solid-ts`, `preact-ts`, …).
+
+3. **Install the runtime and point Vite at the Wails dev server**
+
+   ```bash
+   cd frontend
+   npm install @wailsio/runtime
+   ```
+
+   `@wailsio/runtime` provides the JS APIs (`Events`, `Browser`, dialogs, …). The only
+   *required* `vite.config` change is the dev-server port, so `wails3 dev` can find it:
+
+   ```ts title="frontend/vite.config.ts"
+   import { defineConfig } from "vite";
+
+   export default defineConfig({
+     server: {
+       host: "127.0.0.1",
+       port: Number(process.env.WAILS_VITE_PORT) || 9245,
+       strictPort: true,
+     },
+   });
+   ```
+
+   Only if you intend to use **typed custom events**, also add the plugin — it injects your
+   generated event types and requires bindings to exist before the build:
+
+   ```ts title="frontend/vite.config.ts" {2,5}
+   import { defineConfig } from "vite";
+   import wails from "@wailsio/runtime/plugins/vite";
+
+   export default defineConfig({
+     plugins: [wails("./bindings")],
+     server: { host: "127.0.0.1", port: Number(process.env.WAILS_VITE_PORT) || 9245, strictPort: true },
+   });
+   ```
+
+4. **Call your Go services**
+
+   Generate bindings once, then import them anywhere in your components:
+
+   ```bash
+   wails3 generate bindings
+   ```
+
+   ```js
+   import { GreetService } from "./bindings/changeme";
+
+   const greeting = await GreetService.Greet("World");
+   ```
+
+5. **Run it**
+
+   ```bash
+   wails3 dev
+   ```
+
+</Steps>
+
+:::tip[Generate a plain JavaScript project]
+The same command scaffolds a no-TypeScript project — just use a non-`-ts` Vite template:
+
+```bash
+npm create vite@latest frontend -- --template solid
+```
+:::
+
+## Frameworks with their own scaffolder
+
+A few frameworks aren't created through Vite's `create` templates and have their own
+tooling. They still work — just scaffold them with their native command and add the
+Wails plugin afterwards:
+
+- **SvelteKit:** `npx sv create frontend`. Use the static adapter
+  (`@sveltejs/adapter-static`) so it builds to a static bundle, and disable SSR.
+- **Qwik:** `npm create qwik@latest`. Use the static (SSG) adapter.
+- **Angular:** scaffold with `ng new`, set `outputPath` to `dist`, and point the build
+  script at `ng build`.
+
+The rule is always the same: produce a static build in `frontend/dist/`, keep the
+`@wailsio/runtime` Vite plugin (or import the runtime directly), and import your Go
+bindings from `frontend/bindings/`.
+
+:::note
+If you build a polished setup for a framework, consider publishing it as a
+[custom template](/guides/advanced/custom-templates) so others can `wails3 init -t` it
+directly.
+:::

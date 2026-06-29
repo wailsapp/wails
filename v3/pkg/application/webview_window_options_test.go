@@ -360,6 +360,37 @@ func TestMacLiquidGlassStyle_Constants(t *testing.T) {
 	}
 }
 
+func TestFullscreenButtonState_OptionExists(t *testing.T) {
+	tests := []struct {
+		name  string
+		state ButtonState
+	}{
+		{name: "hidden", state: ButtonHidden},
+		{name: "disabled", state: ButtonDisabled},
+		{name: "enabled", state: ButtonEnabled},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := WebviewWindowOptions{FullscreenButtonState: tt.state}
+			if opts.FullscreenButtonState != tt.state {
+				t.Errorf("FullscreenButtonState = %d, want %d", opts.FullscreenButtonState, tt.state)
+			}
+		})
+	}
+}
+
+func TestFullscreenButtonState_ButtonStateValues(t *testing.T) {
+	if ButtonEnabled != 0 {
+		t.Errorf("ButtonEnabled should be 0, got %d", ButtonEnabled)
+	}
+	if ButtonDisabled != 1 {
+		t.Errorf("ButtonDisabled should be 1, got %d", ButtonDisabled)
+	}
+	if ButtonHidden != 2 {
+		t.Errorf("ButtonHidden should be 2, got %d", ButtonHidden)
+	}
+}
+
 func TestNSVisualEffectMaterial_Constants(t *testing.T) {
 	if NSVisualEffectMaterialAppearanceBased != 0 {
 		t.Error("NSVisualEffectMaterialAppearanceBased should be 0")
@@ -369,5 +400,35 @@ func TestNSVisualEffectMaterial_Constants(t *testing.T) {
 	}
 	if NSVisualEffectMaterialAuto != -1 {
 		t.Error("NSVisualEffectMaterialAuto should be -1")
+	}
+}
+
+func TestEffectiveZoomButtonState(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b ButtonState
+		want ButtonState
+	}{
+		{"both enabled", ButtonEnabled, ButtonEnabled, ButtonEnabled},
+		{"a disabled, b enabled", ButtonDisabled, ButtonEnabled, ButtonDisabled},
+		{"a enabled, b disabled", ButtonEnabled, ButtonDisabled, ButtonDisabled},
+		{"a hidden, b enabled", ButtonHidden, ButtonEnabled, ButtonHidden},
+		{"a enabled, b hidden", ButtonEnabled, ButtonHidden, ButtonHidden},
+		{"a hidden, b disabled", ButtonHidden, ButtonDisabled, ButtonHidden},
+		{"a disabled, b hidden", ButtonDisabled, ButtonHidden, ButtonHidden},
+		{"both disabled", ButtonDisabled, ButtonDisabled, ButtonDisabled},
+		{"both hidden", ButtonHidden, ButtonHidden, ButtonHidden},
+		{"maximise disabled, fullscreen default", ButtonDisabled, ButtonEnabled, ButtonDisabled},
+		{"maximise default, fullscreen disabled", ButtonEnabled, ButtonDisabled, ButtonDisabled},
+		{"maximise hidden, fullscreen default", ButtonHidden, ButtonEnabled, ButtonHidden},
+		{"maximise default, fullscreen hidden", ButtonEnabled, ButtonHidden, ButtonHidden},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := effectiveZoomButtonState(tt.a, tt.b)
+			if got != tt.want {
+				t.Errorf("effectiveZoomButtonState(%v, %v) = %v, want %v", tt.a, tt.b, got, tt.want)
+			}
+		})
 	}
 }

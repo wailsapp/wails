@@ -3,7 +3,7 @@
 package w32
 
 import (
-	"github.com/wailsapp/go-webview2/pkg/combridge"
+	"github.com/wailsapp/wails/webview2/pkg/combridge"
 	"golang.org/x/sys/windows"
 )
 
