@@ -31,6 +31,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.108 - 2026-06-28
+
+## Added
+- Add global (system-wide) keyboard shortcuts via `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Shortcuts fire even when the application is not focused. Implemented natively per platform with no third party dependencies: Carbon hot keys on macOS, `RegisterHotKey` on Windows, `XGrabKey` on X11, and the XDG Desktop Portal global shortcuts interface on Wayland.
+- Add built-in MCP server: a Model Context Protocol server that starts automatically when the application is built with the `mcp` tag, letting LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. No user code required: the `mcp` tag is added automatically by `wails3 build`/`wails3 dev` when `WAILS_MCP=1` is set. Configured entirely via environment variables (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+
+## Fixed
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+
+## v3.0.0-alpha2.107 - 2026-06-27
+
+## Added
+- Add experimental Wake documentation with sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5613) by @leaanthony
+
+## v3.0.0-alpha2.106 - 2026-06-24
+
+## Changed
+- Bump `webview2` to v1.0.27.
+  - ci(webview2): fix release build (cross-compile Windows + complete go.sum) (#5671)
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.26...webview2/v1.0.27
+- Remove go vet from webview2 release workflow cross-compilation in [PR](https://github.com/wailsapp/wails/pull/5672) by @taliesin-ai
+- Update auto-changelog OpenRouter model to google/gemini-2.5-flash-lite in [PR](https://github.com/wailsapp/wails/pull/5670) by @taliesin-ai
+- Bump `webview2` to v1.0.26.
+
+### Fixes
+  - **Recover from transient runtime COM errors instead of exiting** (#5658, #5580). `Chromium.errorCallback` previously called `os.Exit(1)` for *any* COM error, so a recoverable hiccup after startup killed the whole application. Runtime paths (`Resize`/`GetClientRect`, `Navigate`/`NavigateToString`, `Init`, `MessageReceived`, `PutZoomFactor`, `OpenDevToolsWindow`) now log and recover. In particular, a malformed/untrusted web message in `MessageReceived` is now dropped rather than taking the process down. This addresses the mixed-DPI monitor-crossing crash class (#5544, #5650). Environment/controller-creation paths remain fatal.
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.25...webview2/v1.0.26
+
+## Fixed
+- Fix release-webview2 workflow to correctly handle go.sum files in [PR](https://github.com/wailsapp/wails/pull/5671) by @taliesin-ai
+- Fix Linux GTK4 menu updates by clearing and rebuilding the native menu in [PR](https://github.com/wailsapp/wails/pull/5659) by @taliesin-ai
+
 ## v3.0.0-alpha2.105 - 2026-06-21
 
 ## Added
