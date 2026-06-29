@@ -3,11 +3,10 @@
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gio-unix-2.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
-#include "gio/gunixinputstream.h"
 
 // webview_asset_error_quark returns a stable GError domain for asset-server
 // failures. The string literal is static storage, so g_quark_from_static_string
@@ -89,10 +88,10 @@ func (rw *responseWriter) WriteHeader(code int) {
 	}
 	rw.w = w
 
-	stream := C.g_unix_input_stream_new(C.int(rFD), C.gboolean(1))
-	defer C.g_object_unref(C.gpointer(stream))
-
-	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), stream, contentLength); err != nil {
+	// webkit_uri_scheme_request_finish wraps the read end of the pipe in a
+	// GUnixInputStream and completes the request on the GTK main thread; the
+	// stream is created and released there too. See webkit_linux_gtk3.go and #5631.
+	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), rFD, contentLength); err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
 		return
 	}
