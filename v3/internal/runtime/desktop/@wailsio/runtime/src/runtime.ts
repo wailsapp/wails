@@ -23,6 +23,28 @@ const CHUNK_THRESHOLD = 512 * 1024;
 // Re-export nanoid for custom transport implementations
 export { nanoid };
 
+type CallErrorType = {
+    message: string,
+    cause?: unknown,
+    kind: "ReferenceError" | "TypeError" | "RuntimeError"
+}
+
+/**
+ * Exception class that will be thrown in case the bound method returns an error.
+ * The value of the {@link RuntimeError#name} property is "RuntimeError".
+ */
+export class RuntimeError extends Error {
+    /**
+     * Constructs a new RuntimeError instance.
+     * @param message - The error message.
+     * @param options - Options to be forwarded to the Error constructor.
+     */
+    constructor(message?: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = "RuntimeError";
+    }
+}
+
 // Object Names
 export const objectNames = Object.freeze({
     Call: 0,
@@ -141,11 +163,18 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         response = await fetch(url, { method: 'POST', headers, body: bodyStr });
     }
     if (!response.ok) {
-
       const ct = response.headers.get("Content-Type");
       if (ct?.includes("application/json")) {
-          const json = await response.json();
-          throw new Error(json.message);
+          const json: CallErrorType = await response.json();
+          let err;
+          switch (json.kind) {
+              case "ReferenceError": err = new ReferenceError(json.message); break;
+              case "TypeError":      err = new TypeError(json.message); break;
+              case "RuntimeError":   err = new RuntimeError(json.message); break;
+              default:               err = new Error(json.message);
+          }
+          err.cause = json.cause;
+          throw err
       }
       throw new Error(await response.text());
     }
