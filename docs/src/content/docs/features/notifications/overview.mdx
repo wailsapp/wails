@@ -210,6 +210,38 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 `Path` must be an absolute filesystem path. macOS additionally accepts `file://` URLs.
 
+#### Attaching a file that ships with your app
+
+The OS reads the attachment from disk when the notification is delivered, so `Path` has to resolve to a real file on the end user's machine. For an asset you bundle with the application (an icon or image embedded with `go:embed`), there is no fixed absolute path you can hard-code, because the file lives inside the binary rather than at a known location on disk. Write it to a writable directory once at startup and pass that path:
+
+```go
+import (
+    _ "embed"
+    "os"
+    "path/filepath"
+)
+
+//go:embed assets/preview.png
+var previewPNG []byte
+
+// Materialise the embedded asset to a stable path the OS can read.
+previewPath := filepath.Join(os.TempDir(), "myapp-preview.png")
+if err := os.WriteFile(previewPath, previewPNG, 0o644); err != nil {
+    // handle error
+}
+
+notifier.SendNotification(notifications.NotificationOptions{
+    ID:    "image-id",
+    Title: "Photo uploaded",
+    Body:  "Tap to view",
+    Attachments: []notifications.NotificationAttachment{
+        {ID: "preview", Path: previewPath, Type: "inline"},
+    },
+})
+```
+
+A user-supplied or downloaded file already has a real path on disk, so you can pass it to `Path` directly without this step. Passing attachment bytes in-memory may be added in a future release.
+
 ### Threading and Grouping
 
 `ThreadID` groups related notifications together so the OS can collapse them in Notification Center / Action Center.
