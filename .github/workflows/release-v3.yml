@@ -19,6 +19,11 @@ on:
 env:
   GO_VERSION: '1.25'
 
+# Default the GITHUB_TOKEN to read-only for all jobs; the release job opts up to
+# contents: write where it actually needs it.
+permissions:
+  contents: read
+
 jobs:
   # ── Linux binaries (native runners, CGO_ENABLED=0 for static binaries) ──────
   build-linux:
@@ -34,6 +39,11 @@ jobs:
             runner: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-go@v5
         with:
@@ -66,6 +76,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-go@v5
         with:
@@ -93,6 +108,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-go@v5
         with:
@@ -128,7 +148,9 @@ jobs:
           KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          echo "$APPLE_SIGNING_CERT" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          # macos-latest ships BSD base64, which has no --decode; -D is the BSD
+          # decode flag. (GNU's -d is unavailable here.)
+          echo "$APPLE_SIGNING_CERT" | base64 -D > "$RUNNER_TEMP/cert.p12"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -228,6 +250,14 @@ jobs:
             --generate-notes
           )
           [[ "$PRE" == "true" ]] && FLAGS+=(--prerelease)
+
+          # Fail fast if the tag does not exist. Otherwise `gh release create`
+          # would create the tag at an arbitrary commit and publish a release
+          # for the wrong source (notably on a workflow_dispatch typo).
+          if ! gh api "repos/${{ github.repository }}/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG does not exist in ${{ github.repository }}; refusing to create a release."
+            exit 1
+          fi
 
           if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
             # Release exists (e.g. workflow_dispatch re-run) — just upload binaries
