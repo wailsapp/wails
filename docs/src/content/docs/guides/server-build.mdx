@@ -3,20 +3,9 @@ title: Server Build
 description: Run Wails applications as HTTP servers without a native GUI window
 sidebar:
     order: 52
-    badge:
-        text: Experimental
-        variant: caution
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside type="caution" title="Experimental Feature">
-Server mode is experimental and may change in future releases.
-</Aside>
-
 Wails v3 supports server mode, allowing you to run your application as a pure HTTP server without creating native windows or requiring GUI dependencies. This enables deploying the same Wails application to servers, containers, and web browsers.
-
-## Overview
 
 Server mode is useful for:
 
@@ -348,6 +337,6 @@ These take precedence over the `ServerOptions` in your code, which is why the Do
 
 ## See Also
 
-- [Custom Transport](/docs/guides/custom-transport) - For advanced IPC customization
-- [Services](/docs/concepts/services) - Service binding documentation
-- [Events](/docs/guides/events-reference) - Event system documentation
+- [Custom Transport](/guides/custom-transport) - For advanced IPC customization
+- [Services](/features/bindings/services) - Service binding documentation
+- [Events](/guides/events-reference) - Event system documentation
