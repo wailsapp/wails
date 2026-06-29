@@ -7,6 +7,7 @@ import (
 )
 
 var runtimeInit = `window._wails=window._wails||{};window._wails.flags=window._wails.flags||{};window.wails=window.wails||{};`
+var runtimeConfigReady = `Promise.resolve().then(function(){window.dispatchEvent(new Event("wails:runtime-config-ready"));});`
 
 func Core(flags map[string]any) string {
 	flagsStr := ""
@@ -17,5 +18,5 @@ func Core(flags map[string]any) string {
 		}
 	}
 
-	return runtimeInit + flagsStr + invoke + environment
+	return runtimeInit + flagsStr + invoke + environment + runtimeConfigReady
 }

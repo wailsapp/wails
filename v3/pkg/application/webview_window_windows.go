@@ -82,6 +82,13 @@ type windowsWebviewWindow struct {
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
 
+	nonClientHitTest nonClientHitTestState
+	// Tracks the caption button currently pressed through forwarded non-client input.
+	// Once capture is active, Windows reports movement as normal client mouse input,
+	// so we need this state to keep WebView hover/pressed transitions native-like.
+	activeNonClientButton        uintptr
+	activeNonClientButtonHovered bool
+
 	// lastKnownDPI is the window's DPI the last time it was in a non-minimised
 	// state. It is used on the un-minimise path to decide whether the WebView2
 	// rasterization scale actually needs resyncing: when the DPI is unchanged
@@ -361,6 +368,9 @@ func (w *windowsWebviewWindow) run() {
 	w.showRequested = !options.Hidden
 
 	w.chromium = edge.NewChromium()
+	w.chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
+	w.chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
+	w.chromium.SetCursorChangedCallback(w.applyCompositionCursor)
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
 	}
@@ -1526,6 +1536,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		return code
 	}
 
+	if w.parent.options.Windows.WebView2CompositionHosting && w.chromium != nil && w.chromium.CompositionControllerReady() {
+		if result, handled := w.routeNonClientInput(msg, wparam, lparam); handled {
+			return result
+		}
+
+		if w.routeCompositionMouseInput(msg, wparam, lparam) {
+			return 0
+		}
+	}
+
 	if msg == w32.WM_NCHITTEST && w.isCurrentlyFullscreen {
 		return w32.HTCLIENT
 	}
@@ -2444,12 +2464,15 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
 
-	// Install the runtime core
-	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
-
-	// Set the EnableFileDrop flag for this window (Windows-specific)
-	// The JS runtime checks this before processing file drops
-	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
+	// Inject runtime core and window-specific flags together so side-effect
+	// runtime modules see a consistent _wails configuration at startup.
+	js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+	js += fmt.Sprintf(
+		"window._wails.flags.enableFileDrop = %v; window._wails.flags.nonClientRegionTracking = %v;",
+		w.parent.options.EnableFileDrop,
+		w.parent.options.Windows.WebView2CompositionHosting,
+	)
+	w.execJS(js)
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}

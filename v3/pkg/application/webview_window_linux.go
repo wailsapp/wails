@@ -466,3 +466,5 @@ func (w *linuxWebviewWindow) hideMenuBar()                      {}
 func (w *linuxWebviewWindow) toggleMenuBar()                    {}
 func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
 func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}
+func (w *linuxWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}

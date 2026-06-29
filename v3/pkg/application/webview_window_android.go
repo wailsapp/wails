@@ -341,6 +341,10 @@ func (w *androidWebviewWindow) setContentProtection(_ bool) {
 	// Android content protection - could be implemented with FLAG_SECURE
 }
 
+func (w *androidWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+  // Android doesn't support non-client hit test regions like Windows
+}
+
 func (w *androidWebviewWindow) setHTML(_ string) {
 	// Not supported: the WebView always loads from the asset server
 }

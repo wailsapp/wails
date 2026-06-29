@@ -17,6 +17,7 @@ if (hasDOM) {
 
 import "./contextmenu.js";
 import "./drag.js";
+import "./appregion.js";
 
 // Re-export public API
 import * as Application from "./application.js";
