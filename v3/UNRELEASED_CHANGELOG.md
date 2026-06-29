@@ -17,18 +17,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add French documentation localization in [PR](https://github.com/wailsapp/wails/pull/5328) by @leaanthony
-- Add German locale to Astro documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) by @leaanthony
-- Update various Windows related files for WebView2 in [PR](https://github.com/wailsapp/wails/pull/5317) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Split dialog dispatch between GTK3 and GTK4 for Linux in [PR](https://github.com/wailsapp/wails/pull/5340) by @leaanthony
-- Ensure dialog callbacks execute on the GTK thread, fixing segfaults in [PR](https://github.com/wailsapp/wails/pull/5339) by @leaanthony
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix WebView2 content shrinking then disappearing after dragging a window across mixed-DPI monitors on Windows by re-asserting the controller bounds in the `WM_DPICHANGED` handler, mirroring the un-minimise DPI resync (#5677)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

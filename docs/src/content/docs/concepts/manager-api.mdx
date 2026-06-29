@@ -7,11 +7,11 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-The Wails v3 Manager API provides an organized and discoverable way to access application functionality through focused manager structs. This new API structure groups related methods together while maintaining full backward compatibility with the traditional App API.
+The Wails v3 Manager API provides an organised and discoverable way to access application functionality through focused manager structs grouped under public fields on `*application.App`. Wails 3 is a clean break from v2 — there is no per-call wrapper layer to maintain compatibility with the old `app.NewWebviewWindow(...)`-style API, so the managers below are the way to drive the app.
 
 ## Overview
 
-The Manager API organizes application functionality into eleven focused areas:
+The Manager API organises application functionality into twelve focused areas (one logger plus eleven managers):
 
 - **`app.Window`** - Window creation, management, and callbacks
 - **`app.ContextMenu`** - Context menu registration and management  
@@ -24,6 +24,7 @@ The Manager API organizes application functionality into eleven focused areas:
 - **`app.Screen`** - Screen management and coordinate transformations
 - **`app.Clipboard`** - Clipboard text operations
 - **`app.SystemTray`** - System tray icon creation and management
+- **`app.Autostart`** - Register the application to launch at user login
 
 ## Benefits
 
@@ -136,7 +137,7 @@ result, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
 // Message dialogs
@@ -175,11 +176,11 @@ Dynamic management of global key bindings.
 
 ```go
 // Add key bindings
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
     // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
@@ -264,3 +265,25 @@ systray.SetMenu(menu)
 // Destroy system tray when done
 systray.Destroy()
 ```
+
+### Autostart Manager
+
+Registers the application to launch at user login. Picks the appropriate native mechanism per platform: SMAppService or a LaunchAgent plist on macOS, the `HKCU\…\Run` registry key on Windows, an XDG `.desktop` entry on Linux.
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+See the [Autostart feature page](/features/autostart/basics/) for platform behaviour, identifier rules, and the stale-detection guarantee.

@@ -6,6 +6,7 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
+#include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"
 #include "systemtray_darwin.h"
@@ -31,9 +32,8 @@ static void systemTrayHide(void* nsStatusItem) {
 import "C"
 import (
 	"errors"
+	"strings"
 	"unsafe"
-
-	"github.com/leaanthony/go-ansi-parser"
 )
 
 type macosSystemTray struct {
@@ -248,40 +248,50 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	return result
 }
 
-func extractAnsiTextParts(text *ansi.StyledText) (label *C.char, fg *C.char, bg *C.char) {
-	label = C.CString(text.Label)
-	if text.FgCol != nil {
-		fg = C.CString(text.FgCol.Hex)
+func (s *macosSystemTray) setLabel(label string) {
+	s.label = label
+	if !hasANSICodes(label) {
+		C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+		return
 	}
-	if text.BgCol != nil {
-		bg = C.CString(text.BgCol.Hex)
+	parts, err := SystemTrayLabelParser(label)
+	if err != nil || len(parts) == 0 {
+		C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+		return
+	}
+	cLabel, cFg, cBg := partToCStrings(parts[0])
+	attr := C.createAttributedString(cLabel, cFg, cBg)
+	freeCStrings(cLabel, cFg, cBg)
+	for _, p := range parts[1:] {
+		cLabel, cFg, cBg = partToCStrings(p)
+		attr = C.appendAttributedString(attr, cLabel, cFg, cBg)
+		freeCStrings(cLabel, cFg, cBg)
+	}
+	C.systemTraySetANSILabel(s.nsStatusItem, attr)
+}
+
+func hasANSICodes(s string) bool {
+	return strings.Contains(s, "\033[")
+}
+
+func partToCStrings(p SystemTrayLabelPart) (label, fg, bg *C.char) {
+	label = C.CString(p.Text)
+	if p.FgColor != "" {
+		fg = C.CString(p.FgColor)
+	}
+	if p.BgColor != "" {
+		bg = C.CString(p.BgColor)
 	}
 	return
 }
 
-func (s *macosSystemTray) setLabel(label string) {
-	s.label = label
-	if !ansi.HasEscapeCodes(label) {
-		C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
-	} else {
-		parsed, err := ansi.Parse(label)
-		if err != nil {
-			C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
-			return
-		}
-		if len(parsed) == 0 {
-			return
-		}
-		label, fg, bg := extractAnsiTextParts(parsed[0])
-		var attributedString = C.createAttributedString(label, fg, bg)
-		if len(parsed) > 1 {
-			for _, parsedPart := range parsed[1:] {
-				label, fg, bg = extractAnsiTextParts(parsedPart)
-				attributedString = C.appendAttributedString(attributedString, label, fg, bg)
-			}
-		}
-
-		C.systemTraySetANSILabel(s.nsStatusItem, attributedString)
+func freeCStrings(label, fg, bg *C.char) {
+	C.free(unsafe.Pointer(label))
+	if fg != nil {
+		C.free(unsafe.Pointer(fg))
+	}
+	if bg != nil {
+		C.free(unsafe.Pointer(bg))
 	}
 }
 

@@ -1,0 +1,368 @@
+---
+title: 应用程序生命周期
+description: 了解从启动到关闭的 Wails 应用程序生命周期
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 理解应用程序生命周期
+
+桌面应用程序具有从启动到关闭的生命周期。Wails v3 提供了**服务 (Services)**、**事件 (Events)** 和 **钩子 (Hooks)** 来有效管理这一生命周期。
+
+## 生命周期阶段
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Parse: "Parse Options" {
+    shape: rectangle
+  }
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  Setup: "Setup Runtime" {
+    shape: rectangle
+  }
+}
+
+AppRun: "app.Run()" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceStartup: "Service Startup" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+EventLoop: "Event Loop" {
+  Process: "Process Events" {
+    shape: rectangle
+  }
+  Handle: "Handle Messages" {
+    shape: rectangle
+  }
+  Update: "Update UI" {
+    shape: rectangle
+  }
+}
+
+QuitSignal: "Quit Signal" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+ShouldQuit: "ShouldQuit Check" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+OnShutdown: "OnShutdown Callbacks" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceShutdown: "Service Shutdown" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Cleanup: "Cleanup" {
+  Close: "Close Windows" {
+    shape: rectangle
+  }
+  Release: "Release Resources" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Parse
+Init.Parse -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> AppRun
+AppRun -> ServiceStartup
+ServiceStartup -> EventLoop.Process
+EventLoop.Process -> EventLoop.Handle
+EventLoop.Handle -> EventLoop.Update
+EventLoop.Update -> EventLoop.Process: "Loop"
+EventLoop.Process -> QuitSignal: "User quits"
+QuitSignal -> ShouldQuit: "Check allowed?"
+ShouldQuit -> EventLoop.Process: "Denied"
+ShouldQuit -> OnShutdown: "Allowed"
+OnShutdown -> ServiceShutdown
+ServiceShutdown -> Cleanup.Close
+Cleanup.Close -> Cleanup.Release
+Cleanup.Release -> End
+```
+
+### 1. 创建应用程序
+
+使用 `application.New()` 创建您的应用程序：
+
+```go
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "An application built with Wails",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(assets),
+    },
+})
+```
+
+**发生的情况：**
+1. 解析并验证选项
+2. 注册服务（但尚未启动）
+3. 配置资产服务器
+4. 设置运行时
+
+### 2. 运行应用程序
+
+调用 `app.Run()` 启动应用程序：
+
+```go
+err := app.Run()  // Blocks until quit
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**发生的情况：**
+1. 按注册顺序启动服务
+2. 激活事件监听器
+3. 可以创建窗口
+4. 开始事件循环
+
+### 3. 事件循环
+
+应用程序进入事件循环，在此处度过大部分时间：
+
+- 处理操作系统事件（鼠标、键盘、窗口事件）
+- 处理 Go 到 JS 的消息
+- 执行 JS 到 Go 的调用
+- 渲染 UI 更新
+
+### 4. 关闭
+
+当应用程序退出时：
+
+1. 检查 `ShouldQuit` 回调（如果已设置）
+2. 执行 `OnShutdown` 回调
+3. 按相反顺序关闭服务
+4. 关闭窗口
+5. 释放资源
+
+## 服务生命周期 <a id="services-lifecycle"></a>
+
+服务是 Wails v3 中管理生命周期主要方式。它们通过接口提供启动和关闭钩子。有关服务的完整文档，请参阅 [服务指南](/features/bindings/services)。
+
+### 创建服务
+
+```go
+type MyService struct {
+    db *sql.DB
+}
+
+// ServiceStartup is called when the application starts
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return err  // Startup aborts if error returned
+    }
+
+    // Run migrations
+    if err := s.runMigrations(); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+// ServiceShutdown is called when the application shuts down
+func (s *MyService) ServiceShutdown() error {
+    if s.db != nil {
+        return s.db.Close()
+    }
+    return nil
+}
+```
+
+### 注册服务
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+        application.NewService(&AnotherService{}),
+    },
+})
+```
+
+**关键点：**
+- 服务按注册顺序启动
+- 服务按**相反**的注册顺序关闭
+- 如果服务的 `ServiceStartup` 返回错误，应用程序将中止
+- 传递给 `ServiceStartup` 的 `ctx` 在关闭开始时被取消
+
+### 使用应用程序上下文
+
+传递给 `ServiceStartup` 的上下文在整个应用程序生命周期内有效：
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Start a background task that respects shutdown
+    go func() {
+        ticker := time.NewTicker(5 * time.Minute)
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                s.performBackgroundSync()
+            case <-ctx.Done():
+                // Application is shutting down
+                return
+            }
+        }
+    }()
+
+    return nil
+}
+```
+
+您还可以从应用程序实例访问上下文：
+
+```go
+app := application.Get()
+ctx := app.Context()
+```
+
+## 应用程序级钩子
+
+这些是 `application.Options` 中的便捷回调，允许您挂钩到应用程序生命周期，而无需创建完整的服务。它们适用于简单的清理任务、退出确认，或当您需要关闭序列中的特定点运行代码时。
+
+对于具有启动逻辑、依赖注入或有状态资源的更复杂的生命周期管理，请改用 [服务](#services-lifecycle)。
+
+### ShouldQuit
+
+每当请求退出时，都会调用 `ShouldQuit` 回调——无论是用户关闭最后一个窗口、按下 Cmd+Q (macOS) / Alt+F4 (Windows)，还是通过编程方式调用 `app.Quit()`。
+
+**返回值：**
+- 返回 `true` 以允许退出继续（应用程序将关闭）
+- 返回 `false` 以取消退出（应用程序继续运行）
+
+这是您拦截退出请求并选择性地阻止退出的机会，例如提示用户有关未保存的更改：
+
+```go
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        if !hasUnsavedChanges() {
+            return true  // No unsaved changes, allow quit
+        }
+
+        // Prompt the user
+        result, _ := application.QuestionDialog().
+            SetTitle("Unsaved Changes").
+            SetMessage("You have unsaved changes. Quit anyway?").
+            AddButton("Quit", "quit").
+            AddButton("Cancel", "cancel").
+            Show()
+
+        // Only quit if user clicked "Quit"
+        return result == "quit"
+    },
+})
+```
+
+如果未设置 `ShouldQuit`，应用程序将在请求时立即退出。
+
+**调用 ShouldQuit 的时机：**
+- 用户关闭最后一个窗口（除非设置了 `DisableQuitOnLastWindowClosed`）
+- 用户在 macOS 上按下 Cmd+Q
+- 用户在 Windows 上按下 Alt+F4（当焦点在最后一个窗口上时）
+- 代码调用 `app.Quit()`
+
+**不调用 ShouldQuit 的时机：**
+- 进程被杀死（SIGKILL、任务管理器强制退出）
+- 直接调用 `os.Exit()`
+
+### OnShutdown
+
+当确认应用程序正在退出时（在 `ShouldQuit` 返回 `true` 之后，如果已设置），将调用 `OnShutdown` 回调。将其用于清理任务，如保存状态、关闭数据库连接或释放资源。
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        // Save application state
+        saveState()
+
+        // Close connections------|------|
+| macOS | 应用程序保持运行（菜单栏保留） |
+| Windows | 应用程序退出 |
+| Linux | 应用程序退出 |
+
+macOS 遵循原生平台惯例，即使没有窗口，应用程序通常也会在菜单栏中保持活动状态。Windows 和 Linux 默认退出。
+
+**使所有平台在最后一个窗口关闭时退出：**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+**使所有平台在最后一个窗口关闭时保持运行：**
+
+这对于系统托盘应用程序或应在后台保持运行的应用程序非常有用。
+
+```go
+app := application.New(application.Options{
+    Windows: application.WindowsOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+    Linux: application.LinuxOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+})
+```
+
+## 常见模式
+
+### 模式 1：数据库服务
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    if err := s.db.PingContext(ctx); err != nil {
+        return fmt.Errorf("failed to connect to database: %w", err)
+    }
+
+    return nil
+}**有关生命周期的问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或查看 [示例](https://github.com/wailsapp/wails/tree/master/v3/examples)。

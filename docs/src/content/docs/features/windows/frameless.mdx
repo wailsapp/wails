@@ -334,7 +334,7 @@ body {
     ```go
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Windows: application.WindowsOptions{
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })
@@ -348,7 +348,7 @@ body {
     
     **Disable decorations:**
     ```go
-    Windows: application.WindowsOptions{
+    Windows: application.WindowsWindow{
         DisableFramelessWindowDecorations: true,
     },
     ```
@@ -369,30 +369,33 @@ body {
     ```go
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Frameless: true,
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
     })
     ```
-    
+
     **Features:**
     - Native fullscreen support
     - Traffic light buttons (optional)
     - Vibrancy effects
     - Transparent title bar
-    
-    **Hide traffic lights:**
+
+    **Hide the title bar entirely** (use the preset variants exported from the `application` package — there is no `TitleBarStyle` field or `MacTitleBarStyleHidden` constant):
     ```go
-    Mac: application.MacOptions{
-        TitleBarStyle: application.MacTitleBarStyleHidden,
+    Mac: application.MacWindow{
+        TitleBar: application.MacTitleBarHidden,
     },
     ```
-    
+    Other presets include `MacTitleBarDefault`, `MacTitleBarHiddenInset`, and `MacTitleBarHiddenInsetUnified`.
+
     **Invisible title bar:**
     Allows dragging whilst hiding the title bar. This only takes effect when the window is frameless or uses `AppearsTransparent`:
     ```go
-    Mac: application.MacOptions{
+    Mac: application.MacWindow{
         InvisibleTitleBarHeight: 40,
     },
     ```
@@ -596,6 +599,9 @@ var assets embed.FS
 func main() {
     app := application.New(application.Options{
         Name: "Frameless App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
     })
 
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -605,17 +611,15 @@ func main() {
         MinWidth:  800,
         MinHeight: 600,
         Frameless: true,
-        
-        Assets: application.AssetOptions{
-            Handler: application.AssetFileServerFS(assets),
+
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            InvisibleTitleBarHeight: 40,
         },
-        
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            InvisibleTitleBarHeight:    40,
-        },
-        
-        Windows: application.WindowsOptions{
+
+        Windows: application.WindowsWindow{
             DisableFramelessWindowDecorations: false,
         },
     })
