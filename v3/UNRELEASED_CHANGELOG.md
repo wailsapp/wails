@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Windows WebView2 visual hosting option in [PR](https://github.com/wailsapp/wails/pull/5380) by @MerIijn
 - Add Klustr to community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5536) by @SametKUM
 - Add Kira to community showcase with new pages and changelog entry in [PR](https://github.com/wailsapp/wails/pull/5685) by @thiennguyen93
 - Add feedback section to MCP service guide in [PR](https://github.com/wailsapp/wails/pull/5694) by @taliesin-ai
