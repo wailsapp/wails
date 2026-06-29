@@ -260,7 +260,7 @@ tasks:
       - sh: '{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}}command -v garble >/dev/null 2>&1{{.Opn}}else{{.Cls}}true{{.Opn}}end{{.Cls}}'
         msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
     cmds:
-      - '{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}}garble {{.Opn}}.GARBLE_ARGS{{.Cls}} build{{.Opn}}else{{.Cls}}go build{{.Opn}}end{{.Cls}} {{.Opn}}.BUILD_FLAGS{{.Cls}} -o {{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}'
+      - '{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}}garble {{.Opn}}.GARBLE_ARGS{{.Cls}} build{{.Opn}}else{{.Cls}}go build{{.Opn}}end{{.Cls}} {{.Opn}}.BUILD_FLAGS{{.Cls}} -o "{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}"'
     vars:
       BUILD_FLAGS: '-tags server{{.Opn}}if eq .DEV "true"{{.Cls}}{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}},wails_obfuscated{{.Opn}}end{{.Cls}}{{.Opn}}if .EXTRA_TAGS{{.Cls}},{{.Opn}}.EXTRA_TAGS{{.Cls}}{{.Opn}}end{{.Cls}} -buildvcs=false -gcflags=all="-l"{{.Opn}}else{{.Cls}},production{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}},wails_obfuscated{{.Opn}}end{{.Cls}}{{.Opn}}if .EXTRA_TAGS{{.Cls}},{{.Opn}}.EXTRA_TAGS{{.Cls}}{{.Opn}}end{{.Cls}} -trimpath -buildvcs=false -ldflags="-w -s"{{.Opn}}end{{.Cls}}'
 
@@ -271,7 +271,7 @@ tasks:
         vars:
           DEV: "true"
     cmds:
-      - ./{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}
+      - '"./{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}"'
 
   build:docker:
     summary: Builds a Docker image for server mode deployment
@@ -286,7 +286,11 @@ tasks:
     deps:
       # Build the production frontend so frontend/dist (embedded by the Go build
       # inside the image) is present and current in the Docker build context.
+      # Pass the server,production tags so binding generation analyses the same
+      # build the Docker image compiles, not the default-tag build.
       - task: build:frontend
+        vars:
+          BUILD_FLAGS: "-tags server,production"
     cmds:
       - >-
         docker build
