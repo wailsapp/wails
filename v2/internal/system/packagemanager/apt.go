@@ -69,9 +69,10 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
-	cmd.Env = append(os.Environ(), "LANGUAGE=en")
+	cmd.Env = append(os.Environ(), "LC_ALL=C")
 	err := cmd.Run()
-	return strings.Contains(stdo.String(), "[installed]"), err
+	output := a.removeEscapeSequences(stdo.String())
+	return strings.Contains(output, "[installed"), err
 }
 
 // PackageAvailable tests if the given package is available for installation
