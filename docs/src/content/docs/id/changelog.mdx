@@ -31,6 +31,39 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 */
 ## [Belum Dirilis]
 
+## v3.0.0-alpha2.108 - 2026-06-28
+
+## Ditambahkan
+- Tambahkan pintasan keyboard global (sistem-lebar) melalui `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Pintasan aktif bahkan saat aplikasi tidak difokuskan. Diimplementasikan secara native per platform tanpa dependensi pihak ketiga: Carbon hot keys di macOS, `RegisterHotKey` di Windows, `XGrabKey` di X11, dan antarmuka XDG Desktop Portal global shortcuts di Wayland.
+- Tambahkan MCP server bawaan: server Model Context Protocol yang dimulai secara otomatis saat aplikasi di-build dengan tag `mcp`, memungkinkan agen LLM menguji dan mengontrol aplikasi Wails yang sedang berjalan — kontrol window, inspeksi DOM, evaluasi JavaScript, pemanggilan method terikat, event, dan simulasi input mouse/keyboard yang dirender dengan kursor animasi di layar. Tidak diperlukan kode pengguna: tag `mcp` ditambahkan secara otomatis oleh `wails3 build`/`wails3 dev` saat `WAILS_MCP=1` diatur. Dikonfigurasi sepenuhnya melalui variabel lingkungan (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+
+## Diperbaiki
+- Perbaiki `Menu.Update()` yang tidak membangun ulang menu native di GTK4 Linux (#5659, didiagnosis dan diperbaiki secara independen oleh @puneetdixit200 di #5539)
+- Perbaiki crash saat menghitung layar macOS pada perubahan display dengan menyalin string id/nama layar dan mengambil snapshot jumlahnya (#5565, didiagnosis dan diperbaiki secara independen oleh @x-haose di #5584)
+
+## v3.0.0-alpha2.107 - 2026-06-27
+
+## Ditambahkan
+- Tambahkan dokumentasi Wake eksperimental dengan navigasi sidebar dalam [PR](https://github.com/wailsapp/wails/pull/5613) oleh @leaanthony
+
+## v3.0.0-alpha2.106 - 2026-06-24
+
+## Diubah
+- Tingkatkan `webview2` ke v1.0.27.
+  - ci(webview2): perbaiki release build (cross-compile Windows + complete go.sum) (#5671)
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.26...webview2/v1.0.27
+- Hapus go vet dari workflow release webview2 cross-compilation dalam [PR](https://github.com/wailsapp/wails/pull/5672) oleh @taliesin-ai
+- Perbarui model OpenRouter auto-changelog ke google/gemini-2.5-flash-lite dalam [PR](https://github.com/wailsapp/wails/pull/5670) oleh @taliesin-ai
+- Tingkatkan `webview2` ke v1.0.26.
+
+### Perbaikan
+  - **Pulih dari error COM runtime sementara alih-alih keluar** (#5658, #5580). `Chromium.errorCallback` sebelumnya memanggil `os.Exit(1)` untuk *setiap* error COM, sehingga gangguan yang dapat dipulihkan setelah startup mematikan seluruh aplikasi. Path runtime (`Resize`/`GetClientRect`, `Navigate`/`NavigateToString`, `Init`, `MessageReceived`, `PutZoomFactor`, `OpenDevToolsWindow`) kini mencatat log dan memulihkan. Khususnya, web message yang salah bentuk/tidak tepercaya di `MessageReceived` kini dibuang alih-alih mematikan proses. Ini mengatasi kelas crash monitor mixed-DPI (#5544, #5650). Path pembuatan environment/controller tetap fatal.
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.25...webview2/v1.0.26
+
+## Diperbaiki
+- Perbaiki workflow release-webview2 agar menangani file go.sum dengan benar dalam [PR](https://github.com/wailsapp/wails/pull/5671) oleh @taliesin-ai
+- Perbaiki pembaruan menu GTK4 Linux dengan menghapus dan membangun ulang menu native dalam [PR](https://github.com/wailsapp/wails/pull/5659) oleh @taliesin-ai
+
 ## v3.0.0-alpha2.105 - 2026-06-21
 
 ## Ditambahkan
