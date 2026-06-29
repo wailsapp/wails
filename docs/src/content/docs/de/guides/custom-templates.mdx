@@ -179,7 +179,10 @@ Jetzt, wo die Frontend-Dateien vorhanden sind, aktualisieren Sie `common/Taskfil
 
 ### 5. Konfigurieren der Go-Anwendung
 
-Die Standarddateien im Vorlagenverzeichnis reichen aus, um Benutzer starten zu können. Möglicherweise möchten Sie jedoch zusätzliche Funktionalität bereitstellen, um die Fähigkeiten Ihrer Vorlage zu demonstrieren. Der beste Weg dazu ist, `main.go.tmpl` in `main.go` umzubenennen und sie wie jede andere Go-Datei zu bearbeiten. Sobald Sie fertig sind, benennen Sie sie vor dem Committen Ihrer Änderungen wieder in `main.go.tmpl` um. Wenn es Ihnen nichts ausmacht, keine templatisierte `main.go`-Dateie zu haben (die Standardvorlage injiziert den Projektnamen in das Feld `Name` der Anwendung), können Sie diesen Schritt überspringen.----------------------|------------------------------------|------------------------------------|
+Die Standarddateien im Vorlagenverzeichnis reichen aus, um Benutzer starten zu können. Möglicherweise möchten Sie jedoch zusätzliche Funktionalität bereitstellen, um die Fähigkeiten Ihrer Vorlage zu demonstrieren. Der beste Weg dazu ist, `main.go.tmpl` in `main.go` umzubenennen und sie wie jede andere Go-Datei zu bearbeiten. Sobald Sie fertig sind, benennen Sie sie vor dem Committen Ihrer Änderungen wieder in `main.go.tmpl` um. Wenn es Ihnen nichts ausmacht, keine templatisierte `main.go`-Dateie zu haben (die Standardvorlage injiziert den Projektnamen in das Feld `Name` der Anwendung), können Sie diesen Schritt überspringen.
+
+| Variable | Beschreibung | Beispiel |
+|----------|--------------|----------|
 | `Name`               | Der Name des Projekts              | `"MyApp"`                          |
 | `BinaryName`         | Der Name der generierten Binärdatei| `"myapp"`                          |
 | `ProductName`        | Der Produktname                    | `"My Application"`                 |

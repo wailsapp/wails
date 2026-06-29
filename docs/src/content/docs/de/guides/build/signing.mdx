@@ -267,7 +267,10 @@ Die Notarisierung dauert in der Regel 1-2 Minuten. Das Ticket wird automatisch a
 
 - Codesignierungszertifikat (von DigiCert, Sectigo usw.)
 - Für natives Signieren: Windows SDK installiert (für signtool.exe)
-- Für plattformübergreifend: Nur die Zertifikatsdatei----------|----------|-------------|
+- Für plattformübergreifend: Nur die Zertifikatsdatei
+
+| Variable | Erforderlich | Beschreibung |
+|----------|--------------|--------------|
 | `SIGN_CERTIFICATE` | Eine dieser | Pfad zur .pfx/.p12-Zertifikatsdatei |
 | `SIGN_THUMBPRINT` | Eine dieser | Zertifikats-Fingerabdruck im Windows-Zertifikatsspeicher |
 | `TIMESTAMP_SERVER` | Nein | URL des Zeitstempelservers (Standard: http://timestamp.digicert.com) |
@@ -541,7 +544,11 @@ name: Build und signieren (Plattformübergreifend)
 
 on:
   push:
-    tags: ['v*']------|------|
+    tags: ['v*']
+```
+
+| Flag | Beschreibung |
+|------|--------------|
 | `--input` | Pfad zur zu signierenden Datei |
 | `--output` | Ausgabepfad (optional, Standard: Überschreiben der Quelldatei) |
 | `--verbose` | Aktiviert detaillierte Ausgabe |

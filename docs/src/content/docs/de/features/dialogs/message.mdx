@@ -379,6 +379,18 @@ func deleteFiles(app *application.App, paths []string) {
 
 ### Beenden bestätigen
 
-```go---
+```go
+// Beenden mit Bestätigungsdialog
+result := app.Dialog.Question().
+    SetTitle("Beenden bestätigen").
+    SetMessage("Möchten Sie die Anwendung wirklich beenden?").
+    AddButton("Beenden").
+    AddButton("Abbrechen").
+    Show()
+
+if result == "Beenden" {
+    app.Quit()
+}
+```
 
 **Fragen?** Stellen Sie diese in [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Dialog-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs) an.

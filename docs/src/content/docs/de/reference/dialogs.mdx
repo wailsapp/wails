@@ -769,7 +769,10 @@ func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
 
 - GTK-Dialoge auf GTK-basierten Systemen
 - Qt-Dialoge auf Qt-basierten Systemen
-- Passt sich der Desktop-Umgebung an--------|------|------|-------|
+- Passt sich der Desktop-Umgebung an
+
+| Option | GTK3 (`-tags gtk3`) | GTK4 (Standard) | Hinweise |
+|--------|---------------------|-----------------|----------|
 | `ShowHiddenFiles()` | ✅ Funktioniert | ❌ Keine Wirkung | Der Benutzer steuert dies über den UI-Toggle des Dialogs (Strg+H oder Menü) |
 | `CanCreateDirectories()` | ✅ Funktioniert | ❌ Keine Wirkung | Immer im Portal aktiviert |
 | `ResolvesAliases()` | ✅ Funktioniert | ❌ Keine Wirkung | Das Portal behandelt die Auflösung von Symlinks |

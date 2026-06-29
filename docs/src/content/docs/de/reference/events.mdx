@@ -292,7 +292,9 @@ Events.On('data-fetched', (data) => {
 // Service-Methode aufrufen
 const items = await FetchData("search term")
 displayItems(items)
-```### Fortschrittsaktualisierungen
+```
+
+### Fortschrittsaktualisierungen
 
 Ideal für langlaufende Vorgänge wie Datei-Uploads, Batch-Verarbeitung, große Datenimporte oder Videokodierung. Senden Sie Fortschrittsereignisse während des Vorgangs, um Fortschrittsbalken, Statustexte oder Schrittanzeigen in der Benutzeroberfläche zu aktualisieren und den Benutzern Echtzeit-Feedback zu geben.
 
@@ -598,7 +600,11 @@ Events.On('window-state', (state) => {
     document.body.dataset.windowState = state
 })
 
-// Lange Aufgabe auslösen-------|-------------|--------------|-------------|
+// Lange Aufgabe auslösen
+```
+
+| Ereignis | Beschreibung | Wann ausgelöst | Abbrechbar |
+|----------|--------------|----------------|------------|
 | `ApplicationOpenedWithFile` | Anwendung mit einer Datei geöffnet | Wenn die App mit einer Datei gestartet wird (z. B. über Dateizuordnung) | Nein |
 | `ApplicationStarted` | Anwendung hat das Starten abgeschlossen | Nach Abschluss der App-Initialisierung und wenn die App bereit ist | Nein |
 | `ApplicationLaunchedWithUrl` | Anwendung mit einer URL gestartet | Wenn die App über ein URL-Schema gestartet wird | Nein |

@@ -299,7 +299,11 @@ WORKDIR /app
 RUN apk add --no-cache git
 COPY . .
 RUN go mod tidy
-RUN go build -tags server -ldflags="-s -w" -o server .----------|-------------|---------|
+RUN go build -tags server -ldflags="-s -w" -o server .
+```
+
+| Variable | Beschreibung | Standard |
+|----------|--------------|----------|
 | `WAILS_SERVER_HOST` | Netzwerkschnittstelle zum Binden | `localhost` |
 | `WAILS_SERVER_PORT` | Port zum Lauschen | `8080` |
 

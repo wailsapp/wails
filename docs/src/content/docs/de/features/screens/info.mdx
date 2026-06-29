@@ -338,6 +338,27 @@ func (sm *ScreenMonitor) checkScreens() {
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
-    // Base size at 1.0 scale---
+    // Base size at 1.0 scale
+    baseWidth := 800
+    baseHeight := 600
+
+    // Adjust for DPI
+    width := int(float32(baseWidth) * screen.ScaleFactor)
+    height := int(float32(baseHeight) * screen.ScaleFactor)
+
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "DPI-Aware Window",
+        Width:  width,
+        Height: height,
+    })
+
+    // Centre on screen
+    x := screen.X + (screen.Size.Width-width)/2
+    y := screen.Y + (screen.Size.Height-height)/2
+    window.SetPosition(x, y)
+
+    return window
+}
+```
 
 **Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [screen examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

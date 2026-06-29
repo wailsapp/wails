@@ -360,6 +360,12 @@ func (a *AuthService) requireAuth(token string) (*Session, error) {
         return nil, errors.New("nicht authentifiziert")
     }
     
-    if time.Now().After(session.ExpiresAt) {---
+    if time.Now().After(session.ExpiresAt) {
+        return nil, errors.New("session expired")
+    }
+
+    return session, nil
+}
+```
 
 **Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder schauen Sie sich die [Binding-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/binding) an.

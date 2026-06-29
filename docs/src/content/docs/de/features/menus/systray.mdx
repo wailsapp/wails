@@ -307,7 +307,10 @@ func rebuildTrayMenu(status string) {
     
     systray.SetMenu(menu)
 }
-```----------|--------|--------|-------|
+```
+
+| Plattform | Hide() | Show() | Hinweise |
+|-----------|--------|--------|----------|
 | **Windows** | ✅ | ✅ | Voll funktionsfähig - Symbol erscheint/verschwindet im Benachrichtigungsbereich |
 | **macOS** | ✅ | ✅ | Menüleisteintrag wird ein-/ausgeblendet |
 | **Linux** | ✅ | ✅ | Variiert je nach Desktop-Umgebung |
@@ -383,6 +386,5 @@ app := application.New(application.Options{
 
 **Mögliche Ursachen:**
 1. Symbolformat wird nicht unterstützt
-2. Symbolgröße zu groß/klein---
-
+2. Symbolgröße zu groß/klein
 **Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [System-Tray-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic) an.

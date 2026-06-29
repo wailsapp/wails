@@ -312,7 +312,11 @@ type UserLoginData struct {
 type MonitorStats struct {
     CPUUsage    float64
     MemoryUsage float64
-}-------|-------|------|
+}
+```
+
+| Ereignis | Beschreibung | Verwendung |
+|----------|--------------|------------|
 | `common:ApplicationStarted` | Anwendung wurde vollständig gestartet | App initialisieren, gespeicherten Zustand laden |
 | `common:WindowRuntimeReady` | Wails-Laufzeit ist bereit | Wails-API-Aufrufe starten |
 | `common:ThemeChanged` | Systemthema hat sich geändert | App-Design aktualisieren |

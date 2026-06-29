@@ -304,8 +304,8 @@ func disableEditMode() {
 1. **Verwenden Sie Standard-Tastenkombinationen**: Befolgen Sie Plattformkonventionen für häufige Operationen:
    ```go
    // Plattformübergreifendes Speichern
-   if runtime.GOOS == "darwin" {```go
-   app.KeyBinding.Add("Cmd+S", saveHandler)
+   if runtime.GOOS == "darwin" {
+       app.KeyBinding.Add("Cmd+S", saveHandler)
    } else {
        app.KeyBinding.Add("Ctrl+S", saveHandler)
    }
