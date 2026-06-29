@@ -1,0 +1,34 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundlePackageType</key>
+            <string>APPL</string>
+        <key>CFBundleName</key>
+            <string>Single Instance URL Scheme Repro (dev)</string>
+        <key>CFBundleExecutable</key>
+            <string>single-instance-url-scheme</string>
+        <key>CFBundleIdentifier</key>
+            <string>com.wails.example.single-instance-url-scheme.dev</string>
+        <key>CFBundleVersion</key>
+            <string>0.0.1</string>
+        <key>CFBundleShortVersionString</key>
+            <string>0.0.1</string>
+        <key>CFBundleIconFile</key>
+            <string>icons</string>
+        <key>LSMinimumSystemVersion</key>
+            <string>10.15.0</string>
+        <key>NSHighResolutionCapable</key>
+            <string>true</string>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>com.wails.example.single-instance-url-scheme.dev</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>wails-single-url</string>
+                </array>
+            </dict>
+        </array>
+    </dict>
+</plist>

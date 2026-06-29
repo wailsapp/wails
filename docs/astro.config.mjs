@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
@@ -12,6 +13,13 @@ import react from '@astrojs/react';
 // https://astro.build/config
 export default defineConfig({
   site: "https://v3.wails.io",
+  vite: {
+    resolve: {
+      alias: {
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url))
+      }
+    }
+  },
   trailingSlash: "ignore",
   compressHTML: true,
   output: "static",
@@ -125,7 +133,15 @@ export default defineConfig({
       ],
       defaultLocale: "root",
       locales: {
-        root: { label: "English", lang: "en", dir: "ltr" },
+        root:    { label: "English",             lang: "en",    dir: "ltr" },
+        "zh-cn": { label: "简体中文",             lang: "zh-CN", dir: "ltr" },
+        "zh-tw": { label: "繁體中文",             lang: "zh-TW", dir: "ltr" },
+        ja:      { label: "日本語",               lang: "ja",    dir: "ltr" },
+        ko:      { label: "한국어",               lang: "ko",    dir: "ltr" },
+        ru:      { label: "Русский",             lang: "ru",    dir: "ltr" },
+        fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
+        pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
+        de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
@@ -180,6 +196,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
                 { label: "Window Events", link: "/features/windows/events" },
@@ -227,6 +244,11 @@ export default defineConfig({
               ],
             },
             {
+              label: "Autostart",
+              collapsed: true,
+              autogenerate: { directory: "features/autostart" },
+            },
+            {
               label: "Clipboard",
               collapsed: true,
               autogenerate: { directory: "features/clipboard" },
@@ -269,6 +291,30 @@ export default defineConfig({
           ],
         },
 
+        // Mobile
+        {
+          label: "Mobile",
+          collapsed: true,
+          items: [
+            { label: "Overview", link: "/guides/mobile" },
+            { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
+            { label: "iOS", link: "/guides/mobile/ios" },
+            { label: "Android", link: "/guides/mobile/android" },
+            { label: "Mobile API", link: "/guides/mobile/mobile-api" },
+          ],
+        },
+
+        // Experimental - opt-in experiments we're gathering feedback on
+        {
+          label: "Experimental",
+          collapsed: true,
+          items: [
+            { label: "Overview", link: "/experimental" },
+            { label: "Wake", link: "/experimental/wake" },
+            { label: "LLM Control (MCP)", link: "/guides/mcp-service" },
+          ],
+        },
+
         // Guides - Task-oriented patterns (Netflix: When to use it, when not to use it)
         {
           label: "Guides",
@@ -280,6 +326,7 @@ export default defineConfig({
               items: [
                 { label: "Project Structure", link: "/guides/dev/project-structure" },
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
+                { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/dev/testing" },
               ],
@@ -296,13 +343,14 @@ export default defineConfig({
                 { label: "macOS Packaging", link: "/guides/build/macos" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
+                { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
               ],
             },
             {
               label: "Distribution",
               collapsed: true,
               items: [
-                { label: "Auto-Updates", link: "/guides/distribution/auto-updates" },
+                { label: "In-App Updater", link: "/guides/updater" },
                 { label: "File Associations", link: "/guides/distribution/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
                 { label: "Single Instance", link: "/guides/distribution/single-instance" },
@@ -323,7 +371,7 @@ export default defineConfig({
               label: "Advanced Topics",
               collapsed: true,
               items: [
-                { label: "Server Build", link: "/guides/server-build", badge: { text: "Experimental", variant: "caution" } },
+                { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
                 { label: "Panic Handling", link: "/guides/advanced/panic-handling" },

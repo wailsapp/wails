@@ -4,7 +4,6 @@ package assetserver
 
 import (
 	"context"
-	_ "embed"
 	"io/fs"
 	"net"
 	"net/http"

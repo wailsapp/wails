@@ -3,13 +3,13 @@ package s
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/google/shlex"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 var (
@@ -266,11 +266,65 @@ func TOUCH(filepath string) {
 	closefile(f)
 }
 
+func splitShell(s string) ([]string, error) {
+	var args []string
+	var cur strings.Builder
+	inSingle, inDouble := false, false
+	// inWord tracks whether we are inside a token (including empty quoted args).
+	inWord := false
+	runes := []rune(s)
+	for i := 0; i < len(runes); i++ {
+		c := runes[i]
+		switch {
+		case inSingle:
+			if c == '\'' {
+				inSingle = false
+			} else {
+				cur.WriteRune(c)
+			}
+		case inDouble:
+			if c == '"' {
+				inDouble = false
+			} else if c == '\\' && i+1 < len(runes) {
+				i++
+				cur.WriteRune(runes[i])
+			} else {
+				cur.WriteRune(c)
+			}
+		case c == '\'':
+			inSingle = true
+			inWord = true
+		case c == '"':
+			inDouble = true
+			inWord = true
+		case c == '\\' && i+1 < len(runes):
+			i++
+			cur.WriteRune(runes[i])
+			inWord = true
+		case unicode.IsSpace(c):
+			if inWord {
+				args = append(args, cur.String())
+				cur.Reset()
+				inWord = false
+			}
+		default:
+			cur.WriteRune(c)
+			inWord = true
+		}
+	}
+	if inSingle || inDouble {
+		return nil, fmt.Errorf("unterminated quote in: %s", s)
+	}
+	if inWord {
+		args = append(args, cur.String())
+	}
+	return args, nil
+}
+
 func EXEC(command string) ([]byte, error) {
 	log("EXEC %s", command)
 
-	// Split input using shlex
-	args, err := shlex.Split(command)
+	args, err := splitShell(command)
 	checkError(err)
 	// Execute command
 	cmd := exec.Command(args[0], args[1:]...)
