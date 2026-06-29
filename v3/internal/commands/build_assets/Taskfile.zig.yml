@@ -1,0 +1,125 @@
+version: "3"
+
+includes:
+  common: ./Taskfile.yml
+  linux: ./linux/Taskfile.yml
+  windows: ./windows/Taskfile.yml
+  darwin: ./darwin/Taskfile.yml
+
+tasks:
+  build:
+    summary: Builds the application using Zig for CGO
+    cmds:
+      - task: '{{if eq OS "windows"}}build:windows{{else if eq OS "darwin"}}build:darwin{{else}}build:linux{{end}}'
+        vars:
+          ARCH: "{{.ARCH}}"
+          DEV: "{{.DEV}}"
+          OUTPUT: "{{.OUTPUT}}"
+          EXTRA_TAGS: "{{.EXTRA_TAGS}}"
+          OBFUSCATED: "{{.OBFUSCATED}}"
+          GARBLE_ARGS: "{{.GARBLE_ARGS}}"
+
+  build:linux:
+    summary: Builds the application for Linux using Zig
+    internal: true
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+          DEV:
+            ref: .DEV
+      - task: common:generate:icons
+      - task: linux:generate:dotdesktop
+    preconditions:
+      - sh: command -v zig >/dev/null 2>&1
+        msg: "Zig compiler not found. Install from https://ziglang.org/download or your package manager."
+      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
+    cmds:
+      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o {{.OUTPUT}}'
+    vars:
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
+      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+    env:
+      GOOS: linux
+      CGO_ENABLED: 1
+      GOARCH: "{{.ARCH | default ARCH}}"
+      CC: '{{if eq .ARCH "arm64"}}zig cc -target aarch64-linux-gnu{{else}}zig cc -target x86_64-linux-gnu{{end}}'
+      CXX: '{{if eq .ARCH "arm64"}}zig c++ -target aarch64-linux-gnu{{else}}zig c++ -target x86_64-linux-gnu{{end}}'
+
+  build:darwin:
+    summary: Builds the application for macOS using Zig
+    internal: true
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+          DEV:
+            ref: .DEV
+      - task: common:generate:icons
+    preconditions:
+      - sh: command -v zig >/dev/null 2>&1
+        msg: "Zig compiler not found. Install from https://ziglang.org/download or your package manager."
+      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
+    cmds:
+      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
+    vars:
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}"
+      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+    env:
+      GOOS: darwin
+      CGO_ENABLED: 1
+      GOARCH: "{{.ARCH | default ARCH}}"
+      CC: '{{if eq .ARCH "arm64"}}zig cc -target aarch64-macos{{else}}zig cc -target x86_64-macos{{end}}'
+      CXX: '{{if eq .ARCH "arm64"}}zig c++ -target aarch64-macos{{else}}zig c++ -target x86_64-macos{{end}}'
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
+
+  build:windows:
+    summary: Builds the application for Windows using Zig
+    internal: true
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+          DEV:
+            ref: .DEV
+      - task: common:generate:icons
+    preconditions:
+      - sh: command -v zig >/dev/null 2>&1
+        msg: "Zig compiler not found. Install from https://ziglang.org/download or your package manager."
+      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
+    cmds:
+      - task: windows:generate:syso
+        vars:
+          ARCH: "{{.ARCH}}"
+      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
+      - cmd: powershell Remove-item *.syso
+        platforms: [windows]
+      - cmd: rm -f *.syso
+        platforms: [linux, darwin]
+    vars:
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}'
+      DEFAULT_OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}.exe"
+      OUTPUT: "{{ .OUTPUT | default .DEFAULT_OUTPUT }}"
+    env:
+      GOOS: windows
+      CGO_ENABLED: 1
+      GOARCH: "{{.ARCH | default ARCH}}"
+      CC: '{{if eq .ARCH "arm64"}}zig cc -target aarch64-windows-gnu{{else}}zig cc -target x86_64-windows-gnu{{end}}'
+      CXX: '{{if eq .ARCH "arm64"}}zig c++ -target aarch64-windows-gnu{{else}}zig c++ -target x86_64-windows-gnu{{end}}'
