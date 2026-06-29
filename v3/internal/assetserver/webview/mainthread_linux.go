@@ -10,6 +10,26 @@ package webview
 
 extern void webviewMainThreadCallback(uintptr_t id);
 
+// webview_dispatch_mu serializes the enabled-check plus scheduling in
+// webview_invoke_on_main_sync against the flag clear in
+// webview_disable_main_dispatch. Without it a worker could read
+// enabled == TRUE, then have the flag flipped before it scheduled its source,
+// and still queue work onto the now-dead main loop — blocking forever. A
+// statically allocated GMutex needs no g_mutex_init.
+static GMutex webview_dispatch_mu;
+
+// webview_main_dispatch_enabled gates whether webview_invoke_on_main_sync may
+// schedule work onto the GTK main loop. It starts enabled and is cleared once
+// the loop has stopped (see webview_disable_main_dispatch). It is only ever read
+// or written while holding webview_dispatch_mu.
+static gboolean webview_main_dispatch_enabled = TRUE;
+
+static void webview_disable_main_dispatch(void) {
+	g_mutex_lock(&webview_dispatch_mu);
+	webview_main_dispatch_enabled = FALSE;
+	g_mutex_unlock(&webview_dispatch_mu);
+}
+
 typedef struct {
 	uintptr_t id;
 	GMutex    mutex;
@@ -51,7 +71,29 @@ static void webview_invoke_on_main_sync(uintptr_t id) {
 	g_mutex_init(&call.mutex);
 	g_cond_init(&call.cond);
 
+	// The enabled-check and the g_main_context_invoke that acts on it must be
+	// atomic with respect to webview_disable_main_dispatch. Holding
+	// webview_dispatch_mu across both means a worker either schedules onto a live
+	// loop or sees the loop already stopped — it can never schedule onto a loop
+	// that stops in between (which would block it here forever). The trampoline
+	// only touches the per-call mutex/cond, never webview_dispatch_mu, so when
+	// g_main_context_invoke runs it inline (main-thread caller) there is no
+	// self-deadlock.
+	g_mutex_lock(&webview_dispatch_mu);
+	if (!webview_main_dispatch_enabled) {
+		// The GTK main loop has stopped: a scheduled source would never run. The
+		// loop is no longer iterating, so the cross-thread race that makes
+		// main-thread confinement necessary is gone — running the callback inline
+		// on the worker lets in-flight asset requests drain during shutdown
+		// instead of wedging. See #5631 (review question 5).
+		g_mutex_unlock(&webview_dispatch_mu);
+		webviewMainThreadCallback(id);
+		g_mutex_clear(&call.mutex);
+		g_cond_clear(&call.cond);
+		return;
+	}
 	g_main_context_invoke(NULL, webview_main_sync_trampoline, &call);
+	g_mutex_unlock(&webview_dispatch_mu);
 
 	g_mutex_lock(&call.mutex);
 	while (!call.done) {
@@ -85,6 +127,16 @@ func invokeOnMainSync(fn func()) {
 	mainSyncMu.Unlock()
 
 	C.webview_invoke_on_main_sync(C.uintptr_t(id))
+}
+
+// DisableMainThreadDispatch marks the GTK main loop as stopped. After it is
+// called, invokeOnMainSync runs callbacks inline on the calling goroutine
+// instead of scheduling them onto the now-dead main loop, so asset-server
+// workers that complete a request during shutdown cannot block forever waiting
+// for a source that will never be serviced. The application layer calls this
+// once g_application_run has returned. See issue #5631.
+func DisableMainThreadDispatch() {
+	C.webview_disable_main_dispatch()
 }
 
 //export webviewMainThreadCallback
