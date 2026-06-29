@@ -3,9 +3,9 @@ package capabilities
 import "encoding/json"
 
 type Capabilities struct {
-	HasNativeDrag bool
-	GTKVersion    int
-	WebKitVersion string
+	HasNativeDrag bool   `json:"HasNativeDrag"`
+	GTKVersion    int    `json:"GTKVersion"`
+	WebKitVersion string `json:"WebKitVersion"`
 }
 
 func (c Capabilities) AsBytes() []byte {

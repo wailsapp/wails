@@ -122,6 +122,42 @@ export function IsMac(): boolean {
 }
 
 /**
+ * Checks if the current operating system is iOS.
+ *
+ * @returns True if the operating system is iOS, otherwise false.
+ */
+export function IsIOS(): boolean {
+    return (window as any)._wails?.environment?.OS === "ios";
+}
+
+/**
+ * Checks if the current operating system is Android.
+ *
+ * @returns True if the operating system is Android, otherwise false.
+ */
+export function IsAndroid(): boolean {
+    return (window as any)._wails?.environment?.OS === "android";
+}
+
+/**
+ * Checks if the app is running on a mobile OS (iOS or Android).
+ *
+ * @returns True on iOS or Android, otherwise false.
+ */
+export function IsMobile(): boolean {
+    return IsIOS() || IsAndroid();
+}
+
+/**
+ * Checks if the app is running on a desktop OS (macOS, Windows or Linux).
+ *
+ * @returns True on macOS, Windows or Linux, otherwise false.
+ */
+export function IsDesktop(): boolean {
+    return IsMac() || IsWindows() || IsLinux();
+}
+
+/**
  * Checks if the current environment architecture is AMD64.
  *
  * @returns True if the current environment architecture is AMD64, false otherwise.

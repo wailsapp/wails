@@ -22,7 +22,7 @@ wails3 <command> --help
 |---------|-------------|
 | `wails3 init` | Create a new project from a template. Flags: `-n` (project name), `-t` (template, default `vanilla`), `-p` (Go package name, default `main`), `-d` (project directory, default `.`), `-q` (quiet), `-l` (list templates), `-mod` (Go module path), `--git` (Git repository URL), `--skipgomodtidy`, `-s` (skip remote-template warning), `--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`. |
 | `wails3 dev` | Run the application in development mode with frontend hot reload. Flags: `--config` (default `./build/config.yml`), `--port` (Vite dev port), `-s` (enable HTTPS). |
-| `wails3 build` | Build the project. Thin wrapper around the Taskfile `build` task. The only build-time flag is `--tags` (forwarded as `EXTRA_TAGS=`). |
+| `wails3 build` | Build the project. Thin wrapper around the Taskfile `build` task. Flags: `--tags` (forwarded as `EXTRA_TAGS=`), `--obfuscated` (build with Garble; see [Obfuscated Builds](/guides/build/obfuscation)), `--garbleargs` (extra flags forwarded to `garble` before the `build` subcommand). |
 | `wails3 package` | Run the platform-specific `package` Taskfile task. |
 | `wails3 task [name]` | Run any Taskfile task; with no name, `--list` shows every registered task. |
 | `wails3 doctor` | Print a diagnostic report of your environment. |
@@ -38,7 +38,7 @@ wails3 <command> --help
 
 | Subcommand | Description |
 |------------|-------------|
-| `generate bindings` | Generate Go-to-frontend bindings. Flags: `-d` (output dir), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emit `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`. Accepts package patterns (e.g. `./...`); falls back to the current directory if none given. |
+| `generate bindings` | Generate Go-to-frontend bindings. Flags: `-d` (output dir), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emit `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`, `-obfuscated` (generate `wails_obfuscated.gen.go` with stable binding IDs for Garble builds; see [Obfuscated Builds](/guides/build/obfuscation)), `-obfuscated-output` (directory for the generated file; defaults to the main package directory). Accepts package patterns (e.g. `./...`); falls back to the current directory if none given. |
 | `generate icons` | Convert a source PNG into the platform icon formats. Flags: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Generate the `build/` directory contents (Taskfile snippets, NSIS files, `Info.plist`, `.desktop` template, etc.) from `build/config.yml`. |
 | `generate runtime` | Regenerate the pre-built `/wails/runtime.js` shipped to the webview. |

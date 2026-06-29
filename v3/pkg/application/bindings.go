@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/hash"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
@@ -87,6 +88,37 @@ type Bindings struct {
 	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
+}
+
+var registeredBindingMethodIDs sync.Map
+
+// RegisterBindingMethodID registers a stable binding ID for a service method
+// expression so the runtime can resolve it without relying on reflection-visible
+// names (which may be obfuscated).
+func RegisterBindingMethodID(method any, id uint32) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		panic(fmt.Sprintf("binding method ID registration expects a function, got %s", value.Kind()))
+	}
+	registeredBindingMethodIDs.Store(value.Pointer(), id)
+}
+
+// UnregisterBindingMethodID removes the stable binding ID for a service method.
+// Intended for use in tests to restore global state after calling RegisterBindingMethodID.
+func UnregisterBindingMethodID(method any) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		return
+	}
+	registeredBindingMethodIDs.Delete(value.Pointer())
+}
+
+func getRegisteredBindingMethodID(method reflect.Method) (uint32, bool) {
+	id, ok := registeredBindingMethodIDs.Load(method.Func.Pointer())
+	if !ok {
+		return 0, false
+	}
+	return id.(uint32), true
 }
 
 func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
@@ -202,7 +234,8 @@ func getMethods(value any) ([]*BoundMethod, error) {
 
 	// Process Methods
 	for i := range ptrType.NumMethod() {
-		methodName := ptrType.Method(i).Name
+		methodDef := ptrType.Method(i)
+		methodName := methodDef.Name
 		method := namedValue.Method(i)
 
 		if internalServiceMethods[methodName] {
@@ -215,8 +248,13 @@ func getMethods(value any) ([]*BoundMethod, error) {
 		methodType := method.Type()
 
 		// Create new method with cached flags
+		methodID := hash.Fnv(fqn)
+		if registeredID, ok := getRegisteredBindingMethodID(methodDef); ok {
+			methodID = registeredID
+		}
+
 		boundMethod := &BoundMethod{
-			ID:         hash.Fnv(fqn),
+			ID:         methodID,
 			FQN:        fqn,
 			Name:       methodName,
 			Inputs:     nil,
@@ -265,11 +303,40 @@ var errorType = reflect.TypeFor[error]()
 // If the call succeeds, result will be either a non-error return value (if there is only one)
 // or a slice of non-error return values (if there are more than one).
 //
-// If the arguments are mistyped or the call returns one or more non-nil error values,
-// result is nil and err is an instance of *[CallError].
+// If the arguments are mistyped, the call returns one or more non-nil error values,
+// or the method panics, result is nil and err is an instance of *[CallError].
 func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
-	// Use a defer statement to capture panics
-	defer handlePanic(handlePanicOptions{skipEnd: 5})
+	// Convert panics raised by the bound method into a *CallError so the
+	// frontend call rejects instead of the application dying: the default
+	// panic handler is fatal, and a bug in one bound method must not take
+	// down the whole application (#5037). A custom PanicHandler, when
+	// registered, still observes the panic for logging/telemetry.
+	defer func() {
+		e := recover()
+		if e == nil {
+			return
+		}
+		recoveredErr, ok := e.(error)
+		if !ok {
+			recoveredErr = fmt.Errorf("%v", e)
+		}
+		// The stack trace is only used for logging or the PanicHandler, so
+		// only compute it when there is a globalApplication to consume it
+		// (the CallError below carries the message, not the trace).
+		if globalApplication != nil {
+			stackTrace := getStackTrace(3, 5)
+			if handler := globalApplication.options.PanicHandler; handler != nil {
+				handler(newPanicDetails(recoveredErr, stackTrace))
+			} else {
+				globalApplication.error("panic in bound method %s: %s\n%s", b.FQN, recoveredErr, stackTrace)
+			}
+		}
+		result = nil
+		err = &CallError{
+			Message: fmt.Sprintf("%s: panic: %s", b.FQN, recoveredErr),
+			Kind:    RuntimeError,
+		}
+	}()
 	argCount := len(args)
 	if b.needsContext {
 		argCount++

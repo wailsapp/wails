@@ -19,12 +19,17 @@ struct WebviewPreferences {
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
     bool *AllowsBackForwardNavigationGestures;
+    bool *AllowsMagnification;
+    bool *AllowsAirPlayForMediaPlayback;
+    bool *JavaScriptCanOpenWindowsAutomatically;
+    double *MinimumFontSize;
+    bool *EnableAutoplayWithoutUserAction;
 };
 
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
@@ -82,8 +87,24 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
      }
 #endif
 
+	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
+		config.allowsAirPlayForMediaPlayback = *preferences.AllowsAirPlayForMediaPlayback;
+	}
+	if (preferences.EnableAutoplayWithoutUserAction != NULL && *preferences.EnableAutoplayWithoutUserAction) {
+		config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+	}
+	if (preferences.JavaScriptCanOpenWindowsAutomatically != NULL) {
+		config.preferences.javaScriptCanOpenWindowsAutomatically = *preferences.JavaScriptCanOpenWindowsAutomatically;
+	}
+	if (preferences.MinimumFontSize != NULL) {
+		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
+	}
 	config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
+	if (applicationNameForUserAgent != NULL && applicationNameForUserAgent[0] != '\0') {
+		config.applicationNameForUserAgent = [NSString stringWithUTF8String:applicationNameForUserAgent];
+	} else {
+		config.applicationNameForUserAgent = @"wails.io";
+	}
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
@@ -102,10 +123,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    // Set allowsBackForwardNavigationGestures if specified
     if (preferences.AllowsBackForwardNavigationGestures != NULL) {
         webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
     }
+	if (preferences.AllowsMagnification != NULL) {
+		webView.allowsMagnification = *preferences.AllowsMagnification;
+	}
 
 	[view addSubview:webView];
 
@@ -120,7 +143,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 		[dragView autorelease];
 
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		// The mask must be on the drag view itself: it was previously set on
+		// the content view (a no-op), leaving the drag overlay frozen at its
+		// creation size — files dragged over any area gained by resizing the
+		// window were rejected (#3743).
+		[dragView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[view addSubview:dragView];
 		dragView.windowId = id;
 	}
@@ -597,19 +624,25 @@ int windowGetHeight(void* nsWindow) {
 	return [(WebviewWindow*)nsWindow frame].size.height;
 }
 
-// Get window position
+// Get the window position relative to its screen's NSScreen frame origin:
+// X from the screen's left edge, Y from the screen's top edge (Y-down).
+// Uses NSScreen frame (full extent, including menu bar/dock) rather than
+// visibleFrame. Must mirror windowSetRelativePosition exactly so Get/Set
+// round-trip on every screen: previously X was returned absolute (missing
+// the screenFrame.origin.x subtraction) and Y omitted screenFrame.origin.y,
+// so each axis was wrong only on screens whose corresponding NSScreen
+// frame.origin component is non-zero (issue #5408).
 void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSRect frame = [window frame];
-	*x = frame.origin.x;
 
-	// Translate to screen coordinates so Y=0 is the top of the screen
 	NSScreen* screen = [window screen];
 	if( screen == NULL ) {
 		screen = [NSScreen mainScreen];
 	}
 	NSRect screenFrame = [screen frame];
-	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
+	*x = frame.origin.x - screenFrame.origin.x;
+	*y = (screenFrame.origin.y + screenFrame.size.height) - frame.origin.y - frame.size.height;
 }
 
 // Get absolute window position in the canonical Wails coordinate space:
@@ -1013,6 +1046,9 @@ func (w *macosWebviewWindow) getZoom() float64 {
 }
 
 func (w *macosWebviewWindow) setZoom(zoom float64) {
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 	C.windowZoomSet(w.nsWindow, C.double(zoom))
 }
 
@@ -1339,6 +1375,22 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
 		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
 	}
+	if wvprefs.AllowsMagnification.IsSet() {
+		result.AllowsMagnification = bool2CboolPtr(wvprefs.AllowsMagnification.Get())
+	}
+	if wvprefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		result.AllowsAirPlayForMediaPlayback = bool2CboolPtr(wvprefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+	if wvprefs.JavaScriptCanOpenWindowsAutomatically.IsSet() {
+		result.JavaScriptCanOpenWindowsAutomatically = bool2CboolPtr(wvprefs.JavaScriptCanOpenWindowsAutomatically.Get())
+	}
+	if wvprefs.MinimumFontSize.IsSet() {
+		v := C.double(wvprefs.MinimumFontSize.Get())
+		result.MinimumFontSize = &v
+	}
+	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
+		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
+	}
 
 	return result
 }
@@ -1351,6 +1403,11 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
+		var appName *C.char
+		if s := macOptions.WebviewPreferences.ApplicationNameForUserAgent; s != "" {
+			appName = C.CString(s)
+			defer C.free(unsafe.Pointer(appName))
+		}
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
@@ -1358,6 +1415,7 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.Frameless),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
+			appName,
 		)
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))

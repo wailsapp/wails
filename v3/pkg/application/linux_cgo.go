@@ -25,24 +25,25 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator
-func NewCalloc() Calloc {
-	return Calloc{}
+// NewCalloc creates a new allocator. Returns a pointer so the allocation
+// pool is shared across calls without copying.
+func NewCalloc() *Calloc {
+	return &Calloc{}
 }
 
-// String creates a new C string and retains a reference to it
-func (c Calloc) String(in string) *C.char {
+// String creates a new C string and retains a reference to it.
+func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
 	c.pool = append(c.pool, unsafe.Pointer(result))
 	return result
 }
 
 // Free frees all allocated C memory
-func (c Calloc) Free() {
+func (c *Calloc) Free() {
 	for _, str := range c.pool {
 		C.free(str)
 	}
-	c.pool = []unsafe.Pointer{}
+	c.pool = nil
 }
 
 type windowPointer *C.GtkWindow
@@ -80,7 +81,10 @@ var (
 	mainThreadId        *C.GThread
 )
 
-var registerURIScheme sync.Once
+var (
+	registerURIScheme sync.Once
+	fixSignalHandlers sync.Once
+)
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -151,6 +155,11 @@ func appRun(app pointer) error {
 	defer C.free(unsafe.Pointer(signal))
 	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
+	// The GTK main loop has stopped. Tell the asset-server webview layer to stop
+	// marshalling WebKit calls onto it, so any request still being completed on a
+	// worker goroutine runs inline instead of blocking on a loop that is gone.
+	// See #5631.
+	webview.DisableMainThreadDispatch()
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
 
@@ -166,13 +175,21 @@ func appDestroy(application pointer) {
 }
 
 func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
-	// GTK4: Context menus use GtkPopoverMenu, signals handled differently
-	// TODO: Implement GTK4 context menu signal handling
+	// GTK4: GtkPopoverMenu items are wired through the "app" GAction group,
+	// which is attached to the window in windowNew. The popover's "closed"
+	// signal (used for cleanup) is connected in show_context_menu, so there
+	// is nothing to wire up here.
 }
 
 func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData) {
-	// GTK4: Use GtkPopoverMenu instead of gtk_menu_popup_at_rect
-	// TODO: Implement GTK4 context menu popup
+	// GTK4: present the GMenu model as a GtkPopoverMenu anchored to the
+	// webview at the click coordinates (which are relative to the webview).
+	C.show_context_menu(
+		(*C.GtkWidget)(w.webview),
+		(*C.GMenu)(menu),
+		C.int(data.X),
+		C.int(data.Y),
+	)
 }
 
 func (a *linuxApp) getCurrentWindowID() uint {
@@ -212,9 +229,9 @@ func (a *linuxApp) showAllWindows() {
 }
 
 func (a *linuxApp) setIcon(icon []byte) {
-	// TODO: Implement GTK4 icon setting using GdkTexture
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
-	defer C.g_bytes_unref(gbytes)
+	// GTK4 removed per-window icon APIs. The application icon is determined by
+	// the .desktop file's Icon= field at the desktop-integration level.
+	// No programmatic equivalent exists for setting icons from bytes in GTK4.
 }
 
 func clipboardGet() string {
@@ -333,6 +350,24 @@ func menuAppend(parent *Menu, menu *MenuItem, hidden bool) {
 	if !hidden {
 		C.g_menu_append_item(gmenu, gitem)
 	}
+}
+
+// menuClear removes every item from the menu's native GMenu so that it can be
+// rebuilt from scratch on Menu.Update() (#5464). The per-menu append counter is
+// reset too, so rebuilt items get fresh 0-based positions (menuIndex is used by
+// menu_remove_item for hide/show). This mirrors the GTK3/purego menuClear.
+func menuClear(menu *Menu) {
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	C.g_menu_remove_all((*C.GMenu)(impl.native))
+	menuItemCountersLock.Lock()
+	delete(menuItemCounters, impl.native)
+	menuItemCountersLock.Unlock()
 }
 
 func menuBarNew() pointer {
@@ -1189,6 +1224,14 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 			(*[0]byte)(C.onProcessRequest), nil, nil)
 	})
 
+	// Start the periodic signal-handler fix now that a WebView exists and JSC
+	// can actually initialise. Anchoring to first webview creation (not appNew)
+	// ensures the 5s window covers the JSC lazy-init race window.
+	fixSignalHandlers.Do(func() {
+		C.install_signal_handlers()
+		C.schedule_signal_handler_fix()
+	})
+
 	_ = networkSession
 	return pointer(webView)
 }
@@ -1240,6 +1283,7 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
@@ -1270,10 +1314,13 @@ func (w *linuxWebviewWindow) windowShow() {
 		return
 	}
 	C.gtk_window_present(w.gtkWindow())
+	// Re-apply always-on-top state now that the surface exists.
+	C.window_apply_pending_always_on_top(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	// GTK4: No direct equivalent - compositor-dependent
+	// X11 only: uses _NET_WM_STATE_ABOVE. No-op on Wayland (no standard protocol).
+	C.window_set_always_on_top(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
 func (w *linuxWebviewWindow) setBorderless(borderless bool) {
@@ -1282,6 +1329,7 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
@@ -1294,7 +1342,8 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 }
 
 func (w *linuxWebviewWindow) setIcon(icon pointer) {
-	// GTK4: Window icons handled differently - no gtk_window_set_icon
+	// GTK4 removed gtk_window_set_icon. Window icons are set via the
+	// application's .desktop file at the desktop-integration level.
 }
 
 func (w *linuxWebviewWindow) startDrag() error {
@@ -1433,6 +1482,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1477,6 +1527,25 @@ func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 	return C.gboolean(0)
 }
 
+//export handlePermissionRequest
+func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Honour the window's
+	// Permissions for camera/microphone; leave every other request to WebKit's
+	// default handling (deny).
+	if C.is_user_media_permission_request(request) == 0 {
+		return C.gboolean(0)
+	}
+	needAudio := C.is_user_media_for_audio(request) != 0
+	needVideo := C.is_user_media_for_video(request) != 0
+	if allowMediaCapture(uint(data), needAudio, needVideo) {
+		C.webkit_permission_request_allow(request)
+	} else {
+		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
+}
+
 //export handleLoadChanged
 func handleLoadChanged(wv *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
@@ -1487,6 +1556,9 @@ func handleLoadChanged(wv *C.WebKitWebView, event C.WebKitLoadEvent, data C.uint
 	case C.WEBKIT_LOAD_COMMITTED:
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadCommitted))
 	case C.WEBKIT_LOAD_FINISHED:
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadFinished))
 	}
 }

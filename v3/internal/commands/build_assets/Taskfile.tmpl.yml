@@ -4,11 +4,15 @@ tasks:
   go:mod:tidy:
     summary: Runs `go mod tidy`
     internal: true
+    # Universal/multi-arch builds invoke this concurrently from parallel deps;
+    # two `go mod tidy` processes racing on go.mod can corrupt it (#4637).
+    run: once
     cmds:
       - go mod tidy
 
   install:frontend:deps:
     summary: Install frontend dependencies
+    run: once
     cmds:
       - task: install:frontend:deps:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
 
@@ -68,6 +72,12 @@ tasks:
   build:frontend:
     label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}})
     summary: Build the frontend project
+    # darwin:build:universal runs its per-arch builds as parallel deps, each of
+    # which depends on this task. Without run:once the two executions race:
+    # one regenerates frontend/bindings (-clean deletes it first) while the
+    # other's bundler is reading it, failing intermittently with
+    # 'Could not resolve "./bindings/<pkg>"' (#4637).
+    run: once
     dir: frontend
     sources:
       - "**/*"
@@ -80,6 +90,8 @@ tasks:
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
     cmds:
       - task: frontend:run
         vars:
@@ -162,8 +174,8 @@ tasks:
 
 
   generate:bindings:
-    label: generate:bindings (BUILD_FLAGS={{.Opn}}.BUILD_FLAGS{{.Cls}})
     summary: Generates bindings for the frontend
+    run: once
     deps:
       - task: go:mod:tidy
     sources:
@@ -176,10 +188,11 @@ tasks:
     generates:
       - frontend/bindings/**/*
     cmds:
-      - wails3 generate bindings -f '{{.Opn}}.BUILD_FLAGS{{.Cls}}' -clean=true{{if .Typescript}} -ts{{end}}
+      - wails3 generate bindings -f '{{.Opn}}.BUILD_FLAGS{{.Cls}}' -clean=true{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}} -obfuscated{{.Opn}}end{{.Cls}}{{if .Typescript}} -ts{{end}}{{if and .UseInterfaces .Typescript}} -i{{end}}
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
+    run: once
     dir: build
     sources:
       - "appicon.png"
@@ -226,34 +239,66 @@ tasks:
   build:server:
     summary: Builds the application in server mode (no GUI, HTTP server only)
     desc: |
-      Builds the application with the server build tag enabled.
+      Builds a production server binary by default: -tags server,production,
+      -trimpath and a stripped binary, mirroring the desktop `build` task.
       Server mode runs as a pure HTTP server without native GUI dependencies.
-      Usage: task build:server
+
+      Usage: task build:server [DEV=true] [OBFUSCATED=true] [EXTRA_TAGS=tag1,tag2]
+        DEV=true        development server (-tags server, no strip, inlining kept)
+        OBFUSCATED=true obfuscated build via garble (requires garble installed)
+        EXTRA_TAGS      additional comma-separated build tags
     deps:
       - task: build:frontend
         vars:
+          DEV:
+            ref: .DEV
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+    preconditions:
+      - sh: '{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}}command -v garble >/dev/null 2>&1{{.Opn}}else{{.Cls}}true{{.Opn}}end{{.Cls}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
     cmds:
-      - go build -tags server {{.Opn}}.BUILD_FLAGS{{.Cls}} -o {{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}
+      - '{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}}garble {{.Opn}}.GARBLE_ARGS{{.Cls}} build{{.Opn}}else{{.Cls}}go build{{.Opn}}end{{.Cls}} {{.Opn}}.BUILD_FLAGS{{.Cls}} -o "{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}"'
     vars:
-      BUILD_FLAGS: "{{.Opn}}.BUILD_FLAGS{{.Cls}}"
+      BUILD_FLAGS: '-tags server{{.Opn}}if eq .DEV "true"{{.Cls}}{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}},wails_obfuscated{{.Opn}}end{{.Cls}}{{.Opn}}if .EXTRA_TAGS{{.Cls}},{{.Opn}}.EXTRA_TAGS{{.Cls}}{{.Opn}}end{{.Cls}} -buildvcs=false -gcflags=all="-l"{{.Opn}}else{{.Cls}},production{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}},wails_obfuscated{{.Opn}}end{{.Cls}}{{.Opn}}if .EXTRA_TAGS{{.Cls}},{{.Opn}}.EXTRA_TAGS{{.Cls}}{{.Opn}}end{{.Cls}} -trimpath -buildvcs=false -ldflags="-w -s"{{.Opn}}end{{.Cls}}'
 
   run:server:
-    summary: Builds and runs the application in server mode
+    summary: Builds and runs a development server (DEV=true)
     deps:
       - task: build:server
+        vars:
+          DEV: "true"
     cmds:
-      - ./{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}
+      - '"./{{.Opn}}.BIN_DIR{{.Cls}}/{{.Opn}}.APP_NAME{{.Cls}}-server{{.Opn}}exeExt{{.Cls}}"'
 
   build:docker:
     summary: Builds a Docker image for server mode deployment
     desc: |
-      Creates a minimal Docker image containing the server mode binary.
-      The image is based on distroless for security and small size.
-      Usage: task build:docker [TAG=myapp:latest]
+      Creates a minimal Docker image containing the production server binary.
+      Defaults to a pure-Go static binary on a distroless/static base. The
+      production frontend is built first so the embedded assets are current.
+
+      Usage: task build:docker [TAG=myapp:latest] [CGO_ENABLED=1] [GO_IMAGE=...] [RUNTIME_IMAGE=...]
+      For CGO apps, set CGO_ENABLED=1 with libc-compatible builder/runtime images, e.g.:
+        task build:docker CGO_ENABLED=1 GO_IMAGE=golang:bookworm RUNTIME_IMAGE=gcr.io/distroless/base-debian12
+    deps:
+      # Build the production frontend so frontend/dist (embedded by the Go build
+      # inside the image) is present and current in the Docker build context.
+      # Pass the server,production tags so binding generation analyses the same
+      # build the Docker image compiles, not the default-tag build.
+      - task: build:frontend
+        vars:
+          BUILD_FLAGS: "-tags server,production"
     cmds:
-      - docker build -t {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}} -f build/docker/Dockerfile.server .
+      - >-
+        docker build
+        --build-arg CGO_ENABLED={{.Opn}}.CGO_ENABLED | default "0"{{.Cls}}
+        --build-arg GO_IMAGE={{.Opn}}.GO_IMAGE | default "golang:alpine"{{.Cls}}
+        --build-arg RUNTIME_IMAGE={{.Opn}}.RUNTIME_IMAGE | default "gcr.io/distroless/static-debian12"{{.Cls}}
+        -t {{.Opn}}.TAG | default (printf "%s:latest" .APP_NAME){{.Cls}}
+        -f build/docker/Dockerfile.server .
     vars:
       TAG: "{{.Opn}}.TAG{{.Cls}}"
     preconditions:

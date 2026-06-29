@@ -1,0 +1,266 @@
+---
+title: Manager API
+description: 具有专注管理器接口的结构化 API
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 的 Manager API 提供了一种组织良好且易于发现的方式，通过专注的 Manager 结构体来访问应用程序功能。这种新的 API 结构将相关方法分组在一起，同时保持与传统 App API 的完全向后兼容。
+
+## 概述
+
+Manager API 将应用程序功能组织为十一个专注领域：
+
+- **`app.Window`** - 窗口创建、管理和回调
+- **`app.ContextMenu`** - 上下文菜单注册和管理
+- **`app.KeyBinding`** - 全局快捷键绑定管理
+- **`app.Browser`** - 浏览器集成（打开 URL 和文件）
+- **`app.Env`** - 环境信息和系统状态
+- **`app.Dialog`** - 文件和消息对话框操作
+- **`app.Event`** - 自定义事件处理和应用程序事件
+- **`app.Menu`** - 应用程序菜单管理
+- **`app.Screen`** - 屏幕管理和坐标转换
+- **`app.Clipboard`** - 剪贴板文本操作
+- **`app.SystemTray`** - 系统托盘图标创建和管理
+
+## 优势
+
+- **更好的可发现性** - IDE 自动补全显示结构化的 API 表面
+- **改进的代码组织** - 相关方法分组在一起
+- **增强的可维护性** - 跨管理器的关注点分离
+- **未来可扩展性** - 更容易向特定领域添加新功能
+
+## 用法
+
+Manager API 提供对所有应用程序功能的组织化访问：
+
+```go
+// 事件和自定义事件处理
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// 窗口管理
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// 浏览器集成
+app.Browser.OpenURL("https://wails.io")
+
+// 菜单管理
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// 系统托盘
+systray := app.SystemTray.New()
+```
+
+## Manager 参考
+
+### 窗口管理器
+
+管理窗口创建、检索和生命周期回调。
+
+```go
+// 创建窗口
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// 查找窗口
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// 窗口回调
+app.Window.OnCreate(func(window Window) {
+    // 处理窗口创建
+})
+```
+
+### 事件管理器
+
+处理自定义事件和应用程序事件监听。
+
+```go
+// 自定义事件
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // 处理事件
+})
+app.Event.Off("userAction")
+app.Event.Reset() // 移除所有监听器
+
+// 应用程序事件
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // 处理系统主题更改
+})
+```
+
+### 浏览器管理器
+
+提供用于打开 URL 和文件的浏览器集成。
+
+```go
+// 在默认浏览器中打开 URL 和文件
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### 环境管理器
+
+访问系统环境信息。
+
+```go
+// 获取环境信息
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// 检查系统主题
+if app.Env.IsDarkMode() {
+    // 深色模式已激活
+}
+
+// 打开文件管理器
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### 对话框管理器
+
+组织化访问文件和消息对话框。
+
+```go
+// 文件对话框
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// 消息对话框
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### 菜单管理器
+
+应用程序菜单创建和管理。
+
+```go
+// 创建并设置应用程序菜单
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // 处理菜单点击
+})
+
+app.Menu.Set(menu)
+
+// 显示关于对话框
+app.Menu.ShowAbout()
+```
+
+### 快捷键绑定管理器
+
+动态管理全局快捷键绑定。
+
+```go
+// 添加快捷键绑定
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // 处理 Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// 移除快捷键绑定
+app.KeyBinding.Remove("ctrl+n")
+
+// 获取所有绑定
+bindings := app.KeyBinding.GetAll()
+```
+
+### 上下文菜单管理器
+
+高级上下文菜单管理（适用于库作者）。
+
+```go
+// 创建并注册上下文菜单
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// 检索上下文菜单
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// 移除上下文菜单
+app.ContextMenu.Remove("myMenu")
+```
+
+### 屏幕管理器
+
+多显示器设置的屏幕管理和坐标转换。
+
+```go
+// 获取屏幕信息
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// 坐标转换
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// 屏幕检测
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### 剪贴板管理器
+
+用于读写文本的剪贴板操作。
+
+```go
+// 设置剪贴板文本
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // 处理错误
+}
+
+// 从剪贴板获取文本
+text, ok := app.Clipboard.Text()
+if !ok {
+    // 处理错误
+} else {
+    // 使用文本
+}
+```
+
+### 系统托盘管理器
+
+系统托盘图标创建和管理。
+
+```go
+// 创建系统托盘
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// 向系统托盘添加菜单
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // 处理点击
+})
+systray.SetMenu(menu)
+
+// 完成后销毁系统托盘
+systray.Destroy()
+```
