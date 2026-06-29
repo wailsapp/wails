@@ -1,0 +1,214 @@
+---
+title: Single Instance
+description: Ensure only one instance of your application runs at a time
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem, Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Single instance mode prevents users from opening multiple copies of your application. When a second launch occurs, the running instance is notified and brought to the foreground instead.
+
+## Basic Setup
+
+Pass `SingleInstanceOptions` in your application options:
+
+```go title="main.go"
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    var window *application.WebviewWindow
+
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+        SingleInstance: &application.SingleInstanceOptions{
+            UniqueID: "com.example.myapp",
+            OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+                if window != nil {
+                    window.Restore()
+                    window.Focus()
+                }
+            },
+        },
+    })
+
+    window = app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "MyApp",
+        URL:   "/",
+    })
+
+    app.Run()
+}
+```
+
+`UniqueID` identifies your application across instances — use a reverse-domain name to avoid collisions.
+
+## SingleInstanceOptions
+
+```go
+type SingleInstanceOptions struct {
+    // UniqueID identifies the application instance.
+    // Use a reverse-domain name, e.g. "com.mycompany.myapp".
+    UniqueID string
+
+    // OnSecondInstanceLaunch is called when a second instance launches.
+    // Use it to restore/focus your window and handle any arguments.
+    OnSecondInstanceLaunch func(data SecondInstanceData)
+
+    // AdditionalData passes custom key-value data from the second
+    // instance to the first. Set this before calling app.Run().
+    AdditionalData map[string]string
+
+    // ExitCode is returned when the second instance exits.
+    // Defaults to 0.
+    ExitCode int
+
+    // EncryptionKey is a 32-byte AES-256-GCM key for encrypting
+    // instance communication. If zero, data is sent unencrypted.
+    EncryptionKey [32]byte
+}
+```
+
+## SecondInstanceData
+
+The `OnSecondInstanceLaunch` callback receives:
+
+```go
+type SecondInstanceData struct {
+    // Args contains os.Args from the second instance launch.
+    Args []string
+
+    // WorkingDir is the working directory of the second instance.
+    WorkingDir string
+
+    // AdditionalData contains custom data set in SingleInstanceOptions.
+    AdditionalData map[string]string
+}
+```
+
+Use `Args` to open files or handle command-line flags passed to the second instance.
+
+## Passing Data Between Instances
+
+The first instance can receive arguments from the second instance and respond accordingly:
+
+```go
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.example.myapp",
+    OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+        // Focus the window
+        window.Restore()
+        window.Focus()
+
+        // Handle file arguments
+        for _, arg := range data.Args {
+            if strings.HasSuffix(arg, ".myext") {
+                openDocument(arg)
+            }
+        }
+
+        // Read custom data
+        if theme, ok := data.AdditionalData["theme"]; ok {
+            applyTheme(theme)
+        }
+    },
+},
+```
+
+Set `AdditionalData` in the second instance before it exits:
+
+```go
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.example.myapp",
+    AdditionalData: map[string]string{
+        "theme":    "dark",
+        "launched": time.Now().Format(time.RFC3339),
+    },
+},
+```
+
+## Encrypted Communication
+
+By default, instance data is sent unencrypted over a local socket. For sensitive data, provide a 32-byte AES-256-GCM key:
+
+```go
+var instanceKey = [32]byte{
+    0x1e, 0x1f, 0x1c, 0x1d, 0x1a, 0x1b, 0x18, 0x19,
+    0x16, 0x17, 0x14, 0x15, 0x12, 0x13, 0x10, 0x11,
+    0x0e, 0x0f, 0x0c, 0x0d, 0x0a, 0x0b, 0x08, 0x09,
+    0x06, 0x07, 0x04, 0x05, 0x02, 0x03, 0x00, 0x01,
+}
+
+app := application.New(application.Options{
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID:      "com.example.myapp",
+        EncryptionKey: instanceKey,
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            window.Focus()
+        },
+    },
+})
+```
+
+<Aside type="caution">
+Embed or derive the key at build time — do not generate it at runtime, as each instance would have a different key and decryption would fail.
+</Aside>
+
+## Notify the Frontend
+
+Forward the second-instance event to your frontend using window events:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    window.Restore()
+    window.Focus()
+    window.EmitEvent("secondInstance", data)
+},
+```
+
+Listen in your frontend:
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (data) => {
+    console.log("Second instance launched with args:", data.Args);
+    // Update your UI
+});
+```
+
+## Platform Notes
+
+<Tabs syncKey="os">
+<TabItem label="macOS" icon="apple">
+Uses a Unix domain socket in the system temporary directory to detect and communicate between instances.
+</TabItem>
+<TabItem label="Windows" icon="seti:windows">
+Uses a named mutex and a named pipe in the `\\.\pipe\` namespace to detect and communicate between instances.
+</TabItem>
+<TabItem label="Linux" icon="linux">
+Uses a Unix domain socket in the system temporary directory (same mechanism as macOS).
+</TabItem>
+</Tabs>
+
+The lock file or pipe is named using the `UniqueID` value. Use distinct `UniqueID` values for different applications on the same machine.
+
+<CardGrid>
+  <Card title="File Associations" icon="document">
+    [Handle files opened from the OS](/guides/distribution/file-associations) in combination with single instance
+  </Card>
+  <Card title="Events" icon="information">
+    [Learn about Wails events](/features/events/system) for frontend–backend communication
+  </Card>
+</CardGrid>
