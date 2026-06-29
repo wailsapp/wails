@@ -116,6 +116,10 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			if mac.Preferences.ApplicationNameForUserAgent != "" {
 				preferences.applicationNameForUserAgent = c.String(mac.Preferences.ApplicationNameForUserAgent)
 			}
+
+			if mac.Preferences.EnableAutoplayWithoutUserAction.IsSet() {
+				preferences.enableAutoplayWithoutUserAction = bool2CboolPtr(mac.Preferences.EnableAutoplayWithoutUserAction.Get())
+			}
 		}
 
 		zoomable = bool2Cint(!frontendOptions.Mac.DisableZoom)
