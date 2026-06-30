@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Implement macOS WebView reload and force reload, and add recovery for WebContent process termination in [PR](https://github.com/wailsapp/wails/pull/5129) by @wayneforrest
 - Add comprehensive German documentation for contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5396) by @leaanthony
 - Enhance notifications with sound, attachments, scheduling, and update API in [PR](https://github.com/wailsapp/wails/pull/5333) by @popaprozac
 
@@ -25,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
