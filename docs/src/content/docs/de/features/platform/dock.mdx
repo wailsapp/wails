@@ -1,0 +1,241 @@
+---
+title: Dock & Taskleiste
+description: Verwalten Sie die Sichtbarkeit des Dock-Symbols und anzeigen von Badges auf macOS und Windows
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Einführung
+
+Wails bietet einen plattformübergreifenden Dock-Service für Desktop-Anwendungen. Dieser Service ermöglicht es Ihnen:
+
+- Das Anwendungssymbol im macOS-Dock aus- und einzublenden
+- Badges auf Ihrem Anwendungskachel- oder Dock/Taskleistensymbol anzuzeigen (macOS und Windows)
+
+## Grundlegende Verwendung
+
+### Erstellen des Services
+
+Initialisieren Sie zunächst den Dock-Service:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// Erstellen Sie einen neuen Dock-Service
+dockService := dock.New()
+
+// Registrieren Sie den Service bei der Anwendung
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+### Erstellen des Services mit benutzerdefinierten Badge-Optionen (nur Windows)
+
+Unter Windows können Sie das Aussehen des Badges mit verschiedenen Optionen anpassen:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+import "image/color"
+
+// Erstellen Sie einen Dock-Service mit benutzerdefinierten Badge-Optionen
+options := dock.BadgeOptions{
+    TextColour:       color.RGBA{255, 255, 255, 255}, // Weißer Text
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Blauer Hintergrund
+    FontName:         "consolab.ttf",                 // Fette Consolas-Schriftart
+    FontSize:         20,                             // Schriftgröße für einzelnes Zeichen
+    SmallFontSize:    14,                             // Schriftgröße für mehrere Zeichen
+}
+
+dockService := dock.NewWithOptions(options)
+
+// Registrieren Sie den Service bei der Anwendung
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Dock-Operationen
+
+### Ausblenden des Dock-Anwendungssymbols
+
+Blenden Sie das App-Symbol aus dem macOS-Dock aus:
+
+```go
+// Blenden Sie das App-Symbol aus
+dockService.HideAppIcon()
+```
+
+### Einblenden des Dock-Anwendungssymbols
+
+Blenden Sie das App-Symbol im macOS-Dock ein:
+
+```go
+// Blenden Sie das App-Symbol ein
+dockService.ShowAppIcon()
+```
+
+## Badge-Operationen
+
+### Festlegen eines Badges
+
+Legen Sie ein Badge auf dem Anwendungskachel-/Dock-Symbol fest:
+
+```go
+// Legen Sie ein Standard-Badge fest
+dockService.SetBadge("")
+
+// Legen Sie ein numerisches Badge fest
+dockService.SetBadge("3")
+
+// Legen Sie ein Text-Badge fest
+dockService.SetBadge("New")
+```
+
+### Festlegen eines benutzerdefinierten Badges (nur Windows)
+
+Legen Sie ein Badge mit einmalig angewendeten Optionen fest:
+
+```go
+options := dock.BadgeOptions{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName:         "arialb.ttf", // Systemschriftart
+    FontSize:         16,
+    SmallFontSize:    10,
+    TextColour:       color.RGBA{0, 0, 0, 255},
+}
+
+// Legen Sie ein Standard-Badge fest
+dockService.SetCustomBadge("", options)
+
+// Legen Sie ein numerisches Badge fest
+dockService.SetCustomBadge("3", options)
+
+// Legen Sie ein Text-Badge fest
+dockService.SetCustomBadge("New", options)
+```
+
+### Entfernen eines Badges
+
+Entfernen Sie das Badge vom Anwendungssymbol:
+
+```go
+dockService.RemoveBadge()
+```
+
+### Abrufen des festgelegten Badges
+```go
+dockService.GetBadge()
+``` 
+
+## Plattformüberlegungen
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Unter macOS:
+    
+    - Das Dock-Symbol kann **ausgeblendet** und **eingebettet** werden
+    - Badges werden direkt auf dem Dock-Symbol angezeigt
+    - Badge-Optionen sind **nicht anpassbar** (alle an `NewWithOptions`/`SetCustomBadge` übergebenen Optionen werden ignoriert)
+    - Das Standard-macOS-Dock-Badge-Styling wird verwendet und passt sich automatisch an das Erscheinungsbild an
+    - Das Überlaufen von Beschriftungen wird vom System behandelt
+    - Das Bereitstellen eines leeren Labels zeigt ein Standard-Badge von "●" an
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Unter Windows:
+    
+    - Das Ausblenden/Einblenden der Taskleistensymbole wird von diesem Service derzeit nicht unterstützt
+    - Badges werden als Overlay-Symbol in der Taskleiste angezeigt
+    - Badges unterstützen Textwerte
+    - Das Aussehen des Badges kann über `BadgeOptions` angepasst werden
+    - Die Anwendung muss ein Fenster haben, damit Badges angezeigt werden können
+    - Eine kleinere Schriftgröße wird automatisch für Beschriftungen mit mehreren Zeichen verwendet
+    - Das Überlaufen von Beschriftungen wird nicht behandelt
+    - Anpassungsoptionen:
+      - **TextColour**: Textfarbe (Standard: weiß)
+      - **BackgroundColour**: Hintergrundfarbe des Badges (Standard: rot)
+      - **FontName**: Schriftdateiname (Standard: "segoeuib.ttf")
+      - **FontSize**: Schriftgröße für einzelnes Zeichen (Standard: 18)
+      - **SmallFontSize**: Schriftgröße für mehrere Zeichen (Standard: 14)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Unter Linux:
+    
+    - Die Sichtbarkeit des Dock-Symbols und die Badge-Funktionalität sind nicht verfügbar
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. **Beim Ausblenden des Dock-Symbols (macOS):**
+   - Stellen Sie sicher, dass Benutzer weiterhin auf Ihre App zugreifen können (z. B. über [System Tray](https://v3.wails.io/learn/systray/))
+   - Fügen Sie eine "Beenden"-Option in Ihrer alternativen Benutzeroberfläche ein
+   - Die App erscheint nicht im Command+Tab-Wechsler
+   - Offene Fenster bleiben sichtbar und funktionsfähig
+   - Das Schließen aller Fenster beendet die App möglicherweise nicht (das macOS-Verhalten variiert)
+   - Benutzer verlieren die Standardmethode zum Beenden über den Rechtsklick im Dock
+
+2. **Verwenden Sie Badges sparsam:**
+   - Zu viele Badge-Aktualisierungen können Benutzer ablenken
+   - Reservieren Sie Badges für wichtige Benachrichtigungen
+
+3. **Halten Sie den Badge-Text kurz:**
+   - Numerische Badges sind am effektivsten
+   - Unter macOS sollten Text-Badges kurz sein
+
+4. **Für die Windows-Badge-Anpassung:**
+   - Stellen Sie einen hohen Kontrast zwischen Text- und Hintergrundfarben sicher
+   - Testen Sie mit verschiedenen Textlängen, da die Schriftgröße mit der Länge abnimmt
+   - Verwenden Sie gängige Systemschriftarten, um die Verfügbarkeit sicherzustellen
+
+
+## API-Referenz
+
+### Service-Verwaltung
+| Methode                                     | Beschreibung                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Erstellt einen neuen Dock-Service                            |
+| `NewWithOptions(options BadgeOptions)`     | Erstellt einen neuen Dock-Service mit benutzerdefinierten Badge-Optionen (nur Windows; Optionen werden auf macOS und Linux ignoriert) |
+
+### Dock-Operationen
+| Methode                                       | Beschreibung                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | Blendet das App-Symbol aus dem macOS-Dock aus (nur macOS)         |
+| `ShowAppIcon()`                | Blendet das App-Symbol im macOS-Dock ein (nur macOS)           |
+
+### Badge-Operationen
+| Methode                                            | Beschreibung                                                |
+|---------------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`                    | Legt ein Badge mit dem angegebenen Label fest                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | Legt ein Badge mit dem angegebenen Label und benutzerdefinierten Stiloptionen fest (nur Windows) |
+| `RemoveBadge() error`                             | Entfernt das Badge vom Anwendungssymbol                |
+| `GetBadge() *string`                             | Ruft das aktuelle Badge ab                |
+
+### Strukturen und Typen
+
+```go
+// Optionen zum Anpassen des Badge-Aussehens (nur Windows)
+type BadgeOptions struct {
+    TextColour       color.RGBA  // Farbe des Badge-Textes
+    BackgroundColour color.RGBA  // Farbe des Badge-Hintergrunds
+    FontName         string      // Schriftdateiname (z. B. "segoeuib.ttf")
+    FontSize         int         // Schriftgröße für einzelnes Zeichen
+    SmallFontSize    int         // Schriftgröße für mehrere Zeichen
+}
+```

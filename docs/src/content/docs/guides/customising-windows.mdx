@@ -1,5 +1,6 @@
 ---
 title: Customising Windows in Wails
+description: Customize window appearance and behavior in your Wails applications
 sidebar:
   order: 10
 ---
@@ -51,9 +52,10 @@ func main() {
     })
 
     app.Window.NewWithOptions(application.WebviewWindowOptions{
-        MinimiseButtonState: application.ButtonHidden,
-        MaximiseButtonState: application.ButtonDisabled,
-        CloseButtonState:    application.ButtonEnabled,
+        MinimiseButtonState:   application.ButtonHidden,
+        MaximiseButtonState:   application.ButtonDisabled,
+        CloseButtonState:      application.ButtonEnabled,
+        FullscreenButtonState: application.ButtonEnabled,
     })
 
     app.Run()
@@ -72,23 +74,46 @@ the `Window` interface:
 window.SetMinimiseButtonState(wails.ButtonHidden)
 window.SetMaximiseButtonState(wails.ButtonEnabled)
 window.SetCloseButtonState(wails.ButtonDisabled)
+window.SetFullscreenButtonState(wails.ButtonEnabled)
 ```
+
+### macOS: MaximiseButtonState and FullscreenButtonState share a button
+
+On macOS the green traffic-light button (`NSWindowZoomButton`) is the same
+physical control for both maximise and fullscreen. Setting
+`MaximiseButtonState` and `FullscreenButtonState` to different values during
+window creation would otherwise produce a silent last-writer-wins override.
+
+To avoid this, Wails applies the **more restrictive** of the two states at
+initialisation, in the order `ButtonEnabled` < `ButtonDisabled` < `ButtonHidden`.
+
+| `MaximiseButtonState` | `FullscreenButtonState` | Effective state on macOS |
+|-----------------------|-------------------------|--------------------------|
+| `ButtonEnabled`       | `ButtonEnabled`         | `ButtonEnabled`          |
+| `ButtonDisabled`      | `ButtonEnabled`         | `ButtonDisabled`         |
+| `ButtonEnabled`       | `ButtonHidden`          | `ButtonHidden`           |
+| `ButtonDisabled`      | `ButtonHidden`          | `ButtonHidden`           |
+
+At runtime, `SetMaximiseButtonState` and `SetFullscreenButtonState` both target
+`NSWindowZoomButton` on macOS, so the last call wins.
 
 ### Platform Differences
 
 The button state functionality behaves slightly differently on Windows and
 macOS:
 
-|                       | Windows                | Mac                    |
-|-----------------------|------------------------|------------------------|
-| Disable Min/Max/Close | Disables Min/Max/Close | Disables Min/Max/Close |
-| Hide Min              | Disables Min           | Hides Min button       |
-| Hide Max              | Disables Max           | Hides Max button       |
-| Hide Close            | Hides all controls     | Hides Close            |
+|                          | Windows                | Mac                            |
+|--------------------------|------------------------|--------------------------------|
+| Disable Min/Max/Close    | Disables Min/Max/Close | Disables Min/Max/Close         |
+| Hide Min                 | Disables Min           | Hides Min button               |
+| Hide Max                 | Disables Max           | Hides Max button               |
+| Hide Close               | Hides all controls     | Hides Close                    |
+| `FullscreenButtonState`  | No-op                  | Targets the zoom (green) button |
 
 Note: On Windows, it is not possible to hide the Min/Max buttons individually.
 However, disabling both will hide both of the controls and only show the close
-button.
+button. Windows has no dedicated fullscreen button in the standard title bar,
+so `FullscreenButtonState` is a no-op there.
 
 ### Controlling Window Style (Windows)
 

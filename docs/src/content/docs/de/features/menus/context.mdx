@@ -1,0 +1,642 @@
+---
+title: Kontextmenüs
+description: Erstellen Sie Rechtsklick-Kontextmenüs für Ihre Anwendung
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Das Problem
+
+Benutzer erwarten Rechtsklick-Menüs mit kontextspezifischen Aktionen. Verschiedene Elemente benötigen unterschiedliche Menüs:
+- **Text**: Ausschneiden, Kopieren, Einfügen
+- **Bilder**: Speichern, Kopieren, Öffnen
+- **Benutzerspezifische Elemente**: Anwendungsspezifische Aktionen
+
+Das manuelle Erstellen von Kontextmenüs bedeutet, Mausereignisse zu verarbeiten, Positionierung zu handhaben und Plattformunterschiede zu berücksichtigen.
+
+## Die Wails-Lösung
+
+Wails bietet **deklarative Kontextmenüs** über CSS-Eigenschaften. Verknüpfen Sie Menüs mit HTML-Elementen, übergeben Sie Daten und verarbeiten Sie Klicks – alles mit nativem Plattformverhalten.
+
+## Schnellstart
+
+**Go-Code:**
+
+```go
+// Kontextmenü erstellen
+contextMenu := app.NewContextMenu()
+contextMenu.Add("Ausschneiden").OnClick(handleCut)
+contextMenu.Add("Kopieren").OnClick(handleCopy)
+contextMenu.Add("Einfügen").OnClick(handlePaste)
+
+// Mit ID registrieren
+app.RegisterContextMenu("editor-menu", contextMenu)
+```
+
+**HTML:**
+
+```html
+<textarea style="--custom-contextmenu: editor-menu">
+    Klicken Sie mit der rechten Maustaste auf mich!
+</textarea>
+```
+
+**Das war's!** Ein Rechtsklick in das Textfeld zeigt Ihr benutzerdefiniertes Menü.
+
+## Kontextmenüs erstellen
+
+### Basis-Kontextmenü
+
+```go
+// Menü erstellen
+contextMenu := app.NewContextMenu()
+
+// Elemente hinzufügen
+contextMenu.Add("Ausschneiden").SetAccelerator("CmdOrCtrl+X").OnClick(func(ctx *application.Context) {
+    // Ausschneiden verarbeiten
+})
+
+contextMenu.Add("Kopieren").SetAccelerator("CmdOrCtrl+C").OnClick(func(ctx *application.Context) {
+    // Kopieren verarbeiten
+})
+
+contextMenu.Add("Einfügen").SetAccelerator("CmdOrCtrl+V").OnClick(func(ctx *application.Context) {
+    // Einfügen verarbeiten
+})
+
+// Mit eindeutiger ID registrieren
+app.RegisterContextMenu("text-menu", contextMenu)
+```
+
+**Menü-ID:** Muss eindeutig sein. Wird verwendet, um das Menü mit HTML-Elementen zu verknüpfen.
+
+### Mit Untermenüs
+
+```go
+contextMenu := app.NewContextMenu()
+
+// Normale Elemente hinzufügen
+contextMenu.Add("Öffnen").OnClick(handleOpen)
+contextMenu.Add("Löschen").OnClick(handleDelete)
+
+contextMenu.AddSeparator()
+
+// Untermenü hinzufügen
+exportMenu := contextMenu.AddSubmenu("Exportieren als")
+exportMenu.Add("PNG").OnClick(exportPNG)
+exportMenu.Add("JPEG").OnClick(exportJPEG)
+exportMenu.Add("SVG").OnClick(exportSVG)
+
+app.RegisterContextMenu("image-menu", contextMenu)
+```
+
+### Mit Kontrollkästchen und Radiogruppen
+
+```go
+contextMenu := app.NewContextMenu()
+
+// Kontrollkästchen
+contextMenu.AddCheckbox("Raster anzeigen", true).OnClick(func(ctx *application.Context) {
+    showGrid := ctx.ClickedMenuItem().Checked()
+    // Raster umschalten
+})
+
+contextMenu.AddSeparator()
+
+// Radiogruppe
+contextMenu.AddRadio("Klein", false).OnClick(handleSize)
+contextMenu.AddRadio("Mittel", true).OnClick(handleSize)
+contextMenu.AddRadio("Groß", false).OnClick(handleSize)
+
+app.RegisterContextMenu("view-menu", contextMenu)
+```
+
+**Für alle Menüelementtypen** siehe [Menü-Referenz](/de/features/menus/reference).
+
+## Verknüpfung mit HTML-Elementen
+
+Verwenden Sie CSS-Benutzereigenschaften, um Kontextmenüs anzuhängen:
+
+### Basis-Verknüpfung
+
+```html
+<div style="--custom-contextmenu: menu-id">
+    Klicken Sie mit der rechten Maustaste auf mich!
+</div>
+```
+
+**CSS-Eigenschaft:** `--custom-contextmenu: <menu-id>`
+
+### Mit Kontextdaten
+
+Übergeben Sie Daten von HTML nach Go:
+
+```html
+<div style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-123">
+    Klicken Sie mit der rechten Maustaste auf diese Datei
+</div>
+```
+
+**Go-Handler:**
+
+```go
+contextMenu := app.NewContextMenu()
+contextMenu.Add("Öffnen").OnClick(func(ctx *application.Context) {
+    fileID := ctx.ContextMenuData()  // "file-123"
+    openFile(fileID)
+})
+
+app.RegisterContextMenu("file-menu", contextMenu)
+```
+
+**CSS-Eigenschaften:**
+- `--custom-contextmenu: <menu-id>` - Welches Menü angezeigt werden soll
+- `--custom-contextmenu-data: <data>` - Daten, die an die Handler übergeben werden sollen
+
+### Dynamische Daten
+
+Generieren Sie Daten dynamisch in JavaScript:
+
+```html
+<div id="file-item" style="--custom-contextmenu: file-menu">
+    Datei.txt
+</div>
+
+<script>
+// Daten dynamisch festlegen
+const fileItem = document.getElementById('file-item')
+fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
+</script>
+```
+
+### Mehrere Elemente, dasselbe Menü
+
+```html
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-1">
+    Dokument.pdf
+</div>
+
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-2">
+    Bild.png
+</div>
+
+<div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-3">
+    Video.mp4
+</div>
+```
+
+**Ein Menü, unterschiedliche Daten für jedes Element.**
+
+## Kontextdaten
+
+### Zugriff auf Kontextdaten
+
+```go
+contextMenu.Add("Verarbeiten").OnClick(func(ctx *application.Context) {
+    data := ctx.ContextMenuData()  // Daten aus HTML abrufen
+    
+    // Daten verwenden
+    processItem(data)
+})
+```
+
+**Datentyp:** Immer `string`. Bei Bedarf parsen.
+
+### Übertragen komplexer Daten
+
+Verwenden Sie JSON für komplexe Daten:
+
+```html
+<div style="--custom-contextmenu: item-menu; --custom-contextmenu-data: {&quot;id&quot;:123,&quot;type&quot;:&quot;image&quot;}">
+    Bild.png
+</div>
+```
+
+**Go-Handler:**
+
+```go
+import "encoding/json"
+
+type ItemData struct {
+    ID   int    `json:"id"`
+    Type string `json:"type"`
+}
+
+contextMenu.Add("Verarbeiten").OnClick(func(ctx *application.Context) {
+    dataStr := ctx.ContextMenuData()
+    
+    var data ItemData
+    if err := json.Unmarshal([]byte(dataStr), &data); err != nil {
+        log.Printf("Ungültige Daten: %v", err)
+        return
+    }
+    
+    processItem(data.ID, data.Type)
+})
+```
+
+:::caution[Sicherheit]
+**Validieren Sie Kontextdaten** immer von der Frontend-Seite. Benutzer können CSS-Eigenschaften manipulieren, behandeln Sie Daten daher als nicht vertrauenswürdige Eingabe.
+:::
+
+### Validierungsbeispiel
+
+```go
+contextMenu.Add("Löschen").OnClick(func(ctx *application.Context) {
+    fileID := ctx.ContextMenuData()
+    
+    // Validieren
+    if !isValidFileID(fileID) {
+        log.Printf("Ungültige Datei-ID: %s", fileID)
+        return
+    }
+    
+    // Berechtigungen prüfen
+    if !canDeleteFile(fileID) {
+        showError("Berechtigung verweigert")
+        return
+    }
+    
+    // Sicher fortsetzen
+    deleteFile(fileID)
+})
+```
+
+## Standard-Kontextmenü
+
+Das WebView bietet ein integriertes Kontextmenü für Standardoperationen (Kopieren, Einfügen, Untersuchen). Steuern Sie es mit `--default-contextmenu`:
+
+### Standardmenü ausblenden
+
+```html
+<div style="--default-contextmenu: hide">
+    Kein Standardmenü hier
+</div>
+```
+
+**Verwendungsfall:** Benutzerdefinierte UI-Elemente, bei denen das Standardmenü nicht sinnvoll ist.
+
+### Standardmenü anzeigen
+
+```html
+<div style="--default-contextmenu: show">
+    Standardmenü immer anzeigen
+</div>
+```
+
+**Verwendungsfall:** Textbereiche, Eingabefelder, bearbeitbarer Inhalt.
+
+### Auto (Intelligenter) Modus
+
+```html
+<div style="--default-contextmenu: auto">
+    Intelligentes Kontextmenü
+</div>
+```
+
+**Standardverhalten.** Zeigt das Standardmenü an, wenn:
+- Text markiert ist
+- In Texteingabefeldern
+- In bearbarem Inhalt (`contenteditable`)
+
+Blendet das Standardmenü andernfalls aus.
+
+### Kombinieren von benutzerdefiniertem und Standardmenü
+
+```html
+<!-- Benutzerdefiniertes Menü + Standardmenü -->
+<textarea style="--custom-contextmenu: editor-menu; --default-contextmenu: show">
+    Beide Menüs verfügbar
+</textarea>
+```
+
+**Verhalten:**
+1. Benutzerdefiniertes Menü wird zuerst angezeigt
+2. Wenn das benutzerdefinierte Menü leer ist oder nicht gefunden wird, wird das Standardmenü angezeigt
+3. Beide können koexistieren (plattformabhängig)
+
+## Dynamische Kontextmenüs
+
+Aktualisieren Sie Menüs basierend auf dem Anwendungsstatus:
+
+### Elemente aktivieren/deaktivieren
+
+```go
+var cutMenuItem *application.MenuItem
+var copyMenuItem *application.MenuItem
+
+func createContextMenu() {
+    contextMenu := app.NewContextMenu()
+    
+    cutMenuItem = contextMenu.Add("Ausschneiden")
+    cutMenuItem.SetEnabled(false)  // Anfangs deaktiviert
+    cutMenuItem.OnClick(handleCut)
+    
+    copyMenuItem = contextMenu.Add("Kopieren")
+    copyMenuItem.SetEnabled(false)
+    copyMenuItem.OnClick(handleCopy)
+    
+    app.RegisterContextMenu("editor-menu", contextMenu)
+}
+
+func onSelectionChanged(hasSelection bool) {
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    contextMenu.Update()  // Wichtig!
+}
+```
+
+:::caution[Immer Update() aufrufen]Nachdem Sie den Menüstatus geändert haben, **rufen Sie `contextMenu.Update()` auf**. Dies ist unter Windows kritisch.
+
+Details finden Sie in der [Menü-Referenz](/features/menus/reference#enabled-state).
+:::
+
+### Beschriftungen ändern
+
+```go
+playMenuItem := contextMenu.Add("Play")
+
+playMenuItem.OnClick(func(ctx *application.Context) {
+    if isPlaying {
+        playMenuItem.SetLabel("Pause")
+    } else {
+        playMenuItem.SetLabel("Play")
+    }
+    contextMenu.Update()
+})
+```
+
+### Menüs neu aufbauen
+
+Bei größeren Änderungen bauen Sie das gesamte Menü neu auf:
+
+```go
+func rebuildContextMenu(fileType string) {
+    contextMenu := app.NewContextMenu()
+    
+    // Gemeinsame Elemente
+    contextMenu.Add("Open").OnClick(handleOpen)
+    contextMenu.Add("Delete").OnClick(handleDelete)
+    
+    contextMenu.AddSeparator()
+    
+    // Typspezifische Elemente
+    switch fileType {
+    case "image":
+        contextMenu.Add("Edit Image").OnClick(editImage)
+        contextMenu.Add("Set as Wallpaper").OnClick(setWallpaper)
+    case "video":
+        contextMenu.Add("Play").OnClick(playVideo)
+        contextMenu.Add("Extract Audio").OnClick(extractAudio)
+    case "document":
+        contextMenu.Add("Print").OnClick(printDocument)
+        contextMenu.Add("Export PDF").OnClick(exportPDF)
+    }
+    
+    app.RegisterContextMenu("file-menu", contextMenu)
+}
+```
+
+## Plattformverhalten
+
+Kontextmenüs sind **plattform-nativ**:
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Native macOS-Kontextmenüs:**
+    - Systemanimationen und Übergänge
+    - Rechtsklick = Control+Klick (automatisch)
+    - Passt sich dem Systemdesign an (hell/dunkel)
+    - Standard-Textoperationen im Standardmenü
+    - Native Bildlaufaktion für lange Menüs
+    
+    **macOS-Konventionen:**
+    - Verwenden Sie für Menüelemente die Satzschrift (Sentence case)
+    - Verwenden Sie Auslassungspunkte (...) für Elemente, die Dialoge öffnen
+    - Häufige Tastenkürzel: ⌘C (Kopieren), ⌘V (Einfügen)
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Native Windows-Kontextmenüs:**
+    - Windows-eigener Stil
+    - Folgt dem Windows-Design
+    - Standard-Windows-Operationen im Standardmenü
+    - Unterstützung für Touch- und Stift-Eingabe
+    
+    **Windows-Konventionen:**
+    - Verwenden Sie für Menüelemente die Groß-/Kleinschreibung nach Titel (Title case)
+    - Verwenden Sie Auslassungspunkte (...) für Elemente, die Dialoge öffnen
+    - Häufige Tastenkürzel: Strg+C (Kopieren), Strg+V (Einfügen)
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Desktop-Umgebungs-Integration:**
+    - Passt sich dem Desktop-Design an (GTK, Qt usw.)
+    - Das Verhalten des Rechtsklicks folgt den Systemeinstellungen
+    - Der Inhalt des Standardmenüs variiert je nach Umgebung
+    - Die Positionierung folgt den Konventionen der Desktop-Umgebung (DE)
+    
+    **Überlegungen zu Linux:**
+    - Testen Sie auf den Ziel-Desktop-Umgebungen
+    - GTK und Qt haben unterschiedliches Verhalten
+    - Einige DEs passen Kontextmenüs an
+  </TabItem>
+</Tabs>
+
+## Vollständiges Beispiel
+
+**Go-Code:**
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "log"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type FileData struct {
+    ID   string `json:"id"`
+    Type string `json:"type"`
+    Name string `json:"name"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Context Menu Demo",
+    })
+
+    // Erstelle Dateikontextmenü
+    fileMenu := createFileMenu(app)
+    app.RegisterContextMenu("file-menu", fileMenu)
+
+    // Erstelle Bildkontextmenü
+    imageMenu := createImageMenu(app)
+    app.RegisterContextMenu("image-menu", imageMenu)
+
+    // Erstelle Textkontextmenü
+    textMenu := createTextMenu(app)
+    app.RegisterContextMenu("text-menu", textMenu)
+
+    app.Window.New()
+    app.Run()
+}
+
+func createFileMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("Open").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        openFile(data.ID)
+    })
+    
+    menu.Add("Rename").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        renameFile(data.ID)
+    })
+    
+    menu.AddSeparator()
+    
+    menu.Add("Delete").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        deleteFile(data.ID)
+    })
+    
+    return menu
+}
+
+func createImageMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("View").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        viewImage(data.ID)
+    })
+    
+    menu.Add("Edit").OnClick(func(ctx *application.Context) {
+        data := parseFileData(ctx.ContextMenuData())
+        editImage(data.ID)
+    })
+    
+    menu.AddSeparator()
+    
+    exportMenu := menu.AddSubmenu("Export As")
+    exportMenu.Add("PNG").OnClick(exportPNG)
+    exportMenu.Add("JPEG").OnClick(exportJPEG)
+    exportMenu.Add("WebP").OnClick(exportWebP)
+    
+    return menu
+}
+
+func createTextMenu(app *application.Application) *application.ContextMenu {
+    menu := app.NewContextMenu()
+    
+    menu.Add("Cut").SetAccelerator("CmdOrCtrl+X").OnClick(handleCut)
+    menu.Add("Copy").SetAccelerator("CmdOrCtrl+C").OnClick(handleCopy)
+    menu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(handlePaste)
+    
+    return menu
+}
+
+func parseFileData(dataStr string) FileData {
+    var data FileData
+    if err := json.Unmarshal([]byte(dataStr), &data); err != nil {
+        log.Printf("Invalid file data: %v", err)
+    }
+    return data
+}
+
+// Handler-Implementierungen...
+func openFile(id string) { /* ... */ }
+func renameFile(id string) { /* ... */ }
+func deleteFile(id string) { /* ... */ }
+func viewImage(id string) { /* ... */ }
+func editImage(id string) { /* ... */ }
+func exportPNG(ctx *application.Context) { /* ... */ }
+func exportJPEG(ctx *application.Context) { /* ... */ }
+func exportWebP(ctx *application.Context) { /* ... */ }
+func handleCut(ctx *application.Context) { /* ... */ }
+func handleCopy(ctx *application.Context) { /* ... */ }
+func handlePaste(ctx *application.Context) { /* ... */ }
+```
+
+**HTML:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .file-item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Files</h2>
+    
+    <!-- Regular file -->
+    <div class="file-item" 
+         style="--custom-contextmenu: file-menu; 
+                --custom-contextmenu-data: {&quot;id&quot;:&quot;file-1&quot;,&quot;type&quot;:&quot;document&quot;,&quot;name&quot;:&quot;Report.pdf&quot;}">
+        📄 Report.pdf
+    </div>
+    
+    <!-- Image file -->
+    <div class="file-item" 
+         style="--custom-contextmenu: image-menu; 
+                --custom-contextmenu-data: {&quot;id&quot;:&quot;file-2&quot;,&quot;type&quot;:&quot;image&quot;,&quot;name&quot;:&quot;Photo.jpg&quot;}">
+        🖼️ Photo.jpg
+    </div>
+    
+    <h2>Text Editor</h2>
+    
+    <!-- Text area with custom menu + default menu -->
+    <textarea 
+        style="--custom-contextmenu: text-menu; --default-contextmenu: show"
+        placeholder="Type here, then right-click...">
+    </textarea>
+    
+    <h2>No Context Menu</h2>
+    
+    <!-- Disable default menu -->
+    <div style="--default-contextmenu: hide; padding: 20px; border: 1px solid #ccc;">
+        Right-click here - no menu appears
+    </div>
+</body>
+</html>
+```
+
+## Best Practices
+
+### ✅ Tun
+
+- **Menüs fokussiert halten** - Nur relevante Aktionen für das Element
+- **Kontextdaten validieren** - Als nicht vertrauenswürdige Eingabe behandeln
+- **Klare Beschriftungen verwenden** - "Datei löschen" statt "Löschen"
+- **menu.Update() aufrufen** - Nach dem Ändern des Menüstatus
+- **Auf allen Plattformen testen** - Das Verhalten variiert
+- **Tastenkürzel bereitstellen** - Für häufige Aktionen
+- **Zusammengehörige Elemente gruppieren** - Trennlinien verwenden
+
+### ❌ Nicht tun
+
+- **Kontextdaten nicht vertrauen** - Immer validieren
+- **Menüs nicht zu lang machen** - Maximum 7-10 Elemente
+- **menu.Update() nicht vergessen** - Menüs funktionieren sonst nicht richtig
+**Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich das [Beispiel für Kontextmenüs](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus) an.

@@ -38,7 +38,9 @@ func (m *MessageProcessor) processEventsMethod(req *RuntimeRequest, window Windo
 
 		event.Name = *options.Name
 		event.Data = data
-		event.Sender = window.Name()
+		if window != nil {
+			event.Sender = window.Name()
+		}
 		globalApplication.Event.EmitEvent(&event)
 
 		return event.IsCancelled(), nil

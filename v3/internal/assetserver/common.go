@@ -1,10 +1,8 @@
 package assetserver
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -26,32 +24,23 @@ type assetServerLogger struct{}
 
 var assetServerLoggerKey assetServerLogger
 
+// ServeFile writes the provided blob to rw as an HTTP 200 response, ensuring appropriate
+// Content-Length and Content-Type headers are set.
+//
+// If the Content-Type header is not already present, ServeFile determines an appropriate
+// MIME type from the filename and blob and sets the Content-Type header. It then writes
+// the 200 status and the blob body to the response, returning any error encountered while
+// writing the body.
 func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
 	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
 	if mimeType := header.Get(HeaderContentType); mimeType == "" {
 		mimeType = GetMimetype(filename, blob)
 		header.Set(HeaderContentType, mimeType)
-		// Debug CSS serving with clear markers
-		if strings.HasSuffix(filename, ".css") {
-			fmt.Printf("\n🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n")
-			fmt.Printf("CSS FILE BEING SERVED:\n")
-			fmt.Printf("  Filename: %s\n", filename)
-			fmt.Printf("  MimeType: %s\n", mimeType)
-			fmt.Printf("  Size: %d bytes\n", len(blob))
-			if len(blob) > 0 {
-				preview := string(blob)
-				if len(preview) > 100 {
-					preview = preview[:100] + "..."
-				}
-				fmt.Printf("  Preview: %s\n", preview)
-			}
-			fmt.Printf("🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨\n\n")
-		}
 	}
 
 	rw.WriteHeader(http.StatusOK)
-	_, err := io.Copy(rw, bytes.NewReader(blob))
+	_, err := rw.Write(blob)
 	return err
 }
 

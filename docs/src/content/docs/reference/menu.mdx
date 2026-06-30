@@ -316,12 +316,12 @@ menu.Update()
 
 ## Application Menu
 
-### SetApplicationMenu()
+### app.Menu.Set()
 
 Sets the application's main menu bar.
 
 ```go
-func (a *App) SetApplicationMenu(menu *Menu)
+func (mm *MenuManager) Set(menu *Menu)
 ```
 
 **Example:**
@@ -347,7 +347,7 @@ editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
 editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
 editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
 
-app.SetApplicationMenu(menu)
+app.Menu.Set(menu)
 ```
 
 **Platform notes:**
@@ -357,47 +357,52 @@ app.SetApplicationMenu(menu)
 
 ## Context Menus
 
-### RegisterContextMenu()
+### app.ContextMenu.New() / app.ContextMenu.Add()
 
-Registers a context menu (right-click menu) with a specific name.
+Create a `*ContextMenu` via the manager and register it under a name. `ContextMenuManager.Add` takes `*ContextMenu` — **not** `*Menu`, and there is **no** `app.RegisterContextMenu` method.
 
 ```go
-func (a *App) RegisterContextMenu(name string, menu *Menu)
+func (cm *ContextMenuManager) New() *ContextMenu
+func (cm *ContextMenuManager) Add(name string, menu *ContextMenu)
+func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
+func (cm *ContextMenuManager) Remove(name string)
 ```
 
-**Parameters:**
-- `name` - Unique identifier for the context menu
-- `menu` - The menu to show
+Alternatively, the package-level `application.NewContextMenu(name string) *ContextMenu` creates and registers a context menu in one step.
 
 **Go:**
 
 ```go
-// Create context menu
-contextMenu := app.NewMenu()
+// Build the context menu via the manager
+contextMenu := app.ContextMenu.New()
 contextMenu.Add("Cut").OnClick(cut)
 contextMenu.Add("Copy").OnClick(copy)
 contextMenu.Add("Paste").OnClick(paste)
 contextMenu.AddSeparator()
 contextMenu.Add("Select All").OnClick(selectAll)
 
-// Register it
-app.RegisterContextMenu("editor", contextMenu)
+// Register under a name; HTML opts into it via the CSS custom property below.
+app.ContextMenu.Add("editor", contextMenu)
 ```
 
-**HTML:**
+**HTML / CSS:**
+
+The runtime triggers a registered context menu when the right-click target (or any ancestor) has the `--custom-contextmenu` CSS custom property set to that name. The optional `--custom-contextmenu-data` property is passed to the Go callback via `ctx.ContextMenuData()`. To suppress the default browser context menu, set `--default-contextmenu: hide` (or `auto`/`show`).
 
 ```html
 <!-- Trigger context menu on right-click -->
-<div data-wails-context-menu="editor">
+<div style="--custom-contextmenu: editor; --default-contextmenu: hide">
     Right-click here for context menu
 </div>
 ```
+
+There is no `data-wails-context-menu="..."` attribute — that was never wired in the runtime.
 
 **Dynamic context menus:**
 ```go
 // Update context menu based on selection
 func updateContextMenu() {
-    contextMenu := app.NewMenu()
+    contextMenu := app.ContextMenu.New()
 
     if hasSelection {
         contextMenu.Add("Cut").OnClick(cut)
@@ -406,23 +411,23 @@ func updateContextMenu() {
 
     contextMenu.Add("Paste").SetEnabled(hasClipboardContent).OnClick(paste)
 
-    app.RegisterContextMenu("editor", contextMenu)
+    app.ContextMenu.Add("editor", contextMenu)
 }
 ```
 
 ## System Tray Menu
 
-### NewSystemTray()
+### app.SystemTray.New()
 
 Creates a new system tray icon.
 
 ```go
-func (a *App) NewSystemTray() *SystemTray
+func (sm *SystemTrayManager) New() *SystemTray
 ```
 
 **Example:**
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 ```
 
 ### SetIcon()
@@ -452,7 +457,7 @@ func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
 trayMenu := app.NewMenu()
 trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
     window.Show()
-    window.SetFocus()
+    window.Focus()
 })
 trayMenu.Add("Settings").OnClick(openSettings)
 trayMenu.AddSeparator()
@@ -465,10 +470,10 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-Sets the tooltip shown when hovering over the tray icon.
+Sets the tooltip shown when hovering over the tray icon. Returns nothing.
 
 ```go
-func (st *SystemTray) SetTooltip(tooltip string) *SystemTray
+func (st *SystemTray) SetTooltip(tooltip string)
 ```
 
 **Example:**
@@ -491,7 +496,7 @@ tray.OnClick(func() {
         window.Hide()
     } else {
         window.Show()
-        window.SetFocus()
+        window.Focus()
     }
 })
 ```
@@ -507,7 +512,7 @@ import (
     "github.com/wailsapp/wails/v3/pkg/application"
 )
 
-func createMenu(app *application.Application) *application.Menu {
+func createMenu(app *application.App) *application.Menu {
     menu := app.NewMenu()
 
     // File menu
@@ -572,9 +577,9 @@ func main() {
     })
 
     menu := createMenu(app)
-    app.SetApplicationMenu(menu)
+    app.Menu.Set(menu)
 
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.Show()
 
     app.Run()
@@ -584,9 +589,9 @@ func main() {
 ### System Tray Application
 
 ```go
-func setupSystemTray(app *application.Application, window *application.Window) {
+func setupSystemTray(app *application.App, window application.Window) {
     // Create system tray
-    tray := app.NewSystemTray()
+    tray := app.SystemTray.New()
 
     // Set icon
     iconData, _ := os.ReadFile("icon.png")
@@ -599,7 +604,7 @@ func setupSystemTray(app *application.Application, window *application.Window) {
             window.Hide()
         } else {
             window.Show()
-            window.SetFocus()
+            window.Focus()
         }
     })
 
@@ -609,7 +614,7 @@ func setupSystemTray(app *application.Application, window *application.Window) {
     showItem := trayMenu.Add("Show Window")
     showItem.OnClick(func(ctx *application.Context) {
         window.Show()
-        window.SetFocus()
+        window.Focus()
     })
 
     trayMenu.AddSeparator()
@@ -636,7 +641,7 @@ func setupSystemTray(app *application.Application, window *application.Window) {
 
 ```go
 type Editor struct {
-    app         *application.Application
+    app         *application.App
     menu        *application.Menu
     undoItem    *application.MenuItem
     redoItem    *application.MenuItem
@@ -667,7 +672,7 @@ func (e *Editor) createMenu() {
     })
 
     e.updateMenuState()
-    e.app.SetApplicationMenu(e.menu)
+    e.app.Menu.Set(e.menu)
 }
 
 func (e *Editor) updateMenuState() {

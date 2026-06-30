@@ -47,7 +47,7 @@ func main() {
         },
     })
 
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title: "My App",
         Name:  "main",
     })
@@ -291,7 +291,7 @@ func main() {
         },
     })
 
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title: "Raw Message Demo",
         Name:  "main",
         Width: 400,
@@ -382,7 +382,7 @@ RawMessageHandler: func(window application.Window, message string, originInfo *a
     window.EmitEvent("response", result)
 
     // Or broadcast to all windows
-    app.EmitEvent("broadcast", result)
+    app.Event.Emit("broadcast", result)
 }
 ```
 

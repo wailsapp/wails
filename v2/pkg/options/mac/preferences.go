@@ -18,4 +18,10 @@ type Preferences struct {
 	// A Boolean value that indicates whether a web view can display content full screen.
 	// Set to false by default
 	FullscreenEnabled u.Bool
+	// A string used as the application name portion of the user agent string.
+	// When set to a non-empty value, this overrides the default Wails application
+	// name suffix appended to the WKWebView user agent. Useful when sites
+	// (e.g. YouTube embed) reject the default identifier. Leave empty to keep
+	// Wails' default behaviour.
+	ApplicationNameForUserAgent string
 }

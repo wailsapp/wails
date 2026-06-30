@@ -57,10 +57,14 @@ func (g *GreetService) Greet(name string) string {
 
 Wails generates type-safe bindings:
 
-```typescript
-// Auto-generated: frontend/bindings/GreetService.ts
-export function Greet(name: string): Promise<string> {
-    return window.wails.Call('GreetService.Greet', name)
+```javascript
+// Auto-generated: frontend/bindings/<full-go-import-path>/greetservice.js
+// (TypeScript is also generated when you pass `-ts`. The shape below is the real
+// runtime call format — numeric IDs via $Call.ByID, imported from /wails/runtime.js.)
+import { Call as $Call } from "/wails/runtime.js";
+
+export function Greet($0) {
+    return $Call.ByID(1234567890, $0);
 }
 ```
 
@@ -137,7 +141,7 @@ var assets embed.FS
     ```
     
     **What happens:**
-    1. Starts frontend dev server (Vite on port 5173)
+    1. Starts frontend dev server (Vite on port 9245 by default)
     2. Compiles Go without optimisations
     3. Launches app pointing to dev server
     4. Enables hot reload
@@ -186,119 +190,104 @@ var assets embed.FS
 wails3 build
 ```
 
-**Output:** `build/bin/myapp[.exe]`
+**Output:** `bin/<APP_NAME>` (or `bin/<APP_NAME>.exe` on Windows). The `bin/` directory sits at the project root.
 
-### Build for Specific Platform
+`wails3 build` is a thin wrapper around `wails3 task build`. The only build-time flag it forwards is `--tags`, which becomes the `EXTRA_TAGS` Taskfile variable:
 
 ```bash
-# Build for Windows (from any OS)
-wails3 build -platform windows/amd64
-
-# Build for macOS
-wails3 build -platform darwin/amd64
-wails3 build -platform darwin/arm64
-
-# Build for Linux
-wails3 build -platform linux/amd64
+# Build with extra Go build tags
+wails3 build --tags "myfeature,gtk4"
 ```
 
-**Cross-compilation:** Build for any platform from any platform.
+There are no `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags`, or `-package` flags on `wails3 build`. Cross-compilation, output paths, icons, and packaging are controlled through the project's Taskfile (`Taskfile.yml` + `build/config.yml`).
 
-### Build with Options
+### Cross-platform and platform-specific builds
+
+Platform builds are exposed as Taskfile tasks under the `darwin:` / `windows:` / `linux:` namespaces (defined in `build/Taskfile.<platform>.yml`). For example:
 
 ```bash
-# Custom output directory
-wails3 build -o ./dist/myapp
+# macOS — universal binary
+wails3 task darwin:build:universal
 
-# Skip frontend build (use existing)
-wails3 build -skipbindings
+# macOS — current arch
+wails3 task darwin:build
 
-# Clean build (remove cache)
-wails3 build -clean
+# Windows
+wails3 task windows:build
 
-# Verbose output
-wails3 build -v
+# Linux
+wails3 task linux:build
 ```
 
-### Build Modes
+To see every available task in the current project:
 
 ```bash
-# Debug build (includes symbols)
-wails3 build -debug
+wails3 task --list
+```
 
-# Production build (default, optimised)
-wails3 build
+### Icons and packaging
 
-# Development build (fast, unoptimised)
-wails3 build -devbuild
+Generate platform icons (`build/icons.icns`, `build/icon.ico`, etc.) from a source PNG:
+
+```bash
+wails3 generate icons -input appicon.png
+```
+
+Build platform-specific installers/packages:
+
+```bash
+wails3 package           # uses the current Go build env
+wails3 task linux:create:deb
+wails3 task windows:package
+wails3 task darwin:package:universal
 ```
 
 ## Build Configuration
 
 ### Taskfile.yml
 
-Wails uses [Taskfile](https://taskfile.dev/) for build configuration:
+Wails 3 projects use [Taskfile](https://taskfile.dev/) as their build orchestrator. The root `Taskfile.yml` includes per-platform task files from `build/`:
 
 ```yaml
-# Taskfile.yml
+# Taskfile.yml (excerpt — the real templates are richer)
 version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  darwin: ./build/Taskfile.darwin.yml
+  windows: ./build/Taskfile.windows.yml
+  linux: ./build/Taskfile.linux.yml
 
 tasks:
   build:
     desc: Build the application
     cmds:
-      - wails3 build
-  
-  build:windows:
-    desc: Build for Windows
-    cmds:
-      - wails3 build -platform windows/amd64
-  
-  build:macos:
-    desc: Build for macOS (Universal)
-    cmds:
-      - wails3 build -platform darwin/amd64
-      - wails3 build -platform darwin/arm64
-      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
-  
-  build:linux:
-    desc: Build for Linux
-    cmds:
-      - wails3 build -platform linux/amd64
+      - task: "{{OS}}:build"
 ```
 
-**Run tasks:**
+Run tasks with `wails3 task <name>` or `task <name>`:
 
 ```bash
-task build:windows
-task build:macos
-task build:linux
+wails3 task windows:build
+wails3 task darwin:package:universal
+wails3 task linux:create:appimage
 ```
 
-### Build Options File
+### Project configuration: `build/config.yml`
 
-Create `build/build.json` for persistent configuration:
+Project metadata (name, identifier, version, info-plist values, NSIS settings, `.desktop` fields, custom protocols, etc.) lives in `build/config.yml`. The Taskfile reads this file when generating icons, manifests, installers, and the like. There is **no** `build/build.json` file in Wails 3.
 
-```json
-{
-  "name": "My Application",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "description": "Application description",
-  "icon": "build/appicon.png",
-  "outputFilename": "myapp",
-  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev"
-  },
-  "go": {
-    "ldflags": "-s -w -X main.version={{.Version}}"
-  }
-}
+```yaml
+# build/config.yml (illustrative)
+info:
+  productName: "My App"
+  productIdentifier: "com.example.myapp"
+  productVersion: "1.0.0"
+  companyName: "Example Ltd."
+  productDescription: "An application built with Wails"
 ```
+
+Run `wails3 generate build-assets` (or `wails3 update build-assets`) to refresh the platform-specific build assets from this config.
 
 ## Asset Embedding
 
@@ -325,7 +314,7 @@ func main() {
         },
     })
     
-    app.NewWebviewWindow()
+    app.Window.New()
     app.Run()
 }
 ```
@@ -417,7 +406,7 @@ export default {
 
 ```bash
 # After building
-upx --best build/bin/myapp.exe
+upx --best bin/myapp.exe
 ```
 
 **Results:**
@@ -439,11 +428,11 @@ upx --best build/bin/myapp.exe
 **Icon:**
 
 ```bash
-# Specify icon
-wails3 build -icon build/appicon.png
+# Generate platform icons from a source PNG
+wails3 generate icons -input appicon.png -windowsfilename build/icon.ico
 ```
 
-Wails converts PNG to `.ico` automatically.
+The Windows `tool package` step then embeds the generated `.ico` into the executable.
 
 **Manifest:**
 
@@ -498,15 +487,10 @@ myapp.app/
 
 **Universal Binary:**
 
-```bash
-# Build for both architectures
-wails3 build -platform darwin/amd64
-wails3 build -platform darwin/arm64
+The macOS Taskfile ships a `darwin:build:universal` (and `darwin:package:universal`) task that builds both architectures and combines them via `wails3 tool lipo`:
 
-# Combine into universal binary
-lipo -create -output myapp-universal \
-    build/bin/myapp-amd64 \
-    build/bin/myapp-arm64
+```bash
+wails3 task darwin:build:universal
 ```
 
 ### Linux
@@ -566,22 +550,17 @@ sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
 npm run build  # Uses cache by default
 ```
 
-**2. Skip unchanged steps:**
+**2. Run only what you need:**
 
 ```bash
-# Skip frontend if unchanged
-wails3 build -skipbindings
+# Pick the specific Taskfile target you actually need
+wails3 task common:build:frontend   # rebuild only the frontend
+wails3 task windows:build           # rebuild only the Windows binary
 ```
 
-**3. Parallel builds:**
+**3. Parallel builds (multi-machine / CI):**
 
-```bash
-# Build multiple platforms in parallel
-wails3 build -platform windows/amd64 &
-wails3 build -platform darwin/amd64 &
-wails3 build -platform linux/amd64 &
-wait
-```
+Cross-compilation between Linux/Windows/macOS in v3 generally happens in a Docker `wails-cross` container or on dedicated runners per platform — `wails3 build` itself targets the host OS. See [Cross-platform Builds](/guides/build/cross-platform) for the supported workflows.
 
 **4. Use faster tools:**
 
@@ -624,10 +603,7 @@ wait
 
 **Solutions:**
 
-1. **Strip debug symbols** (should be automatic)
-   ```bash
-   wails3 build  # Already includes -ldflags="-s -w"
-   ```
+1. **Strip debug symbols** (the shipped Taskfile already passes `-ldflags="-s -w"` to `go build`).
 
 2. **Check embedded assets**
    ```bash
@@ -637,7 +613,7 @@ wait
 
 3. **Use UPX compression**
    ```bash
-   upx --best build/bin/myapp.exe
+   upx --best bin/myapp.exe
    ```
 
 ### Slow Builds
@@ -650,9 +626,10 @@ wait
    - Go cache is automatic
    - Frontend cache (Vite) is automatic
 
-2. **Skip unchanged steps**
+2. **Run only the task you need**
    ```bash
-   wails3 build -skipbindings
+   wails3 task common:build:frontend
+   wails3 task windows:build
    ```
 
 3. **Optimise frontend build**
@@ -687,14 +664,14 @@ wait
 ## Next Steps
 
 **Building Applications** - Detailed guide to building and packaging  
-[Learn More →](/guides/building)
+[Learn More →](/guides/build/building)
 
 **Cross-Platform Builds** - Build for all platforms from one machine  
-[Learn More →](/guides/cross-platform)
+[Learn More →](/guides/build/cross-platform)
 
 **Creating Installers** - Create installers for end users  
 [Learn More →](/guides/installers)
 
 ---
 
-**Questions about building?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [build examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/build).
+**Questions about building?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [build examples](https://github.com/wailsapp/wails/tree/master/v3/examples/build).

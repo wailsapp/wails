@@ -2,10 +2,9 @@ package commands
 
 import (
 	"github.com/wailsapp/wails/v3/internal/doctor"
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
-type DoctorOptions struct{}
-
-func Doctor(_ *DoctorOptions) error {
-	return doctor.Run()
+func Doctor(options *flags.Doctor) error {
+	return doctor.Run(options.JSON)
 }

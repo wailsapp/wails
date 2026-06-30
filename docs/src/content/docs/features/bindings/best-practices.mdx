@@ -249,6 +249,19 @@ setInterval(async () => {
 }, 100)
 
 // ✅ Good: Events
+// Service must hold a reference to *application.App to emit events / log:
+//
+//   type Service struct {
+//       app *application.App
+//   }
+//
+//   func NewService(app *application.App) *Service {
+//       return &Service{app: app}
+//   }
+//
+//   app := application.New(application.Options{})
+//   app.RegisterService(application.NewService(NewService(app)))
+
 func (s *Service) ProcessLargeFile(path string) error {
     file, err := os.Open(path)
     if err != nil {
@@ -274,7 +287,7 @@ func (s *Service) ProcessLargeFile(path string) error {
         processed++
         
         // Emit progress
-        s.app.EmitEvent("progress", map[string]interface{}{
+        s.app.Event.Emit("progress", map[string]interface{}{
             "processed": processed,
             "total":     total,
             "percent":   int(float64(processed) / float64(total) * 100),
@@ -285,8 +298,10 @@ func (s *Service) ProcessLargeFile(path string) error {
 }
 
 // JavaScript listens
-OnEvent("progress", (data) => {
-    updateProgress(data.percent)
+import { Events } from '@wailsio/runtime'
+
+Events.On("progress", (event) => {
+    updateProgress(event.data.percent)
 })
 ```
 
@@ -685,4 +700,4 @@ func TestUserService_WithMock(t *testing.T) {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

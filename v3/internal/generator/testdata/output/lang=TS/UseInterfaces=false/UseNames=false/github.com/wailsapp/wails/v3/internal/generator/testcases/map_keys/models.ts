@@ -5,10 +5,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-export type BasicCstrAlias<S> = S;
-
-export type ComparableCstrAlias<R> = R;
-
 export type EmbeddedCustomInterface = string;
 
 export type EmbeddedOriginalInterface = string;
@@ -21,735 +17,585 @@ export type EmbeddedValue = string;
 
 export type EmbeddedValuePtr = string;
 
-export type GoodTildeCstrAlias<U> = U;
+export type IntAlias = number;
 
-export type InterfaceCstrAlias<Y> = Y;
+export type IntType = number;
 
 export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Reject
      */
-    "Bool": { [_: string]: number };
+    "Bool": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "Int": { [_: `${number}`]: number };
+    "Int": { [_ in `${number}`]?: number };
 
     /**
      * Accept
      */
-    "Uint": { [_: `${number}`]: number };
+    "Uint": { [_ in `${number}`]?: number };
 
     /**
      * Reject
      */
-    "Float": { [_: string]: number };
+    "Float": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "Complex": { [_: string]: number };
+    "Complex": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "Byte": { [_: `${number}`]: number };
+    "Byte": { [_ in `${number}`]?: number };
 
     /**
      * Accept
      */
-    "Rune": { [_: `${number}`]: number };
+    "Rune": { [_ in `${number}`]?: number };
 
     /**
      * Accept
      */
-    "String": { [_: string]: number };
+    "String": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IntPtr": { [_: string]: number };
+    "IntPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "UintPtr": { [_: string]: number };
+    "UintPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "FloatPtr": { [_: string]: number };
+    "FloatPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "ComplexPtr": { [_: string]: number };
+    "ComplexPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "StringPtr": { [_: string]: number };
+    "StringPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "NTM": { [_: string]: number };
+    "NTM": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "NTMPtr": { [_: string]: number };
+    "NTMPtr": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "VTM": { [_: ValueTextMarshaler]: number };
+    "VTM": { [_ in ValueTextMarshaler]?: number };
 
     /**
      * Accept
      */
-    "VTMPtr": { [_: ValueTextMarshaler]: number };
+    "VTMPtr": { [_ in ValueTextMarshaler]?: number };
 
     /**
      * Reject
      */
-    "PTM": { [_: string]: number };
+    "PTM": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "PTMPtr": { [_: PointerTextMarshaler]: number };
+    "PTMPtr": { [_ in PointerTextMarshaler]?: number };
 
     /**
      * Accept, hide
      */
-    "JTM": { [_: string]: number };
+    "JTM": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "JTMPtr": { [_: string]: number };
+    "JTMPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "A": { [_: string]: number };
+    "A": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "APtr": { [_: string]: number };
+    "APtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TM": { [_: string]: number };
+    "TM": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "TMPtr": { [_: string]: number };
+    "TMPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "CI": { [_: string]: number };
+    "CI": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "CIPtr": { [_: string]: number };
+    "CIPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "EI": { [_: string]: number };
+    "EI": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "EIPtr": { [_: string]: number };
+    "EIPtr": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "EV": { [_: EmbeddedValue]: number };
+    "EV": { [_ in EmbeddedValue]?: number };
 
     /**
      * Accept
      */
-    "EVPtr": { [_: EmbeddedValue]: number };
+    "EVPtr": { [_ in EmbeddedValue]?: number };
 
     /**
      * Accept
      */
-    "EVP": { [_: EmbeddedValuePtr]: number };
+    "EVP": { [_ in EmbeddedValuePtr]?: number };
 
     /**
      * Accept
      */
-    "EVPPtr": { [_: EmbeddedValuePtr]: number };
+    "EVPPtr": { [_ in EmbeddedValuePtr]?: number };
 
     /**
      * Reject
      */
-    "EP": { [_: string]: number };
+    "EP": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "EPPtr": { [_: EmbeddedPointer]: number };
+    "EPPtr": { [_ in EmbeddedPointer]?: number };
 
     /**
      * Accept
      */
-    "EPP": { [_: EmbeddedPointerPtr]: number };
+    "EPP": { [_ in EmbeddedPointerPtr]?: number };
 
     /**
      * Accept
      */
-    "EPPPtr": { [_: EmbeddedPointerPtr]: number };
+    "EPPPtr": { [_ in EmbeddedPointerPtr]?: number };
 
     /**
      * Accept
      */
-    "ECI": { [_: EmbeddedCustomInterface]: number };
+    "ECI": { [_ in EmbeddedCustomInterface]?: number };
 
     /**
      * Accept
      */
-    "ECIPtr": { [_: EmbeddedCustomInterface]: number };
+    "ECIPtr": { [_ in EmbeddedCustomInterface]?: number };
 
     /**
      * Accept
      */
-    "EOI": { [_: EmbeddedOriginalInterface]: number };
+    "EOI": { [_ in EmbeddedOriginalInterface]?: number };
 
     /**
      * Accept
      */
-    "EOIPtr": { [_: EmbeddedOriginalInterface]: number };
+    "EOIPtr": { [_ in EmbeddedOriginalInterface]?: number };
 
     /**
      * Reject
      */
-    "WT": { [_: string]: number };
+    "WT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "WA": { [_: string]: number };
+    "WA": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "ST": { [_: StringType]: number };
+    "ST": { [_ in StringType]?: number };
 
     /**
      * Accept
      */
-    "SA": { [_: StringAlias]: number };
+    "SA": { [_ in StringAlias]?: number };
 
     /**
      * Accept
      */
-    "IntT": { [_: `${number}`]: number };
+    "IntT": { [_ in IntType]?: number };
 
     /**
      * Accept
      */
-    "IntA": { [_: `${number}`]: number };
+    "IntA": { [_ in IntAlias]?: number };
 
     /**
      * Reject
      */
-    "VT": { [_: string]: number };
+    "VT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "VTPtr": { [_: string]: number };
+    "VTPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "VPT": { [_: string]: number };
+    "VPT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "VPTPtr": { [_: string]: number };
+    "VPTPtr": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "VA": { [_: ValueAlias]: number };
+    "VA": { [_ in ValueAlias]?: number };
 
     /**
      * Accept
      */
-    "VAPtr": { [_: ValueAlias]: number };
+    "VAPtr": { [_ in ValueAlias]?: number };
 
     /**
      * Accept, hide
      */
-    "VPA": { [_: string]: number };
+    "VPA": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "VPAPtr": { [_: string]: number };
+    "VPAPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PT": { [_: string]: number };
+    "PT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PTPtr": { [_: string]: number };
+    "PTPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PPT": { [_: string]: number };
+    "PPT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PPTPtr": { [_: string]: number };
+    "PPTPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PA": { [_: string]: number };
+    "PA": { [_ in string]?: number };
 
     /**
      * Accept
      */
-    "PAPtr": { [_: PointerAlias]: number };
+    "PAPtr": { [_ in PointerAlias]?: number };
 
     /**
      * Accept, hide
      */
-    "PPA": { [_: string]: number };
+    "PPA": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "PPAPtr": { [_: string]: number };
+    "PPAPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "IT": { [_: string]: number };
+    "IT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "ITPtr": { [_: string]: number };
+    "ITPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IPT": { [_: string]: number };
+    "IPT": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IPTPtr": { [_: string]: number };
+    "IPTPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "IA": { [_: string]: number };
+    "IA": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IAPtr": { [_: string]: number };
+    "IAPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IPA": { [_: string]: number };
+    "IPA": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "IPAPtr": { [_: string]: number };
+    "IPAPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPR": { [_: string]: number };
+    "TPR": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPRPtr": { [_: string]: number };
+    "TPRPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPS": { [_: string]: number };
+    "TPS": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPSPtr": { [_: string]: number };
+    "TPSPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPT": { [_: string]: number };
+    "TPT": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPTPtr": { [_: string]: number };
+    "TPTPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPU": { [_: string]: number };
+    "TPU": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPUPtr": { [_: string]: number };
+    "TPUPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPV": { [_: string]: number };
+    "TPV": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPVPtr": { [_: string]: number };
+    "TPVPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPW": { [_: string]: number };
+    "TPW": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPWPtr": { [_: string]: number };
+    "TPWPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPX": { [_: string]: number };
+    "TPX": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPXPtr": { [_: string]: number };
+    "TPXPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPY": { [_: string]: number };
+    "TPY": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPYPtr": { [_: string]: number };
+    "TPYPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "TPZ": { [_: string]: number };
+    "TPZ": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "TPZPtr": { [_: string]: number };
+    "TPZPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "GAR": { [_: string]: number };
+    "GARPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "GARPtr": { [_: string]: number };
+    "GASPtr": { [_ in string]?: number };
+
+    /**
+     * Soft reject
+     */
+    "GATPtr": { [_ in string]?: number };
+
+    /**
+     * Soft reject
+     */
+    "GAUPtr": { [_ in string]?: number };
+
+    /**
+     * Soft reject
+     */
+    "GAVPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "GAS": { [_: string]: number };
+    "GAWPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "GASPtr": { [_: string]: number };
+    "GAXPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "GAT": { [_: string]: number };
+    "GAYPtr": { [_ in string]?: number };
 
     /**
      * Soft reject
      */
-    "GATPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAU": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAUPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAV": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAVPtr": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAW": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAWPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAX": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAXPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAY": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAYPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAZ": { [_: string]: number };
-
-    /**
-     * Soft reject
-     */
-    "GAZPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GACi": { [_: `${number}`]: number };
-
-    /**
-     * Accept
-     */
-    "GACV": { [_: ComparableCstrAlias<ValueTextMarshaler>]: number };
+    "GAZPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GACP": { [_: string]: number };
+    "GACiPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GACVPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GACPPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GACiPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GACVPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GACPPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GABi": { [_: `${number}`]: number };
-
-    /**
-     * Accept
-     */
-    "GABs": { [_: BasicCstrAlias<string>]: number };
+    "GABiPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GABiPtr": { [_: string]: number };
+    "GABTPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GAGTPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GANBVPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GABT": { [_: string]: number };
+    "GANBPPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GAPlVPtr": { [_ in string]?: number };
+
+    /**
+     * Accept, hide
+     */
+    "GAPlPPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GABTPtr": { [_: string]: number };
-
-    /**
-     * Accept
-     */
-    "GAGT": { [_: GoodTildeCstrAlias<ValueTextMarshaler>]: number };
+    "GAMSPtr": { [_ in string]?: number };
 
     /**
      * Accept, hide
      */
-    "GAGTPtr": { [_: string]: number };
-
-    /**
-     * Accept
-     */
-    "GANBV": { [_: NonBasicCstrAlias<ValueTextMarshaler>]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GANBP": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GANBVPtr": { [_: string]: number };
+    "GAMVPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GANBPPtr": { [_: string]: number };
+    "GAIIPtr": { [_ in string]?: number };
 
     /**
-     * Accept
+     * Accept, hide
      */
-    "GAPlV1": { [_: PointableCstrAlias<ValueTextMarshaler>]: number };
-
-    /**
-     * Accept
-     */
-    "GAPlV2": { [_: PointableCstrAlias<ValueTextMarshaler>]: number };
+    "GAIVPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GAPlP1": { [_: string]: number };
-
-    /**
-     * Accept
-     */
-    "GAPlP2": { [_: PointableCstrAlias<PointerTextMarshaler>]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPlVPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPlPPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAMi": { [_: `${number}`]: number };
-
-    /**
-     * Accept
-     */
-    "GAMS": { [_: MixedCstrAlias<StringType>]: number };
-
-    /**
-     * Accept
-     */
-    "GAMV": { [_: MixedCstrAlias<ValueTextMarshaler>]: number };
+    "GAIPPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GAMSPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAMVPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAII": { [_: string]: number };
-
-    /**
-     * Accept
-     */
-    "GAIV": { [_: InterfaceCstrAlias<ValueTextMarshaler>]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAIP": { [_: string]: number };
+    "GAPrVPtr": { [_ in string]?: number };
 
     /**
      * Reject
      */
-    "GAIIPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAIVPtr": { [_: string]: number };
-
-    /**
-     * Reject
-     */
-    "GAIPPtr": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPrV": { [_: string]: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPrP": { [_: string]: number };
-
-    /**
-     * Reject
-     */
-    "GAPrVPtr": { [_: string]: number };
-
-    /**
-     * Reject
-     */
-    "GAPrPPtr": { [_: string]: number };
+    "GAPrPPtr": { [_ in string]?: number };
 
     /** Creates a new Maps instance. */
     constructor($$source: Partial<Maps<R, S, T, U, V, W, X, Y, Z>> = {}) {
@@ -1020,68 +866,32 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("TPZPtr" in $$source)) {
             this["TPZPtr"] = {};
         }
-        if (!("GAR" in $$source)) {
-            this["GAR"] = {};
-        }
         if (!("GARPtr" in $$source)) {
             this["GARPtr"] = {};
-        }
-        if (!("GAS" in $$source)) {
-            this["GAS"] = {};
         }
         if (!("GASPtr" in $$source)) {
             this["GASPtr"] = {};
         }
-        if (!("GAT" in $$source)) {
-            this["GAT"] = {};
-        }
         if (!("GATPtr" in $$source)) {
             this["GATPtr"] = {};
-        }
-        if (!("GAU" in $$source)) {
-            this["GAU"] = {};
         }
         if (!("GAUPtr" in $$source)) {
             this["GAUPtr"] = {};
         }
-        if (!("GAV" in $$source)) {
-            this["GAV"] = {};
-        }
         if (!("GAVPtr" in $$source)) {
             this["GAVPtr"] = {};
-        }
-        if (!("GAW" in $$source)) {
-            this["GAW"] = {};
         }
         if (!("GAWPtr" in $$source)) {
             this["GAWPtr"] = {};
         }
-        if (!("GAX" in $$source)) {
-            this["GAX"] = {};
-        }
         if (!("GAXPtr" in $$source)) {
             this["GAXPtr"] = {};
-        }
-        if (!("GAY" in $$source)) {
-            this["GAY"] = {};
         }
         if (!("GAYPtr" in $$source)) {
             this["GAYPtr"] = {};
         }
-        if (!("GAZ" in $$source)) {
-            this["GAZ"] = {};
-        }
         if (!("GAZPtr" in $$source)) {
             this["GAZPtr"] = {};
-        }
-        if (!("GACi" in $$source)) {
-            this["GACi"] = {};
-        }
-        if (!("GACV" in $$source)) {
-            this["GACV"] = {};
-        }
-        if (!("GACP" in $$source)) {
-            this["GACP"] = {};
         }
         if (!("GACiPtr" in $$source)) {
             this["GACiPtr"] = {};
@@ -1092,32 +902,14 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("GACPPtr" in $$source)) {
             this["GACPPtr"] = {};
         }
-        if (!("GABi" in $$source)) {
-            this["GABi"] = {};
-        }
-        if (!("GABs" in $$source)) {
-            this["GABs"] = {};
-        }
         if (!("GABiPtr" in $$source)) {
             this["GABiPtr"] = {};
-        }
-        if (!("GABT" in $$source)) {
-            this["GABT"] = {};
         }
         if (!("GABTPtr" in $$source)) {
             this["GABTPtr"] = {};
         }
-        if (!("GAGT" in $$source)) {
-            this["GAGT"] = {};
-        }
         if (!("GAGTPtr" in $$source)) {
             this["GAGTPtr"] = {};
-        }
-        if (!("GANBV" in $$source)) {
-            this["GANBV"] = {};
-        }
-        if (!("GANBP" in $$source)) {
-            this["GANBP"] = {};
         }
         if (!("GANBVPtr" in $$source)) {
             this["GANBVPtr"] = {};
@@ -1125,47 +917,17 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("GANBPPtr" in $$source)) {
             this["GANBPPtr"] = {};
         }
-        if (!("GAPlV1" in $$source)) {
-            this["GAPlV1"] = {};
-        }
-        if (!("GAPlV2" in $$source)) {
-            this["GAPlV2"] = {};
-        }
-        if (!("GAPlP1" in $$source)) {
-            this["GAPlP1"] = {};
-        }
-        if (!("GAPlP2" in $$source)) {
-            this["GAPlP2"] = {};
-        }
         if (!("GAPlVPtr" in $$source)) {
             this["GAPlVPtr"] = {};
         }
         if (!("GAPlPPtr" in $$source)) {
             this["GAPlPPtr"] = {};
         }
-        if (!("GAMi" in $$source)) {
-            this["GAMi"] = {};
-        }
-        if (!("GAMS" in $$source)) {
-            this["GAMS"] = {};
-        }
-        if (!("GAMV" in $$source)) {
-            this["GAMV"] = {};
-        }
         if (!("GAMSPtr" in $$source)) {
             this["GAMSPtr"] = {};
         }
         if (!("GAMVPtr" in $$source)) {
             this["GAMVPtr"] = {};
-        }
-        if (!("GAII" in $$source)) {
-            this["GAII"] = {};
-        }
-        if (!("GAIV" in $$source)) {
-            this["GAIV"] = {};
-        }
-        if (!("GAIP" in $$source)) {
-            this["GAIP"] = {};
         }
         if (!("GAIIPtr" in $$source)) {
             this["GAIIPtr"] = {};
@@ -1175,12 +937,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         }
         if (!("GAIPPtr" in $$source)) {
             this["GAIPPtr"] = {};
-        }
-        if (!("GAPrV" in $$source)) {
-            this["GAPrV"] = {};
-        }
-        if (!("GAPrP" in $$source)) {
-            this["GAPrP"] = {};
         }
         if (!("GAPrVPtr" in $$source)) {
             this["GAPrVPtr"] = {};
@@ -1287,62 +1043,32 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         const $$createField86_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField87_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField88_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField89_0 = $$createType59($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField90_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField91_0 = $$createType61($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField92_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField93_0 = $$createType63($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField94_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField95_0 = $$createType65($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField96_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField97_0 = $$createType67($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField98_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField99_0 = $$createType69($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField100_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField101_0 = $$createType71($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField102_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField103_0 = $$createType73($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField104_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField105_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField106_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField107_0 = $$createType1;
-        const $$createField108_0 = $$createType15;
-        const $$createField109_0 = $$createType17;
-        const $$createField110_0 = $$createType8;
+        const $$createField89_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField90_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField91_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField92_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField93_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField94_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField95_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField96_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField97_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField98_0 = $$createType8;
+        const $$createField99_0 = $$createType16;
+        const $$createField100_0 = $$createType18;
+        const $$createField101_0 = $$createType8;
+        const $$createField102_0 = $$createType77;
+        const $$createField103_0 = $$createType16;
+        const $$createField104_0 = $$createType16;
+        const $$createField105_0 = $$createType53;
+        const $$createField106_0 = $$createType16;
+        const $$createField107_0 = $$createType18;
+        const $$createField108_0 = $$createType78;
+        const $$createField109_0 = $$createType16;
+        const $$createField110_0 = $$createType24;
         const $$createField111_0 = $$createType16;
-        const $$createField112_0 = $$createType18;
-        const $$createField113_0 = $$createType1;
-        const $$createField114_0 = $$createType7;
-        const $$createField115_0 = $$createType8;
-        const $$createField116_0 = $$createType77;
-        const $$createField117_0 = $$createType78;
-        const $$createField118_0 = $$createType15;
-        const $$createField119_0 = $$createType16;
-        const $$createField120_0 = $$createType15;
-        const $$createField121_0 = $$createType18;
-        const $$createField122_0 = $$createType16;
-        const $$createField123_0 = $$createType53;
-        const $$createField124_0 = $$createType15;
-        const $$createField125_0 = $$createType16;
-        const $$createField126_0 = $$createType17;
-        const $$createField127_0 = $$createType18;
-        const $$createField128_0 = $$createType16;
-        const $$createField129_0 = $$createType18;
-        const $$createField130_0 = $$createType2;
-        const $$createField131_0 = $$createType42;
-        const $$createField132_0 = $$createType15;
-        const $$createField133_0 = $$createType79;
-        const $$createField134_0 = $$createType16;
-        const $$createField135_0 = $$createType23;
-        const $$createField136_0 = $$createType15;
-        const $$createField137_0 = $$createType18;
-        const $$createField138_0 = $$createType24;
-        const $$createField139_0 = $$createType16;
-        const $$createField140_0 = $$createType53;
-        const $$createField141_0 = $$createType16;
-        const $$createField142_0 = $$createType18;
-        const $$createField143_0 = $$createType48;
-        const $$createField144_0 = $$createType53;
+        const $$createField112_0 = $$createType53;
+        const $$createField113_0 = $$createType48;
+        const $$createField114_0 = $$createType53;
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
             if ("Bool" in $$parsedSource) {
@@ -1612,184 +1338,88 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
             if ("TPZPtr" in $$parsedSource) {
                 $$parsedSource["TPZPtr"] = $$createField88_0($$parsedSource["TPZPtr"]);
             }
-            if ("GAR" in $$parsedSource) {
-                $$parsedSource["GAR"] = $$createField89_0($$parsedSource["GAR"]);
-            }
             if ("GARPtr" in $$parsedSource) {
-                $$parsedSource["GARPtr"] = $$createField90_0($$parsedSource["GARPtr"]);
-            }
-            if ("GAS" in $$parsedSource) {
-                $$parsedSource["GAS"] = $$createField91_0($$parsedSource["GAS"]);
+                $$parsedSource["GARPtr"] = $$createField89_0($$parsedSource["GARPtr"]);
             }
             if ("GASPtr" in $$parsedSource) {
-                $$parsedSource["GASPtr"] = $$createField92_0($$parsedSource["GASPtr"]);
-            }
-            if ("GAT" in $$parsedSource) {
-                $$parsedSource["GAT"] = $$createField93_0($$parsedSource["GAT"]);
+                $$parsedSource["GASPtr"] = $$createField90_0($$parsedSource["GASPtr"]);
             }
             if ("GATPtr" in $$parsedSource) {
-                $$parsedSource["GATPtr"] = $$createField94_0($$parsedSource["GATPtr"]);
-            }
-            if ("GAU" in $$parsedSource) {
-                $$parsedSource["GAU"] = $$createField95_0($$parsedSource["GAU"]);
+                $$parsedSource["GATPtr"] = $$createField91_0($$parsedSource["GATPtr"]);
             }
             if ("GAUPtr" in $$parsedSource) {
-                $$parsedSource["GAUPtr"] = $$createField96_0($$parsedSource["GAUPtr"]);
-            }
-            if ("GAV" in $$parsedSource) {
-                $$parsedSource["GAV"] = $$createField97_0($$parsedSource["GAV"]);
+                $$parsedSource["GAUPtr"] = $$createField92_0($$parsedSource["GAUPtr"]);
             }
             if ("GAVPtr" in $$parsedSource) {
-                $$parsedSource["GAVPtr"] = $$createField98_0($$parsedSource["GAVPtr"]);
-            }
-            if ("GAW" in $$parsedSource) {
-                $$parsedSource["GAW"] = $$createField99_0($$parsedSource["GAW"]);
+                $$parsedSource["GAVPtr"] = $$createField93_0($$parsedSource["GAVPtr"]);
             }
             if ("GAWPtr" in $$parsedSource) {
-                $$parsedSource["GAWPtr"] = $$createField100_0($$parsedSource["GAWPtr"]);
-            }
-            if ("GAX" in $$parsedSource) {
-                $$parsedSource["GAX"] = $$createField101_0($$parsedSource["GAX"]);
+                $$parsedSource["GAWPtr"] = $$createField94_0($$parsedSource["GAWPtr"]);
             }
             if ("GAXPtr" in $$parsedSource) {
-                $$parsedSource["GAXPtr"] = $$createField102_0($$parsedSource["GAXPtr"]);
-            }
-            if ("GAY" in $$parsedSource) {
-                $$parsedSource["GAY"] = $$createField103_0($$parsedSource["GAY"]);
+                $$parsedSource["GAXPtr"] = $$createField95_0($$parsedSource["GAXPtr"]);
             }
             if ("GAYPtr" in $$parsedSource) {
-                $$parsedSource["GAYPtr"] = $$createField104_0($$parsedSource["GAYPtr"]);
-            }
-            if ("GAZ" in $$parsedSource) {
-                $$parsedSource["GAZ"] = $$createField105_0($$parsedSource["GAZ"]);
+                $$parsedSource["GAYPtr"] = $$createField96_0($$parsedSource["GAYPtr"]);
             }
             if ("GAZPtr" in $$parsedSource) {
-                $$parsedSource["GAZPtr"] = $$createField106_0($$parsedSource["GAZPtr"]);
-            }
-            if ("GACi" in $$parsedSource) {
-                $$parsedSource["GACi"] = $$createField107_0($$parsedSource["GACi"]);
-            }
-            if ("GACV" in $$parsedSource) {
-                $$parsedSource["GACV"] = $$createField108_0($$parsedSource["GACV"]);
-            }
-            if ("GACP" in $$parsedSource) {
-                $$parsedSource["GACP"] = $$createField109_0($$parsedSource["GACP"]);
+                $$parsedSource["GAZPtr"] = $$createField97_0($$parsedSource["GAZPtr"]);
             }
             if ("GACiPtr" in $$parsedSource) {
-                $$parsedSource["GACiPtr"] = $$createField110_0($$parsedSource["GACiPtr"]);
+                $$parsedSource["GACiPtr"] = $$createField98_0($$parsedSource["GACiPtr"]);
             }
             if ("GACVPtr" in $$parsedSource) {
-                $$parsedSource["GACVPtr"] = $$createField111_0($$parsedSource["GACVPtr"]);
+                $$parsedSource["GACVPtr"] = $$createField99_0($$parsedSource["GACVPtr"]);
             }
             if ("GACPPtr" in $$parsedSource) {
-                $$parsedSource["GACPPtr"] = $$createField112_0($$parsedSource["GACPPtr"]);
-            }
-            if ("GABi" in $$parsedSource) {
-                $$parsedSource["GABi"] = $$createField113_0($$parsedSource["GABi"]);
-            }
-            if ("GABs" in $$parsedSource) {
-                $$parsedSource["GABs"] = $$createField114_0($$parsedSource["GABs"]);
+                $$parsedSource["GACPPtr"] = $$createField100_0($$parsedSource["GACPPtr"]);
             }
             if ("GABiPtr" in $$parsedSource) {
-                $$parsedSource["GABiPtr"] = $$createField115_0($$parsedSource["GABiPtr"]);
-            }
-            if ("GABT" in $$parsedSource) {
-                $$parsedSource["GABT"] = $$createField116_0($$parsedSource["GABT"]);
+                $$parsedSource["GABiPtr"] = $$createField101_0($$parsedSource["GABiPtr"]);
             }
             if ("GABTPtr" in $$parsedSource) {
-                $$parsedSource["GABTPtr"] = $$createField117_0($$parsedSource["GABTPtr"]);
-            }
-            if ("GAGT" in $$parsedSource) {
-                $$parsedSource["GAGT"] = $$createField118_0($$parsedSource["GAGT"]);
+                $$parsedSource["GABTPtr"] = $$createField102_0($$parsedSource["GABTPtr"]);
             }
             if ("GAGTPtr" in $$parsedSource) {
-                $$parsedSource["GAGTPtr"] = $$createField119_0($$parsedSource["GAGTPtr"]);
-            }
-            if ("GANBV" in $$parsedSource) {
-                $$parsedSource["GANBV"] = $$createField120_0($$parsedSource["GANBV"]);
-            }
-            if ("GANBP" in $$parsedSource) {
-                $$parsedSource["GANBP"] = $$createField121_0($$parsedSource["GANBP"]);
+                $$parsedSource["GAGTPtr"] = $$createField103_0($$parsedSource["GAGTPtr"]);
             }
             if ("GANBVPtr" in $$parsedSource) {
-                $$parsedSource["GANBVPtr"] = $$createField122_0($$parsedSource["GANBVPtr"]);
+                $$parsedSource["GANBVPtr"] = $$createField104_0($$parsedSource["GANBVPtr"]);
             }
             if ("GANBPPtr" in $$parsedSource) {
-                $$parsedSource["GANBPPtr"] = $$createField123_0($$parsedSource["GANBPPtr"]);
-            }
-            if ("GAPlV1" in $$parsedSource) {
-                $$parsedSource["GAPlV1"] = $$createField124_0($$parsedSource["GAPlV1"]);
-            }
-            if ("GAPlV2" in $$parsedSource) {
-                $$parsedSource["GAPlV2"] = $$createField125_0($$parsedSource["GAPlV2"]);
-            }
-            if ("GAPlP1" in $$parsedSource) {
-                $$parsedSource["GAPlP1"] = $$createField126_0($$parsedSource["GAPlP1"]);
-            }
-            if ("GAPlP2" in $$parsedSource) {
-                $$parsedSource["GAPlP2"] = $$createField127_0($$parsedSource["GAPlP2"]);
+                $$parsedSource["GANBPPtr"] = $$createField105_0($$parsedSource["GANBPPtr"]);
             }
             if ("GAPlVPtr" in $$parsedSource) {
-                $$parsedSource["GAPlVPtr"] = $$createField128_0($$parsedSource["GAPlVPtr"]);
+                $$parsedSource["GAPlVPtr"] = $$createField106_0($$parsedSource["GAPlVPtr"]);
             }
             if ("GAPlPPtr" in $$parsedSource) {
-                $$parsedSource["GAPlPPtr"] = $$createField129_0($$parsedSource["GAPlPPtr"]);
-            }
-            if ("GAMi" in $$parsedSource) {
-                $$parsedSource["GAMi"] = $$createField130_0($$parsedSource["GAMi"]);
-            }
-            if ("GAMS" in $$parsedSource) {
-                $$parsedSource["GAMS"] = $$createField131_0($$parsedSource["GAMS"]);
-            }
-            if ("GAMV" in $$parsedSource) {
-                $$parsedSource["GAMV"] = $$createField132_0($$parsedSource["GAMV"]);
+                $$parsedSource["GAPlPPtr"] = $$createField107_0($$parsedSource["GAPlPPtr"]);
             }
             if ("GAMSPtr" in $$parsedSource) {
-                $$parsedSource["GAMSPtr"] = $$createField133_0($$parsedSource["GAMSPtr"]);
+                $$parsedSource["GAMSPtr"] = $$createField108_0($$parsedSource["GAMSPtr"]);
             }
             if ("GAMVPtr" in $$parsedSource) {
-                $$parsedSource["GAMVPtr"] = $$createField134_0($$parsedSource["GAMVPtr"]);
-            }
-            if ("GAII" in $$parsedSource) {
-                $$parsedSource["GAII"] = $$createField135_0($$parsedSource["GAII"]);
-            }
-            if ("GAIV" in $$parsedSource) {
-                $$parsedSource["GAIV"] = $$createField136_0($$parsedSource["GAIV"]);
-            }
-            if ("GAIP" in $$parsedSource) {
-                $$parsedSource["GAIP"] = $$createField137_0($$parsedSource["GAIP"]);
+                $$parsedSource["GAMVPtr"] = $$createField109_0($$parsedSource["GAMVPtr"]);
             }
             if ("GAIIPtr" in $$parsedSource) {
-                $$parsedSource["GAIIPtr"] = $$createField138_0($$parsedSource["GAIIPtr"]);
+                $$parsedSource["GAIIPtr"] = $$createField110_0($$parsedSource["GAIIPtr"]);
             }
             if ("GAIVPtr" in $$parsedSource) {
-                $$parsedSource["GAIVPtr"] = $$createField139_0($$parsedSource["GAIVPtr"]);
+                $$parsedSource["GAIVPtr"] = $$createField111_0($$parsedSource["GAIVPtr"]);
             }
             if ("GAIPPtr" in $$parsedSource) {
-                $$parsedSource["GAIPPtr"] = $$createField140_0($$parsedSource["GAIPPtr"]);
-            }
-            if ("GAPrV" in $$parsedSource) {
-                $$parsedSource["GAPrV"] = $$createField141_0($$parsedSource["GAPrV"]);
-            }
-            if ("GAPrP" in $$parsedSource) {
-                $$parsedSource["GAPrP"] = $$createField142_0($$parsedSource["GAPrP"]);
+                $$parsedSource["GAIPPtr"] = $$createField112_0($$parsedSource["GAIPPtr"]);
             }
             if ("GAPrVPtr" in $$parsedSource) {
-                $$parsedSource["GAPrVPtr"] = $$createField143_0($$parsedSource["GAPrVPtr"]);
+                $$parsedSource["GAPrVPtr"] = $$createField113_0($$parsedSource["GAPrVPtr"]);
             }
             if ("GAPrPPtr" in $$parsedSource) {
-                $$parsedSource["GAPrPPtr"] = $$createField144_0($$parsedSource["GAPrPPtr"]);
+                $$parsedSource["GAPrPPtr"] = $$createField114_0($$parsedSource["GAPrPPtr"]);
             }
             return new Maps<R, S, T, U, V, W, X, Y, Z>($$parsedSource as Partial<Maps<R, S, T, U, V, W, X, Y, Z>>);
         };
     }
 }
-
-export type MixedCstrAlias<X> = X;
-
-export type NonBasicCstrAlias<V> = V;
-
-export type PointableCstrAlias<W> = W;
 
 export type PointerAlias = PointerTextMarshaler;
 
@@ -1883,4 +1513,3 @@ const $$createType75 = ($$createParamR: any, $$createParamS: any, $$createParamT
 const $$createType76 = ($$createParamR: any, $$createParamS: any, $$createParamT: any, $$createParamU: any, $$createParamV: any, $$createParamW: any, $$createParamX: any, $$createParamY: any, $$createParamZ: any) => $Create.Map($Create.Any, $Create.Any);
 const $$createType77 = $Create.Map($Create.Any, $Create.Any);
 const $$createType78 = $Create.Map($Create.Any, $Create.Any);
-const $$createType79 = $Create.Map($Create.Any, $Create.Any);

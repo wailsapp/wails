@@ -70,6 +70,7 @@ type MessageProcessor struct {
 	logger *slog.Logger
 
 	runningCalls map[string]context.CancelFunc
+	windowCalls  map[uint]map[string]bool // Track which calls belong to which window
 	l            sync.Mutex
 }
 
@@ -77,6 +78,7 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
 		logger:       logger,
 		runningCalls: map[string]context.CancelFunc{},
+		windowCalls:  map[uint]map[string]bool{},
 	}
 }
 
@@ -133,6 +135,12 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(ctx context.Context, req *Ru
 }
 
 func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string) {
+	// Check for browser window first (server mode)
+	if req.ClientID != "" {
+		if browserWindow := GetBrowserWindow(req.ClientID); browserWindow != nil {
+			return browserWindow, browserWindow.Name()
+		}
+	}
 	if req.WebviewWindowName != "" {
 		window, _ := globalApplication.Window.GetByName(req.WebviewWindowName)
 		return window, req.WebviewWindowName
@@ -158,8 +166,8 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 	m.logger.Error(message, args...)
 }
 
-func (m *MessageProcessor) Info(message string, args ...any) {
-	m.logger.Info(message, args...)
+func (m *MessageProcessor) Debug(message string, args ...any) {
+	m.logger.Debug(message, args...)
 }
 
 func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
@@ -195,5 +203,28 @@ func (m *MessageProcessor) logRuntimeCall(req *RuntimeRequest) {
 		methodName = androidMethodNames[req.Method]
 	}
 
-	m.Info("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
+	m.Debug("Runtime call:", "method", objectName+"."+methodName, "args", req.Args.String())
+}
+
+// CancelWindowCalls cancels all pending calls for a specific window
+func (m *MessageProcessor) CancelWindowCalls(windowID uint) {
+	m.l.Lock()
+	defer m.l.Unlock()
+
+	// Get all call IDs for this window
+	callIDs, exists := m.windowCalls[windowID]
+	if !exists {
+		return
+	}
+
+	// Cancel each call
+	for callID := range callIDs {
+		if cancel, ok := m.runningCalls[callID]; ok {
+			cancel()
+			delete(m.runningCalls, callID)
+		}
+	}
+
+	// Remove the window's call tracking
+	delete(m.windowCalls, windowID)
 }

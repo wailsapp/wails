@@ -1,0 +1,359 @@
+---
+title: Menüreferenz
+description: Vollständige Referenz für Menüelementtypen, Eigenschaften und Methoden
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Menüreferenz
+
+Vollständige Referenz für Menüelementtypen, Eigenschaften und dynamisches Verhalten. Erstellen Sie professionelle, responsive Menüs mit Kontrollkästchen, Radiogruppen, Trennlinien und dynamischen Aktualisierungen.
+
+## Menüelementtypen
+
+### Reguläre Menüelemente
+
+Die häufigste Art—zeigt Text an und löst eine Aktion aus:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked!")
+})
+```
+
+**Verwenden für:** Befehle, Aktionen, Öffnen von Fenstern
+
+### Kontrollkästchen
+
+Umzuschaltende Menüelemente mit aktiviertem/deaktiviertem Zustand:
+
+```go
+checkbox := menu.AddCheckbox("Enable Feature", true)  // true = initially checked
+checkbox.OnClick(func(ctx *application.Context) {
+    isChecked := ctx.ClickedMenuItem().Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+**Verwenden für:** Boolesche Einstellungen, Feature-Toggles, Ansichtsoptionen
+
+**Wichtig:** Der Aktivierungszustand toggelt automatisch beim Klicken.
+
+### Radiogruppen
+
+Ausschließliche Optionen—nur eine kann ausgewählt sein:
+
+```go
+menu.AddRadio("Small", true)   // true = initially selected
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+```
+
+**Verwenden für:** Gegenseitig ausschließliche Auswahlmöglichkeiten (Größe, Thema, Modus)
+
+**So funktioniert die Gruppierung:**
+- Benachbarte Radioelemente bilden automatisch eine Gruppe
+- Das Auswählen eines Elements deaktiviert die anderen in der Gruppe
+- Trennen Sie Gruppen durch eine Trennlinie oder ein reguläres Element
+
+**Beispiel mit mehreren Gruppen:**
+
+```go
+// Gruppe 1: Größe
+menu.AddRadio("Small", true)
+menu.AddRadio("Medium", false)
+menu.AddRadio("Large", false)
+
+menu.AddSeparator()
+
+// Gruppe 2: Thema
+menu.AddRadio("Light", true)
+menu.AddRadio("Dark", false)
+```
+
+### Untermenüs
+
+Verschachtelte Menüstrukturen zur Organisation:
+
+```go
+submenu := menu.AddSubmenu("More Options")
+submenu.Add("Submenu Item 1").OnClick(func(ctx *application.Context) {
+    // Handle click
+})
+submenu.Add("Submenu Item 2")
+```
+
+**Verwenden für:** Gruppieren verwandter Elemente, Reduzieren von Unordnung
+
+**Verschachtelungsgrenze:** Die meisten Plattformen unterstützen 2-3 Ebenen. Vermeiden Sie tiefere Verschachtelungen.
+
+### Trennlinien
+
+Visuelle Trenner zwischen Menüelementen:
+
+```go
+menu.Add("Item 1")
+menu.AddSeparator()
+menu.Add("Item 2")
+```
+
+**Verwenden für:** Visuelle Gruppierung verwandter Elemente
+
+**Best Practice:** Beginnen oder enden Sie Menüs nicht mit Trennlinien.
+
+## Menüelementeigenschaften
+
+### Beschriftung
+
+Der Text, der für das Menüelement angezeigt wird:
+
+```go
+menuItem := menu.Add("Initial Label")
+menuItem.SetLabel("New Label")
+
+// Get current label
+label := menuItem.Label()
+```
+
+**Dynamische Beschriftungen:**
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()  // Important on Windows!
+    
+    // Perform update check
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### Aktivierter Zustand
+
+Steuern, ob das Menüelement interaktiv ist:
+
+```go
+menuItem := menu.Add("Save")
+menuItem.SetEnabled(false)  // Greyed out, can't click
+
+// Enable it later
+menuItem.SetEnabled(true)
+menu.Update()  // Important: Call this after changing enabled state!
+
+// Check current state
+isEnabled := menuItem.Enabled()
+```
+
+:::caution[Windows-Menüverhalten]
+Unter Windows müssen Menüs bei Zustandsänderungen neu aufgebaut werden. **Rufen Sie immer `menu.Update()` nach dem Aktivieren/Deaktivieren von Menüelementen auf**, insbesondere wenn das Element deaktiviert erstellt wurde.
+
+**Warum:** Windows-Menüs werden beim Aktualisieren komplett neu erstellt. Wenn Sie `Update()` nicht aufrufen, werden Klick-Handler nicht ordnungsgemäß ausgelöst.
+:::
+
+**Beispiel: Dynamisches Aktivieren/Deaktivieren**
+
+```go
+var hasSelection bool
+
+cutMenuItem := menu.Add("Cut")
+cutMenuItem.SetEnabled(false)  // Initially disabled
+
+copyMenuItem := menu.Add("Copy")
+copyMenuItem.SetEnabled(false)
+
+// When selection changes
+func onSelectionChanged(selected bool) {
+    hasSelection = selected
+    cutMenuItem.SetEnabled(hasSelection)
+    copyMenuItem.SetEnabled(hasSelection)
+    menu.Update()  // Critical on Windows!
+}
+```
+
+**Häufiges Muster: Aktivieren bei Bedingung**
+
+```go
+saveMenuItem := menu.Add("Save")
+
+func updateSaveMenuItem() {
+    canSave := hasUnsavedChanges() && !isSaving()
+    saveMenuItem.SetEnabled(canSave)
+    menu.Update()
+}
+
+// Call whenever state changes
+onDocumentChanged(func() {
+    updateSaveMenuItem()
+})
+```
+
+### Aktivierter Zustand (Checked State)
+
+Für Kontrollkästchen- und Radioelemente, steuern oder abfragen Sie deren Aktivierungszustand:
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.SetChecked(true)
+menu.Update()
+
+// Query state
+isChecked := checkbox.Checked()
+```
+
+**Auto-Toggle:** Kontrollkästchen toggeln automatisch beim Klicken. Sie müssen `SetChecked()` im Klick-Handler nicht aufrufen.
+
+**Manuelle Steuerung:**
+
+```go
+checkbox := menu.AddCheckbox("Auto-save", false)
+
+// Sync with external state
+func syncAutoSave(enabled bool) {
+    checkbox.SetChecked(enabled)
+    menu.Update()
+}
+```
+
+### Beschleuniger (Tastenkürzel)
+
+Fügen Sie Menüelementen Tastenkürzel hinzu:
+
+```go
+saveMenuItem := menu.Add("Save")
+saveMenuItem.SetAccelerator("CmdOrCtrl+S")
+
+quitMenuItem := menu.Add("Quit")
+quitMenuItem.SetAccelerator("CmdOrCtrl+Q")
+```
+
+**Beschleuniger-Format:**
+- `CmdOrCtrl` - Cmd auf macOS, Ctrl auf Windows/Linux
+- `Shift`, `Alt`, `Option` - Modifier-Tasten
+- `A-Z`, `0-9` - Buchstaben-/Zahlentasten
+- `F1-F12` - Funktionstasten
+- `Enter`, `Space`, `Backspace`, etc. - Sondertasten
+
+**Beispiele:**
+
+```go
+"CmdOrCtrl+S"           // Save
+"CmdOrCtrl+Shift+S"     // Save As
+"CmdOrCtrl+W"           // Close Window
+"CmdOrCtrl+Q"           // Quit
+"F5"                    // Refresh
+"CmdOrCtrl+,"           // Preferences (macOS convention)
+"Alt+F4"                // Close (Windows convention)
+```
+
+**Plattform-spezifische Beschleuniger:**
+
+```go
+if runtime.GOOS == "darwin" {
+    prefsMenuItem.SetAccelerator("Cmd+,")
+} else {
+    prefsMenuItem.SetAccelerator("Ctrl+P")
+}
+```
+
+### Tooltip
+
+Fügen Sie Menüelementen Hover-Text hinzu (Plattformunterstützung variiert):
+
+```go
+menuItem := menu.Add("Advanced Options")
+menuItem.SetTooltip("Configure advanced settings")
+```
+
+**Plattformunterstützung:**
+- **Windows:** ✅ Unterstützt
+- **macOS:** ❌ Nicht unterstützt (Tooltips sind für Menüs nicht Standard)
+- **Linux:** ⚠️ Variiert je nach Desktop-Umgebung
+
+### Versteckter Zustand
+
+Verstecken Sie Menüelemente, ohne sie zu entfernen:
+
+```go
+debugMenuItem := menu.Add("Debug Mode")
+debugMenuItem.SetHidden(true)  // Hidden
+
+// Show in debug builds
+if isDebugBuild {
+    debugMenuItem.SetHidden(false)
+    menu.Update()
+}
+```
+
+**Verwenden für:** Debug-Optionen, Feature-Flags, bedingte Funktionen
+
+## Ereignisbehandlung
+
+### OnClick-Handler
+
+Führen Sie Code aus, wenn ein Menüelement angeklickt wird:
+
+```go
+menuItem := menu.Add("Click Me")
+menuItem.OnClick(func(ctx *application.Context) {
+    // Handle click
+    fmt.Println("Clicked!")
+})
+```
+
+**Der Kontext bietet:**
+- `ctx.ClickedMenuItem()` - Das angeklickte Menüelement
+- Fensterkontext (falls vom Fenstermenü)
+- Anwendungskontext
+
+**Beispiel: Zugriff auf Menüelement im Handler**
+
+```go
+checkbox := menu.AddCheckbox("Feature", false)
+checkbox.OnClick(func(ctx *application.Context) {
+    item := ctx.ClickedMenuItem()
+    isChecked := item.Checked()
+    fmt.Printf("Feature is now: %v\n", isChecked)
+})
+```
+
+### Mehrere Handler
+
+Sie können mehrere Handler festlegen (der letzte gewinnt):
+
+```go
+menuItem := menu.Add("Action")
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("First handler")
+})
+
+// This replaces the first handler
+menuItem.OnClick(func(ctx *application.Context) {
+    fmt.Println("Second handler - this one runs")
+})
+```
+
+**Best Practice:** Legen Sie den Handler einmal fest, verwenden Sie bei Bedarf bedingte Logik darin.
+
+## Dynamische Menüs
+
+### Aktualisieren von Menüelementen
+
+**Die goldene Regel:** Rufen Sie nach jeder Änderung des Menüstatus immer `menu.Update()` auf.
+
+```go
+// ✅ Correct
+menuItem.SetEnabled(true)
+menu.Update()
+
+// ❌ Wrong (especially on Windows)
+menuItem.SetEnabled(true)
+// Forgot to call Update() - click handlers may not work!
+```
+
+**Warum das wichtig ist:****Fragen?** Stellen Sie diese im [Discord](https://discord.gg/JDdSxwjhGf) oder sehen Sie sich die [Menübeispiele](https://github.com/wailsapp/wails/tree/master/v3/examples/menu) an.

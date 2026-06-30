@@ -24,7 +24,7 @@ func main() {
     })
 
     // Create a window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     
     // Configure it
     window.SetTitle("Hello Wails")
@@ -47,7 +47,7 @@ func main() {
 The simplest way to create a window:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 ```
 
 **What you get:**
@@ -61,7 +61,7 @@ window := app.NewWebviewWindow()
 Create a window with custom configuration:
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "My Application",
     Width:  1200,
     Height: 800,
@@ -101,14 +101,13 @@ window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 Give windows names for easy retrieval:
 
 ```go
-window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:  "main-window",
     Title: "Main Application",
 })
 
 // Later, find it by name
-mainWindow := app.GetWindowByName("main-window")
-if mainWindow != nil {
+if mainWindow, ok := app.Window.GetByName("main-window"); ok {
     mainWindow.Show()
 }
 ```
@@ -207,8 +206,8 @@ Normal ←→ Fullscreen
 // Set title
 window.SetTitle("My Application - Document.txt")
 
-// Set background colour
-window.SetBackgroundColour(0, 0, 0, 255) // RGBA
+// Set background colour — RGBA value (helper for RGB)
+window.SetBackgroundColour(application.NewRGBA(0, 0, 0, 255))
 
 // Set always on top
 window.SetAlwaysOnTop(true)
@@ -220,24 +219,18 @@ window.SetResizable(false)
 ### Closing Windows
 
 ```go
-// Close window
+// Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().
 window.Close()
-
-// Destroy window (force close)
-window.Destroy()
 ```
 
-**Difference:**
-- `Close()` - Triggers close event, can be cancelled
-- `Destroy()` - Immediate destruction, cannot be cancelled
+There is no `window.Destroy()` method in v3 — use `Close()` and either listen with `OnWindowEvent` (cannot cancel) or hook with `RegisterHook` (can call `e.Cancel()` to keep the window open).
 
 ## Finding Windows
 
 ### By Name
 
 ```go
-window := app.GetWindowByName("settings")
-if window != nil {
+if window, ok := app.Window.GetByName("settings"); ok {
     window.Show()
 }
 ```
@@ -251,7 +244,9 @@ id := window.ID()
 fmt.Printf("Window ID: %d\n", id)
 
 // Find by ID
-foundWindow := app.GetWindowByID(id)
+if found, ok := app.Window.GetByID(id); ok {
+    found.Focus()
+}
 ```
 
 ### Current Window
@@ -259,7 +254,7 @@ foundWindow := app.GetWindowByID(id)
 Get the currently focused window:
 
 ```go
-current := app.CurrentWindow()
+current := app.Window.Current()
 if current != nil {
     current.SetTitle("Active Window")
 }
@@ -270,7 +265,7 @@ if current != nil {
 Get all windows:
 
 ```go
-windows := app.GetAllWindows()
+windows := app.Window.GetAll()
 fmt.Printf("Total windows: %d\n", len(windows))
 
 for _, w := range windows {
@@ -283,9 +278,9 @@ for _, w := range windows {
 ### Creation
 
 ```go
-app.OnWindowCreation(func(window *application.WebviewWindow) {
+app.Window.OnCreate(func(window application.Window) {
     fmt.Printf("Window created: %s\n", window.Name())
-    
+
     // Configure new windows
     window.SetMinSize(400, 300)
 })
@@ -293,26 +288,30 @@ app.OnWindowCreation(func(window *application.WebviewWindow) {
 
 ### Closing
 
+To prevent a window from closing, use `RegisterHook` with the `WindowClosing` event:
+
 ```go
-window.OnClose(func() bool {
-    // Return false to cancel close
-    // Return true to allow close
-    
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        // Ask user for confirmation
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
 })
 ```
 
-**Important:** `OnClose` only works for user-initiated closes (clicking X button). It doesn't prevent `window.Destroy()`.
+**Important:** `RegisterHook` intercepts the close event before it happens. Call `event.Cancel()` to prevent the window from closing. This works for user-initiated closes (clicking X button).
 
 ### Destruction
 
+To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClosing` event:
+
 ```go
-window.OnDestroy(func() {
-    fmt.Println("Window destroyed")
+window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
+    fmt.Println("Window is closing")
     // Cleanup resources
 })
 ```
@@ -323,7 +322,7 @@ window.OnDestroy(func() {
 
 ```go
 // Main window
-mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "main",
     Title:  "Main Application",
     Width:  1200,
@@ -331,7 +330,7 @@ mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 })
 
 // Settings window
-settingsWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Name:   "settings",
     Title:  "Settings",
     Width:  600,
@@ -349,12 +348,12 @@ Windows can communicate via events:
 
 ```go
 // In main window
-app.EmitEvent("data-updated", map[string]interface{}{
+app.Event.Emit("data-updated", map[string]interface{}{
     "value": 42,
 })
 
 // In settings window
-app.OnEvent("data-updated", func(event *application.WailsEvent) {
+app.Event.On("data-updated", func(event *application.CustomEvent) {
     data := event.Data.(map[string]interface{})
     value := data["value"].(int)
     fmt.Printf("Received: %d\n", value)
@@ -365,23 +364,26 @@ app.OnEvent("data-updated", func(event *application.WailsEvent) {
 
 ### Parent-Child Windows
 
+`WebviewWindowOptions` has no `Parent` field. Create the child as a normal window and attach it to a parent as a sheet modal:
+
 ```go
 // Create child window
-childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-    Title:  "Child Window",
-    Parent: mainWindow,  // Set parent
+childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Child Window",
 })
+
+// Attach to the parent — presents as a sheet on macOS.
+mainWindow.AttachModal(childWindow)
 ```
 
 **Behaviour:**
-- Child closes when parent closes
-- Child stays above parent (on some platforms)
-- Child minimises with parent (on some platforms)
+- Child stays above parent.
+- Child is modal — blocks interaction with the parent.
 
 **Platform support:**
-- **macOS:** Full support
-- **Windows:** Partial support
-- **Linux:** Varies by desktop environment
+- **macOS:** Full support (presents as a sheet).
+- **Windows:** Not supported.
+- **Linux:** Not supported.
 
 ## Platform-Specific Features
 
@@ -393,13 +395,12 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
     // Flash taskbar button
     window.Flash(true)  // Start flashing
     window.Flash(false) // Stop flashing
-    
+
     // Trigger Windows 11 Snap Assist (Win+Z)
     window.SnapAssist()
-    
-    // Set window icon
-    window.SetIcon(iconBytes)
     ```
+
+    There is no per-window `SetIcon` — the application icon is set on the app via `app.SetIcon([]byte)` (or for a Linux-specific window icon, the `application.LinuxWindow.Icon` field at window creation).
     
     **Snap Assist:**
     Shows Windows 11 snap layout options for the window.
@@ -410,46 +411,55 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
   <TabItem label="macOS" icon="apple">
     **macOS-specific features:**
-    
+
     ```go
     // Transparent title bar
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Mac: application.MacOptions{
-            TitleBarAppearsTransparent: true,
-            Backdrop:                   application.MacBackdropTranslucent,
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Mac: application.MacWindow{
+            TitleBar: application.MacTitleBar{
+                AppearsTransparent: true,
+            },
+            Backdrop: application.MacBackdropTranslucent,
         },
     })
     ```
-    
+
     **Backdrop types:**
     - `MacBackdropNormal` - Standard window
     - `MacBackdropTranslucent` - Translucent background
     - `MacBackdropTransparent` - Fully transparent
-    
+
+    **Collection behavior:**
+    Control how windows behave across Spaces:
+    - `MacWindowCollectionBehaviorCanJoinAllSpaces` - Visible on all Spaces
+    - `MacWindowCollectionBehaviorFullScreenAuxiliary` - Can overlay fullscreen apps
+
     **Native fullscreen:**
     macOS fullscreen creates a new Space (virtual desktop).
   </TabItem>
 
   <TabItem label="Linux" icon="linux">
     **Linux-specific features:**
-    
+
     ```go
-    // Set window icon
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Linux: application.LinuxOptions{
+    // Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Linux: application.LinuxWindow{
             Icon: iconBytes,
         },
     })
     ```
-    
+
     **Desktop environment notes:**
     - GNOME: Full support
     - KDE Plasma: Full support
     - XFCE: Partial support
     - Others: Varies
-    
-    **Window managers:**
-    - Tiling WMs may ignore size/position
+
+    **Tiling window managers (Hyprland, Sway, i3, etc.):**
+    - `Minimise()` and `Maximise()` may not work as expected - the WM controls window geometry
+    - `SetSize()` and `SetPosition()` requests are advisory and may be ignored
+    - `Fullscreen()` typically works as expected
     - Some WMs don't support always-on-top
   </TabItem>
 </Tabs>
@@ -460,7 +470,7 @@ childWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 
 ```go
 // Create splash screen
-splash := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:     "Loading...",
     Width:     400,
     Height:    300,
@@ -486,7 +496,7 @@ var settingsWindow *application.WebviewWindow
 
 func showSettings() {
     if settingsWindow == nil {
-        settingsWindow = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   "settings",
             Title:  "Settings",
             Width:  600,
@@ -495,20 +505,22 @@ func showSettings() {
     }
     
     settingsWindow.Show()
-    settingsWindow.SetFocus()
+    settingsWindow.Focus()
 }
 ```
 
 ### Confirm Before Close
 
 ```go
-window.OnClose(func() bool {
+window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
     if hasUnsavedChanges() {
         // Show dialog
-        result := showConfirmdialog("Unsaved changes. Close anyway?")
-        return result == "yes"
+        result := showConfirmDialog("Unsaved changes. Close anyway?")
+        if result != "yes" {
+            // Cancel the close event
+            event.Cancel()
+        }
     }
-    return true
 })
 ```
 
@@ -545,7 +557,7 @@ window.OnClose(func() bool {
 ```go
 window.Show()
 window.Center()
-window.SetFocus()
+window.Focus()
 ```
 
 ### Window Wrong Size
@@ -604,4 +616,4 @@ app := application.New(application.Options{
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [window examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [window examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

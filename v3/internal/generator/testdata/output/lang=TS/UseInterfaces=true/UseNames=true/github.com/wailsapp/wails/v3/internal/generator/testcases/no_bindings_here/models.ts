@@ -18,7 +18,7 @@ export interface HowDifferent<How> {
     /**
      * But they may have many differences.
      */
-    "Differences": ({ [_: string]: How } | null)[] | null;
+    "Differences": ({ [_ in string]?: How } | null)[] | null;
 }
 
 /**

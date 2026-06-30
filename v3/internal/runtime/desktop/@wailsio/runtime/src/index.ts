@@ -9,7 +9,11 @@ The electron alternative for Go
 */
 
 // Setup
-window._wails = window._wails || {};
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    window._wails = window._wails || {};
+}
 
 import "./contextmenu.js";
 import "./drag.js";
@@ -26,7 +30,9 @@ import * as Flags from "./flags.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
 import * as IOS from "./ios.js";
-import Window from "./window.js";
+import * as Android from "./android.js";
+import * as Updater from "./updater.js";
+import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
 
 export {
@@ -40,6 +46,8 @@ export {
     Screens,
     System,
     IOS,
+    Android,
+    Updater,
     Window,
     WML
 };
@@ -62,12 +70,55 @@ export {
     clientId,
 } from "./runtime.js";
 
+import { clientId } from "./runtime.js";
+
 // Notify backend
-window._wails.invoke = System.invoke;
+if (hasDOM) {
+    window._wails.invoke = System.invoke;
+    window._wails.clientId = clientId;
+}
 
 // Register platform handlers (internal API)
 // Note: Window is the thisWindow instance (default export from window.ts)
 // Binding ensures 'this' correctly refers to the current window instance
-window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+if (hasDOM) {
+    window._wails.handlePlatformFileDrop = Window.HandlePlatformFileDrop.bind(Window);
+}
 
-System.invoke("wails:runtime:ready");
+// Linux-specific drag handlers (GTK intercepts DOM drag events)
+if (hasDOM) {
+    window._wails.handleDragEnter = handleDragEnter;
+    window._wails.handleDragLeave = handleDragLeave;
+    window._wails.handleDragOver = handleDragOver;
+}
+
+if (hasDOM) {
+    System.invoke("wails:runtime:ready");
+}
+
+/**
+ * Loads a script from the given URL if it exists.
+ * Uses HEAD request to check existence, then injects a script tag.
+ * Silently ignores if the script doesn't exist.
+ */
+export function loadOptionalScript(url: string): Promise<void> {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                // Verify the response is actually JavaScript and not an HTML fallback
+                // (e.g. Vite dev server returns index.html for unknown routes)
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                if (contentType.includes('javascript')) {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    document.head.appendChild(script);
+                }
+            }
+        })
+        .catch(() => {}); // Silently ignore - script is optional
+}
+
+// Load custom.js if available (used by server mode for WebSocket events, etc.)
+if (hasDOM) {
+    loadOptionalScript('/wails/custom.js');
+}

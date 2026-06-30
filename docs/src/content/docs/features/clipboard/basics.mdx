@@ -43,7 +43,7 @@ if !success {
 
 ```go
 type ClipboardService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (c *ClipboardService) CopyToClipboard(text string) bool {
@@ -54,7 +54,7 @@ func (c *ClipboardService) CopyToClipboard(text string) bool {
 **Call from JavaScript:**
 
 ```javascript
-import { CopyToClipboard } from './bindings/myapp/clipboardservice'
+import { CopyToClipboard } from './bindings/changeme/clipboardservice'
 
 await CopyToClipboard("Text to copy")
 ```
@@ -64,12 +64,12 @@ await CopyToClipboard("Text to copy")
 ```go
 func copyWithFeedback(text string) {
     if app.Clipboard.SetText(text) {
-        app.InfoDialog().
+        app.Dialog.Info().
             SetTitle("Copied").
             SetMessage("Text copied to clipboard!").
             Show()
     } else {
-        app.ErrorDialog().
+        app.Dialog.Error().
             SetTitle("Copy Failed").
             SetMessage("Failed to copy to clipboard.").
             Show()
@@ -108,7 +108,7 @@ func (c *ClipboardService) PasteFromClipboard() string {
 **Call from JavaScript:**
 
 ```javascript
-import { PasteFromClipboard } from './bindings/myapp/clipboardservice'
+import { PasteFromClipboard } from './bindings/changeme/clipboardservice'
 
 const text = await PasteFromClipboard()
 console.log("Pasted:", text)
@@ -144,7 +144,7 @@ func pasteText() (string, error) {
 
 ```go
 type TextService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (t *TextService) CopyText(text string) error {
@@ -158,7 +158,7 @@ func (t *TextService) CopyText(text string) error {
 **JavaScript:**
 
 ```javascript
-import { CopyText } from './bindings/myapp/textservice'
+import { CopyText } from './bindings/changeme/textservice'
 
 async function copyToClipboard(text) {
     try {
@@ -182,7 +182,7 @@ document.getElementById('copy-btn').addEventListener('click', () => {
 
 ```go
 type DataService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (d *DataService) PasteAndProcess() (string, error) {
@@ -203,7 +203,7 @@ func (d *DataService) PasteAndProcess() (string, error) {
 **JavaScript:**
 
 ```javascript
-import { PasteAndProcess } from './bindings/myapp/dataservice'
+import { PasteAndProcess } from './bindings/changeme/dataservice'
 
 async function pasteAndProcess() {
     try {
@@ -219,7 +219,7 @@ async function pasteAndProcess() {
 
 ```go
 type CopyService struct {
-    app *application.Application
+    app *application.App
 }
 
 func (c *CopyService) CopyAsPlainText(text string) bool {
@@ -253,13 +253,13 @@ func (c *CopyService) CopyAsCSV(rows [][]string) bool {
 
 ```go
 type ClipboardMonitor struct {
-    app          *application.Application
+    app          *application.App
     lastText     string
     ticker       *time.Ticker
     stopChan     chan bool
 }
 
-func NewClipboardMonitor(app *application.Application) *ClipboardMonitor {
+func NewClipboardMonitor(app *application.App) *ClipboardMonitor {
     return &ClipboardMonitor{
         app:      app,
         stopChan: make(chan bool),
@@ -296,7 +296,7 @@ func (cm *ClipboardMonitor) checkClipboard() {
     
     if text != cm.lastText {
         cm.lastText = text
-        cm.app.EmitEvent("clipboard-changed", text)
+        cm.app.Event.Emit("clipboard-changed", text)
     }
 }
 ```
@@ -305,12 +305,12 @@ func (cm *ClipboardMonitor) checkClipboard() {
 
 ```go
 type ClipboardHistory struct {
-    app     *application.Application
+    app     *application.App
     history []string
     maxSize int
 }
 
-func NewClipboardHistory(app *application.Application) *ClipboardHistory {
+func NewClipboardHistory(app *application.App) *ClipboardHistory {
     return &ClipboardHistory{
         app:     app,
         history: make([]string, 0),
@@ -383,7 +383,7 @@ async function pasteText() {
 For system-wide clipboard access:
 
 ```javascript
-import { CopyToClipboard, PasteFromClipboard } from './bindings/myapp/clipboardservice'
+import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
 
 // Copy
 async function copy(text) {
@@ -490,4 +490,4 @@ async function paste() {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [clipboard examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [clipboard examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

@@ -59,6 +59,8 @@ const call = newRuntimeCaller(objectNames.Screens);
 const getAll = 0;
 const getPrimary = 1;
 const getCurrent = 2;
+const getByID = 3;
+const getByIndex = 4;
 
 /**
  * Gets all screens.
@@ -85,4 +87,24 @@ export function GetPrimary(): Promise<Screen> {
  */
 export function GetCurrent(): Promise<Screen> {
     return call(getCurrent);
+}
+
+/**
+ * Gets a screen by its unique display ID.
+ *
+ * @param id - The unique identifier of the screen.
+ * @returns A promise that resolves to the matching Screen.
+ */
+export function GetByID(id: string): Promise<Screen> {
+    return call(getByID, { id });
+}
+
+/**
+ * Gets a screen by its index in the screen list.
+ *
+ * @param index - The zero-based index of the screen.
+ * @returns A promise that resolves to the matching Screen.
+ */
+export function GetByIndex(index: number): Promise<Screen> {
+    return call(getByIndex, { index });
 }

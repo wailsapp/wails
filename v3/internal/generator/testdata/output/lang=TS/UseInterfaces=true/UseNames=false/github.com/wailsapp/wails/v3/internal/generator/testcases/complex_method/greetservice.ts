@@ -19,6 +19,6 @@ import * as $models from "./models.js";
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: $models.Person[] | null, $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null } | null, $4: (number | null)[] | null, ...other: string[]): $CancellablePromise<[$models.Person, any, number[] | null]> {
+export function Greet(str: string, people: $models.Person[] | null, $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_ in `${number}`]?: boolean | null } | null, $4: (number | null)[] | null, ...other: string[]): $CancellablePromise<[$models.Person, any, number[] | null]> {
     return $Call.ByID(1411160069, str, people, $2, assoc, $4, other);
 }

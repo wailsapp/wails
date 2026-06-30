@@ -3,11 +3,47 @@ package application
 import (
 	"errors"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
+
+// SystemTrayLabelPart is a segment of a system tray label with optional colour information.
+// FgColor and BgColor are hex strings (e.g. "#ff0000") or empty strings when not set.
+type SystemTrayLabelPart struct {
+	Text    string
+	FgColor string
+	BgColor string
+}
+
+// SystemTrayLabelParser is a function that splits a raw label string into styled parts.
+// It is called by the macOS system tray implementation when the label contains ANSI
+// escape codes. The default implementation strips escape codes and returns plain text.
+//
+// Replace this variable with a custom function to render colours in your system tray
+// labels. For example, wire in go-ansi-parser or any other ANSI library here.
+var SystemTrayLabelParser func(label string) ([]SystemTrayLabelPart, error) = stripANSI
+
+// stripANSI removes ANSI escape sequences from s and returns a single unstyled part.
+func stripANSI(s string) ([]SystemTrayLabelPart, error) {
+	// Remove all sequences matching \033[...m
+	var buf strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] == '\033' && i+1 < len(s) && s[i+1] == '[' {
+			end := strings.IndexByte(s[i:], 'm')
+			if end == -1 {
+				buf.WriteByte(s[i])
+				i++
+				continue
+			}
+			i += end + 1
+			continue
+		}
+		buf.WriteByte(s[i])
+		i++
+	}
+	return []SystemTrayLabelPart{{Text: buf.String()}}, nil
+}
 
 type IconPosition int
 
@@ -77,7 +113,6 @@ func newSystemTray(id uint) *SystemTray {
 			Debounce: 200 * time.Millisecond,
 		},
 	}
-	result.clickHandler = result.defaultClickHandler
 	return result
 }
 
@@ -96,29 +131,92 @@ func (s *SystemTray) Label() string {
 }
 
 func (s *SystemTray) Run() {
-	s.impl = newSystemTrayImpl(s)
-
-	if s.attachedWindow.Window != nil {
-		// Setup listener
-		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
-			s.attachedWindow.Window.Hide()
-			// Special handler for Windows
-			if runtime.GOOS == "windows" {
-				// We don't do this unless the window has already been shown
-				if s.attachedWindow.hasBeenShown == false {
-					return
-				}
-				s.attachedWindow.justClosed = true
-				go func() {
-					defer handlePanic()
-					time.Sleep(s.attachedWindow.Debounce)
-					s.attachedWindow.justClosed = false
-				}()
-			}
-		})
+	if globalApplication == nil || globalApplication.running == false {
+		return
 	}
 
+	s.applySmartDefaults()
+	s.impl = newSystemTrayImpl(s)
 	InvokeSync(s.impl.run)
+}
+
+func (s *SystemTray) applySmartDefaults() {
+	hasWindow := s.attachedWindow.Window != nil
+	hasMenu := s.menu != nil
+
+	if s.clickHandler == nil && hasWindow {
+		s.clickHandler = s.ToggleWindow
+	}
+
+	if s.rightClickHandler == nil && hasMenu {
+		s.rightClickHandler = s.ShowMenu
+	}
+}
+
+func (s *SystemTray) ToggleWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
+}
+
+func (s *SystemTray) defaultClickHandler() {
+	if s.attachedWindow.Window == nil {
+		s.OpenMenu()
+		return
+	}
+
+	// Check the initial visibility state
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
+}
+
+func (s *SystemTray) ShowMenu() {
+	s.OpenMenu()
+}
+
+func (s *SystemTray) ShowWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+	s.attachedWindow.hasBeenShown = true
+	_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+	s.attachedWindow.Window.Show().Focus()
+}
+
+func (s *SystemTray) HideWindow() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+	s.attachedWindow.Window.Hide()
 }
 
 func (s *SystemTray) PositionWindow(window Window, offset int) error {
@@ -296,30 +394,6 @@ func (s *SystemTray) WindowOffset(offset int) *SystemTray {
 func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 	s.attachedWindow.Debounce = debounce
 	return s
-}
-
-func (s *SystemTray) defaultClickHandler() {
-	if s.attachedWindow.Window == nil {
-		s.OpenMenu()
-		return
-	}
-
-	// Check the initial visibility state
-	s.attachedWindow.initialClick.Do(func() {
-		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
-	})
-
-	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
-		return
-	}
-
-	if s.attachedWindow.Window.IsVisible() {
-		s.attachedWindow.Window.Hide()
-	} else {
-		s.attachedWindow.hasBeenShown = true
-		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
-		s.attachedWindow.Window.Show().Focus()
-	}
 }
 
 func (s *SystemTray) OpenMenu() {

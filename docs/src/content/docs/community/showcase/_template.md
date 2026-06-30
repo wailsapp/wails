@@ -1,5 +1,6 @@
 ---
 title: My Project
+description: Template for adding your Wails project to the showcase
 draft: true
 ---
 

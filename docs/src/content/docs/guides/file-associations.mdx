@@ -1,5 +1,6 @@
 ---
 title: File Associations
+description: Configure file associations for your Wails application
 sidebar:
   order: 20
 ---
@@ -86,7 +87,7 @@ func main() {
     // Listen for files being used to open the application
     app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
         associatedFile := event.Context().Filename()
-        application.InfoDialog().SetMessage("Application opened with file: " + associatedFile).Show()
+        app.Dialog.Info().SetMessage("Application opened with file: " + associatedFile).Show()
     })
 
     // Create your window and run the app...

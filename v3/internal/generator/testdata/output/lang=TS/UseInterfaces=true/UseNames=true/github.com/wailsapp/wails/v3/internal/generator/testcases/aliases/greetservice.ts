@@ -47,6 +47,10 @@ export function GetButGenericAliases(): $CancellablePromise<$models.AliasGroup> 
     return $Call.ByName("main.GreetService.GetButGenericAliases");
 }
 
+export function GetButSubPackageAlias(): $CancellablePromise<$models.SubPackageAlias> {
+    return $Call.ByName("main.GreetService.GetButSubPackageAlias");
+}
+
 /**
  * Greet a lot of unusual things.
  */

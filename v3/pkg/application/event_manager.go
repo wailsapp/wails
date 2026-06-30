@@ -3,7 +3,6 @@ package application
 import (
 	"slices"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -100,7 +99,9 @@ func (em *EventManager) OnApplicationEvent(eventType events.ApplicationEventType
 		em.app.applicationEventListenersLock.Lock()
 		defer em.app.applicationEventListenersLock.Unlock()
 		// Remove listener
-		em.app.applicationEventListeners[eventID] = lo.Without(em.app.applicationEventListeners[eventID], listener)
+		em.app.applicationEventListeners[eventID] = slices.DeleteFunc(em.app.applicationEventListeners[eventID], func(l *EventListener) bool {
+			return l == listener
+		})
 	}
 }
 
@@ -116,7 +117,9 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 	return func() {
 		em.app.applicationEventHooksLock.Lock()
-		em.app.applicationEventHooks[eventID] = lo.Without(em.app.applicationEventHooks[eventID], thisHook)
+		em.app.applicationEventHooks[eventID] = slices.DeleteFunc(em.app.applicationEventHooks[eventID], func(h *eventHook) bool {
+			return h == thisHook
+		})
 		em.app.applicationEventHooksLock.Unlock()
 	}
 }

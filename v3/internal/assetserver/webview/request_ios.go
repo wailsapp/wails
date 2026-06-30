@@ -107,12 +107,13 @@ import "C"
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"unsafe"
+
+	"encoding/json"
 )
 
 // NewRequest creates as new WebViewRequest based on a pointer to an `id<WKURLSchemeTask>`

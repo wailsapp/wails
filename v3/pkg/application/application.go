@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
 //go:embed assets/*
@@ -40,6 +41,12 @@ func Get() *App {
 }
 
 func New(appOptions Options) *App {
+	// If we were spawned as an updater helper the process must perform the
+	// swap and exit before any application machinery touches the disk. This
+	// is a no-op when the sentinel env vars are absent, so normal startup is
+	// unaffected.
+	updater.HandleHelperMode()
+
 	if globalApplication != nil {
 		return globalApplication
 	}
@@ -67,6 +74,7 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = messageProc
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
@@ -116,6 +124,10 @@ func New(appOptions Options) *App {
 					if err != nil {
 						result.fatal("unable to serve transport.js: %w", err)
 					}
+				case "/wails/custom.js":
+					// custom.js is only served in server mode.
+					// Return 404 so the runtime's loadOptionalScript skips it.
+					http.NotFound(rw, req)
 				default:
 					next.ServeHTTP(rw, req)
 				}
@@ -151,7 +163,7 @@ func New(appOptions Options) *App {
 		if err != nil {
 			result.fatal("failed to configure transport for serving assets: %w", err)
 		}
-		result.info("Transport configured to serve assets")
+		result.debug("Transport configured to serve assets")
 	}
 
 	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
@@ -237,11 +249,11 @@ type OriginInfo struct {
 	IsMainFrame bool
 }
 
-var windowMessageBuffer = make(chan *windowMessage, 5)
+var windowMessageBuffer = make(chan *windowMessage, 64)
 
-// DropZoneDetails contains information about the HTML element
-// at the location of a file drop.
-type DropZoneDetails struct {
+// DropTargetDetails contains information about the HTML element
+// where files were dropped (the element with data-file-drop-target attribute).
+type DropTargetDetails struct {
 	X          int               `json:"x"`
 	Y          int               `json:"y"`
 	ElementID  string            `json:"id"`
@@ -250,20 +262,20 @@ type DropZoneDetails struct {
 }
 
 type dragAndDropMessage struct {
-	windowId  uint
-	filenames []string
-	X         int
-	Y         int
-	DropZone  *DropZoneDetails
+	windowId   uint
+	filenames  []string
+	X          int
+	Y          int
+	DropTarget *DropTargetDetails
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string, dropZone *DropZoneDetails) {
+func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTargetDetails) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  windowId,
-		filenames: filenames,
-		DropZone:  dropZone,
+		windowId:   windowId,
+		filenames:  filenames,
+		DropTarget: dropTarget,
 	}
 }
 
@@ -319,7 +331,7 @@ func (r *webViewAssetRequest) Close() error {
 	return r.Request.Close()
 }
 
-var webviewRequests = make(chan *webViewAssetRequest, 5)
+var webviewRequests = make(chan *webViewAssetRequest, 256)
 
 type eventHook struct {
 	callback func(event *ApplicationEvent)
@@ -335,17 +347,20 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Window      *WindowManager
-	ContextMenu *ContextMenuManager
-	KeyBinding  *KeyBindingManager
-	Browser     *BrowserManager
-	Env         *EnvironmentManager
-	Dialog      *DialogManager
-	Event       *EventManager
-	Menu        *MenuManager
-	Screen      *ScreenManager
-	Clipboard   *ClipboardManager
-	SystemTray  *SystemTrayManager
+	Window         *WindowManager
+	ContextMenu    *ContextMenuManager
+	KeyBinding     *KeyBindingManager
+	Browser        *BrowserManager
+	Env            *EnvironmentManager
+	Dialog         *DialogManager
+	Event          *EventManager
+	Menu           *MenuManager
+	Screen         *ScreenManager
+	Clipboard      *ClipboardManager
+	SystemTray     *SystemTrayManager
+	Autostart      *AutostartManager
+	GlobalShortcut *GlobalShortcutManager
+	Updater        *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -416,6 +431,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// messageProcessor handles runtime messages
+	messageProcessor *MessageProcessor
 }
 
 func (a *App) Config() Options {
@@ -495,21 +513,14 @@ func (a *App) init() {
 	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
+	a.Autostart = newAutostartManager(a)
+	a.GlobalShortcut = newGlobalShortcutManager(a)
+	a.Updater = updater.New(newUpdaterHost(a))
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
-
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
-//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
-//	a.assets.AttachServiceHandler(prefix, handler)
-//}
 
 func (a *App) GetPID() int {
 	return a.pid
@@ -574,90 +585,106 @@ func (a *App) Run() error {
 	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 
-	// Startup services before dispatching any events.
-	// No need to hold the lock here because a.options.Services may only change when a.running is false.
-	services := a.options.Services
-	a.options.Services = nil
-	for i, service := range services {
-		if err := a.startupService(service); err != nil {
-			return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+	// startup performs the remaining startup sequence: start services, spawn the
+	// event-handling reader goroutines, run any pending windows, and apply the
+	// menu/icon. On desktop this runs inline on the main goroutine. On iOS it is
+	// deferred to a background goroutine (see below).
+	startup := func() error {
+		// Startup services before dispatching any events.
+		// No need to hold the lock here because a.options.Services may only change when a.running is false.
+		services := a.options.Services
+		a.options.Services = nil
+		for i, service := range services {
+			if err := a.startupService(service); err != nil {
+				return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+			}
+			// Schedule started services for shutdown.
+			a.options.Services = services[:i+1]
 		}
-		// Schedule started services for shutdown.
-		a.options.Services = services[:i+1]
+
+
+	// Start the MCP server when the application is built with -tags mcp.
+	// All configuration is read from environment variables (WAILS_MCP_HOST,
+	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+	if err := startMCPServer(a); err != nil {
+		return fmt.Errorf("mcp: %w", err)
 	}
 
-	go func() {
-		for {
-			event := <-applicationEvents
-			go a.Event.handleApplicationEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowEvents
-			go a.handleWindowEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			request := <-webviewRequests
-			go a.handleWebViewRequest(request)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowMessageBuffer
-			go a.handleWindowMessage(event)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowKeyEvents
-			go a.handleWindowKeyEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			dragAndDropMessage := <-windowDragAndDropBuffer
-			a.Logger.Debug(
-				"[DragDropDebug] App.Run: Received message from windowDragAndDropBuffer",
-				"message",
-				fmt.Sprintf("%+v", dragAndDropMessage),
-			)
-			go a.handleDragAndDropMessage(dragAndDropMessage)
-		}
-	}()
-
-	go func() {
-		for {
-			menuItemID := <-menuItemClicked
-			go a.Menu.handleMenuItemClicked(menuItemID)
-		}
-	}()
-
-	a.runLock.Lock()
-	a.running = true
-	a.runLock.Unlock()
-
-	// No need to hold the lock here because
-	//   - a.pendingRun may only change while a.running is false.
-	//   - runnables are scheduled asynchronously anyway.
-	for _, pending := range a.pendingRun {
 		go func() {
-			defer handlePanic()
-			pending.Run()
+			for {
+				event := <-applicationEvents
+				go a.Event.handleApplicationEvent(event)
+			}
 		}()
-	}
-	a.pendingRun = nil
+		go func() {
+			for {
+				event := <-windowEvents
+				go a.handleWindowEvent(event)
+			}
+		}()
+		go func() {
+			for {
+				request := <-webviewRequests
+				go a.handleWebViewRequest(request)
+			}
+		}()
+		go func() {
+			for {
+				event := <-windowMessageBuffer
+				go a.handleWindowMessage(event)
+			}
+		}()
+		go func() {
+			for {
+				event := <-windowKeyEvents
+				go a.handleWindowKeyEvent(event)
+			}
+		}()
+		go func() {
+			for {
+				dragAndDropMessage := <-windowDragAndDropBuffer
+				go a.handleDragAndDropMessage(dragAndDropMessage)
+			}
+		}()
 
-	// set the application menu
-	if runtime.GOOS == "darwin" {
-		a.impl.setApplicationMenu(a.applicationMenu)
-	}
-	if a.options.Icon != nil {
-		a.impl.setIcon(a.options.Icon)
+		go func() {
+			for {
+				menuItemID := <-menuItemClicked
+				go a.Menu.handleMenuItemClicked(menuItemID)
+			}
+		}()
+
+		a.runLock.Lock()
+		a.running = true
+		a.runLock.Unlock()
+
+		// Bind any global shortcuts that were registered before the app started.
+		a.GlobalShortcut.flushPending()
+
+		// No need to hold the lock here because
+		//   - a.pendingRun may only change while a.running is false.
+		//   - runnables are scheduled asynchronously anyway.
+		for _, pending := range a.pendingRun {
+			go func() {
+				defer handlePanic()
+				pending.Run()
+			}()
+		}
+		a.pendingRun = nil
+
+		// set the application menu
+		if runtime.GOOS == "darwin" {
+			a.impl.setApplicationMenu(a.applicationMenu)
+		}
+		if a.options.Icon != nil {
+			a.impl.setIcon(a.options.Icon)
+		}
+		return nil
 	}
 
+	if err := startup(); err != nil {
+		return err
+	}
 	return a.impl.run()
 }
 
@@ -715,13 +742,7 @@ func (a *App) shutdownServices() {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Called with event",
-		"event",
-		fmt.Sprintf("%+v", event),
-	)
 	defer handlePanic()
-	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
@@ -729,13 +750,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	a.Logger.Debug(
-		"[DragDropDebug] App.handleDragAndDropMessage: Calling window.HandleDragAndDropMessage",
-		"windowID",
-		event.windowId,
-	)
-	window.HandleDragAndDropMessage(event.filenames, event.DropZone)
+	window.handleDragAndDropMessage(event.filenames, event.DropTarget)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -750,7 +765,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	a.windowsLock.RUnlock()
 
-	a.info("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
+	a.debug("handleWindowMessage: Looking for window", "windowId", event.windowId, "availableIDs", ids)
 
 	if !ok {
 		a.warning("WebviewWindow #%d not found", event.windowId)
@@ -758,7 +773,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
-		a.info("handleWindowMessage: Processing wails message", "message", event.message)
+		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {
 		if a.options.RawMessageHandler != nil {
@@ -771,10 +786,10 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
 	// Log that we're processing the request
 	url, _ := request.Request.URL()
-	a.info("handleWebViewRequest: Processing request", "url", url)
+	a.debug("handleWebViewRequest: Processing request", "url", url)
 	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
 	a.assets.ServeWebViewRequest(request)
-	a.info("handleWebViewRequest: Request processing complete", "url", url)
+	a.debug("handleWebViewRequest: Request processing complete", "url", url)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
@@ -823,14 +838,20 @@ func (a *App) cleanup() {
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
 	}
+	// Release any global shortcuts the application registered with the OS.
+	if a.GlobalShortcut != nil {
+		if err := a.GlobalShortcut.UnregisterAll(); err != nil {
+			a.handleError(err)
+		}
+	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.RLock()
+		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Close()
 		}
 		a.windows = nil
-		a.windowsLock.RUnlock()
+		a.windowsLock.Unlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()
