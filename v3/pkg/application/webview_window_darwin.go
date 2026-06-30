@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -19,12 +19,17 @@ struct WebviewPreferences {
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
     bool *AllowsBackForwardNavigationGestures;
+    bool *AllowsMagnification;
+    bool *AllowsAirPlayForMediaPlayback;
+    bool *JavaScriptCanOpenWindowsAutomatically;
+    double *MinimumFontSize;
+    bool *EnableAutoplayWithoutUserAction;
 };
 
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
@@ -82,8 +87,24 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
      }
 #endif
 
+	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
+		config.allowsAirPlayForMediaPlayback = *preferences.AllowsAirPlayForMediaPlayback;
+	}
+	if (preferences.EnableAutoplayWithoutUserAction != NULL && *preferences.EnableAutoplayWithoutUserAction) {
+		config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+	}
+	if (preferences.JavaScriptCanOpenWindowsAutomatically != NULL) {
+		config.preferences.javaScriptCanOpenWindowsAutomatically = *preferences.JavaScriptCanOpenWindowsAutomatically;
+	}
+	if (preferences.MinimumFontSize != NULL) {
+		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
+	}
 	config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
+	if (applicationNameForUserAgent != NULL && applicationNameForUserAgent[0] != '\0') {
+		config.applicationNameForUserAgent = [NSString stringWithUTF8String:applicationNameForUserAgent];
+	} else {
+		config.applicationNameForUserAgent = @"wails.io";
+	}
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
@@ -102,10 +123,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    // Set allowsBackForwardNavigationGestures if specified
     if (preferences.AllowsBackForwardNavigationGestures != NULL) {
         webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
     }
+	if (preferences.AllowsMagnification != NULL) {
+		webView.allowsMagnification = *preferences.AllowsMagnification;
+	}
 
 	[view addSubview:webView];
 
@@ -120,7 +143,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 		[dragView autorelease];
 
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		// The mask must be on the drag view itself: it was previously set on
+		// the content view (a no-op), leaving the drag overlay frozen at its
+		// creation size — files dragged over any area gained by resizing the
+		// window were rejected (#3743).
+		[dragView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[view addSubview:dragView];
 		dragView.windowId = id;
 	}
@@ -461,10 +488,13 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+// forward declaration - defined later in this file
+static void setButtonState(void *button, int state);
+
+// setFullscreenButtonState sets the fullscreen button state
+static void setFullscreenButtonState(void* nsWindow, int state) {
 	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
+	setButtonState(fullscreenButton, state);
 }
 
 // Set the titlebar style
@@ -594,52 +624,109 @@ int windowGetHeight(void* nsWindow) {
 	return [(WebviewWindow*)nsWindow frame].size.height;
 }
 
-// Get window position
+// Get the window position relative to its screen's NSScreen frame origin:
+// X from the screen's left edge, Y from the screen's top edge (Y-down).
+// Uses NSScreen frame (full extent, including menu bar/dock) rather than
+// visibleFrame. Must mirror windowSetRelativePosition exactly so Get/Set
+// round-trip on every screen: previously X was returned absolute (missing
+// the screenFrame.origin.x subtraction) and Y omitted screenFrame.origin.y,
+// so each axis was wrong only on screens whose corresponding NSScreen
+// frame.origin component is non-zero (issue #5408).
 void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSRect frame = [window frame];
-	*x = frame.origin.x;
 
-	// Translate to screen coordinates so Y=0 is the top of the screen
 	NSScreen* screen = [window screen];
 	if( screen == NULL ) {
 		screen = [NSScreen mainScreen];
 	}
 	NSRect screenFrame = [screen frame];
-	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
+	*x = frame.origin.x - screenFrame.origin.x;
+	*y = (screenFrame.origin.y + screenFrame.size.height) - frame.origin.y - frame.size.height;
 }
 
-// Get absolute window position (in screen coordinates with Y=0 at top, scaled for DPI)
+// Get absolute window position in the canonical Wails coordinate space:
+// logical points, Y-down, with (0,0) at the top-left of the primary screen.
+// This matches Screen.Bounds (see screen_darwin.go), Windows, GTK and the
+// public APIs of Electron and the web. Screens above the primary have
+// negative Y.
 void windowGetPosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	NSScreen* screen = [window screen];
-	if (screen == NULL) {
-		screen = [NSScreen mainScreen];
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
 	}
-	CGFloat scale = [screen backingScaleFactor];
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
 	NSRect frame = [window frame];
-	NSRect screenFrame = [screen frame];
-	// Convert to top-origin coordinates and apply scale (matching windowSetPosition)
-	*x = frame.origin.x * scale;
-	*y = (screenFrame.size.height - frame.origin.y - frame.size.height) * scale;
+	*x = frame.origin.x;
+	*y = primaryHeight - frame.origin.y - frame.size.height;
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
-    NSScreen* screen = [window screen];
-    if (screen == NULL) {
-        screen = [NSScreen mainScreen];
-    }
-	// Get the scale of the screen
-	CGFloat scale = [screen backingScaleFactor];
-    NSRect frame = [window frame];
-	// Scale the position
-	frame.origin.x = x / scale;
-	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
-	// Set the frame
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* primaryScreen = [[NSScreen screens] firstObject];
+	if (primaryScreen == NULL) {
+		primaryScreen = [NSScreen mainScreen];
+	}
+	CGFloat primaryHeight = [primaryScreen frame].size.height;
+	NSRect frame = [window frame];
+	frame.origin.x = x;
+	frame.origin.y = primaryHeight - frame.size.height - y;
 	[window setFrame:frame display:YES];
 }
 
+
+// Center window on a specific screen identified by display ID
+void windowCenterOnScreen(void* nsWindow, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	CGFloat x = visibleFrame.origin.x + (visibleFrame.size.width - windowFrame.size.width) / 2;
+	CGFloat y = visibleFrame.origin.y + (visibleFrame.size.height - windowFrame.size.height) / 2;
+	[window setFrameOrigin:NSMakePoint(x, y)];
+}
+
+// Position window relative to a specific screen's visible frame
+void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenID) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSString* targetID = [NSString stringWithUTF8String:screenID];
+	NSScreen* targetScreen = nil;
+	for (NSScreen* s in [NSScreen screens]) {
+		NSDictionary* desc = [s deviceDescription];
+		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
+		CGDirectDisplayID displayID = [num unsignedIntValue];
+		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		if ([sid isEqualToString:targetID]) {
+			targetScreen = s;
+			break;
+		}
+	}
+	if (targetScreen == nil) {
+		targetScreen = [NSScreen mainScreen];
+	}
+	CGFloat scale = [targetScreen backingScaleFactor];
+	NSRect visibleFrame = [targetScreen visibleFrame];
+	NSRect windowFrame = [window frame];
+	// x,y are in DIP top-origin coords relative to the screen's work area
+	CGFloat newX = visibleFrame.origin.x + (x / scale);
+	CGFloat newY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - (y / scale);
+	[window setFrameOrigin:NSMakePoint(newX, newY)];
+}
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
@@ -649,6 +736,11 @@ void windowDestroy(void* nsWindow) {
 // Remove drop shadow from window
 void windowSetShadow(void* nsWindow, bool hasShadow) {
 	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
+}
+
+// Set whether the Escape key should be prevented from exiting fullscreen
+void windowSetDisableEscapeExitsFullscreen(void* nsWindow, bool disable) {
+	[(WebviewWindow*)nsWindow setDisableEscapeExitsFullscreen:disable];
 }
 
 
@@ -918,6 +1010,12 @@ func (w *macosWebviewWindow) setPosition(x int, y int) {
 	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
+	cID := C.CString(screen.ID)
+	defer C.free(unsafe.Pointer(cID))
+	C.windowCenterOnScreen(w.nsWindow, cID)
+}
+
 func (w *macosWebviewWindow) print() error {
 	C.windowPrint(w.nsWindow)
 	return nil
@@ -948,6 +1046,9 @@ func (w *macosWebviewWindow) getZoom() float64 {
 }
 
 func (w *macosWebviewWindow) setZoom(zoom float64) {
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 	C.windowZoomSet(w.nsWindow, C.double(zoom))
 }
 
@@ -982,8 +1083,10 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setFullscreenButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.MaximiseButtonState)))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {
@@ -1272,6 +1375,22 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
 		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
 	}
+	if wvprefs.AllowsMagnification.IsSet() {
+		result.AllowsMagnification = bool2CboolPtr(wvprefs.AllowsMagnification.Get())
+	}
+	if wvprefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		result.AllowsAirPlayForMediaPlayback = bool2CboolPtr(wvprefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+	if wvprefs.JavaScriptCanOpenWindowsAutomatically.IsSet() {
+		result.JavaScriptCanOpenWindowsAutomatically = bool2CboolPtr(wvprefs.JavaScriptCanOpenWindowsAutomatically.Get())
+	}
+	if wvprefs.MinimumFontSize.IsSet() {
+		v := C.double(wvprefs.MinimumFontSize.Get())
+		result.MinimumFontSize = &v
+	}
+	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
+		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
+	}
 
 	return result
 }
@@ -1284,6 +1403,11 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
+		var appName *C.char
+		if s := macOptions.WebviewPreferences.ApplicationNameForUserAgent; s != "" {
+			appName = C.CString(s)
+			defer C.free(unsafe.Pointer(appName))
+		}
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
@@ -1291,7 +1415,11 @@ func (w *macosWebviewWindow) run() {
 			C.bool(options.Frameless),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
+			appName,
 		)
+		if macOptions.DisableEscapeExitsFullscreen {
+			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
+		}
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
@@ -1330,8 +1458,14 @@ func (w *macosWebviewWindow) run() {
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
+		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
+		// Apply the more restrictive state to prevent one from silently overriding the other.
+		zoomState := options.MaximiseButtonState
+		if options.FullscreenButtonState > zoomState {
+			zoomState = options.FullscreenButtonState
+		}
+		w.setMaximiseButtonState(zoomState)
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1368,7 +1502,15 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			cID := C.CString(options.Screen.ID)
+			if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenterOnScreen(w.nsWindow, cID)
+			} else {
+				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+			}
+			C.free(unsafe.Pointer(cID))
+		} else if w.parent.options.InitialPosition == WindowCentered {
 			C.windowCenter(w.nsWindow)
 		} else {
 			w.setPosition(options.X, options.Y)
@@ -1550,7 +1692,9 @@ func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
 }
 
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	C.setMaximiseButtonState(w.nsWindow, C.int(state))
+	// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton.
+	// Apply the more restrictive of the two so neither setter silently overrides the other.
+	C.setMaximiseButtonState(w.nsWindow, C.int(effectiveZoomButtonState(state, w.parent.options.FullscreenButtonState)))
 }
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {

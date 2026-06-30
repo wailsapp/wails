@@ -2,6 +2,10 @@
 
 package application
 
+// The clipboard is backed by Android's ClipboardManager via the WailsBridge.
+// Note: on Android 10+ reading the clipboard only succeeds while the app has
+// input focus.
+
 type androidClipboardImpl struct{}
 
 func newClipboardImpl() clipboardImpl {
@@ -9,27 +13,10 @@ func newClipboardImpl() clipboardImpl {
 }
 
 func (c *androidClipboardImpl) setText(text string) bool {
-	// Android clipboard implementation would go here
-	// TODO: Implement via JNI to Android ClipboardManager
+	androidBridgeVoidString("setClipboardText", text)
 	return true
 }
 
 func (c *androidClipboardImpl) text() (string, bool) {
-	// Android clipboard implementation would go here
-	// TODO: Implement via JNI to Android ClipboardManager
-	return "", false
-}
-
-// SetClipboardText sets the clipboard text on Android
-func (c *ClipboardManager) SetClipboardText(text string) error {
-	// Android clipboard implementation would go here
-	// For now, return nil as a placeholder
-	return nil
-}
-
-// GetClipboardText gets the clipboard text on Android
-func (c *ClipboardManager) GetClipboardText() (string, error) {
-	// Android clipboard implementation would go here
-	// For now, return empty string
-	return "", nil
+	return androidBridgeString("getClipboardText")
 }

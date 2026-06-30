@@ -1,0 +1,119 @@
+---
+title: Einzelne Instanz
+description: Beschränkung Ihrer App auf eine einzige laufende Instanz
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Das Sperren auf eine einzelne Instanz ist ein Mechanismus, der verhindert, dass mehrere Instanzen Ihrer App gleichzeitig ausgeführt werden.
+Dies ist nützlich für Apps, die dafür konzipiert sind, Dateien über die Befehlszeile oder den Datei-Explorer des Betriebssystems zu öffnen.
+
+
+## Verwendung
+
+Um die Funktion für eine einzelne Instanz in Ihrer App zu aktivieren, übergeben Sie beim Erstellen Ihrer Anwendung eine `SingleInstanceOptions`-Struktur:
+
+```go
+app := application.New(application.Options{
+    // ... andere Optionen ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Zweite Instanz gestartet mit Args: %v", data.Args)
+            log.Printf("Arbeitsverzeichnis: %s", data.WorkingDir)
+            log.Printf("Zusätzliche Daten: %v", data.AdditionalData)
+        },
+        // Optional: Übergeben Sie zusätzliche Daten an die zweite Instanz
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+Die Struktur `SingleInstanceOptions` verfügt über die folgenden Felder:
+
+- `UniqueID`: Eine eindeutige Kennung für Ihre Anwendung. Dies sollte ein eindeutiger String sein, typischerweise in der umgekehrten Domänenschreibweise (z. B. "com.company.appname").
+- `EncryptionKey`: Optionales 32-Byte-Array zum Verschlüsseln von Daten, die zwischen Instanzen über AES-256-GCM ausgetauscht werden. Wenn es als ein Nicht-Null-Array bereitgestellt wird, wird die gesamte Kommunikation zwischen den Instanzen verschlüsselt.
+- `OnSecondInstanceLaunch`: Eine Callback-Funktion, die aufgerufen wird, wenn eine zweite Instanz Ihrer App gestartet wird. Der Callback empfängt eine `SecondInstanceData`-Struktur, die Folgendes enthält:
+    - `Args`: Die an die zweite Instanz übergebenen Befehlszeilenargumente
+    - `WorkingDir`: Das Arbeitsverzeichnis der zweiten Instanz
+    - `AdditionalData`: Alle zusätzlichen Daten, die von der zweiten Instanz übermittelt wurden (falls bereitgestellt)
+- `AdditionalData`: Optionale Karte von String-Schlüssel-Wert-Paaren, die an die erste Instanz übermittelt werden, wenn nachfolgende Instanzen gestartet werden
+
+:::danger[Warnung]
+Die Single-Instance-Funktion implementiert ein optionales Verschlüsselungsprotokoll unter Verwendung von AES-256-GCM. Ohne aktivierte Verschlüsselung
+sind die zwischen den Instanzen übergebenen Daten nicht sicher. Bei der Verwendung der Single-Instance-Funktion ohne Verschlüsselung
+sollte Ihre App alle Daten, die ihr vom Callback der zweiten Instanz übermittelt werden, als nicht vertrauenswürdig behandeln.
+Sie sollten überprüfen, ob die empfangenen Args gültig sind und keine bösartigen Daten enthalten.
+:::
+
+### Sichere Kommunikation
+
+Um eine sichere Kommunikation zwischen den Instanzen zu ermöglichen, übergeben Sie einen 32-Byte-Verschlüsselungsschlüssel. Dieser Schlüssel muss für alle Instanzen Ihrer Anwendung identisch sein:
+
+```go
+// Definieren Sie Ihren Verschlüsselungsschlüssel (muss genau 32 Bytes lang sein)
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// Verwenden Sie den Schlüssel in SingleInstanceOptions
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // Verschlüsselung für die Instanzkommunikation aktivieren
+    EncryptionKey: encryptionKey,
+    // ... andere Optionen ...
+}
+```
+
+:::tip[Best Practices für die Sicherheit]
+- Verwenden Sie einen eindeutigen Schlüssel für Ihre Anwendung
+- Speichern Sie den Schlüssel sicher, wenn Sie ihn aus der Konfiguration laden
+- Verwenden Sie nicht den oben gezeigten Beispielschlüssel – erstellen Sie Ihren eigenen!
+:::
+
+### Fensterverwaltung
+
+Bei der Behandlung von Starts einer zweiten Instanz möchten Sie oft das Fenster Ihrer Anwendung in den Vordergrund holen. Dies können Sie über die `Focus()`-Methode des Fensters tun. Wenn Ihr Fenster minimiert ist, müssen Sie es möglicherweise zuerst wiederherstellen:
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // Andere Optionen...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Fenster fokussieren, falls erforderlich
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## Funktionsweise
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        Single-Instance-Sperre unter Verwendung eines benannten Mutex. Der Mutex-Name wird aus der eindeutigen ID generiert, die Sie bereitstellen. Die Daten werden an die erste Instanz über [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter) übermittelt.
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        Single-Instance-Sperre unter Verwendung eines benannten Mutex. Der Mutex-Name wird aus der eindeutigen ID generiert, die Sie bereitstellen. Die Daten werden an die erste Instanz über ein gemeinsames Fenster mittels [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) übermittelt.
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        Single-Instance-Sperre unter Verwendung von [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Der dbus-Name wird aus der eindeutigen ID generiert, die Sie bereitstellen. Die Daten werden an die erste Instanz über [dbus](https://www.freedesktop.org/wiki/Software/dbus/) übermittelt.
+
+    </TabItem>
+</Tabs>

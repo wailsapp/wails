@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <link rel="stylesheet" href="/style.css"/>
+    <title>Wails App</title>
+</head>
+<body>
+<!-- Fixed full-bleed background layer (avoids background-attachment:fixed, which
+     is broken in iOS WKWebView). The image swaps to a portrait crop on mobile. -->
+<div class="bg" aria-hidden="true"></div>
+
+<main class="container">
+    <header class="brand">
+        <a class="brand-mark" data-wml-openURL="https://v3.wails.io" aria-label="Wails website">
+            <img src="/wails.png" class="brand-logo" alt="Wails logo"/>
+        </a>
+        <a class="brand-badge" data-wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript" aria-label="JavaScript">
+            <img src="/javascript.svg" alt="JavaScript logo"/>
+        </a>
+    </header>
+
+    <h1 class="title"><span class="title-accent">Wails +</span> <span class="title-name"><span class="title-name-text">JavaScript</span></span></h1>
+    <p class="subtitle">Build beautiful cross-platform apps with Go and JavaScript.</p>
+
+    <div class="greet">
+        <div class="input-box" id="input">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input aria-label="input" class="input" id="name" type="text" placeholder="Your name" autocomplete="off"/>
+            <button aria-label="greet-btn" class="btn" onclick="doGreet()">Greet
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+    </div>
+</main>
+
+<hr class="footer-divider"/>
+<footer class="footer">
+    <span class="footer-version"><span id="version">v3</span></span>
+    <span class="footer-time">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="time">Listening for Time event...</span>
+    </span>
+    <a class="footer-docs" data-wml-openURL="https://v3.wails.io" aria-label="Wails documentation">Docs
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+    </a>
+</footer>
+
+<!-- Toast: shows the greeting returned by the Go backend (overlay, so it never
+     reflows the layout). -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="toast-label">From Go</span>
+    <span aria-label="result" class="toast-msg" id="result"></span>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

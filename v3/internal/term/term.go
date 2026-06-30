@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -11,9 +13,13 @@ import (
 )
 
 func Header(header string) {
-	// Print Wails with the current version in white on red background with the header in white with a green background
-	pterm.BgLightRed.Print(pterm.LightWhite(" Wails (" + version.String() + ") "))
-	pterm.BgLightGreen.Println(pterm.LightWhite(" " + header + " "))
+	brandStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#CE0000"))
+
+	mutedStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#666666"))
+
+	pterm.Println(brandStyle.Render("Wails") + mutedStyle.Render(" "+version.String()+" ›") + " " + header)
 }
 
 func IsTerminal() bool {
@@ -82,12 +88,12 @@ func Success(input any) {
 }
 
 func Section(s string) {
-	style := pterm.NewStyle(pterm.BgDefault, pterm.FgLightBlue, pterm.Bold)
-	style.Println("\n# " + s + " \n")
+	pterm.Println(SectionStyle.Render("# " + s))
 }
 
 func DisableColor() {
 	pterm.DisableColor()
+	lipgloss.SetColorProfile(termenv.Ascii)
 }
 
 func EnableOutput() {

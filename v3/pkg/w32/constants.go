@@ -397,6 +397,12 @@ const (
 	WS_EX_NOACTIVATE          = 0x08000000
 )
 
+// SetLayeredWindowAttributes flags
+const (
+	LWA_COLORKEY = 0x00000001
+	LWA_ALPHA    = 0x00000002
+)
+
 // Window message constants
 const (
 	WM_APP                    = 32768
@@ -609,6 +615,15 @@ const (
 	WM_MOUSELEAVE             = 0x2A3
 	WM_CLIPBOARDUPDATE        = 0x031D
 	WM_DPICHANGED             = 0x02E0
+)
+
+// RegisterHotKey fsModifiers flags
+const (
+	MOD_ALT      = 0x0001
+	MOD_CONTROL  = 0x0002
+	MOD_SHIFT    = 0x0004
+	MOD_WIN      = 0x0008
+	MOD_NOREPEAT = 0x4000
 )
 
 const (

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"golang.org/x/mod/semver"
 )
 
 // setupTestEnvironment creates a proper directory structure for tests
@@ -47,7 +49,7 @@ func TestExtractChangelogContent_EmptySections(t *testing.T) {
 	testContent := `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 alpha release.
 -->
 
 ## Added
@@ -499,6 +501,53 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 	}
 }
 
+// TestAlpha2OutranksStrayTuiTag is the core regression guard for the release-tag
+// fix. A manually-pushed v3.0.0-alpha.98-tui tag hijacked `go install ...@latest`:
+// semver splits the prerelease on dots into alpha + 98-tui, and the alphanumeric
+// "98-tui" outranks every numeric alpha.N, so newer alphas were skipped. Moving to
+// the alpha2.N series fixes it because the label "alpha2" > "alpha".
+//
+// We assert with golang.org/x/mod/semver — the exact comparator the go command
+// uses to resolve @latest — so this test fails if the chosen tag format ever stops
+// out-ranking the stray tag.
+func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
+	const (
+		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
+		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+	)
+
+	for _, v := range []string{strayTag, legacyLatest, nextTag} {
+		if !semver.IsValid(v) {
+			t.Fatalf("%q is not a valid semver version", v)
+		}
+	}
+
+	// Sanity: the bug actually exists — the stray tag really does outrank the
+	// legacy numeric alphas (otherwise the fix would be unnecessary).
+	if semver.Compare(strayTag, legacyLatest) <= 0 {
+		t.Fatalf("expected stray %s to outrank legacy %s (the bug); got Compare=%d",
+			strayTag, legacyLatest, semver.Compare(strayTag, legacyLatest))
+	}
+
+	// The fix: the new alpha2 tag must outrank BOTH the stray tag and the legacy
+	// latest, so `go install ...@latest` selects it.
+	if semver.Compare(nextTag, strayTag) <= 0 {
+		t.Errorf("alpha2 tag %s must outrank stray %s, but Compare=%d",
+			nextTag, strayTag, semver.Compare(nextTag, strayTag))
+	}
+	if semver.Compare(nextTag, legacyLatest) <= 0 {
+		t.Errorf("alpha2 tag %s must outrank legacy latest %s, but Compare=%d",
+			nextTag, legacyLatest, semver.Compare(nextTag, legacyLatest))
+	}
+
+	// And the alpha2 series keeps proper numeric ordering across the digit
+	// boundary (no lexical-string footgun like a dash-only format would have).
+	if semver.Compare("v3.0.0-alpha2.999", "v3.0.0-alpha2.1000") >= 0 {
+		t.Errorf("alpha2 series lost numeric ordering: alpha2.999 should be < alpha2.1000")
+	}
+}
+
 func TestUpdateVersion(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -544,6 +593,20 @@ func TestUpdateVersion(t *testing.T) {
 			name:            "Alpha with large number",
 			currentVersion:  "v3.0.0-alpha.999",
 			expectedVersion: "v3.0.0-alpha.1000",
+		},
+		{
+			// The "alpha2" series outranks the legacy "alpha.*" tags in semver
+			// (label "alpha2" > "alpha"), while keeping a dotted numeric suffix so
+			// ordering stays numeric. The number continues from the legacy series
+			// (alpha.102 -> alpha2.102 -> alpha2.103). See version.txt.
+			name:            "Alpha2 series increment",
+			currentVersion:  "v3.0.0-alpha2.102",
+			expectedVersion: "v3.0.0-alpha2.103",
+		},
+		{
+			name:            "Alpha2 keeps numeric ordering at boundary",
+			currentVersion:  "v3.0.0-alpha2.999",
+			expectedVersion: "v3.0.0-alpha2.1000",
 		},
 	}
 

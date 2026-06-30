@@ -17,6 +17,8 @@ void ios_window_set_background_color(void* viewController, unsigned char r, unsi
 import "C"
 import (
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 // iosWebviewWindow implements the webviewWindowImpl interface for iOS
@@ -42,8 +44,9 @@ func (w *iosWebviewWindow) destroy() {
 func (w *iosWebviewWindow) execJS(js string) {
 	// Direct call to the native window's JavaScript execution
 	if w.nativeHandle != nil {
-		// Call the Objective-C method directly on this window's view controller
-		C.ios_window_exec_js(w.nativeHandle, C.CString(js))
+		cjs := C.CString(js)
+		defer C.free(unsafe.Pointer(cjs))
+		C.ios_window_exec_js(w.nativeHandle, cjs)
 	}
 }
 
@@ -142,20 +145,18 @@ func (w *iosWebviewWindow) setAbsolutePosition(_ int, _ int) {}
 func (w *iosWebviewWindow) setAlwaysOnTop(_ bool) {}
 
 func (w *iosWebviewWindow) setBackgroundColour(col RGBA) {
-    if w.nativeHandle == nil {
-        return
-    }
-    C.ios_window_set_background_color(
-        w.nativeHandle,
-        C.uchar(col.Red), C.uchar(col.Green), C.uchar(col.Blue), C.uchar(col.Alpha),
-    )
+	if w.nativeHandle == nil {
+		return
+	}
+	C.ios_window_set_background_color(
+		w.nativeHandle,
+		C.uchar(col.Red), C.uchar(col.Green), C.uchar(col.Blue), C.uchar(col.Alpha),
+	)
 }
 
 func (w *iosWebviewWindow) setEnabled(_ bool) {}
 
 func (w *iosWebviewWindow) setFrameless(_ bool) {}
-
-func (w *iosWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
 
 func (w *iosWebviewWindow) setMaxSize(_ int, _ int) {}
 
@@ -204,6 +205,12 @@ func (w *iosWebviewWindow) setParent(_ *WebviewWindow) error {
 func (w *iosWebviewWindow) run() {
 	// Create the native WebView when the window runs
 	if w.nativeHandle == nil {
+		// Wait until UIKit has finished launching before creating the WebView.
+		// app.Run() runs this on a background goroutine; the UIApplication
+		// delegate signals launch (via the pure-C handshake) and platformRun then
+		// closes iosLaunched. Creating the WebView before appDelegate/window exist
+		// would return NULL with no retry — an intermittent blank cold launch.
+		<-iosLaunched
 		// Get the Wails window ID from the parent
 		wailsID := w.parent.ID()
 		// Create the native WebView with the Wails window ID
@@ -217,6 +224,14 @@ func (w *iosWebviewWindow) run() {
 				w.nativeHandle,
 				C.uchar(rgba.Red), C.uchar(rgba.Green), C.uchar(rgba.Blue), C.uchar(rgba.Alpha),
 			)
+			// Load the start URL. This is the only initial navigation: the
+			// native layer no longer issues its own loadRequest, so the page
+			// loads exactly once.
+			if startURL, err := assetserver.GetStartURL(w.parent.options.URL); err == nil {
+				w.setURL(startURL)
+			} else if globalApplication != nil {
+				globalApplication.error("iOS: invalid start URL %q: %v", w.parent.options.URL, err)
+			}
 		}
 	}
 }
@@ -335,7 +350,7 @@ func (w *iosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
 }
 
 func (w *iosWebviewWindow) on(eventID uint) {
-	// iOS event handling
+	registerIOSListener(eventID)
 }
 
 func (w *iosWebviewWindow) position() (int, int) {
@@ -367,6 +382,10 @@ func (w *iosWebviewWindow) setCloseButtonState(_ ButtonState) {
 	// iOS doesn't have close buttons like desktop platforms
 }
 
+func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {
+	// iOS doesn't have a fullscreen button like desktop platforms
+}
+
 func (w *iosWebviewWindow) setContentProtection(_ bool) {
 	// iOS content protection - could be implemented with UIScreen captured notifications
 }
@@ -390,6 +409,10 @@ func (w *iosWebviewWindow) setPhysicalBounds(_ Rect) {
 
 func (w *iosWebviewWindow) setPosition(_ int, _ int) {
 	// iOS doesn't support window positioning - apps are fullscreen
+}
+
+func (w *iosWebviewWindow) centerOnScreen(_ *Screen) {
+	// iOS doesn't support window positioning
 }
 
 func (w *iosWebviewWindow) setURL(url string) {
