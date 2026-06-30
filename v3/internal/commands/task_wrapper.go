@@ -22,11 +22,14 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
-// rootDispatchTasks are the verbs that have a top-level task in the generated
-// root Taskfile which dispatches to the platform-specific task via the GOOS
-// variable (e.g. `build` -> `{{.GOOS}}:build`). For these we run the root task
-// and pass GOOS as a variable, so user customisations in the root Taskfile are
-// honoured for both native and cross-compilation builds. Verbs absent here
+// rootDispatchTasks are the verbs that this wrapper routes through the
+// top-level task in the generated root Taskfile, which dispatches to the
+// platform-specific task via the GOOS variable (e.g. `build` -> `{{.GOOS}}:build`).
+// For these we run the root task and pass GOOS as a variable, so user
+// customisations in the root Taskfile are honoured for both native and
+// cross-compilation builds. Only `build` and `package` go through this wrapper:
+// the root Taskfile also defines a `run` dispatch task, but `run` is invoked by
+// `wails3 dev` directly rather than through here. Verbs without a root task
 // (e.g. `sign`, which only exists per-platform) always target the
 // platform-specific task directly.
 var rootDispatchTasks = map[string]bool{

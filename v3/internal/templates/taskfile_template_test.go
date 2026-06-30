@@ -19,10 +19,12 @@ func TestCommonTaskfileUsesBinaryName(t *testing.T) {
 }
 
 // TestCommonTaskfileDispatchesViaGOOS guards the fix for #5615: the root
-// build/package/run tasks must dispatch to the platform Taskfile via the GOOS
-// variable (so `wails3 build`/`dev`/`package` run the root task and honour any
-// customisations there, for both native and cross builds), rather than the
-// built-in {{OS}} which the CLI used to bypass with an OS-prefixed task name.
+// build/package/run tasks in the template must dispatch to the platform
+// Taskfile via the GOOS variable, so running them honours any customisations in
+// the root Taskfile (for both native and cross builds) rather than the built-in
+// {{OS}} which the CLI used to bypass with an OS-prefixed task name. The CLI
+// routes `wails3 build` and `wails3 package` through this dispatch; `wails3 dev`
+// is a direct command and is not affected.
 func TestCommonTaskfileDispatchesViaGOOS(t *testing.T) {
 	data, err := templates.ReadFile("_common/Taskfile.tmpl.yml")
 	require.NoError(t, err, "_common/Taskfile.tmpl.yml should be present in embedded templates")
