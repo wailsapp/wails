@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Dialog Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #f0f0f0;
+        }
+        .info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            min-height: 20px;
+        }
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            button {
+                display: none;
+            }
+            .test-section {
+                background: #f0f0f0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Print Dialog Test</h1>
+    <p>Issue <a href="https://github.com/wailsapp/wails/issues/4290" style="color: white;">#4290</a>: macOS Print dialog does not open</p>
+
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Click the "Print via Go API" button below, OR</li>
+            <li>Use the menu: File &gt; Print, OR</li>
+            <li>Press <code>Cmd+P</code></li>
+        </ol>
+        <p><strong>Expected:</strong> A print dialog should appear as a sheet attached to this window.</p>
+        <p><strong>Bug:</strong> Before the fix, nothing happens when trying to print.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Actions</h2>
+        <button id="btnPrintGo">Print via Go API</button>
+        <button id="btnPrintJS">Print via Window.Print()</button>
+        <div id="status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Sample Content to Print</h2>
+        <p>This is sample content that should appear in the print preview.</p>
+        <ul>
+            <li>Item 1: Testing print functionality</li>
+            <li>Item 2: Verifying dialog appearance</li>
+            <li>Item 3: Checking modal behavior</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <strong>Technical Details:</strong>
+        <p>The bug was caused by passing a raw <code>void*</code> pointer instead of the properly cast <code>NSWindow*</code> to <code>runOperationModalForWindow:</code>.</p>
+        <p><em>Note: <code>window.print()</code> may not be natively supported in WKWebView. The Go API uses NSPrintOperation instead.</em></p>
+    </div>
+
+    <script type="module">
+        import {PrintService} from "./bindings/print-dialog-test/index.js";
+        import {Window} from "/wails/runtime.js";
+
+        const status = document.getElementById('status');
+
+        document.getElementById('btnPrintGo').addEventListener('click', async () => {
+            status.textContent = 'Calling PrintService.Print()...';
+            console.log('Button clicked: Print via Go API');
+            try {
+                await PrintService.Print();
+                status.textContent = 'Print dialog completed or dismissed.';
+            } catch (err) {
+                status.textContent = 'Error: ' + err;
+                console.error('Print error:', err);
+            }
+        });
+
+        document.getElementById('btnPrintJS').addEventListener('click', async () => {
+            status.textContent = 'Calling Window.Print()...';
+            console.log('Button clicked: Print via Window.Print() runtime');
+            try {
+                await Window.Print();
+                status.textContent = 'Window.Print() completed';
+            } catch (err) {
+                status.textContent = 'Error: ' + err;
+                console.error('Window.Print() error:', err);
+            }
+        });
+
+        console.log('Print dialog test loaded');
+    </script>
+</body>
+</html>

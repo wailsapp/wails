@@ -6,30 +6,35 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
-#define EventApplicationDidBecomeActive 1235
-#define EventApplicationDidEnterBackground 1236
-#define EventApplicationDidFinishLaunching 1237
-#define EventApplicationDidReceiveMemoryWarning 1238
-#define EventApplicationWillEnterForeground 1239
-#define EventApplicationWillResignActive 1240
-#define EventApplicationWillTerminate 1241
-#define EventWindowDidLoad 1242
-#define EventWindowWillAppear 1243
-#define EventWindowDidAppear 1244
-#define EventWindowWillDisappear 1245
-#define EventWindowDidDisappear 1246
-#define EventWindowSafeAreaInsetsChanged 1247
-#define EventWindowOrientationChanged 1248
-#define EventWindowTouchBegan 1249
-#define EventWindowTouchMoved 1250
-#define EventWindowTouchEnded 1251
-#define EventWindowTouchCancelled 1252
-#define EventWebViewDidStartNavigation 1253
-#define EventWebViewDidFinishNavigation 1254
-#define EventWebViewDidFailNavigation 1255
-#define EventWebViewDecidePolicyForNavigationAction 1256
+#define EventApplicationDidBecomeActive 1245
+#define EventApplicationDidEnterBackground 1246
+#define EventApplicationDidFinishLaunching 1247
+#define EventApplicationDidReceiveMemoryWarning 1248
+#define EventApplicationWillEnterForeground 1249
+#define EventApplicationWillResignActive 1250
+#define EventApplicationWillTerminate 1251
+#define EventWindowDidLoad 1252
+#define EventWindowWillAppear 1253
+#define EventWindowDidAppear 1254
+#define EventWindowWillDisappear 1255
+#define EventWindowDidDisappear 1256
+#define EventWindowSafeAreaInsetsChanged 1257
+#define EventWindowOrientationChanged 1258
+#define EventWindowTouchBegan 1259
+#define EventWindowTouchMoved 1260
+#define EventWindowTouchEnded 1261
+#define EventWindowTouchCancelled 1262
+#define EventWebViewDidStartNavigation 1263
+#define EventWebViewDidFinishNavigation 1264
+#define EventWebViewDidFailNavigation 1265
+#define EventWebViewDecidePolicyForNavigationAction 1266
+#define EventBatteryChanged 1276
+#define EventNetworkChanged 1277
+#define EventThemeChanged 1278
+#define EventScreenLocked 1279
+#define EventScreenUnlocked 1280
 
-#define MAX_EVENTS 1257
+#define MAX_EVENTS 1281
 
 
 #endif

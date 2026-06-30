@@ -38,7 +38,7 @@ func main() {
     })
 
     // Create system tray
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetLabel("My App")
 
@@ -53,7 +53,7 @@ func main() {
     systray.SetMenu(menu)
 
     // Create hidden window
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.Hide()
 
     app.Run()
@@ -68,7 +68,7 @@ func main() {
 
 ```go
 // Create system tray
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Set icon
 systray.SetIcon(iconBytes)
@@ -95,7 +95,7 @@ func main() {
         Name: "My App",
     })
 
-    systray := app.NewSystemTray()
+    systray := app.SystemTray.New()
     systray.SetIcon(icon)
     systray.SetDarkModeIcon(iconDark)  // macOS dark mode
     
@@ -162,14 +162,14 @@ Attach a window to the tray icon for automatic show/hide:
 
 ```go
 // Create window
-window := app.NewWebviewWindow()
+window := app.Window.New()
 
 // Attach to tray
 systray.AttachWindow(window)
 
-// Configure behaviour
-systray.SetWindowOffset(10)  // Pixels from tray icon
-systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
+// Configure behaviour — these are setters that return the receiver for chaining.
+systray.WindowOffset(10)                          // Pixels from tray icon
+systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 ```
 
 **Behaviour:**
@@ -181,7 +181,7 @@ systray.SetWindowDebounce(200 * time.Millisecond)  // Click debounce
 **Example: Popup window**
 
 ```go
-window := app.NewWebviewWindow(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Quick Access",
     Width:  300,
     Height: 400,
@@ -190,7 +190,7 @@ window := app.NewWebviewWindow(application.WebviewWindowOptions{
 })
 
 systray.AttachWindow(window)
-systray.SetWindowOffset(5)
+systray.WindowOffset(5)
 ```
 
 ## Click Handlers
@@ -198,7 +198,7 @@ systray.SetWindowOffset(5)
 Handle tray icon clicks:
 
 ```go
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 
 // Left click
 systray.OnClick(func() {
@@ -322,15 +322,15 @@ func rebuildTrayMenu(status string) {
     // Use template icon (adapts to dark mode)
     systray.SetTemplateIcon(iconBytes)
     
-    // Set icon position
-    systray.SetIconPosition(application.IconPositionRight)
+    // Set icon position — uses AppKit NSImage placement constants.
+    systray.SetIconPosition(application.NSImageRight)
     ```
-    
-    **Icon positions:**
-    - `IconPositionLeft` - Icon left of label
-    - `IconPositionRight` - Icon right of label
-    - `IconPositionOnly` - Icon only, no label
-    - `IconPositionNone` - Label only, no icon
+
+    **Icon positions** (mirroring `NSImagePosition`):
+    - `application.NSImageLeft` - Icon left of label.
+    - `application.NSImageRight` - Icon right of label.
+    - `application.NSImageOnly` - Icon only, no label.
+    - `application.NSImageNone` - Label only, no icon.
     
     **Best practices:**
     - Use template icons (black + transparent)
@@ -422,7 +422,7 @@ var icon []byte
 var iconActive []byte
 
 type TrayApp struct {
-    app     *application.Application
+    app     *application.App
     systray *application.SystemTray
     window  *application.WebviewWindow
     menu    *application.Menu
@@ -445,7 +445,7 @@ func main() {
 
 func (t *TrayApp) setup() {
     // Create system tray
-    t.systray = t.app.NewSystemTray()
+    t.systray = t.app.SystemTray.New()
     t.systray.SetIcon(icon)
     t.systray.SetLabel("Inactive")
     
@@ -453,7 +453,7 @@ func (t *TrayApp) setup() {
     t.createMenu()
     
     // Create window (hidden by default)
-    t.window = t.app.NewWebviewWindow(application.WebviewWindowOptions{
+    t.window = t.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "Tray Application",
         Width:  400,
         Height: 600,
@@ -462,7 +462,7 @@ func (t *TrayApp) setup() {
     
     // Attach window to tray
     t.systray.AttachWindow(t.window)
-    t.systray.SetWindowOffset(10)
+    t.systray.WindowOffset(10)
     
     // Handle tray clicks
     t.systray.OnRightClick(func() {
@@ -490,7 +490,7 @@ func (t *TrayApp) createMenu() {
     // Show window
     t.menu.Add("Show Window").OnClick(func(ctx *application.Context) {
         t.window.Show()
-        t.window.SetFocus()
+        t.window.Focus()
     })
     
     t.menu.AddSeparator()
@@ -557,12 +557,9 @@ systray.Hide()
 
 // Show tray icon
 systray.Show()
-
-// Check visibility
-if systray.IsVisible() {
-    fmt.Println("Tray icon is visible")
-}
 ```
+
+There is no `IsVisible()` getter — track visibility in your own application state if you need it.
 
 **Platform Support:**
 
@@ -648,12 +645,14 @@ app := application.New(application.Options{
 
 **Solution:**
 
+There is no `SystemTraySupported()` helper; instead create the tray, check the platform, and degrade gracefully:
+
 ```go
-// Check if system tray is supported
-if !application.SystemTraySupported() {
-    fmt.Println("System tray not supported")
-    // Fallback to window-only mode
-}
+// Probe support: on Linux without a notification-area extension, the tray
+// will simply not appear. Defensive code can fall back to window-only mode
+// based on runtime.GOOS or after a short timeout if no tray events arrive.
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
 ```
 
 ### Icon Looks Wrong on macOS
@@ -710,4 +709,4 @@ menu.Update()  // Add this!
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/systray-basic).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [system tray examples](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).

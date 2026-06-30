@@ -63,7 +63,7 @@ func (s *Service) Greet(name string) string {
 
 ```javascript
 // JavaScript
-import { Greet } from './bindings/myapp/service'
+import { Greet } from './bindings/changeme/service'
 const message = await Greet("World")
 ```
 
@@ -85,7 +85,7 @@ Use your browser's dev tools:
 wails3 build
 ```
 
-Your application will be in `build/bin/`.
+Your application will be in `bin/`.
 
 ### Can I cross-compile?
 
@@ -123,8 +123,8 @@ Use SignTool with your certificate.
 Yes! Wails v3 has native multi-window support:
 
 ```go
-window1 := app.NewWebviewWindow()
-window2 := app.NewWebviewWindow()
+window1 := app.Window.New()
+window2 := app.Window.New()
 ```
 
 ### Does Wails support system tray?
@@ -132,7 +132,7 @@ window2 := app.NewWebviewWindow()
 Yes! Create system tray applications:
 
 ```go
-tray := app.NewSystemTray()
+tray := app.SystemTray.New()
 tray.SetIcon(iconBytes)
 tray.SetMenu(menu)
 ```
@@ -142,14 +142,14 @@ tray.SetMenu(menu)
 Yes! Wails provides native dialogs:
 
 ```go
-path, _ := app.OpenFileDialog().
+path, _ := app.Dialog.OpenFile().
     SetTitle("Select File").
     PromptForSingleSelection()
 ```
 
 ### Does Wails support auto-updates?
 
-Wails doesn't include auto-update functionality, but you can implement it yourself or use third-party libraries.
+Yes — Wails v3 includes a built-in self-updater (`app.Updater`) with pluggable providers for GitHub Releases, keygen.sh, and Sparkle AppCast, cryptographic signature verification, and a default UI you can theme or replace. See the [In-App Updater](/guides/updater) guide and the [Self-Updating Wails App](/tutorials/04-self-update-a-wails-app) tutorial.
 
 ## Performance
 
@@ -194,7 +194,7 @@ wails3 generate bindings
 Check if you called `Show()`:
 
 ```go
-window := app.NewWebviewWindow()
+window := app.Window.New()
 window.Show()  // Don't forget this!
 ```
 
@@ -204,7 +204,7 @@ Ensure event names match exactly:
 
 ```go
 // Go
-app.EmitEvent("my-event", data)
+app.Event.Emit("my-event", data)
 
 // JavaScript
 OnEvent("my-event", handler)  // Must match
@@ -252,7 +252,7 @@ See the [Contributing Guide](/contributing).
 
 ### Where can I find examples?
 
-- [Official Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+- [Official Examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
 - [Community Examples](https://github.com/topics/wails)
 
 ## Still Have Questions?

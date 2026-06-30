@@ -1,5 +1,6 @@
 ---
 title: Clave
+description: "A desktop application built with Wails"
 ---
 
 ![Clave](../../../../assets/showcase-images/clave.png)

@@ -189,3 +189,94 @@ func TestBoundMethodCall(t *testing.T) {
 	}
 
 }
+
+func TestRegisteredBindingMethodID(t *testing.T) {
+	const stableID uint32 = 4000000001
+
+	// init globalApplication
+	_ = application.New(application.Options{})
+
+	application.RegisterBindingMethodID((*TestService).String, stableID)
+	t.Cleanup(func() { application.UnregisterBindingMethodID((*TestService).String) })
+
+	bindings := application.NewBindings(nil, nil)
+	if err := bindings.Add(application.NewService(&TestService{})); err != nil {
+		t.Fatalf("bindings.Add() error = %v", err)
+	}
+
+	method := bindings.GetByID(stableID)
+	if method == nil {
+		t.Fatalf("bound method not found by registered stable ID %d", stableID)
+	}
+
+	result, err := method.Call(context.TODO(), newArgs(`"foo"`))
+	if err != nil {
+		t.Fatalf("method.Call() error = %v", err)
+	}
+	if result != "foo" {
+		t.Fatalf("result: %v, expected result: foo", result)
+	}
+}
+
+func TestRegisterBindingMethodIDPanicsForNonFunction(t *testing.T) {
+	defer func() {
+		err := recover()
+		if err == nil {
+			t.Fatalf("RegisterBindingMethodID() did not panic")
+		}
+		if !strings.Contains(err.(string), "expects a function") {
+			t.Fatalf("RegisterBindingMethodID() panic = %v", err)
+		}
+	}()
+
+	application.RegisterBindingMethodID("not a function", 1)
+}
+
+func (t *TestService) Panic() {
+	panic("boom")
+}
+
+func (t *TestService) PanicNilDeref() string {
+	var p *Person
+	return p.Name // mimics #5037: nil pointer dereference inside user code
+}
+
+// TestBoundMethodPanic guards #5037: a panic inside a bound method must
+// reject the call with a *CallError instead of killing the application
+// (the default panic handler is fatal and exits the process — under the old
+// behaviour this test binary would die with the catastrophic-failure banner).
+func TestBoundMethodPanic(t *testing.T) {
+	// init globalApplication
+	_ = application.New(application.Options{})
+
+	bindings := application.NewBindings(nil, nil)
+	if err := bindings.Add(application.NewService(&TestService{})); err != nil {
+		t.Fatalf("bindings.Add() error = %v", err)
+	}
+
+	for _, method := range []string{"Panic", "PanicNilDeref"} {
+		t.Run(method, func(t *testing.T) {
+			bound := bindings.Get(&application.CallOptions{
+				MethodName: "github.com/wailsapp/wails/v3/pkg/application_test.TestService." + method,
+			})
+			if bound == nil {
+				t.Fatalf("bound method not found: %s", method)
+			}
+
+			result, err := bound.Call(context.TODO(), nil)
+			if result != nil {
+				t.Errorf("result = %v, expected nil", result)
+			}
+			var cerr *application.CallError
+			if !errors.As(err, &cerr) {
+				t.Fatalf("err = %#v, expected *application.CallError", err)
+			}
+			if cerr.Kind != application.RuntimeError {
+				t.Errorf("err.Kind = %q, expected RuntimeError", cerr.Kind)
+			}
+			if !strings.Contains(cerr.Message, "panic") || !strings.Contains(cerr.Message, method) {
+				t.Errorf("err.Message = %q, expected it to name the method and mention the panic", cerr.Message)
+			}
+		})
+	}
+}

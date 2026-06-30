@@ -2,9 +2,11 @@ package main
 
 import (
 	"embed"
-	_ "embed"
+
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -18,12 +20,53 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// sampleImage is bundled into the example binary so the demo can attach a
+// real file (UNNotificationAttachment / toast <image> / freedesktop image-path
+// hint all need an absolute filesystem path) without depending on the user
+// having any image files on disk in the test VMs.
+//
+//go:embed frontend/public/wails.png
+var sampleImage []byte
+
+// DemoAssets is a tiny helper service exposed to the frontend so the example
+// can attach a real image path in NotificationOptions.Attachments without
+// needing a file picker.
+type DemoAssets struct {
+	sampleImagePath string
+}
+
+func newDemoAssets() (*DemoAssets, error) {
+	path := filepath.Join(os.TempDir(), "wails-notifications-sample.png")
+	return &DemoAssets{sampleImagePath: path}, nil
+}
+
+func (d *DemoAssets) ServiceName() string {
+	return "DemoAssets"
+}
+
+// SampleImagePath returns the absolute path to a sample image written fresh
+// to the OS temp directory each call. macOS UNNotificationAttachment moves
+// the source file into the system's notification database after delivery,
+// so a one-shot write at startup leaves a stale path on the second send;
+// rewriting on every request keeps the demo self-healing.
+func (d *DemoAssets) SampleImagePath() (string, error) {
+	if err := os.WriteFile(d.sampleImagePath, sampleImage, 0o644); err != nil {
+		return "", fmt.Errorf("write sample image: %w", err)
+	}
+	return d.sampleImagePath, nil
+}
+
 // main function serves as the application's entry point. It initializes the application, creates a window,
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
 // logs any error that might occur.
 func main() {
 	// Create a new Notification Service
 	ns := notifications.New()
+
+	demo, err := newDemoAssets()
+	if err != nil {
+		log.Fatalf("failed to prepare demo assets: %v", err)
+	}
 
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
@@ -35,6 +78,7 @@ func main() {
 		Description: "A demo of using desktop notifications with Wails",
 		Services: []application.Service{
 			application.NewService(ns),
+			application.NewService(demo),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -73,10 +117,7 @@ func main() {
 	})
 
 	// Run the application. This blocks until the application has been exited.
-	err := app.Run()
-
-	// If an error occurred while running the application, log it and exit.
-	if err != nil {
+	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

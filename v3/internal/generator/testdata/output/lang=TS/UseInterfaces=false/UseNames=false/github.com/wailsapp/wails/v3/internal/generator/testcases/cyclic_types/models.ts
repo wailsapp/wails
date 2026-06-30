@@ -7,6 +7,6 @@ import { Create as $Create } from "/wails/runtime.js";
 
 export type Alias = Cyclic | null;
 
-export type Cyclic = { [_: string]: Alias }[];
+export type Cyclic = { [_ in string]?: Alias }[];
 
 export type GenericCyclic<T> = {"X": GenericCyclic<T> | null, "Y": T[]}[];

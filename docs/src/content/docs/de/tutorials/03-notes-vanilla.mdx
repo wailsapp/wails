@@ -1,0 +1,702 @@
+---
+title: Notizen
+description: Erstellen Sie eine Notizenanwendung mit Dateioperationen und nativen Dialogen
+sidebar:
+  order: 3
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In diesem Tutorial erstellen Sie eine Notizenanwendung, die Dateioperationen, native Dialoge und moderne Desktop-App-Muster mit Wails v3 demonstriert.
+
+![Screenshot der Notizen-App](../../../../assets/notes-app.png)
+
+## Was Sie erstellen werden
+
+- Eine vollständige Notizen-App mit Funktionen zum Erstellen, Bearbeiten und Löschen
+- Native Dateispeicher-/Dateioffen-Dialoge zum Importieren und Exportieren von Notizen
+- Automatische Speicherung beim Tippen mit Debounce, um unnötige Updates zu reduzieren
+- Professionelles zweispaltiges Layout (Seitenleiste + Editor), das Apple Notes nachahmt
+
+## Was Sie lernen werden
+
+- Verwendung nativer Dateidialoge in Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
+- Arbeiten mit JSON-Dateien zur Datenspeicherung
+- Implementierung von Debounce-Auto-Save-Mustern
+- Aufbau professioneller Desktop-UIs mit modernem CSS
+- Korrekte JSON-Serialisierung von Go-Strukturen
+
+## Projekt-Einrichtung
+
+<Steps>
+
+1. **Erstellen Sie ein neues Wails-Projekt**
+
+   ```bash
+   wails3 init -n notes-app -t vanilla
+   cd notes-app
+   ```
+
+2. **Erstellen Sie den NotesService**
+
+   Erstellen Sie eine neue Datei `notesservice.go` im Projektstamm:
+
+   ```go
+   package main
+
+   import (
+   	"encoding/json"
+   	"errors"
+   	"os"
+   	"time"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   type Note struct {
+   	ID        string    `json:"id"`
+   	Title     string    `json:"title"`
+   	Content   string    `json:"content"`
+   	CreatedAt time.Time `json:"createdAt"`
+   	UpdatedAt time.Time `json:"updatedAt"`
+   }
+
+   type NotesService struct {
+   	notes []Note
+   }
+
+   func NewNotesService() *NotesService {
+   	return &NotesService{
+   		notes: make([]Note, 0),
+   	}
+   }
+
+   // GetAll gibt alle Notizen zurück
+   func (n *NotesService) GetAll() []Note {
+   	return n.notes
+   }
+
+   // Create erstellt eine neue Notiz
+   func (n *NotesService) Create(title, content string) Note {
+   	note := Note{
+   		ID:        generateID(),
+   		Title:     title,
+   		Content:   content,
+   		CreatedAt: time.Now(),
+   		UpdatedAt: time.Now(),
+   	}
+   	n.notes = append(n.notes, note)
+   	return note
+   }
+
+   // Update aktualisiert eine vorhandene Notiz
+   func (n *NotesService) Update(id, title, content string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes[i].Title = title
+   			n.notes[i].Content = content
+   			n.notes[i].UpdatedAt = time.Now()
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // Delete löscht eine Notiz
+   func (n *NotesService) Delete(id string) error {
+   	for i := range n.notes {
+   		if n.notes[i].ID == id {
+   			n.notes = append(n.notes[:i], n.notes[i+1:]...)
+   			return nil
+   		}
+   	}
+   	return errors.New("note not found")
+   }
+
+   // SaveToFile speichert Notizen in einer Datei
+   func (n *NotesService) SaveToFile() error {
+   	path, err := application.Get().Dialog.SaveFile().
+   		SetFilename("notes.json").
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := json.MarshalIndent(n.notes, "", "  ")
+   	if err != nil {
+   		return err
+   	}
+
+   	if err := os.WriteFile(path, data, 0644); err != nil {
+   		return err
+   	}
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes saved successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   // LoadFromFile lädt Notizen aus einer Datei
+   func (n *NotesService) LoadFromFile() error {
+   	path, err := application.Get().Dialog.OpenFile().
+   		AddFilter("JSON Files", "*.json").
+   		PromptForSingleSelection()
+
+   	if err != nil {
+   		return err
+   	}
+
+   	data, err := os.ReadFile(path)
+   	if err != nil {
+   		return err
+   	}
+
+   	var notes []Note
+   	if err := json.Unmarshal(data, &notes); err != nil {
+   		return err
+   	}
+
+   	n.notes = notes
+
+   	application.Get().Dialog.Info().
+   		SetTitle("Success").
+   		SetMessage("Notes loaded successfully!").
+   		Show()
+
+   	return nil
+   }
+
+   func generateID() string {
+   	return time.Now().Format("20060102150405")
+   }
+   ```
+
+   **Was hier passiert:**
+
+   - **Note struct**: Definiert die Datenstruktur mit JSON-Tags (kleingeschrieben) für die korrekte Serialisierung
+   - **CRUD-Operationen**: GetAll, Create, Update und Delete zum Verwalten von Notizen im Speicher
+   - **Dateidialoge**: Verwendet `application.Get().Dialog.SaveFile()` und `application.Get().Dialog.OpenFile()`, um auf native Dialoge zuzugreifen
+   - **Info-Dialoge**: Zeigt Erfolgsmeldungen mit `application.Get().Dialog.Info()` an
+   - **ID-Generierung**: Einfacher, auf Zeitstempeln basierender ID-Generator
+
+3. **Aktualisieren Sie main.go**
+
+   Ersetzen Sie den Inhalt von `main.go`:
+
+   ```go
+   package main
+
+   import (
+   	"embed"
+   	_ "embed"
+   	"log"
+
+   	"github.com/wailsapp/wails/v3/pkg/application"
+   )
+
+   //go:embed all:frontend/dist
+   var assets embed.FS
+
+   func main() {
+   	app := application.New(application.Options{
+   		Name:        "Notes App",
+   		Description: "A simple notes application",
+   		Services: []application.Service{
+   			application.NewService(NewNotesService()),
+   		},
+   		Assets: application.AssetOptions{
+   			Handler: application.AssetFileServerFS(assets),
+   		},
+   		Mac: application.MacOptions{
+   			ApplicationShouldTerminateAfterLastWindowClosed: true,
+   		},
+   	})
+
+   	app.Window.NewWithOptions(application.WebviewWindowOptions{
+   		Title:            "Notes App",
+   		Width:            1000,
+   		Height:           700,
+   		BackgroundColour: application.NewRGB(255, 255, 255),
+   		URL:              "/",
+   	})
+
+   	err := app.Run()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   }
+   ```
+
+   **Was hier passiert:**
+
+   - Registriert `NotesService` bei der Anwendung
+   - Erstellt ein Fenster mit den Abmessungen (1000x700), das Apple Notes nachahmt
+   - Richtet das richtige macOS-Verhalten ein, um zu beenden, wenn das letzte Fenster geschlossen wird
+
+4. **Erstellen Sie die HTML-Struktur**
+
+   Ersetzen Sie `frontend/index.html`:
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Notes App</title>
+       <link rel="stylesheet" href="./style.css">
+   </head>
+   <body>
+       <div class="app">
+           <!-- Sidebar -->
+           <div class="sidebar">
+               <div class="sidebar-header">
+                   <h1>Notes</h1>
+                   <button id="new-note-btn" class="btn-primary">+ New Note</button>
+               </div>
+               <div id="notes-list" class="notes-list"></div>
+               <div class="sidebar-footer">
+                   <button id="save-btn" class="btn-secondary">Save</button>
+                   <button id="load-btn" class="btn-secondary">Load</button>
+               </div>
+           </div>
+
+           <!-- Editor -->
+           <div class="editor">
+               <div id="empty-state" class="empty-state">
+                   <h2>No note selected</h2>
+                   <p>Select a note from the list or create a new one</p>
+               </div>
+               <div id="note-editor" class="note-editor" style="display: none;">
+                   <input type="text" id="note-title" placeholder="Note title" class="title-input">
+                   <textarea id="note-content" placeholder="Start typing..." class="content-input"></textarea>
+                   <div class="editor-footer">
+                       <button id="delete-btn" class="btn-danger">Delete</button>
+                       <span id="last-updated" class="last-updated"></span>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+       <script src="/wails/runtime.js"></script>
+       <script type="module" src="./src/main.js"></script>
+   </body>
+   </html>
+   ```
+
+   **Was hier passiert:**
+
+   - **Zweispaltiges Layout**: Seitenleiste für die Notizenliste, Hauptbereich für den Editor
+   - **Leerer Zustand**: Wird angezeigt, wenn keine Notiz ausgewählt ist
+   - **Wails-Laufzeit**: Muss vor dem Modul-Skript geladen werden
+
+5. **Fügen Sie das CSS-Styling hinzu**Ersetzen Sie `frontend/public/style.css`:
+
+   ```css
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+   }
+
+   body {
+       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       height: 100vh;
+       overflow: hidden;
+   }
+
+   .app {
+       display: flex;
+       height: 100vh;
+   }
+
+   /* Sidebar */
+   .sidebar {
+       width: 300px;
+       background: #f5f5f5;
+       border-right: 1px solid #e0e0e0;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .sidebar-header {
+       padding: 20px;
+       border-bottom: 1px solid #e0e0e0;
+   }
+
+   .sidebar-header h1 {
+       font-size: 24px;
+       margin-bottom: 16px;
+   }
+
+   .notes-list {
+       flex: 1;
+       overflow-y: auto;
+   }
+
+   .note-item {
+       padding: 16px 20px;
+       border-bottom: 1px solid #e0e0e0;
+       cursor: pointer;
+       transition: background 0.2s;
+   }
+
+   .note-item:hover {
+       background: #e8e8e8;
+   }
+
+   .note-item.active {
+       background: #007aff;
+       color: white;
+   }
+
+   .note-item h3 {
+       font-size: 16px;
+       margin-bottom: 4px;
+   }
+
+   .note-item p {
+       font-size: 14px;
+       opacity: 0.7;
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+   }
+
+   .sidebar-footer {
+       padding: 16px 20px;
+       border-top: 1px solid #e0e0e0;
+       display: flex;
+       gap: 8px;
+   }
+
+   /* Editor */
+   .editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+   }
+
+   .empty-state {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       color: #999;
+   }
+
+   .note-editor {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       padding: 20px;
+   }
+
+   .title-input {
+       font-size: 32px;
+       font-weight: bold;
+       border: none;
+       outline: none;
+       margin-bottom: 16px;
+       padding: 8px 0;
+   }
+
+   .content-input {
+       flex: 1;
+       font-size: 16px;
+       border: none;
+       outline: none;
+       resize: none;
+       font-family: inherit;
+       line-height: 1.6;
+   }
+
+   .editor-footer {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding-top: 16px;
+       border-top: 1px solid #e0e0e0;
+   }
+
+   .last-updated {
+       font-size: 14px;
+       color: #999;
+   }
+
+   /* Buttons */
+   .btn-primary {
+       background: #007aff;
+       color: white;
+       border: none;
+       padding: 10px 20px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       font-weight: 500;
+       width: 100%;
+   }
+
+   .btn-primary:hover {
+       background: #0056b3;
+   }
+
+   .btn-secondary {
+       background: white;
+       color: #333;
+       border: 1px solid #e0e0e0;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+       flex: 1;
+   }
+
+   .btn-secondary:hover {
+       background: #f5f5f5;
+   }
+
+   .btn-danger {
+       background: #ff3b30;
+       color: white;
+       border: none;
+       padding: 8px 16px;
+       border-radius: 6px;
+       cursor: pointer;
+       font-size: 14px;
+   }
+
+   .btn-danger:hover {
+       background: #cc0000;
+   }
+   ```
+
+   **Was hier passiert:**
+
+   - Apple-Design mit klarer Typografie und Farben
+   - Flexbox-Layout für responsive Seitenleiste und Editor
+   - Hervorhebung der aktiven Notiz mit blauem Hintergrund
+   - Sanfte Hover-Übergänge
+
+6. **Implementieren Sie die JavaScript-Logik**
+
+   Ersetzen Sie `frontend/src/main.js`:
+
+   ```javascript
+   import { NotesService } from '../bindings/changeme'
+
+   let notes = []
+   let currentNote = null
+
+   // Load notes on startup
+   async function loadNotes() {
+       notes = await NotesService.GetAll()
+       renderNotesList()
+   }
+
+   // Render notes list
+   function renderNotesList() {
+       const notesList = document.getElementById('notes-list')
+
+       if (notes.length === 0) {
+           notesList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No notes yet</div>'
+           return
+       }
+
+       notesList.innerHTML = notes.map(note => `
+           <div class="note-item ${currentNote?.id === note.id ? 'active' : ''}" data-id="${note.id}">
+               <h3>${note.title || 'Untitled'}</h3>
+               <p>${note.content || 'No content'}</p>
+           </div>
+       `).join('')
+
+       // Add click handlers
+       document.querySelectorAll('.note-item').forEach(item => {
+           item.addEventListener('click', () => {
+               const id = item.dataset.id
+               selectNote(id)
+           })
+       })
+   }
+
+   // Select a note
+   function selectNote(id) {
+       currentNote = notes.find(n => n.id === id)
+       if (currentNote) {
+           document.getElementById('empty-state').style.display = 'none'
+           document.getElementById('note-editor').style.display = 'flex'
+           document.getElementById('note-title').value = currentNote.title
+           document.getElementById('note-content').value = currentNote.content
+           document.getElementById('last-updated').textContent =
+               `Last updated: ${new Date(currentNote.updatedAt).toLocaleString()}`
+           renderNotesList()
+       }
+   }
+
+   // Create new note
+   document.getElementById('new-note-btn').addEventListener('click', async () => {
+       const note = await NotesService.Create('Untitled', '')
+       notes.push(note)
+       selectNote(note.id)
+       // Focus the title input and select all text so user can immediately type
+       const titleInput = document.getElementById('note-title')
+       titleInput.focus()
+       titleInput.select()
+   })
+
+   // Update note on input
+   let updateTimeout
+   function scheduleUpdate() {
+       clearTimeout(updateTimeout)
+       updateTimeout = setTimeout(async () => {
+           if (currentNote) {
+               const title = document.getElementById('note-title').value
+               const content = document.getElementById('note-content').value
+
+               await NotesService.Update(currentNote.id, title, content)
+
+               // Update local copy
+               const note = notes.find(n => n.id === currentNote.id)
+               if (note) {
+                   note.title = title
+                   note.content = content
+                   note.updatedAt = new Date().toISOString()
+               }
+
+               renderNotesList()
+               document.getElementById('last-updated').textContent =
+                   `Last updated: ${new Date().toLocaleString()}`
+           }
+       }, 500)
+   }
+
+   document.getElementById('note-title').addEventListener('input', scheduleUpdate)
+   document.getElementById('note-content').addEventListener('input', scheduleUpdate)
+
+   // Delete note
+   document.getElementById('delete-btn').addEventListener('click', async () => {
+       if (!currentNote) return
+
+       try {
+           await NotesService.Delete(currentNote.id)
+           notes = notes.filter(n => n.id !== currentNote.id)
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           console.error('Delete failed:', error)
+       }
+   })
+
+   // Save to file
+   document.getElementById('save-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.SaveToFile()
+       } catch (error) {
+           if (error) console.error('Save failed:', error)
+       }
+   })```go
+   // Aus Datei laden
+   document.getElementById('load-btn').addEventListener('click', async () => {
+       try {
+           await NotesService.LoadFromFile()
+           notes = await NotesService.GetAll()
+           currentNote = null
+           document.getElementById('empty-state').style.display = 'flex'
+           document.getElementById('note-editor').style.display = 'none'
+           renderNotesList()
+       } catch (error) {
+           if (error) console.error('Load failed:', error)
+       }
+   })
+
+   // Initialisieren
+   loadNotes()
+   ```
+
+   **Was hier passiert:**
+
+   - **Auto-Save**: Ein Debounce von 500ms verhindert übermäßige Aufrufe an das Backend während der Eingabe
+   - **Eigenschaftszugriff**: Es werden Kleinbuchstaben-Eigenschaftsnamen (`.id`, `.title`) verwendet, die den Go-JSON-Tags entsprechen
+   - **Fokusverwaltung**: Beim Erstellen neuer Notizen werden Titel automatisch fokussiert und ausgewählt
+   - **Löschen ohne Bestätigung**: Das Browser-`confirm()` funktioniert in Wails-Webviews nicht
+   - **Dateioperationen**: Native Dialoge behandeln Speichern/Laden mit angemessener Fehlerbehandlung
+
+7. **Anwendung ausführen**
+
+   ```bash
+   wails3 dev
+   ```
+
+   Die App startet und Sie können:
+   - Auf „+ Neue Notiz" klicken, um Notizen zu erstellen
+   - Titel und Inhalt bearbeiten (wird nach 500ms automatisch gespeichert)
+   - Auf Notizen in der Seitenleiste klicken, um zwischen ihnen zu wechseln
+   - Auf „Löschen" klicken, um die aktuelle Notiz zu entfernen
+   - Auf „Speichern" klicken, um Notizen als JSON zu exportieren
+   - Auf „Laden" klicken, um zuvor gespeicherte Notizen zu importieren
+
+</Steps>
+
+## Schlüsselkonzepte
+
+### Dialogfunktionen auf Paketebene
+
+In Wails v3 sind Datei- und Nachrichten-Dialoge Funktionen auf Paketebene, keine Methoden der App-Instanz:
+
+```go
+// Korrekt - Funktion auf Paketebene
+path, err := application.SaveFileDialog().
+    SetFilename("notes.json").
+    AddFilter("JSON Files", "*.json").
+    PromptForSingleSelection()
+
+// Falsch - nicht verfügbar
+path, err := app.Dialog.SaveFile() // Existiert nicht
+```
+
+### JSON-Tag-Zuordnung
+
+Go-Struktur-JSON-Tags müssen kleingeschrieben sein, um dem JavaScript-Eigenschaftszugriff zu entsprechen:
+
+```go
+type Note struct {
+    ID string `json:"id"` // Muss kleingeschrieben sein
+}
+```
+
+```javascript
+// JavaScript greift mit kleingeschriebenen Namen zu
+const noteId = note.id // Korrekt
+const noteId = note.ID // Wäre undefined
+```
+
+### Debounced Auto-Save
+
+Der 500ms-Debounce reduziert unnötige Aufrufe an das Backend:
+
+```javascript
+let updateTimeout
+function scheduleUpdate() {
+    clearTimeout(updateTimeout) // Vorherigen Timer abbrechen
+    updateTimeout = setTimeout(async () => {
+        // Speichert nur, wenn der Benutzer 500ms lang nicht tippt
+        await NotesService.Update(currentNote.id, title, content)
+    }, 500)
+}
+```
+
+## Nächste Schritte
+
+- Kategorien oder Tags hinzufügen, um Notizen zu organisieren
+- Suche und Filterung implementieren
+- Rich-Text-Bearbeitung mit einem WYSIWYG-Editor hinzufügen
+- Notizen mit Cloud-Speicher synchronisieren
+- Tastenkürzel für häufige Operationen hinzufügen

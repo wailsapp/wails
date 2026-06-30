@@ -13,7 +13,6 @@ export type {
     AliasedPerson,
     EmptyAliasStruct,
     EmptyStruct,
-    GenericAlias,
     GenericMapAlias,
     GenericPerson,
     GenericPersonAlias,
@@ -22,5 +21,5 @@ export type {
     OtherAliasStruct,
     Person,
     StrangelyAliasedPerson,
-    TPIndirectPersonAlias
+    SubPackageAlias
 } from "./models.js";

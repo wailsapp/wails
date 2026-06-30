@@ -2,7 +2,10 @@
 
 package application
 
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 // androidWebviewWindow implements the webviewWindowImpl interface for Android
 type androidWebviewWindow struct {
@@ -26,7 +29,6 @@ func (w *androidWebviewWindow) destroy() {
 
 func (w *androidWebviewWindow) execJS(js string) {
 	// Execute JavaScript via JNI callback to Java's WailsBridge.executeJavaScript()
-	androidLogf("debug", "execJS: %s", js)
 	executeJavaScript(js)
 }
 
@@ -39,12 +41,14 @@ func (w *androidWebviewWindow) forceReload() {}
 func (w *androidWebviewWindow) fullscreen() {}
 
 func (w *androidWebviewWindow) getScreen() (*Screen, error) {
-	// Android has a single "screen" (the device display)
-	return &Screen{
-		ID:        "main",
-		Name:      "Main Display",
-		IsPrimary: true,
-	}, nil
+	screens, err := getScreens()
+	if err != nil {
+		return nil, err
+	}
+	if len(screens) == 0 {
+		return nil, fmt.Errorf("no screens available")
+	}
+	return screens[0], nil
 }
 
 func (w *androidWebviewWindow) getZoom() float64 {
@@ -58,7 +62,8 @@ func (w *androidWebviewWindow) hasParent() bool {
 }
 
 func (w *androidWebviewWindow) height() int {
-	return 2400 // Default Android height (common flagship)
+	_, h := w.size()
+	return h
 }
 
 func (w *androidWebviewWindow) hide() {}
@@ -125,16 +130,15 @@ func (w *androidWebviewWindow) setAbsolutePosition(_ int, _ int) {}
 
 func (w *androidWebviewWindow) setAlwaysOnTop(_ bool) {}
 
-func (w *androidWebviewWindow) setBackgroundColour(col RGBA) {
-	// TODO: Send background colour to Java via JNI
-	androidLogf("debug", "setBackgroundColour: rgba(%d,%d,%d,%d)", col.Red, col.Green, col.Blue, col.Alpha)
+func (w *androidWebviewWindow) setBackgroundColour(_ RGBA) {
+	// The WebView background is managed by the Activity theme
 }
 
 func (w *androidWebviewWindow) setEnabled(_ bool) {}
 
 func (w *androidWebviewWindow) setFrameless(_ bool) {}
 
-func (w *androidWebviewWindow) setFullscreenButtonEnabled(_ bool) {}
+func (w *androidWebviewWindow) setFullscreenButtonState(_ ButtonState) {}
 
 func (w *androidWebviewWindow) setMaxSize(_ int, _ int) {}
 
@@ -153,7 +157,12 @@ func (w *androidWebviewWindow) setZoom(_ float64) {}
 func (w *androidWebviewWindow) show() {}
 
 func (w *androidWebviewWindow) size() (int, int) {
-	return 1080, 2400 // Default Android size (common flagship)
+	// The WebView fills the display; report its size in dp (CSS pixels)
+	screens, err := getScreens()
+	if err != nil || len(screens) == 0 {
+		return 0, 0
+	}
+	return screens[0].Size.Width, screens[0].Size.Height
 }
 
 func (w *androidWebviewWindow) toggleDevTools() {}
@@ -165,7 +174,8 @@ func (w *androidWebviewWindow) unmaximise() {}
 func (w *androidWebviewWindow) unminimise() {}
 
 func (w *androidWebviewWindow) width() int {
-	return 1080 // Default Android width
+	wd, _ := w.size()
+	return wd
 }
 
 func (w *androidWebviewWindow) zoom() {}
@@ -181,9 +191,8 @@ func (w *androidWebviewWindow) setParent(_ *WebviewWindow) error {
 }
 
 func (w *androidWebviewWindow) run() {
-	androidLogf("info", "androidWebviewWindow.run() called")
-	// Android WebView is created and managed by the Java Activity
-	// Just store the window ID for reference
+	// The Android WebView is created and managed by the Java Activity;
+	// just store the window ID for reference
 	w.windowID = uint32(w.parent.ID())
 }
 
@@ -232,12 +241,8 @@ func (w *androidWebviewWindow) flashCancel() {}
 func (w *androidWebviewWindow) setFocusable(_ bool) {}
 
 func (w *androidWebviewWindow) bounds() Rect {
-	return Rect{
-		X:      0,
-		Y:      0,
-		Width:  1080,
-		Height: 2400,
-	}
+	width, height := w.size()
+	return Rect{X: 0, Y: 0, Width: width, Height: height}
 }
 
 func (w *androidWebviewWindow) copy() {
@@ -296,8 +301,12 @@ func (w *androidWebviewWindow) nativeWindow() unsafe.Pointer {
 	return nil
 }
 
+func (w *androidWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	// Modal windows are not supported on Android
+}
+
 func (w *androidWebviewWindow) on(eventID uint) {
-	// Android event handling
+	registerAndroidListener(eventID)
 }
 
 func (w *androidWebviewWindow) position() (int, int) {
@@ -305,12 +314,11 @@ func (w *androidWebviewWindow) position() (int, int) {
 }
 
 func (w *androidWebviewWindow) physicalBounds() Rect {
-	return Rect{
-		X:      0,
-		Y:      0,
-		Width:  1080,
-		Height: 2400,
+	screens, err := getScreens()
+	if err != nil || len(screens) == 0 {
+		return Rect{}
 	}
+	return screens[0].PhysicalBounds
 }
 
 func (w *androidWebviewWindow) setBounds(bounds Rect) {
@@ -333,9 +341,8 @@ func (w *androidWebviewWindow) setContentProtection(_ bool) {
 	// Android content protection - could be implemented with FLAG_SECURE
 }
 
-func (w *androidWebviewWindow) setHTML(html string) {
-	// TODO: Implement via JNI
-	androidLogf("debug", "setHTML called")
+func (w *androidWebviewWindow) setHTML(_ string) {
+	// Not supported: the WebView always loads from the asset server
 }
 
 func (w *androidWebviewWindow) setMenu(_ *Menu) {
@@ -350,9 +357,12 @@ func (w *androidWebviewWindow) setPosition(_ int, _ int) {
 	// Android doesn't support window positioning - apps are fullscreen
 }
 
-func (w *androidWebviewWindow) setURL(url string) {
-	// TODO: Implement via JNI
-	androidLogf("debug", "setURL: %s", url)
+func (w *androidWebviewWindow) centerOnScreen(_ *Screen) {
+	// Android doesn't support window positioning
+}
+
+func (w *androidWebviewWindow) setURL(_ string) {
+	// Navigation is driven by the Java Activity (loadApplication)
 }
 
 func (w *androidWebviewWindow) showMenuBar() {

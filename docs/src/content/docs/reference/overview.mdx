@@ -34,22 +34,28 @@ This is the complete API reference for Wails v3. It documents every public type,
 
 #### Error Handling
 
-Most methods that can fail return `error` as the last return value:
+Most methods that can fail return `error` as the last return value. `app.Run()` blocks until the application exits and returns any startup error:
 
 ```go
-window, err := app.NewWebviewWindow()
-if err != nil {
+if err := app.Run(); err != nil {
     log.Fatal(err)
 }
 ```
 
+Window construction does not return an error — `app.Window.New()` returns `*WebviewWindow` directly.
+
 #### Context
 
-Methods that may block or need cancellation accept `context.Context`:
+Service lifecycle methods receive a `context.Context`:
 
 ```go
-err := app.RunWithContext(ctx)
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // ctx is cancelled when the application is shutting down.
+    return nil
+}
 ```
+
+The application's lifetime context is available via `app.Context()`. There is no `RunWithContext` — call `app.Run()`.
 
 #### Options Pattern
 
@@ -116,14 +122,17 @@ const message: string = await Greet("World")
 ```
 github.com/wailsapp/wails/v3/pkg/
 ├── application/          # Core application package
-│   ├── application.go    # Application type
+│   ├── application.go    # App type
 │   ├── webview_window.go # Window management
 │   ├── menu.go           # Menu types
-│   ├── events.go         # Event system
-│   └── dialogs.go        # dialog APIs
+│   ├── event_manager.go  # Event system
+│   └── dialogs.go        # Dialog APIs
 ├── events/               # Event constants
 └── services/             # Built-in services
-    ├── badge/            # Badge service
+    ├── dock/             # macOS dock (includes badge support)
+    ├── fileserver/       # File-server service
+    ├── kvstore/          # Key/value store
+    ├── log/              # Structured logging service
     ├── notifications/    # Notifications service
     └── sqlite/           # SQLite service
 ```
@@ -146,8 +155,7 @@ import (
 import { MyMethod } from './bindings/MyService'
 
 // Runtime APIs
-import { On, Emit } from '@wailsio/runtime'
-import { WindowSetTitle } from '@wailsio/runtime/window'
+import { Events, Window } from '@wailsio/runtime'
 ```
 
 ## Type Reference
@@ -158,24 +166,26 @@ import { WindowSetTitle } from '@wailsio/runtime/window'
   <TabItem label="Go" icon="seti:go">
     ```go
     // Application
-    type Application struct { /* ... */ }
+    type App struct { /* ... */ }
     type Options struct { /* ... */ }
-    
+
     // Window
-    type WebviewWindow struct { /* ... */ }
+    type WebviewWindow struct { /* ... */ } // implements the Window interface
     type WebviewWindowOptions struct { /* ... */ }
-    
+
     // Menu
     type Menu struct { /* ... */ }
     type MenuItem struct { /* ... */ }
-    
-    // Events
-    type Event struct { /* ... */ }
-    type EventListener func(*Event)
-    
+
+    // Events — there is no generic Event type; events are typed by source.
+    type ApplicationEvent struct { /* ... */ }
+    type WindowEvent struct { /* ... */ }
+    type CustomEvent struct { /* ... */ }
+    type EventListener struct { /* ... */ }
+
     // Dialogs
-    type OpenDialogOptions struct { /* ... */ }
-    type SaveDialogOptions struct { /* ... */ }
+    type OpenFileDialogOptions struct { /* ... */ }
+    type SaveFileDialogOptions struct { /* ... */ }
     ```
   </TabItem>
 
@@ -259,7 +269,7 @@ Unstable APIs are marked in documentation.
 ### API Questions
 
 1. **Check this reference** - Complete API documentation
-2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples)
+2. **Check examples** - [GitHub examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
 3. **Search Discord** - [Discord server](https://discord.gg/JDdSxwjhGf)
 4. **Ask the community** - Discord #help channel
 
@@ -274,9 +284,9 @@ Found a bug or inconsistency?
 ## Related Documentation
 
 - [Tutorials](/tutorials/overview) - Learn by building real applications
-- [Guides](/guides/dev/project-structure) - Task-oriented guides for common scenarios
+- [Guides](/guides/architecture) - Task-oriented guides for common scenarios
 - [Features](/features/windows/basics) - Feature-by-feature documentation
-- [Examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples) - Working code examples on GitHub
+- [Examples](https://github.com/wailsapp/wails/tree/master/v3/examples) - Working code examples on GitHub
 
 ---
 

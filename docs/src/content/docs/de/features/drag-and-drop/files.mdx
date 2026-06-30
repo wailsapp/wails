@@ -1,0 +1,212 @@
+---
+title: Dateiübertragung per Drag & Drop
+description: Akzeptieren Sie Dateien, die aus dem Betriebssystem in Ihre Anwendung gezogen werden
+sidebar:
+  order: 1
+---
+
+Wails ermöglicht es Benutzern, Dateien aus dem Betriebssystem (Dateimanager, Desktop) in Ihre Anwendung zu ziehen. Im Gegensatz zum HTML5-Drag-and-Drop, das nur innerhalb des Browsers funktioniert, gibt Ihnen dies Zugriff auf die tatsächlichen Dateipfade auf der Festplatte.
+
+## Dateiübertragung aktivieren
+
+Die Dateiübertragung ist standardmäßig deaktiviert. Um sie zu aktivieren, setzen Sie `EnableFileDrop: true` in Ihren Fensteroptionen:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+Wenn `EnableFileDrop` `false` ist (der Standardwert), werden Dateien, die aus dem Betriebssystem gezogen werden, blockiert – sie werden weder im WebView geöffnet noch lösen sie Ereignisse aus. Dies verhindert versehentliche Navigationen, wenn Benutzer Dateien über Ihre App ziehen.
+
+## Drop-Zonen definieren
+
+Drop-Zonen teilen Wails mit, welche Elemente Dateien akzeptieren sollen. Dateien, die außerhalb einer Drop-Zone abgelegt werden, werden ignoriert.
+
+Fügen Sie das Attribut `data-file-drop-target` zu einem beliebigen Element hinzu:
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+Sie können mehrere Drop-Zonen haben. Die `id` und CSS-Klassen des Elements werden an Ihren Go-Code übergeben, sodass Sie den Empfang von Dateien je nach Ablageort unterschiedlich behandeln können.
+
+## Drag-Hover gestalten
+
+Wenn Dateien über eine Drop-Zone gezogen werden, fügt Wails die Klasse `file-drop-target-active` hinzu. Dies ermöglicht es Ihnen, visuelles Feedback bereitzustellen, damit Benutzer wissen, wo sie Dateien ablegen können:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+Die Klasse wird automatisch entfernt, wenn die Dateien die Zone verlassen oder abgelegt werden.
+
+## Abgelegte Dateien erkennen
+
+Wenn Dateien auf eine gültige Drop-Zone abgelegt werden, löst Wails ein `WindowFilesDropped`-Ereignis aus. Der Ereigniskontext enthält die vollständigen Dateisystempfade aller abgelegten Dateien:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+Die Pfade sind absolut, wie `/home/user/documents/report.pdf` oder `C:\Users\Name\Documents\report.pdf`.
+
+## Informationen zum Drop-Ziel erhalten
+
+Wenn Sie mehrere Drop-Zonen haben, können Sie herausfinden, welche die Dateien empfangen hat, indem Sie `DropTargetDetails()` verwenden:
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+Dies ermöglicht es Ihnen, Dateien an verschiedene Handler weiterzuleiten:
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## Vollständiges Beispiel
+
+**Go:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // Send to frontend
+    app.Event.Emit("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    Drop images here
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    Drop documents here
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## Drop im gesamten Fenster
+
+Wenn Sie möchten, dass Dateien überall in Ihrer App abgelegt werden können, fügen Sie das Attribut zum body-Element hinzu:
+
+```html
+<body data-file-drop-target>
+    <!-- Your app content -->
+</body>
+```
+
+Sie können eine CSS-Overlay verwenden, um anzuzeigen, dass das gesamte Fenster eine Drop-Ziel ist:
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## Kombination mit HTML Drag & Drop
+
+Sie können sowohl externe Dateiübertragungen als auch internes HTML-Drag-and-Drop in derselben Anwendung verwenden. Wenn `EnableFileDrop` auf `true` gesetzt ist, fängt Wails externe Datei-Drag-Vorgänge ab, lässt aber interne HTML5-Drag-Vorgänge normal durchlaufen.
+
+Um zwischen ihnen in Ihren HTML-Drop-Zonen-Handlern zu unterscheiden, prüfen Sie, ob der Drag Dateien enthält:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Skip external file drags - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // Handle internal HTML5 drags
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // Skip external file drops - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle internal drop
+});
+```
+
+Dies stellt sicher, dass Ihre HTML-Drop-Handler nur auf interne Drag-Vorgänge (wie das Verschieben von Listenelementen) reagieren, während Wails externe Dateiübertragungen separat über das `WindowFilesDropped`-Ereignis behandelt.
+
+## Nächste Schritte
+
+- [HTML Drag & Drop](./html) - Elemente innerhalb Ihrer App ziehen
+- [Fensteroptionen](/de/features/windows/options) - Alle Fensterkonfigurationsoptionen

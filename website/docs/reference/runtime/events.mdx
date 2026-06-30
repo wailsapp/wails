@@ -18,10 +18,17 @@ JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => vo
 
 ### EventsOff
 
-This method unregisters the listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`.
+This method unregisters the listener for the given event name, optionally multiple listeners can be unregistered via `additionalEventNames`.
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/>
 JS: `EventsOff(eventName string, ...additionalEventNames)`
+
+### EventsOffAll
+
+This method unregisters all event listeners.
+
+Go: `EventsOffAll(ctx context.Context)`<br/>
+JS: `EventsOffAll()`
 
 ### EventsOnce
 
@@ -45,3 +52,40 @@ This method emits the given event. Optional data may be passed with the event. T
 
 Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/>
 JS: `EventsEmit(eventName: string, ...optionalData: any)`
+
+### Code Sample
+This shows how to trigger an event and listen on the frontend.
+
+Frontend
+```tsx
+  /* React */
+  import {EventsOn, EventsOff } from "../wailsjs/runtime/runtime";
+  import { Auth } from "../wailsjs/go/main/App";
+
+  useEffect(() => {
+      const handler = (event: any) => {
+        // Handle event
+        console.log(event);
+      };
+  
+      EventsOn("auth:success", handler);
+
+      return () => {
+        EventsOff("auth:success");
+      };
+  },[])
+
+
+ <button onClick={Auth}> verify auth </button>
+  
+```
+
+GO
+```go
+  //app.go
+  import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+   func (a *App) Auth() {
+	   runtime.EventsEmit(a.ctx, "auth:success", "user-123")
+   }
+```

@@ -1,5 +1,6 @@
 ---
 title: Links
+description: Community-curated links and resources for Wails
 ---
 
 This page serves as a list for community related links.

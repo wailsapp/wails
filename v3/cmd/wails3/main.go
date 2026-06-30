@@ -4,15 +4,16 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
+	"github.com/wailsapp/wails/v3/internal/wake"
 )
 
 func init() {
@@ -49,7 +50,13 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
+	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
@@ -94,6 +101,10 @@ func main() {
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
+	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
+	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
+	tool.NewSubCommandFunction("has", "Check if a tool is available in PATH (e.g. wails3 tool has git, wails3 tool has gcc|clang)", commands.ToolHas)
+	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has gcc|clang' instead", commands.ToolHasCC)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
@@ -104,10 +115,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
-	setup.Action(func() error {
-		return commands.Setup(&commands.SetupOptions{})
-	})
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)
@@ -130,10 +138,14 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
-    // iOS tools
-    ios := app.NewSubCommand("ios", "iOS tooling")
-    ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
-    ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+	// iOS tools
+	ios := app.NewSubCommand("ios", "iOS tooling")
+	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
+	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+
+	// Android tools
+	android := app.NewSubCommand("android", "Android tooling")
+	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
@@ -142,7 +154,11 @@ func main() {
 
 	err := app.Run()
 	if err != nil {
-		pterm.Error.Println(err)
+		// A wake build failure is already rendered as a clean panel by the build
+		// reporter; printing the raw error again would duplicate it.
+		if !wake.IsReported(err) {
+			pterm.Error.Println(err)
+		}
 		os.Exit(1)
 	}
 }

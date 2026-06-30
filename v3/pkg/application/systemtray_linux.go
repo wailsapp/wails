@@ -1,4 +1,4 @@
-//go:build linux && !android
+//go:build linux && !android && !server
 
 /*
 Portions of this code are derived from the project:
@@ -10,6 +10,8 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"sync"
+	"sync/atomic"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
@@ -40,9 +42,17 @@ type linuxSystemTray struct {
 	props     *prop.Properties
 	menuProps *prop.Properties
 
-	menuVersion uint32 // need to bump this anytime we change anything
+	menuVersion atomic.Uint32
+
+	// itemMapLock guards itemMap and the per-item dbusItem.V1 maps;
+	// the dbusmenu callbacks read these from the godbus worker goroutine.
+	itemMapLock sync.RWMutex
 	itemMap     map[int32]*systrayMenuItem
-	tooltip     string
+
+	tooltip string
+
+	lastClickX int
+	lastClickY int
 }
 
 func (s *linuxSystemTray) getScreen() (*Screen, error) {
@@ -66,25 +76,37 @@ type systrayMenuItem struct {
 }
 
 func (s *systrayMenuItem) setBitmap(data []byte) {
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["icon-data"] = dbus.MakeVariant(data)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setTooltip(v string) {
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["tooltip"] = dbus.MakeVariant(v)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setLabel(v string) {
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["label"] = dbus.MakeVariant(v)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) setDisabled(disabled bool) {
 	v := dbus.MakeVariant(!disabled)
-	if s.dbusItem.V1["toggle-state"] != v {
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
+	if s.dbusItem.V1["enabled"] != v {
 		s.dbusItem.V1["enabled"] = v
-		s.sysTray.update(s)
+		s.sysTray.itemMap[int32(s.menuItem.id)] = s
+		s.sysTray.refreshLocked()
 	}
 }
 
@@ -95,16 +117,22 @@ func (s *systrayMenuItem) setChecked(checked bool) {
 	if checked {
 		v = dbus.MakeVariant(1)
 	}
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	if s.dbusItem.V1["toggle-state"] != v {
 		s.dbusItem.V1["toggle-state"] = v
-		s.sysTray.update(s)
+		s.sysTray.itemMap[int32(s.menuItem.id)] = s
+		s.sysTray.refreshLocked()
 	}
 }
 
 func (s *systrayMenuItem) setAccelerator(accelerator *accelerator) {}
 func (s *systrayMenuItem) setHidden(hidden bool) {
+	s.sysTray.itemMapLock.Lock()
+	defer s.sysTray.itemMapLock.Unlock()
 	s.dbusItem.V1["visible"] = dbus.MakeVariant(!hidden)
-	s.sysTray.update(s)
+	s.sysTray.itemMap[int32(s.menuItem.id)] = s
+	s.sysTray.refreshLocked()
 }
 
 func (s *systrayMenuItem) dbus() *dbusMenu {
@@ -175,17 +203,26 @@ func (s *linuxSystemTray) processMenu(menu *Menu, parentId int32) {
 	}
 }
 
-func (s *linuxSystemTray) refresh() {
-	s.menuVersion++
+// refreshLocked bumps the menu revision and emits the dbusmenu LayoutUpdated
+// signal. The caller must hold itemMapLock for writing: this guarantees that
+// (a) the (layout, revision) pair observed by GetLayout under RLock is always
+// consistent — readers either see both old or both new, never mixed — and
+// (b) concurrent writers serialise their emits in revision order, so the
+// exported Version property never moves backwards.
+func (s *linuxSystemTray) refreshLocked() {
+	v := s.menuVersion.Add(1)
+	if s.menuProps == nil || s.conn == nil {
+		return
+	}
 	if err := s.menuProps.Set("com.canonical.dbusmenu", "Version",
-		dbus.MakeVariant(s.menuVersion)); err != nil {
+		dbus.MakeVariant(v)); err != nil {
 		globalApplication.error("systray error: failed to update menu version: %w", err)
 		return
 	}
 	if err := menu.Emit(s.conn, &menu.Dbusmenu_LayoutUpdatedSignal{
 		Path: menuPath,
 		Body: &menu.Dbusmenu_LayoutUpdatedSignalBody{
-			Revision: s.menuVersion,
+			Revision: v,
 		},
 	}); err != nil {
 		globalApplication.error("systray error: failed to emit layout updated signal: %w", err)
@@ -193,24 +230,9 @@ func (s *linuxSystemTray) refresh() {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
-	if s.parent.attachedWindow.Window != nil {
-		temp := menu
-		menu = NewMenu()
-		title := "Open"
-		if s.parent.attachedWindow.Window.Name() != "" {
-			title += " " + s.parent.attachedWindow.Window.Name()
-		} else {
-			title += " window"
-		}
-		openMenuItem := menu.Add(title)
-		openMenuItem.OnClick(func(*Context) {
-			s.parent.clickHandler()
-		})
-		menu.AddSeparator()
-		menu.Append(temp)
-	}
+	s.itemMapLock.Lock()
+	defer s.itemMapLock.Unlock()
 	s.itemMap = map[int32]*systrayMenuItem{}
-	// our root menu element
 	s.itemMap[0] = &systrayMenuItem{
 		menuItem: nil,
 		dbusItem: &dbusMenu{
@@ -219,44 +241,72 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 			V2: []dbus.Variant{},
 		},
 	}
-	menu.processRadioGroups()
-	s.processMenu(menu, 0)
+	if menu != nil {
+		menu.processRadioGroups()
+		s.processMenu(menu, 0)
+	}
 	s.menu = menu
-	s.refresh()
+	s.refreshLocked()
 }
 
 func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
-	// Get the mouse location on the screen
-	mouseX, mouseY, currentScreen := getMousePosition()
-	screenBounds := currentScreen.Size
-
-	// Calculate new X position
-	newX := mouseX - (window.Width() / 2)
-
-	// Check if the window goes out of the screen bounds on the left side
-	if newX < 0 {
-		newX = 0
+	_, _, currentScreen := getMousePosition()
+	if currentScreen == nil {
+		return fmt.Errorf("unable to get screen information")
 	}
 
-	// Check if the window goes out of the screen bounds on the right side
-	if newX+window.Width() > screenBounds.Width {
-		newX = screenBounds.Width - window.Width()
+	screenX := currentScreen.X
+	screenY := currentScreen.Y
+	screenWidth := currentScreen.Size.Width
+	screenHeight := currentScreen.Size.Height
+	windowWidth := window.Width()
+	windowHeight := window.Height()
+
+	if isTilingWM() {
+		newX := screenX + (screenWidth-windowWidth)/2
+		newY := screenY + (screenHeight-windowHeight)/2
+		window.SetPosition(newX, newY)
+		return nil
 	}
 
-	// Calculate new Y position
-	newY := mouseY - (window.Height() / 2)
-
-	// Check if the window goes out of the screen bounds on the top
-	if newY < 0 {
-		newY = 0
+	clickX, clickY := s.lastClickX, s.lastClickY
+	if clickX == 0 && clickY == 0 {
+		if cx, cy, ok := getCursorPositionFromCompositor(); ok {
+			clickX, clickY = cx, cy
+		} else {
+			clickX = screenX + screenWidth/2
+			clickY = screenY + screenHeight/2
+		}
 	}
 
-	// Check if the window goes out of the screen bounds on the bottom
-	if newY+window.Height() > screenBounds.Height {
-		newY = screenBounds.Height - window.Height() - offset
+	newX := clickX - (windowWidth / 2)
+	if newX < screenX {
+		newX = screenX
+	}
+	if newX+windowWidth > screenX+screenWidth {
+		newX = screenX + screenWidth - windowWidth
 	}
 
-	// Set the new position of the window
+	relativeY := clickY - screenY
+	topThreshold := screenHeight / 5
+	bottomThreshold := screenHeight * 4 / 5
+
+	var newY int
+	if relativeY < topThreshold {
+		newY = clickY + offset
+	} else if relativeY > bottomThreshold {
+		newY = clickY - windowHeight - offset
+	} else {
+		newY = clickY - (windowHeight / 2)
+	}
+
+	if newY < screenY {
+		newY = screenY
+	}
+	if newY+windowHeight > screenY+screenHeight {
+		newY = screenY + screenHeight - windowHeight
+	}
+
 	window.SetPosition(newX, newY)
 	return nil
 }
@@ -303,9 +353,14 @@ func (s *linuxSystemTray) run() {
 		return
 	}
 
+	// Publish the dbus handles under the same lock that refreshLocked reads
+	// them under, so a setter racing with the run()-side wiring never
+	// observes a half-initialised pair.
+	s.itemMapLock.Lock()
 	s.conn = conn
 	s.props = props
 	s.menuProps = menuProps
+	s.itemMapLock.Unlock()
 
 	node := introspect.Node{
 		Name: itemPath,
@@ -359,8 +414,23 @@ func (s *linuxSystemTray) run() {
 				if sig == nil {
 					return // We get a nil signal when closing the window.
 				}
+				// conn.Signal delivers all signals on this connection, not only the
+				// NameOwnerChanged match we added. Other signals (e.g. from
+				// org.freedesktop.Notifications) can have fewer body elements, so
+				// indexing without the guard below causes an out-of-range panic.
+				if sig.Name != "org.freedesktop.DBus.NameOwnerChanged" || len(sig.Body) < 3 {
+					continue
+				}
 				// sig.Body has the args, which are [name old_owner new_owner]
-				if sig.Body[2] != "" {
+				name, ok := sig.Body[0].(string)
+				if !ok || name != "org.kde.StatusNotifierWatcher" {
+					continue
+				}
+				newOwner, ok := sig.Body[2].(string)
+				if !ok {
+					continue
+				}
+				if newOwner != "" {
 					s.register()
 				}
 
@@ -425,7 +495,7 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		label = "Wails"
 	}
 
-	return &linuxSystemTray{
+	impl := &linuxSystemTray{
 		parent:         s,
 		id:             s.id,
 		label:          label,
@@ -434,8 +504,9 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		iconPosition:   s.iconPosition,
 		isTemplateIcon: s.isTemplateIcon,
 		quitChan:       make(chan struct{}),
-		menuVersion:    1,
 	}
+	impl.menuVersion.Store(1)
+	return impl
 }
 
 func (s *linuxSystemTray) openMenu() {
@@ -474,7 +545,7 @@ func (s *linuxSystemTray) createMenuPropSpec() map[string]map[string]*prop.Prop 
 		"com.canonical.dbusmenu": {
 			// update version each time we change something
 			"Version": {
-				Value:    s.menuVersion,
+				Value:    s.menuVersion.Load(),
 				Writable: true,
 				Emit:     prop.EmitTrue,
 				Callback: nil,
@@ -547,14 +618,8 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 			Callback: nil,
 		},
 		"ItemIsMenu": {
-			Value:    true,
+			Value:    false,
 			Writable: false,
-			Emit:     prop.EmitTrue,
-			Callback: nil,
-		},
-		"Menu": {
-			Value:    dbus.ObjectPath(menuPath),
-			Writable: true,
 			Emit:     prop.EmitTrue,
 			Callback: nil,
 		},
@@ -567,7 +632,6 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 	}
 
 	if s.icon == nil {
-		// set a basic default one if one isn't set
 		s.icon = icons.WailsLogoWhiteTransparent
 	}
 	if iconPx, err := iconToPX(s.icon); err == nil {
@@ -579,14 +643,18 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 		}
 	}
 
+	if s.menu != nil {
+		props["Menu"] = &prop.Prop{
+			Value:    dbus.ObjectPath(menuPath),
+			Writable: true,
+			Emit:     prop.EmitTrue,
+			Callback: nil,
+		}
+	}
+
 	return map[string]map[string]*prop.Prop{
 		"org.kde.StatusNotifierItem": props,
 	}
-}
-
-func (s *linuxSystemTray) update(i *systrayMenuItem) {
-	s.itemMap[int32(i.menuItem.id)] = i
-	s.refresh()
 }
 
 func (s *linuxSystemTray) register() bool {
@@ -630,6 +698,8 @@ func (s *linuxSystemTray) AboutToShowGroup(ids []int32) (updatesNeeded []int32, 
 
 // GetProperty is an implementation of the com.canonical.dbusmenu.GetProperty method.
 func (s *linuxSystemTray) GetProperty(id int32, name string) (value dbus.Variant, err *dbus.Error) {
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	if item, ok := s.itemMap[id]; ok {
 		if p, ok := item.dbusItem.V1[name]; ok {
 			return p, nil
@@ -638,12 +708,15 @@ func (s *linuxSystemTray) GetProperty(id int32, name string) (value dbus.Variant
 	return
 }
 
-// Event is com.canonical.dbusmenu.Event method.
 func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, timestamp uint32) (err *dbus.Error) {
+	globalApplication.debug("systray Event called", "id", id, "eventID", eventID, "lastClick", fmt.Sprintf("(%d,%d)", s.lastClickX, s.lastClickY))
 	switch eventID {
 	case "clicked":
-		if item, ok := s.itemMap[id]; ok {
-			InvokeAsync(item.menuItem.handleClick)
+		s.itemMapLock.RLock()
+		item, ok := s.itemMap[id]
+		s.itemMapLock.RUnlock()
+		if ok {
+			gtkDispatch(item.menuItem.handleClick)
 		}
 	case "opened":
 		if s.parent.clickHandler != nil {
@@ -670,9 +743,11 @@ func (s *linuxSystemTray) EventGroup(events []struct {
 	for _, event := range events {
 		fmt.Printf("EventGroup: %v, %v, %v, %v\n", event.V0, event.V1, event.V2, event.V3)
 		if event.V1 == "clicked" {
+			s.itemMapLock.RLock()
 			item, ok := s.itemMap[event.V0]
+			s.itemMapLock.RUnlock()
 			if ok {
-				InvokeAsync(item.menuItem.handleClick)
+				gtkDispatch(item.menuItem.handleClick)
 			}
 		}
 	}
@@ -684,10 +759,8 @@ func (s *linuxSystemTray) GetGroupProperties(ids []int32, propertyNames []string
 	V0 int32
 	V1 map[string]dbus.Variant
 }, err *dbus.Error) {
-	// FIXME: RLock?
-	/*	instance.menuLock.Lock()
-		defer instance.menuLock.Unlock()
-	*/
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	for _, id := range ids {
 		if m, ok := s.itemMap[id]; ok {
 			p := struct {
@@ -707,37 +780,79 @@ func (s *linuxSystemTray) GetGroupProperties(ids []int32, propertyNames []string
 }
 
 // GetLayout is an implementation of the com.canonical.dbusmenu.GetLayout method.
+//
+// The returned dbusMenu must not share its V1 map or V2 slice with the live
+// itemMap: godbus serialises the value through reflection on its own worker
+// goroutine after we have already released the lock, and a concurrent setter
+// would otherwise race that iteration. cloneDbusMenu walks the subtree under
+// the read lock and returns a fresh, self-contained copy.
 func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, propertyNames []string) (revision uint32, layout dbusMenu, err *dbus.Error) {
-	// FIXME: RLock?
+	s.itemMapLock.RLock()
+	defer s.itemMapLock.RUnlock()
 	if m, ok := s.itemMap[parentID]; ok {
-		return s.menuVersion, *m.dbusItem, nil
+		return s.menuVersion.Load(), cloneDbusMenu(m.dbusItem), nil
 	}
 
 	return
 }
 
-// Activate implements org.kde.StatusNotifierItem.Activate method.
+// cloneDbusMenu deep-copies a dbusMenu subtree so the returned value shares no
+// maps or slices with the live menu. V2 entries that wrap a *dbusMenu are
+// recursively cloned and re-wrapped; any other variants (none today, but let's
+// be defensive) are passed through.
+func cloneDbusMenu(src *dbusMenu) dbusMenu {
+	out := dbusMenu{
+		V0: src.V0,
+		V1: make(map[string]dbus.Variant, len(src.V1)),
+		V2: make([]dbus.Variant, 0, len(src.V2)),
+	}
+	for k, v := range src.V1 {
+		out.V1[k] = v
+	}
+	for _, child := range src.V2 {
+		if cm, ok := child.Value().(*dbusMenu); ok {
+			childCopy := cloneDbusMenu(cm)
+			out.V2 = append(out.V2, dbus.MakeVariant(&childCopy))
+		} else {
+			out.V2 = append(out.V2, child)
+		}
+	}
+	return out
+}
+
 func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {
-	if s.parent.doubleClickHandler != nil {
-		s.parent.doubleClickHandler()
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
+	globalApplication.debug("systray Activate called", "x", x, "y", y)
+	if s.parent.clickHandler != nil {
+		s.parent.clickHandler()
 	}
 	return
 }
 
-// ContextMenu is org.kde.StatusNotifierItem.ContextMenu method
 func (s *linuxSystemTray) ContextMenu(x int32, y int32) (err *dbus.Error) {
-	fmt.Println("ContextMenu", x, y)
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
 	return nil
 }
 
 func (s *linuxSystemTray) Scroll(delta int32, orientation string) (err *dbus.Error) {
-	fmt.Println("Scroll", delta, orientation)
 	return
 }
 
-// SecondaryActivate implements org.kde.StatusNotifierItem.SecondaryActivate method.
 func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) {
-	s.parent.rightClickHandler()
+	s.lastClickX = int(x)
+	s.lastClickY = int(y)
+	if s.parent.rightClickHandler != nil {
+		s.parent.rightClickHandler()
+		return
+	}
+	s.itemMapLock.RLock()
+	hasMenu := s.menu != nil
+	s.itemMapLock.RUnlock()
+	if hasMenu {
+		s.parent.OpenMenu()
+	}
 	return
 }
 

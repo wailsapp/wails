@@ -1,0 +1,303 @@
+---
+title: Benachrichtigungen
+description: Zeigen Sie native Systembenachrichtigungen mit Aktionsschaltflächen und Texteingabe an
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Einführung
+
+Wails bietet ein umfassendes plattformübergreifendes Benachrichtigungssystem für Desktop-Anwendungen. Dieser Dienst ermöglicht es Ihnen, native Systembenachrichtigungen anzuzeigen, mit Unterstützung für interaktive Elemente wie Aktionsschaltflächen und Texteingabefelder.
+
+## Grundlegende Verwendung
+
+### Erstellen des Dienstes
+
+Initialisieren Sie zunächst den Benachrichtigungsdienst:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/notifications"
+
+// Erstellen Sie einen neuen Benachrichtigungsdienst
+notifier := notifications.New()
+
+// Registrieren Sie den Dienst bei der Anwendung
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(notifier),
+    },
+})
+```
+
+## Benachrichtigungsberechtigung
+
+Benachrichtigungen auf macOS erfordern eine Benutzerberechtigung. Fordern Sie diese an und prüfen Sie sie:
+
+```go
+authorized, err := notifier.CheckNotificationAuthorization()
+if err != nil {
+    // Fehler bei der Autorisierung behandeln
+}
+if authorized {
+    // Benachrichtigungen senden
+} else {
+    // Berechtigung anfordern
+    authorized, err = notifier.RequestNotificationAuthorization()
+}
+```
+Unter Windows und Linux wird immer `true` zurückgegeben.
+
+## Benachrichtigungstypen
+
+### Einfache Benachrichtigungen
+
+Senden Sie eine einfache Benachrichtigung mit einer eindeutigen ID, einem Titel, einem optionalen Untertitel (macOS und Linux) und einem Textkörper an die Benutzer:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "Neue Kalender-Einladung",
+    Subtitle: "Von: Jane Doe", // Optional
+    Body: "Tippen Sie, um das Ereignis anzuzeigen",
+})
+
+```
+
+### Interaktive Benachrichtigungen
+Senden Sie eine Benachrichtigung mit Aktionsschaltflächen und Texteingaben. Diese Benachrichtigungen erfordern, dass zuerst eine Benachrichtigungskategorie registriert wird:
+
+```go
+// Definieren Sie eine eindeutige Kategorien-ID
+categoryID := "unique-category-id"
+
+// Definieren Sie eine Kategorie mit Aktionen
+category := notifications.NotificationCategory{
+    ID: categoryID,
+    Actions: []notifications.NotificationAction{
+        {
+            ID:    "OPEN", 
+            Title: "Öffnen",
+        },
+        {
+            ID:          "ARCHIVE", 
+            Title:       "Archivieren", 
+            Destructive: true,  /* macOS-spezifisch */
+        },
+    },
+    HasReplyField:    true,
+    ReplyPlaceholder: "Nachricht...",
+    ReplyButtonTitle: "Antworten",
+}
+
+// Registrieren Sie die Kategorie
+notifier.RegisterNotificationCategory(category)
+
+// Senden Sie eine interaktive Benachrichtigung mit den in der angegebenen Kategorie registrierten Aktionen
+notifier.SendNotificationWithActions(notifications.NotificationOptions{
+    ID:         "unique-id",
+    Title:      "Neue Nachricht",
+    Subtitle:   "Von: Jane Doe",
+    Body:       "Können Sie kommen?",
+    CategoryID: categoryID,
+})
+```
+
+## Benachrichtigungsantworten
+
+Verarbeiten Sie Benutzerinteraktionen mit Benachrichtigungen:
+
+```go
+notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
+    response := result.Response
+    fmt.Printf("Benachrichtigung %s wurde mit folgender Aktion bearbeitet: %s\n", response.ID, response.ActionIdentifier)
+
+    if response.ActionIdentifier == "TEXT_REPLY" {
+        fmt.Printf("Benutzer hat geantwortet: %s\n", response.UserText)
+    }
+
+    if data, ok := response.UserInfo["sender"].(string); ok {
+        fmt.Printf("Ursprünglicher Absender: %s\n", data)
+    }
+
+    // Emit ein Ereignis an das Frontend
+    app.Event.Emit("notification", result.Response)
+})
+```
+
+## Benachrichtigungsanpassung
+
+### Benutzerdefinierte Metadaten
+
+Einfache und interaktive Benachrichtigungen können benutzerdefinierte Daten enthalten:
+
+```go
+notifier.SendNotification(notifications.NotificationOptions{
+    ID: "unique-id",
+    Title: "Neue Kalender-Einladung",
+    Subtitle: "Von: Jane Doe", // Optional
+    Body: "Tippen Sie, um das Ereignis anzuzeigen",
+    Data: map[string]interface{}{
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
+    }
+})
+
+```
+
+## Plattformüberlegungen
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    Unter macOS erfordern Benachrichtigungen:
+    
+    - Eine Benutzerberechtigung
+    - Dass die App für die Verteilung notarisiert ist
+    - Die Verwendung systemstandardisierter Benachrichtigungsdesigns
+    - Unterstützung für `subtitle` (Untertitel)
+    - Unterstützung für Benutzertexteingabe
+    - Unterstützung für die Aktionsoption `Destructive`
+    - Automatische Handhabung von Dunkel-/Hellmodus
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    Unter Windows verwenden Benachrichtigungen:
+    
+    - Windows-System-Toast-Stile
+    - Anpassung an Windows-Theme-Einstellungen
+    - Unterstützung für Benutzertexteingabe
+    - Unterstützung für High-DPI-Displays
+    - Keine Unterstützung für `subtitle` (Untertitel)
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    Unter Linux hängt das Dialogverhalten von der Desktop-Umgebung ab:
+    
+    - Verwendung nativer Benachrichtigungen, wenn verfügbar
+    - Befolgen des Themas der Desktop-Umgebung
+    - Positionierung gemäß den Regeln der Desktop-Umgebung
+    - Unterstützung für `subtitle` (Untertitel)
+    - Keine Unterstützung für Benutzertexteingabe
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. Berechtigungen prüfen und anfordern:
+   - macOS erfordert eine Benutzerberechtigung
+
+2. Klare und prägnante Benachrichtigungen bereitstellen:
+   - Verwenden Sie beschreibende Titel, Untertitel, Texte und Aktionstitel
+
+3. Dialogantworten angemessen behandeln:
+   - Prüfen Sie auf Fehler in Benachrichtigungsantworten
+   - Geben Sie Feedback für Benutzeraktionen
+
+4. Plattformkonventionen berücksichtigen:
+   - Befolgen Sie plattformspezifische Benachrichtigungsmuster
+   - Respektieren Sie Systemeinstellungen
+
+## Beispiele
+
+Entdecken Sie dieses Beispiel:
+
+- [Benachrichtigungen](/examples/notifications)
+
+## API-Referenz
+
+### Dienstverwaltung
+| Methode                                     | Beschreibung                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Erstellt einen neuen Benachrichtigungsdienst                   |
+
+### Benachrichtigungsberechtigung
+| Methode                                       | Beschreibung                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| `RequestNotificationAuthorization()`         | Fordert die Berechtigung zum Anzeigen von Benachrichtigungen an (macOS)       |
+| `CheckNotificationAuthorization()`           | Prüft den aktuellen Status der Benachrichtigungsberechtigung (macOS)   |
+
+### Senden von Benachrichtigungen
+| Methode                                                     | Beschreibung                                       |
+|------------------------------------------------------------|---------------------------------------------------|
+| `SendNotification(options NotificationOptions)`            | Sendet eine einfache Benachrichtigung                        |
+| `SendNotificationWithActions(options NotificationOptions)` | Sendet eine interaktive Benachrichtigung mit Aktionen    |
+
+### Benachrichtigungskategorien
+| Methode                                                        | Beschreibung                                       |
+|---------------------------------------------------------------|---------------------------------------------------|
+| `RegisterNotificationCategory(category NotificationCategory)` | Registriert eine wiederverwendbare Benachrichtigungskategorie        |
+| `RemoveNotificationCategory(categoryID string)`               | Entfernt eine zuvor registrierte Kategorie          |------|-------------------------------|-------------|----------|--------------------|--------------|
+| `RemoveAllPendingNotifications()`               | Entfernt alle ausstehenden Benachrichtigungen (nur macOS und Linux)            |
+| `RemovePendingNotification(identifier string)`  | Entfernt eine bestimmte ausstehende Benachrichtigung (nur macOS und Linux)      |
+| `RemoveAllDeliveredNotifications()`             | Entfernt alle zugestellten Benachrichtigungen (nur macOS und Linux)          |
+| `RemoveDeliveredNotification(identifier string)`| Entfernt eine bestimmte zugestellte Benachrichtigung (nur macOS und Linux)    |
+| `RemoveNotification(identifier string)`         | Entfernt eine Benachrichtigung (Linux-spezifisch)                             |
+
+### Ereignisbehandlung
+| Methode                                                             | Beschreibung                                     |
+|------|------------------------|----------------------|--------|--------|
+| `OnNotificationResponse(callback func(result NotificationResult))` | Registriert einen Callback für Benachrichtigungsantworten |
+
+### Strukturen und Typen
+
+#### NotificationOptions
+```go
+type NotificationOptions struct {
+    ID         string                 // Unique identifier for the notification
+    Title      string                 // Main notification title
+    Subtitle   string                 // Subtitle text (macOS and Linux only)
+    Body       string                 // Main notification content
+    CategoryID string                 // Category identifier for interactive notifications
+    Data       map[string]interface{} // Custom data to associate with the notification
+}
+```
+
+#### NotificationCategory 
+```go
+type NotificationCategory struct {
+    ID               string                // Unique identifier for the category
+    Actions          []NotificationAction  // Button actions for the notification
+    HasReplyField    bool                  // Whether to include a text input field
+    ReplyPlaceholder string                // Placeholder text for the input field
+    ReplyButtonTitle string                // Text for the reply button
+}
+```
+
+#### NotificationAction
+```go
+type NotificationAction struct {
+    ID          string  // Unique identifier for the action
+    Title       string  // Button text
+    Destructive bool    // Whether the action is destructive (macOS-specific)
+}
+```
+
+#### NotificationResponse 
+```go
+type NotificationResponse struct {
+    ID               string                  // Notification identifier
+    ActionIdentifier string                  // Action that was triggered
+    CategoryID       string                  // Category of the notification
+    Title            string                  // Title of the notification
+    Subtitle         string                  // Subtitle of the notification
+    Body             string                  // Body text of the notification
+    UserText         string                  // Text entered by the user
+    UserInfo         map[string]interface{}  // Custom data from the notification
+}
+```
+
+#### NotificationResult
+```go
+type NotificationResult struct {
+    Response NotificationResponse  // Response data
+    Error    error                 // Any error that occurred
+}
+```

@@ -10,62 +10,33 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 Wails is a framework for building desktop applications using **Go for the backend** and **web technologies for the frontend**. But unlike Electron, Wails doesn't bundle a browser—it uses the **operating system's native WebView**.
 
 ```d2
-direction: right
+direction: left
 
-User: "User" {
-  shape: person
-  style.fill: "#3B82F6"
-}
+Wails App: {
+  shape: sequence_diagram
+  label: "Wails App"
 
-Application: "Your Wails Application" {
-  Frontend: "Frontend\n(HTML/CSS/JS)" {
-    shape: rectangle
-    style.fill: "#8B5CF6"
+  frontend: Frontend
+  backend: Go Backend
+  os: Operating System
+
+  Initialisation: {
+    shape: sequence_diagram
+    backend."Serves Static Web App"
+    backend -> frontend: HTML / JS / CSS
+    frontend."Render Site via WebKit"
   }
-  
-  Runtime: "Wails Runtime" {
-    Bridge: "Message Bridge" {
-      shape: diamond
-      style.fill: "#10B981"
-    }
-    
-    Bindings: "Type-Safe Bindings" {
-      shape: rectangle
-      style.fill: "#10B981"
-    }
-  }
-  
-  Backend: "Go Backend" {
-    Services: "Your Services" {
-      shape: rectangle
-      style.fill: "#00ADD8"
-    }
-    
-    NativeAPIs: "OS APIs" {
-      shape: rectangle
-      style.fill: "#00ADD8"
-    }
+  Regular Communication: {
+    shape: sequence_diagram
+    frontend."Make API-style call"
+    frontend -> backend.a: JSON
+    backend.a."Service processes request"
+    backend.a -> os: Call System APIs
+    backend.a."Generate Response"
+    backend.a -> frontend: JSON
+    frontend."Process response"
   }
 }
-
-OS: "Operating System" {
-  WebView: "Native WebView\n(WebKit/WebView2/WebKitGTK)" {
-    shape: rectangle
-    style.fill: "#6B7280"
-  }
-  
-  SystemAPIs: "System APIs\n(Windows/macOS/Linux)" {
-    shape: rectangle
-    style.fill: "#6B7280"
-  }
-}
-
-User -> Application.Frontend: "Interacts with UI"
-Application.Frontend <-> Application.Runtime.Bridge: "JSON messages"
-Application.Runtime.Bridge <-> Application.Backend.Services: "Direct function calls"
-Application.Runtime.Bindings -> Application.Frontend: "TypeScript definitions"
-Application.Frontend -> OS.WebView: "Renders in"
-Application.Backend.NativeAPIs -> OS.SystemAPIs: "Native calls"
 ```
 
 **Key differences from Electron:**
@@ -226,33 +197,24 @@ export function GetTime(): Promise<Date>
 Events enable **pub/sub communication** between components.
 
 ```d2
-direction: right
+direction: left
 
-GoService: "Go Service" {
-  shape: rectangle
-  style.fill: "#00ADD8"
+Wails Event System: {
+  shape: sequence_diagram
+
+  window1: Window 1
+  window2: Window 2
+  backend: Go Backend
+
+  Event Driver: {
+    shape: sequence_diagram
+    window1."Subscribe to 'data-updated' events"
+    backend.a."App Emit('data-updated', data)"
+    backend.a -> window1.a:"JSON Event Bus"
+    backend.a -> window2:"JSON Event Bus"
+    window1.a."Subscriber processes On('data-updated', handler)"
+  }
 }
-
-EventBus: "Event Bus" {
-  shape: cylinder
-  style.fill: "#10B981"
-}
-
-Frontend1: "Window 1" {
-  shape: rectangle
-  style.fill: "#8B5CF6"
-}
-
-Frontend2: "Window 2" {
-  shape: rectangle
-  style.fill: "#8B5CF6"
-}
-
-GoService -> EventBus: "Emit('data-updated', data)"
-EventBus -> Frontend1: "Notify subscribers"
-EventBus -> Frontend2: "Notify subscribers"
-Frontend1 -> EventBus: "On('data-updated', handler)"
-Frontend2 -> EventBus: "On('data-updated', handler)"
 ```
 
 **Use cases:**
@@ -264,14 +226,14 @@ Frontend2 -> EventBus: "On('data-updated', handler)"
 **Example:**
 ```go
 // Go: Emit an event
-app.EmitEvent("user-logged-in", user)
+app.Event.Emit("user-logged-in", user)
 ```
 
 ```javascript
 // JavaScript: Listen for event
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 
-On('user-logged-in', (user) => {
+Events.On('user-logged-in', (user) => {
     console.log('User logged in:', user)
 })
 ```
@@ -350,18 +312,16 @@ Shutdown.Save -> End
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
-    OnShutdown: func() {
-        // Save state, close connections, etc.
-    },
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
 })
 ```
+
+There is no `OnStartup` field on `application.Options`. Startup work belongs in a service's `ServiceStartup(ctx, options)`, in a callback registered via `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`, or simply before `app.Run()`.
 
 [Learn more about lifecycle →](/concepts/lifecycle)
 
@@ -575,7 +535,7 @@ Style: Technical diagram with memory regions as boxes, clear labels, size indica
 - **Stream large files**: Don't load entirely into memory
 - **Clean up listeners**: Remove event listeners when done
 
-[Learn more about performance →](/guides/advanced/performance)
+[Learn more about performance →](/guides/performance)
 
 ## Security Model
 
@@ -634,7 +594,7 @@ Bridge -> Frontend: "Send response"
 - **Sanitise file paths** before file operations
 - **Rate limit** expensive operations
 
-[Learn more about security →](/guides/advanced/security)
+[Learn more about security →](/guides/security)
 
 ## Next Steps
 

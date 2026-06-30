@@ -114,14 +114,16 @@ const focusHandler = () => {
     console.log('Window focused');
 };
 
-// Add the listener
-Events.On('common:WindowFocus', focusHandler);
+// Add the listener — capture the unsubscribe function it returns
+const unsubscribe = Events.On('common:WindowFocus', focusHandler);
 
-// Later, remove it when no longer needed
-Events.Off('common:WindowFocus', focusHandler);
+// Later, remove this specific listener via the returned unsubscribe
+unsubscribe();
 
-// Or remove all listeners for an event
+// Or remove ALL listeners for one (or more) event names — Events.Off takes only event-name strings
 Events.Off('common:WindowFocus');
+// Events.Off('common:WindowFocus', 'common:WindowLostFocus'); // variadic
+// Events.OffAll(); // remove every listener for every event (no args)
 ```
 
 ## Common Use Cases
@@ -154,7 +156,7 @@ Keep your app in sync with the system theme:
 import { Events } from '@wailsio/runtime';
 
 Events.On('common:ThemeChanged', (event) => {
-    const isDarkMode = event.data.isDark;
+    const isDarkMode = event.data.isDarkMode;
 
     if (isDarkMode) {
         document.body.classList.add('dark-theme');
@@ -423,6 +425,8 @@ These events work on all platforms:
 | `common:ApplicationStarted` | Application has fully started | Initialize your app, load saved state |
 | `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
 | `common:ThemeChanged` | System theme changed | Update app appearance |
+| `common:SystemWillSleep` | System is about to suspend | Flush state, close sockets |
+| `common:SystemDidWake` | System resumed from suspend | Reconnect, refresh stale data |
 | `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
 | `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
 | `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
@@ -443,7 +447,8 @@ Key events for Windows applications:
 |-------|-------------|----------|
 | `windows:SystemThemeChanged` | Windows theme changed | Update app colors |
 | `windows:APMSuspend` | System suspending | Save state, pause operations |
-| `windows:APMResumeSuspend` | System resumed | Restore state, refresh data |
+| `windows:APMResumeAutomatic` | System resumed (always fires on resume) | Restore state, refresh data |
+| `windows:APMResumeSuspend` | System resumed via user input (after `APMResumeAutomatic`) | Distinguish user-initiated wake |
 | `windows:APMPowerStatusChange` | Power status changed | Adjust performance settings |
 
 #### macOS Events
@@ -455,6 +460,10 @@ Important macOS application events:
 | `mac:ApplicationDidBecomeActive` | App became active | Resume operations |
 | `mac:ApplicationDidResignActive` | App became inactive | Pause operations |
 | `mac:ApplicationWillTerminate` | App will quit | Final cleanup |
+| `mac:ApplicationWillSleep` | System about to suspend | Save state, close sockets |
+| `mac:ApplicationDidWake` | System resumed | Reconnect, refresh |
+| `mac:ApplicationScreensDidSleep` | Displays went to sleep | Pause rendering (distinct from system sleep) |
+| `mac:ApplicationScreensDidWake` | Displays woke | Resume rendering |
 | `mac:WindowDidEnterFullScreen` | Entered fullscreen | Adjust UI for fullscreen |
 | `mac:WindowDidExitFullScreen` | Exited fullscreen | Restore normal UI |
 
@@ -465,8 +474,14 @@ Core Linux window events:
 | Event | Description | Use Case |
 |-------|-------------|----------|
 | `linux:SystemThemeChanged` | Desktop theme changed | Update app theme |
+| `linux:SystemWillSleep` | System about to suspend (logind) | Save state |
+| `linux:SystemDidWake` | System resumed (logind) | Reconnect, refresh |
 | `linux:WindowFocusIn` | Window gained focus | Resume activities |
 | `linux:WindowFocusOut` | Window lost focus | Pause activities |
+| `linux:WindowLoadStarted` | WebView started loading | Show loading indicator |
+| `linux:WindowLoadRedirected` | WebView redirected | Track navigation redirects |
+| `linux:WindowLoadCommitted` | WebView committed load | Content is being received |
+| `linux:WindowLoadFinished` | WebView finished loading | Hide loading indicator, inject JS/CSS |
 
 ## Best Practices
 
@@ -500,11 +515,11 @@ useEffect(() => {
         // Handle event
     };
 
-    Events.On('common:WindowResize', handler);
+    const off = Events.On('common:WindowDidResize', handler);
 
-    // Cleanup
+    // Cleanup — call the unsubscribe returned by Events.On
     return () => {
-        Events.Off('common:WindowResize', handler);
+        off();
     };
 }, []);
 ```
@@ -514,13 +529,12 @@ useEffect(() => {
 Check platform availability when using platform-specific events:
 
 ```javascript
-import { Platform, Events } from '@wailsio/runtime';
+import { Events } from '@wailsio/runtime';
 
-if (Platform.isWindows) {
-    Events.On('windows:APMSuspend', handleSuspend);
-} else if (Platform.isMac) {
-    Events.On('mac:ApplicationWillTerminate', handleTerminate);
-}
+// Platform-specific events can be registered unconditionally;
+// they will simply never fire on unsupported platforms.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
 ```
 
 ### 4. Don't Overuse Events

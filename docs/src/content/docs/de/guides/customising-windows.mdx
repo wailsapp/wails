@@ -1,0 +1,130 @@
+---
+title: Anpassen von Fenstern in Wails
+description: Passen Sie das Erscheinungsbild und das Verhalten von Fenstern in Ihren Wails-Anwendungen an
+sidebar:
+  order: 10
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Relevante Plattformen: <Badge text="Windows" variant="note" /> <Badge text="macOS" variant="success" />
+<br/>
+
+Wails bietet eine API zur Steuerung des Erscheinungsbildes und der Funktionalität
+der Steuerelemente eines Fensters. Diese Funktionalität ist auf Windows und macOS
+verfügbar, nicht jedoch auf Linux.
+
+## Festlegen der Schaltflächenzustände des Fensters
+
+Die Schaltflächenzustände werden durch die `ButtonState`-Aufzählung definiert:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled  ButtonState = 1
+    ButtonHidden    ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: Die Schaltfläche ist aktiviert und sichtbar.
+- `ButtonDisabled`: Die Schaltfläche ist sichtbar, aber deaktiviert (ausgegraut).
+- `ButtonHidden`: Die Schaltfläche ist in der Titelleiste ausgeblendet.
+
+Die Schaltflächenzustände können während der Fenstererstellung oder zur Laufzeit festgelegt werden.
+
+### Festlegen der Schaltflächenzustände während der Fenstererstellung
+
+Beim Erstellen eines neuen Fensters können Sie den Anfangszustand der Schaltflächen mit
+der Struktur `WebviewWindowOptions` festlegen:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+    })
+
+    app.Run()
+}
+```
+
+Im obigen Beispiel ist die Minimieren-Schaltfläche ausgeblendet, die Maximieren-Schaltfläche
+ist inaktiv (ausgegraut) und die Schließen-Schaltfläche ist aktiv.
+
+### Festlegen der Schaltflächenzustände zur Laufzeit
+
+Sie können die Schaltflächenzustände auch zur Laufzeit mit den folgenden Methoden der
+`Window`-Schnittstelle ändern:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+### Plattformunterschiede
+
+Die Funktionalität der Schaltflächenzustände verhält sich auf Windows und
+macOS leicht unterschiedlich:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Min/Max/Schließen deaktivieren | Deaktiviert Min/Max/Schließen | Deaktiviert Min/Max/Schließen |
+| Min ausblenden          | Deaktiviert Min          | Blendet Min-Schaltfläche aus       |
+| Max ausblenden          | Deaktiviert Max          | Blendet Max-Schaltfläche aus       |
+| Schließen ausblenden    | Blendet alle Steuerelemente aus     | Blendet Schließen aus            |
+
+Hinweis: Unter Windows ist es nicht möglich, die Min/Max-Schaltflächen einzeln auszublenden.
+Das Deaktivieren beider blendet jedoch beide Steuerelemente aus und zeigt nur die
+Schließen-Schaltfläche an.
+
+### Steuern des Fensterstils (Windows)
+
+Um den Stil der Titelleiste unter Windows zu steuern, können Sie das Feld `ExStyle`
+in der Struktur `WebviewWindowOptions` verwenden:
+
+Beispiel:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+    })
+
+    app.Run()
+}
+```
+
+Andere Optionen, die den erweiterten Stil eines Fensters beeinflussen, werden durch
+diese Einstellung überschrieben:
+
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

@@ -15,7 +15,6 @@ const call = newRuntimeCaller(objectNames.System);
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
 const SystemCapabilities = 2;
-const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched drop event
 
 const _invoke = (function () {
     try {
@@ -123,6 +122,42 @@ export function IsMac(): boolean {
 }
 
 /**
+ * Checks if the current operating system is iOS.
+ *
+ * @returns True if the operating system is iOS, otherwise false.
+ */
+export function IsIOS(): boolean {
+    return (window as any)._wails?.environment?.OS === "ios";
+}
+
+/**
+ * Checks if the current operating system is Android.
+ *
+ * @returns True if the operating system is Android, otherwise false.
+ */
+export function IsAndroid(): boolean {
+    return (window as any)._wails?.environment?.OS === "android";
+}
+
+/**
+ * Checks if the app is running on a mobile OS (iOS or Android).
+ *
+ * @returns True on iOS or Android, otherwise false.
+ */
+export function IsMobile(): boolean {
+    return IsIOS() || IsAndroid();
+}
+
+/**
+ * Checks if the app is running on a desktop OS (macOS, Windows or Linux).
+ *
+ * @returns True on macOS, Windows or Linux, otherwise false.
+ */
+export function IsDesktop(): boolean {
+    return IsMac() || IsWindows() || IsLinux();
+}
+
+/**
  * Checks if the current environment architecture is AMD64.
  *
  * @returns True if the current environment architecture is AMD64, false otherwise.
@@ -156,37 +191,5 @@ export function IsARM64(): boolean {
  */
 export function IsDebug(): boolean {
     return Boolean((window as any)._wails?.environment?.Debug);
-}
-
-/**
- * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
- * Gathers information about the drop target element and sends it back to the Go backend.
- *
- * @param filenames - An array of file paths (strings) that were dropped.
- * @param x - The x-coordinate of the drop event.
- * @param y - The y-coordinate of the drop event.
- */
-export function HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
-    const element = document.elementFromPoint(x, y);
-    const elementId = element ? element.id : '';
-    const classList = element ? Array.from(element.classList) : [];
-
-    const payload = {
-        filenames,
-        x,
-        y,
-        elementId,
-        classList,
-    };
-
-    call(ApplicationFilesDroppedWithContext, payload)
-        .then(() => {
-            // Optional: Log success or handle if needed
-            console.log("Platform file drop processed and sent to Go.");
-        })
-        .catch(err => {
-            // Optional: Log error
-            console.error("Error sending platform file drop to Go:", err);
-        });
 }
 

@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
@@ -120,6 +121,56 @@ type Options struct {
 	//
 	// Example use case: Implementing WebSocket-based or PostMessage IPC.
 	Transport Transport
+
+	// Server configures the HTTP server for server mode.
+	// Server mode is enabled by building with the "server" build tag:
+	//   go build -tags server
+	//
+	// In server mode, the application runs as an HTTP server without a native window.
+	// This enables deploying the same Wails application as a web server for:
+	//   - Docker/container deployments
+	//   - Server-side rendering
+	//   - Web-only access without desktop dependencies
+	Server ServerOptions
+}
+
+// ServerOptions configures the HTTP server for headless mode.
+type ServerOptions struct {
+	// Host is the address to bind to.
+	// Default: "localhost" for security. Use "0.0.0.0" for all interfaces.
+	Host string
+
+	// Port is the port to listen on.
+	// Default: 8080
+	Port int
+
+	// ReadTimeout is the maximum duration for reading the entire request.
+	// Default: 30 seconds
+	ReadTimeout time.Duration
+
+	// WriteTimeout is the maximum duration before timing out writes of the response.
+	// Default: 30 seconds
+	WriteTimeout time.Duration
+
+	// IdleTimeout is the maximum duration to wait for the next request.
+	// Default: 120 seconds
+	IdleTimeout time.Duration
+
+	// ShutdownTimeout is the maximum duration to wait for active connections to close.
+	// Default: 30 seconds
+	ShutdownTimeout time.Duration
+
+	// TLS configures HTTPS. If nil, HTTP is used.
+	TLS *TLSOptions
+}
+
+// TLSOptions configures HTTPS for the headless server.
+type TLSOptions struct {
+	// CertFile is the path to the TLS certificate file.
+	CertFile string
+
+	// KeyFile is the path to the TLS private key file.
+	KeyFile string
 }
 
 // AssetOptions defines the configuration of the AssetServer.
@@ -222,6 +273,34 @@ type WindowsOptions struct {
 
 	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
 	WebviewBrowserPath string
+
+	// EnabledFeatures, DisabledFeatures and AdditionalBrowserArgs configure the WebView2 browser.
+	// These apply globally to ALL windows because WebView2 shares a single browser environment.
+	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags
+	// AdditionalBrowserArgs must include the "--" prefix, e.g. "--remote-debugging-port=9222"
+	EnabledFeatures       []string
+	DisabledFeatures      []string
+	AdditionalBrowserArgs []string
+
+	// UseVisualHosting forces WebView2 to use IDCompositionVisual hosting
+	// instead of the default windowed (HWND-child) hosting. Set this to
+	// true if your app is used over RDP — particularly the Microsoft
+	// Remote Desktop iOS client, which provisions a Retina-optimised
+	// virtual monitor mid-session whose DPI context differs from the
+	// session's. With windowed hosting that DPI mismatch forces a
+	// synchronous DComp re-marshal on every WebView2 controller call
+	// (PutIsVisible, MoveFocus, first-paint, surface release), each
+	// blocking the UI thread for ~2 seconds and persisting until the
+	// server is rebooted. Visual hosting eliminates that re-marshal.
+	//
+	// Implementation: sets the COREWEBVIEW2_FORCED_HOSTING_MODE env var
+	// to COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL before WebView2 is
+	// initialised. Must be set before app.Run().
+	//
+	// See: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/windowed-vs-visual-hosting
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/5248
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/4485
+	UseVisualHosting bool
 }
 
 /********* Linux Options *********/
@@ -245,66 +324,66 @@ type LinuxOptions struct {
 
 // IOSOptions contains options for iOS applications.
 type IOSOptions struct {
-    // DisableInputAccessoryView controls whether the iOS WKWebView shows the
-    // input accessory toolbar (the bar with Next/Previous/Done) above the keyboard.
-    // Default: false (accessory bar is shown).
-    // true  => accessory view is disabled/hidden
-    // false => accessory view is enabled/shown
-    DisableInputAccessoryView bool
+	// DisableInputAccessoryView controls whether the iOS WKWebView shows the
+	// input accessory toolbar (the bar with Next/Previous/Done) above the keyboard.
+	// Default: false (accessory bar is shown).
+	// true  => accessory view is disabled/hidden
+	// false => accessory view is enabled/shown
+	DisableInputAccessoryView bool
 
-    // Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
-    // Use Disable* to keep default true behavior without surprising zero-values.
-    DisableScroll           bool
-    DisableBounce           bool
-    DisableScrollIndicators bool
+	// Scrolling & Bounce (defaults: scroll/bounce/indicators are enabled on iOS)
+	// Use Disable* to keep default true behavior without surprising zero-values.
+	DisableScroll           bool
+	DisableBounce           bool
+	DisableScrollIndicators bool
 
-    // Navigation gestures (default false)
-    EnableBackForwardNavigationGestures bool
+	// Navigation gestures (default false)
+	EnableBackForwardNavigationGestures bool
 
-    // Link previews (default true on iOS)
-    // Use Disable* so default (false) means previews are enabled.
-    DisableLinkPreview bool
+	// Link previews (default true on iOS)
+	// Use Disable* so default (false) means previews are enabled.
+	DisableLinkPreview bool
 
-    // Media playback
-    // Inline playback (default false) -> Enable*
-    EnableInlineMediaPlayback        bool
-    // Autoplay without user action (default false) -> Enable*
-    EnableAutoplayWithoutUserAction  bool
+	// Media playback
+	// Inline playback (default false) -> Enable*
+	EnableInlineMediaPlayback bool
+	// Autoplay without user action (default false) -> Enable*
+	EnableAutoplayWithoutUserAction bool
 
-    // Inspector / Debug (default true in dev)
-    // Use Disable* so default (false) keeps inspector enabled.
-    DisableInspectable bool
+	// Inspector / Debug (default true in dev)
+	// Use Disable* so default (false) keeps inspector enabled.
+	DisableInspectable bool
 
-    // User agent customization
-    // If empty, defaults apply. ApplicationNameForUserAgent defaults to "wails.io".
-    UserAgent                   string
-    ApplicationNameForUserAgent string
+	// User agent customization
+	// If empty, defaults apply. ApplicationNameForUserAgent defaults to "wails.io".
+	UserAgent                   string
+	ApplicationNameForUserAgent string
 
-    // App-wide background colour for the main iOS window prior to any WebView creation.
-    // If AppBackgroundColourSet is true, the delegate will apply this colour to the app window
-    // during didFinishLaunching. Otherwise, it defaults to white.
-    AppBackgroundColourSet bool
-    BackgroundColour       RGBA
+	// BackgroundColour is the app-wide background colour for the main iOS window,
+	// shown before the WebView paints. Set it to match your web background to
+	// avoid a white flash on launch. Defaults to white when left at its zero
+	// value.
+	BackgroundColour RGBA
 
-    // EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
-    // When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
-    // to the window with detail: { index: number }.
-    // NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
-    // regardless of this flag, and the provided items will be used.
-    EnableNativeTabs bool
+	// EnableNativeTabs enables a native iOS UITabBar at the bottom of the screen.
+	// When enabled, the native tab bar will dispatch a 'nativeTabSelected' CustomEvent
+	// to the window with detail: { index: number }.
+	// NOTE: If NativeTabsItems has one or more entries, native tabs are auto-enabled
+	// regardless of this flag, and the provided items will be used.
+	EnableNativeTabs bool
 
-    // NativeTabsItems configures the labels and optional SF Symbol icons for the
-    // native UITabBar. If one or more items are provided, native tabs are automatically
-    // enabled. If empty and EnableNativeTabs is true, default items are used.
-    NativeTabsItems []NativeTabItem
+	// NativeTabsItems configures the labels and optional SF Symbol icons for the
+	// native UITabBar. If one or more items are provided, native tabs are automatically
+	// enabled. If empty and EnableNativeTabs is true, default items are used.
+	NativeTabsItems []NativeTabItem
 }
 
 // NativeTabItem describes a single item in the iOS native UITabBar.
 // SystemImage is the SF Symbols name to use for the icon (iOS 13+). If empty or
 // unavailable on the current OS, no icon is shown.
 type NativeTabItem struct {
-    Title       string        `json:"Title"`
-    SystemImage NativeTabIcon `json:"SystemImage"`
+	Title       string        `json:"Title"`
+	SystemImage NativeTabIcon `json:"SystemImage"`
 }
 
 // NativeTabIcon is a string-based enum for SF Symbols.
@@ -312,23 +391,24 @@ type NativeTabItem struct {
 // any valid SF Symbols name as a plain string.
 //
 // Example:
-//  NativeTabsItems: []NativeTabItem{
-//    { Title: "Home", SystemImage: NativeTabIconHouse },
-//    { Title: "Settings", SystemImage: "gearshape" }, // arbitrary string still allowed
-//  }
+//
+//	NativeTabsItems: []NativeTabItem{
+//	  { Title: "Home", SystemImage: NativeTabIconHouse },
+//	  { Title: "Settings", SystemImage: "gearshape" }, // arbitrary string still allowed
+//	}
 type NativeTabIcon string
 
 const (
-    // Common icons
-    NativeTabIconNone    NativeTabIcon = ""
-    NativeTabIconHouse   NativeTabIcon = "house"
-    NativeTabIconGear    NativeTabIcon = "gear"
-    NativeTabIconStar    NativeTabIcon = "star"
-    NativeTabIconPerson  NativeTabIcon = "person"
-    NativeTabIconBell    NativeTabIcon = "bell"
-    NativeTabIconMagnify NativeTabIcon = "magnifyingglass"
-    NativeTabIconList    NativeTabIcon = "list.bullet"
-    NativeTabIconFolder  NativeTabIcon = "folder"
+	// Common icons
+	NativeTabIconNone    NativeTabIcon = ""
+	NativeTabIconHouse   NativeTabIcon = "house"
+	NativeTabIconGear    NativeTabIcon = "gear"
+	NativeTabIconStar    NativeTabIcon = "star"
+	NativeTabIconPerson  NativeTabIcon = "person"
+	NativeTabIconBell    NativeTabIcon = "bell"
+	NativeTabIconMagnify NativeTabIcon = "magnifyingglass"
+	NativeTabIconList    NativeTabIcon = "list.bullet"
+	NativeTabIconFolder  NativeTabIcon = "folder"
 )
 
 /********* Android Options *********/
