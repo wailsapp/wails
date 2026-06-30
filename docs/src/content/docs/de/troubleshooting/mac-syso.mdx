@@ -1,0 +1,23 @@
+---
+title: Syso-Dateien auf macOS
+description: Fehlerbehebung bei Build-Fehlern von Syso-Dateien auf macOS
+---
+
+## Problem
+
+Beim Versuch, eine Wails-Anwendung auf macOS zu bauen, schlägt der Build mit einem Fehler fehl, der dem folgenden ähnelt:
+
+```
+Error: Users/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.1.darwin-arm64/pkg/tool/darwin_arm64/link: running clang failed: exit status 1
+ld: unknown file type in '/private/var/folders/ml/x_tvfgn50_s7p67dm1ypcqqm0000gn/T/go-link-774134794/000000.o'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+
+## Warum tritt dies auf?
+
+Beim Bauen für Windows generiert Wails `.syso`-Dateien für das Anwendungsicon, das Fenstericon und das Menüicon. Diese Dateien sind erforderlich, damit die Anwendung unter Windows gebaut werden kann.
+Diese `.syso`-Dateien befinden sich im Stammverzeichnis des Projekts und können beim Bauen für macOS Probleme verursachen.
+
+## Lösung
+
+Um dieses Problem zu beheben, können Sie die Syso-Dateien aus dem Stammverzeichnis des Projekts entfernen. Wenn Sie diese selbst generieren, benennen Sie sie in `wails_windows_<arch>.syso` um, z. B. `wails_windows_arm64.syso`.

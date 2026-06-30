@@ -131,6 +131,11 @@ func (androidManager) StopSpeak() { androidBridgeVoid("stopSpeak") }
 // StorageJSON returns disk space as {"free":bytes,"total":bytes}.
 func (androidManager) StorageJSON() string { s, _ := androidBridgeString("getStorageJson"); return s }
 
+// StoragePath returns the absolute path to the app's private internal files
+// directory (activity.getFilesDir()), suitable for databases and other
+// persistent files. The directory always exists.
+func (androidManager) StoragePath() string { s, _ := androidBridgeString("getStoragePath"); return s }
+
 // PowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
 func (androidManager) PowerJSON() string { s, _ := androidBridgeString("getPowerJson"); return s }
 

@@ -41,8 +41,10 @@ type DependencyStatus struct {
 	Required       bool   `json:"required"`
 	Message        string `json:"message,omitempty"`
 	InstallCommand string `json:"installCommand,omitempty"`
+	ConfigCommand  string `json:"configCommand,omitempty"` // shell lines to add (e.g. export JAVA_HOME=...), shown with a Copy button
 	HelpURL        string `json:"helpUrl,omitempty"`
-	ImageBuilt     bool   `json:"imageBuilt"` // For Docker: whether wails-cross image exists
+	HelpLabel      string `json:"helpLabel,omitempty"` // OS-specific link text, e.g. "Get Xcode from the App Store"
+	ImageBuilt     bool   `json:"imageBuilt"`          // For Docker: whether wails-cross image exists
 }
 
 // DockerStatus represents Docker installation and image status
@@ -224,6 +226,8 @@ type SystemInfo struct {
 	HomeDir      string `json:"homeDir"`
 	OSName       string `json:"osName,omitempty"`
 	OSVersion    string `json:"osVersion,omitempty"`
+	GitName      string `json:"gitName,omitempty"`
+	GitEmail     string `json:"gitEmail,omitempty"`
 }
 
 // WizardState represents the complete wizard state
@@ -242,9 +246,15 @@ type Wizard struct {
 	dockerBuildLogs string
 	dockerMu        sync.RWMutex
 	done            chan struct{}
+	doneOnce        sync.Once
 	shutdown        chan struct{}
 	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
+
+	// Init-mode state. When initData is non-nil the wizard runs as the project
+	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
+	initData   *InitData
+	initResult *InitData
 }
 
 // New creates a new setup wizard
@@ -312,6 +322,7 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	// API routes
 	mux.HandleFunc("/api/state", w.handleState)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
+	mux.HandleFunc("/api/dependencies/mobile", w.handleCheckMobileDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
 	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
 	mux.HandleFunc("/api/docker/status/stream", w.handleDockerStatusStream)
@@ -324,6 +335,11 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/signing/notarize/create", w.handleNotarizeCreate)
 	mux.HandleFunc("/api/signing/notarize/validate", w.handleNotarizeValidate)
+	mux.HandleFunc("/api/init", w.handleInit)
+	mux.HandleFunc("/api/init/create", w.handleInitCreate)
+	mux.HandleFunc("/api/signing/gpg/create", w.handleGPGCreate)
+	mux.HandleFunc("/api/signing/gpg/export", w.handleGPGExport)
+	mux.HandleFunc("/api/signing/windows/create-cert", w.handleWindowsCertCreate)
 	mux.HandleFunc("/api/complete", w.handleComplete)
 	mux.HandleFunc("/api/close", w.handleClose)
 	mux.HandleFunc("/api/report-bug", w.handleReportBug)
@@ -351,10 +367,50 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 		if _, err := fs.Stat(frontendDist, strings.TrimPrefix(path, "/")); err != nil {
 			// Serve index.html for SPA routing
 			r.URL.Path = "/"
+			path = "/index.html"
+		}
+
+		// Set the content type explicitly for static asset types. http.FileServer
+		// otherwise relies on mime.TypeByExtension, which returns "" on hosts with
+		// an incomplete MIME database (e.g. minimal containers, some Windows setups).
+		// For .svg that fallback sniffs to "text/xml", which browsers refuse to
+		// render inside an <img>, leaving the Wails logo blank. Pin the common types.
+		if ct := staticContentType(path); ct != "" {
+			rw.Header().Set("Content-Type", ct)
 		}
 
 		fileServer.ServeHTTP(rw, r)
 	})
+}
+
+// staticContentType returns a stable Content-Type for the static asset
+// extensions the setup wizard frontend ships, so rendering never depends on the
+// host's MIME database. Returns "" for unknown extensions, leaving http.FileServer
+// to handle them as before.
+func staticContentType(path string) string {
+	switch {
+	case strings.HasSuffix(path, ".svg"):
+		return "image/svg+xml"
+	case strings.HasSuffix(path, ".html"):
+		return "text/html; charset=utf-8"
+	case strings.HasSuffix(path, ".css"):
+		return "text/css; charset=utf-8"
+	case strings.HasSuffix(path, ".js"), strings.HasSuffix(path, ".mjs"):
+		return "text/javascript; charset=utf-8"
+	case strings.HasSuffix(path, ".json"):
+		return "application/json"
+	case strings.HasSuffix(path, ".png"):
+		return "image/png"
+	case strings.HasSuffix(path, ".webp"):
+		return "image/webp"
+	case strings.HasSuffix(path, ".ico"):
+		return "image/x-icon"
+	case strings.HasSuffix(path, ".woff2"):
+		return "font/woff2"
+	case strings.HasSuffix(path, ".woff"):
+		return "font/woff"
+	}
+	return ""
 }
 
 func (w *Wizard) initSystemInfo() {
@@ -376,6 +432,15 @@ func (w *Wizard) initSystemInfo() {
 		w.state.System.OSName = info.Name
 		w.state.System.OSVersion = info.Version
 	}
+
+	// Pre-fill author identity from git config (effective config: local repo
+	// overrides global). Used to seed the GPG key and other signing forms.
+	if name, err := execCommand("git", "config", "user.name"); err == nil {
+		w.state.System.GitName = name
+	}
+	if email, err := execCommand("git", "config", "user.email"); err == nil {
+		w.state.System.GitEmail = email
+	}
 }
 
 func (w *Wizard) handleState(rw http.ResponseWriter, r *http.Request) {
@@ -393,6 +458,15 @@ func (w *Wizard) handleCheckDependencies(rw http.ResponseWriter, r *http.Request
 	w.state.Dependencies = deps
 	w.stateMu.Unlock()
 
+	rw.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(deps)
+}
+
+// handleCheckMobileDependencies reports the toolchain status for the requested
+// mobile platforms, e.g. /api/dependencies/mobile?ios=true&android=true.
+func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	deps := w.checkMobileDependencies(q.Get("ios") == "true", q.Get("android") == "true")
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(deps)
 }
@@ -490,7 +564,7 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(response)
 
-	close(w.done)
+	w.doneOnce.Do(func() { close(w.done) })
 }
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
@@ -1095,6 +1169,8 @@ var allowedInstallers = map[string]bool{
 	"eopkg": true, "nix-env": true,
 	// macOS
 	"brew": true,
+	// Mobile toolchains: install SDK packages / simulator runtimes
+	"sdkmanager": true, "xcodebuild": true,
 	// Windows
 	"winget": true, "choco": true, "scoop": true,
 }
@@ -1391,11 +1467,361 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type gpgCreateRequest struct {
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	Passphrase string `json:"passphrase"`
+}
+
+// gpgFieldClean rejects values that could break out of a gpg batch param file
+// (newlines) or be interpreted as a batch directive (a leading '%'). The values
+// are passed through a parameter file, not a shell, so the only injection vector
+// is the file format itself.
+func gpgFieldClean(s string) (string, bool) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "", false
+	}
+	if strings.ContainsAny(s, "\r\n") || strings.HasPrefix(s, "%") {
+		return "", false
+	}
+	return s, true
+}
+
+func (w *Wizard) handleGPGCreate(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	gpg := gpgBinary()
+	if gpg == "" {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "gpg is not installed"})
+		return
+	}
+
+	var req gpgCreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	name, okName := gpgFieldClean(req.Name)
+	email, okEmail := gpgFieldClean(req.Email)
+	if !okName || !okEmail || !strings.Contains(email, "@") {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "A valid name and email are required"})
+		return
+	}
+
+	// Build a batch key-parameter file in a private temp dir. The passphrase, if
+	// any, lives only inside this 0600 file and is removed immediately after.
+	tmpDir, err := os.MkdirTemp("", "wails-gpg-*")
+	if err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Failed to create temp dir: " + err.Error()})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	var params strings.Builder
+	params.WriteString("Key-Type: RSA\nKey-Length: 4096\n")
+	params.WriteString("Subkey-Type: RSA\nSubkey-Length: 4096\n")
+	params.WriteString("Name-Real: " + name + "\n")
+	params.WriteString("Name-Email: " + email + "\n")
+	params.WriteString("Expire-Date: 0\n")
+	if req.Passphrase == "" {
+		params.WriteString("%no-protection\n")
+	} else {
+		params.WriteString("Passphrase: " + strings.ReplaceAll(strings.Trim(req.Passphrase, "\r\n"), "\n", "") + "\n")
+	}
+	params.WriteString("%commit\n")
+
+	paramFile := filepath.Join(tmpDir, "keyparams")
+	if err := os.WriteFile(paramFile, []byte(params.String()), 0o600); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Failed to write key params: " + err.Error()})
+		return
+	}
+
+	cmd := exec.Command(gpg, "--batch", "--pinentry-mode", "loopback", "--gen-key", paramFile)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": cleanToolError(string(out), err)})
+		return
+	}
+
+	// Find the freshly created key by matching the email in the UID list.
+	keyID := ""
+	for _, k := range listGPGSecretKeys() {
+		if strings.Contains(k.UID, email) {
+			keyID = k.KeyID // last match wins → newest
+		}
+	}
+
+	// Export the key to an armoured file. The build pipeline signs DEB/RPM
+	// packages with a key *file path* (the Taskfile's PGP_KEY var → `wails3 tool
+	// sign --pgp-key`), not a keyring ID — so generating the key alone wouldn't
+	// be usable by a build. Export it and record the path alongside the ID.
+	keyPath := ""
+	if keyID != "" {
+		if p, err := exportGPGSecretKey(gpg, keyID, req.Passphrase); err == nil {
+			keyPath = p
+		}
+		if defs, err := LoadGlobalDefaults(); err == nil {
+			defs.Signing.Linux.GPGKeyID = keyID
+			if keyPath != "" {
+				defs.Signing.Linux.GPGKeyPath = keyPath
+			}
+			if err := SaveGlobalDefaults(defs); err != nil {
+				json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Key created but failed to save config: " + err.Error()})
+				return
+			}
+		}
+	}
+
+	json.NewEncoder(rw).Encode(map[string]any{"success": true, "keyID": keyID, "keyPath": keyPath})
+}
+
+// gpgKeyIDPattern matches a hex GPG key id or fingerprint (16–40 hex chars,
+// optional 0x prefix). keyID is used to build an export file path, so it is
+// validated against this allowlist to prevent path traversal.
+var gpgKeyIDPattern = regexp.MustCompile(`^(?:0x)?[A-Fa-f0-9]{16,40}$`)
+
+// exportGPGSecretKey writes the ASCII-armoured private (and public) key for keyID
+// into the signing output dir and returns the private key's path — the artifact
+// the build consumes via the Taskfile PGP_KEY variable. The passphrase, if any,
+// is supplied over stdin so it never appears in the process list, and the private
+// file is written 0600.
+func exportGPGSecretKey(gpg, keyID, passphrase string) (string, error) {
+	// keyID flows into the export file path; reject anything that isn't a plain
+	// hex key id/fingerprint so it can't escape the signing directory.
+	if !gpgKeyIDPattern.MatchString(keyID) {
+		return "", fmt.Errorf("invalid GPG key id %q", keyID)
+	}
+	dir, err := signingOutputDir()
+	if err != nil {
+		return "", err
+	}
+	privPath := filepath.Join(dir, keyID+".asc")
+	pubPath := filepath.Join(dir, keyID+".pub.asc")
+
+	args := []string{"--batch", "--yes", "--pinentry-mode", "loopback"}
+	if passphrase != "" {
+		args = append(args, "--passphrase-fd", "0")
+	}
+	args = append(args, "--armor", "--export-secret-keys", keyID)
+	priv := exec.Command(gpg, args...)
+	if passphrase != "" {
+		priv.Stdin = strings.NewReader(passphrase)
+	}
+	out, err := priv.Output()
+	if err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(privPath, out, 0o600); err != nil {
+		return "", err
+	}
+
+	// Public key is non-sensitive — export best-effort for distribution.
+	if pub, err := exec.Command(gpg, "--armor", "--export", keyID).Output(); err == nil {
+		_ = os.WriteFile(pubPath, pub, 0o644)
+	}
+
+	return privPath, nil
+}
+
+type gpgExportRequest struct {
+	KeyID      string `json:"keyID"`
+	Passphrase string `json:"passphrase"`
+}
+
+// handleGPGExport exports an already-existing keyring key to a file and records
+// its path in the global config. This fixes keys configured by ID only (e.g.
+// generated before the wizard exported automatically): the build signs with a
+// key file, so an ID with no file path is not usable on its own.
+func (w *Wizard) handleGPGExport(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	gpg := gpgBinary()
+	if gpg == "" {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "gpg is not installed"})
+		return
+	}
+
+	var req gpgExportRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	keyID := strings.TrimSpace(req.KeyID)
+	if keyID == "" {
+		if defs, err := LoadGlobalDefaults(); err == nil {
+			keyID = defs.Signing.Linux.GPGKeyID
+		}
+	}
+	if keyID == "" {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "No GPG key id configured to export"})
+		return
+	}
+
+	keyPath, err := exportGPGSecretKey(gpg, keyID, req.Passphrase)
+	if err != nil {
+		// The most common cause of a non-interactive export failure is a
+		// passphrase-protected key with no passphrase supplied.
+		resp := map[string]any{"success": false, "error": cleanToolError("", err)}
+		if req.Passphrase == "" {
+			resp["needsPassphrase"] = true
+		}
+		json.NewEncoder(rw).Encode(resp)
+		return
+	}
+
+	if defs, err := LoadGlobalDefaults(); err == nil {
+		defs.Signing.Linux.GPGKeyID = keyID
+		defs.Signing.Linux.GPGKeyPath = keyPath
+		if err := SaveGlobalDefaults(defs); err != nil {
+			json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Key exported but failed to save config: " + err.Error()})
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(map[string]any{"success": true, "keyID": keyID, "keyPath": keyPath})
+}
+
+type windowsCertCreateRequest struct {
+	CommonName string `json:"commonName"`
+	Password   string `json:"password"`
+}
+
+func (w *Wizard) handleWindowsCertCreate(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if !toolAvailable("openssl") {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "openssl is not installed"})
+		return
+	}
+
+	var req windowsCertCreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Invalid request: " + err.Error()})
+		return
+	}
+
+	// CN is passed to openssl -subj. Strip the characters that would let it add
+	// extra subject fields or break the arg. Args go via exec (no shell).
+	cn := strings.TrimSpace(req.CommonName)
+	cn = strings.Map(func(r rune) rune {
+		if r == '/' || r == '\n' || r == '\r' || r == '=' {
+			return -1
+		}
+		return r
+	}, cn)
+	if cn == "" {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "A certificate name is required"})
+		return
+	}
+	if req.Password == "" {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "A password is required to protect the .pfx"})
+		return
+	}
+
+	outDir, err := signingOutputDir()
+	if err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": err.Error()})
+		return
+	}
+
+	tmpDir, err := os.MkdirTemp("", "wails-wincert-*")
+	if err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Failed to create temp dir: " + err.Error()})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	keyPEM := filepath.Join(tmpDir, "key.pem")
+	certPEM := filepath.Join(tmpDir, "cert.pem")
+	pfxPath := filepath.Join(outDir, "wails-codesign-selfsigned.pfx")
+
+	// 1) Self-signed cert + key with the codeSigning EKU.
+	reqCmd := exec.Command("openssl", "req", "-x509", "-newkey", "rsa:4096",
+		"-keyout", keyPEM, "-out", certPEM, "-days", "3650", "-nodes",
+		"-subj", "/CN="+cn, "-addext", "extendedKeyUsage=codeSigning")
+	if out, err := reqCmd.CombinedOutput(); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": cleanToolError(string(out), err)})
+		return
+	}
+
+	// 2) Bundle into a password-protected .pfx. Password is passed via env, not
+	// argv, so it does not appear in the process list.
+	pfxCmd := exec.Command("openssl", "pkcs12", "-export", "-out", pfxPath,
+		"-inkey", keyPEM, "-in", certPEM, "-name", cn, "-passout", "env:WAILS_PFX_PASS")
+	pfxCmd.Env = append(os.Environ(), "WAILS_PFX_PASS="+req.Password)
+	if out, err := pfxCmd.CombinedOutput(); err != nil {
+		json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": cleanToolError(string(out), err)})
+		return
+	}
+
+	if defs, err := LoadGlobalDefaults(); err == nil {
+		defs.Signing.Windows.CertificatePath = pfxPath
+		if err := SaveGlobalDefaults(defs); err != nil {
+			json.NewEncoder(rw).Encode(map[string]any{"success": false, "error": "Certificate created but failed to save config: " + err.Error()})
+			return
+		}
+	}
+
+	json.NewEncoder(rw).Encode(map[string]any{
+		"success":  true,
+		"path":     pfxPath,
+		"selfSign": true,
+	})
+}
+
+// signingOutputDir returns a stable directory for generated signing artifacts.
+func signingOutputDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot resolve home directory: %w", err)
+	}
+	dir := filepath.Join(home, ".wails", "signing")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return "", fmt.Errorf("cannot create signing directory: %w", err)
+	}
+	return dir, nil
+}
+
+// cleanToolError condenses a command's combined output into a single-line error.
+func cleanToolError(output string, err error) string {
+	out := strings.TrimSpace(output)
+	if out == "" {
+		return err.Error()
+	}
+	lines := strings.Split(out, "\n")
+	// Prefer a line that looks like an error message.
+	for _, line := range lines {
+		l := strings.TrimSpace(line)
+		if strings.Contains(strings.ToLower(l), "error") || strings.Contains(l, "failed") {
+			return l
+		}
+	}
+	return strings.TrimSpace(lines[len(lines)-1])
+}
+
 type signingStatusResponse struct {
-	Darwin       darwinSigningStatus  `json:"darwin"`
-	Windows      windowsSigningStatus `json:"windows"`
-	Linux        linuxSigningStatus   `json:"linux"`
-	ConfigError  string               `json:"configError,omitempty"`
+	Host        string               `json:"host"`
+	Darwin      darwinSigningStatus  `json:"darwin"`
+	Windows     windowsSigningStatus `json:"windows"`
+	Linux       linuxSigningStatus   `json:"linux"`
+	ConfigError string               `json:"configError,omitempty"`
 }
 
 type darwinSigningStatus struct {
@@ -1405,6 +1831,9 @@ type darwinSigningStatus struct {
 	HasNotarization bool     `json:"hasNotarization"`
 	TeamID          string   `json:"teamID,omitempty"`
 	ConfigSource    string   `json:"configSource,omitempty"`
+	// RcodesignAvailable reports whether the `rcodesign` tool is installed —
+	// the way to sign macOS apps from a non-macOS host.
+	RcodesignAvailable bool `json:"rcodesignAvailable"`
 }
 
 type windowsSigningStatus struct {
@@ -1413,18 +1842,31 @@ type windowsSigningStatus struct {
 	HasSignTool     bool   `json:"hasSignTool"`
 	TimestampServer string `json:"timestampServer,omitempty"`
 	ConfigSource    string `json:"configSource,omitempty"`
+	// OsslsigncodeAvailable reports whether `osslsigncode` is installed — the
+	// cross-platform way to Authenticode-sign Windows binaries from macOS/Linux.
+	OsslsigncodeAvailable bool `json:"osslsigncodeAvailable"`
+	// OpensslAvailable gates the "generate self-signed certificate" option.
+	OpensslAvailable bool `json:"opensslAvailable"`
 }
 
 type linuxSigningStatus struct {
-	HasGPGKey    bool   `json:"hasGpgKey"`
-	GPGKeyID     string `json:"gpgKeyID,omitempty"`
-	ConfigSource string `json:"configSource,omitempty"`
+	HasGPGKey    bool         `json:"hasGpgKey"`
+	GPGKeyID     string       `json:"gpgKeyID,omitempty"`
+	GPGAvailable bool         `json:"gpgAvailable"`
+	GPGKeys      []gpgKeyInfo `json:"gpgKeys,omitempty"`
+	ConfigSource string       `json:"configSource,omitempty"`
+}
+
+type gpgKeyInfo struct {
+	KeyID string `json:"keyID"`
+	UID   string `json:"uid"`
 }
 
 func checkSigningStatus() signingStatusResponse {
 	globalDefaults, err := LoadGlobalDefaults()
 
 	resp := signingStatusResponse{
+		Host:    runtime.GOOS,
 		Darwin:  checkDarwinSigningStatus(globalDefaults),
 		Windows: checkWindowsSigningStatus(globalDefaults),
 		Linux:   checkLinuxSigningStatus(globalDefaults),
@@ -1461,6 +1903,8 @@ func checkDarwinSigningStatus(cfg GlobalDefaults) darwinSigningStatus {
 		}
 	}
 
+	status.RcodesignAvailable = toolAvailable("rcodesign")
+
 	return status
 }
 
@@ -1491,28 +1935,114 @@ func checkWindowsSigningStatus(cfg GlobalDefaults) windowsSigningStatus {
 		status.HasSignTool = err == nil
 	}
 
+	status.OsslsigncodeAvailable = toolAvailable("osslsigncode")
+	status.OpensslAvailable = toolAvailable("openssl")
+
 	return status
 }
 
 func checkLinuxSigningStatus(cfg GlobalDefaults) linuxSigningStatus {
 	status := linuxSigningStatus{}
 
-	if cfg.Signing.Linux.GPGKeyPath != "" {
+	status.GPGAvailable = gpgBinary() != ""
+	status.GPGKeys = listGPGSecretKeys()
+
+	if cfg.Signing.Linux.GPGKeyPath != "" || cfg.Signing.Linux.GPGKeyID != "" {
 		status.HasGPGKey = true
 		status.GPGKeyID = cfg.Signing.Linux.GPGKeyID
 		status.ConfigSource = "defaults.yaml"
 	}
 
-	if !status.HasGPGKey {
-		keyID := getDefaultGPGKey()
-		if keyID != "" {
-			status.HasGPGKey = true
-			status.GPGKeyID = keyID
-			status.ConfigSource = "gpg"
-		}
+	if !status.HasGPGKey && len(status.GPGKeys) > 0 {
+		status.HasGPGKey = true
+		status.GPGKeyID = status.GPGKeys[0].KeyID
+		status.ConfigSource = "gpg"
 	}
 
 	return status
+}
+
+// toolAvailable reports whether an executable is on PATH.
+func toolAvailable(name string) bool {
+	_, err := exec.LookPath(name)
+	return err == nil
+}
+
+// gpgBinary returns the path to a usable gpg binary ("gpg" preferred, then
+// "gpg2"), or "" if neither is installed. gpg exists on macOS and Windows too
+// (Homebrew, Gpg4win), so GPG signing setup is not Linux-only.
+func gpgBinary() string {
+	for _, name := range []string{"gpg", "gpg2"} {
+		if p, err := exec.LookPath(name); err == nil {
+			return p
+		}
+	}
+	return ""
+}
+
+// listGPGSecretKeys returns the secret keys available to gpg, parsed from the
+// stable --with-colons machine format (works identically on macOS/Linux/Windows).
+func listGPGSecretKeys() []gpgKeyInfo {
+	gpg := gpgBinary()
+	if gpg == "" {
+		return nil
+	}
+
+	cmd := exec.Command(gpg, "--list-secret-keys", "--with-colons", "--keyid-format", "long")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+	return parseGPGSecretKeys(output)
+}
+
+// parseGPGSecretKeys parses `gpg --list-secret-keys --with-colons` output. Split
+// out as a pure function so it can be tested without gpg installed.
+func parseGPGSecretKeys(output []byte) []gpgKeyInfo {
+	var keys []gpgKeyInfo
+	var current *gpgKeyInfo
+	for _, line := range strings.Split(string(output), "\n") {
+		fields := strings.Split(line, ":")
+		if len(fields) == 0 {
+			continue
+		}
+		switch fields[0] {
+		case "sec":
+			// Field 5 (index 4) is the long key ID. Start a new key; its UID
+			// arrives on the following uid record.
+			if len(fields) > 4 && fields[4] != "" {
+				keys = append(keys, gpgKeyInfo{KeyID: fields[4]})
+				current = &keys[len(keys)-1]
+			}
+		case "uid":
+			// Field 10 (index 9) is the user-ID string; attach the first one.
+			if current != nil && current.UID == "" && len(fields) > 9 {
+				current.UID = unescapeGPGColon(fields[9])
+			}
+		}
+	}
+	return keys
+}
+
+// unescapeGPGColon decodes the \xNN escapes gpg uses in --with-colons output
+// (e.g. \x3a for ':').
+func unescapeGPGColon(s string) string {
+	if !strings.Contains(s, "\\x") {
+		return s
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		if i+3 < len(s) && s[i] == '\\' && s[i+1] == 'x' {
+			var v int
+			if _, err := fmt.Sscanf(s[i+2:i+4], "%02x", &v); err == nil {
+				b.WriteByte(byte(v))
+				i += 3
+				continue
+			}
+		}
+		b.WriteByte(s[i])
+	}
+	return b.String()
 }
 
 func getMacOSSigningIdentities() []string {
@@ -1530,43 +2060,25 @@ func getMacOSSigningIdentities() []string {
 	var identities []string
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
-		if strings.Contains(line, "\"") && strings.Contains(line, "Developer ID") {
-			start := strings.Index(line, "\"")
-			end := strings.LastIndex(line, "\"")
-			if start != -1 && end > start {
-				identity := line[start+1 : end]
-				if !seen[identity] {
-					seen[identity] = true
-					identities = append(identities, identity)
-				}
-			}
+		// Identity lines look like:  1) <40-hex-hash> "Apple Development: Name (TEAM)"
+		// Accept ALL code-signing identity types — Apple Development, Apple
+		// Distribution, Developer ID, Mac Developer, etc. (the `-p codesigning`
+		// policy already restricts the list to signing-capable certs). The
+		// trailing "N valid identities found" line has no quotes, so requiring a
+		// quoted name is enough to skip it.
+		start := strings.Index(line, "\"")
+		end := strings.LastIndex(line, "\"")
+		if start == -1 || end <= start {
+			continue
 		}
+		identity := line[start+1 : end]
+		if identity == "" || seen[identity] {
+			continue
+		}
+		seen[identity] = true
+		identities = append(identities, identity)
 	}
 
 	return identities
 }
 
-func getDefaultGPGKey() string {
-	cmd := exec.Command("gpg", "--list-secret-keys", "--keyid-format", "long")
-	output, err := cmd.Output()
-	if err != nil {
-		return ""
-	}
-
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		if strings.Contains(line, "sec") {
-			parts := strings.Fields(line)
-			for _, part := range parts {
-				if strings.Contains(part, "/") {
-					keyParts := strings.Split(part, "/")
-					if len(keyParts) > 1 {
-						return keyParts[1]
-					}
-				}
-			}
-		}
-	}
-
-	return ""
-}

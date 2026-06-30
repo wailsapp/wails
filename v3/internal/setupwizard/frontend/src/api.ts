@@ -12,6 +12,11 @@ export async function checkDependencies(): Promise<DependencyStatus[]> {
   return response.json();
 }
 
+export async function checkMobileDependencies(ios: boolean, android: boolean): Promise<DependencyStatus[]> {
+  const response = await fetch(`${API_BASE}/dependencies/mobile?ios=${ios}&android=${android}`);
+  return response.json();
+}
+
 export async function getDockerStatus(): Promise<DockerStatus> {
   const response = await fetch(`${API_BASE}/docker/status`);
   return response.json();
@@ -171,6 +176,57 @@ export async function createNotarizationProfile(data: {
   password: string;
 }): Promise<{ success: boolean; error?: string; output?: string }> {
   const response = await fetch(`${API_BASE}/signing/notarize/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function getInit(): Promise<import('./types').InitData | null> {
+  const response = await fetch(`${API_BASE}/init`);
+  return response.json();
+}
+
+export async function createProject(data: import('./types').InitData): Promise<{ success: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/init/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function createGPGKey(data: {
+  name: string;
+  email: string;
+  passphrase: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function exportGPGKey(data: {
+  keyID?: string;
+  passphrase?: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; needsPassphrase?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/export`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function createWindowsCert(data: {
+  commonName: string;
+  password: string;
+}): Promise<{ success: boolean; path?: string; selfSign?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/windows/create-cert`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

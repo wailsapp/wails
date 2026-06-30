@@ -1,0 +1,316 @@
+---
+title: Server-Build
+description: Wails-Anwendungen als HTTP-Server ausführen, ohne ein natives GUI-Fenster zu erstellen
+sidebar:
+    order: 52
+    badge:
+        text: Experimentell
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimentelle Funktion">
+Der Server-Modus ist experimentell und kann sich in zukünftigen Versionen ändern.
+</Aside>
+
+Wails v3 unterstützt den Server-Modus, der es Ihnen ermöglicht, Ihre Anwendung als reinen HTTP-Server auszuführen, ohne native Fenster zu erstellen oder GUI-Abhängigkeiten zu benötigen. Dies ermöglicht das Bereitstellen derselben Wails-Anwendung auf Servern, in Containern und in Webbrowsern.
+
+## Übersicht
+
+Der Server-Modus ist nützlich für:
+
+- **Docker/Container-Bereitstellungen** - Ausführen ohne X11/Wayland-Abhängigkeiten
+- **Serverseitige Anwendungen** - Bereitstellen als Webserver, der über den Browser zugänglich ist
+- **Nur-Web-Zugriff** - Teilen derselben Codebasis zwischen Desktop und Web
+- **CI/CD-Tests** - Ausführen von Integrationstests ohne Display-Server
+- **Microservices** - Verwenden von Wails-Bindings in headless Backend-Diensten
+
+## Schnellstart
+
+Der Server-Modus wird über den `server` Build-Tag aktiviert. Ihr Anwendungscode bleibt derselbe – Sie bauen ihn einfach mit dem Tag:
+
+```bash
+# Mit Taskfile (empfohlen)
+wails3 task build:server
+wails3 task run:server
+
+# Oder direkt mit Go bauen
+go build -tags server -o myapp-server .
+```
+
+Hier ist ein minimales Beispiel:
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Meine App",
+        // Server-Optionen werden verwendet, wenn mit -tags server gebaut wird
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starte Anwendung...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+Der gleiche Code kann für den Desktop (ohne Tag) oder den Server-Modus (mit `-tags server`) gebaut werden.
+
+## Konfiguration
+
+### ServerOptions
+
+Konfigurieren Sie den HTTP-Server mit `ServerOptions`:
+
+```go
+Server: application.ServerOptions{
+    // Host, an den gebunden werden soll. Standard: "localhost"
+    // Verwenden Sie "0.0.0.0", um an allen Schnittstellen zu lauschen
+    Host: "localhost",
+
+    // Port, an dem gelauscht werden soll. Standard: 8080
+    Port: 8080,
+
+    // Lese-Timeout für Anfragen. Standard: 30s
+    ReadTimeout: 30 * time.Second,
+
+    // Schreib-Timeout für Antworten. Standard: 30s
+    WriteTimeout: 30 * time.Second,
+
+    // Timeout für inaktive Verbindungen. Standard: 120s
+    IdleTimeout: 120 * time.Second,
+
+    // Timeout für graceful Shutdown. Standard: 30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // TLS-Konfiguration (optional)
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## Funktionen
+
+### Health-Check-Endpunkt
+
+Ein Health-Check-Endpunkt ist automatisch unter `/health` verfügbar:
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+Dies ist nützlich für:
+- Kubernetes Liveness/Readiness Probes
+- Health-Checks von Load Balancern
+- Überwachungssysteme
+
+### Service-Bindings
+
+Alle Service-Bindings funktionieren im Server-Modus identisch wie im Desktop-Modus:
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hallo, " + name + "!"
+}
+
+// In den Optionen registrieren
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+Das Frontend kann diese Bindings über die Standard-Wails-Laufzeit aufrufen:
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### Ereignisse
+
+Ereignisse funktionieren im Server-Modus bidirektional:
+
+- **Frontend zu Backend**: Vom Browser gesendete Ereignisse werden über HTTP gesendet und von Ihren Go-Ereignishandlern empfangen
+- **Backend zu Frontend**: Von Go gesendete Ereignisse werden an alle verbundenen Browser über WebSocket gesendet
+
+Jeder Browser-Tab wird als "Fenster" mit einem eindeutigen Namen (`browser-1`, `browser-2`, usw.) dargestellt, das über `event.Sender` zugänglich ist:
+
+```go
+// Auf Ereignisse von Browsern lauschen
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Ereignis von %s: %v", event.Sender, event.Data)
+    // event.Sender wird "browser-1", "browser-2", usw. sein
+})
+
+// Ereignisse an alle verbundenen Browser senden
+app.Event.Emit("server-update", data)
+```
+
+Vom Frontend aus:
+
+```javascript
+// Ereignis an Server (und alle anderen Browser) senden
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// Auf Ereignisse vom Server lauschen
+wails.Events.On('server-update', (event) => {
+    console.log('Update vom Server:', event.data);
+});
+```
+
+### Graceful Shutdown
+
+Der Server verarbeitet `SIGINT` und `SIGTERM` Signale graceful:
+
+1. Akzeptiert keine neuen Verbindungen mehr
+2. Wartet, bis aktive Anfragen abgeschlossen sind (bis zu `ShutdownTimeout`)
+3. Führt `OnShutdown`-Hooks aus
+4. Fährt Dienste in umgekehrter Reihenfolge herunter
+
+## Unterschiede zum Desktop-Modus
+
+| Funktion | Desktop-Modus | Server-Modus |
+|---------|-------------|-------------|
+| Native Fenster | Erstellt | Browser-Fenster (`browser-N`) |
+| System-Tray | Verfügbar | Nicht verfügbar |
+| Native Dialoge | Verfügbar | Nicht verfügbar |
+| Anwendungsmenü | Verfügbar | Nicht verfügbar |
+| Bildschirm-Info | Verfügbar | Gibt Fehler zurück |
+| Service-Bindings | Funktioniert | Funktioniert |
+| Ereignisse | Funktioniert | Funktioniert (über WebSocket) |
+| Assets | Über WebView | Über HTTP |
+| CGO erforderlich | Ja | Nein |
+
+### Verhalten der Window-API
+
+Im Server-Modus werden fensterbezogene APIs sicher behandelt:
+
+- `app.Window.NewWithOptions()` - Gibt eine Warnung aus, gibt nil zurück
+- `app.Hide()` / `app.Show()` - No-op
+- `app.Screen.GetPrimary()` - Gibt Fehler zurück
+
+Dies ermöglicht es Code, der auf Fenster verweist, ohne Absturz auszuführen, obwohl Fensteroperationen keine Wirkung haben.
+
+## Build für die Produktion
+
+### Mit Task (Empfohlen)
+
+Projekte, die mit `wails3 init` erstellt wurden, enthalten eine `build:server`-Aufgabe:
+
+```bash
+# Für Server-Modus bauen
+wails3 task build:server
+
+# Bauen und ausführen
+wails3 task run:server
+```
+
+### Manuelles Bauen
+
+```bash
+# Mit Server-Modus bauen
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Wails-Projekte enthalten eine einsatzbereite Docker-Einrichtung. Um Ihre Anwendung in einem Container zu bauen und auszuführen:
+
+```bash
+# Das Docker-Image bauen
+wails3 task build:docker
+
+# Ausführen
+wails3 task run:docker
+```
+
+Das war's! Ihre Anwendung ist unter `http://localhost:8080` verfügbar.
+
+Sie können den Build mit einigen Optionen anpassen:
+
+```bash
+# Einen benutzerdefinierten Image-Tag verwenden
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# Auf einem anderen Port ausführen
+wails3 task run:docker PORT=3000
+```
+
+Das generierte `Dockerfile.server` erstellt ein minimales Image auf Basis von distroless. Es behandelt die Netzwerkbindung automatisch, sodass Ihre Anwendung von außerhalb des Containers zugänglich ist.
+
+### Docker Compose
+
+Für komplexere Bereitstellungen finden Sie hier eine Docker Compose-Konfiguration mit Health-Checks:
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+Das Health-Check-Beispiel verwendet `wget`. Wenn Sie ein distroless-Basisimage verwenden, müssen Sie entweder ein Health-Check-Binary in Ihr Image aufnehmen oder einen externen Health-Check-Mechanismus verwenden (z. B. die `curl`-Option von Docker oder einen Sidecar-Container).
+:::
+
+### Benutzerdefiniertes Dockerfile
+
+Wenn Sie mehr Kontrolle benötigen, können Sie Ihr eigenes Dockerfile erstellen. Der wichtigste Punkt ist, `WAILS_SERVER_HOST=0.0.0.0` zu setzen, damit der Server Verbindungen von außerhalb des Containers akzeptiert:
+
+```dockerfile
+# Build-Stufe
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .
+```
+
+| Variable | Beschreibung | Standard |
+|----------|--------------|----------|
+| `WAILS_SERVER_HOST` | Netzwerkschnittstelle zum Binden | `localhost` |
+| `WAILS_SERVER_PORT` | Port zum Lauschen | `8080` |
+
+Diese haben Vorrang vor `ServerOptions` in Ihrem Code, weshalb die Docker-Beispiele `WAILS_SERVER_HOST=0.0.0.0` setzen - dies ermöglicht dem Container, externe Verbindungen anzunehmen, ohne Änderungen an Ihrer Anwendung vorzunehmen.
+
+## Siehe auch
+
+- [Custom Transport](/docs/guides/custom-transport) - Für erweiterte IPC-Anpassungen
+- [Services](/docs/concepts/services) - Dokumentation zur Service-Bindung
+- [Events](/docs/guides/events-reference) - Dokumentation zum Ereignissystem

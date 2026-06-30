@@ -280,11 +280,11 @@ tasks:
     cmds:
       - echo "Testing template generation (core templates)..."
       - task: install
-      - echo "Testing lit template generation..."
-      - rm -rf ./test-template-lit && wails3 init -n test-template-lit -t lit
-      - mkdir -p ./test-template-lit/frontend/dist && touch ./test-template-lit/frontend/dist/.keep
-      - cd ./test-template-lit && go mod tidy && go build
-      - rm -rf ./test-template-lit
+      - echo "Testing vanilla template generation..."
+      - rm -rf ./test-template-vanilla && wails3 init -n test-template-vanilla -t vanilla
+      - mkdir -p ./test-template-vanilla/frontend/dist && touch ./test-template-vanilla/frontend/dist/.keep
+      - cd ./test-template-vanilla && go mod tidy && go build
+      - rm -rf ./test-template-vanilla
       - echo "Testing react template generation..."
       - rm -rf ./test-template-react && wails3 init -n test-template-react -t react
       - mkdir -p ./test-template-react/frontend/dist && touch ./test-template-react/frontend/dist/.keep

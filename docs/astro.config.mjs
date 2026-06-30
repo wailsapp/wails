@@ -295,12 +295,23 @@ export default defineConfig({
         {
           label: "Mobile",
           collapsed: true,
-          badge: { text: "Experimental", variant: "caution" },
           items: [
             { label: "Overview", link: "/guides/mobile" },
             { label: "Your First Mobile App", link: "/guides/mobile/first-mobile-app" },
             { label: "iOS", link: "/guides/mobile/ios" },
             { label: "Android", link: "/guides/mobile/android" },
+            { label: "Mobile API", link: "/guides/mobile/mobile-api" },
+          ],
+        },
+
+        // Experimental - opt-in experiments we're gathering feedback on
+        {
+          label: "Experimental",
+          collapsed: true,
+          items: [
+            { label: "Overview", link: "/experimental" },
+            { label: "Wake", link: "/experimental/wake" },
+            { label: "LLM Control (MCP)", link: "/guides/mcp-service" },
           ],
         },
 
@@ -315,6 +326,7 @@ export default defineConfig({
               items: [
                 { label: "Project Structure", link: "/guides/dev/project-structure" },
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
+                { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/dev/testing" },
               ],
@@ -359,7 +371,7 @@ export default defineConfig({
               label: "Advanced Topics",
               collapsed: true,
               items: [
-                { label: "Server Build", link: "/guides/server-build", badge: { text: "Experimental", variant: "caution" } },
+                { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
                 { label: "Panic Handling", link: "/guides/advanced/panic-handling" },
@@ -409,7 +421,16 @@ export default defineConfig({
         {
           label: "Troubleshooting",
           collapsed: true,
-          autogenerate: { directory: "troubleshooting" },
+          items: [
+            { label: "Syso files on macOS", link: "/troubleshooting/mac-syso" },
+            {
+              label: "Windows",
+              collapsed: true,
+              items: [
+                { label: "RDP Issues", link: "/troubleshooting/windows/rdp" },
+              ],
+            },
+          ],
         },
 
         // Community & Resources

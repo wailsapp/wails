@@ -3,9 +3,6 @@ title: Mobile Overview
 description: Build iOS and Android apps from the same Go codebase as your desktop app
 sidebar:
   order: 1
-  badge:
-    text: Experimental
-    variant: caution
 ---
 
 import { Card, CardGrid, Aside, LinkCard } from '@astrojs/starlight/components';
@@ -114,6 +111,39 @@ Two important rules to know when writing platform-conditional code:
 - **`android` implies `linux`** — a file tagged `//go:build linux` will also compile for Android. To target desktop-Linux-only, use `//go:build linux && !android`.
 
 At runtime, `runtime.GOOS` returns `"ios"` and `"android"` respectively.
+
+## Runtime platform detection
+
+Build tags are for code that can only *compile* on a given platform. For ordinary
+branching in shared code, use `application.System` — it's available in every build
+(no build tags needed) so the same file works everywhere:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+if application.System.IsMobile() {
+    // iOS or Android
+} else if application.System.IsDesktop() {
+    // macOS, Windows or Linux
+}
+
+// Or test a single target directly:
+if application.System.IsPlatform(application.PlatformIOS) {
+    // iOS only
+}
+```
+
+Available: `IsMobile()`, `IsDesktop()`, `IsServer()` (the `server` build tag), and
+`IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)`.
+
+The frontend has the matching helpers in `@wailsio/runtime`:
+
+```js
+import { System } from "@wailsio/runtime";
+
+if (System.IsMobile()) { /* iOS or Android */ }
+if (System.IsIOS()) { /* … */ }      // also IsAndroid, IsMac, IsWindows, IsLinux, IsDesktop
+```
 
 ## Next steps
 

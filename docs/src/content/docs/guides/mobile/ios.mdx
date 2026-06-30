@@ -1,6 +1,6 @@
 ---
 title: iOS
-description: Build and run Wails applications on iOS — toolchain setup, simulator, device builds, signing, and API reference
+description: Build and run Wails applications on iOS — setup, simulator, device builds, configuration, and native features
 sidebar:
   order: 3
   badge:
@@ -18,15 +18,16 @@ iOS support is experimental and may change in future releases.
 New to mobile with Wails? Start with [Your First Mobile App →](/guides/mobile/first-mobile-app) for a step-by-step walkthrough, then return here for the full reference.
 </Aside>
 
-Wails v3 applications run on iOS as native UIKit apps: a `WKWebView` renders
-the frontend, assets are served **in-process** over a custom `wails://` URL
-scheme (no localhost server, no open ports), and the standard
-`@wailsio/runtime` works unchanged — service bindings, events, dialogs and
-the clipboard use the same `/wails/runtime` transport as on desktop.
+Wails v3 apps run on iOS as fully native apps — and the best part is they work
+*exactly* like the desktop version. The same Go backend, the same frontend, the
+same `@wailsio/runtime`: service bindings, events, dialogs and the clipboard all
+behave identically, with **zero** mobile-specific rewiring. There's no separate
+mobile codebase, no porting layer, and no special API to learn — your existing
+Wails app simply runs on iOS. Porting is genuinely seamless: bring your app
+across as-is and ship.
 
-The same `main.go` builds for desktop and iOS. iOS-specific behaviour is
-configured through `application.Options.IOS`, with per-platform Go files
-guarded by `//go:build ios`.
+The same `main.go` builds for both desktop and iOS; iOS-specific touches are
+configured through `application.Options.IOS`.
 
 ## Requirements
 
@@ -34,7 +35,7 @@ guarded by `//go:build ios`.
   enough) — `wails3 doctor` shows the iOS SDKs it can find
 - Go 1.25+ and npm
 
-## Running on the Simulator
+## Simulator
 
 From your project directory:
 
@@ -42,9 +43,8 @@ From your project directory:
 wails3 task ios:run
 ```
 
-This generates the iOS scaffolding (`build/ios/`), compiles your Go code as
-a C archive (`GOOS=ios`), links it against UIKit, bundles, signs ad-hoc,
-boots a simulator if necessary, and launches the app.
+This builds your app, boots a simulator if one isn't already running, and
+launches it.
 
 Useful companions:
 
@@ -62,8 +62,7 @@ wails3 task ios:package             # production .app for the simulator
 wails3 task ios:deploy-simulator    # install + launch it
 ```
 
-Production builds use `-tags production,ios`, are stripped, and compile out
-the framework's internal diagnostics.
+These are optimised, stripped production builds.
 
 ## Device builds
 
@@ -72,14 +71,13 @@ wails3 task ios:package IOS_PLATFORM=device \
     CODESIGN_IDENTITY="Apple Development: You (TEAMID)" \
     PROVISIONING_PROFILE=path/to/profile.mobileprovision
 
-wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # via xcrun devicectl
+wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # install + launch on a device
 wails3 task ios:package:ipa IOS_PLATFORM=device ...  # distribution .ipa
 ```
 
-`IOS_PLATFORM=device` selects the `iphoneos` SDK and the
-`arm64-apple-ios<min>` target. Entitlements from
-`build/ios/entitlements.plist` are applied to device builds only —
-`get-task-allow` by default; add capability keys as your app needs them.
+`IOS_PLATFORM=device` builds for a physical device. Entitlements come from
+`build/ios/entitlements.plist` and apply to device builds only — add the
+capability keys your app needs.
 
 <Aside type="tip">
 For automatically managed signing, provisioning and App Store archives, open
@@ -99,21 +97,19 @@ ios:
   minIOSVersion: "15.0"
 ```
 
-Application options (`application.Options.IOS`, applied at startup) include
-`DisableScroll`, `DisableBounce`, `DisableScrollIndicators`,
-`DisableInputAccessoryView`, `EnableBackForwardNavigationGestures`,
-`DisableLinkPreview`, `EnableInlineMediaPlayback`,
-`EnableAutoplayWithoutUserAction`, `DisableInspectable`, `UserAgent`,
-`ApplicationNameForUserAgent`, `BackgroundColour`, and native bottom tabs via
-`EnableNativeTabs` + `NativeTabsItems`.
+Startup options (`application.Options.IOS`) include `DisableScroll`,
+`DisableBounce`, `DisableScrollIndicators`, `DisableInputAccessoryView`,
+`EnableBackForwardNavigationGestures`, `DisableLinkPreview`,
+`EnableInlineMediaPlayback`, `EnableAutoplayWithoutUserAction`,
+`DisableInspectable`, `UserAgent`, `ApplicationNameForUserAgent`,
+`BackgroundColour`, and native bottom tabs via `EnableNativeTabs` +
+`NativeTabsItems`.
 
-## Native device features — the `IOS` manager
+## Native features
 
-iOS-specific native capabilities are exposed through the package-level
-`application.IOS` manager. You call it **from Go**, inside a `//go:build ios`
-file, so your shared code stays platform-agnostic (Android has the same shape
-via `application.Android`). This is the "manager pattern": one singleton,
-flat method names, no per-feature objects to construct.
+iOS-specific capabilities are available through `application.IOS`, called from
+Go inside a `//go:build ios` file so your shared code stays platform-agnostic.
+Android offers the same set through `application.Android`.
 
 One-shot actions return immediately:
 
@@ -124,19 +120,23 @@ application.IOS.Haptic("impact-medium") // impact-light|impact-medium|impact-hea
 application.IOS.Share(`{"text":"Hi","url":"https://wails.io"}`)
 application.IOS.SetKeepAwake(true)
 application.IOS.PostNotification(`{"title":"Done","body":"Build finished","delay":2}`)
-application.IOS.SecureSet("token", "abc") // Keychain-backed
+application.IOS.SecureSet("token", "abc") // stored securely
 ```
 
-Query helpers return JSON strings — `SafeAreaJSON()`, `AppInfoJSON()`,
+Query helpers return their results as JSON — `SafeAreaJSON()`, `AppInfoJSON()`,
 `PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`,
-`GetBrightness()`.
+`GetBrightness()`. `StoragePath()` returns the absolute path to the app's
+Application Support directory — a good home for databases and other persistent
+files (the iOS analog of Android's `getFilesDir()`). The directory is created on
+first access; `StoragePath()` returns an empty string if it cannot be created,
+so check for `""` before using it.
 
-### Asynchronous results: `common:*` and `ios:*` events
+### Events
 
 Anything that finishes later — a permission prompt, a sensor stream, a camera
-capture — delivers its result as a Wails **event** rather than a return value.
-Listen on either side of the bridge. Names use a `common:` prefix for
-capabilities shared with Android and an `ios:` prefix for iOS-only ones.
+capture — delivers its result as an **event** rather than a return value, which
+you can listen for in Go or the frontend. Names are prefixed `common:` for
+capabilities shared with Android and `ios:` for iOS-only ones.
 
 ```go
 // Go
@@ -167,10 +167,9 @@ Events.On("common:notification", (e) => { /* {ok, scheduled, presented, tapped, 
 The kitchen-sink example under `v3/examples/mobile` wires every feature above
 end to end.
 
-## Runtime WebView controls
+## WebView controls
 
-Beyond the compile-time `application.Options.IOS` flags, several WebView
-behaviours can be toggled at runtime from Go:
+A few WebView behaviours can also be changed at runtime from Go:
 
 ```go
 application.IOS.SetScrollEnabled(false)
@@ -190,30 +189,26 @@ await IOS.Haptics.Impact("medium"); // light|medium|heavy|soft|rigid
 const info = await IOS.Device.Info();
 ```
 
-Native bottom-tab selections arrive as a `nativeTabSelected` `CustomEvent` on
-`window`.
+Native bottom-tab selections arrive as a `nativeTabSelected` event on `window`.
 
-## What works, what doesn't
+## Support status
 
 | Area | Status |
 |---|---|
-| WKWebView + in-process assets (`wails://`) | ✅ |
+| Frontend rendering & assets | ✅ |
 | Service bindings, events (both directions) | ✅ |
-| Message dialogs | ✅ UIAlertController with button callbacks |
-| Open file / files / directory dialogs | ✅ UIDocumentPicker (files imported as sandbox copies) |
-| Save file dialogs | ❌ Returns an error — write inside the app sandbox instead |
-| Clipboard | ✅ UIPasteboard |
-| Screens API | ✅ UIScreen metrics incl. safe-area work area |
-| Lifecycle events (`events.IOS.*`) | ✅ |
-| Window geometry, menus, system tray | Intentional no-ops |
-| Multiple windows | Only the first window is displayed |
+| Message dialogs | ✅ |
+| Open file / files / directory dialogs | ✅ Imported as sandbox copies |
+| Save file dialogs | ❌ Write inside the app sandbox instead |
+| Clipboard | ✅ |
+| Screens API | ✅ Includes safe-area work area |
+| Lifecycle events | ✅ |
+| Window geometry, menus, system tray | No-ops on iOS |
+| Multiple windows | Only the first window is shown |
 
 ## Porting notes
 
-- Desktop code compiles unchanged under `GOOS=ios`; geometry/menu/tray
-  calls become no-ops because iOS apps are fullscreen.
-- `ios` **implies the `darwin` build tag**: macOS-only files need
-  `//go:build darwin && !ios`, and at runtime `runtime.GOOS` is `"ios"`.
-- Replace save-file dialogs with writes into the app sandbox (for example
-  the Documents directory) plus a share flow.
-- Design the frontend responsively; safe areas are handled natively.
+- Desktop code builds for iOS unchanged — window, menu and system-tray calls
+  simply do nothing.
+- Replace save-file dialogs with a write into the app's sandbox plus a share.
+- Design the frontend responsively; safe areas are handled for you.

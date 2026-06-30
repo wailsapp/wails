@@ -36,8 +36,11 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 
 	impl := menu.impl.(*linuxMenu)
 	if impl.processed {
-		// Menu already processed, skip re-processing to avoid duplicates
-		return
+		// On re-process (Menu.Update()), clear the existing native menu and
+		// rebuild from scratch so that added/removed items are reflected
+		// (#5464). The previous one-way guard skipped re-processing to avoid
+		// appending duplicates, which made Menu.Update() a silent no-op.
+		menuClear(menu)
 	}
 	impl.processed = true
 

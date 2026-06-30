@@ -1,0 +1,172 @@
+---
+title: Erstellen einer benutzerdefinierten Transportschicht
+description: Erfahren Sie, wie Sie Ihre eigene benutzerdefinierte IPC-Transportschicht für Wails v3 erstellen und anpassen
+sidebar:
+    order: 51
+---
+
+Wails v3 ermöglicht es Ihnen, eine benutzerdefinierte IPC-Transportschicht bereitzustellen, während alle generierten Bindungen und die Ereigniskommunikation erhalten bleiben. Dies erlaubt es Ihnen, den standardmäßigen, auf HTTP-Fetch basierenden Transport durch WebSockets, benutzerdefinierte Protokolle oder andere Transportmechanismen zu ersetzen.
+
+## Übersicht
+
+Standardmäßig verwendet Wails HTTP-Fetch-Anfragen vom Frontend aus, um über `/wails/runtime` mit dem Backend zu kommunizieren. Die API für benutzerdefinierte Transportschichten ermöglicht es Ihnen:
+
+- Den HTTP-Transport durch WebSockets, gRPC oder ein beliebiges benutzerdefiniertes Protokoll zu ersetzen
+- Die volle Kompatibilität mit der Wails-Codegenerierung aufrechtzuerhalten
+- Alle vorhandenen Bindungen, Ereignisse, Dialoge und andere Wails-Funktionen zu behalten
+- Ihr eigenes Verbindungsmanagement, Authentifizierung und Fehlerbehandlung zu implementieren
+
+## Architektur
+
+```text
+┌─────────────────────────────────────────────────┐
+│  Frontend (TypeScript)                          │
+│  - Generierte Bindungen funktionieren weiterhin │
+│  - Ihr benutzerdefinierter Client-Transport     │
+└──────────────────┬──────────────────────────────┘
+                   │
+                   │ Ihr Protokoll (WebSocket/etc)
+                   │
+┌──────────────────▼──────────────────────────────┐
+│  Backend (Go)                                   │
+│  - Ihre Transport-Implementierung               │
+│  - Wails MessageProcessor                       │
+│  - Alle vorhandenen Wails-Infrastrukturen       │
+└─────────────────────────────────────────────────┘
+```
+
+## Verwendung
+
+### 1. Implementieren der Transport-Schnittstelle
+
+Erstellen Sie einen benutzerdefinierten Transport, indem Sie die `Transport`-Schnittstelle implementieren:
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type MyCustomTransport struct {
+    // Ihre Felder
+}
+
+func (t *MyCustomTransport) Start(ctx context.Context, processor *application.MessageProcessor) error {
+    // Initialisieren Sie Ihren Transport (WebSocket-Server, gRPC-Server, etc.)
+    // Wenn Sie Anfragen empfangen, rufen Sie processor.HandleRuntimeCallWithIDs() auf
+    return nil
+}
+
+func (t *MyCustomTransport) Stop() error {
+    // Bereinigen Sie Ihren Transport
+    return nil
+}
+```
+
+### 2. Konfigurieren Ihrer Anwendung
+
+Übergeben Sie Ihren benutzerdefinierten Transport an die Anwendungsoptionen:
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Transport: &MyCustomTransport{},
+        // ... weitere Optionen
+    })
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### 3. Ändern der Frontend-Laufzeit
+
+Wenn Sie einen benutzerdefinierten Transport verwenden, müssen Sie die Frontend-Laufzeit so anpassen, dass sie Ihren Transport anstelle von HTTP-Fetch verwendet. Implementieren Sie die `RuntimeTransport`-Schnittstelle, die zur Bearbeitung von Anfragen verwendet wird:
+
+```typescript
+const { setTransport } = await import('/wails/runtime.js');
+
+class MyRuntimeTransport {
+  call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+    // TODO: Implementieren Sie den IPC-Aufruf mit Ihrem Transportprotokoll
+
+    return resp;
+  }
+}
+
+const myTransport = new MyRuntimeTransport();
+setTransport(myTransport);
+```
+
+## Hinweise
+
+- Der standardmäßige HTTP-Transport funktioniert weiterhin, wenn kein benutzerdefinierter Transport angegeben wird
+- Die generierten Bindungen bleiben unverändert – nur die Transportschicht ändert sich
+- Ereignisse, Dialoge, Zwischenablage und alle anderen Wails-Funktionen funktionieren transparent
+- Sie sind für die Fehlerbehandlung, Wiederverbindungslogik und Sicherheit in Ihrem benutzerdefinierten Transport verantwortlich
+- Das bereitgestellte WebSocket-Beispiel dient nur der Demonstration und muss für den Produktionsbetrieb möglicherweise abgesichert werden
+
+## API-Referenz
+
+### Transport-Schnittstelle
+
+```go
+type Transport interface {
+    Start(ctx context.Context, messageProcessor *application.MessageProcessor) error
+    Stop() error
+}
+```
+
+### AssetServerTransport-Schnittstelle (Optional)
+
+Für browserbasierte Bereitstellungen oder wenn Sie sowohl Assets als auch IPC über Ihren benutzerdefinierten Transport bereitstellen möchten, implementieren Sie die `AssetServerTransport`-Schnittstelle:
+
+```go
+type AssetServerTransport interface {
+    Transport
+
+    // ServeAssets konfiguriert den Transport, um Assets zusammen mit IPC bereitzustellen.
+    // Der assetHandler ist der interne Asset-Server von Wails, der alle Assets,
+    // runtime.js, Fähigkeiten, Flags usw. verarbeitet.
+    ServeAssets(assetHandler http.Handler) error
+}
+```
+
+**Wann diese Schnittstelle implementieren:**
+- Ausführen der App in einem Browser anstelle in einem WebView
+- Bereitstellen von Assets über HTTP zusammen mit Ihrem benutzerdefinierten IPC-Transport
+- Erstellen von netzwerkzugänglichen Anwendungen
+
+**Beispielimplementierung:**
+
+```go
+func (t *MyTransport) ServeAssets(assetHandler http.Handler) error {
+    mux := http.NewServeMux()
+
+    // Hängen Sie Ihren IPC-Endpunkt an
+    mux.HandleFunc("/my/ipc/endpoint", t.handleIPC)
+
+    // Hängen Sie den Wails-Asset-Server für alles andere an
+    mux.Handle("/", assetHandler)
+
+    // Starten Sie den HTTP-Server
+    t.httpServer.Handler = mux
+    go t.httpServer.ListenAndServe()
+
+    return nil
+}
+```
+
+Wenn `ServeAssets()` aufgerufen wird, stellt der assetHandler Folgendes bereit:
+- Alle statischen Assets (HTML, CSS, JS, Bilder, etc.)
+- `/wails/runtime.js` - Die Wails-Laufzeitbibliothek
+
+## Siehe auch
+
+- `transport.go` - Kern-Transport-Schnittstellen und -Typen
+- `messageprocessor.go` - Der zugrunde liegende Nachrichtenprozessor, der alle Wails-IPC verarbeitet

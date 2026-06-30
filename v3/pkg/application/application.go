@@ -74,6 +74,7 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = messageProc
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
@@ -346,19 +347,20 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Window      *WindowManager
-	ContextMenu *ContextMenuManager
-	KeyBinding  *KeyBindingManager
-	Browser     *BrowserManager
-	Env         *EnvironmentManager
-	Dialog      *DialogManager
-	Event       *EventManager
-	Menu        *MenuManager
-	Screen      *ScreenManager
-	Clipboard   *ClipboardManager
-	SystemTray  *SystemTrayManager
-	Autostart   *AutostartManager
-	Updater     *updater.Updater
+	Window         *WindowManager
+	ContextMenu    *ContextMenuManager
+	KeyBinding     *KeyBindingManager
+	Browser        *BrowserManager
+	Env            *EnvironmentManager
+	Dialog         *DialogManager
+	Event          *EventManager
+	Menu           *MenuManager
+	Screen         *ScreenManager
+	Clipboard      *ClipboardManager
+	SystemTray     *SystemTrayManager
+	Autostart      *AutostartManager
+	GlobalShortcut *GlobalShortcutManager
+	Updater        *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -429,6 +431,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// messageProcessor handles runtime messages
+	messageProcessor *MessageProcessor
 }
 
 func (a *App) Config() Options {
@@ -509,6 +514,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
+	a.GlobalShortcut = newGlobalShortcutManager(a)
 	a.Updater = updater.New(newUpdaterHost(a))
 }
 
@@ -596,6 +602,14 @@ func (a *App) Run() error {
 			a.options.Services = services[:i+1]
 		}
 
+
+	// Start the MCP server when the application is built with -tags mcp.
+	// All configuration is read from environment variables (WAILS_MCP_HOST,
+	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+	if err := startMCPServer(a); err != nil {
+		return fmt.Errorf("mcp: %w", err)
+	}
+
 		go func() {
 			for {
 				event := <-applicationEvents
@@ -643,6 +657,9 @@ func (a *App) Run() error {
 		a.runLock.Lock()
 		a.running = true
 		a.runLock.Unlock()
+
+		// Bind any global shortcuts that were registered before the app started.
+		a.GlobalShortcut.flushPending()
 
 		// No need to hold the lock here because
 		//   - a.pendingRun may only change while a.running is false.
@@ -820,6 +837,12 @@ func (a *App) cleanup() {
 	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
+	}
+	// Release any global shortcuts the application registered with the OS.
+	if a.GlobalShortcut != nil {
+		if err := a.GlobalShortcut.UnregisterAll(); err != nil {
+			a.handleError(err)
+		}
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
