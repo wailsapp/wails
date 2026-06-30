@@ -632,8 +632,8 @@ class Window {
      * Gathers information about the drop target element and sends it back to the Go backend.
      *
      * @param filenames - An array of file paths (strings) that were dropped.
-     * @param x - The x-coordinate of the drop event (CSS pixels).
-     * @param y - The y-coordinate of the drop event (CSS pixels).
+     * @param x - The x-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
+     * @param y - The y-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
      */
     HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
         // Check if file drops are enabled for this window
