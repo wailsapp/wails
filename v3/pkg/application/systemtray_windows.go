@@ -551,7 +551,10 @@ func (s *windowsSystemTray) destroy() {
 	// destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
-		globalApplication.debug(syscall.GetLastError().Error())
+		// Pass the error as an arg rather than calling .Error() on it: when the
+		// thread's last-error is 0, syscall.GetLastError() returns a nil error,
+		// and nil.Error() would nil-deref panic (mirrors the updateIcon fix).
+		globalApplication.debug("ShellNotifyIcon NIM_DELETE failed", "error", syscall.GetLastError())
 	}
 
 	// Clean up icon handles
