@@ -39,7 +39,9 @@ func ValidateAndSanitizeURL(rawURL string) (string, error) {
 		return "", errors.New("shell metacharacters not allowed")
 	}
 
-	unicodeDangerous := "[\u0000-\u001F\u007F\u00A0\u1680\u2000-\u200F\u2028-\u202F\u205F\u3000\uFEFF\u200B-\u200D\u2060\u2061\u2062\u2063\u2064\u206A-\u206F\uFFF0-\uFFFF]"
+	// U+0085 (NEXT LINE) is a White_Space character like the others listed
+	// here, but it is a C1 control so it is not caught by the r < 32 loop above.
+	unicodeDangerous := "[\u0000-\u001F\u007F\u0085\u00A0\u1680\u2000-\u200F\u2028-\u202F\u205F\u3000\uFEFF\u200B-\u200D\u2060\u2061\u2062\u2063\u2064\u206A-\u206F\uFFF0-\uFFFF]"
 	if matched, _ := regexp.MatchString(unicodeDangerous, rawURL); matched {
 		return "", errors.New("dangerous unicode characters not allowed")
 	}
