@@ -19,6 +19,8 @@ on:
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
     
     permissions:
       contents: write
@@ -53,7 +55,68 @@ jobs:
         
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
-    
+
+    - name: Sync webview2 to latest release
+      # Ensure v3 always releases against the newest released webview2 module.
+      # Reads the latest webview2/v* tag; if v3/go.mod is behind, bumps it and
+      # adds a v3 changelog entry linking to the webview2 release notes (so they
+      # appear in the v3 release notes). Best-effort: a failure here must never
+      # block the v3 release — it just proceeds on the current version.
+      id: webview2_sync
+      run: |
+        set -e
+        LATEST_TAG=$(git tag -l "webview2/v*" | sort -V | tail -n 1)
+        if [ -z "$LATEST_TAG" ]; then
+          echo "No webview2 tag found — skipping."
+          exit 0
+        fi
+        LATEST="${LATEST_TAG#webview2/}"
+        CURRENT=$(awk '/wailsapp\/wails\/webview2 /{print $2}' v3/go.mod | head -n1)
+        echo "webview2: current=$CURRENT latest=$LATEST"
+        if [ "$LATEST" = "$CURRENT" ]; then
+          echo "Already on latest webview2 ($CURRENT)."
+          exit 0
+        fi
+        echo "Bumping webview2 $CURRENT -> $LATEST"
+        if ! (cd v3 && go get "github.com/wailsapp/wails/webview2@${LATEST}" && go mod tidy); then
+          echo "::warning::webview2 bump to ${LATEST} failed; continuing with ${CURRENT}"
+          git checkout -- v3/go.mod v3/go.sum 2>/dev/null || true
+          exit 0
+        fi
+        # Reference the webview2 release notes by link rather than embedding
+        # them. Each webview2 release body uses its own heading style (some are
+        # hand-written with "### Fixes", others are flat auto-generated bullet
+        # lists), so inlining produced inconsistent, messy changelog entries. A
+        # single link is uniform and always points at the authoritative notes.
+        # The tag contains a slash ("webview2/vX.Y.Z"), so URL-encode it as %2F.
+        RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/webview2%2F${LATEST}"
+        INSERT="- Bump \`webview2\` to ${LATEST} ([release notes](${RELEASE_URL}))."
+        # Insert the notes under "## Changed". If that anchor is ever missing,
+        # append the section so the notes are never silently dropped.
+        if grep -q '^## Changed' v3/UNRELEASED_CHANGELOG.md; then
+          awk -v ins="$INSERT" '
+            /^## Changed/ && !done { print; print ins; done=1; next }
+            { print }
+          ' v3/UNRELEASED_CHANGELOG.md > v3/UNRELEASED_CHANGELOG.md.tmp
+          mv v3/UNRELEASED_CHANGELOG.md.tmp v3/UNRELEASED_CHANGELOG.md
+        else
+          printf '\n## Changed\n%s\n' "$INSERT" >> v3/UNRELEASED_CHANGELOG.md
+        fi
+        git add v3/go.mod v3/go.sum v3/UNRELEASED_CHANGELOG.md
+        if git diff --cached --quiet; then
+          echo "No staged changes after bump — nothing to commit."
+          exit 0
+        fi
+        # Commit/push are best-effort too: a failure here must not block the v3
+        # release. Reset to the remote and continue on the current version.
+        if ! git commit -m "chore(v3): bump webview2 to ${LATEST}" || ! git push origin master; then
+          echo "::warning::webview2 sync commit/push failed; resetting and continuing without the bump"
+          git fetch origin master || true
+          git reset --hard origin/master || true
+          exit 0
+        fi
+        echo "bumped=true" >> "$GITHUB_OUTPUT"
+
     - name: Check for existing release tag
       id: check_tag
       run: |
@@ -115,8 +178,11 @@ jobs:
             echo "should_continue=true" >> $GITHUB_OUTPUT
           fi
         else
-          # No current tag, check against latest release
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
+          # No current tag, check against latest release.
+          # Only consider the active "alpha2.*" series: it outranks the legacy
+          # "alpha.*" tags in semver, and on the very first run (no alpha2 tag
+          # yet) the empty result correctly forces the inaugural alpha2 release.
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" | sort -V | tail -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "No previous release found, proceeding with release"
             echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -169,8 +235,13 @@ jobs:
         steps.quick_check.outputs.should_continue == 'true' || 
         github.event.inputs.force_release == 'true'
       env:
-        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
+        # against the API before pushing anything and falls back to
+        # GITHUB_TOKEN if the PAT is expired/revoked. Passing the same value
+        # for both (as before) made the fallback meaningless and an expired
+        # PAT produced a half-release: tag pushed, no GitHub release.
+        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         cd v3/tasks/release
         ARGS=()

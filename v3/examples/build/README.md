@@ -14,6 +14,10 @@ To build the example, run:
 wails3 task build
 ```
 
+> **Note:** Bare `go build .` outputs a binary named `build` (matching the directory
+> name). Use `wails3 task build` or an explicit output path instead:
+> `go build -o bin/buildtest .`
+
 # Status
 
 | Platform | Status  |

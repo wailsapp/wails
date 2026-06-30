@@ -3,8 +3,11 @@
 #import "application_ios.h"
 #import "application_ios_delegate.h"
 #import "../events/events_ios.h"
+#import "mobile_features_ios_internal.h"
 #import <stdlib.h>
+#import <os/log.h>
 extern void processApplicationEvent(unsigned int, void* data);
+extern void iosEmitNativeEvent(const char* name, const char* json);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
 // Buffer console messages until a WKWebView exists
@@ -29,12 +32,83 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     return self;
 }
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
-    NSURL *url = urlSchemeTask.request.URL;
-    NSLog(@"[WailsSchemeHandler] start task: %@", url.absoluteString);
+    // Stream captured media (saved in NSTemporaryDirectory) straight from disk
+    // with HTTP Range support, so <video> can stream/seek a clip of any length
+    // without inlining it as a data URL.
+    if ([urlSchemeTask.request.URL.path hasPrefix:@"/__capture__/"]) {
+        [self serveCaptureTask:urlSchemeTask];
+        return;
+    }
     ServeAssetRequest(self.windowID, (__bridge void*)urlSchemeTask);
 }
+- (void)serveCaptureTask:(id<WKURLSchemeTask>)task {
+    NSURL *url = task.request.URL;
+    // lastPathComponent strips any directory parts → only files directly in the
+    // temp dir can be served (no path traversal).
+    NSString *name = [url.path lastPathComponent];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSFileHandle *fh = [fm fileExistsAtPath:filePath]
+        ? [NSFileHandle fileHandleForReadingAtPath:filePath] : nil;
+    if (!fh) {
+        NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:404
+            HTTPVersion:@"HTTP/1.1" headerFields:@{}];
+        [task didReceiveResponse:r];
+        [task didFinish];
+        return;
+    }
+    @try {
+        unsigned long long length = [[fm attributesOfItemAtPath:filePath error:nil] fileSize];
+        NSString *ext = [[name pathExtension] lowercaseString];
+        NSString *mime = [ext isEqualToString:@"mp4"] ? @"video/mp4"
+            : [ext isEqualToString:@"mov"] ? @"video/quicktime"
+            : ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"jpeg"]) ? @"image/jpeg"
+            : [ext isEqualToString:@"png"] ? @"image/png" : @"application/octet-stream";
+        NSString *range = task.request.allHTTPHeaderFields[@"Range"];
+        if (range && [range hasPrefix:@"bytes="]) {
+            unsigned long long start = 0, end = length > 0 ? length - 1 : 0;
+            NSArray<NSString *> *parts = [[range substringFromIndex:6] componentsSeparatedByString:@"-"];
+            if (parts.count >= 1 && parts[0].length) start = strtoull(parts[0].UTF8String, NULL, 10);
+            if (parts.count >= 2 && parts[1].length) end = strtoull(parts[1].UTF8String, NULL, 10);
+            if (end >= length) end = length > 0 ? length - 1 : 0;
+            if (start > end) start = 0;
+            unsigned long long count = end - start + 1;
+            [fh seekToFileOffset:start];
+            NSData *data = [fh readDataOfLength:(NSUInteger)count];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Content-Range": [NSString stringWithFormat:@"bytes %llu-%llu/%llu", start, end, length],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:206
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        } else {
+            NSData *data = [fh readDataToEndOfFile];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        }
+    } @catch (NSException *e) {
+        [task didFailWithError:[NSError errorWithDomain:@"wails.capture" code:500 userInfo:nil]];
+    } @finally {
+        [fh closeFile];
+    }
+}
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
-    NSLog(@"[WailsSchemeHandler] stop task");
+    WailsVLog(@"[WailsSchemeHandler] stop task");
 }
 @end
 // MARK: - WailsMessageHandler
@@ -73,6 +147,22 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         _windowID = windowID;
     }
     return self;
+}
+// Live light/dark switches arrive here (not via a notification), so emit the
+// ios:ThemeChanged application event with the new mode in its context.
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13.0, *)) {
+        UIUserInterfaceStyle now = self.traitCollection.userInterfaceStyle;
+        UIUserInterfaceStyle was = previousTraitCollection
+            ? previousTraitCollection.userInterfaceStyle
+            : UIUserInterfaceStyleUnspecified;
+        if (now != was) {
+            BOOL dark = (now == UIUserInterfaceStyleDark);
+            processApplicationEvent(EventThemeChanged,
+                dark ? (void *)"{\"isDarkMode\":true}" : (void *)"{\"isDarkMode\":false}");
+        }
+    }
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -141,9 +231,10 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         @try { [self.webView setValue:@(inspectorOn) forKey:@"inspectable"]; } @catch (__unused NSException *e) {}
     }
     [self.view addSubview:self.webView];
-    // Initial load triggers our scheme handler
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"wails://localhost/"]];
-    [self.webView loadRequest:request];
+    // NOTE: no initial loadRequest here. The Go side performs the single
+    // initial navigation (iosWebviewWindow.run -> setURL); a hardcoded load
+    // here caused the page to load twice and lose the runtime-ready
+    // handshake in the overlap.
     // Flush any pending console logs now that a webview exists
     dispatch_async(dispatch_get_main_queue(), ^{
         if (pendingConsoleJS.count > 0) {
@@ -155,7 +246,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     });
     // Enable native tabs if globally enabled
     BOOL tabsEnabled = ios_native_tabs_is_enabled();
-    NSLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
+    WailsVLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
     if (tabsEnabled) {
         [self enableNativeTabs:YES];
     }
@@ -179,9 +270,33 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     CGFloat webBottom = safe.bottom + tabH;
     self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
 }
+// Orientation lock and status-bar appearance are driven by global state set
+// from Go (see mobile_features_ios.m). These overrides feed UIKit the current
+// preference; the setters call the matching setNeeds… to apply it live.
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return mfSupportedOrientations();
+}
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return mfStatusBarStyle();
+}
+- (BOOL)prefersStatusBarHidden {
+    return mfStatusBarHidden();
+}
+// Push safe-area changes (rotation, notch) to the frontend so layouts can react
+// beyond what CSS env(safe-area-inset-*) already provides.
+- (void)viewSafeAreaInsetsDidChange {
+    [super viewSafeAreaInsetsDidChange];
+    if (@available(iOS 11.0, *)) {
+        UIEdgeInsets s = self.view.safeAreaInsets;
+        NSString *json = [NSString stringWithFormat:
+            @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
+            (int)s.top, (int)s.bottom, (int)s.left, (int)s.right];
+        iosEmitNativeEvent("common:safeArea", [json UTF8String]);
+    }
+}
 - (void)enableNativeTabs:(BOOL)enabled {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
+        WailsVLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
         if (enabled) {
             if (!self.tabBar) {
                 UITabBar *tb = [[UITabBar alloc] init];
@@ -206,7 +321,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                         id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
                         if (!err && [obj isKindOfClass:[NSArray class]]) {
                             NSArray *arr = (NSArray*)obj;
-                            NSLog(@"[WailsViewController] Building tab items from JSON, count=%lu", (unsigned long)arr.count);
+                            WailsVLog(@"[WailsViewController] Building tab items from JSON, count=%lu", (unsigned long)arr.count);
                             items = [NSMutableArray arrayWithCapacity:arr.count];
                             NSInteger tag = 0;
                             for (id entry in arr) {
@@ -229,13 +344,13 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                         }
                     }
                     else {
-                        NSLog(@"[WailsViewController] NativeTabsItems JSON string is empty");
+                        WailsVLog(@"[WailsViewController] NativeTabsItems JSON string is empty");
                     }
                 }
                 if (items != nil && items.count > 0) {
                     tb.items = items;
                     tb.selectedItem = items.firstObject;
-                    NSLog(@"[WailsViewController] TabBar created with %lu item(s) from config", (unsigned long)items.count);
+                    WailsVLog(@"[WailsViewController] TabBar created with %lu item(s) from config", (unsigned long)items.count);
                 } else {
                     // Default 3 items
                     UITabBarItem *item0 = [[UITabBarItem alloc] initWithTitle:@"Bindings" image:nil tag:0];
@@ -243,23 +358,23 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
                     UITabBarItem *item2 = [[UITabBarItem alloc] initWithTitle:@"JS Runtime" image:nil tag:2];
                     tb.items = @[item0, item1, item2];
                     tb.selectedItem = item0;
-                    NSLog(@"[WailsViewController] TabBar created with default items (3)" );
+                    WailsVLog(@"[WailsViewController] TabBar created with default items (3)" );
                 }
                 self.tabBar = tb;
                 [self.view addSubview:self.tabBar];
-                NSLog(@"[WailsViewController] TabBar added as subview");
+                WailsVLog(@"[WailsViewController] TabBar added as subview");
             }
             self.tabBar.hidden = NO;
-            NSLog(@"[WailsViewController] TabBar set hidden=NO");
+            WailsVLog(@"[WailsViewController] TabBar set hidden=NO");
         } else {
             if (self.tabBar) {
                 self.tabBar.hidden = YES;
-                NSLog(@"[WailsViewController] TabBar set hidden=YES");
+                WailsVLog(@"[WailsViewController] TabBar set hidden=YES");
             }
         }
         [self.view setNeedsLayout];
         [self.view layoutIfNeeded];
-        NSLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
+        WailsVLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
     });
 }
 - (void)selectNativeTabIndex:(NSInteger)index {
@@ -325,8 +440,7 @@ unsigned int ios_create_webview(void) {
         if (!appDelegate.viewControllers) appDelegate.viewControllers = [NSMutableArray array];
         [appDelegate.viewControllers addObject:vc];
         appDelegate.window.rootViewController = vc;
-        [vc loadView];
-        [vc viewDidLoad];
+        [vc loadViewIfNeeded];
     });
     return windowID;
 }
@@ -342,8 +456,12 @@ void* ios_create_webview_with_id(unsigned int wailsID) {
         if (appDelegate.viewControllers.count == 1) {
             appDelegate.window.rootViewController = viewController;
         }
-        [viewController loadView];
-        [viewController viewDidLoad];
+        // Trigger the view to load exactly once, the UIKit-correct way. Calling
+        // -loadView and -viewDidLoad manually made UIKit ALSO load the view
+        // automatically, creating two WebViews/viewDidLoad passes: content loaded
+        // into one while the other (blank) was displayed → intermittent white
+        // screen on cold launch (force-quit + relaunch).
+        [viewController loadViewIfNeeded];
     };
     if ([NSThread isMainThread]) {
         createBlock();
@@ -399,8 +517,9 @@ void ios_console_log(const char* level, const char* message) {
     if (!message) return;
     NSString *lvl = level ? [NSString stringWithUTF8String:level] : @"log";
     NSString *msg = [NSString stringWithUTF8String:message];
-    // Mirror to system log for simctl visibility
-    NSLog(@"[ios_console_log][%@] %@", lvl, msg);
+    // Mirror to system log. Use %@ (NOT %{public}@) so message content is kept
+    // private/redacted in release builds — it can contain app/user data.
+    os_log(OS_LOG_DEFAULT, "[ios_console_log][%@] %@", lvl, msg);
     // Robustly encode message to avoid JS string escaping issues
     NSData *data = [msg dataUsingEncoding:NSUTF8StringEncoding];
     NSString *b64 = [data base64EncodedStringWithOptions:0];
@@ -423,8 +542,6 @@ void ios_console_log(const char* level, const char* message) {
         for (WailsViewController *vc in appDelegate.viewControllers) {
             [vc.webView evaluateJavaScript:js completionHandler:nil];
         }
-        // Helpful native debug: number of inspectors/webviews
-        NSLog(@"[ios_console_log] Delivered log to %lu webview(s)", (unsigned long)count);
     });
 }
 // Set background color (applies to VC view, WKWebView, and app window)

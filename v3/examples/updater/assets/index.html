@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Updater Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      color: #1d1d1f;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1e; color: #f5f5f7; }
+    }
+    h1 { margin-top: 0; }
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 6px;
+      min-height: 1.5em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .status { background: rgba(255,255,255,0.06); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Updater Example</h1>
+  <p>Use <strong>App → Check for Updates…</strong> to trigger the update flow.
+    The framework's default window will appear; this page mirrors the
+    updater events as they arrive.</p>
+  <div class="status" id="status">waiting…</div>
+
+  <script type="module">
+    const status = document.getElementById("status");
+    function log(line) {
+      const t = new Date().toISOString().slice(11, 19);
+      status.textContent = `[${t}] ${line}\n` + status.textContent;
+    }
+    // Use the typed event constants from `@wailsio/runtime` rather than
+    // hard-coding strings — they cover both the lifecycle events and the
+    // sub-namespaces (User.*, Window.*) and are kept in sync with the Go
+    // side by a regression test.
+    import { Events, Updater } from "/wails/runtime.js";
+    Events.On(Updater.Events.CheckStarted,     () => log("check started"));
+    Events.On(Updater.Events.UpdateAvailable,  (e) => log(`available: v${(e.data ?? e).version}`));
+    Events.On(Updater.Events.NoUpdate,         () => log("up to date"));
+    Events.On(Updater.Events.DownloadProgress, (e) => {
+      const p = e.data ?? e;
+      if (p.total > 0) log(`downloading: ${p.written}/${p.total}`);
+      else             log(`downloading: ${p.written} bytes`);
+    });
+    Events.On(Updater.Events.UpdateReady,      () => log("ready — restart to apply"));
+    Events.On(Updater.Events.Error,            (e) => log(`error: ${(e.data ?? e).message}`));
+  </script>
+</body>
+</html>

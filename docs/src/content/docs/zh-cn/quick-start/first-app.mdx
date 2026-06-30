@@ -1,0 +1,270 @@
+---
+title: 你的第一个应用
+description: 在 10 分钟内构建一个可用的 Wails 应用
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+我们将构建一个简单的问候应用，以演示 Wails 的核心概念：
+- Go 后端管理逻辑
+- 前端调用 Go 函数
+- 类型安全的绑定
+- 开发期间的热重载
+
+**完成时间：** 10 分钟
+
+:::tip[Windows 11 用户的性能提示]
+考虑使用 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 来存储你的项目。Dev Drives 针对开发者工作负载进行了优化，与常规 NTFS 驱动器相比，可以将构建时间和磁盘访问速度提高多达 30%。
+:::
+
+## 创建你的项目
+
+<Steps>
+
+1. **生成项目**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+   这将创建一个使用默认 Vanilla + Vite 模板的新项目（带有 Vite 打包器的纯 HTML/CSS/JS）。
+
+   :::tip[其他模板]
+   尝试使用 `-t react`、`-t vue` 或 `-t svelte` 来选择你喜欢的框架。
+   运行 `wails3 init -l` 查看所有可用模板。
+   :::
+
+2. **了解项目结构**
+
+   ```
+   myapp/
+   ├── main.go              # 应用程序入口点
+   ├── greetservice.go      # 问候服务
+   ├── frontend/            # 你的 UI 代码
+   │   ├── index.html       # HTML 入口点
+   │   ├── src/
+   │   │   └── main.js      # 前端 JavaScript
+   │   ├── public/
+   │   │   └── style.css    # 样式
+   │   ├── package.json     # 前端依赖
+   │   └── vite.config.js   # Vite 打包器配置
+   ├── build/               # 构建配置
+   └── Taskfile.yml         # 构建任务
+   ```
+
+3. **运行应用**
+
+   ```bash
+   wails3 dev
+   ```
+
+   :::note[首次运行]
+   首次运行可能需要比预期更长的时间，因为它会安装前端依赖、生成绑定等。后续运行会快得多。
+   :::
+
+   应用打开后会显示一个问候界面。输入你的名字并点击“Greet”（问候）——Go 后端将处理你的输入并返回问候语。
+
+</Steps>
+
+## 工作原理
+
+让我们了解使这一切工作的代码。
+
+### Go 后端
+
+打开 `greetservice.go`：
+
+```go title="greetservice.go"
+package main
+
+import (
+	"fmt"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+**关键概念：**
+
+1. **服务 (Service)** - 带有导出方法的 Go 结构体
+2. **导出方法** - `Greet` 是大写的，使其对前端可用
+3. **简单逻辑** - 接收名字，返回问候语
+4. **类型安全** - 定义了输入和输出类型
+
+:::tip[理解服务和绑定]
+**服务 (Services)** 是自包含的 Go 模块，用于向你的前端暴露功能。它们只是带有导出方法的普通 Go 结构体，你可以在应用配置的 `Services` 字段中注册它们。
+
+**绑定 (Bindings)** 是自动生成的 TypeScript/JavaScript SDK，允许你的前端调用这些服务。当你运行 `wails3 dev` 或 `wails3 build` 时，Wails 会分析你注册的服务，并在 `frontend/bindings/` 中生成类型安全的绑定。
+
+可以将服务视为你后端的 API，将绑定视为与之通信的客户端库。
+:::
+
+### 注册服务
+
+打开 `main.go` 并找到服务注册代码：
+
+```go title="main.go" {4-6}
+err := application.New(application.Options{
+    Name: "myapp",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    // ... other options
+})
+```
+
+这将你的 `GreetService` 注册到 Wails，使其所有导出方法对前端可用。
+
+### 前端
+
+打开 `frontend/src/main.js`：
+
+```javascript title="frontend/src/main.js"
+import {GreetService} from "../bindings/changeme";
+
+window.greet = async () => {
+    const nameElement = document.getElementById('name');
+    const resultElement = document.getElementById('result');
+
+    const name = nameElement.value;
+    if (!name) {
+        return;
+    }
+
+    try {
+        const result = await GreetService.Greet(name);
+        resultElement.innerText = result;
+    } catch (err) {
+        console.error(err);
+    }
+};
+```
+
+**关键概念：**
+
+1. **自动生成的绑定** - `GreetService` 从生成的代码中导入
+2. **类型安全调用** - 方法名和签名与你的 Go 代码匹配
+3. **默认异步** - 所有 Go 调用返回 Promises
+4. **错误处理** - Go 中的错误在 try/catch 中被捕获
+
+:::note[绑定在哪里？]
+生成的绑定位于 `frontend/bindings/`。当你运行 `wails3 dev` 或 `wails3 build` 时，它们会自动创建。
+
+**切勿手动编辑这些文件**——它们在每次构建时都会重新生成。
+:::
+
+## 自定义你的应用
+
+让我们添加一个新功能来了解工作流程。
+
+### 添加“问候多人”功能
+
+<Steps>
+
+1. **将方法添加到 GreetService**
+
+   将此添加到 `greetservice.go`：
+
+   ```go title="greetservice.go"
+   func (g *GreetService) GreetMany(names []string) []string {
+       greetings := make([]string, len(names))
+       for i, name := range names {
+           greetings[i] = fmt.Sprintf("Hello %s!", name)
+       }
+       return greetings
+   }
+   ```
+
+2. **应用将自动重新构建**
+
+   保存文件，`wails3 dev` 将自动重新构建你的 Go 代码并重启应用。
+
+   :::note[自动重新构建]
+   Go 代码更改会触发自动重新构建和重启。前端更改会热重载而无需重启。
+   :::
+
+3. **在前端中使用它**
+
+   将此添加到 `frontend/src/main.js`：
+
+   ```javascript title="frontend/src/main.js"
+   window.greetMany = async () => {
+       const names = ['Alice', 'Bob', 'Charlie'];
+       const greetings = await GreetService.GreetMany(names);
+       console.log(greetings);
+   };
+   ```
+
+   打开浏览器控制台并调用 `greetMany()`——你将看到问候语数组。
+
+</Steps>
+
+## 构建生产版本
+
+当你准备好分发你的应用时：
+
+```bash
+wails3 build
+```
+
+**这将执行以下操作：**
+- 使用优化编译 Go 代码
+- 为生产环境构建前端（最小化）
+- 在 `build/bin/` 中创建原生可执行文件
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **输出：** `build/bin/myapp.exe`
+
+    双击运行。无需依赖（WebView2 是 Windows 的一部分）。
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **输出：** `build/bin/myapp.app`
+
+    拖拽到应用程序文件夹或双击运行。
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **输出：** `build/bin/myapp`
+
+    使用 `./build/bin/myapp` 运行，或为你的启动器创建 `.desktop` 文件。
+  </TabItem>
+</Tabs>
+
+:::tip[跨平台构建]
+想要为其他平台构建？请参阅 [跨平台构建 →](/guides/build/cross-platform)
+:::
+
+## 我们学到了什么
+
+**项目结构**
+- `main.go` 用于 Go 后端
+- `frontend/` 用于 UI 代码
+- `Taskfile.yml` 用于构建任务
+
+**服务 (Services)**
+- 创建带有导出方法的 Go 结构体
+- 使用 `application.NewService()` 注册
+- 方法在前端自动可用
+
+**绑定 (Bindings)**
+- 自动生成的 TypeScript 定义
+- 类型安全的函数调用
+- 默认异步（Promises）
+
+**开发工作流程**
+- `wails3 dev` 用于热重载
+- Go 更改自动重新构建并重启
+- 前端更改即时热重载
+
+---
+
+**有问题？** 加入 [Discord](https://discord.gg/JDdSxwjhGf) 并向社区提问。

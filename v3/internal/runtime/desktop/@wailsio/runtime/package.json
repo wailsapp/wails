@@ -1,7 +1,7 @@
 {
   "name": "@wailsio/runtime",
   "type": "module",
-  "version": "3.0.0-alpha.82",
+  "version": "3.0.0-alpha.95",
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
@@ -42,28 +42,30 @@
     "generate": "npm run generate:events",
     "prebuild": "npm run clean && npm run generate",
     "build:code": "npx tsc",
-    "build:docs": "npx typedoc --gitRevision v3-alpha --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
-    "build:docs:md": "npx typedoc --gitRevision v3-alpha --plugin typedoc-plugin-markdown --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
+    "build:docs": "npx typedoc --gitRevision master --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
+    "build:docs:md": "npx typedoc --gitRevision master --plugin typedoc-plugin-markdown --plugin typedoc-plugin-mdn-links --plugin typedoc-plugin-missing-exports ./src/index.ts",
     "build": "npm run build:code & npm run build:docs & wait",
     "prepack": "npm run build"
   },
   "devDependencies": {
-    "happy-dom": "^17.1.1",
+    "happy-dom": "^20.9.0",
     "promises-aplus-tests": "2.1.2",
-    "rimraf": "^5.0.5",
-    "typedoc": "^0.27.7",
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.28.0",
     "typedoc-plugin-markdown": "^4.4.2",
-    "typedoc-plugin-mdn-links": "^4.0.13",
-    "typedoc-plugin-missing-exports": "^3.1.0",
+    "typedoc-plugin-mdn-links": "^5.1.1",
+    "typedoc-plugin-missing-exports": "^4.1.3",
     "typescript": "^5.7.3",
-    "vite": "^5.2.0",
-    "vitest": "^3.0.6"
+    "vite": "^8.0.13",
+    "vitest": "^4.1.0"
   },
   "overrides": {
     "promises-aplus-tests": {
       "mocha": "^11.1.0",
       "sinon": "^19.0.2",
       "underscore": "^1.13.7"
-    }
+    },
+    "serialize-javascript": "^7.0.5",
+    "diff": "^8.0.2"
   }
 }

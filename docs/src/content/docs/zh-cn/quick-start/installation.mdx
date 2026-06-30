@@ -1,0 +1,433 @@
+---
+title: 安装
+description: 安装 Wails 并准备构建应用程序
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## 快速安装（5 分钟）
+
+:::tip[TL;DR - 经验丰富的开发者]
+```bash
+# 安装 Go 1.25+，然后：
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+wails3 doctor  # 验证安装
+```
+
+如果 `wails3 doctor` 通过，则安装完成。[跳转到第一个应用 →](/zh-cn/quick-start/first-app)
+:::
+
+## 逐步安装
+
+<Steps>
+
+1. **安装 Go（必需）**
+
+   Wails 需要 Go 1.25 或更高版本。
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       从 **[go.dev/dl](https://go.dev/dl/)** 下载 Windows 安装程序并运行它。
+
+       **验证安装：**
+       ```powershell
+       go version  # 应显示 1.25 或更高版本
+       ```
+
+       **检查 PATH：**
+       ```powershell
+       $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+       ```
+
+       如果为空，请将 `C:\Users\YourName\go\bin` 添加到你的 PATH 中。
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **选项 1：官方安装程序**
+
+       从 **[go.dev/dl](https://go.dev/dl/)** 下载 macOS 安装程序 (.pkg 文件) 并运行它。
+
+       **选项 2：Homebrew**
+       ```bash
+       brew install go
+       ```
+
+       **验证安装：**
+       ```bash
+       go version  # 应显示 1.25 或更高版本
+       echo $PATH | grep go/bin  # 应显示 ~/go/bin
+       ```
+
+       如果 `~/go/bin` 不在 PATH 中，请添加到 `~/.zshrc` 或 `~/.bash_profile`：
+       ```bash
+       export PATH=$PATH:~/go/bin
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **选项 1：官方压缩包**
+
+       从 **[go.dev/dl](https://go.dev/dl/)** 下载 Linux 压缩包，然后：
+       ```bash
+       sudo rm -rf /usr/local/go
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+       ```
+
+       **选项 2：包管理器**
+       ```bash
+       # Ubuntu/Debian
+       sudo apt install golang-go
+
+       # Fedora
+       sudo dnf install golang
+
+       # Arch
+       sudo pacman -S go
+       ```
+
+       **添加到 PATH**（添加到 `~/.bashrc` 或 `~/.zshrc`）：
+       ```bash
+       export PATH=$PATH:/usr/local/go/bin:~/go/bin
+       source ~/.bashrc  # 重新加载
+       ```
+
+       **验证：**
+       ```bash
+       go version
+       echo $PATH | grep go/bin
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **安装平台依赖项**
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **WebView2 运行时**（通常已预装）
+
+       Windows 10/11 默认包含 WebView2。如果缺失：
+       - 从 [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) 下载
+       - 或者稍后运行 `wails3 doctor`——它将引导你完成
+
+       **就这样！** 不需要其他依赖项。
+
+       :::tip[Windows 11 性能提示]
+       考虑使用 [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) 存储你的项目。Dev Drives 针对开发者工作负载进行了优化，可以将构建时间和磁盘访问速度提高多达 30%。
+       :::
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Xcode 命令行工具**（必需）
+
+       ```bash
+       xcode-select --install
+       ```
+
+       在出现的对话框中点击“安装”。
+
+       **验证：**
+       ```bash
+       xcode-select -p  # 应显示 /Library/Developer/CommandLineTools
+       ```
+
+       **就这样！** macOS 默认包含 WebKit。
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **构建工具和 WebKit**
+
+       :::caution[最低发行版版本]
+       Wails v3 需要 **WebKitGTK 4.1**（使用 libsoup3）。仅提供 4.0 的旧发行版——Ubuntu 20.04、Debian 11、RHEL 8/9 及其衍生版本——不受支持。
+       :::
+
+       <Tabs syncKey="distro">
+         <TabItem label="Ubuntu/Debian">
+           需要 Ubuntu 22.04+ 或 Debian 12+。
+           ```bash
+           sudo apt update
+           sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+           ```
+         </TabItem>
+
+         <TabItem label="Fedora">
+           ```bash
+           sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.1-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Arch">
+           ```bash
+           sudo pacman -S base-devel gtk3 webkit2gtk-4.1
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk3-devel webkit2gtk3-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:4.1
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           添加到你的 `shell.nix` 或 `devShell`：
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_4_1 gtk3 pkg-config gcc ];
+           ```
+         </TabItem>
+
+         <TabItem label="其他">
+           安装 Wails 后运行 `wails3 doctor`——它将显示你的发行版所需的确切软件包。
+         </TabItem>
+       </Tabs>
+
+       :::note[可选：GTK4 支持]
+       Wails 还提供实验性的 GTK4 / WebKitGTK 6.0 支持。如果你想使用 GTK4 构建，请为你的发行版安装额外的依赖项，并使用 `wails3 build -tags gtk4` 进行构建。有关详细信息，请参阅 [Linux 打包 - GTK4](/guides/build/linux#gtk4-support-experimental)。
+       :::
+     </TabItem>
+   </Tabs>
+
+3. **安装 Wails CLI**
+
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+   ```
+
+   这将把 `wails3` 命令安装到 `~/go/bin`（或在 Windows 上为 `%USERPROFILE%\go\bin`）。
+
+4. **验证安装**
+
+   ```bash
+   wails3 doctor
+   ```
+
+   **预期输出（或类似）：**
+   ```
+   Wails (v3.0.0-dev)  Wails Doctor
+
+   # System
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
+
+   # Dependencies
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
+   ```
+
+   :::note[如果找不到 `wails3` 命令]
+   你的 `~/go/bin` 不在 PATH 中。请参阅上面的第 1 步来解决此问题，然后重启终端。
+   :::
+
+5. **安装 npm（可选但推荐）**
+
+   大多数 Wails 模板使用 npm 进行前端工具链管理。
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       从 [nodejs.org](https://nodejs.org/) 下载并运行安装程序。
+
+       **验证：**
+       ```powershell
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **选项 1：官方安装程序**
+       从 [nodejs.org](https://nodejs.org/) 下载
+
+       **选项 2：Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **验证：**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **选项 1：NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **选项 2：包管理器**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **验证：**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[其他包管理器]
+   更喜欢 `pnpm`、`yarn` 或 `bun`？没问题！只需更新项目中的 `Taskfile.yml` 使用你偏好的工具即可。
+   :::
+
+</Steps>
+
+## 故障排除
+
+#### `wails3` 命令未找到
+
+**原因：** `~/go/bin`（或 `%USERPROFILE%\go\bin`）不在 PATH 中。
+
+**解决方案：**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. 打开"环境变量"（在开始菜单中搜索）
+    2. 在"用户变量"下，找到 `Path`
+    3. 点击"编辑"→"新建"
+    4. 添加：`C:\Users\YourName\go\bin`（将 YourName 替换为你的用户名）
+    5. 点击所有对话框中的"确定"
+    6. **重启终端**
+
+    **验证：**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    添加到 `~/.zshrc`（macOS）或 `~/.bashrc`（Linux）：
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    重新加载：
+    ```bash
+    source ~/.zshrc  # 或 ~/.bashrc
+    ```
+
+    **验证：**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+
+---
+
+#### `wails3 doctor` 报告缺少依赖项
+
+**Linux：** 输出会告诉你需要安装哪些软件包。示例：
+```
+❌ webkit2gtk not found
+   Install with: sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows：** 如果缺少 WebView2：
+- 从 [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/) 下载
+- 或者运行你的第一个应用时会自动安装
+
+**macOS：** 如果缺少 Xcode 工具：
+```bash
+xcode-select --install
+```
+
+---
+
+#### Go 版本过旧
+
+Wails v3 需要 Go 1.25+。如果你使用的是旧版本：
+
+<Tabs syncKey="os">
+  <TabItem label="Windows/macOS" icon="seti:windows">
+    从 [go.dev/dl](https://go.dev/dl/) 下载最新版本并重新安装。
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    从 [go.dev/dl](https://go.dev/dl/) 下载最新的 tarball，然后执行：
+    ```bash
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+    ```
+  </TabItem>
+</Tabs>
+
+## 开发版本（最新开发版）
+
+想要使用主开发分支中的最新代码吗？这让你能在正式发布前访问新功能和修复，但也伴随着 bug 和破坏性更改的风险。仅推荐给贡献者或需要测试即将推出功能的人员。
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3
+cd v3/cmd/wails3
+go install
+```
+
+:::caution[开发版本]
+- 可能存在 bug 或破坏性更改
+- 创建的项目将使用 `replace` 指令指向本地 Wails
+- 仅推荐给贡献者或用于测试新功能
+:::
+
+## 下一步
+
+**安装完成！** 你的系统已准备好进行 Wails 开发。
+
+<Card title="构建你的第一个应用" icon="rocket">
+  在 10 分钟内创建一个可用的应用程序。
+
+  [第一个应用教程 →](/zh-cn/quick-start/first-app)
+</Card>
+
+<Card title="探索模板" icon="open-book">
+  查看开箱即用的可用内容。
+
+  ```bash
+  wails3 init -l  # 列出模板
+  ```
+</Card>
+
+---
+
+**遇到问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或[提交 issue](https://github.com/wailsapp/wails/issues)。

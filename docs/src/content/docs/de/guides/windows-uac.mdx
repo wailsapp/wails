@@ -1,0 +1,152 @@
+---
+title: Windows-UAC-Konfiguration
+description: Konfigurieren Sie die Benutzerkontensteuerung (UAC) für Ihre Wails-Anwendung unter Windows
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Relevante Plattformen: <Badge text="Windows" variant="note" />
+<br/>
+
+Die Windows-Benutzerkontensteuerung (UAC) bestimmt die Ausführungsrechte Ihrer Wails-Anwendung. Standardmäßig enthalten Wails-v3-Anwendungen eine explizite UAC-Konfiguration in ihrem Windows-Manifest, um ein konsistentes Verhalten auf verschiedenen Maschinen zu gewährleisten.
+
+## UAC-Ausführungsstufen
+
+Windows-Anwendungen können über ihre Manifestdatei verschiedene Ausführungsstufen anfordern. Wails v3 enthält automatisch eine UAC-Konfiguration mit einer Standard-Ausführungsstufe, die Sie basierend auf den Anforderungen Ihrer Anwendung anpassen können.
+
+### Verfügbare Ausführungsstufen
+
+| Stufe | Beschreibung | Anwendungsfall |
+|-------|-------|------|
+| `asInvoker` | Wird mit den gleichen Rechten wie der übergeordnete Prozess ausgeführt | Standard für die meisten Anwendungen |
+| `highestAvailable` | Wird mit den höchsten verfügbaren Rechten des Benutzers ausgeführt | Anwendungen, die möglicherweise erhöhte Zugriffsrechte benötigen |
+| `requireAdministrator` | Erfordert immer Administratorrechte | System-Utilities, Installationsprogramme |
+
+### Standardkonfiguration
+
+Wails-v3-Anwendungen enthalten eine Standard-UAC-Konfiguration in ihrem Windows-Manifest:
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+Diese Konfiguration stellt sicher, dass Ihre Anwendung:
+- Mit den gleichen Rechten wie der startende Prozess ausgeführt wird
+- Standardmäßig keine Erhöhung der Rechte erfordert
+- Auf verschiedenen Maschinen konsistent funktioniert
+- Bei normalen Benutzern keine UAC-Abfragen auslöst
+
+## Anpassen der UAC-Konfiguration
+
+Da Wails v3 Benutzer dazu ermutigt, ihre Build-Assets anzupassen, können Sie die UAC-Konfiguration ändern, indem Sie Ihre Windows-Manifestvorlage direkt bearbeiten.
+
+### Auffinden der Manifestvorlage
+
+Die Windows-Manifestvorlage befindet sich unter:
+```
+build/windows/wails.exe.manifest
+```
+
+### Ändern der Ausführungsstufe
+
+Um die Ausführungsstufe zu ändern, bearbeiten Sie das Attribut `level` im Element `requestedExecutionLevel`:
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### Beispiele
+
+#### Standardanwendung (Standard)
+Die meisten Anwendungen sollten die Standardstufe `asInvoker` verwenden:
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### System-Utility
+Anwendungen, die bei Verfügbarkeit erhöhte Zugriffsrechte benötigen:
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### Administratives Tool
+Anwendungen, die immer Administratorrechte erfordern:
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI-Zugriff
+
+Das Attribut `uiAccess` steuert, ob Ihre Anwendung mit UI-Elementen mit höheren Rechten interagieren kann. In den meisten Fällen sollte dies `false` bleiben.
+
+Nur auf `true` setzen, wenn Ihre Anwendung Folgendes benötigt:
+- Eingaben an andere Anwendungen senden
+- Die UI anderer Anwendungen steuern
+- Auf UI-Elemente von Prozessen mit höheren Rechten zugreifen
+
+:::caution[Anforderungen an den UI-Zugriff]
+Das Setzen von `uiAccess="true"` erfordert, dass Ihre Anwendung:
+- Digital mit einem Zertifikat einer vertrauenswürdigen Zertifizierungsstelle signiert ist
+- An einem sicheren Speicherort installiert ist (Programme oder Windows\System32)
+:::
+
+## Erstellen mit benutzerdefinierten UAC-Einstellungen
+
+Nachdem Sie Ihre Manifestvorlage geändert haben, erstellen Sie Ihre Anwendung wie gewohnt:
+
+```bash
+wails3 build
+```
+
+Der Build-Prozess wird Ihre benutzerdefinierte UAC-Konfiguration automatisch in die ausführbare Datei einbetten.
+
+## Überprüfen der UAC-Konfiguration
+
+Sie können überprüfen, ob Ihre UAC-Einstellungen ordnungsgemäß eingebettet sind, indem Sie das Tool `go-winres` verwenden:
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+Untersuchen Sie anschließend die extrahierte Manifestdatei, um zu bestätigen, dass Ihre UAC-Konfiguration vorhanden ist.
+
+:::tip[Persistenz des Manifests]
+Im Gegensatz zu einigen anderen Frameworks ist die UAC-Konfiguration von Wails v3 direkt während der Kompilierung in die ausführbare Datei eingebettet, was sicherstellt, dass sie beibehalten wird, wenn die Anwendung auf andere Maschinen kopiert wird.
+:::
+
+## Fehlerbehebung
+
+### UAC-Abfragen erscheinen nicht
+Wenn Sie `requireAdministrator` festgelegt haben, aber keine UAC-Abfragen sehen:
+- Überprüfen Sie, ob das Manifest ordnungsgemäß in Ihre ausführbare Datei eingebettet ist
+- Stellen Sie sicher, dass Sie nicht aus einem bereits erhöhten Prozess heraus laufen
+- Stellen Sie sicher, dass die Manifestsyntax gültiges XML ist
+
+### Anwendung startet nicht
+Wenn Ihre Anwendung nach UAC-Änderungen nicht zu starten versucht:
+- Überprüfen Sie die Manifestsyntax auf XML-Fehler
+- Überprüfen Sie, ob der Wert der Ausführungsstufe gültig ist
+- Versuchen Sie, zu `asInvoker` zurückzukehren, um das Problem einzugrenzen
+
+### Inkonsistentes Verhalten auf verschiedenen Maschinen
+Wenn sich das UAC-Verhalten zwischen Maschinen unterscheidet:
+- Stellen Sie sicher, dass das Manifest in der ausführbaren Datei eingebettet ist (nicht extern)
+- Überprüfen Sie, ob die ausführbare Datei nach dem Erstellen nicht modifiziert wurde
+- Stellen Sie sicher, dass die Windows-UAC-Einstellungen auf dem Zielcomputer aktiviert sind
