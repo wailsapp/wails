@@ -1,0 +1,240 @@
+import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults, SigningDefaults, SigningStatus } from './types';
+
+const API_BASE = '/api';
+
+export async function getState(): Promise<WizardState> {
+  const response = await fetch(`${API_BASE}/state`);
+  return response.json();
+}
+
+export async function checkDependencies(): Promise<DependencyStatus[]> {
+  const response = await fetch(`${API_BASE}/dependencies/check`);
+  return response.json();
+}
+
+export async function checkMobileDependencies(ios: boolean, android: boolean): Promise<DependencyStatus[]> {
+  const response = await fetch(`${API_BASE}/dependencies/mobile?ios=${ios}&android=${android}`);
+  return response.json();
+}
+
+export async function getDockerStatus(): Promise<DockerStatus> {
+  const response = await fetch(`${API_BASE}/docker/status`);
+  return response.json();
+}
+
+export function subscribeDockerStatus(onUpdate: (status: DockerStatus) => void): () => void {
+  let eventSource: EventSource | null = null;
+  let closed = false;
+
+  const connect = () => {
+    if (closed) return;
+    
+    eventSource = new EventSource(`${API_BASE}/docker/status/stream`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const status = JSON.parse(event.data) as DockerStatus;
+        onUpdate(status);
+      } catch (e) {
+        console.error('Failed to parse docker status:', e);
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource?.close();
+      if (!closed) {
+        setTimeout(connect, 1000);
+      }
+    };
+  };
+
+  connect();
+
+  return () => {
+    closed = true;
+    eventSource?.close();
+  };
+}
+
+export async function buildDockerImage(): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/docker/build`, { method: 'POST' });
+  return response.json();
+}
+
+export interface DockerStartBackgroundResponse {
+  started: boolean;
+  reason?: string;
+  status: DockerStatus;
+}
+
+export async function startDockerBuildBackground(): Promise<DockerStartBackgroundResponse> {
+  const response = await fetch(`${API_BASE}/docker/start-background`, { method: 'POST' });
+  return response.json();
+}
+
+export async function detectConfig(): Promise<Partial<UserConfig>> {
+  const response = await fetch(`${API_BASE}/config/detect`);
+  return response.json();
+}
+
+export async function saveConfig(config: UserConfig): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/config/save`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+  return response.json();
+}
+
+export async function complete(): Promise<{ status: string; duration: string }> {
+  const response = await fetch(`${API_BASE}/complete`);
+  return response.json();
+}
+
+export interface CloseResponse {
+  status: string;
+  dockerBuilding: boolean;
+  message?: string;
+}
+
+export async function close(): Promise<CloseResponse> {
+  const response = await fetch(`${API_BASE}/close`);
+  return response.json();
+}
+
+export async function getWailsConfig(): Promise<WailsConfig | null> {
+  const response = await fetch(`${API_BASE}/wails-config`);
+  return response.json();
+}
+
+export async function saveWailsConfig(config: WailsConfig): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/wails-config`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+  return response.json();
+}
+
+export interface InstallResult {
+  success: boolean;
+  output: string;
+  error?: string;
+}
+
+export async function installDependency(command: string): Promise<InstallResult> {
+  const response = await fetch(`${API_BASE}/dependencies/install`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command }),
+  });
+  return response.json();
+}
+
+export async function getDefaults(): Promise<GlobalDefaults> {
+  const response = await fetch(`${API_BASE}/defaults`);
+  return response.json();
+}
+
+export async function saveDefaults(defaults: GlobalDefaults): Promise<{ status: string; path: string }> {
+  const response = await fetch(`${API_BASE}/defaults`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(defaults),
+  });
+  return response.json();
+}
+
+export async function getSigningStatus(): Promise<SigningStatus> {
+  const response = await fetch(`${API_BASE}/signing/status`);
+  return response.json();
+}
+
+export async function getSigning(): Promise<SigningDefaults | null> {
+  const response = await fetch(`${API_BASE}/signing`);
+  return response.json();
+}
+
+export async function saveSigning(signing: SigningDefaults): Promise<{ status: string }> {
+  const response = await fetch(`${API_BASE}/signing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(signing),
+  });
+  return response.json();
+}
+
+export async function validateNotarizationProfile(profile: string): Promise<{ valid: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/notarize/validate?profile=${encodeURIComponent(profile)}`);
+  return response.json();
+}
+
+export async function createNotarizationProfile(data: {
+  profileName: string;
+  appleID: string;
+  teamID: string;
+  password: string;
+}): Promise<{ success: boolean; error?: string; output?: string }> {
+  const response = await fetch(`${API_BASE}/signing/notarize/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function getInit(): Promise<import('./types').InitData | null> {
+  const response = await fetch(`${API_BASE}/init`);
+  return response.json();
+}
+
+export async function createProject(data: import('./types').InitData): Promise<{ success: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/init/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function createGPGKey(data: {
+  name: string;
+  email: string;
+  passphrase: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function exportGPGKey(data: {
+  keyID?: string;
+  passphrase?: string;
+}): Promise<{ success: boolean; keyID?: string; keyPath?: string; needsPassphrase?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/gpg/export`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function createWindowsCert(data: {
+  commonName: string;
+  password: string;
+}): Promise<{ success: boolean; path?: string; selfSign?: boolean; error?: string }> {
+  const response = await fetch(`${API_BASE}/signing/windows/create-cert`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function reportBug(currentStep: string): Promise<{ status: string; body?: string; url?: string }> {
+  const response = await fetch(`${API_BASE}/report-bug?step=${encodeURIComponent(currentStep)}`);
+  return response.json();
+}

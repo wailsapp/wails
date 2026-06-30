@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import { invoke, IsWindows } from "./system.js";
+import { invoke, IsWindows, IsLinux } from "./system.js";
 import { GetFlag } from "./flags.js";
 import { canTrackButtons, eventTarget } from "./utils.js";
 
@@ -23,23 +23,55 @@ let resizeEdge: string = "";
 let defaultCursor = "auto";
 
 let buttons = 0;
-const buttonsTracked = canTrackButtons();
+import { hasDOM } from "./environment.js";
 
-window._wails = window._wails || {};
-window._wails.setResizable = (value: boolean): void => {
-    resizable = value;
-    if (!resizable) {
-        // Stop resizing if in progress.
-        canResize = resizing = false;
-        setResize();
+let buttonsTracked = false;
+
+if (hasDOM) {
+    buttonsTracked = canTrackButtons();
+    window._wails = window._wails || {};
+    window._wails.setResizable = (value: boolean): void => {
+        resizable = value;
+        if (!resizable) {
+            // Stop resizing if in progress.
+            canResize = resizing = false;
+            setResize();
+        }
+    };
+}
+
+// Defer attaching mouse listeners until we know we're not on mobile.
+let dragInitDone = false;
+function isMobile(): boolean {
+    const os = (window as any)._wails?.environment?.OS;
+    if (os === "ios" || os === "android") return true;
+    // Fallback heuristic if environment not yet set
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || "";
+    return /android|iphone|ipad|ipod|iemobile|wpdesktop/i.test(ua);
+}
+function tryInitDragHandlers(): void {
+    if (dragInitDone) return;
+    if (isMobile()) return;
+    window.addEventListener('mousedown', update, { capture: true });
+    window.addEventListener('mousemove', update, { capture: true });
+    window.addEventListener('mouseup', update, { capture: true });
+    for (const ev of ['click', 'contextmenu', 'dblclick']) {
+        window.addEventListener(ev, suppressEvent, { capture: true });
     }
-};
-
-window.addEventListener('mousedown', update, { capture: true });
-window.addEventListener('mousemove', update, { capture: true });
-window.addEventListener('mouseup', update, { capture: true });
-for (const ev of ['click', 'contextmenu', 'dblclick']) {
-    window.addEventListener(ev, suppressEvent, { capture: true });
+    dragInitDone = true;
+}
+if (hasDOM) {
+    // Attempt immediate init (in case environment already present)
+    tryInitDragHandlers();
+    // Also attempt on DOM ready
+    document.addEventListener('DOMContentLoaded', tryInitDragHandlers, { once: true });
+    // As a last resort, poll for environment for a short period
+    let dragEnvPolls = 0;
+    const dragEnvPoll = window.setInterval(() => {
+        if (dragInitDone) { window.clearInterval(dragEnvPoll); return; }
+        tryInitDragHandlers();
+        if (++dragEnvPolls > 100) { window.clearInterval(dragEnvPoll); }
+    }, 50);
 }
 
 function suppressEvent(event: Event) {
@@ -196,7 +228,7 @@ function onMouseMove(event: MouseEvent): void {
         return;
     }
 
-    if (!resizable || !IsWindows()) {
+    if (!resizable || (!IsWindows() && !(IsLinux() && GetFlag("frameless")))) {
         if (resizeEdge) { setResize(); }
         return;
     }
@@ -207,16 +239,23 @@ function onMouseMove(event: MouseEvent): void {
     // Extra pixels for the corner areas.
     const cornerExtra = GetFlag("resizeCornerExtra") || 10;
 
-    const rightBorder = (window.outerWidth - event.clientX) < resizeHandleWidth;
+    // When a scrollbar is present at the window edge it consumes mouse events in that strip.
+    // Shift the effective content edge inward so the resize zone sits just before the scrollbar.
+    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    const scrollbarHeight = Math.max(0, window.innerHeight - document.documentElement.clientHeight);
+    const rightContentEdge = window.innerWidth - scrollbarWidth;
+    const bottomContentEdge = window.innerHeight - scrollbarHeight;
+
+    const rightBorder = event.clientX < rightContentEdge && (rightContentEdge - event.clientX) < resizeHandleWidth;
     const leftBorder = event.clientX < resizeHandleWidth;
     const topBorder = event.clientY < resizeHandleHeight;
-    const bottomBorder = (window.outerHeight - event.clientY) < resizeHandleHeight;
+    const bottomBorder = event.clientY < bottomContentEdge && (bottomContentEdge - event.clientY) < resizeHandleHeight;
 
     // Adjust for corner areas.
-    const rightCorner = (window.outerWidth - event.clientX) < (resizeHandleWidth + cornerExtra);
+    const rightCorner = event.clientX < rightContentEdge && (rightContentEdge - event.clientX) < (resizeHandleWidth + cornerExtra);
     const leftCorner = event.clientX < (resizeHandleWidth + cornerExtra);
     const topCorner = event.clientY < (resizeHandleHeight + cornerExtra);
-    const bottomCorner = (window.outerHeight - event.clientY) < (resizeHandleHeight + cornerExtra);
+    const bottomCorner = event.clientY < bottomContentEdge && (bottomContentEdge - event.clientY) < (resizeHandleHeight + cornerExtra);
 
     if (!leftCorner && !topCorner && !bottomCorner && !rightCorner) {
         // Optimisation: out of all corner areas implies out of borders.

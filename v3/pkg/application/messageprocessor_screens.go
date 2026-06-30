@@ -1,42 +1,60 @@
 package application
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 const (
 	ScreensGetAll     = 0
 	ScreensGetPrimary = 1
 	ScreensGetCurrent = 2
+	ScreensGetByID    = 3
+	ScreensGetByIndex = 4
 )
 
 var screensMethodNames = map[int]string{
 	ScreensGetAll:     "GetAll",
 	ScreensGetPrimary: "GetPrimary",
 	ScreensGetCurrent: "GetCurrent",
+	ScreensGetByID:    "GetByID",
+	ScreensGetByIndex: "GetByIndex",
 }
 
-func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, _ QueryParams) {
-	switch method {
+func (m *MessageProcessor) processScreensMethod(req *RuntimeRequest) (any, error) {
+	args := req.Args.AsMap()
+
+	switch req.Method {
 	case ScreensGetAll:
-		screens := globalApplication.Screen.GetAll()
-		m.json(rw, screens)
+		return globalApplication.Screen.GetAll(), nil
 	case ScreensGetPrimary:
-		screen := globalApplication.Screen.GetPrimary()
-		m.json(rw, screen)
+		return globalApplication.Screen.GetPrimary(), nil
 	case ScreensGetCurrent:
 		screen, err := globalApplication.Window.Current().GetScreen()
 		if err != nil {
-			m.httpError(rw, "Window.GetScreen failed:", err)
-			return
+			return nil, errs.WrapInvalidScreensCallErrorf(err, "Window.GetScreen failed")
 		}
-		m.json(rw, screen)
+		return screen, nil
+	case ScreensGetByID:
+		id := args.String("id")
+		if id == nil {
+			return nil, errs.NewInvalidScreensCallErrorf("missing or invalid argument 'id'")
+		}
+		screen := globalApplication.Screen.GetByID(*id)
+		if screen == nil {
+			return nil, errs.NewInvalidScreensCallErrorf("screen not found: %s", *id)
+		}
+		return screen, nil
+	case ScreensGetByIndex:
+		index := args.Int("index")
+		if index == nil {
+			return nil, errs.NewInvalidScreensCallErrorf("missing or invalid argument 'index'")
+		}
+		screen := globalApplication.Screen.GetByIndex(*index)
+		if screen == nil {
+			return nil, errs.NewInvalidScreensCallErrorf("screen not found at index: %d", *index)
+		}
+		return screen, nil
 	default:
-		m.httpError(rw, "Invalid screens call:", fmt.Errorf("unknown method: %d", method))
-		return
+		return nil, errs.NewInvalidScreensCallErrorf("Unknown method: %d", req.Method)
 	}
-
-	m.Info("Runtime call:", "method", "Screens."+screensMethodNames[method])
-
 }

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast Channel API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            height: 100vh;
+            padding: 12px;
+            overflow: hidden;
+        }
+        .container { max-width: 800px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h1 { color: #4ade80; font-size: 1.3rem; }
+        h1 a { color: #4ade80; text-decoration: none; }
+        h1 a:hover { text-decoration: underline; }
+        .status { font-size: 0.8rem; padding: 4px 10px; border-radius: 4px; }
+        .status.on { background: rgba(74,222,128,0.2); color: #4ade80; }
+        .status.off { background: rgba(248,113,113,0.2); color: #f87171; }
+        .main { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; min-height: 0; }
+        h2 { font-size: 0.9rem; margin-bottom: 8px; color: #e94560; }
+        label { display: block; margin-bottom: 3px; color: #888; font-size: 0.75rem; }
+        input {
+            width: 100%; padding: 8px; border: 1px solid #333; border-radius: 4px;
+            background: #1a1a2e; color: #eee; font-size: 0.85rem; margin-bottom: 8px;
+        }
+        button {
+            background: #4ade80; color: #1a1a2e; border: none; padding: 6px 12px;
+            border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        button.sm { padding: 4px 8px; font-size: 0.75rem; }
+        .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .info-row { display: flex; gap: 12px; margin-bottom: 10px; }
+        .info-box { flex: 1; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; }
+        .info-label { font-size: 0.7rem; color: #666; }
+        .info-value { font-size: 1rem; font-weight: 600; color: #4ade80; }
+        .quick-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+        .quick-btn {
+            background: rgba(96,165,250,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3);
+            padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; cursor: pointer;
+        }
+        .quick-btn:hover { background: rgba(96,165,250,0.3); }
+        .messages { flex: 1; background: #0a0a1a; border-radius: 6px; padding: 8px; overflow-y: auto; min-height: 0; }
+        .msg {
+            padding: 8px 10px; margin-bottom: 6px; border-radius: 6px;
+            border-left: 3px solid #4ade80; background: rgba(74,222,128,0.1);
+        }
+        .msg.sent { border-left-color: #60a5fa; background: rgba(96,165,250,0.1); }
+        .msg.system { border-left-color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .msg-header { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 4px; }
+        .msg-type { font-weight: 600; }
+        .msg-type.sent { color: #60a5fa; }
+        .msg-type.received { color: #4ade80; }
+        .msg-type.system { color: #fbbf24; }
+        .msg-time { color: #555; }
+        .msg-content { color: #ccc; font-size: 0.85rem; word-break: break-word; }
+        .msg-sender { color: #666; font-size: 0.7rem; margin-top: 3px; }
+        .stats { display: flex; gap: 15px; margin-bottom: 10px; }
+        .stat { text-align: center; }
+        .stat-val { font-size: 1.2rem; font-weight: bold; color: #4ade80; }
+        .stat-lbl { font-size: 0.65rem; color: #555; }
+        .empty { color: #444; font-size: 0.8rem; text-align: center; padding: 20px; }
+        .features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .feature { font-size: 0.7rem; padding: 3px 8px; border-radius: 3px; background: rgba(74,222,128,0.2); color: #4ade80; }
+        .feature.no { background: rgba(248,113,113,0.2); color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API" target="_blank">Broadcast Channel API</a> Demo</h1>
+            <span id="status" class="status off">Checking...</span>
+        </header>
+
+        <div class="main">
+            <div class="card">
+                <h2>API Features</h2>
+                <div class="features" id="features"></div>
+
+                <h2>Channel</h2>
+                <div class="info-row">
+                    <div class="info-box">
+                        <div class="info-label">Channel</div>
+                        <div class="info-value" id="channelName">demo-channel</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Window ID</div>
+                        <div class="info-value" id="windowId">--</div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button onclick="openNewWindow()">Open New Window</button>
+                    <button class="secondary" onclick="sendPing()">Ping All Windows</button>
+                </div>
+
+                <h2>Send Message</h2>
+                <input type="text" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
+                <div class="btn-row">
+                    <button onclick="sendMsg()">Send</button>
+                    <button class="sm danger" onclick="closeChannel()">Close Channel</button>
+                </div>
+
+                <div class="quick-btns">
+                    <span class="quick-btn" onclick="sendQuick('Hello!')">Hello!</span>
+                    <span class="quick-btn" onclick="sendQuick('Sync')">Sync</span>
+                    <span class="quick-btn" onclick="sendQuick('Logout')">Logout</span>
+                    <span class="quick-btn" onclick="sendQuick('Theme changed')">Theme</span>
+                </div>
+
+                <h2>Stats</h2>
+                <div class="stats">
+                    <div class="stat"><div class="stat-val" id="sent">0</div><div class="stat-lbl">Sent</div></div>
+                    <div class="stat"><div class="stat-val" id="received">0</div><div class="stat-lbl">Received</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Messages <button class="sm secondary" onclick="clearMsgs()" style="float:right;">Clear</button></h2>
+                <div class="messages" id="messages">
+                    <div class="empty">Open another window to test cross-window messaging</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/wails/runtime.js" type="module"></script>
+    <script>
+        let channel = null;
+        const windowId = Math.random().toString(36).substring(2, 6).toUpperCase();
+        let stats = { sent: 0, received: 0 };
+        let msgs = [];
+
+        document.getElementById('windowId').textContent = windowId;
+
+        function openNewWindow() {
+            wails.Call.ByName('main.WindowService.OpenNewWindow');
+        }
+
+        // Check support & show features
+        const supported = typeof BroadcastChannel !== 'undefined';
+        document.getElementById('status').textContent = supported ? 'Connected' : 'Not Supported';
+        document.getElementById('status').className = supported ? 'status on' : 'status off';
+
+        const checks = [
+            ['BroadcastChannel', typeof BroadcastChannel !== 'undefined'],
+            ['postMessage', supported && 'postMessage' in BroadcastChannel.prototype],
+            ['close', supported && 'close' in BroadcastChannel.prototype],
+            ['onmessage', supported],
+            ['onmessageerror', supported],
+            ['MessageChannel', typeof MessageChannel !== 'undefined'],
+        ];
+        document.getElementById('features').innerHTML = checks.map(([n, s]) =>
+            `<span class="feature${s ? '' : ' no'}">${n}</span>`
+        ).join('');
+
+        if (supported) {
+            channel = new BroadcastChannel('demo-channel');
+            channel.onmessage = (e) => {
+                stats.received++;
+                updateStats();
+                addMsg('received', e.data);
+            };
+            // Announce join
+            channel.postMessage({ type: 'join', windowId, ts: Date.now() });
+        }
+
+        function sendMsg() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if (!text || !channel) return;
+            const msg = { type: 'text', content: text, windowId, ts: Date.now() };
+            channel.postMessage(msg);
+            stats.sent++;
+            updateStats();
+            addMsg('sent', msg);
+            input.value = '';
+        }
+
+        function sendQuick(text) {
+            if (!channel) return;
+            const msg = { type: 'text', content: text, windowId, ts: Date.now() };
+            channel.postMessage(msg);
+            stats.sent++;
+            updateStats();
+            addMsg('sent', msg);
+        }
+
+        function sendPing() {
+            if (!channel) return;
+            const msg = { type: 'ping', windowId, ts: Date.now() };
+            channel.postMessage(msg);
+            stats.sent++;
+            updateStats();
+            addMsg('sent', { ...msg, content: 'PING' });
+        }
+
+        function closeChannel() {
+            if (channel) {
+                channel.postMessage({ type: 'leave', windowId, ts: Date.now() });
+                channel.close();
+                channel = null;
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('status').className = 'status off';
+            }
+        }
+
+        function addMsg(dir, data) {
+            msgs.unshift({ dir, data, time: new Date() });
+            if (msgs.length > 30) msgs.pop();
+            renderMsgs();
+        }
+
+        function renderMsgs() {
+            const el = document.getElementById('messages');
+            if (!msgs.length) {
+                el.innerHTML = '<div class="empty">No messages yet</div>';
+                return;
+            }
+            el.innerHTML = msgs.map(m => {
+                const isSystem = m.data.type === 'join' || m.data.type === 'leave';
+                const cls = isSystem ? 'system' : m.dir;
+                let content = m.data.content || '';
+                if (m.data.type === 'join') content = `Window ${m.data.windowId} joined`;
+                if (m.data.type === 'leave') content = `Window ${m.data.windowId} left`;
+                if (m.data.type === 'ping') content = `PING from ${m.data.windowId}`;
+                return `<div class="msg ${cls}">
+                    <div class="msg-header">
+                        <span class="msg-type ${cls}">${isSystem ? 'System' : (m.dir === 'sent' ? 'Sent' : 'Received')}</span>
+                        <span class="msg-time">${m.time.toLocaleTimeString()}</span>
+                    </div>
+                    <div class="msg-content">${escapeHtml(content)}</div>
+                    ${m.data.windowId && !isSystem ? `<div class="msg-sender">From: ${m.data.windowId}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function clearMsgs() { msgs = []; renderMsgs(); }
+        function updateStats() {
+            document.getElementById('sent').textContent = stats.sent;
+            document.getElementById('received').textContent = stats.received;
+        }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+        window.addEventListener('beforeunload', () => {
+            if (channel) channel.postMessage({ type: 'leave', windowId, ts: Date.now() });
+        });
+    </script>
+</body>
+</html>

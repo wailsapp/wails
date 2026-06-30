@@ -1,17 +1,34 @@
-# Starlight Starter Kit: Basics
+# Wails v3 Documentation
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
-```sh
-npm create astro@latest -- --template starlight
+## Prerequisites
+
+* [D2 Diagram Library](https://d2lang.com/). You can download the binary manually from [Github releases](https://github.com/terrastruct/d2/releases) or use the following
+
+```
+# Use install script:
+curl -fsSL https://d2lang.com/install.sh | sh -s --
+
+# Install from source with Go
+go install oss.terrastruct.com/d2@latest
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/starlight/tree/main/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/starlight/tree/main/examples/basics)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/withastro/starlight&create_from_path=examples/basics)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwithastro%2Fstarlight%2Ftree%2Fmain%2Fexamples%2Fbasics&project-name=my-starlight-docs&repository-name=my-starlight-docs)
+World-class documentation for Wails v3, redesigned following Netflix documentation principles.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 📚 Documentation Redesign (2025-10-01)
+
+This documentation has been completely redesigned to follow the **Netflix approach** to developer documentation:
+
+- **Problem-first framing** - Start with why, not what
+- **Progressive disclosure** - Multiple entry points for different skill levels
+- **Real production examples** - No toy code
+- **Story-Code-Context pattern** - Why → How → When
+- **Scannable content** - Clear structure, visual aids
+
+**Status:** Foundation complete (~20%), ready for content migration
+
+See [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for full details.
 
 ## 🚀 Project Structure
 

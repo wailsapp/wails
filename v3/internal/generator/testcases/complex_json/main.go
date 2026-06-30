@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -121,4 +120,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+
+func init() {
+	application.RegisterEvent[map[string]int]("collision")
+	application.RegisterEvent[*struct{ Field []bool }]("overlap")
 }

@@ -15,12 +15,10 @@ import (
 //
 // Whenever one is found and the type of its unique argument
 // is a valid service type, the corresponding named type object
-// is passed to yield.
+// is fed into the returned iterator.
 //
-// Results are deduplicated, i.e. yield is called at most once per object.
-//
-// If yield returns false, FindBoundTypes returns immediately.
-func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) (iter.Seq[*types.TypeName], error) {
+// Results are deduplicated, i.e. the iterator yields any given object at most once.
+func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) (iter.Seq[*types.TypeName], types.Object, error) {
 	type instanceInfo struct {
 		args *types.TypeList
 		pos  token.Position
@@ -46,6 +44,9 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 	// that have been already scheduled for analysis,
 	// for deduplication.
 	scheduled := make(map[target]bool)
+
+	// registerEvent holds the `application.RegisterEvent` function if found.
+	var registerEvent types.Object
 
 	// next lists type parameter objects that have yet to be analysed.
 	var next []targetInfo
@@ -102,29 +103,46 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				}
 			}
 
-			if len(next) > 0 {
-				// application.NewService has been found already.
-				continue
-			}
+			// Detect application.RegisterEvent
+			if registerEvent == nil && obj.Name() == "RegisterEvent" && obj.Pkg().Path() == systemPaths.ApplicationPackage {
+				fn, ok := obj.(*types.Func)
+				if !ok {
+					return nil, nil, ErrBadApplicationPackage
+				}
 
-			fn, ok := obj.(*types.Func)
-			if !ok {
+				signature := fn.Type().(*types.Signature)
+				if signature.Params().Len() != 1 || signature.Results().Len() != 0 || signature.TypeParams().Len() != 1 {
+					logger.Warningf("application.RegisterService params: %d, results: %d, typeparams: %d", signature.Params().Len(), signature.Results().Len(), signature.TypeParams().Len())
+					return nil, nil, ErrBadApplicationPackage
+				}
+
+				if !types.Identical(signature.Params().At(0).Type(), types.Universe.Lookup("string").Type()) {
+					logger.Warningf("application.RegisterService parameter type: %v", signature.Params().At(0).Type())
+					return nil, nil, ErrBadApplicationPackage
+				}
+
+				registerEvent = obj
 				continue
 			}
 
 			// Detect application.NewService
-			if fn.Name() == "NewService" && fn.Pkg().Path() == systemPaths.ApplicationPackage {
-				// Check signature.
+			if len(next) == 0 && obj.Name() == "NewService" && obj.Pkg().Path() == systemPaths.ApplicationPackage {
+				fn, ok := obj.(*types.Func)
+				if !ok {
+					return nil, nil, ErrBadApplicationPackage
+				}
+
 				signature := fn.Type().(*types.Signature)
-				if signature.Params().Len() > 2 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {
-					logger.Warningf("Param Len: %d, Results Len: %d, tp.Len: %d, tp.At(0).Obj(): %v", signature.Params().Len(), signature.Results().Len(), tp.Len(), tp.At(0).Obj())
-					return nil, ErrBadApplicationPackage
+				if signature.Params().Len() != 1 || signature.Results().Len() != 1 || tp.Len() != 1 {
+					logger.Warningf("application.NewService params: %d, results: %d, typeparams: %d", signature.Params().Len(), signature.Results().Len(), tp.Len())
+					return nil, nil, ErrBadApplicationPackage
 				}
 
 				// Schedule unique type param for analysis.
 				tgt := target{obj, 0}
 				scheduled[tgt] = true
 				next = append(next, targetInfo{target: tgt})
+				continue
 			}
 		}
 	}
@@ -185,7 +203,7 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 					logger.Warningf("%s: ignoring interface service type %s%s", instance.pos, named, indirectMsg)
 					continue
 				} else if named.TypeParams() != nil {
-					logger.Warningf("%s: ignoring generic service type %s", instance.pos, named, indirectMsg)
+					logger.Warningf("%s: ignoring generic service type %s%s", instance.pos, named, indirectMsg)
 					continue
 				}
 
@@ -198,5 +216,5 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				}
 			}
 		}
-	}, nil
+	}, registerEvent, nil
 }

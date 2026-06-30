@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #ifndef WebviewWindowDelegate_h
 #define WebviewWindowDelegate_h
@@ -15,10 +15,11 @@
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
 @property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+@property BOOL disableEscapeExitsFullscreen;
 
 @end
 
-@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination>
+@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination, WKUIDelegate>
 
 @property unsigned int windowId;
 @property (retain) NSEvent* leftMouseEvent;

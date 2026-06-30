@@ -12,8 +12,25 @@ var (
 	modshcore = syscall.NewLazyDLL("shcore.dll")
 
 	procGetDpiForMonitor       = modshcore.NewProc("GetDpiForMonitor")
+	procGetProcessDpiAwareness = modshcore.NewProc("GetProcessDpiAwareness")
 	procSetProcessDpiAwareness = modshcore.NewProc("SetProcessDpiAwareness")
 )
+
+func HasGetProcessDpiAwarenessFunc() bool {
+	err := procGetProcessDpiAwareness.Find()
+	return err == nil
+}
+
+// GetProcessDpiAwareness retrieves the DPI awareness of the current process.
+// Returns one of: PROCESS_DPI_UNAWARE, PROCESS_SYSTEM_DPI_AWARE, or PROCESS_PER_MONITOR_DPI_AWARE.
+func GetProcessDpiAwareness() (uint, error) {
+	var awareness uint
+	status, _, err := procGetProcessDpiAwareness.Call(0, uintptr(unsafe.Pointer(&awareness)))
+	if status != S_OK {
+		return 0, fmt.Errorf("GetProcessDpiAwareness failed: %v", err)
+	}
+	return awareness, nil
+}
 
 func HasSetProcessDpiAwarenessFunc() bool {
 	err := procSetProcessDpiAwareness.Find()

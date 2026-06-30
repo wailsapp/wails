@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"encoding"
 	"encoding/json"
 	"log"
@@ -206,4 +205,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+
+func init() {
+	application.RegisterEvent[*struct{ Field []bool }]("collision")
+	application.RegisterEvent[*struct{ Field []bool }]("overlap")
+	application.RegisterEvent[json.Marshaler]("interface")
 }

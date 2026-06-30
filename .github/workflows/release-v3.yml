@@ -1,0 +1,269 @@
+name: Release v3
+
+on:
+  push:
+    tags:
+      - 'v3.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v3.0.0-test.1) — must already exist in the repo'
+        required: true
+        type: string
+      pre_release:
+        description: 'Mark as pre-release on GitHub'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  GO_VERSION: '1.25'
+
+# Default the GITHUB_TOKEN to read-only for all jobs; the release job opts up to
+# contents: write where it actually needs it.
+permissions:
+  contents: read
+
+jobs:
+  # ── Linux binaries (native runners, CGO_ENABLED=0 for static binaries) ──────
+  build-linux:
+    name: Build Linux / ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: v3/go.sum
+
+      - name: Build
+        working-directory: v3
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          go build \
+            -ldflags="-s -w" \
+            -trimpath \
+            -o wails3-linux-${{ matrix.arch }} \
+            ./cmd/wails3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wails3-linux-${{ matrix.arch }}
+          path: v3/wails3-linux-${{ matrix.arch }}
+          retention-days: 1
+
+  # ── Windows binary ────────────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows / amd64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: v3/go.sum
+
+      - name: Build
+        working-directory: v3
+        env:
+          CGO_ENABLED: 0
+          GOOS: windows
+          GOARCH: amd64
+        run: go build -ldflags="-s -w" -trimpath -o wails3-windows-amd64.exe ./cmd/wails3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wails3-windows-amd64
+          path: v3/wails3-windows-amd64.exe
+          retention-days: 1
+
+  # ── macOS: build amd64 + arm64, create universal binary, sign, notarize ──────
+  build-sign-macos:
+    name: Build, Sign & Notarize macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # On workflow_dispatch build the requested tag; on tag push inputs.tag
+          # is empty so github.ref (the tag) is used. Prevents building from the
+          # branch tip and publishing it under an unrelated tag.
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: v3/go.sum
+
+      - name: Build darwin/amd64
+        working-directory: v3
+        env:
+          CGO_ENABLED: 0
+          GOOS: darwin
+          GOARCH: amd64
+        run: go build -ldflags="-s -w" -trimpath -o wails3-darwin-amd64 ./cmd/wails3
+
+      - name: Build darwin/arm64
+        working-directory: v3
+        env:
+          CGO_ENABLED: 0
+          GOOS: darwin
+          GOARCH: arm64
+        run: go build -ldflags="-s -w" -trimpath -o wails3-darwin-arm64 ./cmd/wails3
+
+      - name: Create universal binary
+        working-directory: v3
+        run: lipo -create -output wails3-darwin-universal wails3-darwin-amd64 wails3-darwin-arm64
+
+      - name: Import signing certificate
+        env:
+          APPLE_SIGNING_CERT: ${{ secrets.APPLE_SIGNING_CERT }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          # macos-latest ships BSD base64, which has no --decode; -D is the BSD
+          # decode flag. (GNU's -d is unavailable here.)
+          echo "$APPLE_SIGNING_CERT" | base64 -D > "$RUNNER_TEMP/cert.p12"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/cert.p12" \
+            -P "$APPLE_CERT_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+      - name: Sign binaries
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: |
+          for bin in v3/wails3-darwin-amd64 v3/wails3-darwin-arm64 v3/wails3-darwin-universal; do
+            codesign \
+              --options=runtime \
+              --timestamp \
+              --sign "$APPLE_SIGNING_IDENTITY" \
+              "$bin"
+            codesign --verify --verbose "$bin"
+          done
+
+      - name: Notarize macOS binaries
+        env:
+          APPLE_NOTARIZE_USER: ${{ secrets.APPLE_NOTARIZE_USER }}
+          APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for bin in v3/wails3-darwin-amd64 v3/wails3-darwin-arm64 v3/wails3-darwin-universal; do
+            zip -j "${bin}.zip" "$bin"
+            xcrun notarytool submit "${bin}.zip" \
+              --apple-id "$APPLE_NOTARIZE_USER" \
+              --password "$APPLE_NOTARIZE_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait
+            rm "${bin}.zip"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wails3-macos
+          path: |
+            v3/wails3-darwin-amd64
+            v3/wails3-darwin-arm64
+            v3/wails3-darwin-universal
+          retention-days: 1
+
+  # ── Create GitHub Release and attach all binaries ────────────────────────────
+  release:
+    name: Publish Release
+    needs: [build-linux, build-windows, build-sign-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Determine release tag and pre-release flag
+        id: meta
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+            PRE="${{ github.event.inputs.pre_release }}"
+          else
+            TAG="${{ github.ref_name }}"
+            # Treat tags with a hyphen suffix (e.g. v3.0.0-beta.1) as pre-releases
+            if [[ "$TAG" == *"-"* ]]; then
+              PRE=true
+            else
+              PRE=false
+            fi
+          fi
+          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
+          echo "pre_release=$PRE" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh dist/
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          PRE: ${{ steps.meta.outputs.pre_release }}
+        run: |
+          FLAGS=(
+            --repo "${{ github.repository }}"
+            --title "Wails $TAG"
+            --generate-notes
+          )
+          [[ "$PRE" == "true" ]] && FLAGS+=(--prerelease)
+
+          # Fail fast if the tag does not exist. Otherwise `gh release create`
+          # would create the tag at an arbitrary commit and publish a release
+          # for the wrong source (notably on a workflow_dispatch typo).
+          if ! gh api "repos/${{ github.repository }}/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG does not exist in ${{ github.repository }}; refusing to create a release."
+            exit 1
+          fi
+
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            # Release exists (e.g. workflow_dispatch re-run) — just upload binaries
+            gh release upload "$TAG" dist/* \
+              --repo "${{ github.repository }}" \
+              --clobber
+          else
+            gh release create "$TAG" dist/* "${FLAGS[@]}"
+          fi

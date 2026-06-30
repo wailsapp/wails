@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 #ifndef NOTIFICATIONS_DARWIN_H
 #define NOTIFICATIONS_DARWIN_H
@@ -10,8 +10,12 @@ bool checkBundleIdentifier(void);
 bool ensureDelegateInitialized(void);
 void requestNotificationAuthorization(int channelID);
 void checkNotificationAuthorization(int channelID);
-void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json);
-void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json);
+// sendNotification[WithActions] take a JSON-encoded NotificationOptions blob
+// (id, title, subtitle, body, categoryId, data, plus future fields like sound,
+// attachments, threadId, interruptionLevel, schedule). Passing one blob keeps
+// the C signature stable as new fields are added on the Go side.
+void sendNotification(int channelID, const char *options_json);
+void sendNotificationWithActions(int channelID, const char *options_json);
 void registerNotificationCategory(int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle);
 void removeNotificationCategory(int channelID, const char *categoryId);
 void removeAllPendingNotifications(void);

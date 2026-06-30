@@ -1,11 +1,15 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/tools/go/packages"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
@@ -26,6 +30,20 @@ type Generator struct {
 
 	collector *collect.Collector
 	renderer  *render.Renderer
+
+	// Default output dir for the obfuscated bindings file, plus any
+	// auto-detection error to surface only when -obfuscated-output is unset.
+	mainPackageDir    string
+	mainPackageDirErr error
+
+	// dirToPkgPath maps a loaded package's source directory to its import path.
+	// Used so the obfuscated bindings file can elide the self-import when a
+	// service lives in the same package as the metadata file.
+	dirToPkgPath map[string]string
+
+	// Binding-ID registrations gathered during the per-package pass.
+	obfuscatedMu            sync.Mutex
+	obfuscatedRegistrations []bindingIDRegistration
 
 	logger    *ErrorReport
 	scheduler scheduler
@@ -127,21 +145,32 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}
 
+	if generator.options.Obfuscated {
+		generator.dirToPkgPath = buildDirToPkgPath(pkgs)
+		if generator.options.ObfuscatedOutput == "" {
+			generator.mainPackageDir, generator.mainPackageDirErr = findUniqueMainPackageDir(pkgs)
+		}
+	}
+
 	// Panic on repeated calls.
 	if generator.collector != nil {
 		panic("Generate() must not be called more than once on the same receiver")
 	}
 
-	// Initialise subcomponents.
-	generator.collector = collect.NewCollector(pkgs, systemPaths, generator.options, &generator.scheduler, generator.logger)
-	generator.renderer = render.NewRenderer(generator.options, generator.collector)
-
 	// Update status.
-	generator.logger.Statusf("Looking for services...")
-	serviceFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating service bindings...") })
+	if generator.options.NoEvents {
+		generator.logger.Statusf("Looking for services...")
+	} else {
+		generator.logger.Statusf("Looking for services and events...")
+	}
+	serviceOrEventFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating bindings...") })
 
 	// Run static analysis.
-	services, err := FindServices(pkgs, systemPaths, generator.logger)
+	services, registerEvent, err := FindServices(pkgs, systemPaths, generator.logger)
+
+	// Initialise subcomponents.
+	generator.collector = collect.NewCollector(pkgs, registerEvent, systemPaths, generator.options, &generator.scheduler, generator.logger)
+	generator.renderer = render.NewRenderer(generator.collector, generator.options)
 
 	// Check for analyser errors.
 	if err != nil {
@@ -151,9 +180,23 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	// Discard unneeded data.
 	pkgs = nil
 
+	// Schedule collection and code generation for event data types.
+	if !generator.options.NoEvents {
+		generator.scheduler.Schedule(func() {
+			events := generator.collector.EventMap().Collect()
+			if len(events.Defs) > 0 {
+				serviceOrEventFound()
+				// Not a data race because we wait for this scheduled task
+				// to complete before accessing stats again.
+				stats.Add(events.Stats())
+			}
+			generator.generateEvents(events)
+		})
+	}
+
 	// Schedule code generation for each found service.
 	for obj := range services {
-		serviceFound()
+		serviceOrEventFound()
 		generator.scheduler.Schedule(func() {
 			generator.generateService(obj)
 		})
@@ -175,14 +218,18 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Schedule models, index and included files generation for each package.
-	for info := range generator.collector.Iterate {
+	for pkg := range generator.collector.Iterate {
 		generator.scheduler.Schedule(func() {
-			generator.generateModelsIndexIncludes(info)
+			generator.generateModelsIndexIncludes(pkg)
 		})
 	}
 
 	// Wait until all models and indices have been generated.
 	generator.scheduler.Wait()
+
+	if generator.options.Obfuscated {
+		generator.generateBindingIDMetadataAggregate()
+	}
 
 	// Populate stats.
 	generator.logger.Statusf("Collecting stats...")
@@ -198,18 +245,23 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	return
 }
 
-// generateModelsIndexIncludes schedules generation of public/private model files,
-// included files and, if allowed by the options,
-// of an index file for the given package.
-func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInfo) {
-	index := info.Index(generator.options.TS)
+// generateModelsIndexIncludes schedules generation of public/private model
+// files, included files and, if allowed by the options, of an index file for
+// the given package. Also records the package's binding-ID registrations when
+// obfuscation is enabled.
+func (generator *Generator) generateModelsIndexIncludes(pkg *collect.PackageInfo) {
+	index := pkg.Index(generator.options.TS)
 
 	// info.Index implies info.Collect: goroutines spawned below
 	// can access package information freely.
 
+	if generator.options.Obfuscated {
+		generator.recordObfuscatedRegistrations(index)
+	}
+
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Models)
+			generator.generateModels(pkg, index.Models)
 		})
 	}
 
@@ -224,7 +276,8 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 	}
 }
 
-// validateFileNames validates user-provided filenames.
+// validateFileNames validates user-provided filenames and rejects
+// incompatible flag combinations.
 func (generator *Generator) validateFileNames() error {
 	switch {
 	case generator.options.ModelsFilename == "":
@@ -241,9 +294,51 @@ func (generator *Generator) validateFileNames() error {
 
 	case !generator.options.NoIndex && generator.options.ModelsFilename == generator.options.IndexFilename:
 		return fmt.Errorf("models and package indexes cannot share the same filename")
+
+	case generator.options.Obfuscated && generator.options.UseNames:
+		return fmt.Errorf("obfuscated bindings cannot use name-based calls")
 	}
 
 	return nil
+}
+
+var (
+	errNoMainPackage        = errors.New("no `package main` found among loaded packages")
+	errAmbiguousMainPackage = errors.New("multiple `package main` directories found among loaded packages")
+)
+
+// findUniqueMainPackageDir returns the source directory of the unique loaded
+// `package main`, or a sentinel error when zero or multiple were found.
+func findUniqueMainPackageDir(pkgs []*packages.Package) (string, error) {
+	var dir string
+	for _, pkg := range pkgs {
+		if pkg.Name != "main" || len(pkg.GoFiles) == 0 {
+			continue
+		}
+		candidate := filepath.Dir(pkg.GoFiles[0])
+		if dir != "" && dir != candidate {
+			return "", errAmbiguousMainPackage
+		}
+		dir = candidate
+	}
+	if dir == "" {
+		return "", errNoMainPackage
+	}
+	return dir, nil
+}
+
+// buildDirToPkgPath snapshots a directory→import-path map for every loaded
+// package. Used by the obfuscated bindings emitter to detect when the metadata
+// file lives in the same package as a service and elide the self-import.
+func buildDirToPkgPath(pkgs []*packages.Package) map[string]string {
+	out := make(map[string]string, len(pkgs))
+	for _, pkg := range pkgs {
+		if len(pkg.GoFiles) == 0 || pkg.PkgPath == "" {
+			continue
+		}
+		out[filepath.Dir(pkg.GoFiles[0])] = pkg.PkgPath
+	}
+	return out
 }
 
 // scheduler provides an implementation of the [collect.Scheduler] interface.

@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"fmt"
 	"log"
 	"math/rand"
@@ -9,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -225,7 +224,7 @@ func main() {
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			width, height := w.Size()
-			application.InfoDialog().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
 		})
 	})
 
@@ -256,7 +255,7 @@ func main() {
 	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			x, y := w.RelativePosition()
-			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -275,7 +274,7 @@ func main() {
 	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			x, y := w.Position()
-			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -342,24 +341,24 @@ func main() {
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
 		screen := app.Screen.GetPrimary()
 		msg := fmt.Sprintf("Screen: %+v", screen)
-		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
+		app.Dialog.Info().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
 		screens := app.Screen.GetAll()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		}
 	})
 	stateMenu.Add("Get Screen for WebviewWindow").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			screen, err := w.GetScreen()
 			if err != nil {
-				application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+				app.Dialog.Error().SetTitle("Error").SetMessage(err.Error()).Show()
 				return
 			}
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
 	stateMenu.Add("Disable for 5s").OnClick(func(ctx *application.Context) {

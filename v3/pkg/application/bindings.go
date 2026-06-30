@@ -8,16 +8,18 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/hash"
-
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/sliceutil"
 )
 
+// CallOptions defines the options for a method call.
+// Field order is optimized to minimize struct padding.
 type CallOptions struct {
-	MethodID   uint32            `json:"methodID"`
 	MethodName string            `json:"methodName"`
 	Args       []json.RawMessage `json:"args"`
+	MethodID   uint32            `json:"methodID"`
 }
 
 type ErrorKind string
@@ -28,10 +30,12 @@ const (
 	RuntimeError   ErrorKind = "RuntimeError"
 )
 
+// CallError represents an error that occurred during a method call.
+// Field order is optimized to minimize struct padding.
 type CallError struct {
-	Kind    ErrorKind `json:"kind"`
 	Message string    `json:"message"`
 	Cause   any       `json:"cause,omitempty"`
+	Kind    ErrorKind `json:"kind"`
 }
 
 func (e *CallError) Error() string {
@@ -64,18 +68,19 @@ func (p *Parameter) IsError() bool {
 }
 
 // BoundMethod defines all the data related to a Go method that is
-// bound to the Wails application
+// bound to the Wails application.
+// Field order is optimized to minimize struct padding (136 bytes vs 144 bytes).
 type BoundMethod struct {
-	ID       uint32        `json:"id"`
-	Name     string        `json:"name"`
-	Inputs   []*Parameter  `json:"inputs,omitempty"`
-	Outputs  []*Parameter  `json:"outputs,omitempty"`
-	Comments string        `json:"comments,omitempty"`
-	Method   reflect.Value `json:"-"`
-	FQN      string
-
+	Method       reflect.Value `json:"-"`
+	Name         string        `json:"name"`
+	FQN          string        `json:"-"`
+	Comments     string        `json:"comments,omitempty"`
+	Inputs       []*Parameter  `json:"inputs,omitempty"`
+	Outputs      []*Parameter  `json:"outputs,omitempty"`
 	marshalError func(error) []byte
+	ID           uint32 `json:"id"`
 	needsContext bool
+	isVariadic   bool // cached at registration to avoid reflect call per invocation
 }
 
 type Bindings struct {
@@ -83,6 +88,37 @@ type Bindings struct {
 	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
+}
+
+var registeredBindingMethodIDs sync.Map
+
+// RegisterBindingMethodID registers a stable binding ID for a service method
+// expression so the runtime can resolve it without relying on reflection-visible
+// names (which may be obfuscated).
+func RegisterBindingMethodID(method any, id uint32) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		panic(fmt.Sprintf("binding method ID registration expects a function, got %s", value.Kind()))
+	}
+	registeredBindingMethodIDs.Store(value.Pointer(), id)
+}
+
+// UnregisterBindingMethodID removes the stable binding ID for a service method.
+// Intended for use in tests to restore global state after calling RegisterBindingMethodID.
+func UnregisterBindingMethodID(method any) {
+	value := reflect.ValueOf(method)
+	if value.Kind() != reflect.Func {
+		return
+	}
+	registeredBindingMethodIDs.Delete(value.Pointer())
+}
+
+func getRegisteredBindingMethodID(method reflect.Method) (uint32, bool) {
+	id, ok := registeredBindingMethodIDs.Load(method.Func.Pointer())
+	if !ok {
+		return 0, false
+	}
+	return id.(uint32), true
 }
 
 func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
@@ -114,7 +150,7 @@ func (b *Bindings) Add(service Service) error {
 
 		// Log
 		attrs := []any{"fqn", method.FQN, "id", method.ID}
-		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
+		if alias, ok := sliceutil.FindMapKey(b.methodAliases, method.ID); ok {
 			attrs = append(attrs, "alias", alias)
 		}
 		globalApplication.debug("Registering bound method:", attrs...)
@@ -165,6 +201,10 @@ var internalServiceMethods = map[string]bool{
 
 var ctxType = reflect.TypeFor[context.Context]()
 
+// getMethods returns the list of BoundMethod descriptors for the methods of the named pointer type provided by value.
+//
+// It returns an error if value is not a pointer to a named type, if a function value is supplied (binding functions is deprecated), or if a generic type is supplied.
+// The returned BoundMethod slice includes only exported methods that are not listed in internalServiceMethods. Each BoundMethod has its FQN, ID (computed from the FQN), Method reflect.Value, Inputs and Outputs populated, isVariadic cached from the method signature, and needsContext set when the first parameter is context.Context.
 func getMethods(value any) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
@@ -194,7 +234,8 @@ func getMethods(value any) ([]*BoundMethod, error) {
 
 	// Process Methods
 	for i := range ptrType.NumMethod() {
-		methodName := ptrType.Method(i).Name
+		methodDef := ptrType.Method(i)
+		methodName := methodDef.Name
 		method := namedValue.Method(i)
 
 		if internalServiceMethods[methodName] {
@@ -203,19 +244,25 @@ func getMethods(value any) ([]*BoundMethod, error) {
 
 		fqn := fmt.Sprintf("%s.%s.%s", packagePath, typeName, methodName)
 
-		// Create new method
-		boundMethod := &BoundMethod{
-			ID:       hash.Fnv(fqn),
-			FQN:      fqn,
-			Name:     methodName,
-			Inputs:   nil,
-			Outputs:  nil,
-			Comments: "",
-			Method:   method,
-		}
-
 		// Iterate inputs
 		methodType := method.Type()
+
+		// Create new method with cached flags
+		methodID := hash.Fnv(fqn)
+		if registeredID, ok := getRegisteredBindingMethodID(methodDef); ok {
+			methodID = registeredID
+		}
+
+		boundMethod := &BoundMethod{
+			ID:         methodID,
+			FQN:        fqn,
+			Name:       methodName,
+			Inputs:     nil,
+			Outputs:    nil,
+			Comments:   "",
+			Method:     method,
+			isVariadic: methodType.IsVariadic(), // cache to avoid reflect call per invocation
+		}
 		inputParamCount := methodType.NumIn()
 		var inputs []*Parameter
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
@@ -256,11 +303,40 @@ var errorType = reflect.TypeFor[error]()
 // If the call succeeds, result will be either a non-error return value (if there is only one)
 // or a slice of non-error return values (if there are more than one).
 //
-// If the arguments are mistyped or the call returns one or more non-nil error values,
-// result is nil and err is an instance of *[CallError].
+// If the arguments are mistyped, the call returns one or more non-nil error values,
+// or the method panics, result is nil and err is an instance of *[CallError].
 func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
-	// Use a defer statement to capture panics
-	defer handlePanic(handlePanicOptions{skipEnd: 5})
+	// Convert panics raised by the bound method into a *CallError so the
+	// frontend call rejects instead of the application dying: the default
+	// panic handler is fatal, and a bug in one bound method must not take
+	// down the whole application (#5037). A custom PanicHandler, when
+	// registered, still observes the panic for logging/telemetry.
+	defer func() {
+		e := recover()
+		if e == nil {
+			return
+		}
+		recoveredErr, ok := e.(error)
+		if !ok {
+			recoveredErr = fmt.Errorf("%v", e)
+		}
+		// The stack trace is only used for logging or the PanicHandler, so
+		// only compute it when there is a globalApplication to consume it
+		// (the CallError below carries the message, not the trace).
+		if globalApplication != nil {
+			stackTrace := getStackTrace(3, 5)
+			if handler := globalApplication.options.PanicHandler; handler != nil {
+				handler(newPanicDetails(recoveredErr, stackTrace))
+			} else {
+				globalApplication.error("panic in bound method %s: %s\n%s", b.FQN, recoveredErr, stackTrace)
+			}
+		}
+		result = nil
+		err = &CallError{
+			Message: fmt.Sprintf("%s: panic: %s", b.FQN, recoveredErr),
+			Kind:    RuntimeError,
+		}
+	}()
 	argCount := len(args)
 	if b.needsContext {
 		argCount++
@@ -268,14 +344,20 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result 
 
 	if argCount != len(b.Inputs) {
 		err = &CallError{
-			Kind:    TypeError,
 			Message: fmt.Sprintf("%s expects %d arguments, got %d", b.FQN, len(b.Inputs), argCount),
+			Kind:    TypeError,
 		}
 		return
 	}
 
-	// Convert inputs to values of appropriate type
-	callArgs := make([]reflect.Value, argCount)
+	// Use stack-allocated buffer for common case (<=8 args), heap for larger
+	var argBuffer [8]reflect.Value
+	var callArgs []reflect.Value
+	if argCount <= len(argBuffer) {
+		callArgs = argBuffer[:argCount]
+	} else {
+		callArgs = make([]reflect.Value, argCount)
+	}
 	base := 0
 
 	if b.needsContext {
@@ -289,24 +371,28 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result 
 		err = json.Unmarshal(arg, value.Interface())
 		if err != nil {
 			err = &CallError{
-				Kind:    TypeError,
 				Message: fmt.Sprintf("could not parse argument #%d: %s", index, err),
 				Cause:   json.RawMessage(b.marshalError(err)),
+				Kind:    TypeError,
 			}
 			return
 		}
 		callArgs[base+index] = value.Elem()
 	}
 
-	// Do the call
+	// Do the call using cached isVariadic flag
 	var callResults []reflect.Value
-	if b.Method.Type().IsVariadic() {
+	if b.isVariadic {
 		callResults = b.Method.CallSlice(callArgs)
 	} else {
 		callResults = b.Method.Call(callArgs)
 	}
 
-	var nonErrorOutputs = make([]any, 0, len(callResults))
+	// Process results - optimized for common case of 0-2 return values
+	// to avoid slice allocation
+	var firstResult any
+	var hasFirstResult bool
+	var nonErrorOutputs []any // only allocated if >1 non-error results
 	var errorOutputs []error
 
 	for _, field := range callResults {
@@ -315,12 +401,22 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result 
 				continue
 			}
 			if errorOutputs == nil {
-				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
-				nonErrorOutputs = nil
+				errorOutputs = make([]error, 0, len(callResults))
 			}
 			errorOutputs = append(errorOutputs, field.Interface().(error))
-		} else if nonErrorOutputs != nil {
-			nonErrorOutputs = append(nonErrorOutputs, field.Interface())
+		} else if errorOutputs == nil {
+			// Only collect non-error outputs if no errors yet
+			val := field.Interface()
+			if !hasFirstResult {
+				firstResult = val
+				hasFirstResult = true
+			} else if nonErrorOutputs == nil {
+				// Second result - need to allocate slice
+				nonErrorOutputs = make([]any, 0, len(callResults))
+				nonErrorOutputs = append(nonErrorOutputs, firstResult, val)
+			} else {
+				nonErrorOutputs = append(nonErrorOutputs, val)
+			}
 		}
 	}
 
@@ -331,19 +427,19 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result 
 		}
 
 		cerr := &CallError{
-			Kind:    RuntimeError,
 			Message: errors.Join(errorOutputs...).Error(),
 			Cause:   info,
+			Kind:    RuntimeError,
 		}
 		if len(info) == 1 {
 			cerr.Cause = info[0]
 		}
 
 		err = cerr
-	} else if len(nonErrorOutputs) == 1 {
-		result = nonErrorOutputs[0]
-	} else if len(nonErrorOutputs) > 1 {
+	} else if nonErrorOutputs != nil {
 		result = nonErrorOutputs
+	} else if hasFirstResult {
+		result = firstResult
 	}
 
 	return

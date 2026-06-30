@@ -19,7 +19,6 @@ wails/
 ├── docs/             # Astro-powered v3 docs site (this page!)
 ├── website/          # Docusaurus v2 site and marketing pages (main site)
 ├── scripts/          # Misc helper scripts (e.g. sponsor image generator)
-├── mkdocs-website/   # Deprecated v3 docs prototype
 └── *.md              # Project-wide meta files (CHANGELOG, LICENSE, …)
 ```
 
@@ -29,22 +28,25 @@ From here on, we zoom into the **`v3/`** tree.
 
 ```
 v3/
-├── cmd/          # Compilable commands (currently only wails3 CLI)
-├── examples/     # Hands-on sample apps testing every feature
+├── cmd/          # Compilable commands (currently only the wails3 CLI)
 ├── internal/     # Framework implementation (not public API)
-├── pkg/          # Public Go packages ‑ the API surface
-├── tasks/        # Taskfile-based release utilities
-├── templates/    # RFC-style proposals (WEP) + common assets
+├── pkg/          # Public Go packages — the API surface
+├── tasks/        # Taskfile-based release / generation utilities
+├── wep/          # RFC-style proposals (Wails Enhancement Proposals)
+├── tests/        # Integration test harness
 ├── go.mod
 └── go.sum
 ```
+
+> Project templates ship under `internal/templates/` (one folder per framework
+> stack plus `base/`, `_common/`, and `ios/`). There is no `v3/templates/`
+> directory at the top level.
 
 ### Mental Model
 
 1. **`pkg/`** exposes *what application developers import*  
 2. **`internal/`** contains *how the magic is implemented*  
 3. **`cmd/wails3`** drives *project lifecycle & builds*  
-4. **`examples/`** double as *living tests* and *reference code*  
 
 Everything else supports those three pillars.
 
@@ -74,24 +76,24 @@ internal/
 ├── assetserver/  # Serving & embedding web assets
 ├── buildinfo/    # Reproducible build metadata
 ├── commands/     # CLI mechanics (see above)
-├── runtime/      # Desktop runtime (per-platform)
+├── runtime/      # Build-tag glue + embedded JS runtime sources
 ├── generator/    # Static analysis & binding generator
 ├── templates/    # Project templates (frontend stacks)
-├── packager/     # Linux AppImage/deb/rpm, Windows MSI, macOS DMG
+├── packager/     # nfpm wrapper used by `wails3 tool package`
 ├── capabilities/ # Host OS capability probing
-├── dbus/         # Linux system tray integration
-├── service/      # IPC micro-services framework
-└── ...           # [other helper sub-packages]
+├── dbus/         # Generic D-Bus helper
+├── service/      # Service-template scaffolding (`wails3 generate service`)
+└── ...           # [other helper sub-packages: flags, hash, term, …]
 ```
 
 ### Key Sub-Packages
 
 | Package | Responsibility | Where It Connects |
 |---------|----------------|-------------------|
-| `runtime` | Window/event loop, clipboard, dialogs, system tray. One file per OS with build-tags (`*_darwin.go`, `*_linux.go`, …). | Called by `pkg/application` and message processor. |
-| `assetserver` | Dual-mode file server:<br />• Dev: serves from disk & proxies Vite<br />• Prod: embeds assets via `go:embed` | Initialized by `pkg/application` during startup. |
-| `generator` | Parses Go source to build **binding metadata** which later produces TypeScript stub files and Go marshal/unmarshal code. | Triggered by `wails3 init` / `wails3 generate`. |
-| `packager` | Wraps platform-specific packaging CLIs (eg. `electron-builder` equivalents) into Go for cross-platform automation. | Invoked by `wails3 package`. |
+| `runtime` | Houses the small `runtime{,_darwin,_linux,_windows,_android,_dev,_prod}.go` build-tag glue plus the embedded JS runtime under `runtime/desktop/`. The actual per-OS window/clipboard/dialog/tray code lives in `pkg/application/*_{darwin,linux,windows}.go`. | Imported indirectly via `pkg/application`. |
+| `assetserver` | Dual-mode file server:<br />• Dev: serves from disk & proxies Vite (`build_dev.go`)<br />• Prod: embeds assets via `go:embed` (`build_production.go`) | Initialized by `pkg/application` during startup. |
+| `generator` | Parses Go source to build **binding metadata** which later produces TypeScript/JS stub files and event constants. Entry points: `generator.Generate` / `generator.Generator` over `collect/` + `render/`. | Triggered by `wails3 generate bindings`. |
+| `packager` | `nfpm` wrapper used to emit Linux `deb`/`rpm`/`archlinux` artifacts (driven by `myapp.DEB`/`.RPM`/`.ARCHLINUX` nfpm configs under `internal/commands/`). | Invoked by `wails3 tool package`. macOS DMG / Windows MSIX live under `internal/commands/{dmg,msix.go,webview2/}`. |
 
 Supporting utilities (eg. `s/`, `hash/`, `flags/`) keep internal concerns decoupled.
 
@@ -101,12 +103,19 @@ Supporting utilities (eg. `s/`, `hash/`, `flags/`) keep internal concerns decoup
 
 ```
 pkg/
-├── application/   # Core API: windows, menus, dialogs, events, …
-├── runtime/       # JS-side helpers (bridge, events, screen, ...)
-├── options/       # Strongly-typed configuration structs
-├── menu/          # Declarative menu DSL
-└── ...            # Platform helpers (mac/, windows/, assetserver/, …)
+├── application/  # Core API: App, windows, menus, dialogs, events, managers
+├── events/       # Event constants (Common/Mac/Windows/Linux) + generator
+├── services/     # Optional built-in services (notifications, kvstore, …)
+├── doctor-ng/    # New-style `wails3 doctor-ng` checks
+├── errs/         # Shared error types
+├── icons/        # Default platform icons
+├── mac/          # macOS-only helpers
+└── w32/          # Windows Win32 helpers
 ```
+
+> There is no `pkg/runtime/`, `pkg/options/` or `pkg/menu/` package. Window/menu
+> options live alongside `pkg/application` (e.g. `WebviewWindowOptions`, `Menu`,
+> `MenuItem`), and `assetserver/` is under `internal/`.
 
 `pkg/application` bootstraps a Wails program:
 
@@ -114,51 +123,42 @@ pkg/
 func main() {
     app := application.New(application.Options{
         Name: "MyApp",
-        Assets: application.NewAssetsFS(assetsFS),
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assetsFS),
+        },
     })
-    window := app.Window.New(&application.WebviewWindowOptions{
-        Title:  "Hello",
-        Width:  1024,
-        Height: 768,
-    })
-    app.Run()
+    window := app.Window.New()
+    window.SetTitle("Hello").SetSize(1024, 768)
+    _ = app.Run()
 }
 ```
 
 Under the hood it:
 
-1. Spins up `internal.runtime.*`
-2. Sets up an `assetserver`
-3. Registers bindings generated by `internal.generator`
+1. Wires up the `internal/runtime` build-tag glue and per-OS code in `pkg/application/`
+2. Sets up an `internal/assetserver` instance
+3. Registers any binding-driven message processors
 4. Enters the OS main thread
 
 ---
 
-## `examples/` – Living Specs
+## `internal/templates/` – Scaffolding Blueprints
 
-Each sub-folder is a **self-contained application** exercising one feature.  
-Patterns you’ll see mirrored in real code:
+`internal/templates/` ships **base templates** (Go layout under `base/`,
+`_common/`, `ios/`) and **frontend skins** (`vanilla[-ts]`, `react[-ts]`,
+`react-swc[-ts]`, `lit[-ts]`, `preact[-ts]`, `qwik[-ts]`, `solid[-ts]`,
+`svelte[-ts]`, `sveltekit[-ts]`, `vue[-ts]`).
 
-* Binding services (`examples/binding/`)  
-* Multi-window (`examples/window/`)  
-* System tray (`examples/systray-*`)  
-* Packaging (`examples/file-association/`)  
-
-When in doubt, start here and drill into implementation.
-
----
-
-## `templates/` – Scaffolding Blueprints
-
-`internal/templates` ships **base templates** (Go layout) and **frontend skins**
-(React, Svelte, Vue, …).  
 At `wails3 init -t react`, the CLI:
 
 1. Copies `_common` Go files
-2. Merges desired frontend pack
-3. Runs `npm install` + `task deps`
+2. Merges the desired frontend pack
+3. Runs `go mod tidy` (skippable with `--skipgomodtidy`)
 
-Editing templates **does not** affect existing apps, only future `init`s.
+Editing templates **does not** affect existing apps, only future `init`s. The
+public examples that previously lived under `v3/examples/` have been removed
+from the tree — refer to https://github.com/wailsapp/wails/tree/master/v3
+for canonical sample apps as they're re-published.
 
 ---
 
@@ -202,12 +202,12 @@ desktop app**.
 
 | Need to understand… | Look at… |
 |---------------------|----------|
-| Platform shims | `internal/runtime/*_DARWIN.go`, `*_windows.go`, … |
-| Bridge protocol | `pkg/application/messageprocessor_*.go` |
-| Asset workflow | `internal/assetserver`, `v3/templates/base/assets` |
-| Packaging flow | `internal/commands/appimage.go`, `internal/packager` |
-| Template engine | `internal/templates/templates.go` |
-| Static analysis | `internal/generator/*` |
+| Platform shims | `pkg/application/*_darwin.go`, `*_linux.go`, `*_windows.go` (window, clipboard, dialogs, systray, mainthread, events_common). Linux cgo: `pkg/application/linux_cgo*.go`. |
+| Bridge protocol | `pkg/application/messageprocessor*.go` |
+| Asset workflow | `internal/assetserver/` (`build_dev.go` vs `build_production.go`) |
+| Packaging flow | `internal/commands/{appimage,msix,dot_desktop,dmg/}.go`, `internal/packager/` |
+| Template engine | `internal/templates/` (`templates.Install`, `templates.GetDefaultTemplates`) |
+| Static analysis | `internal/generator/{generate.go,collect/,render/}` |
 
 ---
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"embed"
-	_ "embed"
+
 	"log"
 	"time"
 
@@ -16,6 +16,13 @@ import (
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+func init() {
+	// Register a custom event whose associated data type is string.
+	// This is not required, but the binding generator will pick up registered events
+	// and provide a strongly typed JS/TS API for them.
+	application.RegisterEvent[string]("time")
+}
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
@@ -48,12 +55,15 @@ func main() {
 	// 'URL' is the URL that will be loaded into the webview.
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
+		// Window sized to the golden ratio (1000 / 618 ≈ 1.618).
+		Width:  1000,
+		Height: 618,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
-		BackgroundColour: application.NewRGB(27, 38, 54),
+		BackgroundColour: application.NewRGB(6, 7, 15),
 		URL:              "/",
 	})
 

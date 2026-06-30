@@ -2,7 +2,7 @@ package log
 
 import (
 	"context"
-	_ "embed"
+
 	"log/slog"
 	"sync/atomic"
 

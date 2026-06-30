@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 
 package application
 
@@ -56,6 +56,15 @@ static void init(void) {
 
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+
+	// Workspace power notifications are posted on a separate notification
+	// center from the default one — apps must observe NSWorkspace's centre
+	// to receive sleep/wake events. Mirrors WM_POWERBROADCAST on Windows.
+	NSNotificationCenter *workspaceCenter = [[NSWorkspace sharedWorkspace] notificationCenter];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceWillSleep:) name:NSWorkspaceWillSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
 
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
@@ -146,10 +155,37 @@ static char* getAppName(void) {
 
 // get the current window ID
 static unsigned int getCurrentWindowID(void) {
-	NSWindow *window = [NSApp keyWindow];
-	// Get the window delegate
-	WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
-	return delegate.windowId;
+	// AppKit must be accessed on the main thread. This function may be called
+	// from arbitrary Go goroutines, so we hop to the main queue when needed.
+	__block unsigned int result = 0;
+	if (NSApp == nil) {
+		return result;
+	}
+	void (^resolve)(void) = ^{
+		NSWindow *window = [NSApp keyWindow];
+		if (window == nil) {
+			window = [NSApp mainWindow];
+		}
+		if (window == nil) {
+			return;
+		}
+		// System panels (e.g. PMPrintPanelController) can become the key window;
+		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		id delegateObj = [window delegate];
+		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
+		if (delegate != nil) {
+			result = delegate.windowId;
+		}
+	};
+	if ([NSThread isMainThread]) {
+		resolve();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), resolve);
+	}
+	return result;
 }
 
 // Set the application icon
@@ -196,12 +232,14 @@ static void startSingleInstanceListener(const char *uniqueID) {
 */
 import "C"
 import (
-	"encoding/json"
+	"sync"
+	"time"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -277,6 +315,18 @@ func (m *macosApp) run() error {
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 			C.activateIgnoringOtherApps()
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
+		},
+	)
+	// Refresh screen cache when display configuration changes
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidChangeScreenParameters,
+		func(*ApplicationEvent) {
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
 		},
 	)
 	m.setupCommonEvents()
@@ -344,10 +394,18 @@ func processWindowEvent(windowID C.uint, eventID C.uint) {
 }
 
 //export processMessage
-func processMessage(windowID C.uint, message *C.char) {
+func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFrame bool) {
+	o := ""
+	if origin != nil {
+		o = C.GoString(origin)
+	}
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
+		originInfo: &OriginInfo{
+			Origin:      o,
+			IsMainFrame: isMainFrame,
+		},
 	}
 }
 
@@ -355,7 +413,7 @@ func processMessage(windowID C.uint, message *C.char) {
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	window, ok := globalApplication.Window.GetByID(uint(windowID))
 	if !ok || window == nil {
-		globalApplication.debug("could not find window with id: %d", windowID)
+		globalApplication.debug("could not find window with id", "windowID", windowID)
 		return
 	}
 
@@ -406,6 +464,254 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.
 	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
+//export macosOnDragEnter
+func macosOnDragEnter(windowID C.uint) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		return
+	}
+
+	// Call JavaScript to show drag entered state
+	window.ExecJS("window._wails.handleDragEnter();")
+}
+
+//export macosOnDragExit
+func macosOnDragExit(windowID C.uint) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		return
+	}
+
+	// Call JavaScript to clean up drag state
+	window.ExecJS("window._wails.handleDragLeave();")
+}
+
+var (
+	// Pre-allocated buffer for drag JS calls to avoid allocations
+	dragOverJSBuffer = make([]byte, 128) // Increased for safety
+	dragOverJSMutex  sync.Mutex          // Protects dragOverJSBuffer
+	dragOverJSPrefix = []byte("window._wails.handleDragOver(")
+
+	// Cache window references to avoid repeated lookups
+	windowImplCache sync.Map // windowID -> *macosWebviewWindow
+
+	// Per-window drag throttle state
+	dragThrottle sync.Map // windowID -> *dragThrottleState
+)
+
+type dragThrottleState struct {
+	mu           sync.Mutex // Protects all fields below
+	lastX, lastY int
+	timer        *time.Timer
+	pendingX     int
+	pendingY     int
+	hasPending   bool
+}
+
+// clearWindowDragCache removes cached references for a window
+func clearWindowDragCache(windowID uint) {
+	windowImplCache.Delete(windowID)
+
+	// Cancel any pending timer
+	if throttleVal, ok := dragThrottle.Load(windowID); ok {
+		if throttle, ok := throttleVal.(*dragThrottleState); ok {
+			throttle.mu.Lock()
+			if throttle.timer != nil {
+				throttle.timer.Stop()
+			}
+			throttle.mu.Unlock()
+		}
+	}
+	dragThrottle.Delete(windowID)
+}
+
+// writeInt writes an integer to a byte slice and returns the number of bytes written
+func writeInt(buf []byte, n int) int {
+	if n < 0 {
+		if len(buf) == 0 {
+			return 0
+		}
+		buf[0] = '-'
+		return 1 + writeInt(buf[1:], -n)
+	}
+	if n == 0 {
+		if len(buf) == 0 {
+			return 0
+		}
+		buf[0] = '0'
+		return 1
+	}
+
+	// Count digits
+	tmp := n
+	digits := 0
+	for tmp > 0 {
+		digits++
+		tmp /= 10
+	}
+
+	// Bounds check
+	if digits > len(buf) {
+		return 0
+	}
+
+	// Write digits in reverse
+	for i := digits - 1; i >= 0; i-- {
+		buf[i] = byte('0' + n%10)
+		n /= 10
+	}
+	return digits
+}
+
+//export macosOnDragOver
+func macosOnDragOver(windowID C.uint, x C.int, y C.int) {
+	winID := uint(windowID)
+	intX, intY := int(x), int(y)
+
+	// Get or create throttle state
+	throttleKey := winID
+	throttleVal, _ := dragThrottle.LoadOrStore(throttleKey, &dragThrottleState{
+		lastX: intX,
+		lastY: intY,
+	})
+	throttle := throttleVal.(*dragThrottleState)
+
+	throttle.mu.Lock()
+
+	// Update pending position
+	throttle.pendingX = intX
+	throttle.pendingY = intY
+	throttle.hasPending = true
+
+	// If timer is already running, just update the pending position
+	if throttle.timer != nil {
+		throttle.mu.Unlock()
+		return
+	}
+
+	// Apply 5-pixel threshold for immediate update
+	dx := intX - throttle.lastX
+	dy := intY - throttle.lastY
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+
+	// Check if we should send an immediate update
+	shouldSendNow := dx >= 5 || dy >= 5
+
+	if shouldSendNow {
+		// Update last position
+		throttle.lastX = intX
+		throttle.lastY = intY
+		throttle.hasPending = false
+
+		// Send this update immediately (unlock before JS call to avoid deadlock)
+		throttle.mu.Unlock()
+		sendDragUpdate(winID, intX, intY)
+		throttle.mu.Lock()
+	}
+
+	// Start 50ms timer for next update (whether we sent now or not)
+	throttle.timer = time.AfterFunc(50*time.Millisecond, func() {
+		// Execute on main thread to ensure UI updates
+		InvokeSync(func() {
+			throttle.mu.Lock()
+			// Clear timer reference
+			throttle.timer = nil
+
+			// Send pending update if any
+			if throttle.hasPending {
+				pendingX, pendingY := throttle.pendingX, throttle.pendingY
+				throttle.lastX = pendingX
+				throttle.lastY = pendingY
+				throttle.hasPending = false
+				throttle.mu.Unlock()
+				sendDragUpdate(winID, pendingX, pendingY)
+			} else {
+				throttle.mu.Unlock()
+			}
+		})
+	})
+	throttle.mu.Unlock()
+}
+
+// sendDragUpdate sends the actual drag update to JavaScript
+func sendDragUpdate(winID uint, x, y int) {
+	// Try cached implementation first
+	var darwinImpl *macosWebviewWindow
+	var needsExecJS bool
+
+	if cached, found := windowImplCache.Load(winID); found {
+		darwinImpl = cached.(*macosWebviewWindow)
+		if darwinImpl != nil && darwinImpl.nsWindow != nil {
+			needsExecJS = true
+		} else {
+			// Invalid cache entry, remove it
+			windowImplCache.Delete(winID)
+		}
+	}
+
+	if !needsExecJS {
+		// Fallback to full lookup
+		window, ok := globalApplication.Window.GetByID(winID)
+		if !ok || window == nil {
+			return
+		}
+
+		// Type assert to WebviewWindow
+		webviewWindow, ok := window.(*WebviewWindow)
+		if !ok || webviewWindow == nil {
+			return
+		}
+
+		// Get implementation
+		darwinImpl, ok = webviewWindow.impl.(*macosWebviewWindow)
+		if !ok {
+			return
+		}
+
+		// Cache for next time
+		windowImplCache.Store(winID, darwinImpl)
+		needsExecJS = true
+	}
+
+	if !needsExecJS || darwinImpl == nil {
+		return
+	}
+
+	// Protect shared buffer access
+	dragOverJSMutex.Lock()
+
+	// Build JS string with zero allocations
+	// Format: "window._wails.handleDragOver(X,Y)"
+	// Max length with int32 coords: 30 + 11 + 1 + 11 + 1 + 1 = 55 bytes
+	n := copy(dragOverJSBuffer[:], dragOverJSPrefix)
+	n += writeInt(dragOverJSBuffer[n:], x)
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = ','
+		n++
+	}
+	n += writeInt(dragOverJSBuffer[n:], y)
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = ')'
+		n++
+	}
+	if n < len(dragOverJSBuffer) {
+		dragOverJSBuffer[n] = 0 // null terminate for C
+	} else {
+		// Buffer overflow - this should not happen with 128 byte buffer
+		dragOverJSMutex.Unlock()
+		return
+	}
+
+	// Call JavaScript with zero allocations
+	darwinImpl.execJSDragOver(dragOverJSBuffer[:n+1]) // Include null terminator
+	dragOverJSMutex.Unlock()
+}
+
 //export processMenuItemClick
 func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
@@ -454,8 +760,8 @@ func HandleOpenFile(filePath *C.char) {
 	}
 }
 
-//export HandleCustomProtocol
-func HandleCustomProtocol(urlCString *C.char) {
+//export HandleOpenURL
+func HandleOpenURL(urlCString *C.char) {
 	urlString := C.GoString(urlCString)
 	eventContext := newApplicationEventContext()
 	eventContext.setURL(urlString)

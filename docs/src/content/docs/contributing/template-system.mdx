@@ -5,103 +5,138 @@ sidebar:
   order: 7
 ---
 
-Wails ships with a **template system** that lets `wails3 init` produce a ready-to-run
-project for **any** modern frontend stack (React, Svelte, Vue, Solid, Vanilla
-JS …).
+Wails ships with a **template system** that lets `wails3 init` produce a
+ready-to-run project. A deliberately small set of frameworks have built-in
+templates (Vanilla, React, Vue, Svelte); any other framework can be used by
+[bringing your own frontend](/guides/dev/frontend-frameworks) or publishing a
+[custom template](/guides/advanced/custom-templates).
 
 This page covers:
 
-1. Template directory layout  
-2. How the CLI chooses & renders templates  
-3. Creating a new template step-by-step  
-4. Updating or overriding existing templates  
-5. Troubleshooting and best practices  
+1. Template directory layout
+2. How the CLI chooses & renders templates
+3. Creating a new template step-by-step
+4. Updating or overriding existing templates
+5. Troubleshooting and best practices
 
 ---
 
 ## 1. Where Templates Live
 
 ```
-v3/
-└── internal/templates/
-    ├── _common/           # Files copied into EVERY project (main.go, .gitignore)
-    ├── base/              # Backend-only “plain Go” template
-    ├── react/             # React + Vite
-    ├── react-ts/
-    ├── svelte/
-    ├── vue/
-    ├── ... (others)
-    └── templates.go       # Registry + helper functions
+v3/internal/templates/
+├── _common/        # Files copied into EVERY project (Taskfile.yml, build/, etc.)
+├── base/           # Backend-only "plain Go" base layer (frontend/ + NEXTSTEPS.md)
+├── ios/            # iOS bootstrapper
+├── vanilla/        vanilla-js/   # TypeScript (default) + JavaScript variant
+├── react/          react-js/     # TypeScript (default) + JavaScript variant
+├── vue/                          # TypeScript only
+├── svelte/                       # TypeScript only
+└── templates.go    # Registry + Install/Get APIs (no auto-registration via embed)
 ```
 
-* **`_common/`** – universal boilerplate (Go modules, Taskfile, README stub,  
-  VS Code settings).  
-* **Framework folders** – contain **frontend/** and any stack-specific config.  
-* Folder names match the **template ID** you pass to the CLI  
-  (`wails3 init -t react-ts`).
+* **`_common/`** — universal boilerplate (Taskfile, `build/` directory,
+  shared infrastructure) merged into every project.
+* **`base/`** — the Go side that every template starts from. Note: `base/`
+  itself does **not** contain a `template.json`; that file lives inside each
+  framework-specific template.
+* **Framework folders** — contain the frontend (`frontend/`), framework
+  config, and a `template.json` describing the template metadata.
+* Folder names match the **template ID** you pass to the CLI
+  (`wails3 init -t react`).
+* **Language convention:** TypeScript is the default and owns the bare name
+  (`react`); a JavaScript variant, where one exists, is suffixed `-js`
+  (`react-js`). Built-in templates declare their language explicitly with
+  `typescript: true|false` in `template.yaml`. Community templates may still use
+  the legacy `-ts` suffix, which is honoured as a fallback.
 
-> The whole directory is compiled into the CLI binary via `go:embed`, so users
-> can scaffold projects offline.
+> The whole `internal/templates/` directory is compiled into the CLI binary
+> via `//go:embed *`, so users can scaffold projects offline.
 
 ---
 
 ## 2. How `wails3 init` Uses Templates
 
-Call chain:
+Call chain (no `cmd/wails3/init.go` — the CLI is wired up directly in
+`cmd/wails3/main.go`):
 
 ```
-cmd/wails3/init.go
+cmd/wails3/main.go             (clir wiring)
        │
        ▼
-internal/commands/init.go  ← parses flags, target dir
+internal/commands/init.go      Init(options *flags.Init) error
        │
        ▼
-internal/templates.Load()  ← templates.go
+internal/templates/templates.go
+       │   templates.Install(options)
+       │   templates.GetDefaultTemplates()
+       ▼
+gosod.New(template.FS).Extract(options.ProjectDir, data)   // file extraction
        │
        ▼
-Template.CopyTo(dest)      ← filesystem copy + text substitutions
+go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 ```
+
+There is no `Template.Load()` / `Template.CopyTo()` / `Template.Validate()`
+API — extraction is handled by `gosod` (`github.com/leaanthony/gosod`) against
+the embedded `fs.FS`.
+
+### `wails3 init` flags
+
+Defined in `internal/flags/init.go`:
+
+| Flag | Purpose | Default |
+|------|---------|---------|
+| `-p`              | Package name | `main` |
+| `-t`              | Built-in template name, local path, or URL | `vanilla` |
+| `-n`              | Project name | (empty) |
+| `-d`              | Project directory | `.` |
+| `-q`              | Suppress console output | false |
+| `-l`              | List templates | false |
+| `-skipgomodtidy`  | Skip running `go mod tidy` after extraction | false |
+| `-git`            | Git repository URL to initialise | (empty) |
+| `-mod`            | Go module path (derived from `-git` if not set) | (empty) |
+| `-s`              | Skip the warning when using remote templates | false |
+| `-productname` / `-productdescription` / `-productversion` / `-productcompany` / `-productcopyright` / `-productcomments` / `-productidentifier` | Metadata baked into the generated build assets | sensible defaults |
+
+There is **no** `-list` long alias (`-l` only) and no per-template `--help`.
 
 ### Substitutions
 
-Placeholders wrapped in `{{ }}` are replaced at copy time:
+Placeholders are standard Go template directives — the leading `.` is part of
+the field accessor:
 
 | Placeholder | Example | Source |
 |-------------|---------|--------|
-| `{{ProjectName}}` | `myapp` | CLI flag/dir name |
-| `{{ModulePath}}`  | `github.com/me/myapp` | if `--module` provided |
-| `{{WailsVersion}}`| `v3.0.0` | compiled constant |
+| `{{.ProjectName}}` | `myapp` | `-n` flag / directory name |
+| `{{.ModulePath}}`  | `github.com/me/myapp` | `-mod` flag or derived from `-git` |
+| `{{.WailsVersion}}`| `v3.0.0-…` | Compiled-in constant from `internal/version` |
+| `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Bake-time metadata | corresponding `-product*` flags |
 
-You can add **any** placeholder; just ensure it gets a value in
-`internal/commands/init.go`.
+If you need a new placeholder, add a field to the template data in
+`internal/templates/templates.go` and a matching field/flag in
+`internal/flags/init.go` (or set it from `internal/commands/init.go`).
 
-### Post-Copy Hooks
+### Post-Copy Hook
 
-Each template may ship a **Taskfile** with a `deps` task.  
-After copy, the CLI runs:
+After `gosod` finishes extracting the template, the CLI runs:
 
 ```
-task --taskfile Taskfile.yml deps
+go mod tidy
 ```
 
-Typical work:
-
-* `go mod tidy`
-* `npm install`
-* git init & initial commit (optional)
-
-Hook behaviour defined in `_common/Taskfile.yml` but override-able per template.
+unless you pass `-skipgomodtidy`. There is no `task deps` step.
 
 ---
 
 ## 3. Creating a New Template
 
-> Example: Add **Qwik-TS** template
+> Example: Add a **Solid** template
 
 ### 3.1 Folder & ID
 
 ```
-internal/templates/qwik-ts/
+internal/templates/solid/
 ```
 
 The folder name = template ID. Keep it **kebab-case**.
@@ -109,79 +144,79 @@ The folder name = template ID. Keep it **kebab-case**.
 ### 3.2 Minimal File Set
 
 ```
-qwik-ts/
-├── README.md              # Shown in CLI with -list
-├── frontend/              # Your web project
+solid/
+├── template.yaml    # name, description, wailsVersion, typescript (required)
+├── frontend/        # Your web project (no node_modules/dist)
 │   ├── src/
 │   ├── package.json
 │   └── vite.config.ts
-├── Taskfile.yml           # deps & dev tasks
-└── go/                    # Optional extra Go files
+└── ...              # Any extra Go files the template wants to inject
 ```
 
-Start by copying `react-ts` and pruning files.
+Start by copying `react` and pruning files. Don't forget to author a
+`template.yaml` — set `typescript: true` for a TypeScript template — `base/` is
+the only folder without one.
 
 ### 3.3 Update Placeholders
 
-Search/replace:
+Search/replace literal sample values for Go template directives, e.g.:
 
-* `myapp` → `{{ProjectName}}`
-* `github.com/you/myapp` → `{{ModulePath}}`
+* `myapp` → `{{.ProjectName}}`
+* `github.com/you/myapp` → `{{.ModulePath}}`
 
-### 3.4 Register (optional)
+### 3.4 Wire Up
 
-If the folder exists, **templates.go auto-detects it** via `embed`.  
-Only add explicit code if you need **custom validation**:
-
-```go
-func (t *Template) Validate() error {
-    // check Node ≥ 20 for this template
-}
-```
+Because `templates.go` walks the embedded FS at init time, dropping a new
+folder under `internal/templates/<id>/` is generally sufficient — no manual
+registration call is required. If you need extra logic (custom validation,
+post-copy steps), add it to `templates.Install` in
+`internal/templates/templates.go`.
 
 ### 3.5 Test
 
 ```bash
-wails3 init -n demo -t qwik-ts
+wails3 init -n demo -t solid
 cd demo
 wails3 dev
 ```
 
 Ensure:
 
-* Dev server starts  
-* `wailsjs` bindings generate  
-* Hot-reload works  
+* Dev server starts on the port published in `WAILS_VITE_PORT`
+* Generated bindings appear under `frontend/bindings/...`
+* Hot-reload works
 
 ---
 
 ## 4. Modifying Existing Templates
 
 1. Edit files under `internal/templates/<id>/`.
-2. Run `go generate ./v3/...` **or** just `go run ./v3/cmd/wails3 –help`; the
-   embed directive recompiles automatically.
-3. Bump any **dependency versions** in `frontend/package.json` & `Taskfile.yml`.
-4. Update `README.md` inside the template — users see it via  
-   `wails3 init -t react --help`.
+2. Rebuild the CLI (`cd v3 && go build -o ../wails3 ./cmd/wails3`); the
+   `//go:embed *` directive picks up the new content.
+3. Bump any **dependency versions** in `frontend/package.json` &
+   `Taskfile.yml`.
+4. Update the template's `template.json` description if behaviour changes.
 
 ### Common Tweaks
 
 | Task | Where |
 |------|-------|
-| Change dev server port | `frontend/Taskfile.yml` (`vite dev --port {{DevPort}}`) |
-| Add environment variables | same Taskfile or `.env` |
-| Replace JS package manager | Switch `npm` → `pnpm` in Taskfile |
+| Change dev server port | `frontend/vite.config.ts` — read `WAILS_VITE_PORT` |
+| Add environment variables | `build/Taskfile.yml` or `frontend/.env` |
+| Replace JS package manager | Swap `npm` → `pnpm`/`bun` in `build/Taskfile.yml` |
 
 ---
 
 ## 5. Template Authoring Tips
 
-* **Keep frontend generic** – avoid referencing Wails-specific globals; runtime
-  is injected automatically.
-* **No compiled artefacts** – exclude `node_modules`, `dist`, `.DS_Store` via
-  `.tmplignore`.
-* **Document prerequisites** – Node version, extra CLI tools, etc.
-* **Avoid breaking changes** – create a *new* template ID if overhaul is big.
+* **Keep frontend generic** — avoid referencing Wails-specific globals;
+  `/wails/runtime.js` is served by the asset server at runtime.
+* **No compiled artefacts** — exclude `node_modules`, `dist`, `.DS_Store` from
+  the embedded directory (or `.gitignore` them so they're never committed).
+* **Document prerequisites** — Node version, extra CLI tools, etc., in
+  `template.json` or `NEXTSTEPS.md`.
+* **Avoid breaking changes** — if the overhaul is big, create a new template
+  ID rather than mutating an existing one.
 
 ---
 
@@ -189,12 +224,10 @@ Ensure:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `unknown template id` | Folder name mismatch | Check `wails3 init -list` |
-| Placeholders not replaced | Missing entry in `Data` map | Edit `internal/commands/init.go` |
-| Dev server opens blank page | Wrong `DevPort` env | Ensure Taskfile echoes port to stdout |
-| Frontend fails to build in prod | Forgotten vite `base` path | Set `base: "./"` in `vite.config.ts` |
-
-Add `--verbose` to `wails3 init` to print every copied file and substitution.
+| `unknown template name` | Typo in `-t` or template not embedded | Run `wails3 init -l` to list available templates |
+| Placeholders not replaced | Used `{{ProjectName}}` instead of `{{.ProjectName}}` | Add the leading `.` (Go template field access) |
+| Dev server opens blank page | Vite config not reading `WAILS_VITE_PORT` | Check your `vite.config.ts` |
+| Frontend fails to build in prod | Forgotten Vite `base` path | Set `base: "./"` in `vite.config.ts` |
 
 ---
 
@@ -202,21 +235,23 @@ Add `--verbose` to `wails3 init` to print every copied file and substitution.
 
 | File | Responsibility |
 |------|----------------|
-| `internal/templates/templates.go` | Embeds template FS, returns `[]Template` |
+| `internal/templates/templates.go` | Embeds template FS, exposes `Install(options *flags.Init) error`, `GetDefaultTemplates()`, `ValidTemplateName(name)` |
 | `internal/templates/<id>/**` | Actual template content |
-| `internal/commands/init.go` | CLI glue: picks template, fills placeholders |
-| `internal/commands/generate_template.go` | Utility to *export* a live project back into a template (handy for updates) |
+| `internal/commands/init.go` | CLI glue: picks template, fills metadata, calls `templates.Install` |
+| `internal/commands/generate_template.go` | `wails3 generate template` — utility to *export* a live project back into a template (handy for updates) |
+| `internal/flags/init.go` | Flag definitions for `wails3 init` |
 
 ---
 
 ## 8. Recap
 
-* Templates live in **`internal/templates/`** and are baked into the CLI.
-* `wails3 init -t <id>` copies `_common` + selected template, performs
-  substitutions, then runs a **deps** Taskfile hook.
-* Creating a template is as simple as **making a folder**, adding files, and
-  using placeholders.
+* Templates live in **`internal/templates/`** and are baked into the CLI via
+  `//go:embed *`.
+* `wails3 init -t <id>` extracts the template via `gosod` and runs
+  `go mod tidy` (skippable with `-skipgomodtidy`).
+* Creating a template is as simple as **making a folder**, adding files plus a
+  `template.json`, and using `{{.ProjectName}}`-style placeholders.
 * The system is **extensible** and **self-contained** — perfect for sharing
   custom stacks with your team or the community.
 
-Happy templating!  
+Happy templating!

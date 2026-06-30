@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 
 package application
 
@@ -17,4 +17,17 @@ func windowShouldUnconditionallyClose(windowId C.uint) C.bool {
 	unconditionallyClose := window.shouldUnconditionallyClose()
 	globalApplication.debug("windowShouldUnconditionallyClose check", "windowId", windowId, "unconditionallyClose", unconditionallyClose)
 	return C.bool(unconditionallyClose)
+}
+
+//export windowIsHidden
+func windowIsHidden(windowId C.uint) C.bool {
+	window, _ := globalApplication.Window.GetByID(uint(windowId))
+	if window == nil {
+		return C.bool(false)
+	}
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return C.bool(false)
+	}
+	return C.bool(webviewWindow.options.Hidden)
 }

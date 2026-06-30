@@ -14,14 +14,21 @@ const call = newRuntimeCaller(objectNames.System);
 
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
-const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched drop event
+const SystemCapabilities = 2;
 
 const _invoke = (function () {
     try {
+        // Windows WebView2
         if ((window as any).chrome?.webview?.postMessage) {
             return (window as any).chrome.webview.postMessage.bind((window as any).chrome.webview);
-        } else if ((window as any).webkit?.messageHandlers?.['external']?.postMessage) {
+        }
+        // macOS/iOS WKWebView
+        else if ((window as any).webkit?.messageHandlers?.['external']?.postMessage) {
             return (window as any).webkit.messageHandlers['external'].postMessage.bind((window as any).webkit.messageHandlers['external']);
+        }
+        // Android WebView - uses addJavascriptInterface which exposes window.wails.invoke
+        else if ((window as any).wails?.invoke) {
+            return (msg: any) => (window as any).wails.invoke(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     } catch(e) {}
 
@@ -51,12 +58,7 @@ export function IsDarkMode(): Promise<boolean> {
  * @returns A promise that resolves to an object containing the capabilities.
  */
 export async function Capabilities(): Promise<Record<string, any>> {
-    let response = await fetch("/wails/capabilities");
-    if (response.ok) {
-        return response.json();
-    } else {
-        throw new Error("could not fetch capabilities: " + response.statusText);
-    }
+    return call(SystemCapabilities);
 }
 
 export interface OSInfo {
@@ -98,7 +100,7 @@ export function Environment(): Promise<EnvironmentInfo> {
  * @return True if the operating system is Windows, otherwise false.
  */
 export function IsWindows(): boolean {
-    return window._wails.environment.OS === "windows";
+    return (window as any)._wails?.environment?.OS === "windows";
 }
 
 /**
@@ -107,7 +109,7 @@ export function IsWindows(): boolean {
  * @returns Returns true if the current operating system is Linux, false otherwise.
  */
 export function IsLinux(): boolean {
-    return window._wails.environment.OS === "linux";
+    return (window as any)._wails?.environment?.OS === "linux";
 }
 
 /**
@@ -116,7 +118,43 @@ export function IsLinux(): boolean {
  * @returns True if the environment is macOS, false otherwise.
  */
 export function IsMac(): boolean {
-    return window._wails.environment.OS === "darwin";
+    return (window as any)._wails?.environment?.OS === "darwin";
+}
+
+/**
+ * Checks if the current operating system is iOS.
+ *
+ * @returns True if the operating system is iOS, otherwise false.
+ */
+export function IsIOS(): boolean {
+    return (window as any)._wails?.environment?.OS === "ios";
+}
+
+/**
+ * Checks if the current operating system is Android.
+ *
+ * @returns True if the operating system is Android, otherwise false.
+ */
+export function IsAndroid(): boolean {
+    return (window as any)._wails?.environment?.OS === "android";
+}
+
+/**
+ * Checks if the app is running on a mobile OS (iOS or Android).
+ *
+ * @returns True on iOS or Android, otherwise false.
+ */
+export function IsMobile(): boolean {
+    return IsIOS() || IsAndroid();
+}
+
+/**
+ * Checks if the app is running on a desktop OS (macOS, Windows or Linux).
+ *
+ * @returns True on macOS, Windows or Linux, otherwise false.
+ */
+export function IsDesktop(): boolean {
+    return IsMac() || IsWindows() || IsLinux();
 }
 
 /**
@@ -125,7 +163,7 @@ export function IsMac(): boolean {
  * @returns True if the current environment architecture is AMD64, false otherwise.
  */
 export function IsAMD64(): boolean {
-    return window._wails.environment.Arch === "amd64";
+    return (window as any)._wails?.environment?.Arch === "amd64";
 }
 
 /**
@@ -134,7 +172,7 @@ export function IsAMD64(): boolean {
  * @returns True if the current architecture is ARM, false otherwise.
  */
 export function IsARM(): boolean {
-    return window._wails.environment.Arch === "arm";
+    return (window as any)._wails?.environment?.Arch === "arm";
 }
 
 /**
@@ -143,7 +181,7 @@ export function IsARM(): boolean {
  * @returns Returns true if the environment is ARM64 architecture, otherwise returns false.
  */
 export function IsARM64(): boolean {
-    return window._wails.environment.Arch === "arm64";
+    return (window as any)._wails?.environment?.Arch === "arm64";
 }
 
 /**
@@ -152,38 +190,6 @@ export function IsARM64(): boolean {
  * @returns True if the app is being run in debug mode.
  */
 export function IsDebug(): boolean {
-    return Boolean(window._wails.environment.Debug);
-}
-
-/**
- * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
- * Gathers information about the drop target element and sends it back to the Go backend.
- *
- * @param filenames - An array of file paths (strings) that were dropped.
- * @param x - The x-coordinate of the drop event.
- * @param y - The y-coordinate of the drop event.
- */
-export function HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
-    const element = document.elementFromPoint(x, y);
-    const elementId = element ? element.id : '';
-    const classList = element ? Array.from(element.classList) : [];
-
-    const payload = {
-        filenames,
-        x,
-        y,
-        elementId,
-        classList,
-    };
-
-    call(ApplicationFilesDroppedWithContext, payload)
-        .then(() => {
-            // Optional: Log success or handle if needed
-            console.log("Platform file drop processed and sent to Go.");
-        })
-        .catch(err => {
-            // Optional: Log error
-            console.error("Error sending platform file drop to Go:", err);
-        });
+    return Boolean((window as any)._wails?.environment?.Debug);
 }
 

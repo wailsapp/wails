@@ -11,6 +11,7 @@ type Init struct {
 	List               bool   `name:"l" description:"List templates"`
 	SkipGoModTidy      bool   `name:"skipgomodtidy" description:"Skip running go mod tidy"`
 	Git                string `name:"git" description:"Git repository URL to initialize (e.g. github.com/username/project)"`
+	ModulePath         string `name:"mod" description:"The Go module path for the project. Will be computed from the Git URL if unspecified."`
 	ProductName        string `description:"The name of the product" default:"My Product"`
 	ProductDescription string `description:"The description of the product" default:"My Product Description"`
 	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
@@ -19,4 +20,9 @@ type Init struct {
 	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	SkipWarning        bool   `name:"s" description:"Skips the warning message when using remote templates"`
+	UseInterfaces      bool   `description:"Generate TypeScript interfaces instead of classes for bindings" default:"true"`
+	UI                 bool   `name:"ui" description:"Launch the interactive project setup wizard in the browser"`
+
+	TemplateFromDefaults      bool
+	UseInterfacesFromDefaults bool
 }

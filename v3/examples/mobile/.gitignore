@@ -1,0 +1,34 @@
+# Build outputs
+bin/
+*.apk
+*.aab
+.task/
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+
+# iOS generated (per-machine; overlay holds absolute paths)
+build/ios/xcode/overlay.json
+build/ios/xcode/gen/
+build/ios/xcode/main.xcodeproj/
+
+# Android generated (per-machine; overlay holds absolute paths)
+build/android/overlay.json
+build/android/gen/
+
+# Android build artifacts
+build/android/.gradle/
+build/android/build/
+build/android/app/build/
+build/android/local.properties
+build/android/app/src/main/jniLibs/*/libwails.so
+
+# Desktop packaging
+build/linux/appimage/build
+build/windows/nsis/*.exe
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store

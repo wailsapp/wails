@@ -127,20 +127,21 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// Emit an event back to the frontend
-		s.app.Event.EmitEvent(&application.CustomEvent{
-			Name: "gin-api-response",
-			Data: map[string]interface{}{
+		s.app.Event.Emit("gin-api-response",
+			map[string]interface{}{
                 "message": "Response from Gin API Service",
                 "time":    time.Now().Format(time.RFC3339),
             },
-		})
+		)
 	})
 
 	return nil
 }
 
-// ServiceShutdown is called when the service shuts down
-func (s *GinService) ServiceShutdown(ctx context.Context) error {
+// ServiceShutdown is called when the service shuts down.
+// IMPORTANT: the interface is `ServiceShutdown() error` (no ctx); a method that
+// takes a context.Context does NOT satisfy the interface and will never be called.
+func (s *GinService) ServiceShutdown() error {
 	// Clean up resources if needed
 	return nil
 }
@@ -316,13 +317,12 @@ s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
 	s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 	// Emit an event back to the frontend
-	s.app.Event.EmitEvent(&application.CustomEvent{
-		Name: "gin-api-response",
-		Data: map[string]interface{}{
+	s.app.Event.Emit("gin-api-response",
+		map[string]interface{}{
 			"message": "Response from Gin API Service",
 			"time":    time.Now().Format(time.RFC3339),
 		},
-	})
+	)
 })
 ```
 
@@ -349,10 +349,7 @@ Then use it in your code:
 import * as wails from '@wailsio/runtime';
 
 // Event emission
-wails.Events.Emit({
-    name: 'gin-api-event',
-    data: eventData,
-});
+wails.Events.Emit('gin-api-event', eventData);
 ```
 
 Here's an example of how to set up frontend integration:
@@ -528,7 +525,7 @@ Here's an example of how to set up frontend integration:
                 message: "Hello from the frontend!",
                 timestamp: new Date().toISOString()
             };
-            wails.Events.Emit({name: 'gin-api-event', data: eventData});
+            wails.Events.Emit('gin-api-event', eventData);
         });
         
         // Set up event listener for responses from the backend

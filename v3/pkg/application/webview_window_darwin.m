@@ -1,15 +1,16 @@
-//go:build darwin
+//go:build darwin && !ios && !server
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 #import "webview_window_darwin.h"
 #import "../events/events_darwin.h"
-extern void processMessage(unsigned int, const char*);
+extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
+extern bool windowIsHidden(unsigned int);
 // Define custom glass effect style constants (these match the Go constants)
 typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleAutomatic = 0,
@@ -190,12 +191,18 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (BOOL) resignFirstResponder {
     return YES;
 }
+- (void) cancelOperation:(id)sender {
+    if (self.disableEscapeExitsFullscreen &&
+        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
     // If the delegate is our WebviewWindowDelegate (which handles NSDraggingDestination)
     if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
-        NSLog(@"WebviewWindow: setDelegate - Registering window for dragged types (NSFilenamesPboardType) because WebviewWindowDelegate is being set.");
         [self registerForDraggedTypes:@[NSFilenamesPboardType]]; // 'self' is the WebviewWindow instance
     }
 }
@@ -245,74 +252,54 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 @end
 @implementation WebviewWindowDelegate
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: draggingEntered called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        NSLog(@"WebviewWindowDelegate: draggingEntered - Found NSFilenamesPboardType. Firing EventWindowFileDraggingEntered.");
-        // We need to ensure processWindowEvent is available or adapt this part
-        // For now, let's assume it's available globally or via an import
         if (hasListeners(EventWindowFileDraggingEntered)) {
              processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
         }
         return NSDragOperationCopy;
     }
-    NSLog(@"WebviewWindowDelegate: draggingEntered - NSFilenamesPboardType NOT found.");
     return NSDragOperationNone;
 }
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: draggingExited called. WindowID: %u", self.windowId);
     if (hasListeners(EventWindowFileDraggingExited)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingExited);
     }
 }
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: prepareForDragOperation called. WindowID: %u", self.windowId);
     return YES;
 }
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-    NSLog(@"WebviewWindowDelegate: performDragOperation called. WindowID: %u", self.windowId);
     NSPasteboard *pasteboard = [sender draggingPasteboard];
-    
     if (hasListeners(EventWindowFileDraggingPerformed)) {
         processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     }
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Found NSFilenamesPboardType.");
         NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
         NSUInteger count = [files count];
-        NSLog(@"WebviewWindowDelegate: performDragOperation - File count: %lu", (unsigned long)count);
         if (count == 0) {
-            NSLog(@"WebviewWindowDelegate: performDragOperation - No files found in pasteboard, though type was present.");
             return NO;
         }
         char** cArray = (char**)malloc(count * sizeof(char*));
         if (cArray == NULL) {
-            NSLog(@"WebviewWindowDelegate: performDragOperation - Failed to allocate memory for file array.");
             return NO;
         }
         for (NSUInteger i = 0; i < count; i++) {
             NSString* str = files[i];
-            NSLog(@"WebviewWindowDelegate: performDragOperation - File %lu: %@", (unsigned long)i, str);
             cArray[i] = (char*)[str UTF8String];
         }
-        
         // Get the WebviewWindow instance, which is the dragging destination
         WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
-        
         CGFloat viewHeight = webView.frame.size.height;
         int x = (int)dropPointInView.x;
         int y = (int)(viewHeight - dropPointInView.y); // Flip Y for web coordinate system
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Coords: x=%d, y=%d. ViewHeight: %f", x, y, viewHeight);
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Calling processDragItems for windowId %u.", self.windowId);
         processDragItems(self.windowId, cArray, (int)count, x, y); // self.windowId is from the delegate
         free(cArray);
-        NSLog(@"WebviewWindowDelegate: performDragOperation - Returned from processDragItems.");
         return NO;
     }
-    NSLog(@"WebviewWindowDelegate: performDragOperation - NSFilenamesPboardType NOT found. Returning NO.");
     return NO;
 }
 // Original WebviewWindowDelegate methods continue here...
@@ -321,6 +308,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     // Check if this window should close unconditionally (called from Close() method)
     if (windowShouldUnconditionallyClose(delegate.windowId)) {
         return true;
+    }
+    // If the window is hidden (via Hide()), don't trigger close events.
+    // This fixes issue #4389 where hiding the last window with
+    // ApplicationShouldTerminateAfterLastWindowClosed=true would incorrectly
+    // trigger the close event sequence and destroy the window.
+    if (windowIsHidden(delegate.windowId)) {
+        return false;
     }
     // For user-initiated closes, emit WindowClosing event and let the application decide
     processWindowEvent(delegate.windowId, EventWindowShouldClose);
@@ -336,9 +330,19 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
-    NSString *m = message.body;
+    // Get the origin from the message's frame
+    NSString *origin = nil;
+    if (message.frameInfo && message.frameInfo.request && message.frameInfo.request.URL) {
+        NSURL *url = message.frameInfo.request.URL;
+        if (url.scheme && url.host) {
+            origin = [url absoluteString];
+        }
+    }
+    id body = message.body;
+    NSString *m = [body isKindOfClass:[NSString class]] ? (NSString *)body : [body description];
     const char *_m = [m UTF8String];
-    processMessage(self.windowId, _m);
+    const char *_origin = origin ? [origin UTF8String] : "";
+    processMessage(self.windowId, _m, _origin, message.frameInfo.isMainFrame);
 }
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
@@ -348,6 +352,15 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];
         if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            // Skip drag if the click is near a window edge (resize zone).
+            // This prevents conflict between dragging and native top-corner resizing,
+            // which causes window content to shake/jitter (#4960).
+            CGFloat resizeThreshold = 5.0;
+            BOOL nearLeftEdge = location.x < resizeThreshold;
+            BOOL nearRightEdge = location.x > frame.size.width - resizeThreshold;
+            if( nearLeftEdge || nearRightEdge ) {
+                return;
+            }
             [window performWindowDragWithEvent:event];
             return;
         }
@@ -357,6 +370,11 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     self.leftMouseEvent = nil;
 }
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    NSURL *url = urlSchemeTask.request.URL;
+    fflush(stdout);
+    if ([url.path hasSuffix:@".css"] || [url.path containsString:@"style"]) {
+        fflush(stdout);
+    }
     processURLRequest(self.windowId, urlSchemeTask);
 }
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
@@ -778,29 +796,39 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 // GENERATED EVENTS END
+// WKUIDelegate - Handle file input element clicks
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    [openPanel beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
+}
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;
-    
     // Get current frame
     NSRect frame = [nsWindow frame];
-    
     // Convert frame to screen coordinates
     NSRect screenFrame = [nsScreen frame];
     NSRect currentScreenFrame = [[nsWindow screen] frame];
-    
     // Calculate the menubar height for the target screen
     NSRect visibleFrame = [nsScreen visibleFrame];
     CGFloat menubarHeight = screenFrame.size.height - visibleFrame.size.height;
-    
     // Calculate the distance from the top of the current screen
     CGFloat topOffset = currentScreenFrame.origin.y + currentScreenFrame.size.height - frame.origin.y;
-    
     // Position relative to new screen's top, accounting for menubar
     frame.origin.x = screenFrame.origin.x + (frame.origin.x - currentScreenFrame.origin.x);
     frame.origin.y = screenFrame.origin.y + screenFrame.size.height - topOffset - menubarHeight - yOffset;
-    
     // Set the frame which moves the window to the new screen
     [nsWindow setFrame:frame display:YES];
 }
@@ -816,13 +844,11 @@ bool isLiquidGlassSupported() {
 void windowRemoveVisualEffects(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     NSView* contentView = [window contentView];
-    
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
     if (@available(macOS 26.0, *)) {
         glassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
     }
-    
     // Remove all NSVisualEffectView and NSGlassEffectView subviews
     NSArray* subviews = [contentView subviews];
     for (NSView* subview in subviews) {
@@ -836,13 +862,11 @@ void windowRemoveVisualEffects(void* nsWindow) {
 void configureWebViewForLiquidGlass(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     WKWebView* webView = window.webView;
-    
     // Make WebView background transparent
     [webView setValue:@NO forKey:@"drawsBackground"];
     if (@available(macOS 10.12, *)) {
         [webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
     }
-    
     // Ensure WebView is above glass layer
     if (webView.layer) {
         webView.layer.zPosition = 1.0;
@@ -852,10 +876,9 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
 }
 // Apply Liquid Glass effect to window
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
-                          int r, int g, int b, int a, 
+                          int r, int g, int b, int a,
                           const char* groupID, double groupSpacing) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
-    
     // Ensure we're on the main thread for UI operations
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -863,38 +886,31 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
         });
         return;
     }
-    
     // Remove any existing visual effects
     windowRemoveVisualEffects(nsWindow);
-    
     // Try to use NSGlassEffectView if available
     NSView* glassView = nil;
-    
     if (@available(macOS 26.0, *)) {
         Class NSGlassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
         if (NSGlassEffectViewClass) {
             // Create NSGlassEffectView (autoreleased)
             glassView = [[[NSGlassEffectViewClass alloc] init] autorelease];
-            
             // Set corner radius if the property exists
             if (cornerRadius > 0 && [glassView respondsToSelector:@selector(setCornerRadius:)]) {
                 [glassView setValue:@(cornerRadius) forKey:@"cornerRadius"];
             }
-            
             // Set tint color if the property exists and color is specified
             if (a > 0 && [glassView respondsToSelector:@selector(setTintColor:)]) {
                 NSColor* tintColor = [NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
                 // Use performSelector to safely set tintColor if the setter exists
                 [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
-            
             // Set style if the property exists
             if ([glassView respondsToSelector:@selector(setStyle:)]) {
                 // For vibrant style, try to use Light style for a lighter effect
                 int lightStyle = (style == LiquidGlassStyleVibrant) ? LiquidGlassStyleLight : style;
                 [glassView setValue:@(lightStyle) forKey:@"style"];
             }
-            
             // Set group identifier if the property exists and groupID is specified
             if (groupID && strlen(groupID) > 0) {
                 if ([glassView respondsToSelector:@selector(setGroupIdentifier:)]) {
@@ -905,19 +921,16 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                     [glassView performSelector:@selector(setGroupName:) withObject:groupIDString];
                 }
             }
-            
             // Set group spacing if the property exists and spacing is specified
             if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
                 [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
             }
         }
     }
-    
     // Fallback to NSVisualEffectView if NSGlassEffectView is not available
     if (!glassView) {
         NSVisualEffectView* effectView = [[[NSVisualEffectView alloc] init] autorelease];
         glassView = effectView; // Use effectView as glassView for the rest of the function
-        
         // If a custom material is specified, use it directly
         if (material >= 0) {
             [effectView setMaterial:(NSVisualEffectMaterial)material];
@@ -968,15 +981,12 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                     break;
             }
         }
-        
         // Use followsWindowActiveState for automatic adjustment
         [effectView setState:NSVisualEffectStateFollowsWindowActiveState];
-        
         // Don't emphasize - it makes the effect too dark
         if (@available(macOS 10.12, *)) {
             [effectView setEmphasized:NO];
         }
-        
         // Apply corner radius if specified
         if (cornerRadius > 0) {
             [effectView setWantsLayer:YES];
@@ -984,30 +994,23 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
             effectView.layer.masksToBounds = YES;
         }
     }
-    
     // Get the content view
     NSView* contentView = [window contentView];
-    
     // Set up the glass view
     [glassView setFrame:contentView.bounds];
     [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    
     // Check if this is a real NSGlassEffectView with contentView property
     BOOL hasContentView = [glassView respondsToSelector:@selector(contentView)];
-    
     if (hasContentView) {
         // NSGlassEffectView: Add it to window and webView goes in its contentView
         [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
-        
         // Safely reparent the webView to the glass view's contentView
         WKWebView* webView = window.webView;
         NSView* glassContentView = [glassView valueForKey:@"contentView"];
-        
         // Only proceed if both webView and glassContentView are non-nil
         if (webView && glassContentView) {
             // Always remove from current superview to avoid exceptions
             [webView removeFromSuperview];
-            
             // Add to the glass view's contentView
             [glassContentView addSubview:webView];
             [webView setFrame:glassContentView.bounds];
@@ -1016,17 +1019,14 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     } else {
         // NSVisualEffectView: Add glass as bottom layer, webView on top
         [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
-        
         WKWebView* webView = window.webView;
         if (webView) {
             [webView removeFromSuperview];
             [contentView addSubview:webView positioned:NSWindowAbove relativeTo:glassView];
         }
     }
-    
     // Configure WebView for liquid glass
     configureWebViewForLiquidGlass(nsWindow);
-    
     // Make window transparent
     [window setOpaque:NO];
     [window setBackgroundColor:[NSColor clearColor]];

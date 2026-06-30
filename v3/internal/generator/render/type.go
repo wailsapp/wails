@@ -149,7 +149,7 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 
 	case *types.Alias, *types.Named, *types.Pointer:
 		if collect.IsMapKey(k) {
-			if collect.IsStringAlias(k) {
+			if collect.IsStringAlias(k) || collect.IsNumberAlias(k) {
 				// Alias or named type is a string and therefore
 				// safe to use as a JS object key.
 				if ptr, ok := k.(*types.Pointer); ok {
@@ -165,7 +165,7 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 		}
 	}
 
-	return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
+	return fmt.Sprintf("{ [_ in %s]?: %s }%s", key, elem, null), m.UseInterfaces
 }
 
 // renderNamedType outputs the TS representation
@@ -174,6 +174,11 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 	if typ.Obj().Pkg() == nil {
 		// Builtin alias or named type: render underlying type.
 		return m.renderType(typ.Underlying(), quoted)
+	}
+
+	// Special case: application.Void renders as TS void
+	if m.collector.IsVoidAlias(typ.Obj()) {
+		return "void", false
 	}
 
 	if quoted {

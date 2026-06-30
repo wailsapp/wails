@@ -1,0 +1,393 @@
+---
+title: Raw Messages
+description: Implement custom frontend-to-backend communication for performance-critical applications
+sidebar:
+  order: 10
+---
+
+Raw messages provide a low-level communication channel between your frontend and backend, bypassing the standard binding system. This trades convenience for speed.
+
+## When to Use Raw Messages
+
+Raw messages are best suited for extreme edge cases:
+
+- **Ultra-high-frequency updates** - Thousands of messages per second where every microsecond matters
+- **Custom message protocols** - When you need complete control over the wire format
+
+:::tip
+For almost all use cases, standard [service bindings](/features/bindings/services) are recommended as they provide type safety, automatic serialization, and a better developer experience with negligible overhead.
+:::
+
+## Backend Setup
+
+Configure the `RawMessageHandler` in your application options:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
+
+            // Process the message and respond via events
+            response := processMessage(message)
+            window.EmitEvent("raw-response", response)
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Name:  "main",
+    })
+
+    app.Run()
+}
+
+func processMessage(message string) map[string]any {
+    // Your custom message processing logic
+    return map[string]any{
+        "received": message,
+        "status":   "processed",
+    }
+}
+```
+
+### Handler Signature
+
+```go
+RawMessageHandler func(window Window, message string, originInfo *application.OriginInfo)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `window` | `Window` | The window that sent the message |
+| `message` | `string` | The raw message content |
+| `originInfo` | `*application.OriginInfo` | Origin information about the message source |
+
+#### OriginInfo Structure
+
+```go
+type OriginInfo struct {
+	Origin      string
+	TopOrigin   string
+	IsMainFrame bool
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Origin` | `string` | The origin URL of the document that sent the message |
+| `TopOrigin` | `string` | The top-level origin URL (may differ from Origin in iframes) |
+| `IsMainFrame` | `bool` | Whether the message originated from the main frame |
+
+#### Platform-Specific Availability
+
+- **macOS**: `Origin` and `IsMainFrame` are provided
+- **Windows**: `Origin` and `TopOrigin` are provided
+- **Linux**: Only `Origin` is provided
+
+### Origin Validation
+
+:::caution
+Never assume a message is safe because it arrives in your handler. The origin information must be validated before processing sensitive operations or operations that modify state.
+:::
+
+**Always verify the origin of incoming messages before processing them.** The `originInfo` parameter provides critical security information that must be validated to prevent unauthorized access.
+Malicious content, compromised content, or unintended scripts could send raw messages. Without origin validation, you may process commands from untrusted sources. Use `originInfo` to ensure messages come from expected sources.
+
+### Key Validation Points
+
+- **Always check `Origin`** - Verify the origin matches your expected trusted sources (typically `wails://wails` or `http://wails.localhost` for local assets or your app's specific origin)
+- **Validate `IsMainFrame`** (macOS) - Be aware if the message comes from an iframe, as this may indicate embedded content with different security contexts
+- **Use `TopOrigin`** (Windows) - Verify the top-level origin when dealing with framed content
+- **Reject unexpected origins** - Fail securely by rejecting messages from origins you don't explicitly allow
+
+
+:::note
+Messages prefixed with `wails:` are reserved for internal Wails communication and will not be passed to your handler.
+:::
+
+## Frontend Setup
+
+Send raw messages using `System.invoke()`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        // Send raw message
+        document.getElementById('send').addEventListener('click', () => {
+            const message = document.getElementById('input').value
+            System.invoke(message)
+        })
+
+        // Listen for response
+        Events.On('raw-response', (event) => {
+            console.log('Response:', event.data)
+        })
+    </script>
+</head>
+<body>
+    <input type="text" id="input" placeholder="Enter message" />
+    <button id="send">Send</button>
+</body>
+</html>
+```
+
+### Using the Pre-built Bundle
+
+If you're not using npm, access `invoke` via the global `wails` object:
+
+```html
+<script type="module" src="/wails/runtime.js"></script>
+<script>
+    window.onload = function() {
+        document.getElementById('send').onclick = function() {
+            wails.System.invoke('my-message')
+        }
+    }
+</script>
+```
+
+## Structured Messages
+
+For complex data, serialize to JSON:
+
+### Frontend
+
+```javascript
+import { System } from '@wailsio/runtime'
+
+const command = {
+    action: 'update',
+    payload: {
+        id: 123,
+        value: 'new value'
+    }
+}
+
+System.invoke(JSON.stringify(command))
+```
+
+### Backend
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    var cmd struct {
+        Action  string `json:"action"`
+        Payload struct {
+            ID    int    `json:"id"`
+            Value string `json:"value"`
+        } `json:"payload"`
+    }
+
+    if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+        window.EmitEvent("error", err.Error())
+        return
+    }
+
+    switch cmd.Action {
+    case "update":
+        // Handle update
+        result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
+        window.EmitEvent("update-complete", result)
+    default:
+        window.EmitEvent("error", "unknown action")
+    }
+}
+```
+
+## Performance Comparison
+
+| Approach | Overhead | Type Safety | Use Case |
+|----------|----------|-------------|----------|
+| Service Bindings | Higher | Full | General purpose |
+| Raw Messages | Minimal | Manual | High-frequency, performance-critical |
+
+### Benchmark Example
+
+Raw messages can process significantly more messages per second compared to service bindings for simple payloads:
+
+```go
+// Raw message handler - minimal overhead
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Direct string processing, no reflection or marshaling
+    counter++
+}
+```
+
+## Complete Example
+
+Here's a full example implementing a simple command protocol:
+
+### main.go
+
+```go
+package main
+
+import (
+    "embed"
+    "encoding/json"
+    "fmt"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+type Command struct {
+    Type string          `json:"type"`
+    Data json.RawMessage `json:"data"`
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Raw Message Demo",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: true,
+        },
+        RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+            var cmd Command
+            if err := json.Unmarshal([]byte(message), &cmd); err != nil {
+                window.EmitEvent("error", map[string]string{"error": err.Error()})
+                return
+            }
+
+            switch cmd.Type {
+            case "ping":
+                window.EmitEvent("pong", map[string]any{
+                    "time":   time.Now().UnixMilli(),
+                    "window": window.Name(),
+                })
+            case "echo":
+                var text string
+                json.Unmarshal(cmd.Data, &text)
+                window.EmitEvent("echo", text)
+            default:
+                window.EmitEvent("error", map[string]string{
+                    "error": fmt.Sprintf("unknown command: %s", cmd.Type),
+                })
+            }
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Raw Message Demo",
+        Name:  "main",
+        Width: 400,
+        Height: 300,
+    })
+
+    app.Run()
+}
+```
+
+### assets/index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Message Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px 20px; }
+        #output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Raw Message Demo</h1>
+
+    <button id="ping">Ping</button>
+    <button id="echo">Echo "Hello"</button>
+
+    <div id="output">Waiting for response...</div>
+
+    <script type="module">
+        import { System, Events } from '@wailsio/runtime'
+
+        const output = document.getElementById('output')
+
+        function send(type, data) {
+            System.invoke(JSON.stringify({ type, data }))
+        }
+
+        document.getElementById('ping').onclick = () => send('ping')
+        document.getElementById('echo').onclick = () => send('echo', 'Hello')
+
+        Events.On('pong', (e) => {
+            output.textContent = `Pong from ${e.data.window} at ${e.data.time}`
+        })
+
+        Events.On('echo', (e) => {
+            output.textContent = `Echo: ${e.data}`
+        })
+
+        Events.On('error', (e) => {
+            output.textContent = `Error: ${e.data.error}`
+        })
+    </script>
+</body>
+</html>
+```
+
+## Best Practices
+
+### Do
+
+- Use raw messages for genuinely performance-critical paths
+- Implement proper error handling in your handler
+- Use events to send responses back to the frontend
+- Consider JSON for structured data
+- Keep message processing fast to avoid blocking
+
+### Don't
+
+- Use raw messages when service bindings would suffice
+- Forget to validate incoming messages
+- Block in the handler with long-running operations (use goroutines)
+- Ignore the window parameter when responses need to target specific windows
+
+## Multi-Window Considerations
+
+The `window` parameter identifies which window sent the message, allowing you to:
+
+- Send responses to the correct window
+- Implement window-specific behavior
+- Track message sources for debugging
+
+```go
+RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
+    // Respond only to the sending window
+    window.EmitEvent("response", result)
+
+    // Or broadcast to all windows
+    app.Event.Emit("broadcast", result)
+}
+```
+
+## Next Steps
+
+- [Service Bindings](/features/bindings/services) - Standard approach for most applications
+- [Events](/guides/events-reference) - Event system for backend-to-frontend communication
+- [Performance](/guides/performance) - General performance optimization

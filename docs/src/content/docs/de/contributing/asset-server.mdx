@@ -1,0 +1,200 @@
+---
+title: Asset-Server
+description: Wie Wails v3 Ihre Web-Assets in Entwicklung und Produktion bereitstellt und einbettet
+sidebar:
+  order: 4
+---
+
+## Übersicht
+
+Jede Wails-Anwendung liefert einen **einzelnen nativen ausführbaren Datei**, der Folgendes kombiniert:
+
+1. Ihr *Go*-Backend  
+2. Ein *Web*-Frontend (HTML + JS + CSS)
+
+Der **Asset-Server** ist der Klebstoff, der dies ermöglicht.  
+Er verfügt über **zwei Betriebsmodi**, die zur Kompilierzeit über Go-Build-Tags ausgewählt werden:
+
+| Modus | Tag | Zweck |
+|------|-----|---------|
+| **Entwicklung** | `//go:build dev` | Schnelle Iteration mit Hot-Reload |
+| **Produktion**  | `//go:build !dev` | Abhängigkeitsfreie, eingebettete Assets |
+
+Die Implementierung befindet sich in  
+`v3/internal/assetserver/` mit klarer Dateiaufteilung:
+
+```
+assetserver_dev.go        # ⬅️ Laufzeit-Dev-Server
+assetserver_production.go # ⬅️ eingebetteter Server
+assetserver_darwin.go     # OS-spezifische Hilfsprogramme (gleicher Code für Linux/Windows)
+asset_fileserver.go       # Gemeinsame Logik für statische Dateien
+content_type_sniffer.go   | MIME-Typ-Erkennung
+ringqueue.go              # Winzige LRU für MIME-Cache
+```
+
+---
+
+## Entwicklungsmodus
+
+### Lebenszyklus
+
+1. `wails3 dev` startet und **startet Ihren Frontend-Dev-Server**  
+   (Vite, SvelteKit, React-SWC …), indem es die in
+   `build/Taskfile.yml` definierte Aufgabe ausführt (normalerweise `npm run dev`).
+2. Wails startet den **Dev Asset Server**, der auf `localhost:<random>` lauscht, und
+   weist die Go-Laufzeit an, `http://<host>:<VITE_PORT>` als Fenster-URL zu laden.
+3. Eingehende Anfragen werden von `assetserver_dev.go` verarbeitet:
+
+   ```
+   ┌─────────┐  /runtime/...          ┌─────────────┐
+   │ Browser │ ── native Brücke  ───▶ │   Laufzeit   │
+   ├─────────┤                       └─────────────┘
+   │   JS    │  / (index.html)        proxy / -> Vite
+   └─────────┘ ◀─────────────┐
+                 AssetServer │
+                             ▼
+                      ┌────────────┐
+                      │  Vite Dev  │
+                      │   Server   │
+                      └────────────┘
+   ```
+
+4. Statische Dateien (`/assets/logo.svg`) werden **direkt von der Festplatte** über
+   `asset_fileserver.go` bereitgestellt (für Geschwindigkeit), während alles Unbekannte **an den**
+   Framework-Dev-Server **weitergeleitet** wird, was Ihnen *sofortiges* Hot-Module-Replacement ermöglicht.
+
+### Funktionen
+
+* **Live Reload** – Vite/Snowpack/… injiziert ein HMR-WebSocket; Wails muss es nur
+  weiterleiten.
+* **Source-Map-Unterstützung** – Da die Assets nicht gebündelt werden, können Ihre Browser-DevTools
+  Fehler auf den ursprünglichen Quellcode zurückführen.
+* **Kein Go-Neukompilieren** – Nur das Frontend wird neu erstellt; Go-Code bleibt aktiv, bis
+  Sie `.go`-Dateien ändern.
+
+### Wechseln der Frameworks
+
+Der Dev-Proxy ist **framework-agnostisch**:
+
+* Die Root-`Taskfile.yml`-Aufgabendatei injiziert zwei Umgebungsvariablen:
+  `APP_NAME` & `WAILS_VITE_PORT`.
+* Taskfiles für jede Vorlage geben diese Variablen aus, bevor sie ihre Dev-Server starten.
+* `assetserver_dev.go` leitet einfach an dieses Ziel weiter.
+
+Eine neue Vorlage hinzufügen → deren Dev-Aufgabe definieren → Asset Server funktioniert einfach.
+
+---
+
+## Produktionsmodus
+
+Wenn Sie `wails3 build` ausführen, durchläuft die Pipeline:
+
+1. Führt den Frontend-**Produktionsaufbau** (`npm run build`) aus, der
+   `/frontend/dist/**` erzeugt.
+2. **Bettet** diesen Ordner zur Kompilierzeit in das `go:embed`-Dateisystem ein (siehe
+   `bundled_assetserver.go` generierte Datei).
+3. Kompiliert die Go-Binärdatei mit `-tags production` (implizit).
+
+### Anfrageverarbeitung
+
+```go
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 1. Versuche eingebettete statische Assets (exakter Pfad)
+    // 2. Fallback auf index.html für SPA-Routing
+    // 3. MIME-Typ ermitteln, wenn Erweiterung unbekannt
+    // 4. Starke Cache-Header setzen
+}
+```
+
+* **MIME-Erkennung** – Wenn das Build-Tool erweiterungslose Dateien erzeugt hat (z.B.
+  `/assets/manifest`), untersucht `content_type_sniffer.go` die ersten 512 Bytes und
+  zwischenspeichert das Ergebnis in einer winzigen sperrfreien LRU.
+* **Ring-Queue-Caching** – Häufig zugriffene Assets (Logo, CSS) werden im Speicher
+  für die Lebensdauer der App gehalten, wodurch Nachschlagevorgänge auf der Festplatte oder im eingebetteten Dateisystem
+  entfallen.
+* **Sicherheits-Header** – Verhindert `file://`-Navigation, aktiviert `nosniff`.
+
+Da alles eingebettet ist, hat die ausgelieferte Binärdatei **keine externen
+Abhängigkeiten** (auch nicht unter Windows).
+
+---
+
+## Brücke zwischen Dev ↔ Prod
+
+Beide Modi stellen die **gleiche öffentliche Schnittstelle** bereit:
+
+```go
+type AssetServer interface {
+    URL()        string // dev: http://localhost:34115, prod: wails://app
+    Open() error // Starten des Lauschens
+    Close()      // Graceful Shutdown
+}
+```
+
+`pkg/application` verwendet gerne die jeweils kompilierte Implementierung, was bedeutet,
+**dass sich Ihr Anwendungscode zwischen `dev` und `build` nicht ändert**.
+
+---
+
+## Integration von Frontend-Frameworks
+
+### Vorlagen
+
+Jede offizielle Vorlage (React, Vue, Svelte, Solid…) enthält:
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts` (oder Äquivalent)
+
+Sie exportieren mehrere Aufgaben, darunter:
+
+| Aufgabe | Zweck |
+|------|---------|
+| `dev:frontend`   | Startet den Framework-Dev-Server auf einem **zufälligen freien Port** und gibt ihn an stdout aus (`PORT=5173`). |
+| `build:frontend` | Erzeugt statische Assets in `dist/` + Manifest für Cache-Busting. |
+
+`internal/commands/dev.go` setzt die Umgebungsvariable `FRONTEND_DEVSERVER_URL` unter Verwendung von `localhost` als `host` und der ausgegebenen Umgebungsvariable `VITE_PORT` als `port` und startet den **Dev Asset Server**.
+
+Frameworks bleiben vollständig entkoppelt von Go:
+
+* Keine Notwendigkeit, das Wails JS SDK zur Build-Zeit zu importieren – die Laufzeit injiziert es bei der Fenstererstellung.
+* Jedes Framework mit einem HTTP-Dev-Server kann eingebunden werden.
+
+---
+
+## Erweitern / Anpassen
+
+Benötigen Sie benutzerdefinierte Header, Authentifizierung oder gzip?
+
+1. Implementieren Sie `type Middleware func(http.Handler) http.Handler`
+2. Registrieren Sie es über `internal/assetserver/options.go`
+3. Denken Sie für die Produktion daran, denselben Middleware auch in `assetserver_production.go` hinzuzufügen.
+
+---
+
+## Wichtige Quelldateien
+
+| Datei | Rolle |
+|------|------|
+| `assetserver_dev.go` | Reverse Proxy + Festplatten-Dateiserver |
+| `assetserver_production.go` | Eingebetteter FS-Handler |
+| `options.go` | Konfigurationsstruktur, die aus `pkg/options/assetserver`_parsed wird |
+| `build_dev.go` / `build_production.go` | Build-Tag-Wrapper, die die korrekte Implementierung auswählen |
+| `bundled_assetserver.go` | Generierte Embed-Daten (nur in Produktionsbuilds vorhanden) |
+
+---
+
+## Fallstricke & Debugging
+
+* **Weißer Bildschirm in Prod** – meist SPA-Routing: Stellen Sie sicher, dass `History API Fallback`
+  in der Entwicklung aktiviert ist und der `index.html`-Fallback in der Produktion funktioniert.
+* **404 in Dev** – nicht übereinstimmender `FRONTEND_DEV_PORT`; starten Sie mit
+  `WAILSDEV_VERBOSE=1`, um jede weitergeleitete Anfrage auszugeben.
+* **Große Assets** – sie werden eingebettet; erwägen Sie
+  [`assetserver.WithExternalDir("/path")`](https://pkg.go.dev), um von der Festplatte zu laden.
+
+---
+
+Sie wissen nun, wie der Wails **Asset Server** Ihren Web-Code in beiden **Entwicklungs**- und **Produktions**-Modi an das native
+Fenster übergibt.  
+Beherrschen Sie diese Schicht, und Sie können Lade-Probleme debuggen, Middlewares hinzufügen oder sogar
+zuverlässig eine völlig andere Frontend-Toolchain austauschen.

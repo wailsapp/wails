@@ -1,4 +1,4 @@
-//go:build !windows && !production
+//go:build !windows && !production && !ios && !android
 
 package application
 
@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/lmittmann/tint"
+	"github.com/wailsapp/wails/v3/internal/tint"
 	"github.com/mattn/go-isatty"
 )
 

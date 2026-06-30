@@ -225,7 +225,7 @@ func (s *windowsSystemTray) run() {
 	s.uid = uint32(s.parent.id)
 
 	// Resolve the base icons once so we can reuse them for light/dark modes
-	defaultIcon := getNativeApplication().windowClass.Icon
+	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
 
 	// Priority: custom icon > default app icon > built-in icon
 	if s.parent.icon != nil {
@@ -486,10 +486,12 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 }
 
 func (s *windowsSystemTray) updateMenu(menu *Menu) {
+	if s.menu != nil {
+		s.menu.Destroy()
+	}
 	s.menu = NewPopupMenu(s.hwnd, menu)
 	s.menu.onMenuOpen = s.parent.onMenuOpen
 	s.menu.onMenuClose = s.parent.onMenuClose
-	s.menu.Update()
 }
 
 func (s *windowsSystemTray) setTooltip(tooltip string) {
@@ -570,7 +572,7 @@ func (s *windowsSystemTray) Show() {
 	nid.DwStateMask = w32.NIS_HIDDEN
 	nid.DwState = 0
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed: %v", syscall.GetLastError())
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY show failed", "error", syscall.GetLastError())
 	}
 }
 
@@ -584,7 +586,7 @@ func (s *windowsSystemTray) Hide() {
 	nid.DwStateMask = w32.NIS_HIDDEN
 	nid.DwState = w32.NIS_HIDDEN
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed: %v", syscall.GetLastError())
+		globalApplication.debug("ShellNotifyIcon NIM_MODIFY hide failed", "error", syscall.GetLastError())
 	}
 }
 

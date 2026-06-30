@@ -1,6 +1,9 @@
 on:
   push:
-    branches: ['v3-alpha']
+    branches: ['master']
+    paths:
+      - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
 concurrency:
@@ -54,12 +57,13 @@ jobs:
       contents: write
       actions: read
       pull-requests: read
+      id-token: write # Required for npm Trusted Publishing (OIDC) + provenance
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: 'v3-alpha'
+          ref: 'master'
           token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
 
       - name: Configure git
@@ -74,10 +78,16 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
+
+      - name: Upgrade npm for Trusted Publishing
+        # Trusted Publishing (OIDC) requires npm >= 11.5.1.
+        run: |
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
@@ -99,21 +109,53 @@ jobs:
           npm test
           npm run build
 
+      - name: Verify generated artifacts
+        # Fail the publish if (re)generation did not produce the expected
+        # outputs — both the npm package payload (dist/, gitignored, what gets
+        # published) and the tracked bundled runtime that is committed back to
+        # master below. A missing/empty file here means a silent build failure.
+        working-directory: v3
+        run: |
+          set -euo pipefail
+          required=(
+            "internal/assetserver/bundledassets/runtime.js"
+            "internal/assetserver/bundledassets/runtime.debug.js"
+            "internal/runtime/desktop/@wailsio/runtime/dist/runtime.js"
+          )
+          for f in "${required[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::expected generated artifact missing or empty: v3/$f"
+              exit 1
+            fi
+          done
+          echo "All expected runtime artifacts were generated."
+
       - name: Bump version
         id: bump-version
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
         run: |
           echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
 
-      - name: Commit changes
+      - name: Commit regenerated runtime + version bump
+        # Commit ALL regenerated tracked files back to master, not just the
+        # version bump: the bundled runtime (internal/assetserver/bundledassets),
+        # generated events (v3/pkg/events/events.go) and TypeDoc output all come
+        # from `task runtime:build` and must stay in sync with the published
+        # package. dist/ is gitignored, so `git add -A` will not commit it.
         run: |
-          git add .
+          git add -A
+          echo "Files committed back to master:"
+          git status --short
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           git push
 
-      - name: Publish npm package
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          package: v3/internal/runtime/desktop/@wailsio/runtime
-          access: public
-          token: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm package (Trusted Publishing / OIDC)
+        # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a
+        # short-lived publish credential. Provenance is attached automatically.
+        # Requires a Trusted Publisher to be configured for @wailsio/runtime on
+        # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        # --tag latest: v3 ships prerelease (alpha.N) as the default dist-tag,
+        # matching the templates' "@wailsio/runtime": "latest" pin. npm >= 11
+        # requires an explicit --tag to publish a prerelease as latest.
+        run: npm publish --access public --tag latest

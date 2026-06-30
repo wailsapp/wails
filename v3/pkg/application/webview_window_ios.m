@@ -1,0 +1,567 @@
+//go:build ios
+#import "webview_window_ios.h"
+#import "application_ios.h"
+#import "application_ios_delegate.h"
+#import "../events/events_ios.h"
+#import "mobile_features_ios_internal.h"
+#import <stdlib.h>
+#import <os/log.h>
+extern void processApplicationEvent(unsigned int, void* data);
+extern void iosEmitNativeEvent(const char* name, const char* json);
+extern void processWindowEvent(unsigned int, unsigned int);
+extern bool hasListeners(unsigned int);
+// Buffer console messages until a WKWebView exists
+static NSMutableArray<NSString *> *pendingConsoleJS;
+// Subclass that optionally hides the input accessory toolbar based on global flag
+@interface WailsWebView : WKWebView @end
+@implementation WailsWebView
+- (UIView *)inputAccessoryView {
+    if (ios_is_input_accessory_disabled()) {
+        return nil;
+    }
+    return [super inputAccessoryView];
+}
+@end
+// MARK: - WailsSchemeHandler
+@implementation WailsSchemeHandler
+- (instancetype)initWithWindowID:(unsigned int)windowID {
+    self = [super init];
+    if (self) {
+        _windowID = windowID;
+    }
+    return self;
+}
+- (void)webView:(WKWebView *)webView startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
+    // Stream captured media (saved in NSTemporaryDirectory) straight from disk
+    // with HTTP Range support, so <video> can stream/seek a clip of any length
+    // without inlining it as a data URL.
+    if ([urlSchemeTask.request.URL.path hasPrefix:@"/__capture__/"]) {
+        [self serveCaptureTask:urlSchemeTask];
+        return;
+    }
+    ServeAssetRequest(self.windowID, (__bridge void*)urlSchemeTask);
+}
+- (void)serveCaptureTask:(id<WKURLSchemeTask>)task {
+    NSURL *url = task.request.URL;
+    // lastPathComponent strips any directory parts → only files directly in the
+    // temp dir can be served (no path traversal).
+    NSString *name = [url.path lastPathComponent];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSFileHandle *fh = [fm fileExistsAtPath:filePath]
+        ? [NSFileHandle fileHandleForReadingAtPath:filePath] : nil;
+    if (!fh) {
+        NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:404
+            HTTPVersion:@"HTTP/1.1" headerFields:@{}];
+        [task didReceiveResponse:r];
+        [task didFinish];
+        return;
+    }
+    @try {
+        unsigned long long length = [[fm attributesOfItemAtPath:filePath error:nil] fileSize];
+        NSString *ext = [[name pathExtension] lowercaseString];
+        NSString *mime = [ext isEqualToString:@"mp4"] ? @"video/mp4"
+            : [ext isEqualToString:@"mov"] ? @"video/quicktime"
+            : ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"jpeg"]) ? @"image/jpeg"
+            : [ext isEqualToString:@"png"] ? @"image/png" : @"application/octet-stream";
+        NSString *range = task.request.allHTTPHeaderFields[@"Range"];
+        if (range && [range hasPrefix:@"bytes="]) {
+            unsigned long long start = 0, end = length > 0 ? length - 1 : 0;
+            NSArray<NSString *> *parts = [[range substringFromIndex:6] componentsSeparatedByString:@"-"];
+            if (parts.count >= 1 && parts[0].length) start = strtoull(parts[0].UTF8String, NULL, 10);
+            if (parts.count >= 2 && parts[1].length) end = strtoull(parts[1].UTF8String, NULL, 10);
+            if (end >= length) end = length > 0 ? length - 1 : 0;
+            if (start > end) start = 0;
+            unsigned long long count = end - start + 1;
+            [fh seekToFileOffset:start];
+            NSData *data = [fh readDataOfLength:(NSUInteger)count];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Content-Range": [NSString stringWithFormat:@"bytes %llu-%llu/%llu", start, end, length],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:206
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        } else {
+            NSData *data = [fh readDataToEndOfFile];
+            NSDictionary *headers = @{
+                @"Content-Type": mime,
+                @"Content-Length": [@(data.length) stringValue],
+                @"Accept-Ranges": @"bytes",
+                @"Cache-Control": @"no-store",
+            };
+            NSHTTPURLResponse *r = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200
+                HTTPVersion:@"HTTP/1.1" headerFields:headers];
+            [task didReceiveResponse:r];
+            [task didReceiveData:data];
+            [task didFinish];
+        }
+    } @catch (NSException *e) {
+        [task didFailWithError:[NSError errorWithDomain:@"wails.capture" code:500 userInfo:nil]];
+    } @finally {
+        [fh closeFile];
+    }
+}
+- (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
+    WailsVLog(@"[WailsSchemeHandler] stop task");
+}
+@end
+// MARK: - WailsMessageHandler
+@implementation WailsMessageHandler
+- (instancetype)initWithWindowID:(unsigned int)windowID {
+    self = [super init];
+    if (self) {
+        _windowID = windowID;
+    }
+    return self;
+}
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    // Support both plain string messages and structured objects
+    if ([message.body isKindOfClass:[NSString class]]) {
+        NSString *msg = (NSString *)message.body;
+        HandleJSMessage(self.windowID, (char *)[msg UTF8String]);
+        return;
+    }
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:message.body options:0 error:&error];
+    if (!error && jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        HandleJSMessage(self.windowID, (char *)[jsonString UTF8String]);
+    } else {
+        // Fallback: attempt to stringify non-serializable payloads
+        NSString *desc = [NSString stringWithFormat:@"%@", message.body];
+        HandleJSMessage(self.windowID, (char *)[desc UTF8String]);
+    }
+}
+@end
+// MARK: - WailsViewController
+@implementation WailsViewController
+- (instancetype)initWithWindowID:(unsigned int)windowID {
+    self = [super init];
+    if (self) {
+        _windowID = windowID;
+    }
+    return self;
+}
+// Live light/dark switches arrive here (not via a notification), so emit the
+// ios:ThemeChanged application event with the new mode in its context.
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+    if (@available(iOS 13.0, *)) {
+        UIUserInterfaceStyle now = self.traitCollection.userInterfaceStyle;
+        UIUserInterfaceStyle was = previousTraitCollection
+            ? previousTraitCollection.userInterfaceStyle
+            : UIUserInterfaceStyleUnspecified;
+        if (now != was) {
+            BOOL dark = (now == UIUserInterfaceStyleDark);
+            processApplicationEvent(EventThemeChanged,
+                dark ? (void *)"{\"isDarkMode\":true}" : (void *)"{\"isDarkMode\":false}");
+        }
+    }
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+    config.suppressesIncrementalRendering = YES;
+    // Application name for UA (default to "wails.io" if not set)
+    const char* appNameForUA = ios_get_app_name_for_user_agent();
+    config.applicationNameForUserAgent = appNameForUA ? [NSString stringWithUTF8String:appNameForUA] : @"wails.io";
+    // Enable JavaScript using modern API (javaScriptEnabled is deprecated)
+    if (@available(iOS 14.0, *)) {
+        config.defaultWebpagePreferences.allowsContentJavaScript = YES;
+    } else {
+        // Fallback for very old iOS versions
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        config.preferences.javaScriptEnabled = YES;
+        #pragma clang diagnostic pop
+    }
+    // Media playback
+    config.allowsInlineMediaPlayback = ios_is_inline_media_playback_enabled();
+    if (ios_is_autoplay_without_user_action_enabled()) {
+        config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    } else {
+        config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeAll;
+    }
+    // URL scheme handler and script bridge
+    self.schemeHandler = [[WailsSchemeHandler alloc] initWithWindowID:self.windowID];
+    [config setURLSchemeHandler:self.schemeHandler forURLScheme:@"wails"];
+    self.messageHandler = [[WailsMessageHandler alloc] initWithWindowID:self.windowID];
+    // Register both handler names used by runtimes: "external" (current runtime) and "wails" (legacy)
+    [config.userContentController addScriptMessageHandler:self.messageHandler name:@"external"];
+    [config.userContentController addScriptMessageHandler:self.messageHandler name:@"wails"];
+    self.webView = [[WailsWebView alloc] initWithFrame:self.view.bounds configuration:config];
+    // Custom user agent if provided
+    const char* userAgent = ios_get_user_agent();
+    if (userAgent) {
+        self.webView.customUserAgent = [NSString stringWithUTF8String:userAgent];
+    }
+    self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.webView.navigationDelegate = self;
+    // Back/forward gestures
+    self.webView.allowsBackForwardNavigationGestures = ios_is_back_forward_gestures_enabled();
+    // Link preview
+    self.webView.allowsLinkPreview = ios_is_link_preview_disabled() ? NO : YES;
+    // Configure scrolling & bounce & indicators
+    UIScrollView *sv = self.webView.scrollView;
+    bool scrollDisabled = ios_is_scroll_disabled();
+    bool bounceDisabled = ios_is_bounce_disabled();
+    bool indicatorsDisabled = ios_is_scroll_indicators_disabled();
+    sv.scrollEnabled = scrollDisabled ? NO : YES;
+    sv.bounces = bounceDisabled ? NO : YES;
+    sv.alwaysBounceVertical = bounceDisabled ? NO : YES;
+    sv.alwaysBounceHorizontal = bounceDisabled ? NO : YES;
+    sv.showsVerticalScrollIndicator = indicatorsDisabled ? NO : YES;
+    sv.showsHorizontalScrollIndicator = indicatorsDisabled ? NO : YES;
+    sv.contentInset = UIEdgeInsetsZero;
+    sv.scrollIndicatorInsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        sv.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+    // Inspector
+    BOOL inspectorOn = ios_is_inspectable_disabled() ? NO : YES;
+    if (@available(iOS 16.4, *)) {
+        self.webView.inspectable = inspectorOn;
+    } else {
+        @try { [self.webView setValue:@(inspectorOn) forKey:@"inspectable"]; } @catch (__unused NSException *e) {}
+    }
+    [self.view addSubview:self.webView];
+    // NOTE: no initial loadRequest here. The Go side performs the single
+    // initial navigation (iosWebviewWindow.run -> setURL); a hardcoded load
+    // here caused the page to load twice and lose the runtime-ready
+    // handshake in the overlap.
+    // Flush any pending console logs now that a webview exists
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (pendingConsoleJS.count > 0) {
+            for (NSString *js in pendingConsoleJS) {
+                [self.webView evaluateJavaScript:js completionHandler:nil];
+            }
+            [pendingConsoleJS removeAllObjects];
+        }
+    });
+    // Enable native tabs if globally enabled
+    BOOL tabsEnabled = ios_native_tabs_is_enabled();
+    WailsVLog(@"[WailsViewController] viewDidLoad: ios_native_tabs_is_enabled=%d", tabsEnabled);
+    if (tabsEnabled) {
+        [self enableNativeTabs:YES];
+    }
+}
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    // Layout webView and optional tabBar respecting safe area
+    UIEdgeInsets safe = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        safe = self.view.safeAreaInsets;
+    }
+    CGFloat width = self.view.bounds.size.width;
+    CGFloat height = self.view.bounds.size.height;
+    CGFloat tabH = 0;
+    if (self.tabBar && !self.tabBar.isHidden) {
+        CGSize size = [self.tabBar sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)];
+        tabH = size.height;
+        self.tabBar.frame = CGRectMake(0, height - safe.bottom - tabH, width, tabH);
+    }
+    CGFloat webTop = safe.top;
+    CGFloat webBottom = safe.bottom + tabH;
+    self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
+}
+// Orientation lock and status-bar appearance are driven by global state set
+// from Go (see mobile_features_ios.m). These overrides feed UIKit the current
+// preference; the setters call the matching setNeeds… to apply it live.
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return mfSupportedOrientations();
+}
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return mfStatusBarStyle();
+}
+- (BOOL)prefersStatusBarHidden {
+    return mfStatusBarHidden();
+}
+// Push safe-area changes (rotation, notch) to the frontend so layouts can react
+// beyond what CSS env(safe-area-inset-*) already provides.
+- (void)viewSafeAreaInsetsDidChange {
+    [super viewSafeAreaInsetsDidChange];
+    if (@available(iOS 11.0, *)) {
+        UIEdgeInsets s = self.view.safeAreaInsets;
+        NSString *json = [NSString stringWithFormat:
+            @"{\"top\":%d,\"bottom\":%d,\"left\":%d,\"right\":%d}",
+            (int)s.top, (int)s.bottom, (int)s.left, (int)s.right];
+        iosEmitNativeEvent("common:safeArea", [json UTF8String]);
+    }
+}
+- (void)enableNativeTabs:(BOOL)enabled {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        WailsVLog(@"[WailsViewController] enableNativeTabs called with enabled=%d, existingTabBar=%@", enabled, self.tabBar ? @"YES" : @"NO");
+        if (enabled) {
+            if (!self.tabBar) {
+                UITabBar *tb = [[UITabBar alloc] init];
+                tb.delegate = self;
+                if (@available(iOS 13.0, *)) {
+                    UITabBarAppearance *appearance = [[UITabBarAppearance alloc] init];
+                    [appearance configureWithDefaultBackground];
+                    tb.standardAppearance = appearance;
+                    if (@available(iOS 15.0, *)) {
+                        tb.scrollEdgeAppearance = appearance;
+                    }
+                }
+                // Build items from configured JSON, fallback to defaults
+                const char* cjson = ios_native_tabs_get_items_json();
+                NSMutableArray<UITabBarItem*> *items = nil;
+                if (cjson) {
+                    NSString *jsonStr = [NSString stringWithUTF8String:cjson];
+                    free((void*)cjson);
+                    if (jsonStr.length) {
+                        NSData *data = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+                        NSError *err = nil;
+                        id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
+                        if (!err && [obj isKindOfClass:[NSArray class]]) {
+                            NSArray *arr = (NSArray*)obj;
+                            WailsVLog(@"[WailsViewController] Building tab items from JSON, count=%lu", (unsigned long)arr.count);
+                            items = [NSMutableArray arrayWithCapacity:arr.count];
+                            NSInteger tag = 0;
+                            for (id entry in arr) {
+                                if (![entry isKindOfClass:[NSDictionary class]]) continue;
+                                NSDictionary *d = (NSDictionary*)entry;
+                                NSString *title = [d[@"Title"] isKindOfClass:[NSString class]] ? d[@"Title"] : @"";
+                                UIImage *img = nil;
+                                if (@available(iOS 13.0, *)) {
+                                    NSString *symbol = [d[@"SystemImage"] isKindOfClass:[NSString class]] ? d[@"SystemImage"] : nil;
+                                    if (symbol.length) {
+                                        img = [UIImage systemImageNamed:symbol];
+                                    }
+                                }
+                                UITabBarItem *it = [[UITabBarItem alloc] initWithTitle:(title ?: @"") image:img tag:tag++];
+                                [items addObject:it];
+                            }
+                        }
+                        else if (err) {
+                            NSLog(@"[WailsViewController] ERROR parsing NativeTabsItems JSON: %@", err);
+                        }
+                    }
+                    else {
+                        WailsVLog(@"[WailsViewController] NativeTabsItems JSON string is empty");
+                    }
+                }
+                if (items != nil && items.count > 0) {
+                    tb.items = items;
+                    tb.selectedItem = items.firstObject;
+                    WailsVLog(@"[WailsViewController] TabBar created with %lu item(s) from config", (unsigned long)items.count);
+                } else {
+                    // Default 3 items
+                    UITabBarItem *item0 = [[UITabBarItem alloc] initWithTitle:@"Bindings" image:nil tag:0];
+                    UITabBarItem *item1 = [[UITabBarItem alloc] initWithTitle:@"Go Runtime" image:nil tag:1];
+                    UITabBarItem *item2 = [[UITabBarItem alloc] initWithTitle:@"JS Runtime" image:nil tag:2];
+                    tb.items = @[item0, item1, item2];
+                    tb.selectedItem = item0;
+                    WailsVLog(@"[WailsViewController] TabBar created with default items (3)" );
+                }
+                self.tabBar = tb;
+                [self.view addSubview:self.tabBar];
+                WailsVLog(@"[WailsViewController] TabBar added as subview");
+            }
+            self.tabBar.hidden = NO;
+            WailsVLog(@"[WailsViewController] TabBar set hidden=NO");
+        } else {
+            if (self.tabBar) {
+                self.tabBar.hidden = YES;
+                WailsVLog(@"[WailsViewController] TabBar set hidden=YES");
+            }
+        }
+        [self.view setNeedsLayout];
+        [self.view layoutIfNeeded];
+        WailsVLog(@"[WailsViewController] Requested layout update (enableNativeTabs)");
+    });
+}
+- (void)selectNativeTabIndex:(NSInteger)index {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!self.tabBar || self.tabBar.isHidden) return;
+        if (index < 0 || index >= (NSInteger)self.tabBar.items.count) return;
+        UITabBarItem *item = self.tabBar.items[index];
+        self.tabBar.selectedItem = item;
+        [self tabBar:self.tabBar didSelectItem:item];
+    });
+}
+#pragma mark - UITabBarDelegate
+- (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item {
+    NSInteger idx = [tabBar.items indexOfObject:item];
+    if (idx == NSNotFound) return;
+    // Dispatch a CustomEvent to the frontend
+    NSString *js = [NSString stringWithFormat:@"window.dispatchEvent(new CustomEvent('nativeTabSelected',{detail:{index:%ld}}));", (long)idx];
+    [self executeJavaScript:js];
+}
+- (void)executeJavaScript:(NSString *)js {
+    [self.webView evaluateJavaScript:js completionHandler:^(id result, NSError *error) {
+        if (error) {
+            NSLog(@"[WailsViewController] JS error: %@", error);
+        }
+    }];
+}
+// GENERATED EVENTS START
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidStartNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidStartNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidFinishNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidFinishNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation {
+    if( hasListeners(EventWebViewDidFailNavigation) ) {
+        processWindowEvent(self.windowID, EventWebViewDidFailNavigation);
+    }
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if( hasListeners(EventWebViewDecidePolicyForNavigationAction) ) {
+        processWindowEvent(self.windowID, EventWebViewDecidePolicyForNavigationAction);
+    }
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+// GENERATED EVENTS END
+@end
+// MARK: - C bridges used by Go
+unsigned int ios_create_webview(void) {
+    __block unsigned int windowID = nextWindowID++;
+    if (!appDelegate || !appDelegate.window) {
+        return windowID;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        WailsViewController *vc = [[WailsViewController alloc] initWithWindowID:windowID];
+        if (!appDelegate.viewControllers) appDelegate.viewControllers = [NSMutableArray array];
+        [appDelegate.viewControllers addObject:vc];
+        appDelegate.window.rootViewController = vc;
+        [vc loadViewIfNeeded];
+    });
+    return windowID;
+}
+void* ios_create_webview_with_id(unsigned int wailsID) {
+    __block WailsViewController *viewController = nil;
+    if (!appDelegate || !appDelegate.window) {
+        return NULL;
+    }
+    void (^createBlock)(void) = ^{
+        viewController = [[WailsViewController alloc] initWithWindowID:wailsID];
+        if (!appDelegate.viewControllers) appDelegate.viewControllers = [NSMutableArray array];
+        [appDelegate.viewControllers addObject:viewController];
+        if (appDelegate.viewControllers.count == 1) {
+            appDelegate.window.rootViewController = viewController;
+        }
+        // Trigger the view to load exactly once, the UIKit-correct way. Calling
+        // -loadView and -viewDidLoad manually made UIKit ALSO load the view
+        // automatically, creating two WebViews/viewDidLoad passes: content loaded
+        // into one while the other (blank) was displayed → intermittent white
+        // screen on cold launch (force-quit + relaunch).
+        [viewController loadViewIfNeeded];
+    };
+    if ([NSThread isMainThread]) {
+        createBlock();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), createBlock);
+    }
+    return (__bridge_retained void*)viewController;
+}
+void ios_execute_javascript(unsigned int windowID, const char* js) {
+    if (!js) return;
+    NSString *jsString = [NSString stringWithUTF8String:js];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (WailsViewController *vc in appDelegate.viewControllers) {
+            if (vc.windowID == windowID) { [vc executeJavaScript:jsString]; break; }
+        }
+    });
+}
+void ios_window_exec_js(void* viewController, const char* js) {
+    if (!viewController || !js) return;
+    WailsViewController *vc = (__bridge WailsViewController *)viewController;
+    NSString *jsString = [NSString stringWithUTF8String:js];
+    dispatch_async(dispatch_get_main_queue(), ^{ [vc executeJavaScript:jsString]; });
+}
+void ios_window_load_url(void* viewController, const char* url) {
+    if (!viewController || !url) return;
+    WailsViewController *vc = (__bridge WailsViewController *)viewController;
+    NSString *urlString = [NSString stringWithUTF8String:url];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSURL *nsurl = [NSURL URLWithString:urlString];
+        if (!nsurl) return;
+        [vc.webView loadRequest:[NSURLRequest requestWithURL:nsurl]];
+    });
+}
+void ios_window_set_html(void* viewController, const char* html) {
+    if (!viewController || !html) return;
+    WailsViewController *vc = (__bridge WailsViewController *)viewController;
+    NSString *htmlString = [NSString stringWithUTF8String:html];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [vc.webView loadHTMLString:htmlString baseURL:[NSURL URLWithString:@"wails://localhost/"]];
+    });
+}
+unsigned int ios_window_get_id(void* viewController) {
+    if (!viewController) return 0;
+    WailsViewController *vc = (__bridge WailsViewController *)viewController;
+    return vc.windowID;
+}
+void ios_window_release_handle(void* viewController) {
+    if (!viewController) return;
+    CFRelease(viewController);
+}
+// Broadcast a console message to all active WKWebViews
+void ios_console_log(const char* level, const char* message) {
+    if (!message) return;
+    NSString *lvl = level ? [NSString stringWithUTF8String:level] : @"log";
+    NSString *msg = [NSString stringWithUTF8String:message];
+    // Mirror to system log. Use %@ (NOT %{public}@) so message content is kept
+    // private/redacted in release builds — it can contain app/user data.
+    os_log(OS_LOG_DEFAULT, "[ios_console_log][%@] %@", lvl, msg);
+    // Robustly encode message to avoid JS string escaping issues
+    NSData *data = [msg dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *b64 = [data base64EncodedStringWithOptions:0];
+    NSString *levelJS = ([lvl length] ? [NSString stringWithFormat:@"'%@'", lvl] : @"'log'");
+    NSString *js = [NSString stringWithFormat:
+                    @"(function(){try{var b=atob('%@');var bytes=new Uint8Array(b.length);for(var i=0;i<b.length;i++){bytes[i]=b.charCodeAt(i);}var msg=new TextDecoder('utf-8').decode(bytes);console[%@](msg);}catch(e){console.log('wails log bridge error:'+e)}})();",
+                    b64, levelJS];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Ensure buffer is initialised
+        if (pendingConsoleJS == nil) {
+            pendingConsoleJS = [NSMutableArray array];
+        }
+        NSUInteger count = appDelegate.viewControllers.count;
+        if (count == 0) {
+            // No webviews yet: buffer
+            [pendingConsoleJS addObject:js];
+            return;
+        }
+        // Broadcast to all existing webviews
+        for (WailsViewController *vc in appDelegate.viewControllers) {
+            [vc.webView evaluateJavaScript:js completionHandler:nil];
+        }
+    });
+}
+// Set background color (applies to VC view, WKWebView, and app window)
+void ios_window_set_background_color(void* viewController, unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+    if (!viewController) return;
+    WailsViewController *vc = (__bridge WailsViewController *)viewController;
+    CGFloat fr = ((CGFloat)r) / 255.0;
+    CGFloat fg = ((CGFloat)g) / 255.0;
+    CGFloat fb = ((CGFloat)b) / 255.0;
+    CGFloat fa = ((CGFloat)a) / 255.0;
+    UIColor *color = [UIColor colorWithRed:fr green:fg blue:fb alpha:fa];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        vc.view.backgroundColor = color;
+        if (vc.webView) {
+            vc.webView.opaque = (a == 255);
+            vc.webView.backgroundColor = color;
+            vc.webView.scrollView.backgroundColor = color;
+        }
+        if (appDelegate && appDelegate.window) {
+            appDelegate.window.backgroundColor = color;
+        }
+    });
+}

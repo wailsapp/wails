@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -339,6 +339,27 @@ func main() {
 			}).Show()
 			windowCounter++
 		})
+	myMenu.Add("New WebviewWindow (Frameless + Transparent)").
+		OnClick(func(ctx *application.Context) {
+			app.Window.NewWithOptions(application.WebviewWindowOptions{
+				HTML: `<html><body style="margin:0;background:rgba(20,20,20,0.35);color:#fff;font-family:sans-serif;">
+<div style="padding:12px;">
+  <p>Frameless transparent window. Click the button and resize the window to exercise input handling.</p>
+  <button id="b" onclick="document.getElementById('c').innerText=++window._n||1">Click me</button>
+  <span id="c">0</span>
+</div></body></html>`,
+				X:              rand.Intn(1000),
+				Y:              rand.Intn(800),
+				Width:          400,
+				Height:         300,
+				Frameless:      true,
+				BackgroundType: application.BackgroundTypeTransparent,
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
+			windowCounter++
+		})
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
@@ -512,7 +533,7 @@ func main() {
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			width, height := w.Size()
-			application.InfoDialog().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
 		})
 	})
 
@@ -544,7 +565,7 @@ func main() {
 	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			x, y := w.Position()
-			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -568,7 +589,7 @@ func main() {
 	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			x, y := w.RelativePosition()
-			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			app.Dialog.Info().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -681,24 +702,24 @@ func main() {
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
 		screen := app.Screen.GetPrimary()
 		msg := fmt.Sprintf("Screen: %+v", screen)
-		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
+		app.Dialog.Info().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
 		screens := app.Screen.GetAll()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		}
 	})
 	stateMenu.Add("Get Screen for WebviewWindow").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w application.Window) {
 			screen, err := w.GetScreen()
 			if err != nil {
-				application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+				app.Dialog.Error().SetTitle("Error").SetMessage(err.Error()).Show()
 				return
 			}
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.Dialog.Info().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
 	stateMenu.Add("Disable for 5s").OnClick(func(ctx *application.Context) {

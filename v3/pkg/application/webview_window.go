@@ -1,28 +1,28 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
-	"text/template"
 	"unsafe"
 
-	"github.com/leaanthony/u"
+	"encoding/json"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // Enabled means the feature should be enabled
-var Enabled = u.True
+var Enabled = optional.True
 
 // Disabled means the feature should be disabled
-var Disabled = u.False
+var Disabled = optional.False
+
+var shouldSkipHideOnFocusLost = func() bool { return false }
 
 // LRTB is a struct that holds Left, Right, Top, Bottom values
 type LRTB struct {
@@ -90,6 +90,7 @@ type (
 		setBounds(bounds Rect)
 		position() (int, int)
 		setPosition(x int, y int)
+		centerOnScreen(screen *Screen)
 		relativePosition() (int, int)
 		setRelativePosition(x int, y int)
 		flash(enabled bool)
@@ -98,6 +99,7 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		setFullscreenButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
 		cut()
@@ -113,12 +115,13 @@ type (
 		setMenu(menu *Menu)
 		snapAssist()
 		setContentProtection(enabled bool)
+		attachModal(modalWindow *WebviewWindow)
 	}
 )
 
 type WindowEvent struct {
 	ctx       *WindowEventContext
-	Cancelled bool
+	cancelled atomic.Bool
 }
 
 func (w *WindowEvent) Context() *WindowEventContext {
@@ -129,8 +132,12 @@ func NewWindowEvent() *WindowEvent {
 	return &WindowEvent{}
 }
 
+func (w *WindowEvent) IsCancelled() bool {
+	return w.cancelled.Load()
+}
+
 func (w *WindowEvent) Cancel() {
-	w.Cancelled = true
+	w.cancelled.Store(true)
 }
 
 type WindowEventListener struct {
@@ -163,14 +170,18 @@ type WebviewWindow struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
-	// Flags for managing the runtime
-	// runtimeLoaded indicates that the runtime has been loaded
-	runtimeLoaded bool
-	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	runtimeLoaded  bool
+	pendingJS      []string
+	pendingJSMutex sync.Mutex
 
 	// unconditionallyClose marks the window to be unconditionally closed (atomic)
 	unconditionallyClose uint32
+
+	savedMinWidth    int
+	savedMinHeight   int
+	savedMaxWidth    int
+	savedMaxHeight   int
+	constraintsSaved bool
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -189,13 +200,26 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	}
 }
 
-// EmitEvent emits an event from the window
-func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.Event.EmitEvent(&CustomEvent{
+// EmitEvent emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+// The [CustomEvent.Sender] field will be set to the window name.
+//
+// If the given event name is registered, EmitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (w *WebviewWindow) EmitEvent(name string, data ...any) bool {
+	event := &CustomEvent{
 		Name:   name,
-		Data:   data,
 		Sender: w.Name(),
-	})
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	return globalApplication.Event.EmitEvent(event)
 }
 
 var windowID uint
@@ -268,6 +292,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)
 	}
 
+	// Inject the minimal `window.wails.Events` shim into HTML-supplied
+	// pages that opted into the simple postMessage emit path. Without this
+	// they can't load /wails/runtime.js (their origin is "null") so they'd
+	// have to hand-roll a dispatch receiver and an invoke caller every
+	// time. See inline_event_shim.go.
+	options.HTML = maybeInjectInlineEventShim(options.HTML, options.AllowSimpleEventEmit)
+
 	result := &WebviewWindow{
 		id:             thisWindowID,
 		options:        options,
@@ -290,6 +321,15 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if result.options.KeyBindings != nil {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
+	if result.options.HideOnEscape {
+		result.RegisterKeyBinding("escape", func(window Window) {
+			window.Hide()
+		})
+	}
+
+	if result.options.HideOnFocusLost {
+		result.setupHideOnFocusLost()
+	}
 
 	return result
 }
@@ -311,60 +351,19 @@ func processKeyBindingOptions(
 	return result
 }
 
+func (w *WebviewWindow) setupHideOnFocusLost() {
+	if runtime.GOOS == "linux" && shouldSkipHideOnFocusLost() {
+		return
+	}
+	w.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		w.Hide()
+	})
+}
+
 func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellersLock.Lock()
 	defer w.cancellersLock.Unlock()
 	w.cancellers = append(w.cancellers, canceller)
-}
-
-func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.callErrorHandler('%s', '%s', %t);",
-				callID,
-				template.JSEscapeString(result),
-				isJSON,
-			),
-		)
-	}
-}
-
-func (w *WebviewWindow) CallResponse(callID string, result string) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.callResultHandler('%s', '%s', true);",
-				callID,
-				template.JSEscapeString(result),
-			),
-		)
-	}
-}
-
-func (w *WebviewWindow) DialogError(dialogID string, result string) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.dialogErrorCallback('%s', '%s');",
-				dialogID,
-				template.JSEscapeString(result),
-			),
-		)
-	}
-}
-
-func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
-	if w.impl != nil {
-		w.impl.execJS(
-			fmt.Sprintf(
-				"_wails.dialogResultCallback('%s', '%s', %t);",
-				dialogID,
-				template.JSEscapeString(result),
-				isJSON,
-			),
-		)
-	}
 }
 
 func (w *WebviewWindow) ID() uint {
@@ -435,6 +434,14 @@ func (w *WebviewWindow) Run() {
 		return
 	}
 	w.impl = newWindowImpl(w)
+
+	// On Linux GTK4, we must wait for the application to be activated
+	// before creating windows with gtk_application_window_new()
+	if nativeApp := globalApplication.impl; nativeApp != nil {
+		if waiter, ok := nativeApp.(interface{ waitForActivation() }); ok {
+			waiter.waitForActivation()
+		}
+	}
 
 	InvokeSync(w.impl.run)
 }
@@ -539,65 +546,63 @@ func (w *WebviewWindow) Resizable() bool {
 
 // SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) Window {
-	w.options.MinWidth = minWidth
-	w.options.MinHeight = minHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if minHeight != 0 && currentHeight < minHeight {
 		newHeight = minHeight
-		w.options.Height = newHeight
 		newSize = true
 	}
 	if minWidth != 0 && currentWidth < minWidth {
 		newWidth = minWidth
-		w.options.Width = newWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MinWidth = minWidth
+		w.options.MinHeight = minHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMinSize(minWidth, minHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
 // SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
-	w.options.MaxWidth = maxWidth
-	w.options.MaxHeight = maxHeight
-
 	currentWidth, currentHeight := w.Size()
 	newWidth, newHeight := currentWidth, currentHeight
 
 	var newSize bool
 	if maxHeight != 0 && currentHeight > maxHeight {
 		newHeight = maxHeight
-		w.options.Height = maxHeight
 		newSize = true
 	}
 	if maxWidth != 0 && currentWidth > maxWidth {
 		newWidth = maxWidth
-		w.options.Width = maxWidth
 		newSize = true
 	}
-	if w.impl != nil {
+	InvokeSync(func() {
+		w.options.MaxWidth = maxWidth
+		w.options.MaxHeight = maxHeight
 		if newSize {
-			InvokeSync(func() {
+			w.options.Height = newHeight
+			w.options.Width = newWidth
+			if w.impl != nil {
 				w.impl.setSize(newWidth, newHeight)
-			})
+			}
 		}
-		InvokeSync(func() {
+		if w.impl != nil {
 			w.impl.setMaxSize(maxWidth, maxHeight)
-		})
-	}
+		}
+	})
 	return w
 }
 
@@ -606,12 +611,15 @@ func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
+	w.pendingJSMutex.Lock()
 	if w.runtimeLoaded {
+		w.pendingJSMutex.Unlock()
 		InvokeSync(func() {
 			w.impl.execJS(js)
 		})
 	} else {
 		w.pendingJS = append(w.pendingJS, js)
+		w.pendingJSMutex.Unlock()
 	}
 }
 
@@ -653,6 +661,16 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setCloseButtonState(state)
+		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
+	w.options.FullscreenButtonState = state
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setFullscreenButtonState(state)
 		})
 	}
 	return w
@@ -758,11 +776,40 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		}
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
+		w.pendingJSMutex.Lock()
 		w.runtimeLoaded = true
+		pending := w.pendingJS
+		w.pendingJS = nil
+		w.pendingJSMutex.Unlock()
 		w.SetResizable(!w.options.DisableResize)
-		for _, js := range w.pendingJS {
-			w.ExecJS(js)
+		for _, js := range pending {
+			InvokeSync(func() {
+				w.impl.execJS(js)
+			})
 		}
+	case strings.HasPrefix(message, "wails:event:emit:"):
+		// Forward an event from a page that can't reach the modern HTTP
+		// runtime (e.g. an InitialHTML pop-up loaded with `baseURL:nil`
+		// where `window.location.origin` is "null" and fetch fails). Sent
+		// as `wails:event:emit:<event-name>`; bare names only (no payload).
+		// Enough for the updater window's user-action buttons; pages that
+		// need to send structured data should use the full runtime.
+		//
+		// Gated on WebviewWindowOptions.AllowSimpleEventEmit so a page
+		// loaded into a webview cannot synthesise host-side custom events
+		// unless its owning code explicitly opted in. See the comment on
+		// that field for the threat model.
+		if !w.options.AllowSimpleEventEmit {
+			w.Error("wails:event:emit received but AllowSimpleEventEmit is not set on this window: %v", message)
+			return
+		}
+		name := strings.TrimPrefix(message, "wails:event:emit:")
+		if name == "" {
+			w.Error("empty event name in wails:event:emit")
+			return
+		}
+		evt := &CustomEvent{Name: name, Sender: w.Name()}
+		globalApplication.Event.EmitEvent(evt)
 	default:
 		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
@@ -805,7 +852,9 @@ func (w *WebviewWindow) OnWindowEvent(
 	return func() {
 		// Check if eventListener is already locked
 		w.eventListenersLock.Lock()
-		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
+		w.eventListeners[eventID] = slices.DeleteFunc(w.eventListeners[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventListener
+		})
 		w.eventListenersLock.Unlock()
 	}
 }
@@ -826,7 +875,9 @@ func (w *WebviewWindow) RegisterHook(
 	return func() {
 		w.eventHooksLock.Lock()
 		defer w.eventHooksLock.Unlock()
-		w.eventHooks[eventID] = lo.Without(w.eventHooks[eventID], windowEventHook)
+		w.eventHooks[eventID] = slices.DeleteFunc(w.eventHooks[eventID], func(l *WindowEventListener) bool {
+			return l == windowEventHook
+		})
 	}
 }
 
@@ -841,7 +892,7 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
-		if thisEvent.Cancelled {
+		if thisEvent.IsCancelled() {
 			return
 		}
 	}
@@ -853,6 +904,9 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, listener := range tempListeners {
 		go func() {
+			if thisEvent.IsCancelled() {
+				return
+			}
 			defer handlePanic()
 			listener.callback(thisEvent)
 		}()
@@ -942,6 +996,22 @@ func (w *WebviewWindow) SetPosition(x int, y int) {
 	})
 }
 
+// SetScreen moves the window to the center of the given screen's WorkArea.
+// If called before Run() (impl is nil), the screen is stored for deferred application.
+func (w *WebviewWindow) SetScreen(screen *Screen) Window {
+	if screen == nil {
+		return w
+	}
+	w.options.Screen = screen
+	if w.impl == nil || w.isDestroyed() {
+		return w
+	}
+	InvokeSync(func() {
+		w.impl.centerOnScreen(screen)
+	})
+	return w
+}
+
 // RelativePosition returns the position of the window relative to the screen WorkArea on which it is
 func (w *WebviewWindow) RelativePosition() (int, int) {
 	if w.impl == nil || w.isDestroyed() {
@@ -969,6 +1039,11 @@ func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
 func (w *WebviewWindow) destroy() {
 	if w.impl == nil || w.isDestroyed() {
 		return
+	}
+
+	// Cancel all pending async calls for this window
+	if globalApplication.messageProcessor != nil {
+		globalApplication.messageProcessor.CancelWindowCalls(w.id)
 	}
 
 	// Cancel the callbacks
@@ -1164,13 +1239,32 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		if !w.constraintsSaved {
+			w.savedMinWidth = w.options.MinWidth
+			w.savedMinHeight = w.options.MinHeight
+			w.savedMaxWidth = w.options.MaxWidth
+			w.savedMaxHeight = w.options.MaxHeight
+			w.constraintsSaved = true
+		}
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
 			w.impl.setMaxSize(0, 0)
 		}
 	})
+}
+
+func (w *WebviewWindow) restoreSavedSizeConstraintOptions() bool {
+	if !w.constraintsSaved {
+		return false
+	}
+	w.options.MinWidth = w.savedMinWidth
+	w.options.MinHeight = w.savedMinHeight
+	w.options.MaxWidth = w.savedMaxWidth
+	w.options.MaxHeight = w.savedMaxHeight
+	w.constraintsSaved = false
+	return true
 }
 
 func (w *WebviewWindow) EnableSizeConstraints() {
@@ -1178,10 +1272,11 @@ func (w *WebviewWindow) EnableSizeConstraints() {
 		return
 	}
 	InvokeSync(func() {
-		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		w.restoreSavedSizeConstraintOptions()
+		if w.options.MinWidth > 0 || w.options.MinHeight > 0 {
 			w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
 		}
-		if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		if w.options.MaxWidth > 0 || w.options.MaxHeight > 0 {
 			w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
 		}
 	})
@@ -1207,7 +1302,13 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 }
 
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	// Guard against race condition where event fires before runtime is initialized
+	// This can happen during page reload when WindowLoadFinished fires before
+	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
+	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
 	w.ExecJS(msg)
 }
 
@@ -1232,40 +1333,18 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage called",
-		"files", filenames,
-		"dropZone", dropZone,
-	)
+func (w *WebviewWindow) handleDragAndDropMessage(filenames []string, dropTarget *DropTargetDetails) {
 	thisEvent := NewWindowEvent()
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created",
-		"ctx", thisEvent.ctx,
-	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
-	if dropZone != nil { // Check if dropZone details are available
-		ctx.setDropZoneDetails(dropZone)
+	if dropTarget != nil {
+		ctx.setDropTargetDetails(dropTarget)
 	}
 	thisEvent.ctx = ctx
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned",
-		"thisEvent.ctx", thisEvent.ctx,
-		"ctx", ctx,
-	)
-	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: Found listeners for WindowDropZoneFilesDropped",
-		"count", len(listeners),
-	)
-	globalApplication.debug(
-		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners",
-		"thisEvent.ctx", thisEvent.ctx,
-	)
+
+	listeners := w.eventListeners[uint(events.Common.WindowFilesDropped)]
 	for _, listener := range listeners {
 		if listener == nil {
-			fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Skipping nil listener")
 			continue
 		}
 		listener.callback(thisEvent)
@@ -1296,12 +1375,31 @@ func (w *WebviewWindow) NativeWindow() unsafe.Pointer {
 	return w.impl.nativeWindow()
 }
 
+// AttachModal attaches a modal window to this window, presenting it as a sheet on macOS.
+func (w *WebviewWindow) AttachModal(modalWindow Window) {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+
+	modalWebviewWindow, ok := modalWindow.(*WebviewWindow)
+	if !ok || modalWebviewWindow == nil {
+		return
+	}
+
+	InvokeSync(func() {
+		w.impl.attachModal(modalWebviewWindow)
+	})
+}
+
 // shouldUnconditionallyClose returns whether the window should close unconditionally
 func (w *WebviewWindow) shouldUnconditionallyClose() bool {
 	return atomic.LoadUint32(&w.unconditionallyClose) != 0
 }
 
 func (w *WebviewWindow) Focus() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
 	InvokeSync(w.impl.focus)
 }
 
@@ -1376,6 +1474,21 @@ func (w *WebviewWindow) isDestroyed() bool {
 	w.destroyedLock.RLock()
 	defer w.destroyedLock.RUnlock()
 	return w.destroyed
+}
+
+func (w *WebviewWindow) RegisterKeyBinding(binding string, callback func(window Window)) *WebviewWindow {
+	acc, err := parseAccelerator(binding)
+	if err != nil {
+		globalApplication.error("invalid keybinding: %w", err)
+		return w
+	}
+	w.keyBindingsLock.Lock()
+	defer w.keyBindingsLock.Unlock()
+	if w.keyBindings == nil {
+		w.keyBindings = make(map[string]func(Window))
+	}
+	w.keyBindings[acc.String()] = callback
+	return w
 }
 
 func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
@@ -1482,11 +1595,6 @@ func (w *WebviewWindow) ToggleMenuBar() {
 }
 
 func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
-	globalApplication.debug(
-		"[DragDropDebug] InitiateFrontendDropProcessing called",
-		"x", x,
-		"y", y,
-	)
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
@@ -1504,15 +1612,76 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 		y,
 	)
 
-	// Ensure JS is executed after runtime is loaded
+	w.pendingJSMutex.Lock()
 	if !w.runtimeLoaded {
 		w.pendingJS = append(w.pendingJS, jsCall)
+		w.pendingJSMutex.Unlock()
 		return
 	}
+	w.pendingJSMutex.Unlock()
 
 	InvokeSync(func() {
 		w.impl.execJS(jsCall)
 	})
+}
+
+// HandleDragEnter is called when drag enters the window (Linux only, since GTK intercepts drag events)
+func (w *WebviewWindow) HandleDragEnter() {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Reset drag hover state for new drag session
+	dragHover.lastSentX = 0
+	dragHover.lastSentY = 0
+
+	w.impl.execJS("window._wails.handleDragEnter();")
+}
+
+// Drag hover throttle state
+var dragHover struct {
+	lastSentX int
+	lastSentY int
+}
+
+// HandleDragOver is called during drag-motion to update hover state in JS
+// This is called from the GTK main thread, so we can call execJS directly
+func (w *WebviewWindow) HandleDragOver(x int, y int) {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Throttle: only send if moved at least 5 pixels
+	dx := x - dragHover.lastSentX
+	dy := y - dragHover.lastSentY
+	if dx < 0 {
+		dx = -dx
+	}
+	if dy < 0 {
+		dy = -dy
+	}
+	if dx < 5 && dy < 5 {
+		return
+	}
+	dragHover.lastSentX = x
+	dragHover.lastSentY = y
+
+	// Use platform-specific zero-alloc implementation if available
+	if impl, ok := w.impl.(interface{ execJSDragOver(x, y int) }); ok {
+		impl.execJSDragOver(x, y)
+	} else {
+		w.impl.execJS(fmt.Sprintf("window._wails.handleDragOver(%d,%d)", x, y))
+	}
+}
+
+// HandleDragLeave is called when drag leaves the window
+func (w *WebviewWindow) HandleDragLeave() {
+	if w.impl == nil || w.isDestroyed() || !w.runtimeLoaded {
+		return
+	}
+
+	// Don't use InvokeSync - execJS already handles main thread dispatch internally
+	w.impl.execJS("window._wails.handleDragLeave();")
 }
 
 // SnapAssist triggers the Windows Snap Assist feature by simulating Win+Z key combination.

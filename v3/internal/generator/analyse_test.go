@@ -17,8 +17,9 @@ import (
 
 func TestAnalyser(t *testing.T) {
 	type testParams struct {
-		name string
-		want []string
+		name   string
+		want   []string
+		events bool
 	}
 
 	// Gather tests from cases directory.
@@ -57,6 +58,19 @@ func TestAnalyser(t *testing.T) {
 		}
 		slices.Sort(test.want)
 
+		events, err := os.Open(filepath.Join("testcases", entry.Name(), "events.json"))
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				t.Fatal(err)
+			}
+		} else {
+			err = json.NewDecoder(events).Decode(&test.events)
+			events.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
 		tests = append(tests, test)
 	}
 
@@ -68,6 +82,7 @@ func TestAnalyser(t *testing.T) {
 
 		for _, test := range tests {
 			all.want = append(all.want, test.want...)
+			all.events = all.events || test.events
 		}
 		slices.Sort(all.want)
 
@@ -97,7 +112,7 @@ func TestAnalyser(t *testing.T) {
 
 			got := make([]string, 0)
 
-			services, err := FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil))
+			services, registerService, err := FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil))
 			if err != nil {
 				t.Error(err)
 			}
@@ -110,6 +125,10 @@ func TestAnalyser(t *testing.T) {
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("Found services mismatch (-want +got):\n%s", diff)
+			}
+
+			if test.events != (registerService != nil) {
+				t.Errorf("Found events mismatch: wanted=%t, got=%t", test.events, registerService != nil)
 			}
 		})
 	}

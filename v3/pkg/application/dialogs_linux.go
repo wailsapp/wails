@@ -1,3 +1,5 @@
+//go:build linux && !android && !server
+
 package application
 
 func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
@@ -13,7 +15,7 @@ func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
-	InvokeAsync(func() {
+	gtkDispatch(func() {
 		runQuestionDialog(
 			pointer(parent),
 			about,
@@ -36,7 +38,7 @@ func (m *linuxDialog) show() {
 		}
 	}
 
-	InvokeAsync(func() {
+	gtkDispatch(func() {
 		response := runQuestionDialog(pointer(parent), m.dialog)
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]
