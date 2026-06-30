@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
