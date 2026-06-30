@@ -1806,13 +1806,27 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// correct rect arrives if the DPI really differs on restore.
 		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
+			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
+			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
+			// and recalculate hit-test regions for proper mouse interaction after DPI change.
+			// See: https://github.com/wailsapp/wails/issues/4691
+			if w.parent.options.Frameless {
+				flags |= w32.SWP_FRAMECHANGED
+			}
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
 				int(newWindowRect.Left),
 				int(newWindowRect.Top),
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
-				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+				uint(flags))
+			// For frameless windows with decorations, re-extend the frame into client area
+			// to ensure proper window frame styling after DPI change.
+			if w.framelessWithDecorations() {
+				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+					globalApplication.handleFatalError(err)
+				}
+			}
 			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
 			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
