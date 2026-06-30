@@ -1,0 +1,204 @@
+---
+title: Laufzeit-Internals
+description: Tiefgehender Einblick darin, wie Wails v3 startet, läuft und mit dem Betriebssystem kommuniziert
+sidebar:
+  order: 3
+---
+
+Die **Laufzeitumgebung** (Runtime) ist die Schicht, die gewöhnliche Go-Funktionen in eine plattformübergreifende Desktop-Anwendung verwandelt.  
+Dieses Dokument erklärt die Komponenten, die Sie beim Durchlaufen des Quellcodes kennenlernen werden.
+
+---
+
+## 1. Anwendungslebenszyklus
+
+| Phase | Code-Pfad | Was passiert |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Registriert Build-Zeit-Daten, erstellt ein globales `application`-Singleton. |
+| **New()** | `application.New(...)` | Validiert `Options`, startet den **AssetServer**, initialisiert das Logging. |
+| **Run()** | `application.(*App).Run()` | 1. Ruft plattformspezifisches `mainthread.X()` auf, um in den OS-UI-Thread einzutreten.<br />2. Startet die **Laufzeitumgebung** (`internal/runtime`).<br />3. Blockiert, bis das letzte Fenster geschlossen wird oder `Quit()` aufgerufen wird. |
+| **Shutdown** | `application.(*App).Quit()` | Sendet `application:shutdown`-Ereignis, leert den Log, baut Fenster & Dienste ab. |
+
+Der Lebenszyklus ist strikt **Single-Entry**: Sie können viele Fenster erstellen, aber das Anwendungsobjekt selbst wird nur einmal initialisiert.
+
+---
+
+## 2. Fensterverwaltung
+
+### Öffentliche API
+
+```go
+win := app.Window.New(&application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+`app.Window.New()` delegiert an `internal/runtime/webview_window_*.go`, wo die plattformspezifischen Konstruktoren liegen:
+
+```
+internal/runtime/
+├── webview_window_darwin.go
+├── webview_window_linux.go
+└── webview_window_windows.go
+```
+
+Jede Datei:
+
+1. Erstellt ein natives WebView (WKWebView, WebKitGTK, WebView2).
+2. Registriert einen **Message Processor** Callback.
+3. Mappt Wails-Ereignisse (`WindowResized`, `Focus`, `DropFile`, …) auf Laufzeit-Ereignis-IDs.
+
+Fenster werden von `screenmanager.go` verwaltet, das **Query-APIs** (alle Displays, DPI, aktives Fenster) anbietet und das Buchführen von Resize-/Move-Operationen zentralisiert.
+
+---
+
+## 3. Nachrichtenverarbeitungs-Pipeline
+
+Die Brücke zwischen JavaScript und Go wird durch die Familie der **Message Processors** in `pkg/application/messageprocessor_*.go` implementiert.
+
+Ablauf:
+
+1. **JavaScript** ruft `window.runtime.Invoke("Greet", "Alice")` auf.
+2. Die Laufzeitumgebung serialisiert die Anfrage:  
+   `{"t":"c","id":"123","m":"Greet","p":["Alice"]}`  
+   (`t` = Typ, `c` = Aufruf).
+3. **Go** empfängt dieses JSON über den WebView-Callback.
+4. `messageprocessor_call.go` sucht die gebundene Methode in der generierten Tabelle (`application.bindings.go`) und führt sie aus.
+5. Das Ergebnis oder der Fehler wird zurück an JS gemarshalled, wo ein `Promise` aufgelöst wird.
+
+Spezialisierte Prozessoren:
+
+| Datei | Zweck |
+|------|---------|
+| `messageprocessor_window.go` | Fensteraktionen (ausblenden, maximieren, …) |
+| `messageprocessor_dialog.go` | Native Dialoge (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Zwischenablage lesen/schreiben |
+| `messageprocessor_events.go` | Ereignis abonnieren / senden |
+| `messageprocessor_browser.go` | Browser-Navigation, DevTools |
+
+Prozessoren sind **zustandslos** – sie ziehen alles, was sie benötigen, aus dem `ApplicationContext`, das mit jeder Nachricht übergeben wird.
+
+---
+
+## 4. Ereignissystem
+
+Ereignisse sind namespaced Strings, die über drei Schichten hinweg verteilt werden:
+
+1. **Anwendungsereignisse**: globaler Lebenszyklus (`application:ready`,
+   `application:shutdown`).
+2. **Fensterereignisse**: pro Fenster (`window:focus`, `window:resize`).
+3. **Benutzerdefinierte Ereignisse**: benutzerdefiniert (`chat:new-message`).
+
+Implementierungsdetails:
+
+* Konstanten werden aus `internal/events/defaults.go` generiert.
+* Go-Seite:  
+  `app.On("window:focus", func(e application.WindowEvent) {...})`
+* JS-Seite:  
+  `window.runtime.EventsOn("chat:new-message", cb)`
+
+Unter der Haube mappen beide auf denselben **EventBus** in
+`pkg/application/events.go`.  
+Abonnenten sind referenzgezählt; wenn ein Fenster geschlossen wird, werden seine Callbacks automatisch abgemeldet, um Speicherlecks zu vermeiden.
+
+---
+
+## 5. Plattformspezifische Implementierungen
+
+Bedingte Kompilierung hält die öffentliche API identisch, während OS-spezifische Details verborgen werden.
+
+| Anliegen | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Hauptthread | `mainthread_darwin.go` (Cgo zu Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Dialoge | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Zwischenablage | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Tray-Icons | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Wichtige Prinzipien:
+
+* **Kein Cgo auf Windows/Linux**, es sei denn, es ist unvermeidbar (Performance, Portabilität).
+* Verwenden Sie **Build-Tags** (`//go:build darwin && !production`), um die Dateien lesbar zu halten.
+* Bieten Sie **Funktionen** über `internal/capabilities` an, damit höhere Schichten graceful degradieren können.
+
+---
+
+## 6. Dateiführer
+
+| Datei | Warum Sie sie bearbeiten würden |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Globale Startlogik ändern, Debug-Hooks hinzufügen. |
+| `internal/runtime/webview_window_*.go` | Neue Fenster-Hinweise oder Verhalten implementieren. |
+| `pkg/application/messageprocessor_*.go` | Neue Brückenbefehle hinzufügen, die von JS aufrufbar sind. |
+| `pkg/application/events_*.go` | Eingebaute Ereignisdefinitionen erweitern. |
+| `internal/assetserver/*` | Dev/Production-Asset-Verarbeitung anpassen. |
+
+---
+
+## 7. Debugging-Tipps
+
+* Starten Sie mit `WAILS_LOG_LEVEL=debug`, um jede Nachricht zu drucken, die die Brücke überquert.
+* Verwenden Sie `wails3 dev -verbose`, um Live-Reload & Asset-Anfragen zu sehen.
+* Führen Sie auf macOS unter `lldb --` aus, um Objective-C-Ausnahmen frühzeitig abzufangen.
+* Für WebView2-Probleme unter Windows aktivieren Sie die Debug-Logs:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Erweitern der Laufzeitumgebung
+
+1. Definieren Sie ein **Capability-Flag** in `internal/capabilities`.
+2. Implementieren Sie die Funktion in jeder Plattformsdatei unter Verwendung von Build-Tags.
+3. Fügen Sie die öffentliche API in `pkg/application` hinzu.
+4. Registrieren Sie einen neuen Nachrichtentyp oder ein Ereignis, wenn JS es aufrufen muss.
+5. Aktualisieren Sie mindestens ein Beispiel in `v3/examples/`, das die Funktion nutzt.
+
+Folgen Sie dieser Checkliste, und Sie halten den plattformübergreifenden Vertrag intakt.
+
+---
+
+## 9. Drag-and-Drop
+
+Datei-Drag-and-Drop verwendet auf allen Plattformen einen **JavaScript-first-Ansatz**. Die nativen Schicht fängt OS-Drag-Ereignisse ab, aber die eigentliche Drop-Verarbeitung und DOM-Interaktion erfolgt in JavaScript.
+
+### Ablauf
+
+1. Benutzer zieht Dateien vom OS über das Wails-Fenster
+2. Die native Schicht erkennt den Drag und benachrichtigt JavaScript für Hover-Effekte
+3. Benutzer lässt die Dateien los
+4. Die native Schicht sendet Dateipfade + Koordinaten an JavaScript
+5. JavaScript findet das Drop-Zielelement (`data-file-drop-target`)
+6. JavaScript sendet Dateipfade + Elementdetails an das Go-Backend
+7. Go sendet `WindowFilesDropped`-Ereignis mit vollem Kontext
+
+### Plattformspezifische Implementierungen
+
+| Plattform | Native Schicht | Herausforderung |
+|----------|--------------|---------------|
+| **Windows** | Eingebaute Drag-Unterstützung von WebView2 | Koordinaten in CSS-Pixeln, keine Konvertierung nötig |
+| **macOS** | NSWindow Drag-Delegates | Fenster-relative zu WebView-relativen Koordinaten konvertieren |
+| **Linux** | GTK3 Drag-Signale | Muss Dateidrag von internem HTML5-Drag unterscheiden |
+
+### Linux: Unterscheiden von Drag-Typen
+
+Sowohl GTK als auch WebKit wollen Drag-Ereignisse verarbeiten. Der Schlüssel liegt im Überprüfen des Drag-Zieltyps:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // Externer Datei-Drag
+        }
+        g_free(name);
+    }
+    return FALSE;  // Interner HTML5-Drag
+}
+```
+
+Signal-Handler geben `FALSE` für interne Dags zurück (WebKit sie verarbeiten lassen) und `TRUE` für Datei-Drag (selbst verarbeiten).Sie haben nun einen geführten Rundgang durch die Interna der Laufzeitumgebung erhalten. Kombinieren Sie dieses Wissen mit der Karte des **Codebase Layout** und der Dokumentation des **Asset Server**, um sicher zu navigieren und wirkungsvolle Beiträge zu leisten. Viel Spaß beim Coden!

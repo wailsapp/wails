@@ -1,0 +1,269 @@
+---
+title: Build-Anpassung
+description: Passen Sie Ihren Build-Prozess mit Task und Taskfile.yml an
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## Übersicht
+
+Das Wails-Buildsystem ist ein flexibles und leistungsstarkes Werkzeug, das entwickelt wurde, um
+den Build-Prozess für Ihre Wails-Anwendungen zu vereinfachen. Es nutzt
+[Task](https://taskfile.dev), einen Task-Runner, mit dem Sie Aufgaben einfach definieren und ausführen
+können. Obwohl das v3-Buildsystem standardmäßig verwendet wird, fördert Wails einen
+"Bring Your Own Tooling"-Ansatz, der es Entwicklern ermöglicht, ihren Build-Prozess nach Bedarf anzupassen.
+
+Erfahren Sie mehr darüber, wie Sie Task in der
+[offiziellen Dokumentation](https://taskfile.dev/usage/) verwenden können.
+
+## Task: Das Herzstück des Build-Systems
+
+[Task](https://taskfile.dev) ist eine moderne Alternative zu Make, geschrieben in Go. Es
+verwendet eine YAML-Datei, um Aufgaben und deren Abhängigkeiten zu definieren. Im Wails-Build-
+System spielt [Task](https://taskfile.dev) eine zentrale Rolle bei der Koordination des
+Build-Prozesses.
+
+Die Hauptdatei `Taskfile.yml` befindet sich im Projektstamm, während plattformspezifische
+Aufgaben in `build/<platform>/Taskfile.yml`-Dateien definiert sind. Eine gemeinsame `Taskfile.yml`-
+Datei im Verzeichnis `build` enthält allgemeine Aufgaben, die plattformübergreifend geteilt werden.
+
+<FileTree>
+
+- Projektstamm
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+Die `Taskfile.yml`-Datei im Projektstamm ist der Haupteinstiegspunkt für das Build-System. Sie definiert
+die Aufgaben und deren Abhängigkeiten. Hier ist die Standard-`Taskfile.yml`-Datei:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## Plattformspezifische Taskfiles
+
+Jede Plattform hat ihr eigenes Taskfile, das sich in den Plattformverzeichnissen unterhalb des `build`-Verzeichnisses befindet. Diese
+Dateien definieren die Kernaufgaben für diese Plattform. Jedes Taskfile enthält gemeinsame Aufgaben aus der `build/Taskfile.yml`-Datei.
+
+### Windows
+
+Standort: `build/windows/Taskfile.yml`
+
+Das plattformspezifische Taskfile für Windows enthält Aufgaben zum Erstellen, Verpacken und
+Ausführen der Anwendung unter Windows. Zu den wichtigsten Funktionen gehören:
+
+- Erstellen mit optionalen Produktionsflags
+- Generieren der `.ico`-Icon-Datei
+- Generieren der Windows-`.syso`-Datei
+- Erstellen eines NSIS-Installers zum Verpacken
+
+### Linux
+
+Standort: `build/linux/Taskfile.yml`
+
+Das plattformspezifische Taskfile für Linux enthält Aufgaben zum Erstellen, Verpacken und Ausführen
+der Anwendung unter Linux. Zu den wichtigsten Funktionen gehören:
+
+- Erstellen mit optionalen Produktionsflags
+- Erstellen eines AppImage-, deb-, rpm- und Arch Linux-Pakets
+- Generieren der `.desktop`-Datei für Linux-Anwendungen
+
+### macOS
+
+Standort: `build/darwin/Taskfile.yml`
+
+Das plattformspezifische Taskfile für macOS enthält Aufgaben zum Erstellen, Verpacken und Ausführen
+der Anwendung unter macOS. Zu den wichtigsten Funktionen gehören:
+
+- Erstellen von Binärdateien für amd64-, arm64- und Universal-Architekturen (beide)
+- Generieren der `.icns`-Icon-Datei
+- Erstellen eines `.app`-Bundles zur Verteilung
+- Ad-hoc-Signierung von `.app`-Bundles
+- Festlegen von plattformspezifischen Build-Flags und Umgebungsvariablen für macOS
+
+## Task-Ausführung und Befehlsaliasse
+
+Der Befehl `wails3 task` ist eine eingebettete Version von [Taskfile](https://taskfile.dev), die die
+in Ihrer `Taskfile.yml` definierten Aufgaben ausführt.
+
+Die Befehle `wails3 build` und `wails3 package` sind Aliase für
+`wails3 task build` bzw. `wails3 task package`. Wenn Sie diese
+Befehle ausführen, übersetzt Wails sie intern in die entsprechende Task-Ausführung:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### Parameter an Aufgaben übergeben
+
+Sie können CLI-Variablen an Aufgaben im Format `KEY=VALUE` übergeben. Diese Variablen werden durch die Alias-Befehle weitergeleitet:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+In Ihrer `Taskfile.yml` können Sie auf diese Variablen mit der Go-Templating-Syntax zugreifen:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## Gemeinsamer Build-Prozess
+
+Über alle Plattformen hinweg umfasst der Build-Prozess typischerweise die folgenden Schritte:
+
+1. Bereinigen der Go-Module
+2. Erstellen des Frontends
+3. Generieren von Icons
+4. Kompilieren des Go-Codes mit plattformspezifischen Flags
+5. Verpacken der Anwendung (plattformspezifisch)
+
+## Anpassen des Build-Prozesses
+
+Während das v3-Buildsystem eine solide Standardkonfiguration bietet, können Sie diese leicht
+an die Anforderungen Ihres Projekts anpassen. Durch das Ändern der `Taskfile.yml` und
+der plattformspezifischen Taskfiles können Sie:
+
+- Neue Aufgaben hinzufügen
+- Bestehende Aufgaben ändern
+- Die Reihenfolge der Aufgabenausführung ändern
+- Integration mit anderen Tools und Skripten
+
+Diese Flexibilität ermöglicht es Ihnen, den Build-Prozess an Ihre spezifischen
+Anforderungen anzupassen, während Sie dennoch von der Struktur profitieren, die das Wails
+-Buildsystem bereitstellt.
+
+:::tip[Taskfile lernen]
+Wir empfehlen dringend, die [Taskfile](https://taskfile.dev)-Dokumentation zu lesen, um
+zu verstehen, wie Sie Taskfile effektiv nutzen können.
+Sie können herausfinden, welche Version von Taskfile in der Wails CLI eingebettet ist, indem Sie `wails3 task --version` ausführen.
+:::
+
+## Entwicklungsmodus
+
+Das Wails-Buildsystem enthält einen leistungsstarken Entwicklungsmodus, der die
+Entwicklererfahrung durch Live-Reloading und Hot Module Replacement verbessert.
+Dieser Modus wird mit dem Befehl `wails3 dev` aktiviert.
+
+### Funktionsweise
+
+Wenn Sie `wails3 dev` ausführen, erfolgt der folgende Prozess:
+
+1. Der Befehl prüft auf einen verfügbaren Port, der standardmäßig auf 9245 gesetzt ist, wenn nicht
+   angegeben.
+2. Es werden die Umgebungsvariablen für den Frontend-Dev-Server (Vite) festgelegt.
+3. Es wird der Dateibeobachter mit der [refresh](https://github.com/atterpac/refresh)-Bibliothek gestartet.
+
+Die [refresh](https://github.com/atterpac/refresh)-Bibliothek ist dafür verantwortlich,
+Dateiänderungen zu überwachen und Neubuilds auszulösen. Sie verwendet die Konfiguration, die unter dem Schlüssel `dev_mode` in der `./build/config.yaml`-Datei definiert ist.
+Es kann so konfiguriert werden, dass bestimmte Verzeichnisse und Dateien ignoriert werden, um zu bestimmen, welche Dateien überwacht werden sollen und welche Aktionen bei erkannten Änderungen ausgeführt werden sollen.
+Die Standardkonfiguration funktioniert ziemlich gut, aber Sie können sie gerne an Ihre Bedürfnisse anpassen.
+
+### Konfiguration
+
+Hier ist ein Beispiel für die Struktur:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+Diese Konfigurationsdatei ermöglicht es Ihnen:
+
+- Den Root-Pfad für die Dateiüberwachung festzulegen
+- Das Logging-Level zu konfigurieren
+- Eine Debounce-Zeit für Dateiänderungsereignisse festzulegen
+- Bestimmte Verzeichnisse, Dateien oder Dateierweiterungen zu ignorieren
+- Befehle zu definieren, die bei Dateiänderungen ausgeführt werden sollen### Anpassen des Entwicklungsmodus
+
+Sie können das Entwicklungsumgebungserlebnis anpassen, indem Sie diese Werte in der Datei `config.yaml` ändern.
+
+Mögliche Anpassungen sind:
+
+1. Ändern der überwachten Verzeichnisse oder Dateien
+2. Anpassen der Debounce-Zeit, um zu steuern, wie schnell das System auf Änderungen reagiert
+3. Hinzufügen oder Ändern der Ausführrbefehle, um sie an die Anforderungen Ihres Projekts anzupassen
+
+### Verwendung eines Browsers für die Entwicklung
+
+Während Wails v2 die Verwendung eines Browsers für die Entwicklung vollständig unterstützte, führte dies zu viel Verwirrung. Anwendungen, die im Browser funktionierten, funktionierten nicht unbedingt in der Desktop-Anwendung, da nicht alle Browser-APIs in Webviews verfügbar sind.
+
+Für UI-fokussierte Entwicklungsarbeiten haben Sie in v3 weiterhin die Flexibilität, einen Browser zu verwenden, indem Sie die Vite-URL unter `http://localhost:9245` im Entwicklungsmodus aufrufen. Dies gibt Ihnen Zugriff auf leistungsfähige Browser-Entwicklertools, während Sie an Styling und Layout arbeiten. Beachten Sie, dass Go-Bindungen in diesem Modus *nicht funktionieren*. Wenn Sie bereit sind, Funktionalitäten wie Bindungen und Ereignisse zu testen, wechseln Sie einfach zur Desktop-Ansicht, um sicherzustellen, dass alles in der Produktionsumgebung perfekt funktioniert.
