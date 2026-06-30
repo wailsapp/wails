@@ -9,7 +9,7 @@ The electron alternative for Go
 */
 
 import { CancellablePromise, type CancellablePromiseWithResolvers } from "./cancellable.js";
-import { newRuntimeCaller, objectNames, type RuntimeError } from "./runtime.js";
+import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { nanoid } from "./nanoid.js";
 
 // Setup
@@ -47,6 +47,11 @@ export type CallOptions = {
     /** Arguments to be passed into the bound method. */
     args: any[];
 };
+
+// runtime.js needs to use RuntimeError internally to properly parse and return
+// errors for binding calls, so it had to move there. Exporting here again to
+// keep from breaking the public Call interface.
+export { RuntimeError } from "./runtime.js";
 
 /**
  * Generates a unique ID using the nanoid library.
