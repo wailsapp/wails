@@ -1,0 +1,212 @@
+---
+title: Drop File
+description: Terima file yang diseret dari sistem operasi ke aplikasi Anda
+sidebar:
+  order: 1
+---
+
+Wails memungkinkan pengguna menyeret file dari sistem operasi (file manager, desktop) ke aplikasi Anda. Berbeda dengan drag-and-drop HTML5 yang hanya bekerja di dalam browser, ini memberi Anda akses ke path file aktual di disk.
+
+## Aktifkan Drop File
+
+Drop file dinonaktifkan secara default. Untuk mengaktifkannya, set `EnableFileDrop: true` di opsi window Anda:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "My App",
+    Width:          800,
+    Height:         600,
+    EnableFileDrop: true,
+})
+```
+
+Ketika `EnableFileDrop` adalah `false` (default), file yang diseret dari OS diblokir — tidak akan terbuka di webview atau memicu event apa pun. Ini mencegah navigasi tidak sengaja saat pengguna menyeret file di atas aplikasi Anda.
+
+## Tentukan Zona Drop
+
+Zona drop memberi tahu Wails elemen mana yang harus menerima file. File yang di-drop di luar zona drop diabaikan.
+
+Tambahkan atribut `data-file-drop-target` ke elemen mana pun:
+
+```html
+<div id="upload" class="drop-zone" data-file-drop-target>
+    Drop files here
+</div>
+```
+
+Anda dapat memiliki beberapa zona drop. `id` dan class CSS elemen diteruskan ke kode Go Anda, sehingga Anda dapat menangani drop secara berbeda tergantung di mana file mendarat.
+
+## Gaya Hover Drag
+
+Saat file diseret di atas zona drop, Wails menambahkan class `file-drop-target-active`. Ini memungkinkan Anda memberikan umpan balik visual agar pengguna tahu di mana mereka dapat drop:
+
+```css
+.drop-zone {
+    border: 2px dashed #ccc;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.file-drop-target-active {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+```
+
+Class dihapus otomatis saat file meninggalkan zona atau di-drop.
+
+## Deteksi File yang Di-drop
+
+Saat file di-drop pada zona drop yang valid, Wails memicu event `WindowFilesDropped`. Konteks event berisi path filesystem lengkap dari semua file yang di-drop:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    
+    for _, file := range files {
+        fmt.Println("Dropped:", file)
+    }
+})
+```
+
+Path bersifat absolut, seperti `/home/user/documents/report.pdf` atau `C:\Users\Name\Documents\report.pdf`.
+
+## Dapatkan Info Target Drop
+
+Saat Anda memiliki beberapa zona drop, Anda dapat mengetahui zona mana yang menerima file menggunakan `DropTargetDetails()`:
+
+```go
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    fmt.Printf("Dropped on element: id=%s, classes=%v\n", 
+        details.ElementID, details.ClassList)
+    fmt.Printf("Position: x=%d, y=%d\n", details.X, details.Y)
+})
+```
+
+Ini memungkinkan Anda mengarahkan file ke handler yang berbeda:
+
+```go
+switch details.ElementID {
+case "images":
+    handleImageUpload(files)
+case "documents":
+    handleDocumentUpload(files)
+}
+```
+
+## Contoh Lengkap
+
+**Go:**
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:          "File Uploader",
+    EnableFileDrop: true,
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    files := event.Context().DroppedFiles()
+    details := event.Context().DropTargetDetails()
+    
+    // Send to frontend
+    app.Event.Emit("files-dropped", map[string]any{
+        "files":   files,
+        "target":  details.ElementID,
+    })
+})
+```
+
+**HTML:**
+
+```html
+<div id="images" class="drop-zone" data-file-drop-target>
+    Drop images here
+</div>
+
+<div id="documents" class="drop-zone" data-file-drop-target>
+    Drop documents here
+</div>
+
+<style>
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px;
+        transition: all 0.2s ease;
+    }
+    
+    .drop-zone.file-drop-target-active {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+</style>
+```
+
+## Drop Seluruh Window
+
+Jika Anda ingin file dapat di-drop di mana saja di aplikasi, tambahkan atribut ke elemen body:
+
+```html
+<body data-file-drop-target>
+    <!-- Your app content -->
+</body>
+```
+
+Anda dapat menggunakan overlay CSS untuk menunjukkan seluruh window adalah target drop:
+
+```css
+body.file-drop-target-active::after {
+    content: "Drop files anywhere";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #007bff;
+    background: rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+}
+```
+
+## Menggabungkan dengan HTML Drag & Drop
+
+Anda dapat menggunakan drop file eksternal dan drag-and-drop HTML internal dalam aplikasi yang sama. Saat `EnableFileDrop` adalah `true`, Wails mencegat drag file eksternal tetapi membiarkan drag HTML5 internal melewati secara normal.
+
+Untuk membedakannya di handler zona drop HTML Anda, periksa apakah drag berisi file:
+
+```javascript
+zone.addEventListener('dragenter', (e) => {
+    // Skip external file drags - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    // Handle internal HTML5 drags
+    zone.classList.add('drag-over');
+});
+
+zone.addEventListener('drop', (e) => {
+    // Skip external file drops - Wails handles these
+    if (e.dataTransfer?.types.includes('Files')) {
+        return;
+    }
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    // Handle internal drop
+});
+```
+
+Ini memastikan handler drop HTML Anda hanya merespons drag internal (seperti memindahkan item daftar), sementara Wails menangani drop file eksternal secara terpisah melalui event `WindowFilesDropped`.
+
+## Langkah Selanjutnya
+
+- [HTML Drag & Drop](./html) - Seret elemen di dalam aplikasi Anda
+- [Opsi Window](/id/features/windows/options) - Semua opsi konfigurasi window

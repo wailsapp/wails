@@ -1,0 +1,157 @@
+---
+title: Sistem Binding
+description: Cara sistem binding mengumpulkan, memproses, dan menghasilkan kode JavaScript/TypeScript
+sidebar:
+  order: 1
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Panduan ini menjelaskan cara sistem binding Wails bekerja secara internal, memberikan wawasan bagi developer yang ingin memahami mekanisme di balik generasi kode otomatis.
+
+## Ikhtisar Arsitektur
+
+Sistem binding Wails terdiri dari tiga komponen utama:
+
+1. **Collection**: Menganalisis kode Go untuk mengekstrak informasi tentang service, model, dan deklarasi lainnya
+2. **Configuration**: Mengelola pengaturan dan opsi untuk proses generasi binding
+3. **Rendering**: Menghasilkan kode JavaScript/TypeScript berdasarkan informasi yang dikumpulkan
+
+<FileTree>
+- internal/generator/
+  - collect/     # Analisis paket dan ekstraksi informasi
+  - config/      # Struktur konfigurasi dan interface
+  - render/      # Generasi kode untuk JS/TS
+</FileTree>
+
+## Proses Collection
+
+Proses collection bertanggung jawab menganalisis paket Go dan mengekstrak informasi tentang service, model, dan deklarasi lainnya. Ini ditangani oleh paket `collect`.
+
+### Komponen Kunci
+
+- **Collector**: Mengelola informasi paket dan cache data yang dikumpulkan
+- **Package**: Mewakili paket Go yang dianalisis dan menyimpan service, model, dan directive yang dikumpulkan
+- **Service**: Mengumpulkan informasi tentang tipe service dan method-nya
+- **Model**: Mengumpulkan informasi detail tentang tipe model, termasuk field, value, dan type parameter
+- **Directive**: Mem-parse dan menafsirkan directive `//wails:` di kode sumber Go
+
+### Alur Collection
+
+1. Collector memindai paket Go yang ditentukan di proyek
+2. Mengidentifikasi tipe service (struct dengan method yang akan diekspos ke frontend)
+3. Untuk setiap service, mengumpulkan informasi tentang method-nya
+4. Mengidentifikasi tipe model (struct digunakan sebagai parameter atau return value di method service)
+5. Untuk setiap model, mengumpulkan informasi tentang field dan type parameter-nya
+6. Memproses directive `//wails:` yang ditemukan di kode
+
+## Proses Rendering
+
+Proses rendering bertanggung jawab menghasilkan kode JavaScript/TypeScript berdasarkan informasi yang dikumpulkan. Ini ditangani oleh paket `render`.
+
+### Komponen Kunci
+
+- **Renderer**: Mengorkestrasi rendering file service, model, dan index
+- **Module**: Mewakili satu modul JavaScript/TypeScript yang dihasilkan
+- **Templates**: Template teks yang digunakan untuk generasi kode
+
+### Alur Rendering
+
+1. Untuk setiap service, renderer menghasilkan file JavaScript/TypeScript dengan fungsi yang mencerminkan method service
+2. Untuk setiap model, renderer menghasilkan class JavaScript/TypeScript yang mencerminkan struct model
+3. Renderer menghasilkan file index yang re-export semua service dan model
+4. Renderer menerapkan injeksi kode kustom yang ditentukan oleh directive `//wails:inject`
+
+## Pemetaan Tipe
+
+Salah satu aspek paling penting sistem binding adalah bagaimana tipe Go dipetakan ke tipe JavaScript/TypeScript. Berikut ringkasan pemetaannya:
+
+| Tipe Go | Tipe JavaScript | Tipe TypeScript |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[string]V` | `Object` | `{ [_: string]: V }` |
+| `map[K]V` (`K` non-string) | `Object` | `{ [_ in K]?: V }` |
+| `struct` | `Object` | Custom class |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | Tidak didukung | Tidak didukung |
+| `chan` | Tidak didukung | Tidak didukung |
+
+## Sistem Directive
+
+Sistem binding mendukung beberapa directive yang dapat digunakan untuk menyesuaikan kode yang dihasilkan. Directive ini ditambahkan sebagai komentar di kode Go Anda.
+
+### Directive yang Tersedia
+
+- `//wails:inject`: Menyuntikkan kode JavaScript/TypeScript kustom ke binding yang dihasilkan
+- `//wails:include`: Menyertakan file tambahan dengan binding yang dihasilkan
+- `//wails:internal`: Menandai tipe atau method sebagai internal, mencegahnya diekspos ke frontend
+- `//wails:ignore`: Sepenuhnya mengabaikan method selama generasi binding
+- `//wails:id`: Menentukan ID kustom untuk method, meng-override ID berbasis hash default
+
+### Pemrosesan Directive
+
+1. Selama fase collection, collector mengidentifikasi dan mem-parse directive di kode Go
+2. Directive disimpan dengan deklarasi yang sesuai (service, method, model, dll.)
+3. Selama fase rendering, renderer menerapkan directive untuk menyesuaikan kode yang dihasilkan
+
+## Fitur Lanjutan
+
+### Generasi Kode Kondisional
+
+Sistem binding mendukung generasi kode kondisional menggunakan prefix kondisi dua karakter untuk directive `include` dan `inject`:
+
+```
+<language><style>:<content>
+```
+
+Di mana:
+- `<language>` dapat berupa:
+  - `*` - JavaScript dan TypeScript
+  - `j` - JavaScript saja
+  - `t` - TypeScript saja
+
+- `<style>` dapat berupa:
+  - `*` - Class dan interface
+  - `c` - Class saja
+  - `i` - Interface saja
+
+Contoh:
+```go
+//wails:inject j*:console.log("JavaScript only");
+//wails:inject t*:console.log("TypeScript only");
+```
+
+### ID Method Kustom
+
+Secara default, method diidentifikasi oleh ID berbasis hash. Namun, Anda dapat menentukan ID kustom menggunakan directive `//wails:id`:
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+Ini berguna untuk menjaga kompatibilitas saat refactoring kode.
+
+## Pertimbangan Performa
+
+Generator binding dirancang efisien, tetapi ada beberapa hal yang perlu diingat:
+
+1. Run pertama akan lebih lambat karena membangun cache paket untuk dipindai
+2. Run berikutnya akan lebih cepat karena menggunakan informasi yang di-cache
+3. Generator memproses semua paket di proyek, yang dapat memakan waktu untuk proyek besar
+4. Anda dapat menggunakan flag `-clean` untuk membersihkan direktori output sebelum generasi
+
+## Debugging
+
+Jika Anda mengalami masalah dengan generasi binding, Anda dapat menggunakan flag `-v` untuk mengaktifkan output debug:
+
+```bash
+wails3 generate bindings -v
+```
+
+Ini akan memberikan informasi detail tentang proses collection dan rendering, yang dapat membantu mengidentifikasi sumber masalah.
