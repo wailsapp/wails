@@ -17,8 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add comprehensive German documentation for contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5396) by @leaanthony
-- Enhance notifications with sound, attachments, scheduling, and update API in [PR](https://github.com/wailsapp/wails/pull/5333) by @popaprozac
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -31,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove German translated MDX files from contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5702) by @taliesin-ai
 
 ## Security
 <!-- Security-related changes -->
