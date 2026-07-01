@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math"
 	"net/url"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,11 +99,18 @@ type windowsWebviewWindow struct {
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
 
-	// lastProcessFailedLogAt throttles the ProcessFailed diagnostic. WebView2
-	// re-raises RENDER_PROCESS_UNRESPONSIVE every few seconds while the process
-	// stays hung, so a full stack trace on every event would flood the logs.
-	// ProcessFailed is delivered on the main thread, so no lock is needed.
-	lastProcessFailedLogAt time.Time
+	// WebView2 process-failure recovery state (webview_recovery_windows.go).
+	// All fields are touched on the main thread only, so no lock is needed.
+	// processFailedLogAt throttles the ProcessFailed stack trace per kind
+	// (RENDER_PROCESS_UNRESPONSIVE re-fires every few seconds while hung; a
+	// new kind is always logged immediately). webviewRebuildTimes rate-caps
+	// controller rebuilds; webviewHealthProbeFailures counts consecutive
+	// watchdog probe failures.
+	processFailedLogAt         map[string]time.Time
+	lastRebuildSuppressedLogAt time.Time
+	webviewRebuildInProgress   bool
+	webviewRebuildTimes        []time.Time
+	webviewHealthProbeFailures int
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -480,6 +486,11 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	w.setupChromium()
+
+	// Backstop for WebView2 wedges whose ProcessFailed event is missed or
+	// never fires: a low-frequency controller health probe that rebuilds the
+	// controller after consecutive failures (#5701).
+	w.startWebviewHealthWatchdog()
 
 	if options.Windows.WindowDidMoveDebounceMS == 0 {
 		options.Windows.WindowDidMoveDebounceMS = 50
@@ -1253,9 +1264,15 @@ func (w *windowsWebviewWindow) show() {
 	w.showRequested = true
 	w.updateContentProtection()
 
-	// Show WebView if navigation has completed
+	// Show WebView if navigation has completed. IsReady also guards the
+	// recovery window: during a controller rebuild (#5701) a queued show()
+	// can be dispatched by the rebuild's nested Embed message pump while the
+	// fresh chromium has no controller yet, and chromium.Show() dereferences
+	// the controller unguarded — the rebuild makes the webview visible itself.
 	if w.webviewNavigationCompleted {
-		w.chromium.Show()
+		if w.chromium.IsReady() {
+			w.chromium.Show()
+		}
 		// Cancel timeout since we can show immediately
 		if w.visibilityTimeout != nil {
 			w.visibilityTimeout.Stop()
@@ -1267,7 +1284,7 @@ func (w *windowsWebviewWindow) show() {
 			w.visibilityTimeout = time.AfterFunc(3*time.Second, func() {
 				// Show WebView even if navigation hasn't completed
 				// This prevents permanent invisibility in efficiency mode
-				if !w.webviewNavigationCompleted && w.chromium != nil {
+				if !w.webviewNavigationCompleted && w.chromium != nil && w.chromium.IsReady() {
 					w.chromium.Show()
 				}
 				w.visibilityTimeout = nil
@@ -2091,44 +2108,6 @@ func (w *windowsWebviewWindow) enableNativeMonitorScaleDetection() {
 	}
 }
 
-// processFailed is the ProcessFailedCallback. It is diagnostic only (no
-// recovery): when WebView2's render / GPU / browser process dies — the
-// unrecoverable "controller zombie" root event behind #5701 — it records the
-// failed-process kind and a Go stack trace so the trigger is visible in the
-// logs, instead of the failure being silent and the UI simply going dead. The
-// stack is throttled because RENDER_PROCESS_UNRESPONSIVE re-fires repeatedly.
-func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
-	now := time.Now()
-	if now.Sub(w.lastProcessFailedLogAt) < 30*time.Second {
-		return
-	}
-	w.lastProcessFailedLogAt = now
-	kind := "unknown"
-	if args != nil {
-		if k, err := args.GetProcessFailedKind(); err == nil {
-			kind = processFailedKindName(k)
-		}
-	}
-	globalApplication.error("WebView2 process failed (kind=%s) — UI may be wedged (#5701)\n%s", kind, debug.Stack())
-}
-
-// processFailedKindName gives the COREWEBVIEW2_PROCESS_FAILED_KIND enum a
-// human-readable label for the diagnostic log.
-func processFailedKindName(k edge.COREWEBVIEW2_PROCESS_FAILED_KIND) string {
-	switch k {
-	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
-		return "browser-process-exited"
-	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED:
-		return "render-process-exited"
-	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_UNRESPONSIVE:
-		return "render-process-unresponsive"
-	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_GPU_PROCESS_EXITED:
-		return "gpu-process-exited"
-	default:
-		return fmt.Sprintf("kind-%d", uint32(k))
-	}
-}
-
 // crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
 // WebView2 permission-kind enum. Unknown types map to UnknownPermission.
 func crossPermissionToWebView2Kind(p PermissionType) edge.CoreWebView2PermissionKind {
@@ -2512,6 +2491,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 
+	// Reset BEFORE either navigation branch: navigationCompleted early-returns
+	// when this flag is still true, skipping the WebView2Feedback#1077
+	// Hide/Show repaint nudge and focus restore. On a controller rebuild
+	// (#5701) the flag is true from the previous controller's first load, so
+	// missing this reset leaves the rebuilt webview permanently unpainted —
+	// for HTML-mode windows there was previously no reset at all.
+	w.webviewNavigationCompleted = false
+
 	if w.parent.options.HTML != "" {
 		var script string
 		if w.parent.options.JS != "" {
@@ -2532,7 +2519,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
-		w.webviewNavigationCompleted = false
 		chromium.Navigate(startURL)
 	}
 
