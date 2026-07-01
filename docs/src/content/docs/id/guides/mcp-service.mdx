@@ -1,0 +1,291 @@
+---
+title: Kontrol LLM (MCP)
+description: Biarkan agen LLM menguji dan mengontrol aplikasi Anda melalui Model Context Protocol
+sidebar:
+  order: 11
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Server MCP bawaan bersifat eksperimental dan API-nya mungkin berubah di rilis mendatang.
+</Aside>
+
+Wails v3 memiliki server [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
+bawaan yang memungkinkan agen LLM — Claude Code, asisten IDE, atau klien MCP apa pun — memeriksa,
+menguji, dan mengendalikan aplikasi Wails yang **sedang berjalan**.
+
+Saat diaktifkan, agen yang terhubung ke aplikasi Anda dapat:
+
+- **Menampilkan dan mengontrol window** — ukuran, posisi, fokus, layar penuh, devtools, reload, …
+- **Memeriksa DOM** — query elemen, dapatkan HTML, ambil snapshot struktural
+- **Mengevaluasi JavaScript** — jalankan kode arbitrer di dalam window mana pun dan dapatkan hasilnya
+- **Mensimulasikan input pengguna** — gerakan mouse, klik, drag, dan scroll yang dirender dengan
+  **kursor animasi di layar** sehingga Anda bisa melihat agen bekerja
+- **Mengetik dan menekan tombol** — event per karakter yang realistis dan bekerja dengan input terkontrol React
+- **Memanggil method Go terikat** dan emit/await event aplikasi
+
+## Cara kerjanya
+
+Server MCP dikompilasi ke dalam aplikasi Anda hanya saat **build tag `mcp`** ada.
+Tanpa tag tersebut, kode server sepenuhnya tidak ada dalam binary — tidak ada overhead runtime,
+tidak ada port yang terbuka, tidak ada permukaan serangan.
+
+Saat tag ada, server dimulai secara otomatis di dalam `App.Run()`,
+terikat ke `127.0.0.1:9099` secara default, dan mencatat endpoint-nya. Tidak diperlukan kode pengguna.
+
+## Tutorial
+
+### Langkah 1 — tulis aplikasi Wails biasa
+
+MCP tidak memerlukan import atau registrasi. Buat aplikasi seperti biasanya:
+
+```go title="main.go"
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed assets
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Assets: application.AssetOptions{
+            Handler: application.BundledAssetFileServer(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "My App",
+        Width: 1024, Height: 768,
+    })
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Langkah 2 — build atau run dengan tag `mcp`
+
+<Tabs>
+<TabItem label="Wails CLI (direkomendasikan)">
+
+Atur `WAILS_MCP=1` dan Wails CLI akan menambahkan tag `mcp` secara otomatis:
+
+```shell
+# Development
+WAILS_MCP=1 wails3 dev
+
+# Production build
+WAILS_MCP=1 wails3 build
+```
+
+</TabItem>
+<TabItem label="Go langsung">
+
+Berikan tag ke `go run` atau `go build` secara langsung:
+
+```shell
+go run -tags mcp .
+go build -tags mcp -o myapp .
+```
+
+</TabItem>
+<TabItem label="Windows (PowerShell)">
+
+```powershell
+$env:WAILS_MCP = "1"
+wails3 dev
+# atau
+wails3 build
+```
+
+</TabItem>
+</Tabs>
+
+Saat startup, aplikasi mencatat endpoint MCP:
+
+```
+INFO MCP server started. Connect MCP clients using the streamable HTTP transport.
+     url=http://127.0.0.1:9099/mcp
+```
+
+### Langkah 3 — hubungkan klien
+
+Server menggunakan **transport HTTP streamable MCP**. Hubungkan dengan klien MCP-kompatibel apa pun.
+
+<Tabs>
+<TabItem label="Claude Code">
+
+```shell
+claude mcp add --transport http my-app http://127.0.0.1:9099/mcp
+```
+
+Kemudian minta Claude berinteraksi dengan aplikasi Anda:
+
+```
+Klik tombol "Submit", lalu verifikasi bahwa toast sukses muncul.
+```
+
+</TabItem>
+<TabItem label="VS Code (GitHub Copilot)">
+
+Tambahkan ke `.vscode/settings.json`:
+
+```json
+{
+  "github.copilot.chat.mcp.enabled": true,
+  "mcp": {
+    "servers": {
+      "my-wails-app": {
+        "type": "http",
+        "url": "http://127.0.0.1:9099/mcp"
+      }
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Klien lainnya">
+
+Arahkan klien MCP apa pun yang mendukung transport HTTP streamable ke:
+
+```
+http://127.0.0.1:9099/mcp
+```
+
+</TabItem>
+</Tabs>
+
+### Langkah 4 — jalankan sesi pengujian
+
+Minta agen untuk menguji aplikasi Anda. Berikut beberapa contoh prompt:
+
+```
+Ambil snapshot DOM dari window utama.
+```
+```
+Klik tombol "Add item", ketik "Hello world" di kolom input,
+lalu tekan Enter dan verifikasi item muncul dalam daftar.
+```
+```
+Panggil method terikat main.GreetService.Greet dengan argumen ["World"]
+dan kembalikan hasilnya.
+```
+```
+Tunggu event "save:complete" sambil mengklik tombol Save.
+```
+
+## Konfigurasi
+
+Semua konfigurasi melalui variabel lingkungan — tidak diperlukan perubahan kode.
+
+| Variabel lingkungan    | Default     | Deskripsi |
+|------------------------|-------------|-----------|
+| `WAILS_MCP`            | (tidak diatur) | Atur ke `1`, `true`, `on`, atau `yes` untuk menambahkan tag build `mcp` secara otomatis saat menggunakan Wails CLI. |
+| `WAILS_MCP_HOST`       | `127.0.0.1` | Antarmuka untuk binding. Ubah hanya di jaringan terisolasi yang tepercaya. |
+| `WAILS_MCP_PORT`       | `9099`      | Port untuk didengarkan. Atur ke `0` untuk port bebas yang ditetapkan secara acak (dicetak di log). |
+| `WAILS_MCP_TIMEOUT`    | `30000`     | Timeout evaluasi JS default dalam **milidetik**. |
+| `WAILS_MCP_HIDE_CURSOR`| (tidak diatur) | Atur ke `1` atau `true` untuk menonaktifkan overlay kursor animasi. |
+
+Contoh — port kustom dan timeout 60 detik:
+
+```shell
+WAILS_MCP=1 WAILS_MCP_PORT=9200 WAILS_MCP_TIMEOUT=60000 wails3 dev
+```
+
+## Tool yang tersedia
+
+| Tool | Tujuan |
+|------|--------|
+| `app_info` | Informasi aplikasi: platform, arsitektur, semua window, endpoint MCP |
+| `windows_list` | Daftar semua window dengan geometri dan status |
+| `window_control` | Fokus, resize, pindah, layar penuh, devtools, reload, set URL, … (22 aksi) |
+| `js_eval` | Evaluasi JavaScript di window (async body, `return` untuk nilai) |
+| `dom_html` | Dapatkan HTML dari halaman atau elemen tertentu |
+| `dom_query` | Temukan elemen berdasarkan CSS selector — tag, teks, bounds, visibilitas |
+| `screenshot_dom` | Snapshot struktural dari halaman yang terlihat (berbasis DOM, tanpa piksel) |
+| `mouse_move` | Animasikan kursor ke titik atau CSS selector |
+| `mouse_click` | Klik dengan kursor animasi (kiri/kanan/tengah, double-click, modifier) |
+| `mouse_drag` | Drag dengan kursor animasi (mendukung elemen HTML5 drag-and-drop) |
+| `mouse_scroll` | Scroll di titik atau elemen |
+| `keyboard_type` | Ketik teks karakter demi karakter dengan event yang realistis |
+| `keyboard_press` | Tekan satu tombol (Enter, Tab, Escape, ArrowDown, …) dengan modifier opsional |
+| `call_bound_method` | Panggil method service Go terikat, misalnya `main.GreetService.Greet` |
+| `emit_event` | Emit event aplikasi Wails |
+| `wait_for_event` | Tunggu event aplikasi Wails dan kembalikan datanya |
+
+### Dukungan multi-window
+
+Semua tool yang beroperasi pada window menerima argumen `window` opsional yang berisi
+**nama** window (diatur melalui `WebviewWindowOptions.Name`). Jika tidak diisi, tool
+menargetkan window yang sedang difokuskan, atau window pertama jika tidak ada yang difokuskan.
+
+```
+Daftar semua window, lalu klik tombol "New" di window bernama "editor".
+```
+
+### Memilih elemen
+
+Tool mouse dan keyboard menerima:
+- **CSS selector** — `selector: "#submit-btn"` (elemen di-scroll ke tampilan secara otomatis)
+- **Koordinat** — `x: 400, y: 300` (piksel CSS relatif terhadap viewport)
+
+Untuk operasi drag, beri awalan `from_` dan `to_`:
+```
+Drag from selector: ".card" to selector: ".dropzone"
+```
+
+## Keamanan
+
+<Aside type="caution">
+Server MCP memberikan kontrol programatik penuh atas aplikasi Anda. Siapa pun yang dapat
+menjangkau port tersebut dapat membaca DOM, mengevaluasi JavaScript, mengklik tombol, dan memanggil method Go.
+</Aside>
+
+- Server terikat ke `127.0.0.1` secara default dan menolak origin browser non-lokal
+  (perlindungan DNS-rebinding sesuai spesifikasi MCP).
+- Build produksi **tidak boleh** menyertakan tag `mcp`. Wails CLI hanya menambahkannya saat
+  `WAILS_MCP=1` diatur secara eksplisit, dan `wails3 build` default tidak memiliki kode server sama sekali.
+- Jika Anda perlu mengekspos server di antarmuka non-loopback (misalnya pengujian LAN), atur
+  `WAILS_MCP_HOST=0.0.0.0` dan pastikan jaringan Anda tepercaya.
+
+## Aplikasi contoh
+
+Aplikasi playground lengkap yang mendemonstrasikan semua tool tersedia di
+[`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/mcp).
+Mencakup:
+- Counter dengan tombol increment/reset
+- Input nama dengan method terikat Greet, Add, Shout
+- Sumber dan target HTML5 drag-and-drop
+- Daftar yang dapat di-scroll (50 item)
+- Log event
+
+Jalankan dengan:
+
+```shell
+cd v3/examples/mcp
+go run -tags mcp .
+```
+
+Kemudian hubungkan Claude Code atau klien MCP apa pun ke `http://127.0.0.1:9099/mcp` dan minta
+untuk menguji UI.
+
+## Umpan balik
+
+Server MCP bawaan adalah eksperimen, dan umpan balik Anda menentukan arahnya.
+Jika Anda mencobanya, kami ingin mendengar klien dan tool apa yang Anda gunakan, apa yang Anda harapkan
+dan apa yang sebenarnya terjadi, serta apakah membiarkan agen mengendalikan aplikasi Anda berguna —
+laporan yang paling berguna adalah yang mengatakan dengan tepat apa yang Anda jalankan. Ceritakan kepada kami di
+[diskusi umpan balik MCP Server](https://github.com/wailsapp/wails/discussions/5692).

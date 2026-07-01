@@ -1,0 +1,210 @@
+---
+title: iOS
+description: Build dan jalankan aplikasi Wails di iOS — setup, simulator, build perangkat, konfigurasi, dan fitur native
+sidebar:
+  order: 3
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Dukungan iOS bersifat eksperimental dan dapat berubah di rilis mendatang.
+</Aside>
+
+<Aside type="tip">
+Baru dengan mobile di Wails? Mulai dengan [Aplikasi Mobile Pertama Anda →](/id/guides/mobile/first-mobile-app) untuk panduan langkah demi langkah, lalu kembali ke sini untuk referensi lengkap.
+</Aside>
+
+Aplikasi Wails v3 berjalan di iOS sebagai aplikasi native sepenuhnya — dan bagian terbaiknya bekerja
+*persis* seperti versi desktop. Backend Go yang sama, frontend yang sama,
+`@wailsio/runtime` yang sama: service bindings, events, dialog, dan clipboard semua
+berperilaku identik, dengan **nol** rewiring spesifik mobile. Tidak ada
+codebase mobile terpisah, tidak ada layer porting, dan tidak ada API khusus untuk dipelajari — aplikasi Wails
+Anda yang sudah ada cukup berjalan di iOS. Porting benar-benar mulus: bawa aplikasi Anda
+apa adanya dan ship.
+
+`main.go` yang sama di-build untuk desktop dan iOS; sentuhan spesifik iOS
+dikonfigurasi melalui `application.Options.IOS`.
+
+## Persyaratan
+
+- macOS dengan **Xcode lengkap** terinstal (command-line tools saja tidak
+  cukup) — `wails3 doctor` menampilkan SDK iOS yang ditemukan
+- Go 1.25+ dan npm
+
+## Simulator
+
+Dari direktori proyek Anda:
+
+```bash
+wails3 task ios:run
+```
+
+Perintah ini build aplikasi, boot simulator jika belum berjalan, dan
+meluncurkannya.
+
+Teman yang berguna:
+
+```bash
+wails3 task ios:logs:dev    # stream log aplikasi dari simulator
+wails3 task ios:xcode       # buka proyek Xcode yang di-generate
+```
+
+Di build debug, webview dapat diinspeksi dari menu Develop Safari.
+
+## Packaging
+
+```bash
+wails3 task ios:package             # production .app untuk simulator
+wails3 task ios:deploy-simulator    # install + launch
+```
+
+Ini adalah build produksi yang dioptimasi dan di-strip.
+
+## Build perangkat
+
+```bash
+wails3 task ios:package IOS_PLATFORM=device \
+    CODESIGN_IDENTITY="Apple Development: You (TEAMID)" \
+    PROVISIONING_PROFILE=path/to/profile.mobileprovision
+
+wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # install + launch on a device
+wails3 task ios:package:ipa IOS_PLATFORM=device ...  # distribution .ipa
+```
+
+`IOS_PLATFORM=device` build untuk perangkat fisik. Entitlement berasal dari
+`build/ios/entitlements.plist` dan hanya berlaku untuk build perangkat — tambahkan
+capability key yang dibutuhkan aplikasi Anda.
+
+<Aside type="tip">
+Untuk signing, provisioning, dan archive App Store yang dikelola otomatis, buka
+proyek Xcode yang di-generate dengan `wails3 task ios:xcode` dan build dari
+Xcode.
+</Aside>
+
+## Konfigurasi
+
+`build/config.yml`:
+
+```yaml
+ios:
+  bundleID: com.example.myapp
+  displayName: My App
+  version: 1.0.0
+  minIOSVersion: "15.0"
+```
+
+Opsi startup (`application.Options.IOS`) mencakup `DisableScroll`,
+`DisableBounce`, `DisableScrollIndicators`, `DisableInputAccessoryView`,
+`EnableBackForwardNavigationGestures`, `DisableLinkPreview`,
+`EnableInlineMediaPlayback`, `EnableAutoplayWithoutUserAction`,
+`DisableInspectable`, `UserAgent`, `ApplicationNameForUserAgent`,
+`BackgroundColour`, dan tab bawah native via `EnableNativeTabs` +
+`NativeTabsItems`.
+
+## Fitur native
+
+Kemampuan spesifik iOS tersedia melalui `application.IOS`, dipanggil dari
+Go di dalam file `//go:build ios` agar kode bersama tetap platform-agnostic.
+Android menawarkan set yang sama melalui `application.Android`.
+
+Aksi one-shot mengembalikan hasil segera:
+
+```go
+//go:build ios
+
+application.IOS.Haptic("impact-medium") // impact-light|impact-medium|impact-heavy|success|warning|error|selection
+application.IOS.Share(`{"text":"Hi","url":"https://wails.io"}`)
+application.IOS.SetKeepAwake(true)
+application.IOS.PostNotification(`{"title":"Done","body":"Build finished","delay":2}`)
+application.IOS.SecureSet("token", "abc") // stored securely
+```
+
+Query helper mengembalikan hasil sebagai JSON — `SafeAreaJSON()`, `AppInfoJSON()`,
+`PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`,
+`GetBrightness()`.
+
+### Events
+
+Apa pun yang selesai nanti — prompt permission, stream sensor, capture
+kamera — mengirimkan hasilnya sebagai **event** alih-alih return value, yang
+dapat didengarkan di Go atau frontend. Nama diberi prefix `common:` untuk
+kemampuan yang dibagi dengan Android dan `ios:` untuk yang khusus iOS.
+
+```go
+// Go
+app.Event.On("common:location", func(e *application.CustomEvent) {
+    // e.Data -> {"lat":..,"lng":..,"accuracy":..} or {"error":..}
+})
+```
+
+```js
+// frontend
+import { Events } from "@wailsio/runtime";
+Events.On("common:notification", (e) => { /* {ok, scheduled, presented, tapped, error} */ });
+```
+
+| Event | Dipicu oleh | Payload |
+|---|---|---|
+| `common:biometric` | `BiometricAuthenticate(reason)` | `{ok, error}` |
+| `common:location` | `GetLocation()` | `{lat, lng, accuracy}` / `{error}` |
+| `common:motion` | `SetMotion(true)` | `{x, y, z}` |
+| `common:proximity` | `SetProximity(true)` | `{near}` |
+| `common:keyboard` | `SetKeyboardWatch(true)` | `{visible, height}` |
+| `common:torch` | `SetTorch(bool)` | `{on, available}` |
+| `common:notification` | `PostNotification(json)` | `{ok, scheduled, presented, tapped, error}` |
+| `common:capture` | `CapturePhoto()` / `CaptureVideo()` | `{type, path, size, thumb}` |
+| `common:screenCapture` | `SetScreenProtect(true)` | `{screenshot, recording}` |
+| `ios:backgroundTask` | `BeginBackgroundTask(seconds)` | `{message, granted}` |
+
+Contoh kitchen-sink di `v3/examples/mobile` menghubungkan setiap fitur di atas
+end to end.
+
+## Kontrol WebView
+
+Beberapa perilaku WebView juga dapat diubah saat runtime dari Go:
+
+```go
+application.IOS.SetScrollEnabled(false)
+application.IOS.SetBounceEnabled(false)
+application.IOS.SetScrollIndicatorsEnabled(false)
+application.IOS.SetBackForwardGesturesEnabled(true)
+application.IOS.SetLinkPreviewEnabled(false)
+application.IOS.SetInspectableEnabled(true)
+application.IOS.SetCustomUserAgent("MyApp/1.0")
+```
+
+`@wailsio/runtime` yang disertakan juga mengekspos namespace iOS **frontend** kecil:
+
+```js
+import { IOS } from "@wailsio/runtime";
+await IOS.Haptics.Impact("medium"); // light|medium|heavy|soft|rigid
+const info = await IOS.Device.Info();
+```
+
+Seleksi tab bawah native tiba sebagai event `nativeTabSelected` di `window`.
+
+## Status dukungan
+
+| Area | Status |
+|---|---|
+| Rendering frontend & aset | ✅ |
+| Service bindings, events (kedua arah) | ✅ |
+| Dialog pesan | ✅ |
+| Dialog buka file / files / direktori | ✅ Diimpor sebagai salinan sandbox |
+| Dialog simpan file | ❌ Tulis di dalam sandbox aplikasi |
+| Clipboard | ✅ |
+| Screens API | ✅ Termasuk work area safe-area |
+| Lifecycle events | ✅ |
+| Geometri window, menu, system tray | No-op di iOS |
+| Beberapa window | Hanya window pertama yang ditampilkan |
+
+## Catatan porting
+
+- Kode desktop di-build untuk iOS tanpa perubahan — panggilan window, menu, dan system-tray
+  hanya tidak melakukan apa-apa.
+- Ganti dialog save-file dengan tulis ke sandbox aplikasi plus share.
+- Desain frontend secara responsif; safe area ditangani untuk Anda.
