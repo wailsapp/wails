@@ -1,5 +1,12 @@
 version: '3'
 
+# See the note in ../Taskfile.yml: this example is a standalone module nested
+# under v3/, so an active go.work would shadow it. Force workspace mode off here
+# too, so the Go-tooling tasks (go mod tidy, generate bindings, go build) behave
+# correctly even when invoked directly rather than via the root dev/build tasks.
+env:
+  GOWORK: "off"
+
 tasks:
   go:mod:tidy:
     summary: Runs `go mod tidy`

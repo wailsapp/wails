@@ -6,6 +6,17 @@ includes:
   darwin: ./build/darwin/Taskfile.yml
   linux: ./build/linux/Taskfile.yml
 
+# This example is a standalone Go module (its own go.mod, with a `replace`
+# pointing at the local Wails checkout because MacWindowTabbingMode is not in a
+# published release yet). It physically lives under v3/, which is a member of
+# the repo's root go.work. An active workspace would shadow this module: binding
+# generation would find 0 services and `go mod tidy` would target v3 instead.
+# Force workspace mode off so the example always builds as itself. This is
+# inherited by the wails3 dev/build subprocess tree and is a harmless no-op
+# outside the monorepo, where there is no go.work.
+env:
+  GOWORK: "off"
+
 vars:
   APP_NAME: "mac-window-tabs"
   BIN_DIR: "bin"
