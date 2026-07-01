@@ -155,6 +155,11 @@ func appRun(app pointer) error {
 	defer C.free(unsafe.Pointer(signal))
 	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
+	// The GTK main loop has stopped. Tell the asset-server webview layer to stop
+	// marshalling WebKit calls onto it, so any request still being completed on a
+	// worker goroutine runs inline instead of blocking on a loop that is gone.
+	// See #5631.
+	webview.DisableMainThreadDispatch()
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
 
@@ -345,6 +350,24 @@ func menuAppend(parent *Menu, menu *MenuItem, hidden bool) {
 	if !hidden {
 		C.g_menu_append_item(gmenu, gitem)
 	}
+}
+
+// menuClear removes every item from the menu's native GMenu so that it can be
+// rebuilt from scratch on Menu.Update() (#5464). The per-menu append counter is
+// reset too, so rebuilt items get fresh 0-based positions (menuIndex is used by
+// menu_remove_item for hide/show). This mirrors the GTK3/purego menuClear.
+func menuClear(menu *Menu) {
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	C.g_menu_remove_all((*C.GMenu)(impl.native))
+	menuItemCountersLock.Lock()
+	delete(menuItemCounters, impl.native)
+	menuItemCountersLock.Unlock()
 }
 
 func menuBarNew() pointer {
@@ -1260,6 +1283,7 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
@@ -1305,6 +1329,7 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
@@ -1457,6 +1482,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1499,6 +1525,25 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 	return C.gboolean(0)
+}
+
+//export handlePermissionRequest
+func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Honour the window's
+	// Permissions for camera/microphone; leave every other request to WebKit's
+	// default handling (deny).
+	if C.is_user_media_permission_request(request) == 0 {
+		return C.gboolean(0)
+	}
+	needAudio := C.is_user_media_for_audio(request) != 0
+	needVideo := C.is_user_media_for_video(request) != 0
+	if allowMediaCapture(uint(data), needAudio, needVideo) {
+		C.webkit_permission_request_allow(request)
+	} else {
+		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
 }
 
 //export handleLoadChanged

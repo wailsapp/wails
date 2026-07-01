@@ -1,0 +1,353 @@
+---
+title: Server Build
+description: Jalankan aplikasi Wails sebagai server HTTP tanpa window GUI native
+sidebar:
+    order: 52
+    badge:
+        text: Experimental
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Mode server bersifat eksperimental dan dapat berubah di rilis mendatang.
+</Aside>
+
+Wails v3 mendukung mode server, memungkinkan Anda menjalankan aplikasi sebagai server HTTP murni tanpa membuat window native atau memerlukan dependensi GUI. Ini memungkinkan deploy aplikasi Wails yang sama ke server, container, dan browser web.
+
+## Ringkasan
+
+Mode server berguna untuk:
+
+- **Deploy Docker/Container** - Jalankan tanpa dependensi X11/Wayland
+- **Aplikasi server-side** - Deploy sebagai web server yang dapat diakses via browser
+- **Akses web-only** - Bagikan codebase yang sama antara desktop dan web
+- **Pengujian CI/CD** - Jalankan integration test tanpa display server
+- **Microservices** - Gunakan bindings Wails di layanan backend headless
+
+## Memulai Cepat
+
+Mode server diaktifkan via build tag `server`. Kode aplikasi Anda tetap sama — Anda hanya build dengan tag tersebut:
+
+```bash
+# Menggunakan Taskfile (direkomendasikan)
+wails3 task build:server
+wails3 task run:server
+
+# Atau build langsung dengan Go
+go build -tags server -o myapp-server .
+```
+
+Berikut contoh minimal:
+
+```go
+package main
+
+import (
+    "embed"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        // Opsi server digunakan saat di-build dengan -tags server
+        Server: application.ServerOptions{
+            Host: "localhost",
+            Port: 8080,
+        },
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    log.Println("Starting application...")
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+Kode yang sama dapat di-build untuk desktop (tanpa tag) atau mode server (dengan `-tags server`).
+
+## Konfigurasi
+
+### ServerOptions
+
+Konfigurasi server HTTP dengan `ServerOptions`:
+
+```go
+Server: application.ServerOptions{
+    // Host untuk bind. Default: "localhost"
+    // Gunakan "0.0.0.0" untuk listen di semua interface
+    Host: "localhost",
+
+    // Port untuk listen. Default: 8080
+    Port: 8080,
+
+    // Request read timeout. Default: 30s
+    ReadTimeout: 30 * time.Second,
+
+    // Response write timeout. Default: 30s
+    WriteTimeout: 30 * time.Second,
+
+    // Idle connection timeout. Default: 120s
+    IdleTimeout: 120 * time.Second,
+
+    // Graceful shutdown timeout. Default: 30s
+    ShutdownTimeout: 30 * time.Second,
+
+    // Konfigurasi TLS (opsional)
+    TLS: &application.TLSOptions{
+        CertFile: "/path/to/cert.pem",
+        KeyFile:  "/path/to/key.pem",
+    },
+},
+```
+
+## Fitur
+
+### Endpoint Health Check
+
+Endpoint health check tersedia secara otomatis di `/health`:
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+Ini berguna untuk:
+- Kubernetes liveness/readiness probe
+- Health check load balancer
+- Sistem monitoring
+
+### Service Bindings
+
+Semua service bindings bekerja identik dengan mode desktop:
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello, " + name + "!"
+}
+
+// Daftarkan di opsi
+Services: []application.Service{
+    application.NewService(&GreetService{}),
+},
+```
+
+Frontend dapat memanggil bindings ini menggunakan runtime Wails standar:
+
+```javascript
+const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
+```
+
+### Events
+
+Events bekerja dua arah di mode server:
+
+- **Frontend ke Backend**: Event yang di-emit dari browser dikirim via HTTP dan diterima oleh event handler Go Anda
+- **Backend ke Frontend**: Event yang di-emit dari Go di-broadcast ke semua browser yang terhubung via WebSocket
+
+Setiap tab browser direpresentasikan sebagai "window" dengan nama unik (`browser-1`, `browser-2`, dll.), dapat diakses via `event.Sender`:
+
+```go
+// Dengarkan event dari browser
+app.Event.On("user-action", func(event *application.CustomEvent) {
+    log.Printf("Event from %s: %v", event.Sender, event.Data)
+    // event.Sender akan "browser-1", "browser-2", dll.
+})
+
+// Emit event ke semua browser yang terhubung
+app.Event.Emit("server-update", data)
+```
+
+Dari frontend:
+
+```javascript
+// Emit event ke server (dan semua browser lain)
+await wails.Events.Emit('user-action', { action: 'click' });
+
+// Dengarkan event dari server
+wails.Events.On('server-update', (event) => {
+    console.log('Update from server:', event.data);
+});
+```
+
+### Graceful Shutdown
+
+Server menangani sinyal `SIGINT` dan `SIGTERM` dengan graceful:
+
+1. Berhenti menerima koneksi baru
+2. Menunggu request aktif selesai (hingga `ShutdownTimeout`)
+3. Menjalankan hook `OnShutdown`
+4. Mematikan layanan dalam urutan terbalik
+
+## Perbedaan dari Mode Desktop
+
+| Fitur | Mode Desktop | Mode Server |
+|---------|-------------|-------------|
+| Window native | Dibuat | Window browser (`browser-N`) |
+| System tray | Tersedia | Tidak tersedia |
+| Dialog native | Tersedia | Tidak tersedia |
+| Menu aplikasi | Tersedia | Tidak tersedia |
+| Info layar | Tersedia | Mengembalikan error |
+| Service bindings | Berfungsi | Berfungsi |
+| Events | Berfungsi | Berfungsi (via WebSocket) |
+| Assets | Via webview | Via HTTP |
+| CGO diperlukan | Ya | Tidak |
+
+### Perilaku Window API
+
+Di mode server, API terkait window ditangani dengan aman:
+
+- `app.Window.NewWithOptions()` - Log peringatan, mengembalikan nil
+- `app.Hide()` / `app.Show()` - No-op
+- `app.Screen.GetPrimary()` - Mengembalikan error
+
+Ini memungkinkan kode yang mereferensikan window berjalan tanpa crash, meskipun operasi window tidak berpengaruh.
+
+## Build untuk Produksi
+
+### Menggunakan Task (Direkomendasikan)
+
+Proyek yang dibuat dengan `wails3 init` menyertakan task `build:server`:
+
+```bash
+# Build untuk mode server
+wails3 task build:server
+
+# Build dan jalankan
+wails3 task run:server
+```
+
+### Build Manual
+
+```bash
+# Build dengan mode server
+go build -tags server -o myapp-server .
+```
+
+### Docker
+
+Proyek Wails menyertakan setup Docker siap pakai. Untuk build dan jalankan aplikasi Anda di container:
+
+```bash
+# Build image Docker
+wails3 task build:docker
+
+# Jalankan
+wails3 task run:docker
+```
+
+Selesai! Aplikasi Anda akan tersedia di `http://localhost:8080`.
+
+Anda dapat menyesuaikan build dengan beberapa opsi:
+
+```bash
+# Gunakan tag image kustom
+wails3 task build:docker TAG=myapp:v1.0.0
+
+# Jalankan di port berbeda
+wails3 task run:docker PORT=3000
+```
+
+`Dockerfile.server` yang di-generate membuat image minimal berbasis distroless. Image ini menangani network binding secara otomatis, sehingga aplikasi Anda dapat diakses dari luar container.
+
+### Docker Compose
+
+Untuk deploy yang lebih kompleks, berikut konfigurasi Docker Compose dengan health check:
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - WAILS_SERVER_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+:::note
+Contoh healthcheck menggunakan `wget`. Jika Anda menggunakan base image distroless, Anda perlu menyertakan binary healthcheck di image atau menggunakan mekanisme health check eksternal (mis. opsi `curl` Docker atau sidecar container).
+:::
+
+### Dockerfile Kustom
+
+Jika Anda memerlukan kontrol lebih, Anda dapat membuat Dockerfile sendiri. Hal penting yang perlu diingat adalah mengatur `WAILS_SERVER_HOST=0.0.0.0` agar server menerima koneksi dari luar container:
+
+```dockerfile
+# Build stage
+FROM golang:alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache git
+COPY . .
+RUN go mod tidy
+RUN go build -tags server -ldflags="-s -w" -o server .
+
+# Runtime stage
+FROM gcr.io/distroless/static-debian12
+COPY --from=builder /app/server /server
+COPY --from=builder /app/frontend/dist /frontend/dist
+EXPOSE 8080
+ENV WAILS_SERVER_HOST=0.0.0.0
+ENTRYPOINT ["/server"]
+```
+
+## Pertimbangan Keamanan
+
+Saat mendeploy aplikasi mode server:
+
+1. **Bind ke localhost secara default** - Hanya gunakan `0.0.0.0` saat diperlukan
+2. **Gunakan TLS di produksi** - Konfigurasi `ServerOptions.TLS`
+3. **Tempatkan di belakang reverse proxy** - Gunakan nginx/traefik untuk keamanan tambahan
+4. **Validasi semua input** - Praktik keamanan yang sama seperti aplikasi web apa pun
+
+## Contoh
+
+Contoh lengkap tersedia di `v3/examples/server/`:
+
+```bash
+cd v3/examples/server
+
+# Menggunakan Taskfile
+task dev
+
+# Atau jalankan langsung
+go run -tags server .
+
+# Buka http://localhost:8080 di browser
+```
+
+## Variabel Lingkungan
+
+Untuk skenario deploy di mana Anda perlu meng-override konfigurasi server tanpa mengubah kode, Wails mengenali variabel lingkungan berikut:
+
+| Variabel | Deskripsi | Default |
+|----------|-------------|---------|
+| `WAILS_SERVER_HOST` | Interface jaringan untuk bind | `localhost` |
+| `WAILS_SERVER_PORT` | Port untuk listen | `8080` |
+
+Variabel ini memiliki prioritas lebih tinggi dari `ServerOptions` di kode Anda, itulah mengapa contoh Docker mengatur `WAILS_SERVER_HOST=0.0.0.0` — ini memungkinkan container menerima koneksi eksternal tanpa perlu perubahan pada aplikasi Anda.
+
+## Lihat Juga
+
+- [Custom Transport](/id/guides/custom-transport) - Untuk kustomisasi IPC lanjutan
+- [Services](/id/features/bindings/services) - Dokumentasi service binding
+- [Events](/id/guides/events-reference) - Dokumentasi sistem event

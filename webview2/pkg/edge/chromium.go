@@ -246,7 +246,10 @@ func (e *Chromium) Resize() {
 
 	bounds, err := w32.GetClientRect(e.hwnd)
 	if err != nil {
-		e.errorCallback(err)
+		// GetClientRect can fail transiently while the window is being torn
+		// down or reconfigured during DPI churn. Skipping a resize frame is
+		// recoverable; killing the process (errorCallback) is not.
+		log.Printf("[WebView2] Resize failed to get client rect: %v", err)
 		return
 	}
 
@@ -256,21 +259,23 @@ func (e *Chromium) Resize() {
 func (e *Chromium) Navigate(url string) {
 	err := e.webview.Navigate(url)
 	if err != nil {
-		e.errorCallback(err)
+		// A failed navigation is recoverable (the previous content stays
+		// visible); killing the process is not.
+		log.Printf("[WebView2] Navigate failed: %v", err)
 	}
 }
 
 func (e *Chromium) NavigateToString(content string) {
 	err := e.webview.NavigateToString(content)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] NavigateToString failed: %v", err)
 	}
 }
 
 func (e *Chromium) Init(script string) {
 	err := e.webview.AddScriptToExecuteOnDocumentCreated(script, nil)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] Init script registration failed: %v", err)
 	}
 }
 
@@ -281,7 +286,13 @@ func (e *Chromium) Eval(script string) {
 
 	err := e.webview.ExecuteScript(script, nil)
 	if err != nil && !errors.Is(err, windows.ERROR_IO_PENDING) {
-		e.errorCallback(err)
+		// ExecuteScript fails transiently while the browser process is busy
+		// reconfiguring — e.g. RESOURCE_NOT_IN_CORRECT_STATE during a DPI
+		// transition when the window is dragged between mixed-DPI monitors
+		// (wailsapp/wails#5544). Script execution is fire-and-forget; a
+		// dropped script during a transition is recoverable, killing the
+		// process (errorCallback) is not.
+		log.Printf("[WebView2] Eval failed: %v", err)
 	}
 }
 
@@ -401,13 +412,20 @@ func (e *Chromium) ContainsFullScreenElementChanged(sender *ICoreWebView2, args 
 func (e *Chromium) MessageReceived(sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs) uintptr {
 	message, err := args.TryGetWebMessageAsString()
 	if err != nil {
-		e.errorCallback(err)
+		// The web message originates from (potentially untrusted) page
+		// content. A malformed message must never be able to take the whole
+		// process down — drop it and keep running.
+		log.Printf("[WebView2] dropping malformed web message: %v", err)
+		return 0
 	}
 
 	if HasCapability(e.webview2RuntimeVersion, GetAdditionalObjects) {
 		obj, err := args.GetAdditionalObjects()
 		if err != nil {
-			e.errorCallback(err)
+			// Fall back to delivering the plain string message below rather
+			// than killing the process.
+			log.Printf("[WebView2] failed to read additional objects, delivering message without them: %v", err)
+			obj = nil
 		}
 
 		if obj != nil && e.MessageWithAdditionalObjectsCallback != nil {
@@ -422,7 +440,7 @@ func (e *Chromium) MessageReceived(sender *ICoreWebView2, args *ICoreWebView2Web
 
 	err = sender.PostWebMessageAsString(message)
 	if err != nil && !errors.Is(err, windows.ERROR_IO_PENDING) {
-		e.errorCallback(err)
+		log.Printf("[WebView2] PostWebMessageAsString failed: %v", err)
 	}
 	return 0
 }
@@ -539,6 +557,16 @@ func (e *Chromium) GetController() *ICoreWebView2Controller {
 	return e.controller
 }
 
+// IsReady reports whether the WebView2 controller has been fully initialised.
+// e.controller is assigned partway through CreateCoreWebView2ControllerCompleted,
+// before the controller's COM setup has finished, so a non-nil controller is
+// not sufficient to safely call into it: COM calls made in that window fail
+// with E_INVALIDARG ("The parameter is incorrect"). The inited flag is set
+// only after setup completes. Safe to call from any goroutine.
+func (e *Chromium) IsReady() bool {
+	return atomic.LoadUintptr(&e.inited) != 0
+}
+
 func boolToInt(input bool) int {
 	if input {
 		return 1
@@ -570,23 +598,37 @@ func (e *Chromium) NotifyParentWindowPositionChanged() error {
 }
 
 func (e *Chromium) Focus() {
+	// The WndProc can dispatch WM_SETFOCUS re-entrantly while the controller
+	// is still being configured in CreateCoreWebView2ControllerCompleted
+	// (issue #5446). Callers' GetController() != nil checks cannot exclude
+	// that window, so guard here: dropping a focus request during startup is
+	// harmless, calling MoveFocus on a partially-initialised controller is
+	// fatal (errorCallback exits the process).
+	if !e.IsReady() {
+		return
+	}
 	err := e.controller.MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC)
 	if err != nil {
-		e.errorCallback(err)
+		// MoveFocus can legitimately fail after initialisation too — e.g.
+		// E_INVALIDARG when the window is hidden or minimised to the tray
+		// (wailsapp/wails#4158 reproduces this on tray-click restore). A
+		// failed focus request is never worth killing the process, which is
+		// what errorCallback does; log it instead.
+		log.Printf("[WebView2] Focus failed: %v", err)
 	}
 }
 
 func (e *Chromium) PutZoomFactor(zoomFactor float64) {
 	err := e.controller.PutZoomFactor(zoomFactor)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] PutZoomFactor failed: %v", err)
 	}
 }
 
 func (e *Chromium) OpenDevToolsWindow() {
 	err := e.webview.OpenDevToolsWindow()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] OpenDevToolsWindow failed: %v", err)
 	}
 }
 

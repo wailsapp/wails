@@ -1,0 +1,677 @@
+---
+title: Sistem Build
+description: Memahami bagaimana Wails mem-build dan mengemas aplikasi Anda
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Sistem Build Terpadu
+
+Wails menyediakan **sistem build terpadu** yang mengompilasi kode Go, membundel aset frontend, meng-embed semuanya ke executable tunggal, dan menangani build spesifik platform—semuanya dengan satu perintah.
+
+```bash
+wails3 build
+```
+
+**Output:** Executable native dengan semuanya ter-embed.
+
+## Ringkasan Proses Build
+
+{/*
+TODO: Fix D2 diagram generation or embed as image.
+The previous D2 code block was causing MDX parsing errors in the build pipeline.
+*/}
+
+**[Placeholder Diagram Proses Build]**
+
+
+## Fase Build
+
+### 1. Fase Analisis
+
+Wails memindai kode Go Anda untuk memahami service Anda:
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Yang diekstrak Wails:**
+- Nama service: `GreetService`
+- Nama metode: `Greet`
+- Tipe parameter: `string`
+- Tipe return: `string`
+
+**Digunakan untuk:** Menghasilkan binding TypeScript
+
+### 2. Fase Generasi
+
+#### Binding TypeScript
+
+Wails menghasilkan binding type-safe:
+
+```javascript
+// Auto-generated: frontend/bindings/<full-go-import-path>/greetservice.js
+// (TypeScript is also generated when you pass `-ts`. The shape below is the real
+// runtime call format — numeric IDs via $Call.ByID, imported from /wails/runtime.js.)
+import { Call as $Call } from "/wails/runtime.js";
+
+export function Greet($0) {
+    return $Call.ByID(1234567890, $0);
+}
+```
+
+**Manfaat:**
+- Type safety penuh
+- Autocomplete IDE
+- Error compile-time
+- Komentar JSDoc
+
+#### Build Frontend
+
+Bundler frontend Anda berjalan (Vite, webpack, dll.):
+
+```bash
+# Vite example
+vite build --outDir dist
+```
+
+**Yang terjadi:**
+- JavaScript/TypeScript dikompilasi
+- CSS diproses dan diminify
+- Aset dioptimasi
+- Source map dihasilkan (dev saja)
+- Output ke `frontend/dist/`
+
+### 3. Fase Kompilasi
+
+#### Kompilasi Go
+
+Kode Go dikompilasi dengan optimasi:
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**Flag:**
+- `-s`: Strip symbol table
+- `-w`: Strip info debugging DWARF
+- Hasil: Binary lebih kecil (~30% reduksi)
+
+**Spesifik platform:**
+- Windows: `.exe` dengan ikon ter-embed
+- macOS: Struktur bundle `.app`
+- Linux: Binary ELF
+
+#### Embedding Aset
+
+Aset frontend di-embed ke binary Go:
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**Hasil:** Executable tunggal dengan semuanya di dalam.
+
+### 4. Output
+
+**Binary native tunggal:**
+- Windows: `myapp.exe` (~15MB)
+- macOS: `myapp.app` (~15MB)
+- Linux: `myapp` (~15MB)
+
+**Tanpa dependensi** (kecuali WebView sistem).
+
+## Development vs Production
+
+<Tabs syncKey="mode">
+  <TabItem label="Development (wails3 dev)" icon="seti:config">
+    **Dioptimasi untuk kecepatan:**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **Yang terjadi:**
+    1. Memulai dev server frontend (Vite di port 9245 secara default)
+    2. Mengompilasi Go tanpa optimasi
+    3. Meluncurkan app yang mengarah ke dev server
+    4. Mengaktifkan hot reload
+    5. Menyertakan source maps
+    
+    **Karakteristik:**
+    - **Rebuild cepat** (&lt;1s untuk perubahan frontend)
+    - **Tanpa embedding aset** (disajikan dari dev server)
+    - **Debug symbols** disertakan
+    - **Source maps** diaktifkan
+    - **Logging verbose**
+    
+    **Ukuran file:** Lebih besar (~50MB dengan debug symbols)
+  </TabItem>
+
+  <TabItem label="Production (wails3 build)" icon="rocket">
+    **Dioptimasi untuk ukuran dan performa:**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **Yang terjadi:**
+    1. Build frontend untuk production (diminify)
+    2. Kompilasi Go dengan optimasi
+    3. Strip debug symbols
+    4. Embed aset
+    5. Buat binary tunggal
+    
+    **Karakteristik:**
+    - **Kode dioptimasi** (diminify, tree-shaken)
+    - **Aset ter-embed** (tanpa file eksternal)
+    - **Debug symbols di-strip**
+    - **Tanpa source maps**
+    - **Logging minimal**
+    
+    **Ukuran file:** Lebih kecil (~15MB)
+  </TabItem>
+</Tabs>
+
+## Perintah Build
+
+### Build Dasar
+
+```bash
+wails3 build
+```
+
+**Output:** `bin/<APP_NAME>` (atau `bin/<APP_NAME>.exe` di Windows). Direktori `bin/` berada di root proyek.
+
+`wails3 build` adalah wrapper tipis di sekitar `wails3 task build`. Satu-satunya flag build-time yang diteruskan adalah `--tags`, yang menjadi variabel Taskfile `EXTRA_TAGS`:
+
+```bash
+# Build with extra Go build tags
+wails3 build --tags "myfeature,gtk4"
+```
+
+Tidak ada flag `-platform`, `-o`, `-skipbindings`, `-clean`, `-debug`, `-devbuild`, `-icon`, `-ldflags`, atau `-package` pada `wails3 build`. Cross-compilation, path output, ikon, dan packaging dikontrol melalui Taskfile proyek (`Taskfile.yml` + `build/config.yml`).
+
+### Build lintas platform dan spesifik platform
+
+Build platform diekspos sebagai task Taskfile di namespace `darwin:` / `windows:` / `linux:` (didefinisikan di `build/Taskfile.<platform>.yml`). Contoh:
+
+```bash
+# macOS — universal binary
+wails3 task darwin:build:universal
+
+# macOS — arsitektur saat ini
+wails3 task darwin:build
+
+# Windows
+wails3 task windows:build
+
+# Linux
+wails3 task linux:build
+```
+
+Untuk melihat setiap task yang tersedia di proyek saat ini:
+
+```bash
+wails3 task --list
+```
+
+### Ikon dan packaging
+
+Hasilkan ikon platform (`build/icons.icns`, `build/icon.ico`, dll.) dari PNG sumber:
+
+```bash
+wails3 generate icons -input appicon.png
+```
+
+Build installer/paket spesifik platform:
+
+```bash
+wails3 package           # uses the current Go build env
+wails3 task linux:create:deb
+wails3 task windows:package
+wails3 task darwin:package:universal
+```
+
+## Konfigurasi Build
+
+### Taskfile.yml
+
+Proyek Wails 3 menggunakan [Taskfile](https://taskfile.dev/) sebagai orchestrator build mereka. `Taskfile.yml` root menyertakan file task per-platform dari `build/`:
+
+```yaml
+# Taskfile.yml (excerpt — the real templates are richer)
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  darwin: ./build/Taskfile.darwin.yml
+  windows: ./build/Taskfile.windows.yml
+  linux: ./build/Taskfile.linux.yml
+
+tasks:
+  build:
+    desc: Build the application
+    cmds:
+      - task: "{{OS}}:build"
+```
+
+Jalankan task dengan `wails3 task <name>` atau `task <name>`:
+
+```bash
+wails3 task windows:build
+wails3 task darwin:package:universal
+wails3 task linux:create:appimage
+```
+
+### Konfigurasi proyek: `build/config.yml`
+
+Metadata proyek (nama, identifier, versi, nilai info-plist, pengaturan NSIS, field `.desktop`, protokol kustom, dll.) berada di `build/config.yml`. Taskfile membaca file ini saat menghasilkan ikon, manifest, installer, dan sejenisnya. **Tidak ada** file `build/build.json` di Wails 3.
+
+```yaml
+# build/config.yml (illustrative)
+info:
+  productName: "My App"
+  productIdentifier: "com.example.myapp"
+  productVersion: "1.0.0"
+  companyName: "Example Ltd."
+  productDescription: "An application built with Wails"
+```
+
+Jalankan `wails3 generate build-assets` (atau `wails3 update build-assets`) untuk memperbarui aset build spesifik platform dari konfigurasi ini.
+
+## Embedding Aset
+
+### Cara Kerjanya
+
+Wails menggunakan paket `embed` Go:
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**Saat build:**
+1. Frontend di-build ke `frontend/dist/`
+2. Direktif `//go:embed` menyertakan file
+3. File dikompilasi ke binary
+4. Binary berisi semuanya
+
+**Saat runtime:**
+1. App start
+2. Aset disajikan dari memori
+3. Tanpa I/O disk untuk aset
+4. Loading cepat
+
+### Aset Kustom
+
+Embed file tambahan:
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## Optimasi Build
+
+### Optimasi Frontend
+
+**Vite (default):**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // Remove console.log
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // Separate vendor bundle
+        },
+      },
+    },
+  },
+}
+```
+
+**Hasil:**
+- JavaScript diminify (~70% reduksi)
+- CSS diminify (~60% reduksi)
+- Gambar dioptimasi
+- Tree-shaking diterapkan
+
+### Optimasi Go
+
+**Flag compiler:**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`: Strip symbol table (~10% reduksi)
+- `-w`: Strip info debug DWARF (~20% reduksi)
+
+**Optimasi tambahan:**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`: Set nilai variabel saat build
+- Berguna untuk nomor versi, tanggal build
+
+### Kompresi Binary
+
+**UPX (opsional):**
+
+```bash
+# After building
+upx --best bin/myapp.exe
+```
+
+**Hasil:**
+- ~50% reduksi ukuran
+- Startup sedikit lebih lambat (~100ms)
+- Tidak direkomendasikan untuk macOS (masalah code signing)
+
+## Build Spesifik Platform
+
+### Windows
+
+**Output:** `myapp.exe`
+
+**Termasuk:**
+- Ikon aplikasi
+- Informasi versi
+- Manifest (pengaturan UAC)
+
+**Ikon:**
+
+```bash
+# Generate platform icons from a source PNG
+wails3 generate icons -input appicon.png -windowsfilename build/icon.ico
+```
+
+Langkah `tool package` Windows kemudian meng-embed `.ico` yang dihasilkan ke executable.
+
+**Manifest:**
+
+```xml
+<!-- build/windows/manifest.xml -->
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="MyApp"/>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>
+```
+
+### macOS
+
+**Output:** `myapp.app` (application bundle)
+
+**Struktur:**
+
+```
+myapp.app/
+├── Contents/
+│   ├── Info.plist          # App metadata
+│   ├── MacOS/
+│   │   └── myapp           # Binary
+│   ├── Resources/
+│   │   └── icon.icns       # Icon
+│   └── _CodeSignature/     # Code signature (if signed)
+```
+
+**Info.plist:**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>My App</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myapp</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+</dict>
+</plist>
+```
+
+**Universal Binary:**
+
+Taskfile macOS menyediakan task `darwin:build:universal` (dan `darwin:package:universal`) yang mem-build kedua arsitektur dan menggabungkannya via `wails3 tool lipo`:
+
+```bash
+wails3 task darwin:build:universal
+```
+
+### Linux
+
+**Output:** `myapp` (binary ELF)
+
+**Dependensi:**
+- GTK3
+- WebKitGTK
+
+**File desktop:**
+
+```ini
+# myapp.desktop
+[Desktop Entry]
+Name=My App
+Exec=/usr/bin/myapp
+Icon=myapp
+Type=Application
+Categories=Utility;
+```
+
+**Instalasi:**
+
+```bash
+# Copy binary
+sudo cp myapp /usr/bin/
+
+# Copy desktop file
+sudo cp myapp.desktop /usr/share/applications/
+
+# Copy icon
+sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png
+```
+
+## Performa Build
+
+### Waktu Build Tipikal
+
+| Fase | Waktu | Catatan |
+|-------|------|-------|
+| Analisis | &lt;1s | Pemindaian kode Go |
+| Generasi Binding | &lt;1s | Generasi TypeScript |
+| Build Frontend | 5-30s | Tergantung ukuran proyek |
+| Kompilasi Go | 2-10s | Tergantung ukuran kode |
+| Embedding Aset | &lt;1s | Embedding frontend |
+| **Total** | **10-45s** | Build pertama |
+| **Incremental** | **5-15s** | Build berikutnya |
+
+### Mempercepat Build
+
+**1. Gunakan build cache:**
+
+```bash
+# Go build cache is automatic
+# Frontend cache (Vite)
+npm run build  # Uses cache by default
+```
+
+**2. Jalankan hanya yang Anda butuhkan:**
+
+```bash
+# Pick the specific Taskfile target you actually need
+wails3 task common:build:frontend   # rebuild only the frontend
+wails3 task windows:build           # rebuild only the Windows binary
+```
+
+**3. Build paralel (multi-machine / CI):**
+
+Cross-compilation antara Linux/Windows/macOS di v3 umumnya terjadi di container Docker `wails-cross` atau di runner khusus per platform — `wails3 build` sendiri menargetkan OS host. Lihat [Build Lintas Platform](/id/guides/build/cross-platform) untuk alur kerja yang didukung.
+
+**4. Gunakan alat yang lebih cepat:**
+
+```bash
+# Use esbuild instead of webpack
+# (Vite uses esbuild by default)
+```
+
+## Troubleshooting
+
+### Build Gagal
+
+**Gejala:** `wails3 build` keluar dengan error
+
+**Penyebab umum:**
+
+1. **Error kompilasi Go**
+   ```bash
+   # Check Go code compiles
+   go build
+   ```
+
+2. **Error build frontend**
+   ```bash
+   # Check frontend builds
+   cd frontend
+   npm run build
+   ```
+
+3. **Dependensi hilang**
+   ```bash
+   # Install dependencies
+   npm install
+   go mod download
+   ```
+
+### Binary Terlalu Besar
+
+**Gejala:** Binary >50MB
+
+**Solusi:**
+
+1. **Strip debug symbols** (Taskfile yang dikirim sudah meneruskan `-ldflags="-s -w"` ke `go build`).
+
+2. **Periksa aset ter-embed**
+   ```bash
+   # Remove unnecessary files from frontend/dist/
+   # Check for large images, videos, etc.
+   ```
+
+3. **Gunakan kompresi UPX**
+   ```bash
+   upx --best bin/myapp.exe
+   ```
+
+### Build Lambat
+
+**Gejala:** Build memakan waktu >1 menit
+
+**Solusi:**
+
+1. **Gunakan build cache**
+   - Cache Go otomatis
+   - Cache frontend (Vite) otomatis
+
+2. **Jalankan hanya task yang Anda butuhkan**
+   ```bash
+   wails3 task common:build:frontend
+   wails3 task windows:build
+   ```
+
+3. **Optimasi build frontend**
+   ```javascript
+   // vite.config.js
+   export default {
+     build: {
+       minify: 'esbuild',  // Faster than terser
+     },
+   }
+   ```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- **Gunakan `wails3 dev` selama development** - Iterasi cepat
+- **Gunakan `wails3 build` untuk rilis** - Output dioptimasi
+- **Versioning build Anda** - Gunakan `-ldflags` untuk embed versi
+- **Uji build di platform target** - Cross-compilation tidak sempurna
+- **Jaga build frontend tetap cepat** - Optimasi konfigurasi bundler
+- **Gunakan build cache** - Mempercepat build berikutnya
+
+### ❌ Jangan
+
+- **Jangan commit direktori `build/`** - Tambahkan ke `.gitignore`
+- **Jangan lewati pengujian build** - Selalu uji sebelum rilis
+- **Jangan embed aset yang tidak perlu** - Jaga binary tetap kecil
+- **Jangan gunakan debug build untuk production** - Gunakan build dioptimasi
+- **Jangan lupa code signing** - Diperlukan untuk distribusi
+
+## Langkah Selanjutnya
+
+**Mem-build Aplikasi** - Panduan detail untuk build dan packaging  
+[Pelajari Selengkapnya →](/id/guides/build/building)
+
+**Build Lintas Platform** - Build untuk semua platform dari satu mesin  
+[Pelajari Selengkapnya →](/id/guides/build/cross-platform)
+
+**Membuat Installer** - Buat installer untuk pengguna akhir  
+[Pelajari Selengkapnya →](/id/guides/installers)
+
+---
+
+**Pertanyaan tentang build?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh build](https://github.com/wailsapp/wails/tree/master/v3/examples/build).

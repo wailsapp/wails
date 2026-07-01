@@ -1,0 +1,118 @@
+---
+title: Referensi CLI
+description: Referensi lengkap untuk perintah CLI Wails
+sidebar:
+  order: 1
+---
+
+## Gambaran Umum
+
+CLI Wails (`wails3`) adalah titik masuk baris perintah untuk membuat, mengembangkan, membangun, menandatangani, mengemas, dan memeriksa aplikasi Wails 3. Sebagian besar orkestrasi build didelegasikan ke Taskfile per-proyek (di bawah `build/` dalam proyek Anda) — banyak perintah `wails3` adalah wrapper tipis yang memanggil task tertentu.
+
+Untuk bantuan terbaru pada perintah apa pun, jalankan:
+
+```bash
+wails3 --help
+wails3 <command> --help
+```
+
+## Siklus hidup proyek
+
+| Perintah | Deskripsi |
+|---------|-------------|
+| `wails3 init` | Membuat proyek baru dari template. Flag: `-n` (nama proyek), `-t` (template, default `vanilla`), `-p` (nama paket Go, default `main`), `-d` (direktori proyek, default `.`), `-q` (quiet), `-l` (daftar template), `-mod` (path modul Go), `--git` (URL repositori Git), `--skipgomodtidy`, `-s` (lewati peringatan template remote), `--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`. |
+| `wails3 dev` | Menjalankan aplikasi dalam mode pengembangan dengan hot reload frontend. Flag: `--config` (default `./build/config.yml`), `--port` (port dev Vite), `-s` (aktifkan HTTPS). |
+| `wails3 build` | Membangun proyek. Wrapper tipis di sekitar task `build` Taskfile. Flag: `--tags` (diteruskan sebagai `EXTRA_TAGS=`), `--obfuscated` (build dengan Garble; lihat [Build Terobfuscasi](/id/guides/build/obfuscation)), `--garbleargs` (flag tambahan diteruskan ke `garble` sebelum subperintah `build`). |
+| `wails3 package` | Menjalankan task `package` Taskfile khusus platform. |
+| `wails3 task [name]` | Menjalankan task Taskfile apa pun; tanpa nama, `--list` menampilkan setiap task yang terdaftar. |
+| `wails3 doctor` | Mencetak laporan diagnostik lingkungan Anda. |
+| `wails3 doctor-ng` | Varian TUI yang lebih baru dari `doctor`. |
+| `wails3 version` | Mencetak versi CLI. |
+| `wails3 releasenotes` | Mencetak catatan rilis terbaru. |
+| `wails3 docs` | Membuka situs dokumentasi di browser Anda. |
+| `wails3 sponsor` | Membuka halaman sponsor. |
+
+## Generasi
+
+`wails3 generate <subcommand>`:
+
+| Subperintah | Deskripsi |
+|------------|-------------|
+| `generate bindings` | Membuat binding Go-ke-frontend. Flag: `-d` (direktori output), `-models`, `-index`, `-ts`, `-i` (antarmuka), `-b` (bundle), `-names` (emit `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`, `-obfuscated` (membuat `wails_obfuscated.gen.go` dengan ID binding stabil untuk build Garble; lihat [Build Terobfuscasi](/id/guides/build/obfuscation)), `-obfuscated-output` (direktori untuk file yang dibuat; default ke direktori paket utama). Menerima pola paket (mis. `./...`); kembali ke direktori saat ini jika tidak ada yang diberikan. |
+| `generate icons` | Mengonversi PNG sumber ke format ikon platform. Flag: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
+| `generate build-assets` | Membuat konten direktori `build/` (cuplikan Taskfile, file NSIS, `Info.plist`, template `.desktop`, dll.) dari `build/config.yml`. |
+| `generate runtime` | Membuat ulang `/wails/runtime.js` yang sudah di-build sebelumnya untuk webview. |
+| `generate syso` | Membuat file resource Windows `.syso` (ikon + manifest + info versi). |
+| `generate webview2bootstrapper` | Membuat installer bootstrap WebView2 untuk Windows. |
+| `generate constants` | Membuat konstanta nama event JS dari tipe event Go. |
+| `generate template` | Membuat scaffold template proyek baru. |
+| `generate .desktop` | Membuat file Linux `.desktop` (digunakan oleh AppImage/DEB/RPM). |
+| `generate appimage` | Membuat direktori build AppImage. |
+
+## Pembaruan
+
+`wails3 update <subcommand>`:
+
+| Subperintah | Deskripsi |
+|------------|-------------|
+| `update build-assets` | Memperbarui direktori `build/` dari `build/config.yml` (mempertahankan editan pengguna jika memungkinkan). |
+| `update cli` | Memperbarui sendiri biner `wails3`. |
+
+## Penandatanganan kode & pengemasan
+
+| Perintah | Deskripsi |
+|---------|-------------|
+| `wails3 setup signing` | Wizard interaktif yang mengonfigurasi penandatanganan untuk platform yang terdeteksi di `build/`. Flag: `--platform` (dapat diulang; default deteksi otomatis dari direktori build). |
+| `wails3 setup entitlements` | Wizard interaktif untuk entitlements macOS. Flag: `--output` (path; default `build/darwin/entitlements.plist`). |
+| `wails3 sign [GOOS=…]` | Wrapper yang menjalankan task Taskfile `*:sign` khusus platform untuk OS saat ini (atau yang ditentukan melalui `GOOS`). |
+| `wails3 tool sign` | Titik masuk penandatanganan langsung tingkat rendah. Flag: `--input`, `--output`, `--verbose`, `--certificate`, `--password`, `--thumbprint`, `--timestamp`, `--identity`, `--entitlements`, `--hardened-runtime`, `--notarize`, `--keychain-profile`, `--pgp-key`, `--pgp-password`, `--role`. |
+
+Tidak ada subperintah `wails3 signing` — untuk kredensial keychain gunakan `xcrun notarytool store-credentials`, dan untuk kunci PGP gunakan `gpg` secara langsung (wizard `wails3 setup signing` mengotomatiskan keduanya).
+
+## Alat
+
+`wails3 tool <subcommand>`:
+
+| Subperintah | Deskripsi |
+|------------|-------------|
+| `tool checkport` | Memeriksa apakah port TCP terbuka (berguna untuk menunggu Vite). |
+| `tool watcher` | Menjalankan perintah setiap kali file yang diawasi berubah. |
+| `tool cp` | Salin file lintas platform. |
+| `tool buildinfo` | Mencetak info build Go yang tertanam dari biner. |
+| `tool package` | Membuat paket Linux (`deb`, `rpm`, `archlinux`) dari `build/linux/nfpm`. |
+| `tool version` | Menaikkan versi semantik proyek. |
+| `tool lipo` | Menggabungkan beberapa biner arsitektur macOS menjadi biner universal. |
+| `tool capabilities` | Memeriksa sistem untuk ketersediaan GTK3/GTK4 / WebKit. |
+| `tool sign` | (Lihat [Penandatanganan kode & pengemasan](#penandatanganan-kode--pengemasan).) |
+
+## Service
+
+`wails3 service <subcommand>`:
+
+| Subperintah | Deskripsi |
+|------------|-------------|
+| `service init` | Membuat scaffold paket service baru. |
+
+## iOS
+
+`wails3 ios <subcommand>`:
+
+| Subperintah | Deskripsi |
+|------------|-------------|
+| `ios overlay:gen` | Membuat overlay Go untuk shim bridge iOS. |
+| `ios xcode:gen` | Membuat proyek Xcode di direktori output. |
+
+## Path output build
+
+- Biner native berada di `bin/<APP_NAME>` (atau `bin/<APP_NAME>.exe` di Windows). Tidak ada `build/bin/`.
+- Output yang dikemas (`.app`, `.dmg`, installer NSIS, MSIX, DEB/RPM/AppImage) juga berada di `bin/` (atau di bawah subdirektori khusus platform yang dibuat oleh task Taskfile terkait).
+
+## Flag global
+
+| Flag | Berlaku untuk | Deskripsi |
+|------|------------|-------------|
+| `--no-colour` | Semua perintah | Menonaktifkan warna ANSI di output CLI. |
+
+---
+
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau periksa [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).

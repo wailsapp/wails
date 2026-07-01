@@ -1,0 +1,275 @@
+---
+title: Berkontribusi
+description: Berkontribusi pada Wails
+sidebar:
+  order: 100
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Selamat Datang, Kontributor!
+
+Kami menyambut kontribusi pada Wails! Baik Anda memperbaiki bug, menambahkan fitur, atau meningkatkan dokumentasi, bantuan Anda sangat dihargai.
+
+## Cara Berkontribusi
+
+### 1. Laporkan Issue
+
+Menemukan bug? [Buka issue](https://github.com/wailsapp/wails/issues/new) dengan:
+- Deskripsi yang jelas
+- Langkah reproduksi
+- Perilaku yang diharapkan vs aktual
+- Informasi sistem
+- Contoh kode
+
+### 2. Tingkatkan Dokumentasi
+
+Peningkatan dokumentasi selalu disambut:
+- Perbaiki typo dan kesalahan
+- Tambahkan contoh
+- Perjelas penjelasan
+- Terjemahkan konten
+
+### 3. Kirim Kode
+
+Kontribusi kode melalui pull request:
+- Perbaikan bug
+- Fitur baru
+- Peningkatan performa
+- Tes
+
+## Memulai
+
+### Fork dan Clone
+
+```bash
+# Fork repositori di GitHub
+# Lalu clone fork Anda
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Tambahkan remote upstream
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### Build dari Sumber
+
+```bash
+# Instal dependensi
+go mod download
+
+# Build Wails CLI
+cd v3/cmd/wails3
+go build
+
+# Uji build Anda
+./wails3 version
+```
+
+### Jalankan Tes
+
+```bash
+# Jalankan semua tes
+go test ./...
+
+# Jalankan tes paket tertentu
+go test ./v3/pkg/application
+
+# Jalankan dengan coverage
+go test -cover ./...
+```
+
+## Membuat Perubahan
+
+### Buat Branch
+
+```bash
+# Perbarui main
+git checkout main
+git pull upstream main
+
+# Buat branch fitur
+git checkout -b feature/my-feature
+```
+
+### Buat Perubahan Anda
+
+1. **Tulis kode** mengikuti konvensi Go
+2. **Tambahkan tes** untuk fungsionalitas baru
+3. **Perbarui dokumentasi** jika diperlukan
+4. **Jalankan tes** untuk memastikan tidak ada yang rusak
+5. **Commit perubahan** dengan pesan yang jelas
+
+### Panduan Commit
+
+```bash
+# Pesan commit yang baik
+git commit -m "fix: resolve window focus issue on macOS"
+git commit -m "feat: add support for custom window chrome"
+git commit -m "docs: improve bindings documentation"
+
+# Gunakan conventional commits:
+# - feat: Fitur baru
+# - fix: Perbaikan bug
+# - docs: Dokumentasi
+# - test: Tes
+# - refactor: Refactoring kode
+# - chore: Maintenance
+```
+
+### Kirim Pull Request
+
+```bash
+# Push ke fork Anda
+git push origin feature/my-feature
+
+# Buka pull request di GitHub
+# Berikan deskripsi yang jelas
+# Referensikan issue terkait
+```
+
+## Panduan Pull Request
+
+### Deskripsi PR yang Baik
+
+```markdown
+## Description
+Deskripsi singkat perubahan
+
+## Changes
+- Menambahkan fitur X
+- Memperbaiki bug Y
+- Memperbarui dokumentasi
+
+## Testing
+- Diuji di macOS 14
+- Diuji di Windows 11
+- Semua tes lulus
+
+## Related Issues
+Fixes #123
+```
+
+### Checklist PR
+
+- [ ] Kode mengikuti konvensi Go
+- [ ] Tes ditambahkan/diperbarui
+- [ ] Dokumentasi diperbarui
+- [ ] Semua tes lulus
+- [ ] Tidak ada breaking changes (atau didokumentasikan)
+- [ ] Pesan commit jelas
+
+## Panduan Kode
+
+### Gaya Kode Go
+
+```go
+// ✅ Baik: Jelas, terdokumentasi, teruji
+// ProcessData memproses data input dan mengembalikan hasil.
+// Mengembalikan error jika data tidak valid.
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ Buruk: Tanpa docs, tanpa penanganan error
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### Pengujian
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"valid input", "test", "processed", false},
+        {"empty input", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## Dokumentasi
+
+### Menulis Docs
+
+Dokumentasi menggunakan Starlight (Astro):
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### Gaya Dokumentasi
+
+- Gunakan ejaan International English
+- Mulai dengan masalahnya
+- Sediakan contoh yang berfungsi
+- Sertakan troubleshooting
+- Referensikan konten terkait
+
+## Komunitas
+
+### Dapatkan Bantuan
+
+- **Discord:** [Bergabung dengan komunitas kami](https://discord.gg/JDdSxwjhGf)
+- **GitHub Discussions:** Ajukan pertanyaan
+- **GitHub Issues:** Laporkan bug
+
+### Kode Etik
+
+Bersikaplah hormat, inklusif, dan profesional. Kita semua di sini untuk membangun perangkat lunak hebat bersama.
+
+## Pengakuan
+
+Kontributor diakui dalam:
+- Catatan rilis
+- Daftar kontributor
+- GitHub insights
+
+Terima kasih telah berkontribusi pada Wails! 🎉
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Repositori GitHub" icon="github">
+    Kunjungi repositori Wails.
+    
+    [Lihat di GitHub →](https://github.com/wailsapp/wails)
+  </Card>
+
+  <Card title="Komunitas Discord" icon="discord">
+    Bergabung dengan komunitas.
+    
+    [Gabung Discord →](https://discord.gg/JDdSxwjhGf)
+  </Card>
+
+  <Card title="Dokumentasi" icon="open-book">
+    Baca dokumentasi.
+    
+    [Jelajahi Docs →](/id/quick-start/why-wails)
+  </Card>
+</CardGrid>

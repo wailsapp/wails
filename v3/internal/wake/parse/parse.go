@@ -467,7 +467,25 @@ func resolveIncludes(tf *ast.Taskfile, resolved map[string]*ast.Taskfile) error 
 
 		for taskName, task := range tfResolved.Tasks {
 			namespaced := name + ":" + taskName
-			tf.Tasks[namespaced] = task.Clone()
+			cloned := task.Clone()
+			// Inject the included file's top-level vars into each cloned task so
+			// they're available during execution (e.g. CROSS_IMAGE in preconditions).
+			// Task-specific vars have higher priority and overwrite these defaults.
+			if len(tfResolved.Vars) > 0 {
+				merged := make(map[string]*ast.Var, len(tfResolved.Vars)+len(cloned.Vars))
+				// Deep-copy the included vars (consistent with Task.Clone) so the
+				// later in-place mutation by ResolveVars/ResolveAllVarShells can't
+				// leak across the tasks that share this included file.
+				for k, v := range tfResolved.Vars {
+					vClone := *v
+					merged[k] = &vClone
+				}
+				for k, v := range cloned.Vars {
+					merged[k] = v
+				}
+				cloned.Vars = merged
+			}
+			tf.Tasks[namespaced] = cloned
 		}
 	}
 	return nil

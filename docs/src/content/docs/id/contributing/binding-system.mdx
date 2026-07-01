@@ -1,0 +1,258 @@
+---
+title: Sistem Binding
+description: Cara Wails v3 memungkinkan Go dan JavaScript saling memanggil tanpa boilerplate
+sidebar:
+  order: 5
+---
+
+> "Binding" adalah **kontrak type-safe** yang memungkinkan Anda menulis:
+
+```go
+msg, err := chatService.Send("Hello")
+```
+
+di Go *dan*
+
+```ts
+import { Send } from "../bindings/github.com/you/yourapp/services/chatservice";
+
+const msg = await Send("Hello");
+```
+
+di TypeScript **tanpa menulis glue IPC apa pun secara manual**.
+Dokumen ini memecah *bagaimana* itu terjadi, dari **analisis statis** saat
+build, melalui **generasi kode**, hingga **bridge runtime** yang memindahkan
+byte melalui WebView.
+
+> Lihat [`contributing/architecture/bindings`](/id/contributing/architecture/bindings) untuk
+> deep-dive otoritatif tentang pipeline generator — halaman ini adalah
+> ikhtisar fokus kontributor.
+
+---
+
+## 1. Ikhtisar 30 Detik
+
+| Tahap | Komponen | Output |
+|-------|-----------|--------|
+| **Collect / Analyse** | `internal/generator/collect/`, `internal/generator/analyse.go` | Model in-memory service Go exported, method, param, return type, model |
+| **Generation** | `internal/generator/render/templates/*.tmpl` (`service.{js,ts}.tmpl`, `models.{js,ts}.tmpl`, `index.tmpl`, `eventcreate.js.tmpl`, `eventdata.d.ts.tmpl`, `newline.tmpl`) | Modul ES per-service di bawah `frontend/bindings/<full Go import path>/...` |
+| **Runtime** | `pkg/application/messageprocessor*.go` + runtime JS embedded di bawah `internal/runtime/desktop/@wailsio/runtime/src/` (`calls.ts`, `events.ts`, …) | Pesan call/event melalui bridge native WebView |
+
+Alur diorkestrasi oleh perintah `wails3 generate bindings`, yang
+menggerakkan `generator.Generate` (didefinisikan di `internal/generator/generate.go`)
+di atas set paket Go.
+
+```
+wails3 generate bindings
+        │
+        ▼
+internal/generator/generate.go: Generator.Generate(patterns...)
+        │
+        ├── internal/generator/collect/   // load.go, collector.go, service.go, model.go, …
+        ├── internal/generator/analyse.go // pemeriksaan semantik
+        └── internal/generator/render/    // eksekusi template → frontend/bindings/**
+```
+
+---
+
+## 2. Analisis Statis
+
+### Entry Point
+
+```
+internal/generator/generate.go        // Generator + Generate(patterns…)
+internal/generator/analyse.go         // validasi semantik
+internal/generator/collect/load.go    // loader go/packages
+internal/generator/collect/collector.go
+```
+
+Pass collector melewati setiap paket yang dimuat dan merekam:
+
+* `collect.ServiceInfo` — satu per struct Go exported yang terikat.
+* `collect.ServiceMethodInfo` / `collect.MethodInfo` — info signature per-method
+  (nama, param, result, posisi error, receiver, doc).
+* `collect.ModelInfo` / `collect.StructInfo` — di-emitted sebagai model TS / JS.
+* Komentar directive seperti `//wails:inject`, `//wails:include`,
+  `//wails:internal`, `//wails:ignore`, `//wails:id <hex>` (lihat
+  `internal/generator/collect/directive.go`).
+
+Tipe yang tidak didukung menghasilkan error generator sehingga kesalahan muncul saat build time,
+bukan saat runtime.
+
+### Identifier Model
+
+Envelope call runtime mengidentifikasi method dengan **hash FNV-1a deterministik**
+dari nama fully-qualified-nya (`pkg.Struct.Method`). Anda akan melihat ini sebagai
+`$Call.ByID(<numeric-id>, …)` di binding yang dihasilkan atau `$Call.ByName("pkg.Struct.Method", …)`
+saat generasi berjalan dengan `-names`.
+
+---
+
+## 3. Generasi Kode
+
+### Template
+
+`internal/generator/render/templates/`:
+
+| Template | Tujuan |
+|----------|---------|
+| `service.js.tmpl` | Satu modul JS per service terikat |
+| `service.ts.tmpl` | Pendamping TypeScript (dengan `-ts`) |
+| `models.js.tmpl` | Output class model (per-paket) |
+| `models.ts.tmpl` | Output `.d.ts` model (per-paket) |
+| `index.tmpl` | Re-export barrel `index.{js,ts}` per-paket |
+| `eventcreate.js.tmpl` / `eventdata.d.ts.tmpl` | Constructor event / typing payload |
+| `newline.tmpl` | Normaliser trailing-newline |
+
+Output pergi ke bawah `frontend/bindings/<full Go import path>/...` — misalnya
+service yang didefinisikan di `github.com/you/yourapp/services/chat` mendarat di bawah
+`frontend/bindings/github.com/you/yourapp/services/chat/`. Tidak ada
+direktori `frontend/src/wailsjs/` di v3.
+
+### Output JavaScript
+
+Binding yang dihasilkan adalah modul ES yang mengimpor helper runtime dari
+`/wails/runtime.js`:
+
+```js
+import { Call as $Call, Create as $Create } from "/wails/runtime.js";
+
+/**
+ * @param {string} msg
+ * @returns {Promise<string> & { cancel(): void }}
+ */
+export function Send(msg) {
+    return $Call.ByID(2042131923, msg);
+}
+```
+
+Saat generasi berjalan dengan `-names`, `$Call.ByName("pkg.Struct.Method", ...)`
+di-emitted — selalu **fully-qualified**, tidak pernah hanya `"Method"`.
+
+Class model yang dihasilkan menggunakan pola konstruktor `$$source` dengan default
+per-field `if (!("X" in $$source))`, nama field dalam tanda kutip, dan
+`static createFrom(...)` yang menjalankan `JSON.parse` pada input string.
+
+### Sorotan Pemetaan Tipe
+
+Diverifikasi terhadap `internal/generator/render/`:
+
+| Go | TypeScript |
+|----|------------|
+| `map[string]V` | `{ [_: string]: V }` |
+| `map[K]V` (`K` non-string) | `{ [_ in K]?: V }` (bukan `Map<K, V>`, bukan `Record<K, V>`) |
+| `[]byte` | `Uint8Array` |
+| `time.Time` | `string` (JSON ISO 8601) |
+| `error` (posisi return) | rejected promise |
+
+### Catatan Reflection
+
+`pkg/application/bindings.go` **hand-written** dan menggunakan `reflect` untuk menggerakkan
+dispatch method dari registry `BoundMethod`. Jangan baca klaim lama
+"zero reflection at runtime" terlalu harfiah — generator menghindari reflection,
+tetapi dispatcher runtime menggunakannya.
+
+---
+
+## 4. Protokol Invokasi Runtime
+
+### Sisi JavaScript
+
+```ts
+import { Call } from "/wails/runtime.js";
+
+await Call.ByID(0x7a1201d3 /* ChatService.Send */, "Hello");
+// atau, dengan -names:
+await Call.ByName("chatservice.ChatService.Send", "Hello");
+```
+
+Helper runtime ada di
+`internal/runtime/desktop/@wailsio/runtime/src/calls.ts` (dispatch call),
+`events.ts` (event), dan sejenisnya — tidak ada `invoke.ts` atau `errors.ts`
+di pohon ini. Envelope wire yang tepat di-encode oleh `calls.ts` di sisi JS
+dan di-decode oleh `pkg/application/messageprocessor_call.go` di sisi Go;
+konsultasikan kedua file bersama saat debug bridge.
+
+### Sisi Go
+
+1. `pkg/application/messageprocessor_call.go` menerima pesan call.
+2. Mencari method terikat berdasarkan ID atau nama di
+   `pkg/application/bindings.go` (didorong oleh `reflect`).
+3. Memanggil method terikat dan menserialisasi `{result, error}` kembali ke JS.
+
+### Pemetaan Error
+
+| Go | JavaScript |
+|----|------------|
+| `error == nil` | `Promise` resolve dengan result |
+| `error != nil` | `Promise` reject dengan `Error` yang `message`-nya adalah string error Go |
+
+---
+
+## 5. Memanggil JavaScript dari Go
+
+Generator binding satu arah (method Go diekspos ke JS). Untuk komunikasi Go → JS,
+gunakan event bus atau jalankan JS di window:
+
+```go
+app.Event.Emit("chat:new-message", msg)
+window.ExecJS(`window.dispatchEvent(new CustomEvent("ping"))`)
+```
+
+Di sisi JS, subscribe dengan `Events.On(name, cb)` dari
+`/wails/runtime.js`.
+
+---
+
+## 6. Memperluas & Troubleshooting
+
+### Error Tipe Tidak Didukung
+
+```
+error: field "Client" uses unsupported type: chan struct{}
+```
+
+→ bungkus channel di belakang API method, atau tandai field dengan
+`//wails:internal` agar generator melewatinya.
+
+### Binding Usang
+
+Output yang dihasilkan ditimpa pada setiap `wails3 generate bindings` /
+`wails3 dev` / `wails3 build`. Jika intellisense IDE menampilkan stub usang, hapus
+`frontend/bindings/` dan jalankan ulang generator. Flag `-clean` (default
+`true` di build saat ini) membersihkan direktori bindings sebelum setiap run.
+
+### Tips Performa
+
+* Hindari streaming byte slice besar melalui bridge — layani via
+  asset server.
+* Batch beberapa call cepat ke satu method saat latency penting.
+* Prefer value receiver untuk struct param kecil untuk mengurangi alokasi.
+
+---
+
+## 7. Peta File Kunci
+
+| Concern | File |
+|---------|------|
+| Orkestrasi generator | `internal/generator/generate.go` |
+| Pemeriksaan semantik | `internal/generator/analyse.go` |
+| Koleksi (service, method, model) | `internal/generator/collect/{service,method,model,struct,package}.go` |
+| Template render | `internal/generator/render/templates/*.tmpl` |
+| Lokasi binding yang dihasilkan | `frontend/bindings/<full Go import path>/...` |
+| Dispatcher sisi Go | `pkg/application/bindings.go`, `messageprocessor_call.go` |
+| Runtime JS | `internal/runtime/desktop/@wailsio/runtime/src/{calls,events,index}.ts` |
+
+Simpan cheat-sheet ini saat melacak bug bridge.
+
+---
+
+## 8. Rekap
+
+1. **Collector** memindai kode Go Anda → model semantik in-memory.
+2. **Template** memancarkan modul ES per-service dan file model/index per-paket.
+3. **Message Processor** mendispatch call di sisi Go via registry bindings.
+4. **JS Runtime** membungkus semuanya dalam promise idiomatis dengan cancellation.
+
+Semua tanpa Anda menulis satu baris boilerplate IPC. Itulah sistem binding
+Wails v3. Go forth and bind!
