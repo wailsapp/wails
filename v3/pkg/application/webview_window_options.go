@@ -364,6 +364,10 @@ type WindowsWindow struct {
 	// Menu is the menu to use for the window.
 	Menu *Menu
 
+	// DisableMenu will disable the menu for the window.
+	// Default: false
+	DisableMenu bool
+
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
 
