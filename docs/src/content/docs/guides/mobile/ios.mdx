@@ -1,0 +1,214 @@
+---
+title: iOS
+description: Build and run Wails applications on iOS — setup, simulator, device builds, configuration, and native features
+sidebar:
+  order: 3
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimental Feature">
+iOS support is experimental and may change in future releases.
+</Aside>
+
+<Aside type="tip">
+New to mobile with Wails? Start with [Your First Mobile App →](/guides/mobile/first-mobile-app) for a step-by-step walkthrough, then return here for the full reference.
+</Aside>
+
+Wails v3 apps run on iOS as fully native apps — and the best part is they work
+*exactly* like the desktop version. The same Go backend, the same frontend, the
+same `@wailsio/runtime`: service bindings, events, dialogs and the clipboard all
+behave identically, with **zero** mobile-specific rewiring. There's no separate
+mobile codebase, no porting layer, and no special API to learn — your existing
+Wails app simply runs on iOS. Porting is genuinely seamless: bring your app
+across as-is and ship.
+
+The same `main.go` builds for both desktop and iOS; iOS-specific touches are
+configured through `application.Options.IOS`.
+
+## Requirements
+
+- macOS with **full Xcode** installed (the command-line tools alone are not
+  enough) — `wails3 doctor` shows the iOS SDKs it can find
+- Go 1.25+ and npm
+
+## Simulator
+
+From your project directory:
+
+```bash
+wails3 task ios:run
+```
+
+This builds your app, boots a simulator if one isn't already running, and
+launches it.
+
+Useful companions:
+
+```bash
+wails3 task ios:logs:dev    # stream the app's logs from the simulator
+wails3 task ios:xcode       # open the generated Xcode project
+```
+
+In debug builds the webview is inspectable from Safari's Develop menu.
+
+## Packaging
+
+```bash
+wails3 task ios:package             # production .app for the simulator
+wails3 task ios:deploy-simulator    # install + launch it
+```
+
+These are optimised, stripped production builds.
+
+## Device builds
+
+```bash
+wails3 task ios:package IOS_PLATFORM=device \
+    CODESIGN_IDENTITY="Apple Development: You (TEAMID)" \
+    PROVISIONING_PROFILE=path/to/profile.mobileprovision
+
+wails3 task ios:deploy-device [DEVICE_ID=<udid>]     # install + launch on a device
+wails3 task ios:package:ipa IOS_PLATFORM=device ...  # distribution .ipa
+```
+
+`IOS_PLATFORM=device` builds for a physical device. Entitlements come from
+`build/ios/entitlements.plist` and apply to device builds only — add the
+capability keys your app needs.
+
+<Aside type="tip">
+For automatically managed signing, provisioning and App Store archives, open
+the generated Xcode project with `wails3 task ios:xcode` and build from
+Xcode instead.
+</Aside>
+
+## Configuration
+
+`build/config.yml`:
+
+```yaml
+ios:
+  bundleID: com.example.myapp
+  displayName: My App
+  version: 1.0.0
+  minIOSVersion: "15.0"
+```
+
+Startup options (`application.Options.IOS`) include `DisableScroll`,
+`DisableBounce`, `DisableScrollIndicators`, `DisableInputAccessoryView`,
+`EnableBackForwardNavigationGestures`, `DisableLinkPreview`,
+`EnableInlineMediaPlayback`, `EnableAutoplayWithoutUserAction`,
+`DisableInspectable`, `UserAgent`, `ApplicationNameForUserAgent`,
+`BackgroundColour`, and native bottom tabs via `EnableNativeTabs` +
+`NativeTabsItems`.
+
+## Native features
+
+iOS-specific capabilities are available through `application.IOS`, called from
+Go inside a `//go:build ios` file so your shared code stays platform-agnostic.
+Android offers the same set through `application.Android`.
+
+One-shot actions return immediately:
+
+```go
+//go:build ios
+
+application.IOS.Haptic("impact-medium") // impact-light|impact-medium|impact-heavy|success|warning|error|selection
+application.IOS.Share(`{"text":"Hi","url":"https://wails.io"}`)
+application.IOS.SetKeepAwake(true)
+application.IOS.PostNotification(`{"title":"Done","body":"Build finished","delay":2}`)
+application.IOS.SecureSet("token", "abc") // stored securely
+```
+
+Query helpers return their results as JSON — `SafeAreaJSON()`, `AppInfoJSON()`,
+`PowerJSON()`, `NetworkJSON()`, `StorageJSON()`, `GetOrientation()`,
+`GetBrightness()`. `StoragePath()` returns the absolute path to the app's
+Application Support directory — a good home for databases and other persistent
+files (the iOS analog of Android's `getFilesDir()`). The directory is created on
+first access; `StoragePath()` returns an empty string if it cannot be created,
+so check for `""` before using it.
+
+### Events
+
+Anything that finishes later — a permission prompt, a sensor stream, a camera
+capture — delivers its result as an **event** rather than a return value, which
+you can listen for in Go or the frontend. Names are prefixed `common:` for
+capabilities shared with Android and `ios:` for iOS-only ones.
+
+```go
+// Go
+app.Event.On("common:location", func(e *application.CustomEvent) {
+    // e.Data -> {"lat":..,"lng":..,"accuracy":..} or {"error":..}
+})
+```
+
+```js
+// frontend
+import { Events } from "@wailsio/runtime";
+Events.On("common:notification", (e) => { /* {ok, scheduled, presented, tapped, error} */ });
+```
+
+| Event | Triggered by | Payload |
+|---|---|---|
+| `common:biometric` | `BiometricAuthenticate(reason)` | `{ok, error}` |
+| `common:location` | `GetLocation()` | `{lat, lng, accuracy}` / `{error}` |
+| `common:motion` | `SetMotion(true)` | `{x, y, z}` |
+| `common:proximity` | `SetProximity(true)` | `{near}` |
+| `common:keyboard` | `SetKeyboardWatch(true)` | `{visible, height}` |
+| `common:torch` | `SetTorch(bool)` | `{on, available}` |
+| `common:notification` | `PostNotification(json)` | `{ok, scheduled, presented, tapped, error}` |
+| `common:capture` | `CapturePhoto()` / `CaptureVideo()` | `{type, path, size, thumb}` |
+| `common:screenCapture` | `SetScreenProtect(true)` | `{screenshot, recording}` |
+| `ios:backgroundTask` | `BeginBackgroundTask(seconds)` | `{message, granted}` |
+
+The kitchen-sink example under `v3/examples/mobile` wires every feature above
+end to end.
+
+## WebView controls
+
+A few WebView behaviours can also be changed at runtime from Go:
+
+```go
+application.IOS.SetScrollEnabled(false)
+application.IOS.SetBounceEnabled(false)
+application.IOS.SetScrollIndicatorsEnabled(false)
+application.IOS.SetBackForwardGesturesEnabled(true)
+application.IOS.SetLinkPreviewEnabled(false)
+application.IOS.SetInspectableEnabled(true)
+application.IOS.SetCustomUserAgent("MyApp/1.0")
+```
+
+The bundled `@wailsio/runtime` also exposes a small **frontend** iOS namespace:
+
+```js
+import { IOS } from "@wailsio/runtime";
+await IOS.Haptics.Impact("medium"); // light|medium|heavy|soft|rigid
+const info = await IOS.Device.Info();
+```
+
+Native bottom-tab selections arrive as a `nativeTabSelected` event on `window`.
+
+## Support status
+
+| Area | Status |
+|---|---|
+| Frontend rendering & assets | ✅ |
+| Service bindings, events (both directions) | ✅ |
+| Message dialogs | ✅ |
+| Open file / files / directory dialogs | ✅ Imported as sandbox copies |
+| Save file dialogs | ❌ Write inside the app sandbox instead |
+| Clipboard | ✅ |
+| Screens API | ✅ Includes safe-area work area |
+| Lifecycle events | ✅ |
+| Window geometry, menus, system tray | No-ops on iOS |
+| Multiple windows | Only the first window is shown |
+
+## Porting notes
+
+- Desktop code builds for iOS unchanged — window, menu and system-tray calls
+  simply do nothing.
+- Replace save-file dialogs with a write into the app's sandbox plus a share.
+- Design the frontend responsively; safe areas are handled for you.

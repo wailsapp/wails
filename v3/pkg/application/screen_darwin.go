@@ -10,6 +10,7 @@ package application
 #import <Cocoa/Cocoa.h>
 #import <AppKit/AppKit.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct Screen {
 	const char* id;
@@ -49,6 +50,16 @@ CGFloat primaryScreenHeight(){
 	return [primaryScreen frame].size.height;
 }
 
+// strdupOrNull copies a C string with strdup, tolerating NULL. Used to copy
+// the autoreleased buffers returned by -[NSString UTF8String] into malloc'd
+// memory the caller owns: the autoreleased buffer only lives until the
+// enclosing autorelease pool drains, which can happen before Go reads the
+// string in cScreenToScreen (use-after-free, see #5556). The Go side frees
+// the copies after conversion.
+static const char* strdupOrNull(const char* s) {
+	return s != NULL ? strdup(s) : NULL;
+}
+
 Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
 	Screen returnScreen;
 	returnScreen.scaleFactor = screen.backingScaleFactor;
@@ -79,7 +90,7 @@ Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
 	NSDictionary* screenDictionary = [screen deviceDescription];
 	NSNumber* screenID = [screenDictionary objectForKey:@"NSScreenNumber"];
 	CGDirectDisplayID displayID = [screenID unsignedIntValue];
-	returnScreen.id = [[NSString stringWithFormat:@"%d", displayID] UTF8String];
+	returnScreen.id = strdupOrNull([[NSString stringWithFormat:@"%d", displayID] UTF8String]);
 
 	// Get physical monitor size
 	NSValue *sizeValue = [screenDictionary objectForKey:@"NSDeviceSize"];
@@ -91,9 +102,10 @@ Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
 	double rotation = CGDisplayRotation(displayID);
 	returnScreen.rotation = rotation;
 
+	returnScreen.name = NULL;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
 	if( @available(macOS 10.15, *) ){
-		returnScreen.name = [screen.localizedName UTF8String];
+		returnScreen.name = strdupOrNull([screen.localizedName UTF8String]);
 	}
 #endif
 	return returnScreen;
@@ -106,30 +118,40 @@ Screen GetPrimaryScreen(){
 	return processScreen(mainScreen, primaryScreenHeight());
 }
 
-// getAllScreens returns a malloc'd array of Screen and, via outCount, the number
-// of entries it contains. The count is captured from the same [NSScreen screens]
-// snapshot used to size the allocation, so callers must not query the screen
-// count separately (doing so races display changes and can over-read the buffer).
+// getAllScreens returns a malloc'd array of Screen and, via outCount, the
+// number of entries it contains. The count comes from the same
+// [NSScreen screens] snapshot used to size the allocation; callers must not
+// query the screen count separately — a display change between the two calls
+// would over-read the buffer (freeing garbage id/name pointers) or leak the
+// strdup'd strings in unvisited tail entries.
 Screen* getAllScreens(int* outCount) {
-	NSArray<NSScreen *> *screens = [NSScreen screens];
-	NSUInteger count = screens.count;
-	if (outCount != NULL) {
-		*outCount = (int)count;
+	// The explicit pool releases the autoreleased objects created during
+	// enumeration as soon as it ends: without it they leak when this is
+	// called from a Go goroutine thread that has no ambient pool. Only the
+	// strdup'd strings in the returned structs survive the pool.
+	@autoreleasepool {
+		NSArray<NSScreen *> *screens = [NSScreen screens];
+		NSUInteger count = screens.count;
+		if (outCount != NULL) {
+			*outCount = (int)count;
+		}
+		// Reuse the snapshot above instead of re-enumerating [NSScreen screens];
+		// screens[0] is the primary screen (matches isPrimary = (i == 0) below).
+		CGFloat primaryHeight = count > 0 ? [[screens objectAtIndex:0] frame].size.height : 0;
+		Screen* returnScreens = malloc(sizeof(Screen) * count);
+		for (NSUInteger i = 0; i < count; i++) {
+			returnScreens[i] = processScreen([screens objectAtIndex:i], primaryHeight);
+			returnScreens[i].isPrimary = (i == 0);
+		}
+		return returnScreens;
 	}
-	// Reuse the snapshot above instead of re-enumerating [NSScreen screens];
-	// screens[0] is the primary screen (matches isPrimary = (i == 0) below).
-	CGFloat primaryHeight = count > 0 ? [[screens objectAtIndex:0] frame].size.height : 0;
-	Screen* returnScreens = malloc(sizeof(Screen) * count);
-	for (NSUInteger i = 0; i < count; i++) {
-		returnScreens[i] = processScreen([screens objectAtIndex:i], primaryHeight);
-		returnScreens[i].isPrimary = (i == 0);
-	}
-	return returnScreens;
 }
 
 Screen getScreenForWindow(void* window){
-	NSScreen* screen = ((NSWindow*)window).screen;
-	return processScreen(screen, primaryScreenHeight());
+	@autoreleasepool {
+		NSScreen* screen = ((NSWindow*)window).screen;
+		return processScreen(screen, primaryScreenHeight());
+	}
 }
 
 // Get the screen for the system tray
@@ -159,6 +181,13 @@ import "C"
 import "unsafe"
 
 func cScreenToScreen(screen C.Screen) *Screen {
+	// id and name are malloc'd copies made by processScreen (strdupOrNull);
+	// this function owns them and must free them exactly once.
+	id := C.GoString(screen.id)
+	name := C.GoString(screen.name)
+	C.free(unsafe.Pointer(screen.id))
+	C.free(unsafe.Pointer(screen.name))
+
 	// NSScreen.frame and visibleFrame return values in points (already DIPs).
 	// applyDPIScaling in screenmanager.go expects Physical* fields to be in
 	// device pixels and produces Bounds/WorkArea in DIPs by dividing by
@@ -203,27 +232,31 @@ func cScreenToScreen(screen C.Screen) *Screen {
 			Width:  toPhysical(screen.w_width),
 		},
 		ScaleFactor: float32(screen.scaleFactor),
-		ID:          C.GoString(screen.id),
-		Name:        C.GoString(screen.name),
+		ID:          id,
+		Name:        name,
 		IsPrimary:   bool(screen.isPrimary),
 		Rotation:    float32(screen.rotation),
 	}
 }
 
-func (m *macosApp) processAndCacheScreens() error {
-	enumerate := func() []*Screen {
-		var count C.int
-		cScreens := C.getAllScreens(&count)
-		defer C.free(unsafe.Pointer(cScreens))
-		numScreens := int(count)
-		screens := make([]*Screen, numScreens)
-		cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
-		for i := 0; i < numScreens; i++ {
-			screens[i] = cScreenToScreen(cScreenHeaders[i])
-		}
-		return screens
+// allScreens enumerates the attached screens and converts them to Go values.
+// It is a free function (rather than inlined in processAndCacheScreens) so
+// tests can exercise the C string ownership handover without cgo, which is
+// unavailable in test files.
+func allScreens() []*Screen {
+	var count C.int
+	cScreens := C.getAllScreens(&count)
+	defer C.free(unsafe.Pointer(cScreens))
+	numScreens := int(count)
+	screens := make([]*Screen, numScreens)
+	cScreenHeaders := (*[1 << 30]C.Screen)(unsafe.Pointer(cScreens))[:numScreens:numScreens]
+	for i := 0; i < numScreens; i++ {
+		screens[i] = cScreenToScreen(cScreenHeaders[i])
 	}
+	return screens
+}
 
+func (m *macosApp) processAndCacheScreens() error {
 	// NSScreen and other AppKit APIs are not thread-safe and must be accessed on
 	// the main thread. Application events (including ApplicationDidChangeScreenParameters)
 	// are dispatched on background goroutines and can fire several times in quick
@@ -233,9 +266,9 @@ func (m *macosApp) processAndCacheScreens() error {
 	// Guard against InvokeSync deadlocking when we are already on the main thread.
 	var screens []*Screen
 	if m.isOnMainThread() {
-		screens = enumerate()
+		screens = allScreens()
 	} else {
-		InvokeSync(func() { screens = enumerate() })
+		InvokeSync(func() { screens = allScreens() })
 	}
 	return m.parent.Screen.LayoutScreens(screens)
 }

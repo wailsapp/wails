@@ -59,6 +59,9 @@ type WebviewWindowOptions struct {
     ContentProtectionEnabled    bool
     KeyBindings                 map[string]func(window *WebviewWindow)
 
+    // Permissions
+    Permissions map[PermissionType]Permission
+
     // Window-control button states
     MinimiseButtonState ButtonState
     MaximiseButtonState ButtonState
@@ -676,6 +679,32 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetContentProtection(true)
 ```
 
+### Permissions
+
+**Type:** `map[PermissionType]Permission`  
+**Default:** `nil` (platform default handling)  
+**Platform:** Linux, Windows (macOS defers to TCC)
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionAllow,
+},
+```
+
+**Purpose:** Declaratively control how capability requests (camera, microphone, geolocation, notifications, clipboard read) from the window's web content are handled, without platform-specific code.
+
+**PermissionType values:** `PermissionMicrophone`, `PermissionCamera`, `PermissionGeolocation`, `PermissionNotifications`, `PermissionClipboardRead`
+
+**Permission values:**
+- `PermissionDefault` (0) — platform's native handling: OS/WebView2 prompt on macOS/Windows; on Linux, camera/microphone are allowed, everything else is denied
+- `PermissionAllow` (1) — grant without prompting (Linux: only camera/microphone are implemented; other types remain denied)
+- `PermissionDeny` (2) — deny without prompting
+
+**Important — Windows:** Before this option existed, Wails silently granted all WebView2 capabilities. Now, setting any entry in `Permissions` disables that blanket grant. Capabilities not listed will show WebView2's native prompt rather than being auto-allowed. List every capability your app needs explicitly.
+
+**See [Permissions](/features/windows/permissions) for the full guide, platform matrix, and examples.**
+
 ## Window Lifecycle Events
 
 Window lifecycle events are handled using `OnWindowEvent` and `RegisterHook`. These methods provide fine-grained control over window closing and destruction behavior.
@@ -849,6 +878,38 @@ Mac: application.MacWindow{
 },
 ```
 
+**WebviewPreferences** (`MacWebviewPreferences`)
+
+Fine-grained control over the underlying `WKWebView` configuration. All fields are optional — unset fields leave the WebKit default unchanged.
+
+```go
+Mac: application.MacWindow{
+    WebviewPreferences: application.MacWebviewPreferences{
+        TabFocusesLinks:                       optional.True,
+        TextInteractionEnabled:                optional.True,
+        FullscreenEnabled:                     optional.False,
+        AllowsBackForwardNavigationGestures:   optional.False,
+        AllowsMagnification:                   optional.True,
+        AllowsAirPlayForMediaPlayback:         optional.True,
+        JavaScriptCanOpenWindowsAutomatically: optional.False,
+        MinimumFontSize:                       optional.NewVar(12.0),
+        ApplicationNameForUserAgent:           "MyApp",
+        EnableAutoplayWithoutUserAction:       optional.True,
+    },
+},
+```
+
+- `TabFocusesLinks` — When `true`, pressing Tab moves focus to links and form controls (default: `false`)
+- `TextInteractionEnabled` — When `true`, users can select and interact with text in the webview (default: `true`)
+- `FullscreenEnabled` — When `true`, web content can enter fullscreen via the HTML Fullscreen API (default: `false`). Requires macOS 12.3+.
+- `AllowsBackForwardNavigationGestures` — When `true`, horizontal swipe gestures trigger back/forward navigation (default: `false`)
+- `AllowsMagnification` — When `true`, pinch-to-zoom is enabled on the webview (default: `false`)
+- `AllowsAirPlayForMediaPlayback` — When `true`, media can be streamed to AirPlay devices (default: `true`)
+- `JavaScriptCanOpenWindowsAutomatically` — When `true`, JavaScript can open new windows without a user gesture (default: `false`)
+- `MinimumFontSize` — Minimum font size in points. Use `optional.NewVar(12.0)` to set. Unset leaves WebKit default.
+- `ApplicationNameForUserAgent` — Overrides the application-name suffix in the WebKit user-agent string. Useful when sites reject the default `"wails.io"` identifier (e.g. YouTube embeds). Leave empty to keep the default.
+- `EnableAutoplayWithoutUserAction` — When `true`, audio and video can autoplay without a user gesture. Maps to `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (default: `false`)
+
 ### Windows Options (per-window)
 
 The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions` (that's the *application*-level struct).
@@ -856,6 +917,7 @@ The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions
 ```go
 Windows: application.WindowsWindow{
     DisableIcon:                       false,
+    DisableMenu:                       false,
     BackdropType:                      application.Auto,
     CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
@@ -864,6 +926,10 @@ Windows: application.WindowsWindow{
 
 **DisableIcon** (`bool`)
 - Remove icon from title bar.
+
+**DisableMenu** (`bool`)
+- Disable the menu bar for the window. When `true`, the window does not display a menu bar even if one is configured.
+- Default: `false`
 
 **BackdropType** (`BackdropType`)
 - `application.Auto` - System default

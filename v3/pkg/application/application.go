@@ -74,6 +74,7 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = messageProc
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
@@ -248,7 +249,7 @@ type OriginInfo struct {
 	IsMainFrame bool
 }
 
-var windowMessageBuffer = make(chan *windowMessage, 5)
+var windowMessageBuffer = make(chan *windowMessage, 64)
 
 // DropTargetDetails contains information about the HTML element
 // where files were dropped (the element with data-file-drop-target attribute).
@@ -330,7 +331,7 @@ func (r *webViewAssetRequest) Close() error {
 	return r.Request.Close()
 }
 
-var webviewRequests = make(chan *webViewAssetRequest, 5)
+var webviewRequests = make(chan *webViewAssetRequest, 256)
 
 type eventHook struct {
 	callback func(event *ApplicationEvent)
@@ -346,19 +347,20 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Window      *WindowManager
-	ContextMenu *ContextMenuManager
-	KeyBinding  *KeyBindingManager
-	Browser     *BrowserManager
-	Env         *EnvironmentManager
-	Dialog      *DialogManager
-	Event       *EventManager
-	Menu        *MenuManager
-	Screen      *ScreenManager
-	Clipboard   *ClipboardManager
-	SystemTray  *SystemTrayManager
-	Autostart   *AutostartManager
-	Updater     *updater.Updater
+	Window         *WindowManager
+	ContextMenu    *ContextMenuManager
+	KeyBinding     *KeyBindingManager
+	Browser        *BrowserManager
+	Env            *EnvironmentManager
+	Dialog         *DialogManager
+	Event          *EventManager
+	Menu           *MenuManager
+	Screen         *ScreenManager
+	Clipboard      *ClipboardManager
+	SystemTray     *SystemTrayManager
+	Autostart      *AutostartManager
+	GlobalShortcut *GlobalShortcutManager
+	Updater        *updater.Updater
 
 	// Windows
 	windows     map[uint]Window
@@ -429,6 +431,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// messageProcessor handles runtime messages
+	messageProcessor *MessageProcessor
 }
 
 func (a *App) Config() Options {
@@ -509,6 +514,7 @@ func (a *App) init() {
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
+	a.GlobalShortcut = newGlobalShortcutManager(a)
 	a.Updater = updater.New(newUpdaterHost(a))
 }
 
@@ -579,85 +585,106 @@ func (a *App) Run() error {
 	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 
-	// Startup services before dispatching any events.
-	// No need to hold the lock here because a.options.Services may only change when a.running is false.
-	services := a.options.Services
-	a.options.Services = nil
-	for i, service := range services {
-		if err := a.startupService(service); err != nil {
-			return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+	// startup performs the remaining startup sequence: start services, spawn the
+	// event-handling reader goroutines, run any pending windows, and apply the
+	// menu/icon. On desktop this runs inline on the main goroutine. On iOS it is
+	// deferred to a background goroutine (see below).
+	startup := func() error {
+		// Startup services before dispatching any events.
+		// No need to hold the lock here because a.options.Services may only change when a.running is false.
+		services := a.options.Services
+		a.options.Services = nil
+		for i, service := range services {
+			if err := a.startupService(service); err != nil {
+				return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+			}
+			// Schedule started services for shutdown.
+			a.options.Services = services[:i+1]
 		}
-		// Schedule started services for shutdown.
-		a.options.Services = services[:i+1]
+
+
+	// Start the MCP server when the application is built with -tags mcp.
+	// All configuration is read from environment variables (WAILS_MCP_HOST,
+	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+	if err := startMCPServer(a); err != nil {
+		return fmt.Errorf("mcp: %w", err)
 	}
 
-	go func() {
-		for {
-			event := <-applicationEvents
-			go a.Event.handleApplicationEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowEvents
-			go a.handleWindowEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			request := <-webviewRequests
-			go a.handleWebViewRequest(request)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowMessageBuffer
-			go a.handleWindowMessage(event)
-		}
-	}()
-	go func() {
-		for {
-			event := <-windowKeyEvents
-			go a.handleWindowKeyEvent(event)
-		}
-	}()
-	go func() {
-		for {
-			dragAndDropMessage := <-windowDragAndDropBuffer
-			go a.handleDragAndDropMessage(dragAndDropMessage)
-		}
-	}()
-
-	go func() {
-		for {
-			menuItemID := <-menuItemClicked
-			go a.Menu.handleMenuItemClicked(menuItemID)
-		}
-	}()
-
-	a.runLock.Lock()
-	a.running = true
-	a.runLock.Unlock()
-
-	// No need to hold the lock here because
-	//   - a.pendingRun may only change while a.running is false.
-	//   - runnables are scheduled asynchronously anyway.
-	for _, pending := range a.pendingRun {
 		go func() {
-			defer handlePanic()
-			pending.Run()
+			for {
+				event := <-applicationEvents
+				go a.Event.handleApplicationEvent(event)
+			}
 		}()
-	}
-	a.pendingRun = nil
+		go func() {
+			for {
+				event := <-windowEvents
+				go a.handleWindowEvent(event)
+			}
+		}()
+		go func() {
+			for {
+				request := <-webviewRequests
+				go a.handleWebViewRequest(request)
+			}
+		}()
+		go func() {
+			for {
+				event := <-windowMessageBuffer
+				go a.handleWindowMessage(event)
+			}
+		}()
+		go func() {
+			for {
+				event := <-windowKeyEvents
+				go a.handleWindowKeyEvent(event)
+			}
+		}()
+		go func() {
+			for {
+				dragAndDropMessage := <-windowDragAndDropBuffer
+				go a.handleDragAndDropMessage(dragAndDropMessage)
+			}
+		}()
 
-	// set the application menu
-	if runtime.GOOS == "darwin" {
-		a.impl.setApplicationMenu(a.applicationMenu)
-	}
-	if a.options.Icon != nil {
-		a.impl.setIcon(a.options.Icon)
+		go func() {
+			for {
+				menuItemID := <-menuItemClicked
+				go a.Menu.handleMenuItemClicked(menuItemID)
+			}
+		}()
+
+		a.runLock.Lock()
+		a.running = true
+		a.runLock.Unlock()
+
+		// Bind any global shortcuts that were registered before the app started.
+		a.GlobalShortcut.flushPending()
+
+		// No need to hold the lock here because
+		//   - a.pendingRun may only change while a.running is false.
+		//   - runnables are scheduled asynchronously anyway.
+		for _, pending := range a.pendingRun {
+			go func() {
+				defer handlePanic()
+				pending.Run()
+			}()
+		}
+		a.pendingRun = nil
+
+		// set the application menu
+		if runtime.GOOS == "darwin" {
+			a.impl.setApplicationMenu(a.applicationMenu)
+		}
+		if a.options.Icon != nil {
+			a.impl.setIcon(a.options.Icon)
+		}
+		return nil
 	}
 
+	if err := startup(); err != nil {
+		return err
+	}
 	return a.impl.run()
 }
 
@@ -810,6 +837,12 @@ func (a *App) cleanup() {
 	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
+	}
+	// Release any global shortcuts the application registered with the OS.
+	if a.GlobalShortcut != nil {
+		if err := a.GlobalShortcut.UnregisterAll(); err != nil {
+			a.handleError(err)
+		}
 	}
 	InvokeSync(func() {
 		a.shutdownServices()

@@ -52,6 +52,12 @@ func Dev(options *DevOptions) error {
 		os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", host, port))
 	}
 
+	// Environment variables such as WAILS_MCP imply extra build tags. Export them
+	// via EXTRA_TAGS so the project Taskfile includes them in dev builds.
+	if tags := envTags(); len(tags) > 0 {
+		os.Setenv("EXTRA_TAGS", mergeTags(os.Getenv("EXTRA_TAGS"), tags...))
+	}
+
 	return Watcher(&WatcherOptions{
 		Config: options.Config,
 	})

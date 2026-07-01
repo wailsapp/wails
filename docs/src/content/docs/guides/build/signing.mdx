@@ -45,27 +45,48 @@ When running on the native platform, Wails uses the native tools for maximum com
 
 ## Quick Start
 
-The easiest way to configure signing is using the interactive setup wizard:
+The fastest way to configure signing is the setup wizard:
 
 ```bash
-wails3 setup signing
+wails3 setup
 ```
 
-This command:
-- Walks you through configuring signing credentials for each platform
-- On macOS, lists available Developer ID certificates from your keychain
-- For Linux, can generate a new PGP key if you don't have one
-- **Stores passwords securely in your system keychain** (not in Taskfiles)
-- Updates the `vars` section in each platform's Taskfile with non-sensitive config
+This writes a shared signing configuration to `~/.config/wails/defaults.yaml` that is
+**honored at sign time on every platform** (see [Configuration precedence](#configuration-precedence)).
+Its signing step:
+- Detects which signing tools are installed for the platform you want to target —
+  **from any host** — and shows the install command for your OS (e.g.
+  `brew install gnupg`, `sudo apt install osslsigncode`, `winget install GnuPG.Gpg4win`).
+- On macOS, lists Developer ID certificates from your keychain.
+- For Linux, lists your GPG keys and can **generate and export** a new one.
+- For Windows, can **generate a self-signed certificate** (for testing) via OpenSSL.
+- **Stores passwords securely in your system keychain** (not in Taskfiles).
 
 <Aside type="tip">
 Passwords are stored in your system's native credential store (macOS Keychain, Windows Credential Manager, or Linux Secret Service). This means your signing configuration is secure and works across all your Wails projects.
 </Aside>
 
-To configure only specific platforms:
+## Configuration precedence
+
+When you run a sign task, each signing option is resolved in this order (first
+match wins):
+
+1. An explicit flag passed to `wails3 tool sign` (e.g. `--pgp-key`, `--certificate`, `--identity`).
+2. The matching **project Taskfile var** (`PGP_KEY`, `SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`, `SIGN_IDENTITY`, …).
+3. The **global config** in `~/.config/wails/defaults.yaml` (written by `wails3 setup`).
+
+This means the Taskfile vars are **optional overrides**: if a var is unset, the
+globally configured key/certificate/identity is used. If none of the three provides
+a value, the sign command reports a clear error telling you how to configure it.
+
+## Per-project configuration
+
+To configure signing for a single project rather than globally, run the per-project
+wizard from inside the project — it writes the `vars` into that project's
+`build/<platform>/Taskfile.yml` files:
 
 ```bash
-wails3 setup signing --platform darwin
+wails3 setup signing                                   # all detected platforms
 wails3 setup signing --platform windows --platform linux
 ```
 
@@ -271,8 +292,21 @@ Notarization typically takes 1-2 minutes. The ticket is automatically stapled to
 ### Prerequisites
 
 - Code signing certificate (from DigiCert, Sectigo, etc.)
-- For native signing: Windows SDK installed (for signtool.exe)
-- For cross-platform: Just the certificate file
+- For native signing on Windows: Windows SDK installed (for `signtool.exe`)
+- For cross-platform signing from macOS/Linux: [`osslsigncode`](https://github.com/mtrojnar/osslsigncode) (the `wails3 setup` signing step shows the host-specific install command)
+
+### Generating a self-signed certificate (testing)
+
+If you just need to test the signing pipeline, run `wails3 setup`, open the
+**Windows** tab of the signing step, and choose **Generate a self-signed
+certificate**. This uses OpenSSL to create a code-signing `.pfx` and records its
+path in the global config.
+
+<Aside type="caution">
+Self-signed certificates are for **testing and internal distribution only** — they
+trigger SmartScreen warnings for end users. Public releases need a certificate from
+a trusted CA.
+</Aside>
 
 ### Configuration
 
@@ -288,9 +322,14 @@ vars:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SIGN_CERTIFICATE` | One of these | Path to .pfx/.p12 certificate file |
-| `SIGN_THUMBPRINT` | One of these | Certificate thumbprint in Windows cert store |
+| `SIGN_CERTIFICATE` | Override | Path to .pfx/.p12 certificate file (falls back to global config if unset) |
+| `SIGN_THUMBPRINT` | Override | Certificate thumbprint in Windows cert store (alternative to `SIGN_CERTIFICATE`) |
 | `TIMESTAMP_SERVER` | No | Timestamp server URL (default: http://timestamp.digicert.com) |
+
+<Aside type="note">
+These vars are optional **overrides**. If unset, the certificate configured globally
+via `wails3 setup` is used. See [Configuration precedence](#configuration-precedence).
+</Aside>
 
 <Aside type="note">
 The certificate password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_WINDOWS_CERT_PASSWORD` environment variable in CI.
@@ -325,7 +364,22 @@ Linux packages (DEB and RPM) are signed using PGP/GPG keys. Unlike Windows and m
 
 ### Generating a PGP Key
 
-If you don't have a PGP key, generate one with `gpg` (the `wails3 setup signing` wizard offers to do this for you and asks the same questions):
+The easiest way is the setup wizard — run `wails3 setup`, open the **Linux** tab of
+the signing step, and choose **Create a new GPG key**. The wizard:
+- generates an RSA 4096 key in your GPG keyring (leave the passphrase blank for an
+  unattended, CI-friendly key),
+- **exports it to `~/.wails/signing/<keyid>.asc`** (the file a build signs with), and
+- records both the key ID and the exported path in `~/.config/wails/defaults.yaml`,
+  so it's used automatically at sign time.
+
+<Aside type="note">
+If a key was configured by **ID only** (e.g. created before the wizard exported keys
+automatically), the Linux tab exports it to a file on your next visit and fills in
+the path — no manual steps needed. Builds sign with a key *file*, so the path is
+what matters.
+</Aside>
+
+You can also do it by hand with `gpg`:
 
 ```bash
 # Interactive — the wizard will prompt for name, email, key size and expiry.
@@ -354,7 +408,7 @@ vars:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `PGP_KEY` | Yes | Path to PGP private key file |
+| `PGP_KEY` | Override | Path to the exported PGP private key file (falls back to the key configured globally via `wails3 setup` if unset) |
 | `SIGN_ROLE` | No | DEB signing role (default: builder) |
 
 <Aside type="note">
