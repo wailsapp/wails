@@ -101,6 +101,9 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	menu.Update()
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
@@ -414,7 +417,7 @@ func (w *windowsWebviewWindow) run() {
 	var appMenu w32.HMENU
 
 	// Process Menu
-	if !options.Frameless {
+	if !options.Frameless && !options.Windows.DisableMenu {
 		userMenu := w.parent.options.Windows.Menu
 		if userMenu != nil {
 			// Explicit window menu takes priority
@@ -678,12 +681,30 @@ func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, window
 	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Calculated offset", "offsetX", offsetX, "offsetY", offsetY)
 
 	// Convert window-relative coordinates to webview-relative coordinates
-	webviewX := windowX - offsetX
-	webviewY := windowY - offsetY
+	webviewPhysicalX := windowX - offsetX
+	webviewPhysicalY := windowY - offsetY
 
-	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Webview coordinates before DPI Scaling", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
 
-	return webviewX, webviewY
+	// Get DPI for this window
+	dpi := w32.GetDpiForWindow(w.hwnd)
+	if dpi == 0 {
+		globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get dpi, returning physical coordinates", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
+		return webviewPhysicalX, webviewPhysicalY
+	}
+
+	// Convert to scale factor: 96 DPI == 1.0 (100%)
+	scaleFactor := float64(dpi) / 96.0
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: DPI info", "dpi", dpi, "scaleFactor", scaleFactor)
+
+	// Convert physical pixels -> logical/CSS pixels by dividing by the scale factor
+	// Use rounding to avoid truncation artefacts
+	webviewLogicalX := int(math.Round(float64(webviewPhysicalX) / scaleFactor))
+	webviewLogicalY := int(math.Round(float64(webviewPhysicalY) / scaleFactor))
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates (logical/CSS pixels)",
+		"webviewLogicalX", webviewLogicalX, "webviewLogicalY", webviewLogicalY)
+
+	return webviewLogicalX, webviewLogicalY
 }
 
 func (w *windowsWebviewWindow) physicalBounds() Rect {
@@ -1788,13 +1809,27 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// correct rect arrives if the DPI really differs on restore.
 		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
+			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
+			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
+			// and recalculate hit-test regions for proper mouse interaction after DPI change.
+			// See: https://github.com/wailsapp/wails/issues/4691
+			if w.parent.options.Frameless {
+				flags |= w32.SWP_FRAMECHANGED
+			}
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
 				int(newWindowRect.Left),
 				int(newWindowRect.Top),
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
-				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+				uint(flags))
+			// For frameless windows with decorations, re-extend the frame into client area
+			// to ensure proper window frame styling after DPI change.
+			if w.framelessWithDecorations() {
+				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+					globalApplication.handleFatalError(err)
+				}
+			}
 			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
 			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
@@ -2628,6 +2663,9 @@ func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) toggleMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		if w32.GetMenu(w.hwnd) == 0 {
 			w32.SetMenu(w.hwnd, w.menu.menu)
@@ -2744,6 +2782,9 @@ func (w *windowsWebviewWindow) setPadding(padding edge.Rect) {
 }
 
 func (w *windowsWebviewWindow) showMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, w.menu.menu)
 	}
