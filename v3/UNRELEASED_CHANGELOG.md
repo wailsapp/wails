@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update Taskfile template and CLI to dispatch build/package tasks with GOOS and ARCH in [PR](https://github.com/wailsapp/wails/pull/5617) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
