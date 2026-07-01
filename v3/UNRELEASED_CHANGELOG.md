@@ -27,6 +27,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Revalidate the WebView2 surface when the window crosses onto a monitor driven by a different GPU adapter, to address the permanent black screen on dual-GPU laptops (#5705) in [PR](https://github.com/wailsapp/wails/pull/5710) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -93,6 +93,15 @@ type windowsWebviewWindow struct {
 	// window is repositioned off the monitor it will restore to).
 	lastKnownDPI w32.UINT
 
+	// currentMonitor is the handle of the monitor the window was last seen on
+	// while non-minimised. It is used to detect when the window crosses onto a
+	// different monitor (potentially driven by a different GPU adapter), which
+	// on some systems invalidates the WebView2 composition surface and needs a
+	// manual revalidation (#5705). It is only sampled while non-minimised: while
+	// minimised the window is parked off its restore monitor, so the handle
+	// flips spuriously (same reasoning as lastKnownDPI, #5605).
+	currentMonitor w32.HMONITOR
+
 	// menubarTheme is the theme for the menubar
 	menubarTheme *w32.MenuBarTheme
 
@@ -467,6 +476,11 @@ func (w *windowsWebviewWindow) run() {
 	if dpi, _ := w.DPI(); dpi != 0 {
 		w.lastKnownDPI = dpi
 	}
+
+	// Seed the current monitor so the first genuine monitor crossing (not the
+	// window's initial placement) is what triggers the WebView2 revalidation
+	// in the WM_WINDOWPOSCHANGED handler (#5705).
+	w.currentMonitor = w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
 	// This could happen when using the default window position and the window launches on a secondary monitor.
@@ -1639,6 +1653,27 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if windowPos.Flags&w32.SWP_NOZORDER == 0 {
 			w.parent.emit(events.Windows.WindowZOrderChanged)
 		}
+		// Detect the window crossing onto a different monitor. WM_WINDOWPOSCHANGED
+		// fires reliably during a cross-monitor drag (unlike WM_DISPLAYCHANGE,
+		// which is only broadcast on a resolution/topology change, #5705), and
+		// MonitorFromWindow is a cheap syscall, so comparing the handle every
+		// message is fine. Skip while minimised: the parked off-screen window
+		// reports a spurious monitor handle there (same reasoning as the DPI
+		// handling, #5605).
+		if !w.isMinimizing {
+			if monitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST); monitor != 0 && monitor != w.currentMonitor {
+				w.currentMonitor = monitor
+				w.revalidateWebviewForNewMonitor()
+			}
+		}
+	case w32.WM_DISPLAYCHANGE:
+		// A display topology / resolution change (e.g. a hybrid-GPU laptop
+		// activating its discrete adapter for an external panel) can invalidate
+		// the WebView2 composition surface just like a cross-monitor move. Run
+		// the same revalidation. Skip while minimised for the reason above.
+		if !w.isMinimizing {
+			w.revalidateWebviewForNewMonitor()
+		}
 	case w32.WM_PAINT:
 		w.parent.emit(events.Windows.WindowPaint)
 	case w32.WM_ERASEBKGND:
@@ -2057,6 +2092,46 @@ func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
 		return
 	}
 	w.resyncWebviewDPIAfterMinimise()
+}
+
+// revalidateWebviewForNewMonitor is run when the window crosses onto a
+// different monitor (WM_WINDOWPOSCHANGED) or the display topology changes
+// (WM_DISPLAYCHANGE). On dual-GPU systems the destination monitor may be driven
+// by a different GPU adapter than the source, which can leave WebView2's
+// composition surface tied to the old adapter: the content goes permanently
+// black and every subsequent ExecuteScript returns
+// RESOURCE_NOT_IN_CORRECT_STATE (#5705). Wails runs WebView2 in raw-pixels
+// bounds mode with ShouldDetectMonitorScaleChanges disabled, so nothing else
+// prompts the controller to rebuild that surface on a same-DPI move — the
+// WM_DPICHANGED recovery (#5677) never fires when both monitors share a DPI.
+//
+// IMPORTANT (unverified): the effective recovery action here could not be
+// tested on real dual-GPU hardware. Re-asserting the *same* bounds is known to
+// be a no-op (WebView2 early-outs when the rect is unchanged), so this nudges
+// the bounds by one pixel and restores them to force a real re-layout / surface
+// revalidation. If that proves insufficient on affected hardware, stronger
+// escalations to try are a visibility toggle (PutIsVisible false->true) or, as
+// a last resort, recreating the controller. See the PR discussion on #5705.
+func (w *windowsWebviewWindow) revalidateWebviewForNewMonitor() {
+	// Tell WebView2 the parent moved (harmless if already sent by WM_MOVE) and
+	// re-assert the rasterization scale for the mixed-DPI case (a no-op at equal
+	// DPI, and self-guarded against an unavailable controller).
+	_ = w.chromium.NotifyParentWindowPositionChanged()
+	w.resyncWebviewRasterizationScale()
+
+	rect := w32.GetClientRect(w.hwnd)
+	if rect == nil {
+		return
+	}
+	// Nudge the bounds by one pixel so WebView2 performs a genuine re-layout
+	// (a same-bounds Resize would early-out), then restore the correct bounds.
+	w.chromium.ResizeWithBounds(&edge.Rect{
+		Left:   rect.Left,
+		Top:    rect.Top,
+		Right:  rect.Right + 1,
+		Bottom: rect.Bottom,
+	})
+	w.chromium.Resize()
 }
 
 // crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
