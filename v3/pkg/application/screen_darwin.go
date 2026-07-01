@@ -61,7 +61,23 @@ static const char* strdupOrNull(const char* s) {
 }
 
 Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
-	Screen returnScreen;
+	// Zero-initialise so every field has a defined value: not all callers set
+	// isPrimary (only getAllScreens does), and the availability-gated name
+	// assignment may be skipped, leaving Go to read uninitialised pointers.
+	Screen returnScreen = {0};
+
+	// A window can have no associated screen (e.g. minimised or on a
+	// disconnected display), so ((NSWindow*)window).screen is NULL. Fall back
+	// to the main screen rather than messaging a nil NSScreen and returning a
+	// garbage Screen, matching the guard used elsewhere (systemtray_darwin.m).
+	if (screen == NULL) {
+		screen = [NSScreen mainScreen];
+	}
+	if (screen == NULL) {
+		// No screens attached at all; returnScreen stays zero-initialised.
+		return returnScreen;
+	}
+
 	returnScreen.scaleFactor = screen.backingScaleFactor;
 
 	// NSScreen's native coordinate space is Y-up with (0,0) at the bottom-left
