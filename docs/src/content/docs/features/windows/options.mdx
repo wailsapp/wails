@@ -917,6 +917,7 @@ The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions
 ```go
 Windows: application.WindowsWindow{
     DisableIcon:                       false,
+    DisableMenu:                       false,
     BackdropType:                      application.Auto,
     CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
@@ -925,6 +926,10 @@ Windows: application.WindowsWindow{
 
 **DisableIcon** (`bool`)
 - Remove icon from title bar.
+
+**DisableMenu** (`bool`)
+- Disable the menu bar for the window. When `true`, the window does not display a menu bar even if one is configured.
+- Default: `false`
 
 **BackdropType** (`BackdropType`)
 - `application.Auto` - System default

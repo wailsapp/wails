@@ -1,0 +1,190 @@
+---
+title: Pipeline Build & Packaging
+description: Apa yang terjadi di balik layar saat Anda menjalankan `wails3 build`, bagaimana binary lintas platform dihasilkan, dan bagaimana installer dibuat untuk setiap OS.
+sidebar:
+  order: 6
+---
+
+`wails3 build` sengaja **tipis**: ini adalah wrapper Taskfile yang meneruskan
+build tag ekstra ke task `build` proyek host. Pekerjaan berat ada di
+`build/Taskfile.yml` proyek sendiri (dihasilkan oleh `wails3 init`), di
+`internal/commands/build-assets.go` (yang mengelola asset bake-time), dan di
+`internal/packager` (packaging Linux nfpm) plus `internal/commands/{appimage,
+msix,dmg/,dot_desktop}.go` (installer per-platform).
+
+Halaman ini mencakup:
+
+1. Entry-point CLI aktual
+2. Alur build berbasis Taskfile
+3. Asset bake & injeksi build-info
+4. Backend packaging per platform
+5. Menyesuaikan pipeline
+6. Troubleshooting
+
+---
+
+## 1. Entry-Point CLI Aktual
+
+```
+wails3 build       → internal/commands.Build       (di task_wrapper.go)
+wails3 package     → internal/commands.Package     (di task_wrapper.go)
+wails3 generate build-assets → GenerateBuildAssets (di build-assets.go)
+wails3 update build-assets   → UpdateBuildAssets   (di build-assets.go)
+wails3 tool buildinfo        → BuildInfoOptions    (di tool_buildinfo.go)
+wails3 tool package          → internal/packager   (wrapper nfpm)
+wails3 generate .desktop     → di dot_desktop.go
+```
+
+`internal/commands/task_wrapper.go`:
+
+```go
+func Build(buildFlags *flags.Build, otherArgs []string) error {
+    // meneruskan --tags / EXTRA_TAGS, lalu defer ke target Taskfile
+    return wrapTask("build", otherArgs)
+}
+```
+
+`flags.Build` mengekspos **satu** flag — `--tags` (diteruskan sebagai
+`EXTRA_TAGS=`). **Tidak ada** flag `-platform`, `-o`, `-skipbindings`,
+`-skip-package`, `-package`, `-ldflags`, `-verbose`, `-debug`, `-devbuild`,
+`-icon`, atau `-clean` pada `wails3 build`. Cross-compilation, path output,
+ikon, dll. dikonfigurasi di **`Taskfile.yml`**, **`build/config.yml`**, dan
+perintah pendukung `wails3 generate icons` / `wails3 generate build-assets`.
+
+`build/build.json` **bukan** bagian v3 — konfigurasi adalah `Taskfile.yml` plus
+`build/config.yml`.
+
+---
+
+## 2. Alur Build Berbasis Taskfile
+
+Proyek yang baru diinisialisasi mengirim `build/Taskfile.yml` dengan namespace
+kira-kira:
+
+| Namespace | Task (pilihan) |
+|-----------|-------------------|
+| `darwin:` | `build`, `build:universal`, `package`, `run`, `dev` |
+| `windows:` | `build`, `package`, `run`, `dev` |
+| `linux:` | `build`, `package`, `run`, `dev` |
+| `common:` | `update:build-assets`, `generate:icons`, `generate:syso` |
+
+`wails3 build` memanggil namespace `build` OS host secara default; Taskfile
+proyek kemudian shell out ke `go build` dengan flag spesifik host. Build untuk OS
+lain berarti menjalankan task-nya langsung (mis. `wails3 task darwin:build:universal`), bukan meneruskan flag ke `wails3 build`.
+
+Direktori output default adalah **`bin/<APP_NAME>`** (tanpa prefix
+`build/bin/`).
+
+---
+
+## 3. Asset Bake-Time dan Build Info
+
+| Concern | File |
+|---------|------|
+| Generasi/pembaruan build-asset | `internal/commands/build-assets.go` |
+| Printer build info (CLI: `wails3 tool buildinfo`) | `internal/commands/tool_buildinfo.go` — mencetak informasi; **bukan** injector `ldflags` |
+| Stub production | `internal/assetserver/build_production.go` — `//go:build production` |
+| Bundle frontend | di-embed via `//go:embed` di paket aplikasi sendiri (mis. di samping `main.go`) |
+| Resource Windows (`.syso`) | `internal/commands/syso.go` — menghasilkan `rsrc_windows_<arch>.syso` |
+| Windows MSIX | `internal/commands/msix.go` + `internal/commands/webview2/` |
+| Input macOS DMG | `internal/commands/dmg/` |
+| Linux `.desktop` | `internal/commands/dot_desktop.go` |
+
+CLI tidak otomatis bake `bundled_assetserver.go` untuk aplikasi Anda —
+`internal/assetserver/bundled_assetserver.go` **hand-written** dan membungkus
+runtime JS embedded di bawah `bundledassets/`.
+
+---
+
+## 4. Backend Packaging
+
+### Linux
+
+Packaging Linux didorong oleh **nfpm** (bukan `fpm`):
+
+* `internal/packager/packager.go` membungkus `github.com/goreleaser/nfpm/v2` dan
+  mengekspos `CreatePackageFromConfig(pkgType, configPath, output)` /
+  `CreatePackageFromConfigWriter(...)`.
+* Proyek yang dihasilkan mengirim konfig gaya nfpm `myapp.DEB`, `myapp.RPM`, dan `myapp.ARCHLINUX`
+  di bawah `internal/commands/` (digunakan oleh `wails3 tool package`).
+* Generasi AppImage ada di `internal/commands/appimage.go`, yang memanggil
+  `linuxdeploy` + `linuxdeploy-plugin-gtk` (plugin dikirim di
+  `internal/commands/linuxdeploy-plugin-gtk.sh`).
+
+**Tidak ada** flag `-package deb`/`rpm` pada `wails3 build`. Gunakan
+`wails3 tool package` atau target Taskfile spesifik platform.
+
+### macOS
+
+* `darwin:package` dari Taskfile proyek menghasilkan bundle `.app`.
+* Asset DMG ada di bawah `internal/commands/dmg/`; proyek dapat membungkus
+  bundle ke DMG dengan `hdiutil` setelah `darwin:package` selesai (Taskfile
+  di template lebih baru menyertakan helper `dmg`).
+* CFBundle identifier, versi, dan copyright berasal dari flag `-product*`
+  saat `wails3 init` dan dari `build/config.yml`.
+
+### Windows
+
+* Target packaging Windows adalah **MSIX** (bukan WiX/MSI). Lihat
+  `internal/commands/msix.go` dan `internal/commands/webview2/` untuk
+  alur kerja lengkap.
+* **Tidak ada** `internal/commands/packager.go` dan **tidak ada**
+  direktori `internal/commands/windows_resources/`.
+* Code-signing opsional untuk executable berjalan via `wails3 tool sign`
+  (Authenticode) — lihat `internal/commands/sign.go`.
+
+---
+
+## 5. Menyesuaikan Pipeline
+
+| Kebutuhan | Pendekatan |
+|------|----------|
+| Build tag ekstra | `wails3 build --tags myFeature,otherTag` |
+| Linter / langkah pre-build | Tambahkan task ke `build/Taskfile.yml` dan buat task `build` spesifik OS bergantung padanya |
+| Cross-compile | Jalankan task OS relevan (mis. `wails3 task linux:build`) — tidak ada flag `-platform` |
+| Lewati packaging | Cukup jalankan task `build`; `package` terpisah |
+| Packager kustom | Letakkan konfig di bawah `internal/commands/myapp.*` dan panggil `wails3 tool package` dengan `-config <file>` |
+| Strip simbol | Edit task `build` `darwin:/windows:/linux:` untuk meneruskan `-ldflags "-s -w"` langsung ke `go build` — `wails3 build` sendiri tidak memiliki flag `-ldflags` |
+
+Semua target Taskfile menghormati env var yang diterbitkan Wails (`APP_NAME`,
+`WAILS_VITE_PORT`, `FRONTEND_DEVSERVER_URL`, …) sehingga task kustom dapat mengandalkannya.
+
+---
+
+## 6. Troubleshooting
+
+| Gejala | Kemungkinan Penyebab | Perbaikan |
+|---------|--------------|-----|
+| **`ld: framework not found WebKit` (mac)** | Xcode CLI tools hilang | `xcode-select --install` |
+| **Window kosong di prod build** | Build frontend gagal atau routing SPA | Periksa `frontend/dist/index.html` ada dan handler asset Anda fallback ke sana |
+| **Alat packaging MSIX hilang** | SDK `WebView2` / alat MSIX tidak terinstal | Jalankan `wails3 task install:msix:tools` |
+| **`linuxdeploy` tidak ditemukan** | Plugin hilang di PATH | Instal `linuxdeploy` + jalankan `internal/commands/linuxdeploy-plugin-gtk.sh` via langkah auto-install CLI |
+
+`wails3 build` tidak memiliki flag `-verbose`. Set `TASK_X_VERBOSE=1` (Taskfile) atau
+periksa target task langsung untuk melihat perintah yang dieksekusi.
+
+---
+
+## 7. Peta Sumber Kunci
+
+| Concern | File |
+|---------|------|
+| Wrapper build | `internal/commands/task_wrapper.go` (`Build`, `Package`, `SignWrapper`, `wrapTask`) |
+| Generasi build-asset | `internal/commands/build-assets.go` (`GenerateBuildAssets`, `UpdateBuildAssets`) |
+| Printer build info | `internal/commands/tool_buildinfo.go` |
+| AppImage builder | `internal/commands/appimage.go` |
+| Packaging Linux (nfpm) | `internal/packager/packager.go`, `internal/commands/myapp.{DEB,RPM,ARCHLINUX}` |
+| Windows MSIX | `internal/commands/msix.go`, `internal/commands/webview2/` |
+| Generator resource Windows | `internal/commands/syso.go` |
+| Asset macOS DMG | `internal/commands/dmg/` |
+| Generator `.desktop` | `internal/commands/dot_desktop.go` |
+| Konstanta versi | `internal/version/version.go` |
+
+Simpan tabel ini saat melacak kegagalan build.
+
+---
+
+Anda sekarang memiliki gambaran lengkap dari **kode sumber** ke **installer**. TL;DR
+adalah `wails3 build` sendiri wrapper tipis — hampir setiap kustomisasi
+terjadi di `Taskfile.yml` / `build/config.yml` proyek, atau via sub-perintah
+eksplisit `wails3 generate …` / `wails3 tool …`. Happy shipping!
