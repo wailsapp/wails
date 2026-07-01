@@ -1,5 +1,5 @@
 import {Events} from "@wailsio/runtime";
-import {WindowService} from "../bindings/changeme";
+import {WindowService} from "../bindings/mac-window-tabs";
 const timeElement = document.getElementById('time');
 
 window.openTabbedWindow = async () => {

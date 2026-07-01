@@ -55,52 +55,19 @@ func main() {
 	// 'URL' is the URL that will be loaded into the webview.
 	windowBackground := application.NewRGB(27, 38, 54)
 
-	macBase := application.MacWindow{
-		InvisibleTitleBarHeight: 50,
-		Backdrop:                application.MacBackdropTranslucent,
-		TitleBar:                application.MacTitleBarHiddenInset,
-	}
-
+	// Open a single window at startup. It uses TabbingModePreferred so that any
+	// "tabbed" window opened from its buttons will merge into it as a new tab.
+	// The two buttons in the frontend drive the demo:
+	//   - "Open tabbed window"     -> TabbingModePreferred     (joins this window)
+	//   - "Open non-tabbed window" -> TabbingModeDisallowed    (opens standalone)
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Tabbing Enabled",
-		Mac: func() application.MacWindow {
-			mac := macBase
-			mac.TabbingMode = application.MacWindowTabbingModePreferred
-			return mac
-		}(),
-		BackgroundColour: windowBackground,
-		URL:              "/",
-	})
-
-	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Opens From Tabbing Enabled",
-		Mac: func() application.MacWindow {
-			mac := macBase
-			mac.TabbingMode = application.MacWindowTabbingModePreferred
-			return mac
-		}(),
-		BackgroundColour: windowBackground,
-		URL:              "/",
-	})
-
-	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Tabbing Disabled",
-		Mac: func() application.MacWindow {
-			mac := macBase
-			mac.TabbingMode = application.MacWindowTabbingModeDisallowed
-			return mac
-		}(),
-		BackgroundColour: windowBackground,
-		URL:              "/",
-	})
-
-	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Opens From Tabbing Disabled",
-		Mac: func() application.MacWindow {
-			mac := macBase
-			mac.TabbingMode = application.MacWindowTabbingModeDisallowed
-			return mac
-		}(),
+		Title: "macOS Window Tabs",
+		Mac: application.MacWindow{
+			InvisibleTitleBarHeight: 50,
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInset,
+			TabbingMode:             application.MacWindowTabbingModePreferred,
+		},
 		BackgroundColour: windowBackground,
 		URL:              "/",
 	})

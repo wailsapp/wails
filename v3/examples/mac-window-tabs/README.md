@@ -22,17 +22,17 @@ non-dev binary instead.
 
 ## What to Expect
 
-Four windows open on launch:
+A single window opens on launch. It uses `MacWindowTabbingModePreferred`, so it
+is willing to accept new tabs. Two buttons drive the demo:
 
-- **Tabbing Enabled** and **Opens From Tabbing Enabled** use
-  `MacWindowTabbingModePreferred`. On macOS 10.12+ these merge into a single
-  tabbed window.
-- **Tabbing Disabled** and **Opens From Tabbing Disabled** use
-  `MacWindowTabbingModeDisallowed`. These stay as separate windows and never
-  tab.
+- **Open tabbed window** opens a window with `MacWindowTabbingModePreferred`. On
+  macOS 10.12+ it merges into the current window as a new tab.
+- **Open non-tabbed window** opens a window with `MacWindowTabbingModeDisallowed`.
+  It always opens as a separate window and never tabs, even via Window > Merge
+  All Windows.
 
-You can also use Window > Merge All Windows to force the tabbable windows
-together.
+Open a mix of both to see the difference: tabbed windows stack into one titled
+tab bar, while non-tabbed windows stay independent.
 
 ## Relevant Code
 

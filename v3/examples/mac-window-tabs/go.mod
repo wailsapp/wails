@@ -1,4 +1,4 @@
-module changeme
+module mac-window-tabs
 
 go 1.25.0
 
