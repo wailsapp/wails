@@ -17,13 +17,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add HappyTools to community showcase in [PR](https://github.com/wailsapp/wails/pull/5061) by @Aliuyanfeng
-- Add Indonesian locale support and comprehensive documentation in [PR](https://github.com/wailsapp/wails/pull/5643) by @triadmoko
-- Add DisableMenu option to WindowsWindow in [PR](https://github.com/wailsapp/wails/pull/4813) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update Taskfile template and CLI to dispatch build/package tasks with GOOS and ARCH in [PR](https://github.com/wailsapp/wails/pull/5617) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
@@ -33,7 +29,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove German translated MDX files from contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5702) by @taliesin-ai
 
 ## Security
 <!-- Security-related changes -->
