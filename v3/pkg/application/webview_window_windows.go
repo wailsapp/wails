@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -98,6 +99,12 @@ type windowsWebviewWindow struct {
 
 	// Modal window tracking
 	parentHWND w32.HWND // Parent window HWND when this window is a modal
+
+	// lastProcessFailedLogAt throttles the ProcessFailed diagnostic. WebView2
+	// re-raises RENDER_PROCESS_UNRESPONSIVE every few seconds while the process
+	// stays hung, so a full stack trace on every event would flood the logs.
+	// ProcessFailed is delivered on the main thread, so no lock is needed.
+	lastProcessFailedLogAt time.Time
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -2056,6 +2063,72 @@ func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
 	w.resyncWebviewDPIAfterMinimise()
 }
 
+// enableNativeMonitorScaleDetection re-enables WebView2's built-in monitor
+// scale-change detection. edge.NewChromium disables it (PutShouldDetectMonitor
+// ScaleChanges(false)) to run in raw-pixels bounds mode and make the app own DPI
+// transitions. On a DPI scale-up across a mixed-DPI / dual-GPU boundary the
+// manual rasterization-scale resync could not keep WebView2's render surface
+// valid, so the render process terminated and every subsequent controller COM
+// call returned RESOURCE_NOT_IN_CORRECT_STATE forever (wailsapp/wails#5701).
+// Letting WebView2 detect the change natively keeps the surface valid. Only the
+// rasterization scale changes hands; BoundsMode stays USE_RAW_PIXELS, so the
+// app still sets exact pixel bounds. Called once, right after Embed, when the
+// controller is guaranteed live (Embed message-pumps until initialised).
+func (w *windowsWebviewWindow) enableNativeMonitorScaleDetection() {
+	if w.chromium == nil {
+		return
+	}
+	controller := w.chromium.GetController()
+	if controller == nil {
+		return
+	}
+	controller3 := controller.GetICoreWebView2Controller3()
+	if controller3 == nil {
+		return
+	}
+	if err := controller3.PutShouldDetectMonitorScaleChanges(true); err != nil {
+		globalApplication.error("failed to enable WebView2 monitor scale detection: %s", err)
+	}
+}
+
+// processFailed is the ProcessFailedCallback. It is diagnostic only (no
+// recovery): when WebView2's render / GPU / browser process dies — the
+// unrecoverable "controller zombie" root event behind #5701 — it records the
+// failed-process kind and a Go stack trace so the trigger is visible in the
+// logs, instead of the failure being silent and the UI simply going dead. The
+// stack is throttled because RENDER_PROCESS_UNRESPONSIVE re-fires repeatedly.
+func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+	now := time.Now()
+	if now.Sub(w.lastProcessFailedLogAt) < 30*time.Second {
+		return
+	}
+	w.lastProcessFailedLogAt = now
+	kind := "unknown"
+	if args != nil {
+		if k, err := args.GetProcessFailedKind(); err == nil {
+			kind = processFailedKindName(k)
+		}
+	}
+	globalApplication.error("WebView2 process failed (kind=%s) — UI may be wedged (#5701)\n%s", kind, debug.Stack())
+}
+
+// processFailedKindName gives the COREWEBVIEW2_PROCESS_FAILED_KIND enum a
+// human-readable label for the diagnostic log.
+func processFailedKindName(k edge.COREWEBVIEW2_PROCESS_FAILED_KIND) string {
+	switch k {
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+		return "browser-process-exited"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED:
+		return "render-process-exited"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_UNRESPONSIVE:
+		return "render-process-unresponsive"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_GPU_PROCESS_EXITED:
+		return "gpu-process-exited"
+	default:
+		return fmt.Sprintf("kind-%d", uint32(k))
+	}
+}
+
 // crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
 // WebView2 permission-kind enum. Unknown types map to UnknownPermission.
 func crossPermissionToWebView2Kind(p PermissionType) edge.CoreWebView2PermissionKind {
@@ -2312,8 +2385,21 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
+	// Diagnostic only: surface a render/GPU/browser process death (the
+	// unrecoverable "controller zombie" root event, wailsapp/wails#5701) with a
+	// stack trace, instead of it being invisible. Must be set before Embed so it
+	// is registered when AddProcessFailed runs during controller creation.
+	chromium.ProcessFailedCallback = w.processFailed
 
 	chromium.Embed(w.hwnd)
+
+	// Hand DPI/monitor-scale transitions back to WebView2. edge.NewChromium
+	// disables native detection for raw-pixels bounds mode; doing the resync
+	// manually let the render process terminate on a mixed-DPI / dual-GPU
+	// scale-up, permanently wedging the controller (#5701). Native detection
+	// keeps the render surface valid across the transition. Bounds stay in raw
+	// pixels — only rasterization-scale detection changes hands.
+	w.enableNativeMonitorScaleDetection()
 
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
