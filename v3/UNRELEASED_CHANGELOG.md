@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add DisableMenu option to WindowsWindow in [PR](https://github.com/wailsapp/wails/pull/4813) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
