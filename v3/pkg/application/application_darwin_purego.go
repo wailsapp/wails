@@ -202,7 +202,44 @@ func appInit() {
 			nsString(name), objc.ID(0))
 	}
 
+	// Local mouse-down monitor: native window dragging from the invisible
+	// title-bar strip of frameless / transparent-titlebar windows. Mirrors the
+	// cgo handleLeftMouseDown: logic, implemented directly in Go.
+	installFramelessDragMonitor()
+
 	startCustomProtocolHandler()
+}
+
+func installFramelessDragMonitor() {
+	const nsEventMaskLeftMouseDown = 1 << 1
+	block := objc.NewBlock(func(b objc.Block, event objc.ID) objc.ID {
+		ev := id(event)
+		win := ev.send("window")
+		if win.isNil() {
+			return event
+		}
+		v, ok := nsWindowToID.Load(win.ptr())
+		if !ok {
+			return event
+		}
+		impl := windowImplForID(v.(uint))
+		if impl == nil || impl.invisibleTitleBarHeight == 0 {
+			return event
+		}
+		loc := get[NSPoint](ev, "locationInWindow")
+		frame := get[NSRect](win, "frame")
+		if loc.Y > frame.Size.Height-CGFloat(impl.invisibleTitleBarHeight) {
+			// Skip near the left/right edges so native corner resize still works.
+			const resizeThreshold = 5.0
+			if loc.X < resizeThreshold || loc.X > frame.Size.Width-resizeThreshold {
+				return event
+			}
+			win.send("performWindowDragWithEvent:", event)
+		}
+		return event
+	})
+	class("NSEvent").send("addLocalMonitorForEventsMatchingMask:handler:",
+		uint(nsEventMaskLeftMouseDown), block)
 }
 
 // pushAppEvent constructs and enqueues an application event, mirroring the cgo

@@ -22,6 +22,37 @@ type macosWebviewWindow struct {
 	parent    *WebviewWindow
 	wkWebView unsafe.Pointer // WKWebView*
 	delegate  unsafe.Pointer // WailsWebviewWindowDelegate*
+
+	// invisibleTitleBarHeight enables native window dragging from the top
+	// `height` points of a frameless / transparent-titlebar window (see the
+	// local mouse monitor installed in appInit).
+	invisibleTitleBarHeight uint
+	// showToolbarWhenFullscreen controls the fullscreen presentation options
+	// returned by the delegate.
+	showToolbarWhenFullscreen bool
+}
+
+// windowImplForID resolves the macOS window backend for a Wails window id.
+func windowImplForID(windowID uint) *macosWebviewWindow {
+	if cached, ok := windowImplCache.Load(windowID); ok {
+		if impl, ok := cached.(*macosWebviewWindow); ok {
+			return impl
+		}
+	}
+	window, ok := globalApplication.Window.GetByID(windowID)
+	if !ok || window == nil {
+		return nil
+	}
+	ww, ok := window.(*WebviewWindow)
+	if !ok || ww == nil {
+		return nil
+	}
+	impl, ok := ww.impl.(*macosWebviewWindow)
+	if !ok {
+		return nil
+	}
+	windowImplCache.Store(windowID, impl)
+	return impl
 }
 
 func (w *macosWebviewWindow) win() id     { return id(uintptr(w.nsWindow)) }
@@ -203,6 +234,21 @@ func registerWindowDelegateClass() id {
 			},
 		})
 
+		// window:willUseFullScreenPresentationOptions: — hide the toolbar in
+		// fullscreen unless the window opted to keep it.
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("window:willUseFullScreenPresentationOptions:"),
+			Fn: func(self objc.ID, cmd objc.SEL, window objc.ID, proposed uint) uint {
+				const autoHideToolbar = 1 << 11 // NSApplicationPresentationAutoHideToolbar
+				if wid, ok := windowIDForDelegate(self); ok {
+					if impl := windowImplForID(wid); impl != nil && impl.showToolbarWhenFullscreen {
+						return proposed
+					}
+				}
+				return proposed | autoHideToolbar
+			},
+		})
+
 		windowDelegateClass = registerDelegateClass("WailsWebviewWindowDelegate", "NSObject", nil, methods)
 	})
 	return windowDelegateClass
@@ -331,6 +377,7 @@ func (w *macosWebviewWindow) applyMacOptions(options WebviewWindowOptions) {
 	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	titleBar := macOptions.TitleBar
+	w.showToolbarWhenFullscreen = titleBar.ShowToolbarWhenFullscreen
 	if !options.Frameless {
 		w.setTitleBarAppearsTransparent(titleBar.AppearsTransparent)
 		w.setHideTitleBar(titleBar.Hide)
@@ -339,6 +386,12 @@ func (w *macosWebviewWindow) applyMacOptions(options WebviewWindowOptions) {
 		w.setUseToolbar(titleBar.UseToolbar)
 		w.setToolbarStyle(int(titleBar.ToolbarStyle))
 		w.setHideToolbarSeparator(titleBar.HideToolbarSeparator)
+	}
+
+	// Enable native drag from the invisible title-bar strip when configured for
+	// a frameless or transparent-titlebar window (matches cgo run()).
+	if macOptions.InvisibleTitleBarHeight != 0 && (options.Frameless || titleBar.AppearsTransparent) {
+		w.invisibleTitleBarHeight = uint(macOptions.InvisibleTitleBarHeight)
 	}
 
 	if macOptions.Appearance != "" {
