@@ -113,11 +113,18 @@ type windowsWebviewWindow struct {
 	webviewHealthProbeFailures int
 
 	// DPI-flap breaker state (noteDPITransitionAndDetectFlap, #5701).
-	// Main-thread only (WM_DPICHANGED handling).
+	// Main-thread only (WM_DPICHANGED handling). lastAppliedDPI is the DPI of
+	// the last WM_DPICHANGED actually processed (dedup key — unlike
+	// lastKnownDPI it is NOT refreshed by WM_SIZE, so it cannot race ahead of
+	// the transition stream). inSizeMove tracks the modal move/size loop
+	// (WM_ENTERSIZEMOVE..WM_EXITSIZEMOVE); the flap resolver must not
+	// reposition a window the user is actively dragging.
 	lastDPITransitionAt   time.Time
 	lastDPITransitionFrom uint32
 	dpiFlapReversals      int
 	dpiFlapSuppressUntil  time.Time
+	lastAppliedDPI        uint32
+	inSizeMove            bool
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -480,9 +487,11 @@ func (w *windowsWebviewWindow) run() {
 
 	// Seed the last-known DPI so the first un-minimise has a baseline to compare
 	// against (it is otherwise refreshed on every non-minimised WM_SIZE). See
-	// resyncWebviewDPIAfterUnminimiseIfDPIChanged (#5605).
+	// resyncWebviewDPIAfterUnminimiseIfDPIChanged (#5605). lastAppliedDPI seeds
+	// the WM_DPICHANGED dedup (#5701) with the starting DPI.
 	if dpi, _ := w.DPI(); dpi != 0 {
 		w.lastKnownDPI = dpi
+		w.lastAppliedDPI = uint32(dpi)
 	}
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
@@ -1632,6 +1641,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		w.parent.emit(events.Windows.WindowKillFocus)
 	case w32.WM_ENTERSIZEMOVE:
+		w.inSizeMove = true
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&(0x8000) != 0 {
@@ -1642,6 +1652,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowStartResize)
 		}
 	case w32.WM_EXITSIZEMOVE:
+		w.inSizeMove = false
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
 			w.parent.emit(events.Windows.WindowEndMove)
 		} else {
@@ -1828,27 +1839,41 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
-		// DPI-flap breaker (#5701): field logs show a window resting near a
-		// mixed-DPI boundary can OSCILLATE — each suggested-rect resize pushes
-		// the window's majority back across the boundary, Windows fires the
-		// opposite WM_DPICHANGED, and the loop runs at ~2 transitions/second
-		// with progressively mangled suggested sizes. That resize/scale storm
-		// is what assert-crashes the WebView2 GPU process (exit code
-		// 0x80000003, reason=crashed). Detect the reversal pattern and stop
-		// applying resizes until the storm passes; a genuine user drag cannot
-		// reverse direction 3× inside 600 ms windows, so it is never affected.
-		flapSuppressed := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), uint32(wparam&0xFFFF))
+		newDPI := uint32(wparam & 0xFFFF)
+		suggested := (*w32.RECT)(unsafe.Pointer(lparam))
+
+		// Redundant-transition dedup (tao/winit/Chromium all carry the same
+		// guard): Windows can deliver a WM_DPICHANGED for the DPI the window
+		// was already switched to (a "dpi 120 -> 120" was observed in the
+		// field). Processing it would only add resize/COM churn during exactly
+		// the storms that crash the GPU process (#5701).
+		if newDPI != 0 && newDPI == w.lastAppliedDPI {
+			globalApplication.warning("DPI transition dedup: window %d already at dpi %d — skipped (#5701)", w.parent.id, newDPI)
+			break
+		}
+
+		// DPI-flap breaker (#5701): a window resting near a mixed-DPI boundary
+		// can OSCILLATE — each applied suggested rect pushes the window's
+		// majority back across the boundary, Windows fires the opposite
+		// WM_DPICHANGED, and the resize/scale storm assert-crashes the WebView2
+		// GPU process (exit code 0x80000003) until Chromium intentionally kills
+		// the browser process. Detect the reversal pattern, stop applying
+		// resizes while it persists, and — unless the user is mid-drag — move
+		// the window fully onto one monitor so the loop's root condition ends.
+		flapSuppressed, flapTripped := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), newDPI)
 		// Diagnostic breadcrumb (#5701): mixed-DPI monitor crossings are the
 		// trigger for WebView2 GPU-process deaths in the field, so record every
 		// transition — a "WebView2 process failed" shortly after one of these
 		// confirms the correlation. Warning level so log bridges that forward
 		// only Warn+ still ship it; DPI transitions are rare enough not to spam.
-		{
-			newDPI := uint32(wparam & 0xFFFF)
-			suggested := (*w32.RECT)(unsafe.Pointer(lparam))
-			globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
-				w.parent.id, w.lastKnownDPI, newDPI,
-				suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
+		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
+			w.parent.id, w.lastKnownDPI, newDPI,
+			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
+		if flapTripped && !w.inSizeMove && !w.isMinimizing {
+			w.resolveDPIFlapStraddle(suggested)
+		}
+		if !w.isMinimizing {
+			w.lastAppliedDPI = newDPI
 		}
 		// While minimised the window is repositioned off its restore monitor; a
 		// DPI change in that state delivers a suggested rect scaled for whatever
@@ -2041,25 +2066,48 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
 }
 
+const (
+	// dpiFlapReversalWindow bounds how far apart two opposing WM_DPICHANGED
+	// transitions may be and still count as oscillation. Field data (#5701)
+	// shows the feedback loop running anywhere from ~350 ms to ~2.5 s per
+	// transition depending on where the window sits relative to the boundary —
+	// the first breaker shipped with 600 ms and missed the slower storms
+	// entirely (every breadcrumb logged flapSuppressed=false while the GPU
+	// process was assert-crashing). A human CAN reverse a drag within 3 s, so
+	// occasional false positives are accepted: the cost is a 3 s resize pause
+	// and a settle resync, versus a GPU-process crash cascade for a miss.
+	dpiFlapReversalWindow = 3 * time.Second
+
+	// dpiFlapSuppression is the resize-suppression period once oscillation is
+	// detected. Transitions arriving while suppressed EXTEND the suppression —
+	// the storm is evidently still alive — so the total pause is storm-scoped,
+	// not fixed.
+	dpiFlapSuppression = 3 * time.Second
+)
+
 // noteDPITransitionAndDetectFlap records a WM_DPICHANGED transition and
-// reports whether resize handling should be suppressed. It detects the
-// mixed-DPI oscillation observed in the field (#5701): a window resting near a
-// monitor boundary ping-pongs A→B→A→B at ~2 transitions/second because each
-// applied suggested rect moves the window's majority back across the boundary.
-// Three direction reversals inside 600 ms windows cannot be produced by a
-// human drag, so that pattern triggers a 2 s suppression during which the
-// suggested rect and the manual rasterization resync are skipped — with
-// nothing resizing the window, Windows stops re-evaluating the boundary and
-// the loop starves. A settle resync runs once after the suppression expires so
-// the webview ends up scaled for whichever monitor the window came to rest on.
-// Main thread only.
-func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI uint32) bool {
+// classifies it. It detects the mixed-DPI oscillation observed in the field
+// (#5701): a window resting near a monitor boundary ping-pongs A→B→A→B because
+// each applied suggested rect moves the window's majority back across the
+// boundary. Chromium tolerates a handful of GPU-process crashes and then
+// INTENTIONALLY kills the browser process ("GPU process isn't usable.
+// Goodbye."), so an unbroken storm always ends in a wedged controller.
+//
+// Returns (suppressed, tripped): suppressed=true → skip the suggested-rect
+// resize and rasterization resync for this transition; tripped=true → this
+// exact transition crossed the detection threshold (the caller runs the
+// straddle resolver once on that edge). A settle resync self-reschedules until
+// the suppression window has fully lapsed. Main thread only.
+func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI uint32) (suppressed, tripped bool) {
 	now := time.Now()
 	if now.Before(w.dpiFlapSuppressUntil) {
-		return true
+		// Still oscillating while suppressed — extend so suppression outlives
+		// the storm instead of re-arming it for another crash window.
+		w.dpiFlapSuppressUntil = now.Add(dpiFlapSuppression)
+		return true, false
 	}
 
-	if newDPI == w.lastDPITransitionFrom && now.Sub(w.lastDPITransitionAt) < 600*time.Millisecond {
+	if newDPI == w.lastDPITransitionFrom && now.Sub(w.lastDPITransitionAt) < dpiFlapReversalWindow {
 		w.dpiFlapReversals++
 	} else {
 		w.dpiFlapReversals = 0
@@ -2068,30 +2116,87 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	w.lastDPITransitionAt = now
 
 	if w.dpiFlapReversals < 3 {
-		return false
+		return false, false
 	}
 	w.dpiFlapReversals = 0
-	w.dpiFlapSuppressUntil = now.Add(2 * time.Second)
-	globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes for 2s to break the feedback loop (#5701)",
+	w.dpiFlapSuppressUntil = now.Add(dpiFlapSuppression)
+	globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
 		w.parent.id, fromDPI, newDPI)
 
-	// Settle once after the storm: whichever monitor the window rests on, put
-	// the rasterization scale and bounds back in sync. Timer→InvokeAsync so
-	// this never runs inside the WM_DPICHANGED dispatch.
-	time.AfterFunc(2200*time.Millisecond, func() {
-		InvokeAsync(func() {
-			if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown || w.webviewRebuildInProgress {
-				return
-			}
-			if w.resyncWebviewRasterizationScale() {
-				w.chromium.Resize()
-			}
-			if dpi, _ := w.DPI(); dpi != 0 {
-				w.lastKnownDPI = dpi
-			}
+	// Settle after the storm: whichever monitor the window rests on, put the
+	// rasterization scale and bounds back in sync. The closure re-arms itself
+	// while suppression keeps being extended, so it runs exactly once, after
+	// the LAST transition. Timer→InvokeAsync so it never runs inside the
+	// WM_DPICHANGED dispatch.
+	var settle func()
+	settle = func() {
+		time.AfterFunc(dpiFlapSuppression+500*time.Millisecond, func() {
+			InvokeAsync(func() {
+				if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown {
+					return
+				}
+				if time.Now().Before(w.dpiFlapSuppressUntil) || w.webviewRebuildInProgress {
+					settle() // storm (or a rebuild) still active — check again later
+					return
+				}
+				if w.resyncWebviewRasterizationScale() {
+					w.chromium.Resize()
+				}
+				if dpi, _ := w.DPI(); dpi != 0 {
+					w.lastKnownDPI = dpi
+				}
+				globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (#5701)", w.parent.id, w.lastKnownDPI)
+			})
 		})
-	})
-	return true
+	}
+	settle()
+	return true, true
+}
+
+// resolveDPIFlapStraddle ends the oscillation's root condition: the window
+// straddling a mixed-DPI monitor boundary. It takes the OS suggested rect of
+// the transition that tripped the breaker, shifts it so it lies ENTIRELY on
+// the suggested rect's target monitor (tao/winit ship the same nudge on
+// Windows 10; here it is gated to flap detection only, since winit PR #4119
+// showed unconditional nudging causes the opposite bug), and applies position
+// + size in a single SetWindowPos. With the window fully on one monitor the
+// majority-area rule has nothing left to flip. Skipped while the user holds a
+// drag (the modal move loop would fight the reposition). Main thread only.
+func (w *windowsWebviewWindow) resolveDPIFlapStraddle(suggested *w32.RECT) {
+	monitor := w32.MonitorFromRect(suggested, w32.MONITOR_DEFAULTTONEAREST)
+	if monitor == 0 {
+		return
+	}
+	var info w32.MONITORINFO
+	info.CbSize = uint32(unsafe.Sizeof(info))
+	if !w32.GetMonitorInfo(monitor, &info) {
+		return
+	}
+	work := info.RcWork
+	rect := *suggested
+	width := rect.Right - rect.Left
+	height := rect.Bottom - rect.Top
+
+	// Shift fully inside the work area (size preserved; an oversized window
+	// simply pins to the near edge).
+	if rect.Right > work.Right {
+		rect.Left -= rect.Right - work.Right
+	}
+	if rect.Left < work.Left {
+		rect.Left = work.Left
+	}
+	if rect.Bottom > work.Bottom {
+		rect.Top -= rect.Bottom - work.Bottom
+	}
+	if rect.Top < work.Top {
+		rect.Top = work.Top
+	}
+
+	globalApplication.warning("DPI flap resolver: window %d moved fully onto its target monitor at (%d,%d) %dx%d (#5701)",
+		w.parent.id, rect.Left, rect.Top, width, height)
+	w32.SetWindowPos(w.hwnd, 0,
+		int(rect.Left), int(rect.Top), int(width), int(height),
+		uint(w32.SWP_NOZORDER|w32.SWP_NOACTIVATE))
 }
 
 // resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
@@ -2427,6 +2532,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	if len(appOpts.AdditionalBrowserArgs) > 0 {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, appOpts.AdditionalBrowserArgs...)
+	}
+
+	// Crash-ladder escalation (#5701): after repeated WebView2 process crashes
+	// exhausted the rebuild budget, run the browser without GPU — Chromium's
+	// own last rung. Only effective when the browser process starts fresh,
+	// which is the case for the rebuild-after-browser-death path that sets it.
+	if webviewGPUSoftwareFallback {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 	}
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath

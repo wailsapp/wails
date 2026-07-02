@@ -82,6 +82,16 @@ const webviewRecoveryConfirmDelay = 2 * time.Second
 // correlate process deaths with runtime rollouts. Main-thread only.
 var webviewRuntimeVersion string
 
+// webviewGPUSoftwareFallback records that repeated WebView2 process crashes
+// exhausted a window's rebuild budget and the recovery escalated to software
+// rendering: every subsequent controller rebuild appends --disable-gpu to the
+// browser arguments (effective from the next browser-process start — which is
+// exactly the wedged-after-browser-death situation that reaches the cap).
+// This mirrors Chromium's own crash ladder (hardware GL → software fallback
+// after its crash limit) and Electron's disableHardwareAcceleration guidance.
+// Session-scoped; main-thread only.
+var webviewGPUSoftwareFallback bool
+
 // webviewRebuildActiveGlobal serializes rebuilds ACROSS windows. Embed pumps a
 // nested thread-wide message loop (GetMessage with hwnd=0), which reentrantly
 // dispatches other windows' queued InvokeAsync callbacks — in the field
@@ -101,10 +111,13 @@ const (
 	// webviewRebuildWindow / webviewRebuildMaxAttempts cap rebuild frequency:
 	// at most webviewRebuildMaxAttempts rebuilds per window within
 	// webviewRebuildWindow. The cap breaks pathological rebuild loops (e.g. a
-	// broken WebView2 runtime that wedges immediately after every rebuild)
+	// DPI-flap storm killing each freshly rebuilt controller within seconds)
 	// while still allowing occasional legitimate recoveries — entries expire,
-	// so a dock/undock event hours later gets a fresh budget.
-	webviewRebuildWindow      = 5 * time.Minute
+	// so a dock/undock event later gets a fresh budget. Field data (#5701):
+	// a storm burned 3 attempts in 90s and the UI then sat wedged until the
+	// budget expired, so the window is kept short — the watchdog (15s probes,
+	// 2 strikes) picks the wedge up within ~30s of the budget freeing.
+	webviewRebuildWindow      = 2 * time.Minute
 	webviewRebuildMaxAttempts = 3
 )
 
@@ -351,12 +364,23 @@ func (w *windowsWebviewWindow) rebuildWebview(reason string) {
 	}
 	w.webviewRebuildTimes = recent
 	if len(w.webviewRebuildTimes) >= webviewRebuildMaxAttempts {
-		if now.Sub(w.lastRebuildSuppressedLogAt) >= time.Minute {
-			w.lastRebuildSuppressedLogAt = now
-			globalApplication.error("WebView2 rebuild suppressed: %d attempts within %s (%s) — the runtime appears unable to host a webview; an app restart is required (#5701)",
-				webviewRebuildMaxAttempts, webviewRebuildWindow, reason)
+		if !webviewGPUSoftwareFallback {
+			// The budget is gone because each rebuilt controller kept getting
+			// killed — escalate the way Chromium itself does after its GPU
+			// crash limit: give up on hardware rendering and rebuild once more
+			// with --disable-gpu. Field data (#5701): all crashes were Chromium
+			// CHECK failures (0x80000003) in the GPU path during DPI storms.
+			webviewGPUSoftwareFallback = true
+			w.webviewRebuildTimes = w.webviewRebuildTimes[:0]
+			globalApplication.error("WebView2 rebuild budget exhausted (%s) — falling back to SOFTWARE RENDERING (--disable-gpu) for all further rebuilds this session (#5701)", reason)
+		} else {
+			if now.Sub(w.lastRebuildSuppressedLogAt) >= time.Minute {
+				w.lastRebuildSuppressedLogAt = now
+				globalApplication.error("WebView2 rebuild suppressed: %d attempts within %s (%s), already on software rendering — the runtime appears unable to host a webview; an app restart is required (#5701)",
+					webviewRebuildMaxAttempts, webviewRebuildWindow, reason)
+			}
+			return
 		}
-		return
 	}
 	w.webviewRebuildTimes = append(w.webviewRebuildTimes, now)
 
