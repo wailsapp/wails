@@ -1285,10 +1285,122 @@ func (w *macosWebviewWindow) injectCSS(css string) {
 	w.webview().send("evaluateJavaScript:completionHandler:", nsString(js), objc.ID(0))
 }
 
-// applyLiquidGlass is only meaningful on macOS 26+ and relies on private NSGlass
-// APIs; left as a no-op when unsupported (the window renders normally).
+// applyLiquidGlass applies Apple's Liquid Glass effect (macOS 26+), falling back
+// to a translucent backdrop on older systems. Port of the cgo applyLiquidGlass +
+// windowSetLiquidGlass.
 func (w *macosWebviewWindow) applyLiquidGlass() {
-	globalApplication.debug("[purego] liquid glass backdrop not applied (requires macOS 26 private APIs)")
+	options := w.parent.options.Mac.LiquidGlass
+	if options.CornerRadius < 0 {
+		options.CornerRadius = 0
+	}
+	if !classExists("NSGlassEffectView") {
+		runOnMain(func() {
+			w.setTranslucentBackdrop()
+			w.setWebviewTransparent()
+		})
+		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
+		return
+	}
+	runOnMain(func() { w.windowSetLiquidGlass(options) })
+}
+
+func (w *macosWebviewWindow) windowSetLiquidGlass(o MacLiquidGlass) {
+	w.removeVisualEffects()
+
+	glass := class("NSGlassEffectView").send("alloc").send("init").send("autorelease")
+	if o.CornerRadius > 0 && respondsTo(glass, "setCornerRadius:") {
+		glass.send("setValue:forKey:", nsNumberDouble(o.CornerRadius), nsString("cornerRadius"))
+	}
+	if o.TintColor != nil && o.TintColor.Alpha > 0 && respondsTo(glass, "setTintColor:") {
+		tint := class("NSColor").send("colorWithRed:green:blue:alpha:",
+			CGFloat(o.TintColor.Red)/255, CGFloat(o.TintColor.Green)/255,
+			CGFloat(o.TintColor.Blue)/255, CGFloat(o.TintColor.Alpha)/255)
+		glass.send("setTintColor:", tint)
+	}
+	if respondsTo(glass, "setStyle:") {
+		lightStyle := int(o.Style)
+		if o.Style == LiquidGlassStyleVibrant {
+			lightStyle = int(LiquidGlassStyleLight)
+		}
+		glass.send("setValue:forKey:", nsNumberInt(lightStyle), nsString("style"))
+	}
+	if o.GroupID != "" {
+		switch {
+		case respondsTo(glass, "setGroupIdentifier:"):
+			glass.send("setGroupIdentifier:", nsString(o.GroupID))
+		case respondsTo(glass, "setGroupName:"):
+			glass.send("setGroupName:", nsString(o.GroupID))
+		}
+	}
+	if o.GroupSpacing > 0 && respondsTo(glass, "setGroupSpacing:") {
+		glass.send("setValue:forKey:", nsNumberDouble(o.GroupSpacing), nsString("groupSpacing"))
+	}
+
+	const autoWidth, autoHeight = 1 << 1, 1 << 4
+	const belowWindow = -1
+	contentView := w.win().send("contentView")
+	glass.send("setFrame:", get[NSRect](contentView, "bounds"))
+	glass.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+	contentView.send("addSubview:positioned:relativeTo:", glass, belowWindow, objc.ID(0))
+
+	// A real NSGlassEffectView hosts the webview in its own contentView.
+	if respondsTo(glass, "contentView") {
+		webView := w.webview()
+		glassContent := glass.send("contentView")
+		if !webView.isNil() && !glassContent.isNil() {
+			webView.send("removeFromSuperview")
+			glassContent.send("addSubview:", webView)
+			webView.send("setFrame:", get[NSRect](glassContent, "bounds"))
+			webView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+		}
+	}
+
+	w.configureWebViewForLiquidGlass()
+	w.win().send("setOpaque:", false)
+	w.win().send("setBackgroundColor:", class("NSColor").send("clearColor"))
+}
+
+func (w *macosWebviewWindow) configureWebViewForLiquidGlass() {
+	wv := w.webview()
+	wv.send("setValue:forKey:", nsNumberBool(false), nsString("drawsBackground"))
+	wv.send("setValue:forKey:", class("NSColor").send("clearColor"), nsString("backgroundColor"))
+	layer := wv.send("layer")
+	if !layer.isNil() {
+		layer.send("setZPosition:", CGFloat(1.0))
+		layer.send("setShouldRasterize:", true)
+		scale := get[CGFloat](class("NSScreen").send("mainScreen"), "backingScaleFactor")
+		layer.send("setRasterizationScale:", scale)
+	}
+}
+
+// removeVisualEffects removes any NSVisualEffectView / NSGlassEffectView backdrop
+// previously added to the content view.
+func (w *macosWebviewWindow) removeVisualEffects() {
+	contentView := w.win().send("contentView")
+	subviews := contentView.send("subviews")
+	count := get[uint](subviews, "count")
+	veClass := class("NSVisualEffectView")
+	glassClass := class("NSGlassEffectView") // id(0) if unavailable
+	for i := uint(0); i < count; i++ {
+		sv := subviews.send("objectAtIndex:", i)
+		if get[bool](sv, "isKindOfClass:", veClass) ||
+			(!glassClass.isNil() && get[bool](sv, "isKindOfClass:", glassClass)) {
+			sv.send("removeFromSuperview")
+		}
+	}
+}
+
+func classExists(name string) bool {
+	loadFrameworks()
+	return objc.GetClass(name) != 0
+}
+
+func respondsTo(o id, sel string) bool {
+	return get[bool](o, "respondsToSelector:", sel_(sel))
+}
+
+func nsNumberDouble(d float64) id {
+	return class("NSNumber").send("numberWithDouble:", d)
 }
 
 // setStdButtonState toggles a standard window button, matching the cgo

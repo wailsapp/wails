@@ -64,7 +64,7 @@ the window-event delegate are wired.
 | Context menu, print, attach-modal (sheet), start-drag, disable-size-constraints, frameless toggle, CSS injection, key-event routing | implemented |
 | Frameless native title-bar drag (invisible title-bar mouse monitor), show-toolbar-when-fullscreen | implemented |
 | Disable-escape-exits-fullscreen, frameless keyboard focus (canBecomeKey/Main) | implemented (NSWindow subclass) |
-| Liquid glass backdrop (macOS 26 private NSGlass APIs) | **remaining** (no-op; window renders normally) |
+| Liquid glass backdrop (NSGlassEffectView via KVC, translucent fallback) | implemented |
 | Native file-drop overlay view (drag-drop of files) | implemented (NSView <NSDraggingDestination>) |
 | Window key-binding capture (keyDown: accelerator mapping) | implemented |
 
@@ -74,4 +74,3 @@ the window-event delegate are wired.
   `NSException` into `errRequestStopped` without a tiny native shim (no
   `@try/@catch` from pure Go); the exception would otherwise propagate.
 - Dialogs are application-modal rather than window sheets.
-- Liquid glass backdrop is a no-op (requires macOS 26 private APIs).
