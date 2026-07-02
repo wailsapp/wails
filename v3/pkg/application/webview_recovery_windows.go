@@ -82,27 +82,6 @@ const webviewRecoveryConfirmDelay = 2 * time.Second
 // correlate process deaths with runtime rollouts. Main-thread only.
 var webviewRuntimeVersion string
 
-// webviewGPUSoftwareFallback records that repeated WebView2 process crashes
-// exhausted a window's rebuild budget and the recovery escalated to software
-// rendering: every subsequent controller rebuild appends --disable-gpu to the
-// browser arguments (effective from the next browser-process start — which is
-// exactly the wedged-after-browser-death situation that reaches the cap).
-// This mirrors Chromium's own crash ladder (hardware GL → software fallback
-// after its crash limit) and Electron's disableHardwareAcceleration guidance.
-// Session-scoped; main-thread only.
-var webviewGPUSoftwareFallback bool
-
-// webviewGPUSoftwareFallbackRejected latches once a software-rendering rebuild
-// FAILED to create its controller. WebView2 environments on one user data
-// folder must share browser arguments with the running browser process —
-// budgets are per-window, so one window can exhaust and request --disable-gpu
-// while sibling windows still run standard-args controllers, and the mismatch
-// makes controller creation fail with 8007139F ERROR_INVALID_STATE (field
-// crash, #5701: that failure used to take the whole app down via the fatal
-// error callback). Once rejected, the fallback is not re-armed this session;
-// standard-args rebuilds + the health watchdog carry the recovery instead.
-var webviewGPUSoftwareFallbackRejected bool
-
 // webviewRebuildActiveGlobal serializes rebuilds ACROSS windows. Embed pumps a
 // nested thread-wide message loop (GetMessage with hwnd=0), which reentrantly
 // dispatches other windows' queued InvokeAsync callbacks — in the field
@@ -375,24 +354,22 @@ func (w *windowsWebviewWindow) rebuildWebview(reason string) {
 	}
 	w.webviewRebuildTimes = recent
 	if len(w.webviewRebuildTimes) >= webviewRebuildMaxAttempts {
-		if !webviewGPUSoftwareFallback && !webviewGPUSoftwareFallbackRejected {
-			// The budget is gone because each rebuilt controller kept getting
-			// killed — escalate the way Chromium itself does after its GPU
-			// crash limit: give up on hardware rendering and rebuild once more
-			// with --disable-gpu. Field data (#5701): all crashes were Chromium
-			// CHECK failures (0x80000003) in the GPU path during DPI storms.
-			webviewGPUSoftwareFallback = true
-			w.webviewRebuildTimes = w.webviewRebuildTimes[:0]
-			globalApplication.error("WebView2 rebuild budget exhausted (%s) — falling back to SOFTWARE RENDERING (--disable-gpu) for all further rebuilds this session (#5701)", reason)
-		} else {
-			if now.Sub(w.lastRebuildSuppressedLogAt) >= time.Minute {
-				w.lastRebuildSuppressedLogAt = now
-				globalApplication.error("WebView2 rebuild suppressed: %d attempts within %s (%s, softwareFallback=%v rejected=%v) — waiting for the budget window; the health watchdog keeps retrying (#5701)",
-					webviewRebuildMaxAttempts, webviewRebuildWindow, reason,
-					webviewGPUSoftwareFallback, webviewGPUSoftwareFallbackRejected)
-			}
-			return
+		// The ladder deliberately has NO --disable-gpu software-fallback rung:
+		// production apps must not depend on browser flags (Microsoft may
+		// remove or alter them at any time), and a mid-session argument switch
+		// is invalid anyway while sibling controllers share the user data
+		// folder — the args mismatch fails controller creation with 8007139F
+		// ERROR_INVALID_STATE (field crash, #5701, v200.0.5: that failure used
+		// to take the whole app down via the fatal error callback). Chromium
+		// applies its own internal software fallback after repeated GPU
+		// crashes; our job is only to keep rebuilding standard controllers
+		// once the budget window frees.
+		if now.Sub(w.lastRebuildSuppressedLogAt) >= time.Minute {
+			w.lastRebuildSuppressedLogAt = now
+			globalApplication.error("WebView2 rebuild suppressed: %d attempts within %s (%s) — waiting for the budget window; the health watchdog keeps retrying (#5701)",
+				webviewRebuildMaxAttempts, webviewRebuildWindow, reason)
 		}
+		return
 	}
 	w.webviewRebuildTimes = append(w.webviewRebuildTimes, now)
 
@@ -430,14 +407,7 @@ func (w *windowsWebviewWindow) rebuildWebview(reason string) {
 		// Controller/environment creation failed (edge.Embed reports the error
 		// and returns instead of exiting — the fatal path killed the app from
 		// exactly this spot in the field, #5701). Typical cause: 8007139F
-		// ERROR_INVALID_STATE while the shared browser process is mid-teardown,
-		// or this rebuild's browser args mismatching the args the running
-		// browser process was started with.
-		if webviewGPUSoftwareFallback {
-			webviewGPUSoftwareFallback = false
-			webviewGPUSoftwareFallbackRejected = true
-			globalApplication.error("WebView2 rebuild: software-rendering args rejected (sibling windows still run standard-args controllers on this user data folder) — reverting to standard args for all further rebuilds (#5701)")
-		}
+		// ERROR_INVALID_STATE while the shared browser process is mid-teardown.
 		globalApplication.error("WebView2 rebuild FAILED (%s): controller did not come up — retrying in 5s (#5701)", reason)
 		w.scheduleWebviewRecovery(5*time.Second, reason+" (rebuild retry)", webviewRecoveryRebuild)
 		return
