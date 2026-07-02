@@ -15,6 +15,7 @@ package application
 import (
 	"strings"
 	"sync"
+	"unsafe"
 
 	"github.com/ebitengine/purego/objc"
 )
@@ -121,12 +122,10 @@ func nsImageFromBytes(b []byte) id {
 func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
 	InvokeAsync(func() {
 		alert := class("NSAlert").send("alloc").send("init")
-		if title != "" {
-			alert.send("setMessageText:", nsString(title))
-		}
-		if message != "" {
-			alert.send("setInformativeText:", nsString(message))
-		}
+		// cgo always sets both (empty C strings when unset); leaving
+		// messageText unset shows NSAlert's default "Alert" text.
+		alert.send("setMessageText:", nsString(title))
+		alert.send("setInformativeText:", nsString(message))
 		if len(icon) > 0 {
 			alert.send("setIcon:", nsImageFromBytes(icon))
 		}
@@ -242,6 +241,9 @@ func (m *macosDialog) show() {
 				dialogCallback(callBackID, getButtonNumber(response))
 			})
 			alert.send("beginSheetModalForWindow:completionHandler:", parent, block)
+			// beginSheetModal... copies the block; release our +1 so it is
+			// freed once the sheet completes.
+			block.Release()
 		}
 	})
 }
@@ -281,8 +283,14 @@ func openPanelShouldEnableURL(self objc.ID, _ objc.SEL, _ objc.ID, url objc.ID) 
 	if u.isNil() {
 		return false
 	}
-	// Always allow directories so the user can navigate into them.
-	if get[bool](u, "hasDirectoryPath") {
+	// Always allow directories so the user can navigate into them. Use the
+	// filesystem check like the cgo delegate (fileExistsAtPath:isDirectory:
+	// resolves symlinks; hasDirectoryPath is string-based and misses dirs
+	// without a trailing slash and symlinked dirs).
+	var isDir bool
+	fm := class("NSFileManager").send("defaultManager")
+	exists := get[bool](fm, "fileExistsAtPath:isDirectory:", u.send("path"), unsafe.Pointer(&isDir))
+	if exists && isDir {
 		return true
 	}
 
@@ -445,39 +453,37 @@ func (m *macosOpenFileDialog) show() (chan string, error) {
 	panel.send("setTreatsFilePackagesAsDirectories:", m.dialog.treatsFilePackagesAsDirectories)
 	panel.send("setAllowsOtherFileTypes:", m.dialog.allowsOtherFileTypes)
 
-	// Deliver the collected paths on the response channel from a goroutine so
-	// the (main-thread) caller can read them on its own goroutine.
+	// The completion handler always runs on the main thread AFTER show() has
+	// returned (both presentations below are non-blocking), so the response
+	// maps are only ever touched from the main thread — exactly like the cgo
+	// backend's //export callbacks — and the channel consumer (the calling
+	// goroutine) is already blocked reading when the sends happen.
 	dialogID := m.dialog.id
-	finish := func(paths []string) {
+	block := objc.NewBlock(func(b objc.Block, result int) {
+		var paths []string
+		if result == nsModalResponseOK {
+			paths = collectOpenPanelPaths(panel)
+		}
 		if !delegate.isNil() {
 			releaseOpenPanelDelegate(delegate)
 		}
-		go func() {
-			for _, p := range paths {
-				openFileDialogCallback(dialogID, p)
-			}
-			openFileDialogCallbackEnd(dialogID)
-		}()
-	}
+		for _, p := range paths {
+			openFileDialogCallback(dialogID, p)
+		}
+		openFileDialogCallbackEnd(dialogID)
+	})
 
-	// Attach as a sheet when a parent window is supplied; otherwise run modal.
+	// Attach as a sheet when a parent window is supplied; otherwise present
+	// non-modally (cgo uses beginWithCompletionHandler:, which keeps the rest
+	// of the app interactive, unlike runModal).
 	parent := dialogParentWindow(m.dialog.window)
 	if parent.isNil() {
-		var paths []string
-		if get[int](panel, "runModal") == nsModalResponseOK {
-			paths = collectOpenPanelPaths(panel)
-		}
-		finish(paths)
+		panel.send("beginWithCompletionHandler:", block)
 	} else {
-		block := objc.NewBlock(func(b objc.Block, result int) {
-			var paths []string
-			if result == nsModalResponseOK {
-				paths = collectOpenPanelPaths(panel)
-			}
-			finish(paths)
-		})
 		panel.send("beginSheetModalForWindow:completionHandler:", parent, block)
 	}
+	// Both presentations copy the block; drop our +1.
+	block.Release()
 
 	return openFileResponses[dialogID], nil
 }
@@ -553,28 +559,24 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 	panel.send("setTreatsFilePackagesAsDirectories:", m.dialog.treatsFilePackagesAsDirectories)
 	panel.send("setAllowsOtherFileTypes:", m.dialog.allowOtherFileTypes)
 
+	// See the open-panel note above: the handler runs on the main thread after
+	// show() returns, keeping all response-map access main-thread-confined.
 	dialogID := m.dialog.id
-	finish := func(path string) {
-		go func() { saveFileDialogCallback(dialogID, path) }()
-	}
+	block := objc.NewBlock(func(b objc.Block, result int) {
+		var path string
+		if result == nsModalResponseOK {
+			path = panel.send("URL").send("path").string()
+		}
+		saveFileDialogCallback(dialogID, path)
+	})
 
 	parent := dialogParentWindow(m.dialog.window)
 	if parent.isNil() {
-		var path string
-		if get[int](panel, "runModal") == nsModalResponseOK {
-			path = panel.send("URL").send("path").string()
-		}
-		finish(path)
+		panel.send("beginWithCompletionHandler:", block)
 	} else {
-		block := objc.NewBlock(func(b objc.Block, result int) {
-			var path string
-			if result == nsModalResponseOK {
-				path = panel.send("URL").send("path").string()
-			}
-			finish(path)
-		})
 		panel.send("beginSheetModalForWindow:completionHandler:", parent, block)
 	}
+	block.Release()
 
 	return saveFileResponses[dialogID], nil
 }
