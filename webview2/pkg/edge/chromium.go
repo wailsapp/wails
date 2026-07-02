@@ -73,6 +73,7 @@ type Chromium struct {
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
+	rasterizationScaleChanged        *ICoreWebView2RasterizationScaleChangedEventHandler
 
 	environment            *ICoreWebView2Environment
 	webview2RuntimeVersion string
@@ -95,6 +96,11 @@ type Chromium struct {
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
 	AcceleratorKeyCallback                   func(uint) bool
+	// RasterizationScaleChangedCallback fires whenever the controller's
+	// rasterization scale changes — including changes the BROWSER makes on its
+	// own when native monitor-scale detection is enabled (wailsapp/wails#5701).
+	// Delivered on the UI thread with the controller's current scale.
+	RasterizationScaleChangedCallback func(scale float64)
 
 	// Error handling
 	globalErrorCallback func(error)
@@ -128,6 +134,7 @@ func NewChromium() *Chromium {
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
 	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.containsFullScreenElementChanged = newICoreWebView2ContainsFullScreenElementChangedEventHandler(e)
+	e.rasterizationScaleChanged = NewICoreWebView2RasterizationScaleChangedEventHandler(e)
 	/*
 		// Pinner seems to panic in some cases as reported on Discord, maybe during shutdown when GC detects pinned objects
 		// to be released that have not been unpinned.
@@ -422,6 +429,13 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		if err := controller3.PutShouldDetectMonitorScaleChanges(false); err != nil {
 			return setupFailed("PutShouldDetectMonitorScaleChanges", err)
 		}
+
+		// Diagnostic only — the host uses this to timestamp browser-initiated
+		// scale changes (wailsapp/wails#5701). Losing the event must not fail
+		// the embed, so registration failure is log-only, not setupFailed.
+		if _, err := controller3.AddRasterizationScaleChanged(e.rasterizationScaleChanged); err != nil {
+			log.Printf("[WebView2] AddRasterizationScaleChanged failed (diagnostic event, non-fatal): %v", err)
+		}
 	}
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
@@ -469,6 +483,22 @@ func (e *Chromium) ContainsFullScreenElementChanged(sender *ICoreWebView2, args 
 	if e.ContainsFullScreenElementChangedCallback != nil {
 		e.ContainsFullScreenElementChangedCallback(sender, args)
 	}
+	return 0
+}
+
+func (e *Chromium) RasterizationScaleChanged(sender *ICoreWebView2Controller, args *IUnknown) uintptr {
+	if e.RasterizationScaleChangedCallback == nil {
+		return 0
+	}
+	scale := 0.0
+	if sender != nil {
+		if controller3 := sender.GetICoreWebView2Controller3(); controller3 != nil {
+			if s, err := controller3.GetRasterizationScale(); err == nil {
+				scale = s
+			}
+		}
+	}
+	e.RasterizationScaleChangedCallback(scale)
 	return 0
 }
 

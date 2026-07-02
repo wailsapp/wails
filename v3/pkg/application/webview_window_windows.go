@@ -1662,6 +1662,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// window off the boundary produces no further transitions, so the
 			// frozen rasterization scale can snap back fast instead of waiting
 			// out the full quiet window (#5701, v200.0.7 field report).
+			// The breadcrumb captures the exact moment the user parks and looks
+			// at the window: raster vs dpi/96 here says whether they were left
+			// staring at wrongly-sized content until the settle.
+			dpi, _ := w.DPI()
+			raster := 0.0
+			if !w.isMinimizing {
+				raster = w.currentWebviewRasterizationScale()
+			}
+			globalApplication.warning("DPI flap: drag released mid-storm on window %d (dpi %d → target %.2f, raster=%.2f) — fast settle armed (#5701)",
+				w.parent.id, dpi, float64(dpi)/96.0, raster)
 			w.scheduleDPIFlapSettle(dpiFlapReleaseSettle + 50*time.Millisecond)
 		}
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
@@ -1878,9 +1888,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// transition — a "WebView2 process failed" shortly after one of these
 		// confirms the correlation. Warning level so log bridges that forward
 		// only Warn+ still ship it; DPI transitions are rare enough not to spam.
-		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, stormActive=%v) (#5701)",
+		// raster= is the controller's LIVE rasterization scale at flip time: it
+		// shows whether the browser's native scale detection has already caught
+		// up with the monitor the window is entering (raster == newDPI/96) or is
+		// still on the old monitor's scale — the losing side of that race is
+		// what the user sees as wrongly-sized content (#5677). Property read
+		// only; skipped while minimised (#5605).
+		rasterScale := 0.0
+		if !w.isMinimizing {
+			rasterScale = w.currentWebviewRasterizationScale()
+		}
+		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, raster=%.2f, minimised=%v, inSizeMove=%v, stormActive=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
-			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, stormActive)
+			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, rasterScale, w.isMinimizing, w.inSizeMove, stormActive)
 		resolved := false
 		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
@@ -2316,7 +2336,11 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
-	w.resyncWebviewRasterizationScale()
+	// put=false in the settle breadcrumb means native detection had already
+	// corrected the scale mid-storm — i.e. the wrong-LAYOUT window (#5677)
+	// opened at that native change and stayed open until the Resize below.
+	rasterBefore := w.currentWebviewRasterizationScale()
+	scalePut := w.resyncWebviewRasterizationScale()
 	// ALWAYS re-assert the controller bounds, independent of whether the scale
 	// re-put above was needed. With native monitor-scale detection on, WebView2
 	// often corrects the rasterization scale by itself mid-storm, so the resync
@@ -2339,8 +2363,9 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 		cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
 	}
 	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail, client %dx%d px) (#5701)",
-		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(), cw, ch)
+	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail, raster %.2f→%.2f put=%v, client %dx%d px) (#5701)",
+		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(),
+		rasterBefore, float64(w.lastKnownDPI)/96.0, scalePut, cw, ch)
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
@@ -2457,6 +2482,47 @@ func (w *windowsWebviewWindow) syncWebviewRasterizationScale(dpi uint32) bool {
 		return false
 	}
 	return true
+}
+
+// currentWebviewRasterizationScale reads the controller's live rasterization
+// scale for diagnostics; 0 means unavailable. A property read only — it never
+// triggers a re-raster, so it is safe inside DPI storms. Callers must gate on
+// !isMinimizing: COM calls into a possibly-suspended controller are the #5605
+// restore-crash class.
+func (w *windowsWebviewWindow) currentWebviewRasterizationScale() float64 {
+	controller := w.chromium.GetController()
+	if controller == nil {
+		return 0
+	}
+	controller3 := controller.GetICoreWebView2Controller3()
+	if controller3 == nil {
+		return 0
+	}
+	scale, err := controller3.GetRasterizationScale()
+	if err != nil {
+		return 0
+	}
+	return scale
+}
+
+// onWebviewRasterizationScaleChanged is telemetry for the mixed-DPI wrong-size
+// investigation (#5701). With native monitor-scale detection on, the browser
+// re-rasters on its own schedule during monitor moves, and a scale change with
+// no following bounds put re-scales the displayed frame WITHOUT re-laying it
+// out (#5677) — content looks wrongly sized from that instant until the next
+// bounds put (the flip's WM_SIZE resize or the storm settle, whichever races
+// in first). These events are the missing half of that race in field logs.
+// Warning level so New Relic receives them. Fires on the UI thread.
+func (w *windowsWebviewWindow) onWebviewRasterizationScaleChanged(scale float64) {
+	dpi, _ := w.DPI()
+	sinceFlip := int64(-1)
+	if !w.lastDPITransitionAt.IsZero() {
+		sinceFlip = time.Since(w.lastDPITransitionAt).Milliseconds()
+	}
+	globalApplication.warning(
+		"WebView2 rasterization scale now %.2f: window %d (dpi %d → target %.2f), storm=%v, inSizeMove=%v, minimised=%v, %dms after last DPI flip (#5701)",
+		scale, w.parent.id, dpi, float64(dpi)/96.0,
+		!w.dpiFlapSuppressUntil.IsZero(), w.inSizeMove, w.isMinimizing, sinceFlip)
 }
 
 // resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
@@ -2783,6 +2849,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 	// stack trace, instead of it being invisible. Must be set before Embed so it
 	// is registered when AddProcessFailed runs during controller creation.
 	chromium.ProcessFailedCallback = w.processFailed
+	// Diagnostic only: timestamp every rasterization-scale change, including
+	// the ones the BROWSER makes via native monitor-scale detection. Content is
+	// wrongly sized exactly between a browser-initiated scale change and the
+	// next bounds put (#5677), so these events bracket the visible wrong-size
+	// windows in field logs (#5701). Set before Embed, same as processFailed.
+	chromium.RasterizationScaleChangedCallback = w.onWebviewRasterizationScaleChanged
 
 	if !chromium.Embed(w.hwnd) {
 		// Environment/controller creation failed — edge reports the error via
