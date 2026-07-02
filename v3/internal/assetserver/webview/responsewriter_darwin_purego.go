@@ -10,17 +10,17 @@ package webview
 // the helper layer declared in request_darwin_purego.go (class/sel/nsString/
 // taskID/withAutoreleasePool).
 //
-// LIMITATION vs cgo: the cgo bridge wraps each call in @try/@catch to swallow the
-// NSException "This task has already been stopped" thrown by WebKit when the task
-// was cancelled, returning false so Write/Finish surface errRequestStopped. An
-// Objective-C @try/@catch cannot be expressed in pure Go/purego (it needs the
-// zero-cost exception personality routine emitted by clang), so the helpers below
-// always report success. If a stopped task is written to, the underlying
-// NSException will propagate rather than being converted to errRequestStopped;
-// catching it would require a small native (cgo/assembly) shim.
+// The cgo bridge wraps each call in @try/@catch to swallow the NSException
+// "This task has already been stopped" thrown by WebKit when the task was
+// cancelled. An Objective-C @try/@catch cannot be expressed in pure Go/purego,
+// so instead of catching the exception we AVOID it: the window backend calls
+// MarkTaskStopped from its webView:stopURLSchemeTask: handler, and the bridge
+// helpers below skip messaging a stopped task and report it as stopped (so
+// Write/Finish surface errRequestStopped, matching the cgo behaviour).
 
 import (
 	"net/http"
+	"sync"
 	"unsafe"
 
 	"github.com/ebitengine/purego/objc"
@@ -109,11 +109,28 @@ func (rw *responseWriter) Code() int {
 // path always returns true; see the file header note.
 // ---------------------------------------------------------------------------
 
+// stoppedTasks tracks WKURLSchemeTasks that WebKit has cancelled (via
+// webView:stopURLSchemeTask:). Messaging a stopped task throws an NSException
+// that cannot be caught in pure Go, so instead we skip the call and report the
+// request as stopped. MarkTaskStopped is called from the window backend's
+// stopURLSchemeTask: handler.
+var stoppedTasks sync.Map // unsafe.Pointer -> struct{}
+
+// MarkTaskStopped records that the given WKURLSchemeTask has been cancelled.
+func MarkTaskStopped(task unsafe.Pointer) { stoppedTasks.Store(task, struct{}{}) }
+
+func taskStopped(task unsafe.Pointer) bool {
+	_, ok := stoppedTasks.Load(task)
+	return ok
+}
+
+func clearTaskStopped(task unsafe.Pointer) { stoppedTasks.Delete(task) }
+
 // urlSchemeTaskDidReceiveData wraps Go bytes in an NSData and calls
 // -[task didReceiveData:].
 func urlSchemeTaskDidReceiveData(task unsafe.Pointer, data unsafe.Pointer, length int) bool {
 	t := taskID(task)
-	if t == 0 {
+	if t == 0 || taskStopped(task) {
 		return false
 	}
 
@@ -127,13 +144,14 @@ func urlSchemeTaskDidReceiveData(task unsafe.Pointer, data unsafe.Pointer, lengt
 // urlSchemeTaskDidFinish calls -[task didFinish].
 func urlSchemeTaskDidFinish(task unsafe.Pointer) bool {
 	t := taskID(task)
-	if t == 0 {
+	if t == 0 || taskStopped(task) {
 		return false
 	}
 
 	withAutoreleasePool(func() {
 		t.Send(sel("didFinish"))
 	})
+	clearTaskStopped(task)
 	return true
 }
 
@@ -141,7 +159,7 @@ func urlSchemeTaskDidFinish(task unsafe.Pointer) bool {
 // code + headers and calls -[task didReceiveResponse:].
 func urlSchemeTaskDidReceiveResponse(task unsafe.Pointer, statusCode int, headers map[string]string) bool {
 	t := taskID(task)
-	if t == 0 {
+	if t == 0 || taskStopped(task) {
 		return false
 	}
 

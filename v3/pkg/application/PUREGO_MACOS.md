@@ -70,7 +70,4 @@ the window-event delegate are wired.
 
 ## Known gaps
 
-- Writing to an already-stopped `WKURLSchemeTask` cannot convert WebKit's
-  `NSException` into `errRequestStopped` without a tiny native shim (no
-  `@try/@catch` from pure Go); the exception would otherwise propagate.
 - Dialogs are application-modal rather than window sheets.

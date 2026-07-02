@@ -11,6 +11,7 @@ import (
 
 	"github.com/ebitengine/purego/objc"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -217,11 +218,13 @@ func registerWindowDelegateClass() id {
 				}
 			},
 		})
-		// WKURLSchemeHandler: webView:stopURLSchemeTask: (no-op; asset writer
-		// tolerates a stopped task).
+		// WKURLSchemeHandler: webView:stopURLSchemeTask: — mark the task stopped so
+		// the asset writer skips further messaging (avoids WebKit's NSException).
 		methods = append(methods, objc.MethodDef{
 			Cmd: sel_("webView:stopURLSchemeTask:"),
-			Fn:  func(self objc.ID, cmd objc.SEL, wv objc.ID, task objc.ID) {},
+			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, task objc.ID) {
+				webview.MarkTaskStopped(unsafe.Pointer(uintptr(task)))
+			},
 		})
 
 		// WKNavigationDelegate: didFinishNavigation.

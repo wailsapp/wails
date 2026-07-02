@@ -289,6 +289,7 @@ func (r *request) Close() error {
 		err = r.body.Close()
 	}
 	r.Response().Finish()
+	clearTaskStopped(r.task)
 	urlSchemeTaskRelease(r.task)
 	return err
 }
