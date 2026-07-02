@@ -1881,6 +1881,23 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, stormActive=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
 			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, stormActive)
+		// Push the incoming DPI's rasterization scale BEFORE the suggested
+		// rect is applied (below, or by the straddle resolver): the rect apply
+		// fires WM_SIZE → controller bounds-put → exactly ONE re-layout, and
+		// with the scale already current that single raster happens at the
+		// correct scale. Ordering is the whole point (Step 19, #5701):
+		// deferring the scale to the settle rastered every mid-storm flip at
+		// the PREVIOUS monitor's scale (visibly wrong-sized content — native
+		// detection's own silent scale-put never re-lays-out, #5677), while
+		// correcting AFTER the apply added a second full raster per flip and
+		// the doubled load crashed the GPU process into Chromium's
+		// browser-process kill within seconds (v200.0.16 field session).
+		// While minimised the window sits off its restore monitor and the
+		// controller may be suspended — skip, the restore path handles it
+		// (#5605); skip mid-rebuild too (no controller worth syncing).
+		if !w.isMinimizing && !w.webviewRebuildInProgress {
+			w.syncWebviewRasterizationScale(newDPI)
+		}
 		resolved := false
 		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
@@ -1935,41 +1952,23 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// Native monitor-scale detection is enabled post-Embed (#5701), so
-		// WebView2 usually re-rasterizes on its own; this manual resync is the
-		// belt-and-braces for transitions the runtime's detection lags or
-		// misses (it no-ops when the scale is already in sync) — but only
-		// while non-minimised. While minimised the window sits off its restore
-		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
-		// would push a wrong scale
-		// onto the controller (one the restore-time DPI gate then won't correct,
-		// since DPI == lastKnownDPI) and would make a COM call into a possibly
-		// suspended controller (#5605). A genuine DPI difference is instead
-		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
+		// The scale was pushed BEFORE the rect apply above, so the WM_SIZE
+		// bounds-put has already re-laid-out the page at the correct scale.
+		// What remains is a belt-and-braces for CLEAN crossings only: a
+		// suggested rect with an unchanged size produces no WM_SIZE, leaving
+		// the pre-applied scale without the bounds re-put that triggers the
+		// re-layout (#5677/#5689). One IsReady-gated Resize covers it.
+		// Mid-storm this stays OFF: oscillation rects always differ in size
+		// (per-flip WM_SIZE is guaranteed), and adding a second bounds-put per
+		// flip doubled the raster load and crashed the GPU process into
+		// Chromium's browser-process kill within seconds (v200.0.16 field
+		// session). The settle's unconditional Resize remains the storm-end
+		// backstop. While minimised skip everything: the window sits off its
+		// restore monitor and the controller may be suspended (#5605); a
+		// genuine DPI difference is caught on restore by
+		// resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			// Correct scale + layout on EVERY transition, storm or not. This
-			// path used to be gated on !stormActive (defer to the settle) on
-			// the theory that the mid-storm resync was redundant churn: native
-			// monitor-scale detection corrects the scale by itself. It does —
-			// but a scale-put alone does not re-lay out content whose bounds
-			// are unchanged (#5677), so during a slow boundary oscillation
-			// (~1.4s per flip, v200.0.15 field session) every flip re-laid-out
-			// with the PREVIOUS monitor's scale, the silent native correction
-			// never triggered a re-layout, and the page stayed visibly
-			// wrong-sized for entire storms (8.8s and 9.7s observed). The
-			// deferral also wasn't buying crash prevention: gpu-process exits
-			// occurred with it active. Per-flip cost is one scale-put + one
-			// bounds-put on top of the suggested-rect apply — the same work a
-			// clean crossing already does.
-			w.resyncWebviewRasterizationScale()
-			// Re-assert bounds unconditionally rather than gating on the resync
-			// return value: native detection often gets the scale there first,
-			// making the resync a no-op — but the re-layout must still happen
-			// (v200.0.8 field report; the settle path learned the same lesson).
-			// IsReady() keeps this off an unavailable or wedged controller
-			// (#5605). chromium.Resize() reads w32.GetClientRect, the real
-			// pixel dimensions, not the stale options size.
-			if w.chromium.IsReady() {
+			if !stormActive && !w.webviewRebuildInProgress && w.chromium.IsReady() {
 				w.chromium.Resize()
 			}
 			// Track the new DPI so the un-minimise comparison stays accurate.
@@ -2423,13 +2422,23 @@ func (w *windowsWebviewWindow) resolveDPIFlapStraddle(suggested *w32.RECT) {
 // is the application's responsibility. It is a no-op when the controller is
 // unavailable or already in sync.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
+	dpiX, _ := w.DPI()
+	return w.syncWebviewRasterizationScale(uint32(dpiX))
+}
+
+// syncWebviewRasterizationScale puts the given DPI's scale onto the WebView2
+// controller and reports whether a re-put was needed. Used with the window's
+// current DPI by the settle/unminimise resyncs, and with WM_DPICHANGED's
+// incoming DPI BEFORE the suggested rect applies (Step 19, #5701) so the
+// rect's WM_SIZE re-layout rasters at the correct scale. It is a no-op when
+// the controller is unavailable or the scale is already in sync; a failed
+// put is log-only.
+func (w *windowsWebviewWindow) syncWebviewRasterizationScale(dpi uint32) bool {
 	// The #5605 restore crash is prevented by the DPI-change gate in
 	// resyncWebviewDPIAfterUnminimiseIfDPIChanged, which keeps us off the
 	// controller entirely when the DPI is unchanged. The GetController nil
 	// check below covers the early-initialisation / unavailable-controller
-	// window. (A chromium.IsReady() guard was considered, but that method is
-	// not in the released webview2 module v3 depends on, so it cannot be used
-	// here yet.)
+	// window.
 	controller := w.chromium.GetController()
 	if controller == nil {
 		return false
@@ -2438,11 +2447,10 @@ func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 	if controller3 == nil {
 		return false
 	}
-	dpiX, _ := w.DPI()
-	if dpiX == 0 {
+	if dpi == 0 {
 		return false
 	}
-	scale := float64(dpiX) / 96.0
+	scale := float64(dpi) / 96.0
 	// Compare with a tolerance: GetRasterizationScale returns a float that may
 	// not be bit-identical to dpi/96 for non-25% DPI steps, and an exact ==
 	// would re-Put the scale on every resync.

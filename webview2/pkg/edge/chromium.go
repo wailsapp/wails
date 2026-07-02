@@ -390,53 +390,74 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 	controller.vtbl.AddRef.Call(uintptr(unsafe.Pointer(controller)))
 	e.controller = controller
 
+	// Post-creation setup can fail transiently — during a controller REBUILD
+	// the shared browser process may still be thrashing from GPU crashes and
+	// any of these COM calls can return an error. The old fatal errorCallback
+	// turned each one into os.Exit(1), killing the whole app from its own
+	// recovery path (wailsapp/wails#5701; v200.0.16 field death right after a
+	// gpu-process-exit pair). Treat them like a creation failure instead:
+	// mark the embed failed so Embed's pump exits, Embed returns false, and
+	// the rebuild ladder retries with a fresh Chromium. The AddRef'd
+	// interfaces leak in this rare path — a retry discards this Chromium
+	// anyway, and leaking beats releasing a half-torn COM object.
+	setupFailed := func(stage string, err error) uintptr {
+		log.Printf("[WebView2] controller setup failed at %s: %v", stage, err)
+		if e.globalErrorCallback != nil {
+			e.globalErrorCallback(fmt.Errorf("controller setup failed at %s: %w", stage, err))
+		}
+		e.controller = nil
+		e.webview = nil
+		atomic.StoreUintptr(&e.embedFailed, 1)
+		return 0
+	}
+
 	// Try to get ICoreWebView2Controller3 interface for better performance
 	if controller3 := e.controller.GetICoreWebView2Controller3(); controller3 != nil {
 		// Use raw pixels mode for better performance during resize
 		if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
-			e.errorCallback(err)
+			return setupFailed("PutBoundsMode", err)
 		}
 
 		// Disable monitor scale changes since we're using raw pixels
 		if err := controller3.PutShouldDetectMonitorScaleChanges(false); err != nil {
-			e.errorCallback(err)
+			return setupFailed("PutShouldDetectMonitorScaleChanges", err)
 		}
 	}
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("GetCoreWebView2", err)
 	}
 
 	e.webview.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e.webview)))
 	err = e.webview.AddWebMessageReceived(e.webMessageReceived, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddWebMessageReceived", err)
 	}
 	err = e.webview.AddPermissionRequested(e.permissionRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddPermissionRequested", err)
 	}
 	err = e.webview.AddWebResourceRequested(e.webResourceRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddWebResourceRequested", err)
 	}
 	err = e.webview.AddNavigationCompleted(e.navigationCompleted, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddNavigationCompleted", err)
 	}
 	err = e.webview.AddProcessFailed(e.processFailed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddProcessFailed", err)
 	}
 	err = e.webview.AddContainsFullScreenElementChanged(e.containsFullScreenElementChanged, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddContainsFullScreenElementChanged", err)
 	}
 
 	err = e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return setupFailed("AddAcceleratorKeyPressed", err)
 	}
 
 	atomic.StoreUintptr(&e.inited, 1)
