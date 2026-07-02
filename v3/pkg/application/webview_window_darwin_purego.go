@@ -5,6 +5,7 @@ package application
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"unsafe"
 
@@ -341,8 +342,7 @@ func (w *macosWebviewWindow) applyMacOptions(options WebviewWindowOptions) {
 	macOptions := options.Mac
 
 	if macOptions.DisableEscapeExitsFullscreen {
-		// Requires an NSWindow subclass override of cancelOperation:; tracked as
-		// a known gap in PUREGO_MACOS.md.
+		windowDisableEscape.Store(w.win().ptr(), true)
 	}
 
 	switch macOptions.Backdrop {
@@ -422,7 +422,7 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 		height = 600
 	}
 
-	win := class("NSWindow").send("alloc").send("initWithContentRect:styleMask:backing:defer:",
+	win := registerWebviewWindowClass().send("alloc").send("initWithContentRect:styleMask:backing:defer:",
 		rect(0, 0, CGFloat(width-1), CGFloat(height-1)), uint(styleMask), uint(backingBuffered), false)
 	w.nsWindow = unsafe.Pointer(win.ptr())
 
@@ -463,6 +463,234 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 	webView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
 
 	applyWebviewPreferences(webView, config, options.Mac.WebviewPreferences)
+
+	if options.EnableFileDrop {
+		w.installFileDropView(view, width, height)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// NSWindow subclass
+//
+// A minimal NSWindow subclass supplying the overrides the cgo WebviewWindow
+// relies on: it must be able to become key/main even when borderless
+// (frameless), and it can optionally swallow the Escape key so it doesn't exit
+// fullscreen.
+// ---------------------------------------------------------------------------
+
+var (
+	registerWindowClassOnce sync.Once
+	webviewWindowClass      id
+	windowDisableEscape     sync.Map // uintptr(window) -> bool
+)
+
+// keyCodeToString maps macOS virtual key codes to the Wails accelerator key
+// names, mirroring the cgo keyStringFromEvent switch (US layout).
+var keyCodeToString = map[uint]string{
+	122: "f1", 120: "f2", 99: "f3", 118: "f4", 96: "f5", 97: "f6", 98: "f7",
+	100: "f8", 101: "f9", 109: "f10", 103: "f11", 111: "f12", 105: "f13",
+	107: "f14", 113: "f15", 106: "f16", 64: "f17", 79: "f18", 80: "f19", 90: "f20",
+	0: "a", 11: "b", 8: "c", 2: "d", 14: "e", 3: "f", 5: "g", 4: "h", 34: "i",
+	38: "j", 40: "k", 37: "l", 46: "m", 45: "n", 31: "o", 35: "p", 12: "q",
+	15: "r", 1: "s", 17: "t", 32: "u", 9: "v", 13: "w", 7: "x", 16: "y", 6: "z",
+	29: "0", 18: "1", 19: "2", 20: "3", 21: "4", 23: "5", 22: "6", 26: "7",
+	28: "8", 25: "9",
+	51: "delete", 117: "forward delete", 123: "left", 124: "right", 126: "up",
+	125: "down", 48: "tab", 53: "escape", 49: "space",
+	33: "[", 30: "]", 43: ",", 27: "-", 39: "'", 44: "/", 47: ".", 41: ";",
+	24: "=", 50: "`", 42: "\\",
+}
+
+// keyStringFromEvent replicates the cgo keyStringFromEvent: mapping.
+func keyStringFromEvent(ev id) string {
+	characters := ev.send("characters").string()
+	if characters == "" {
+		return ""
+	}
+	switch characters {
+	case "\r":
+		return "enter"
+	case "\b":
+		return "backspace"
+	case "\x1b":
+		return "escape"
+	case "\x0b":
+		return "page down"
+	case "\x0e":
+		return "page up"
+	case "\x01":
+		return "home"
+	case "\x04":
+		return "end"
+	case "\x0c":
+		return "clear"
+	}
+	return keyCodeToString[get[uint](ev, "keyCode")]
+}
+
+func registerWebviewWindowClass() id {
+	registerWindowClassOnce.Do(func() {
+		yes := func(self objc.ID, cmd objc.SEL) bool { return true }
+		methods := []objc.MethodDef{
+			{Cmd: sel_("canBecomeKeyWindow"), Fn: yes},
+			{Cmd: sel_("canBecomeMainWindow"), Fn: yes},
+			{Cmd: sel_("acceptsFirstResponder"), Fn: yes},
+			{Cmd: sel_("becomeFirstResponder"), Fn: yes},
+			{Cmd: sel_("resignFirstResponder"), Fn: yes},
+			{Cmd: sel_("cancelOperation:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) {
+				const fullScreen = 1 << 14 // NSWindowStyleMaskFullScreen
+				if v, ok := windowDisableEscape.Load(uintptr(self)); ok && v.(bool) {
+					if get[uint](id(self), "styleMask")&fullScreen == fullScreen {
+						return
+					}
+				}
+				objc.ID(self).SendSuper(sel_("cancelOperation:"), sender)
+			}},
+			{Cmd: sel_("keyDown:"), Fn: func(self objc.ID, cmd objc.SEL, event objc.ID) {
+				v, ok := nsWindowToID.Load(uintptr(self))
+				if !ok {
+					return
+				}
+				const (
+					flagShift   = 1 << 17
+					flagControl = 1 << 18
+					flagOption  = 1 << 19
+					flagCommand = 1 << 20
+				)
+				ev := id(event)
+				mods := get[uint](ev, "modifierFlags")
+				parts := make([]string, 0, 5)
+				if mods&flagShift != 0 {
+					parts = append(parts, "shift")
+				}
+				if mods&flagControl != 0 {
+					parts = append(parts, "ctrl")
+				}
+				if mods&flagOption != 0 {
+					parts = append(parts, "option")
+				}
+				if mods&flagCommand != 0 {
+					parts = append(parts, "cmd")
+				}
+				if key := keyStringFromEvent(ev); key != "" {
+					parts = append(parts, key)
+				}
+				processWindowKeyDownEvent(v.(uint), strings.Join(parts, "+"))
+			}},
+		}
+		webviewWindowClass = registerDelegateClass("WailsWebviewNSWindow", "NSWindow", nil, methods)
+	})
+	return webviewWindowClass
+}
+
+// ---------------------------------------------------------------------------
+// File-drop overlay (NSView <NSDraggingDestination>)
+// ---------------------------------------------------------------------------
+
+const nsFilenamesPboardType = "NSFilenamesPboardType"
+
+var (
+	dragViewToWindowID   sync.Map // uintptr(view) -> uint
+	registerDragViewOnce sync.Once
+	dragViewClass        id
+	nsDragOperationNone  = uint(0)
+	nsDragOperationCopy  = uint(1)
+)
+
+// dropPointToContentXY converts a dragging-info location into content-view
+// top-left coordinates, matching the cgo WebviewDrag conversion.
+func dropPointToContentXY(self, sender id) (int, int) {
+	loc := get[NSPoint](sender, "draggingLocation")
+	inView := get[NSPoint](self, "convertPoint:fromView:", loc, objc.ID(0))
+	contentView := self.send("window").send("contentView")
+	contentHeight := get[NSRect](contentView, "frame").Size.Height
+	return int(inView.X), int(contentHeight - inView.Y)
+}
+
+func pasteboardHasFiles(sender id) bool {
+	pb := sender.send("draggingPasteboard")
+	return get[bool](pb.send("types"), "containsObject:", nsString(nsFilenamesPboardType))
+}
+
+func registerDragViewClass() id {
+	registerDragViewOnce.Do(func() {
+		enteredID := macWindowEventID("WindowFileDraggingEntered")
+		exitedID := macWindowEventID("WindowFileDraggingExited")
+		performedID := macWindowEventID("WindowFileDraggingPerformed")
+
+		widFor := func(self objc.ID) (uint, bool) {
+			if v, ok := dragViewToWindowID.Load(uintptr(self)); ok {
+				return v.(uint), true
+			}
+			return 0, false
+		}
+
+		methods := []objc.MethodDef{
+			{Cmd: sel_("draggingEntered:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) uint {
+				wid, ok := widFor(self)
+				if ok && pasteboardHasFiles(id(sender)) {
+					processWindowEvent(wid, enteredID)
+					macosOnDragEnter(wid)
+					return nsDragOperationCopy
+				}
+				return nsDragOperationNone
+			}},
+			{Cmd: sel_("draggingUpdated:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) uint {
+				wid, ok := widFor(self)
+				if ok && pasteboardHasFiles(id(sender)) {
+					x, y := dropPointToContentXY(id(self), id(sender))
+					macosOnDragOver(wid, x, y)
+					return nsDragOperationCopy
+				}
+				return nsDragOperationNone
+			}},
+			{Cmd: sel_("draggingExited:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) {
+				if wid, ok := widFor(self); ok {
+					processWindowEvent(wid, exitedID)
+					macosOnDragExit(wid)
+				}
+			}},
+			{Cmd: sel_("prepareForDragOperation:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) bool {
+				return true
+			}},
+			{Cmd: sel_("performDragOperation:"), Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) bool {
+				wid, ok := widFor(self)
+				if !ok {
+					return false
+				}
+				processWindowEvent(wid, performedID)
+				s := id(sender)
+				if !pasteboardHasFiles(s) {
+					return false
+				}
+				files := s.send("draggingPasteboard").send("propertyListForType:", nsString(nsFilenamesPboardType))
+				count := get[uint](files, "count")
+				if count == 0 {
+					return false
+				}
+				filenames := make([]string, 0, count)
+				for i := uint(0); i < count; i++ {
+					filenames = append(filenames, files.send("objectAtIndex:", i).string())
+				}
+				x, y := dropPointToContentXY(id(self), s)
+				processDragItems(wid, filenames, x, y)
+				return true
+			}},
+		}
+		dragViewClass = registerDelegateClass("WailsWebviewDrag", "NSView", nil, methods)
+	})
+	return dragViewClass
+}
+
+func (w *macosWebviewWindow) installFileDropView(contentView id, width, height int) {
+	const autoWidth, autoHeight = 1 << 1, 1 << 4
+	dragView := registerDragViewClass().send("alloc").
+		send("initWithFrame:", rect(0, 0, CGFloat(width-1), CGFloat(height-1)))
+	dragView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+	dragView.send("registerForDraggedTypes:",
+		class("NSArray").send("arrayWithObject:", nsString(nsFilenamesPboardType)))
+	dragViewToWindowID.Store(dragView.ptr(), w.parent.id)
+	contentView.send("addSubview:", dragView)
 }
 
 func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences) {
