@@ -3,7 +3,7 @@
 package webviewloader
 
 import (
-	"github.com/wailsapp/wails/webview2/pkg/combridge"
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/combridge"
 )
 
 // HRESULT

@@ -2,5 +2,4 @@ go 1.25.0
 
 use (
 	./v3
-	./webview2
 )

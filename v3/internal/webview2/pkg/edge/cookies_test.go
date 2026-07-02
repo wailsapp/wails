@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 import (
@@ -7,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/wailsapp/wails/webview2/internal/w32"
+	"github.com/wailsapp/wails/v3/internal/webview2/internal/w32"
 	"golang.org/x/sys/windows"
 )
 
