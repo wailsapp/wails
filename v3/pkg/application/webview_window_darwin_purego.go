@@ -109,7 +109,7 @@ var windowNotificationSelectors = []string{
 	"windowWillBecomeMain:", "windowWillBeginSheet:", "windowWillChangeOrderingMode:",
 	"windowWillDeminiaturize:", "windowWillEnterFullScreen:", "windowWillEnterVersionBrowser:",
 	"windowWillExitFullScreen:", "windowWillExitVersionBrowser:", "windowWillFocus:",
-	"windowWillMiniaturize:", "windowWillMove:",
+	"windowWillMiniaturize:", "windowWillMove:", "windowWillClose:",
 }
 
 func selectorToEventField(sel string) string {
@@ -236,14 +236,63 @@ func registerWindowDelegateClass() id {
 			},
 		})
 
-		// WKNavigationDelegate: didFinishNavigation.
-		finishNavID := macWindowEventID("WebViewDidFinishNavigation")
+		// WKNavigationDelegate: navigation lifecycle events (same set the cgo
+		// delegate forwards).
+		for sel, field := range map[string]string{
+			"webView:didStartProvisionalNavigation:":                    "WebViewDidStartProvisionalNavigation",
+			"webView:didReceiveServerRedirectForProvisionalNavigation:": "WebViewDidReceiveServerRedirectForProvisionalNavigation",
+			"webView:didCommitNavigation:":                              "WebViewDidCommitNavigation",
+			"webView:didFinishNavigation:":                              "WebViewDidFinishNavigation",
+		} {
+			evID := macWindowEventID(field)
+			methods = append(methods, objc.MethodDef{
+				Cmd: sel_(sel),
+				Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, nav objc.ID) {
+					if wid, ok := windowIDForDelegate(self); ok {
+						processWindowEvent(wid, evID)
+					}
+				},
+			})
+		}
+
+		// WKNavigationDelegate: recover from WebContent (renderer) process
+		// termination — notably after macOS sleep. Without the reload the
+		// WKWebView is left showing an unresponsive blank page (cgo parity).
+		terminatedID := macWindowEventID("WebViewWebContentProcessDidTerminate")
 		methods = append(methods, objc.MethodDef{
-			Cmd: sel_("webView:didFinishNavigation:"),
-			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, nav objc.ID) {
+			Cmd: sel_("webViewWebContentProcessDidTerminate:"),
+			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID) {
 				if wid, ok := windowIDForDelegate(self); ok {
-					processWindowEvent(wid, finishNavID)
+					processWindowEvent(wid, terminatedID)
 				}
+				id(wv).send("reload")
+			},
+		})
+
+		// WKUIDelegate: handle <input type="file"> clicks with an NSOpenPanel,
+		// mirroring the cgo runOpenPanelWithParameters: implementation.
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("webView:runOpenPanelWithParameters:initiatedByFrame:completionHandler:"),
+			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, params objc.ID, frame objc.ID, handler objc.ID) {
+				// Copy the completion handler so it survives until the panel
+				// completes (we invoke it asynchronously).
+				completion := objc.Block(handler).Copy()
+				panel := class("NSOpenPanel").send("openPanel")
+				panel.send("setAllowsMultipleSelection:", get[bool](id(params), "allowsMultipleSelection"))
+				if respondsTo(id(params), "allowsDirectories") {
+					panel.send("setCanChooseDirectories:", get[bool](id(params), "allowsDirectories"))
+				}
+				window := id(wv).send("window")
+				block := objc.NewBlock(func(b objc.Block, result int) {
+					var urls objc.ID
+					if result == nsModalResponseOK {
+						urls = panel.send("URLs").raw()
+					}
+					invokeForeignBlock(objc.ID(completion), uintptr(urls))
+					completion.Release()
+				})
+				panel.send("beginSheetModalForWindow:completionHandler:", window, block)
+				block.Release()
 			},
 		})
 

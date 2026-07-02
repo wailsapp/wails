@@ -121,6 +121,28 @@ func registerAppDelegateClass() id {
 			},
 		})
 
+		// application:continueUserActivity:restorationHandler: — universal
+		// links (cgo parity: forward BrowsingWeb webpage URLs to HandleOpenURL).
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("application:continueUserActivity:restorationHandler:"),
+			Fn: func(self objc.ID, cmd objc.SEL, app objc.ID, activity objc.ID, handler objc.ID) bool {
+				act := id(activity)
+				if act.isNil() {
+					return false
+				}
+				// Literal value of NSUserActivityTypeBrowsingWeb.
+				if act.send("activityType").string() != "NSUserActivityTypeBrowsingWeb" {
+					return false
+				}
+				url := act.send("webpageURL")
+				if url.isNil() {
+					return false
+				}
+				HandleOpenURL(url.send("absoluteString").string())
+				return true
+			},
+		})
+
 		// applicationShouldTerminateAfterLastWindowClosed:
 		methods = append(methods, objc.MethodDef{
 			Cmd: sel_("applicationShouldTerminateAfterLastWindowClosed:"),

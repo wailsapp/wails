@@ -279,6 +279,20 @@ func registerDelegateClass(name string, super string, ivars []objc.FieldDef, met
 // values (window ids, indices) bridged into Objective-C instances.
 var ptrField = reflect.TypeOf(uintptr(0))
 
+// invokeForeignBlock calls an Objective-C block received FROM a framework
+// (e.g. a WebKit completion handler). objc.Block.Invoke only works for blocks
+// created by Go via objc.NewBlock, so we call the block's invoke function
+// pointer directly; it lives at offset 16 of the block literal on 64-bit
+// (isa 8 bytes, flags 4, reserved 4). The block itself is the implicit first
+// argument.
+func invokeForeignBlock(block objc.ID, args ...uintptr) {
+	if block == 0 {
+		return
+	}
+	invoke := *(*uintptr)(unsafe.Pointer(uintptr(block) + 16))
+	purego.SyscallN(invoke, append([]uintptr{uintptr(block)}, args...)...)
+}
+
 // ---------------------------------------------------------------------------
 // Version / capability guards
 //
