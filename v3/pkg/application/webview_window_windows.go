@@ -1947,21 +1947,29 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			// The manual scale resync + bounds re-assert is part of the churn
-			// the flap breaker exists to stop — skip it while suppressed; the
-			// breaker schedules one settle resync after the storm passes.
-			if !stormActive && w.resyncWebviewRasterizationScale() {
-				// A scale re-put alone does not make WebView2 re-lay out content
-				// whose bounds are unchanged — the page keeps reporting sizes
-				// computed with the stale scale until the bounds are re-asserted.
-				// Dragging across a mixed-DPI boundary (e.g. 150%→100%) hits this:
-				// content renders shrunk, then disappears, until restart (#5677).
-				// Mirror the un-minimise path (resyncWebviewDPIAfterMinimise, #5544)
-				// and re-assert the bounds. Gating on the resync return value keeps
-				// this off an unavailable controller (#5605): a true return is proof
-				// PutRasterizationScale just succeeded, so the controller is live.
-				// chromium.Resize() reads w32.GetClientRect, the real pixel
-				// dimensions, not the stale options size.
+			// Correct scale + layout on EVERY transition, storm or not. This
+			// path used to be gated on !stormActive (defer to the settle) on
+			// the theory that the mid-storm resync was redundant churn: native
+			// monitor-scale detection corrects the scale by itself. It does —
+			// but a scale-put alone does not re-lay out content whose bounds
+			// are unchanged (#5677), so during a slow boundary oscillation
+			// (~1.4s per flip, v200.0.15 field session) every flip re-laid-out
+			// with the PREVIOUS monitor's scale, the silent native correction
+			// never triggered a re-layout, and the page stayed visibly
+			// wrong-sized for entire storms (8.8s and 9.7s observed). The
+			// deferral also wasn't buying crash prevention: gpu-process exits
+			// occurred with it active. Per-flip cost is one scale-put + one
+			// bounds-put on top of the suggested-rect apply — the same work a
+			// clean crossing already does.
+			w.resyncWebviewRasterizationScale()
+			// Re-assert bounds unconditionally rather than gating on the resync
+			// return value: native detection often gets the scale there first,
+			// making the resync a no-op — but the re-layout must still happen
+			// (v200.0.8 field report; the settle path learned the same lesson).
+			// IsReady() keeps this off an unavailable or wedged controller
+			// (#5605). chromium.Resize() reads w32.GetClientRect, the real
+			// pixel dimensions, not the stale options size.
+			if w.chromium.IsReady() {
 				w.chromium.Resize()
 			}
 			// Track the new DPI so the un-minimise comparison stays accurate.
@@ -2162,10 +2170,11 @@ const (
 // INTENTIONALLY kills the browser process ("GPU process isn't usable.
 // Goodbye."), so an unbroken storm always ends in a wedged controller.
 //
-// Returns (stormActive, resolveStraddle): stormActive=true → our manual
-// rasterization resync is deferred to the settle (the suggested rect is still
-// applied and native scale detection keeps content correct — geometry stays
-// OS-owned, Steps 15/16); resolveStraddle=true → the caller should run the
+// Returns (stormActive, resolveStraddle): stormActive=true marks a storm in
+// progress — it arms the settle sync + telemetry and feeds the resume ladder
+// (scale+layout correction itself now runs on every transition regardless;
+// deferring it during slow oscillations left per-flip stale layouts, #5677 /
+// v200.0.15 field data); resolveStraddle=true → the caller should run the
 // straddle resolver for this transition (further gated there on !inSizeMove:
 // a window the user actively holds must not be repositioned). Detection has
 // two tiers:
@@ -2237,7 +2246,7 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 			fromDPI, newDPI, dpiFlapResumeWindow, w.dpiFlapResumeCount, w.parent.id)
 	default:
 		w.dpiFlapResumeCount = 0
-		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — deferring manual resync until the storm settles (#5701)",
+		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — arming straddle resolver + settle sync (#5701)",
 			w.parent.id, fromDPI, newDPI)
 	}
 
