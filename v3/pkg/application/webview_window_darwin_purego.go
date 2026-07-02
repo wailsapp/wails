@@ -225,6 +225,14 @@ func registerWindowDelegateClass() id {
 			Cmd: sel_("webView:stopURLSchemeTask:"),
 			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, task objc.ID) {
 				webview.MarkTaskStopped(unsafe.Pointer(uintptr(task)))
+				// Close a streamed request body like the cgo handler does, so an
+				// in-flight body reader observes the cancellation promptly
+				// instead of consuming the rest of a cancelled upload.
+				if req := id(task).send("request"); !req.isNil() {
+					if stream := req.send("HTTPBodyStream"); !stream.isNil() {
+						stream.send("close")
+					}
+				}
 			},
 		})
 

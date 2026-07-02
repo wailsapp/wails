@@ -15,10 +15,13 @@ package webview
 // same build tag, so the helpers are declared once here.
 //
 // Threading: the cgo version calls the WKURLSchemeTask methods directly on
-// whatever goroutine drives the asset request, WITHOUT dispatching to the main
-// thread (its own comments note that these calls already hop to the main thread
-// internally and that grabbing a lock around them deadlocks). We mirror that:
-// no dispatch_async, direct message sends.
+// whatever goroutine drives the asset request and relies on an Objective-C
+// @try/@catch to swallow the "This task has already been stopped" NSException
+// raised when a send races WebKit cancelling the task. Pure Go cannot catch
+// Objective-C exceptions, so the purego bridge instead confines the
+// stopped-check + send atomically to the main thread (runOnMainSync below):
+// WebKit delivers webView:stopURLSchemeTask: on the main thread, so a task can
+// never transition to stopped between our check and our send.
 
 import (
 	"bytes"
@@ -54,6 +57,46 @@ func loadFrameworks() {
 			_, _ = purego.Dlopen(fw, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 		}
 	})
+}
+
+// ---------------------------------------------------------------------------
+// Main-thread confinement (libdispatch)
+// ---------------------------------------------------------------------------
+
+var (
+	dispatchInitOnce  sync.Once
+	dispatchMainQueue uintptr
+	dispatchSyncFn    func(queue uintptr, block objc.Block)
+)
+
+func dispatchInit() {
+	dispatchInitOnce.Do(func() {
+		lib, err := purego.Dlopen("/usr/lib/libSystem.B.dylib", purego.RTLD_NOW|purego.RTLD_GLOBAL)
+		if err != nil {
+			panic("wails/purego: failed to load libSystem: " + err.Error())
+		}
+		mainQ, err := purego.Dlsym(lib, "_dispatch_main_q")
+		if err != nil {
+			panic("wails/purego: failed to resolve _dispatch_main_q: " + err.Error())
+		}
+		dispatchMainQueue = mainQ
+		purego.RegisterLibFunc(&dispatchSyncFn, lib, "dispatch_sync")
+	})
+}
+
+// runOnMainSync runs fn synchronously on the main thread. The WKURLSchemeTask
+// stopped-check and message send must be one atomic main-thread unit (WebKit
+// delivers stopURLSchemeTask: there), and dispatch_sync also keeps the caller's
+// Go buffers alive for the duration of the send.
+func runOnMainSync(fn func()) {
+	if objc.Send[bool](class("NSThread"), sel("isMainThread")) {
+		fn()
+		return
+	}
+	dispatchInit()
+	block := objc.NewBlock(func(objc.Block) { fn() })
+	dispatchSyncFn(dispatchMainQueue, block)
+	block.Release()
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +195,9 @@ func withAutoreleasePool(fn func()) {
 // NewRequest creates a new WebViewRequest based on a pointer to an
 // `id<WKURLSchemeTask>`.
 func NewRequest(wkURLSchemeTask unsafe.Pointer) Request {
+	// A freed task's heap address can be reused for a later task; drop any
+	// stale stopped-registry entry so the new request doesn't inherit it.
+	clearTaskStopped(wkURLSchemeTask)
 	urlSchemeTaskRetain(wkURLSchemeTask)
 	return newRequestFinalizer(&request{task: wkURLSchemeTask})
 }

@@ -14,9 +14,13 @@ package webview
 // "This task has already been stopped" thrown by WebKit when the task was
 // cancelled. An Objective-C @try/@catch cannot be expressed in pure Go/purego,
 // so instead of catching the exception we AVOID it: the window backend calls
-// MarkTaskStopped from its webView:stopURLSchemeTask: handler, and the bridge
-// helpers below skip messaging a stopped task and report it as stopped (so
-// Write/Finish surface errRequestStopped, matching the cgo behaviour).
+// MarkTaskStopped from its webView:stopURLSchemeTask: handler (delivered on
+// the main thread), and each helper below performs its stopped-check and its
+// message send as ONE synchronous main-thread unit (runOnMainSync). Because
+// stop can only be delivered on the same thread, a task can never transition
+// to stopped between the check and the send — the check-then-act race that a
+// bare registry lookup would leave open. Write/Finish surface
+// errRequestStopped, matching the cgo behaviour.
 
 import (
 	"net/http"
@@ -127,62 +131,84 @@ func taskStopped(task unsafe.Pointer) bool {
 func clearTaskStopped(task unsafe.Pointer) { stoppedTasks.Delete(task) }
 
 // urlSchemeTaskDidReceiveData wraps Go bytes in an NSData and calls
-// -[task didReceiveData:].
+// -[task didReceiveData:]. Check + send run atomically on the main thread.
 func urlSchemeTaskDidReceiveData(task unsafe.Pointer, data unsafe.Pointer, length int) bool {
 	t := taskID(task)
-	if t == 0 || taskStopped(task) {
+	if t == 0 {
 		return false
 	}
 
-	withAutoreleasePool(func() {
-		nsdata := class("NSData").Send(sel("dataWithBytes:length:"), data, uint(length))
-		t.Send(sel("didReceiveData:"), nsdata)
+	delivered := false
+	runOnMainSync(func() {
+		if taskStopped(task) {
+			return
+		}
+		withAutoreleasePool(func() {
+			nsdata := class("NSData").Send(sel("dataWithBytes:length:"), data, uint(length))
+			t.Send(sel("didReceiveData:"), nsdata)
+		})
+		delivered = true
 	})
-	return true
+	return delivered
 }
 
-// urlSchemeTaskDidFinish calls -[task didFinish].
+// urlSchemeTaskDidFinish calls -[task didFinish]. Check + send run atomically
+// on the main thread.
 func urlSchemeTaskDidFinish(task unsafe.Pointer) bool {
 	t := taskID(task)
-	if t == 0 || taskStopped(task) {
+	if t == 0 {
 		return false
 	}
 
-	withAutoreleasePool(func() {
-		t.Send(sel("didFinish"))
+	delivered := false
+	runOnMainSync(func() {
+		if taskStopped(task) {
+			return
+		}
+		withAutoreleasePool(func() {
+			t.Send(sel("didFinish"))
+		})
+		delivered = true
 	})
-	clearTaskStopped(task)
-	return true
+	return delivered
 }
 
 // urlSchemeTaskDidReceiveResponse builds an NSHTTPURLResponse from the status
-// code + headers and calls -[task didReceiveResponse:].
+// code + headers and calls -[task didReceiveResponse:]. Check + send run
+// atomically on the main thread.
 func urlSchemeTaskDidReceiveResponse(task unsafe.Pointer, statusCode int, headers map[string]string) bool {
 	t := taskID(task)
-	if t == 0 || taskStopped(task) {
+	if t == 0 {
 		return false
 	}
 
-	withAutoreleasePool(func() {
-		// The response URL comes from the originating request, like the cgo code.
-		var url objc.ID
-		if req := t.Send(sel("request")); req != 0 {
-			url = req.Send(sel("URL"))
+	delivered := false
+	runOnMainSync(func() {
+		if taskStopped(task) {
+			return
 		}
+		withAutoreleasePool(func() {
+			// The response URL comes from the originating request, like the cgo code.
+			var url objc.ID
+			if req := t.Send(sel("request")); req != 0 {
+				url = req.Send(sel("URL"))
+			}
 
-		headerFields := class("NSMutableDictionary").Send(sel("dictionary"))
-		for k, v := range headers {
-			headerFields.Send(sel("setObject:forKey:"), nsString(v), nsString(k))
-		}
+			headerFields := class("NSMutableDictionary").Send(sel("dictionary"))
+			for k, v := range headers {
+				headerFields.Send(sel("setObject:forKey:"), nsString(v), nsString(k))
+			}
 
-		// [[[NSHTTPURLResponse alloc] initWithURL:statusCode:HTTPVersion:headerFields:] autorelease]
-		response := class("NSHTTPURLResponse").Send(sel("alloc")).Send(
-			sel("initWithURL:statusCode:HTTPVersion:headerFields:"),
-			url, statusCode, nsString("HTTP/1.1"), headerFields,
-		)
-		response.Send(sel("autorelease"))
+			// [[[NSHTTPURLResponse alloc] initWithURL:statusCode:HTTPVersion:headerFields:] autorelease]
+			response := class("NSHTTPURLResponse").Send(sel("alloc")).Send(
+				sel("initWithURL:statusCode:HTTPVersion:headerFields:"),
+				url, statusCode, nsString("HTTP/1.1"), headerFields,
+			)
+			response.Send(sel("autorelease"))
 
-		t.Send(sel("didReceiveResponse:"), response)
+			t.Send(sel("didReceiveResponse:"), response)
+		})
+		delivered = true
 	})
-	return true
+	return delivered
 }
