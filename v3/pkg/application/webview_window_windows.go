@@ -125,6 +125,7 @@ type windowsWebviewWindow struct {
 	dpiFlapSuppressUntil  time.Time
 	lastAppliedDPI        uint32
 	inSizeMove            bool
+	lastStraddleResolveAt time.Time
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -1860,7 +1861,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// the browser process. Detect the reversal pattern, stop applying
 		// resizes while it persists, and — unless the user is mid-drag — move
 		// the window fully onto one monitor so the loop's root condition ends.
-		flapSuppressed, flapTripped := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), newDPI)
+		flapSuppressed, resolveStraddle := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), newDPI)
 		// Diagnostic breadcrumb (#5701): mixed-DPI monitor crossings are the
 		// trigger for WebView2 GPU-process deaths in the field, so record every
 		// transition — a "WebView2 process failed" shortly after one of these
@@ -1869,7 +1870,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
 			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
-		if flapTripped && !w.inSizeMove && !w.isMinimizing {
+		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
 		}
 		if !w.isMinimizing {
@@ -1910,8 +1911,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode),
-		// so the rasterization scale must follow DPI changes manually — but only
+		// Native monitor-scale detection is enabled post-Embed (#5701), so
+		// WebView2 usually re-rasterizes on its own; this manual resync is the
+		// belt-and-braces for transitions the runtime's detection lags or
+		// misses (it no-ops when the scale is already in sync) — but only
 		// while non-minimised. While minimised the window sits off its restore
 		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
 		// would push a wrong scale
@@ -2083,6 +2086,20 @@ const (
 	// the storm is evidently still alive — so the total pause is storm-scoped,
 	// not fixed.
 	dpiFlapSuppression = 3 * time.Second
+
+	// dpiParkedReversalWindow bounds the PARKED fast path. A window that is
+	// not in the modal move/size loop receives opposing WM_DPICHANGED
+	// transitions only when it rests straddling a mixed-DPI boundary and the
+	// applied rects are flipping its majority monitor — a user cannot
+	// ping-pong a parked window's DPI except via two full keyboard monitor
+	// moves, and for those the straddle resolver is behaviourally equivalent
+	// to the default handling (it applies the transition's own suggested size,
+	// placed fully on the target monitor). Field data (#5701, v200.0.2): the
+	// parked oscillation runs as slowly as ~6 s per transition, far under the
+	// 3-reversals-in-3s in-drag threshold, and every GPU-process crash in that
+	// run sat next to these unsuppressed slow reversals. One parked reversal
+	// is therefore enough to trip.
+	dpiParkedReversalWindow = 10 * time.Second
 )
 
 // noteDPITransitionAndDetectFlap records a WM_DPICHANGED transition and
@@ -2093,21 +2110,42 @@ const (
 // INTENTIONALLY kills the browser process ("GPU process isn't usable.
 // Goodbye."), so an unbroken storm always ends in a wedged controller.
 //
-// Returns (suppressed, tripped): suppressed=true → skip the suggested-rect
-// resize and rasterization resync for this transition; tripped=true → this
-// exact transition crossed the detection threshold (the caller runs the
-// straddle resolver once on that edge). A settle resync self-reschedules until
-// the suppression window has fully lapsed. Main thread only.
-func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI uint32) (suppressed, tripped bool) {
+// Returns (suppressed, resolveStraddle): suppressed=true → skip the
+// suggested-rect resize and rasterization resync for this transition;
+// resolveStraddle=true → the caller should run the straddle resolver for this
+// transition (further gated there on !inSizeMove: a window the user actively
+// holds must not be repositioned). Detection has two tiers:
+//   - in-drag: 3 reversals within dpiFlapReversalWindow (a human CAN wiggle a
+//     drag across the boundary, so demand a sustained pattern);
+//   - parked: ONE reversal within dpiParkedReversalWindow trips immediately —
+//     a parked window ping-ponging its DPI is proof of the feedback loop, and
+//     field data shows the parked oscillation can run slower than any
+//     rapid-reversal threshold while still assert-crashing the GPU process.
+//
+// While suppressed, parked reversals keep resolving: suppression stops the
+// resize churn, but only the resolver ends the straddle feeding the storm. A
+// settle resync self-reschedules until the suppression window has fully
+// lapsed. Main thread only.
+func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI uint32) (suppressed, resolveStraddle bool) {
 	now := time.Now()
+	parked := !w.inSizeMove && !w.isMinimizing
+	isReversal := newDPI == w.lastDPITransitionFrom
+	reversalAge := now.Sub(w.lastDPITransitionAt)
+	parkedReversal := parked && isReversal && reversalAge < dpiParkedReversalWindow
+
 	if now.Before(w.dpiFlapSuppressUntil) {
 		// Still oscillating while suppressed — extend so suppression outlives
-		// the storm instead of re-arming it for another crash window.
+		// the storm instead of re-arming it for another crash window. Keep the
+		// transition bookkeeping current (a stale lastDPITransitionAt made the
+		// first post-settle reversal look isolated, delaying re-detection into
+		// exactly the unsuppressed gap where the v200.0.2 crashes clustered).
 		w.dpiFlapSuppressUntil = now.Add(dpiFlapSuppression)
-		return true, false
+		w.lastDPITransitionFrom = fromDPI
+		w.lastDPITransitionAt = now
+		return true, parkedReversal
 	}
 
-	if newDPI == w.lastDPITransitionFrom && now.Sub(w.lastDPITransitionAt) < dpiFlapReversalWindow {
+	if isReversal && reversalAge < dpiFlapReversalWindow {
 		w.dpiFlapReversals++
 	} else {
 		w.dpiFlapReversals = 0
@@ -2115,13 +2153,18 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	w.lastDPITransitionFrom = fromDPI
 	w.lastDPITransitionAt = now
 
-	if w.dpiFlapReversals < 3 {
+	if w.dpiFlapReversals < 3 && !parkedReversal {
 		return false, false
 	}
 	w.dpiFlapReversals = 0
 	w.dpiFlapSuppressUntil = now.Add(dpiFlapSuppression)
-	globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
-		w.parent.id, fromDPI, newDPI)
+	if parkedReversal {
+		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — suppressing DPI resizes and resolving (#5701)",
+			fromDPI, newDPI, w.parent.id)
+	} else {
+		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
+			w.parent.id, fromDPI, newDPI)
+	}
 
 	// Settle after the storm: whichever monitor the window rests on, put the
 	// rasterization scale and bounds back in sync. The closure re-arms itself
@@ -2163,6 +2206,13 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 // majority-area rule has nothing left to flip. Skipped while the user holds a
 // drag (the modal move loop would fight the reposition). Main thread only.
 func (w *windowsWebviewWindow) resolveDPIFlapStraddle(suggested *w32.RECT) {
+	// Rate limit: with the parked fast path the resolver can be invoked on
+	// every transition of a storm; one reposition per second is plenty to
+	// converge and guarantees the resolver itself can never become the churn.
+	now := time.Now()
+	if now.Sub(w.lastStraddleResolveAt) < time.Second {
+		return
+	}
 	monitor := w32.MonitorFromRect(suggested, w32.MONITOR_DEFAULTTONEAREST)
 	if monitor == 0 {
 		return
@@ -2182,16 +2232,30 @@ func (w *windowsWebviewWindow) resolveDPIFlapStraddle(suggested *w32.RECT) {
 	if rect.Right > work.Right {
 		rect.Left -= rect.Right - work.Right
 	}
+	rect.Right = rect.Left + width
 	if rect.Left < work.Left {
 		rect.Left = work.Left
+		rect.Right = rect.Left + width
 	}
 	if rect.Bottom > work.Bottom {
 		rect.Top -= rect.Bottom - work.Bottom
 	}
+	rect.Bottom = rect.Top + height
 	if rect.Top < work.Top {
 		rect.Top = work.Top
+		rect.Bottom = rect.Top + height
 	}
 
+	// Converged guard: if the window already sits exactly at the target rect
+	// yet transitions keep arriving (monitor assignment flipping without
+	// movement), re-Setting the same rect would only feed the loop.
+	if cur := w32.GetWindowRect(w.hwnd); cur != nil &&
+		cur.Left == rect.Left && cur.Top == rect.Top &&
+		cur.Right == rect.Right && cur.Bottom == rect.Bottom {
+		return
+	}
+
+	w.lastStraddleResolveAt = now
 	globalApplication.warning("DPI flap resolver: window %d moved fully onto its target monitor at (%d,%d) %dx%d (#5701)",
 		w.parent.id, rect.Left, rect.Top, width, height)
 	w32.SetWindowPos(w.hwnd, 0,
