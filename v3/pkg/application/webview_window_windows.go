@@ -125,6 +125,7 @@ type windowsWebviewWindow struct {
 	dpiFlapSuppressUntil  time.Time
 	dpiFlapStormStartAt   time.Time
 	lastDPIFlapSettledAt  time.Time
+	dpiFlapResumeCount    int
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
@@ -2207,12 +2208,19 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	w.dpiFlapStormStartAt = now
 	switch {
 	case parkedReversal:
+		w.dpiFlapResumeCount = 0
 		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — suppressing DPI resizes and resolving (#5701)",
 			fromDPI, newDPI, w.parent.id)
 	case resumedStorm:
-		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle): window %d — re-suppressing on the first reversal (#5701)",
-			fromDPI, newDPI, dpiFlapResumeWindow, w.parent.id)
+		// Each resume proves the last settle fired inside a still-live storm —
+		// escalate the quiet threshold so the settle/resume churn (each cycle
+		// is a scale+bounds re-put, v200.0.8: 41 settles / 30 resumes in one
+		// session) converges instead of tracking the storm cadence.
+		w.dpiFlapResumeCount++
+		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle, resume %d): window %d — re-suppressing on the first reversal (#5701)",
+			fromDPI, newDPI, dpiFlapResumeWindow, w.dpiFlapResumeCount, w.parent.id)
 	default:
+		w.dpiFlapResumeCount = 0
 		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
 			w.parent.id, fromDPI, newDPI)
 	}
@@ -2255,7 +2263,19 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	threshold := dpiFlapQuietSettle
 	if !w.inSizeMove {
-		threshold = dpiFlapReleaseSettle
+		// Released: base 400 ms, doubling per consecutive resume (capped at
+		// the mid-drag threshold). A slow storm flipping every ~1 s otherwise
+		// satisfies the base threshold between flips, and every premature
+		// settle is a scale+bounds re-put feeding the exact churn the breaker
+		// exists to stop (v200.0.8 field trace: settle→resume every ~1.6 s).
+		n := w.dpiFlapResumeCount
+		if n > 2 {
+			n = 2
+		}
+		threshold = time.Duration(1<<n) * dpiFlapReleaseSettle
+		if threshold > dpiFlapQuietSettle {
+			threshold = dpiFlapQuietSettle
+		}
 	}
 	quiet := time.Since(w.lastDPITransitionAt)
 	if quiet < threshold || w.webviewRebuildInProgress {
@@ -2270,15 +2290,32 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
-	if w.resyncWebviewRasterizationScale() {
+	w.resyncWebviewRasterizationScale()
+	// ALWAYS re-assert the controller bounds, independent of whether the scale
+	// re-put above was needed. With native monitor-scale detection on, WebView2
+	// often corrects the rasterization scale by itself mid-storm, so the resync
+	// returns false — but a scale change without a bounds re-assert does not
+	// re-lay out the content (#5677), and the storm's suppressed transitions
+	// skipped every bounds update. Gating Resize on the resync result left the
+	// page laid out for stale bounds: wrongly-sized content inside a correctly
+	// sized window (v200.0.8 field report).
+	if w.chromium.IsReady() {
 		w.chromium.Resize()
 	}
 	if dpi, _ := w.DPI(); dpi != 0 {
 		w.lastKnownDPI = dpi
 	}
+	// Client size is logged so field data can separate the two wrong-size
+	// failure modes: stale content layout (client size correct for the DPI,
+	// content wrong) vs stale window size (client size still sized for the
+	// other monitor because every suggested rect was suppressed).
+	var cw, ch int32
+	if rect := w32.GetClientRect(w.hwnd); rect != nil {
+		cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
+	}
 	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail) (#5701)",
-		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds())
+	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail, client %dx%d px) (#5701)",
+		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(), cw, ch)
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
