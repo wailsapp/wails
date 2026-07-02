@@ -4,6 +4,7 @@ package application
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 
@@ -26,6 +27,9 @@ type macosApp struct {
 var (
 	appDelegate                            id
 	appShouldTerminateAfterLastWindowClose bool
+	// appShuttingDown mirrors the cgo delegate's shuttingDown property so
+	// applicationShouldTerminate: runs cleanup() at most once.
+	appShuttingDown atomic.Bool
 	// nsWindowToID maps an NSWindow pointer to its Wails window id. Populated by
 	// the window backend on creation and used by getCurrentWindowID.
 	nsWindowToID sync.Map // uintptr -> uint
@@ -157,7 +161,13 @@ func registerAppDelegateClass() id {
 			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) int {
 				const nsTerminateCancel = 0
 				const nsTerminateNow = 1
+				// cgo keeps a shuttingDown flag on the delegate so cleanup()
+				// runs at most once even if AppKit re-enters.
+				if appShuttingDown.Swap(true) {
+					return nsTerminateNow
+				}
 				if !shouldQuitApplication() {
+					appShuttingDown.Store(false)
 					return nsTerminateCancel
 				}
 				cleanup()
@@ -202,6 +212,11 @@ func registerAppDelegateClass() id {
 // NSApplication, install the delegate, and register the theme/power observers.
 func appInit() {
 	loadFrameworks()
+	// appInit runs before [NSApp run] installs the main run-loop pool; wrap
+	// the autoreleased objects created below (notification-name NSStrings,
+	// ...) so they don't trigger one-time "autorelease with no pool" leaks.
+	pool := class("NSAutoreleasePool").send("alloc").send("init")
+	defer pool.send("drain")
 	app := class("NSApplication").send("sharedApplication")
 	cls := registerAppDelegateClass()
 	appDelegate = cls.send("new")
@@ -232,8 +247,38 @@ func appInit() {
 	startCustomProtocolHandler()
 }
 
+// lastLeftMouseDown stores the retained left-mouse-down NSEvent per NSWindow
+// pointer, mirroring cgo's `@property (retain) NSEvent* leftMouseEvent`. A
+// JS-initiated drag (--wails-draggable) round-trips through the bridge, by
+// which time NSApp.currentEvent is usually a later drag event — anchoring the
+// drag at the wrong point. Cleared (and released) on left-mouse-up.
+var lastLeftMouseDown sync.Map // uintptr(NSWindow) -> id (retained NSEvent)
+
+func storeLeftMouseDown(win id, event id) {
+	event.send("retain")
+	if prev, loaded := lastLeftMouseDown.Swap(win.ptr(), event); loaded {
+		prev.(id).send("release")
+	}
+}
+
+func clearLeftMouseDown(win id) {
+	if prev, loaded := lastLeftMouseDown.LoadAndDelete(win.ptr()); loaded {
+		prev.(id).send("release")
+	}
+}
+
+// takeLeftMouseDown returns the retained mouse-down event for the window, or
+// nil. Ownership stays with the map (released on mouse-up / next mouse-down).
+func takeLeftMouseDown(win id) id {
+	if v, ok := lastLeftMouseDown.Load(win.ptr()); ok {
+		return v.(id)
+	}
+	return 0
+}
+
 func installFramelessDragMonitor() {
 	const nsEventMaskLeftMouseDown = 1 << 1
+	const nsEventMaskLeftMouseUp = 1 << 2
 	block := objc.NewBlock(func(b objc.Block, event objc.ID) objc.ID {
 		ev := id(event)
 		win := ev.send("window")
@@ -244,6 +289,9 @@ func installFramelessDragMonitor() {
 		if !ok {
 			return event
 		}
+		// Remember the press for JS-initiated drags (cgo retains it on the
+		// delegate; see startDrag).
+		storeLeftMouseDown(win, ev)
 		impl := windowImplForID(v.(uint))
 		if impl == nil || impl.invisibleTitleBarHeight == 0 {
 			return event
@@ -262,6 +310,18 @@ func installFramelessDragMonitor() {
 	})
 	class("NSEvent").send("addLocalMonitorForEventsMatchingMask:handler:",
 		uint(nsEventMaskLeftMouseDown), block)
+	// The monitor copied the block; drop our +1.
+	block.Release()
+
+	upBlock := objc.NewBlock(func(b objc.Block, event objc.ID) objc.ID {
+		if win := id(event).send("window"); !win.isNil() {
+			clearLeftMouseDown(win)
+		}
+		return event
+	})
+	class("NSEvent").send("addLocalMonitorForEventsMatchingMask:handler:",
+		uint(nsEventMaskLeftMouseUp), upBlock)
+	upBlock.Release()
 }
 
 // pushAppEvent constructs and enqueues an application event, mirroring the cgo
@@ -297,7 +357,14 @@ func (m *macosApp) getAccentColor() string {
 	var result string
 	runOnMain(func() {
 		withAutoreleasePool(func() {
-			accent := class("NSColor").send("controlAccentColor")
+			// controlAccentColor is macOS 10.14+; cgo falls back to
+			// systemBlueColor under @available.
+			var accent id
+			if respondsTo(class("NSColor"), "controlAccentColor") {
+				accent = class("NSColor").send("controlAccentColor")
+			} else {
+				accent = class("NSColor").send("systemBlueColor")
+			}
 			rgb := accent.send("colorUsingColorSpace:", class("NSColorSpace").send("sRGBColorSpace"))
 			if rgb.isNil() {
 				rgb = accent
@@ -393,7 +460,12 @@ func (m *macosApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-	class("NSApplication").send("sharedApplication").send("run")
+	app := class("NSApplication").send("sharedApplication")
+	app.send("run")
+	// cgo parity after [NSApp run] returns: release the delegate and abort
+	// any modal session so termination isn't blocked by one.
+	appDelegate.send("release")
+	app.send("abortModal")
 	return nil
 }
 

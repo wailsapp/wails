@@ -823,6 +823,10 @@ func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences, fr
 // ---------------------------------------------------------------------------
 
 func (w *macosWebviewWindow) setTitle(title string) {
+	// cgo parity: frameless windows have no titlebar to set.
+	if w.parent.options.Frameless {
+		return
+	}
 	runOnMain(func() { w.win().send("setTitle:", nsString(title)) })
 }
 
@@ -839,7 +843,18 @@ func (w *macosWebviewWindow) setHTML(html string) {
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
-	runOnMain(func() {
+	// cgo parity: asynchronous, and guarded against shutdown / destroyed
+	// windows so JS is never dispatched into a closing webview.
+	InvokeAsync(func() {
+		globalApplication.shutdownLock.Lock()
+		performingShutdown := globalApplication.performingShutdown
+		globalApplication.shutdownLock.Unlock()
+		if performingShutdown {
+			return
+		}
+		if w.nsWindow == nil || w.parent.isDestroyed() {
+			return
+		}
 		w.webview().send("evaluateJavaScript:completionHandler:", nsString(js), objc.ID(0))
 	})
 }
@@ -857,10 +872,9 @@ func (w *macosWebviewWindow) execJSDragOver(buffer []byte) {
 }
 
 func (w *macosWebviewWindow) show() {
-	runOnMain(func() {
-		w.win().send("makeKeyAndOrderFront:", objc.ID(0))
-		class("NSApplication").send("sharedApplication").send("activateIgnoringOtherApps:", true)
-	})
+	// cgo windowShow is makeKeyAndOrderFront: only — Show() must not steal
+	// application focus from other apps.
+	runOnMain(func() { w.win().send("makeKeyAndOrderFront:", objc.ID(0)) })
 }
 
 func (w *macosWebviewWindow) hide() { runOnMain(func() { w.win().send("orderOut:", objc.ID(0)) }) }
@@ -899,9 +913,15 @@ func (w *macosWebviewWindow) center() {
 }
 
 func (w *macosWebviewWindow) focus() {
+	// cgo windowFocus: only activate the app when it is inactive, then make
+	// the window key.
 	runOnMain(func() {
+		app := class("NSApplication").send("sharedApplication")
+		if !get[bool](app, "isActive") {
+			app.send("activateIgnoringOtherApps:", true)
+		}
 		w.win().send("makeKeyAndOrderFront:", objc.ID(0))
-		class("NSApplication").send("sharedApplication").send("activateIgnoringOtherApps:", true)
+		w.win().send("makeKeyWindow")
 	})
 }
 
@@ -958,7 +978,12 @@ func (w *macosWebviewWindow) isFullscreen() bool {
 	})
 }
 func (w *macosWebviewWindow) isVisible() bool {
-	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "isVisible") })
+	// cgo parity: occlusion state, not NSWindow.isVisible (a fully occluded
+	// window reports not-visible).
+	return w.syncMainThreadReturningBool(func() bool {
+		const nsWindowOcclusionStateVisible = uint(1 << 1)
+		return get[uint](w.win(), "occlusionState")&nsWindowOcclusionStateVisible == nsWindowOcclusionStateVisible
+	})
 }
 func (w *macosWebviewWindow) isNormal() bool {
 	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
@@ -1115,27 +1140,43 @@ func (w *macosWebviewWindow) setContentProtection(enabled bool) {
 	})
 }
 
+// Webview zoom uses WKWebView magnification like cgo (not pageZoom), with the
+// same >=1.0 floor and 0.05 steps.
 func (w *macosWebviewWindow) getZoom() float64 {
 	var z float64
-	runOnMain(func() { z = get[float64](w.webview(), "pageZoom") })
-	if z == 0 {
-		z = 1
-	}
+	runOnMain(func() { z = get[float64](w.webview(), "magnification") })
 	return z
 }
 func (w *macosWebviewWindow) setZoom(zoom float64) {
-	runOnMain(func() { w.webview().send("setPageZoom:", zoom) })
-}
-func (w *macosWebviewWindow) zoomIn() { w.setZoom(w.getZoom() + 0.1) }
-func (w *macosWebviewWindow) zoomOut() {
-	z := w.getZoom() - 0.1
-	if z < 0.1 {
-		z = 0.1
+	if zoom < 1.0 {
+		zoom = 1.0
 	}
-	w.setZoom(z)
+	runOnMain(func() { w.webview().send("setMagnification:", zoom) })
 }
-func (w *macosWebviewWindow) zoomReset() { w.setZoom(1) }
-func (w *macosWebviewWindow) zoom()      { w.zoomReset() }
+func (w *macosWebviewWindow) zoomIn() {
+	runOnMain(func() {
+		w.webview().send("setMagnification:", get[float64](w.webview(), "magnification")+0.05)
+	})
+}
+func (w *macosWebviewWindow) zoomOut() {
+	runOnMain(func() {
+		z := get[float64](w.webview(), "magnification")
+		if z > 1.05 {
+			w.webview().send("setMagnification:", z-0.05)
+		} else {
+			w.webview().send("setMagnification:", float64(1.0))
+		}
+	})
+}
+func (w *macosWebviewWindow) zoomReset() {
+	runOnMain(func() { w.webview().send("setMagnification:", float64(1.0)) })
+}
+
+// zoom toggles window maximise ([window zoom:nil]), matching cgo windowZoom —
+// it is the WINDOW zoom, not the webview zoom.
+func (w *macosWebviewWindow) zoom() {
+	runOnMain(func() { w.win().send("zoom:", objc.ID(0)) })
+}
 
 func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer { return w.nsWindow }
 
@@ -1266,6 +1307,12 @@ func (w *macosWebviewWindow) getBorderSizes() *LRTB { return &LRTB{} }
 
 func (w *macosWebviewWindow) print() error {
 	runOnMain(func() {
+		// printOperationWithPrintInfo: is macOS 11+; cgo gates the whole body
+		// with @available(macOS 11.0,*) — an unguarded miss would raise an
+		// uncatchable NSException.
+		if !respondsTo(w.webview(), "printOperationWithPrintInfo:") {
+			return
+		}
 		const paginationAutomatic = 0
 		const orientationLandscape = 1
 		pInfo := class("NSPrintInfo").send("sharedPrintInfo")
@@ -1335,9 +1382,26 @@ func (w *macosWebviewWindow) disableSizeConstraints() {
 	})
 }
 
-func (w *macosWebviewWindow) windowZoom()    { w.maximise() }
-func (w *macosWebviewWindow) restore()       { w.unminimise() }
-func (w *macosWebviewWindow) restoreWindow() { w.unminimise() }
+func (w *macosWebviewWindow) windowZoom() {
+	runOnMain(func() { w.win().send("zoom:", objc.ID(0)) })
+}
+
+// restore mirrors cgo windowRestore: exit fullscreen, un-zoom, deminiaturize.
+func (w *macosWebviewWindow) restore() {
+	runOnMain(func() {
+		const nsWindowStyleMaskFullScreen = 1 << 14
+		if get[uint](w.win(), "styleMask")&nsWindowStyleMaskFullScreen != 0 {
+			w.win().send("toggleFullScreen:", objc.ID(0))
+		}
+		if get[bool](w.win(), "isZoomed") {
+			w.win().send("zoom:", objc.ID(0))
+		}
+		if get[bool](w.win(), "isMiniaturized") {
+			w.win().send("deminiaturize:", objc.ID(0))
+		}
+	})
+}
+func (w *macosWebviewWindow) restoreWindow() { w.restore() }
 
 // setEnabled matches the cgo backend, where windowSetEnabled is intentionally a
 // no-op.
@@ -1380,7 +1444,13 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 
 func (w *macosWebviewWindow) startDrag() error {
 	runOnMain(func() {
-		ev := class("NSApplication").send("sharedApplication").send("currentEvent")
+		// Anchor at the original mouse-down like cgo's retained
+		// leftMouseEvent; NSApp.currentEvent has usually moved on by the time
+		// the JS bridge message arrives.
+		ev := takeLeftMouseDown(w.win())
+		if ev.isNil() {
+			ev = class("NSApplication").send("sharedApplication").send("currentEvent")
+		}
 		if !ev.isNil() {
 			w.win().send("performWindowDragWithEvent:", ev)
 		}
@@ -1392,7 +1462,10 @@ func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
 	setStdButtonState(w, nsWindowMiniaturizeButton, state)
 }
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	setStdButtonState(w, nsWindowZoomButton, state)
+	// Both MaximiseButtonState and FullscreenButtonState target the zoom
+	// button; apply the more restrictive so neither silently overrides the
+	// other (cgo parity).
+	setStdButtonState(w, nsWindowZoomButton, effectiveZoomButtonState(state, w.parent.options.FullscreenButtonState))
 }
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	setStdButtonState(w, nsWindowCloseButton, state)
@@ -1484,7 +1557,9 @@ func (w *macosWebviewWindow) setUseToolbar(use bool) {
 }
 
 func (w *macosWebviewWindow) setToolbarStyle(style int) {
-	if !w.win().send("toolbar").isNil() {
+	// setToolbarStyle: is macOS 11+ (cgo guards with @available); a missed
+	// selector is an uncatchable NSException.
+	if respondsTo(w.win(), "setToolbarStyle:") && !w.win().send("toolbar").isNil() {
 		w.win().send("setToolbarStyle:", style)
 	}
 }

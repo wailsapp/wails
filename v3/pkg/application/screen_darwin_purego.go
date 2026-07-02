@@ -75,7 +75,9 @@ func processScreen(screen id, isPrimary bool) *Screen {
 	screenDictionary := screen.send("deviceDescription")
 	screenID := screenDictionary.send("objectForKey:", nsString("NSScreenNumber"))
 	displayID := get[uint32](screenID, "unsignedIntValue")
-	idStr := fmt.Sprintf("%d", displayID)
+	// cgo renders the CGDirectDisplayID through printf %d (signed); keep the
+	// same rendering so persisted Screen.IDs match across backends.
+	idStr := fmt.Sprintf("%d", int32(displayID))
 
 	// Physical monitor size (device pixels).
 	sizeValue := screenDictionary.send("objectForKey:", nsString("NSDeviceSize"))
@@ -89,8 +91,12 @@ func processScreen(screen id, isPrimary bool) *Screen {
 		rotation = cgDisplayRotation(displayID)
 	}
 
-	// localizedName is available on macOS 10.15+.
-	name := screen.send("localizedName").string()
+	// localizedName is macOS 10.15+ (cgo guards with @available); a missed
+	// selector is an uncatchable NSException.
+	var name string
+	if respondsTo(screen, "localizedName") {
+		name = screen.send("localizedName").string()
+	}
 
 	// Pre-multiply the point values by backingScaleFactor so that
 	// applyDPIScaling's later division by ScaleFactor lands back on the

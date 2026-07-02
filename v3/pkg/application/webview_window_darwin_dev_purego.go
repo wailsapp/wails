@@ -12,11 +12,17 @@ func (w *macosWebviewWindow) enableDevTools() {
 }
 
 // openDevTools shows the Web Inspector. The inspector is reached through the
-// private -[WKWebView _inspector] selector (macOS 12+).
+// private -[WKWebView _inspector] selector (macOS 12+). Both selectors are
+// PRIVATE API and can vanish in any WebKit update; a missing selector raises
+// an uncatchable NSException, so guard every send (cgo wraps this in both
+// @available(macOS 12,*) and @try/@catch).
 func (w *macosWebviewWindow) openDevTools() {
 	runOnMain(func() {
+		if !respondsTo(w.webview(), "_inspector") {
+			return
+		}
 		inspector := w.webview().send("_inspector")
-		if !inspector.isNil() {
+		if !inspector.isNil() && respondsTo(inspector, "show") {
 			inspector.send("show")
 		}
 	})

@@ -11,7 +11,7 @@
 // The public surface deliberately mirrors the idioms used by the cgo backend so
 // that the higher-level files read like their Objective-C counterparts:
 //
-//	obj := class("NSObject").alloc().init()
+//	obj := class("NSObject").send("alloc").send("init")
 //	obj.send("release")
 //	str := nsString("hello")
 //	go2 := str.string()
@@ -55,11 +55,18 @@ func loadFrameworks() {
 			frameworkAppKit,
 			frameworkWebKit,
 			frameworkCoreGfx,
-			frameworkUniType,
 		} {
 			// RTLD_GLOBAL so the class symbols become visible process-wide.
-			_, _ = purego.Dlopen(fw, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+			// A failure here is fatal: every subsequent class() lookup would
+			// return nil and all sends would become silent no-ops (no window,
+			// no diagnostic).
+			if _, err := purego.Dlopen(fw, purego.RTLD_NOW|purego.RTLD_GLOBAL); err != nil {
+				panic("wails/purego: failed to load " + fw + ": " + err.Error())
+			}
 		}
+		// UniformTypeIdentifiers only exists on macOS 11+; callers guard UTType
+		// usage with classExists, so tolerate a failed load.
+		_, _ = purego.Dlopen(frameworkUniType, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 	})
 }
 
@@ -84,6 +91,12 @@ func (o id) send(sel string, args ...any) id {
 }
 
 // sendSuper dispatches to the superclass implementation.
+//
+// CAVEAT: purego resolves "super" from the receiver's DYNAMIC class. If an
+// instance of one of our registered classes is ever isa-swizzled (e.g. KVO's
+// NSKVONotifying_* subclassing), super-dispatch would resolve to the class
+// itself and recurse forever. Do not KVO-observe instances of runtime
+// registered delegate classes.
 func (o id) sendSuper(sel string, args ...any) id {
 	return id(objc.ID(o).SendSuper(sel_(sel), args...))
 }
@@ -268,7 +281,14 @@ func nsNumberInt(i int) id {
 // condition, so failing fast surfaces it during development.
 func registerDelegateClass(name string, super string, ivars []objc.FieldDef, methods []objc.MethodDef) id {
 	loadFrameworks()
-	cls, err := objc.RegisterClass(name, objc.GetClass(super), nil, ivars, methods)
+	sup := objc.GetClass(super)
+	if sup == 0 {
+		// objc_allocateClassPair with a Nil superclass "succeeds" by creating
+		// a methodless ROOT class, deferring the failure to an uncatchable
+		// doesNotRecognizeSelector on the first alloc — fail fast instead.
+		panic("wails/purego: superclass not found registering " + name + ": " + super)
+	}
+	cls, err := objc.RegisterClass(name, sup, nil, ivars, methods)
 	if err != nil {
 		panic("wails/purego: failed to register class " + name + ": " + err.Error())
 	}
