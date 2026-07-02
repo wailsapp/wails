@@ -232,12 +232,31 @@ func (m *macosDialog) show() {
 			removeDialogCallback(callBackID)
 		})
 
-		// Run the alert. When a parent window is supplied the cgo backend uses a
-		// sheet; here we run it application-modal on the main thread which is the
-		// simplest block-free equivalent and delivers the same button result.
-		response := get[int](alert, "runModal")
-		dialogCallback(callBackID, getButtonNumber(response))
+		// Attach as a sheet when a parent window is supplied (matching the cgo
+		// backend); otherwise run application-modal.
+		parent := dialogParentWindow(m.dialog.window)
+		if parent.isNil() {
+			dialogCallback(callBackID, getButtonNumber(get[int](alert, "runModal")))
+		} else {
+			block := objc.NewBlock(func(b objc.Block, response int) {
+				dialogCallback(callBackID, getButtonNumber(response))
+			})
+			alert.send("beginSheetModalForWindow:completionHandler:", parent, block)
+		}
 	})
+}
+
+// dialogParentWindow returns the native NSWindow for a dialog's attached window,
+// or a nil id when the dialog is not attached to a window.
+func dialogParentWindow(w Window) id {
+	if w == nil {
+		return 0
+	}
+	p := w.NativeWindow()
+	if p == nil {
+		return 0
+	}
+	return id(uintptr(p))
 }
 
 // ---------------------------------------------------------------------------
@@ -426,37 +445,59 @@ func (m *macosOpenFileDialog) show() (chan string, error) {
 	panel.send("setTreatsFilePackagesAsDirectories:", m.dialog.treatsFilePackagesAsDirectories)
 	panel.send("setAllowsOtherFileTypes:", m.dialog.allowsOtherFileTypes)
 
-	// Run the panel modally on the main thread and collect the results. We then
-	// feed the channel from a goroutine so this (main-thread) call can return
-	// the channel to the caller, which reads it on its own goroutine.
+	// Deliver the collected paths on the response channel from a goroutine so
+	// the (main-thread) caller can read them on its own goroutine.
 	dialogID := m.dialog.id
-	var paths []string
-	if get[int](panel, "runModal") == nsModalResponseOK {
-		urls := panel.send("URLs")
-		count := get[int](urls, "count")
-		if count > 0 {
-			for i := 0; i < count; i++ {
-				url := urls.send("objectAtIndex:", uint(i))
-				paths = append(paths, url.send("path").string())
+	finish := func(paths []string) {
+		if !delegate.isNil() {
+			releaseOpenPanelDelegate(delegate)
+		}
+		go func() {
+			for _, p := range paths {
+				openFileDialogCallback(dialogID, p)
 			}
-		} else {
-			url := panel.send("URL")
-			paths = append(paths, url.send("path").string())
-		}
+			openFileDialogCallbackEnd(dialogID)
+		}()
 	}
 
-	if !delegate.isNil() {
-		releaseOpenPanelDelegate(delegate)
-	}
-
-	go func() {
-		for _, p := range paths {
-			openFileDialogCallback(dialogID, p)
+	// Attach as a sheet when a parent window is supplied; otherwise run modal.
+	parent := dialogParentWindow(m.dialog.window)
+	if parent.isNil() {
+		var paths []string
+		if get[int](panel, "runModal") == nsModalResponseOK {
+			paths = collectOpenPanelPaths(panel)
 		}
-		openFileDialogCallbackEnd(dialogID)
-	}()
+		finish(paths)
+	} else {
+		block := objc.NewBlock(func(b objc.Block, result int) {
+			var paths []string
+			if result == nsModalResponseOK {
+				paths = collectOpenPanelPaths(panel)
+			}
+			finish(paths)
+		})
+		panel.send("beginSheetModalForWindow:completionHandler:", parent, block)
+	}
 
 	return openFileResponses[dialogID], nil
+}
+
+// collectOpenPanelPaths reads the selected file paths from a completed
+// NSOpenPanel.
+func collectOpenPanelPaths(panel id) []string {
+	var paths []string
+	urls := panel.send("URLs")
+	count := get[int](urls, "count")
+	if count > 0 {
+		for i := 0; i < count; i++ {
+			url := urls.send("objectAtIndex:", uint(i))
+			paths = append(paths, url.send("path").string())
+		}
+	} else {
+		url := panel.send("URL")
+		paths = append(paths, url.send("path").string())
+	}
+	return paths
 }
 
 // ---------------------------------------------------------------------------
@@ -513,15 +554,27 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 	panel.send("setAllowsOtherFileTypes:", m.dialog.allowOtherFileTypes)
 
 	dialogID := m.dialog.id
-	var path string
-	if get[int](panel, "runModal") == nsModalResponseOK {
-		url := panel.send("URL")
-		path = url.send("path").string()
+	finish := func(path string) {
+		go func() { saveFileDialogCallback(dialogID, path) }()
 	}
 
-	go func() {
-		saveFileDialogCallback(dialogID, path)
-	}()
+	parent := dialogParentWindow(m.dialog.window)
+	if parent.isNil() {
+		var path string
+		if get[int](panel, "runModal") == nsModalResponseOK {
+			path = panel.send("URL").send("path").string()
+		}
+		finish(path)
+	} else {
+		block := objc.NewBlock(func(b objc.Block, result int) {
+			var path string
+			if result == nsModalResponseOK {
+				path = panel.send("URL").send("path").string()
+			}
+			finish(path)
+		})
+		panel.send("beginSheetModalForWindow:completionHandler:", parent, block)
+	}
 
 	return saveFileResponses[dialogID], nil
 }

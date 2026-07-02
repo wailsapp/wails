@@ -52,10 +52,10 @@ the window-event delegate are wired.
 | WKWebView: setURL/setHTML/execJS, reload, zoom, devtools | implemented |
 | Asset serving (WKURLSchemeHandler), JS message bridge | implemented |
 | Window events (~60 NSWindowDelegate notifications) | implemented |
-| Drag/drop throttling (frontend drop) | ported (native drag view pending) |
+| Drag/drop (frontend throttling + native file-drop) | implemented |
 | Clipboard, screens | implemented |
 | Menu / menu items / roles, system tray | implemented |
-| Dialogs (message/open/save) | implemented (app-modal; sheets pending) |
+| Dialogs (message/open/save), window-attached sheets | implemented |
 | Global shortcuts (Carbon), autostart (SMAppService), single-instance | implemented |
 | Bundle id (`pkg/mac`), events | implemented |
 | Dock badge, notifications services | implemented |
@@ -70,4 +70,12 @@ the window-event delegate are wired.
 
 ## Known gaps
 
-- Dialogs are application-modal rather than window sheets.
+The full macOS backend interface is implemented CGO-free with behaviour matching
+the cgo backend, including window-attached dialog sheets and the
+already-stopped-`WKURLSchemeTask` handling (avoided via a stopped-task registry
+rather than an Objective-C `@try/@catch`).
+
+Caveat: this backend has been verified to build (`CGO_ENABLED=0 -tags purego`)
+and to launch and serve its frontend headlessly. On-screen rendering and
+interactive behaviour of every feature should still be smoke-tested on a real
+macOS desktop session before relying on it in production.
