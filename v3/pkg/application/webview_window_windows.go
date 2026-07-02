@@ -111,6 +111,13 @@ type windowsWebviewWindow struct {
 	webviewRebuildInProgress   bool
 	webviewRebuildTimes        []time.Time
 	webviewHealthProbeFailures int
+
+	// DPI-flap breaker state (noteDPITransitionAndDetectFlap, #5701).
+	// Main-thread only (WM_DPICHANGED handling).
+	lastDPITransitionAt   time.Time
+	lastDPITransitionFrom uint32
+	dpiFlapReversals      int
+	dpiFlapSuppressUntil  time.Time
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -1821,6 +1828,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
+		// DPI-flap breaker (#5701): field logs show a window resting near a
+		// mixed-DPI boundary can OSCILLATE — each suggested-rect resize pushes
+		// the window's majority back across the boundary, Windows fires the
+		// opposite WM_DPICHANGED, and the loop runs at ~2 transitions/second
+		// with progressively mangled suggested sizes. That resize/scale storm
+		// is what assert-crashes the WebView2 GPU process (exit code
+		// 0x80000003, reason=crashed). Detect the reversal pattern and stop
+		// applying resizes until the storm passes; a genuine user drag cannot
+		// reverse direction 3× inside 600 ms windows, so it is never affected.
+		flapSuppressed := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), uint32(wparam&0xFFFF))
 		// Diagnostic breadcrumb (#5701): mixed-DPI monitor crossings are the
 		// trigger for WebView2 GPU-process deaths in the field, so record every
 		// transition — a "WebView2 process failed" shortly after one of these
@@ -1829,9 +1846,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		{
 			newDPI := uint32(wparam & 0xFFFF)
 			suggested := (*w32.RECT)(unsafe.Pointer(lparam))
-			globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v) (#5701)",
+			globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
 				w.parent.id, w.lastKnownDPI, newDPI,
-				suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing)
+				suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
 		}
 		// While minimised the window is repositioned off its restore monitor; a
 		// DPI change in that state delivers a suggested rect scaled for whatever
@@ -1840,7 +1857,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// restored at 3072x1728 after crossing a 200%→125% boundary while
 		// minimised, #5544). Skip the resize; a fresh WM_DPICHANGED with a
 		// correct rect arrives if the DPI really differs on restore.
-		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
+		if !w.ignoreDPIChangeResizing && !w.isMinimizing && !flapSuppressed {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
 			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
 			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
@@ -1878,7 +1895,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			if w.resyncWebviewRasterizationScale() {
+			// The manual scale resync + bounds re-assert is part of the churn
+			// the flap breaker exists to stop — skip it while suppressed; the
+			// breaker schedules one settle resync after the storm passes.
+			if !flapSuppressed && w.resyncWebviewRasterizationScale() {
 				// A scale re-put alone does not make WebView2 re-lay out content
 				// whose bounds are unchanged — the page keeps reporting sizes
 				// computed with the stale scale until the bounds are re-asserted.
@@ -2019,6 +2039,59 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	}
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+}
+
+// noteDPITransitionAndDetectFlap records a WM_DPICHANGED transition and
+// reports whether resize handling should be suppressed. It detects the
+// mixed-DPI oscillation observed in the field (#5701): a window resting near a
+// monitor boundary ping-pongs A→B→A→B at ~2 transitions/second because each
+// applied suggested rect moves the window's majority back across the boundary.
+// Three direction reversals inside 600 ms windows cannot be produced by a
+// human drag, so that pattern triggers a 2 s suppression during which the
+// suggested rect and the manual rasterization resync are skipped — with
+// nothing resizing the window, Windows stops re-evaluating the boundary and
+// the loop starves. A settle resync runs once after the suppression expires so
+// the webview ends up scaled for whichever monitor the window came to rest on.
+// Main thread only.
+func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI uint32) bool {
+	now := time.Now()
+	if now.Before(w.dpiFlapSuppressUntil) {
+		return true
+	}
+
+	if newDPI == w.lastDPITransitionFrom && now.Sub(w.lastDPITransitionAt) < 600*time.Millisecond {
+		w.dpiFlapReversals++
+	} else {
+		w.dpiFlapReversals = 0
+	}
+	w.lastDPITransitionFrom = fromDPI
+	w.lastDPITransitionAt = now
+
+	if w.dpiFlapReversals < 3 {
+		return false
+	}
+	w.dpiFlapReversals = 0
+	w.dpiFlapSuppressUntil = now.Add(2 * time.Second)
+	globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes for 2s to break the feedback loop (#5701)",
+		w.parent.id, fromDPI, newDPI)
+
+	// Settle once after the storm: whichever monitor the window rests on, put
+	// the rasterization scale and bounds back in sync. Timer→InvokeAsync so
+	// this never runs inside the WM_DPICHANGED dispatch.
+	time.AfterFunc(2200*time.Millisecond, func() {
+		InvokeAsync(func() {
+			if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown || w.webviewRebuildInProgress {
+				return
+			}
+			if w.resyncWebviewRasterizationScale() {
+				w.chromium.Resize()
+			}
+			if dpi, _ := w.DPI(); dpi != 0 {
+				w.lastKnownDPI = dpi
+			}
+		})
+	})
+	return true
 }
 
 // resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
