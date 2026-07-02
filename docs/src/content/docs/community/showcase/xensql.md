@@ -16,6 +16,7 @@ description: Local-first SQL workbench with multi-database support and advanced 
 - **Seamless Data Editing** - Browse tables, stage changes inline, bulk operations, and safe `INSERT`/`UPDATE`/`DELETE` with `RETURNING` support
 - **Productivity Features** - Schema explorer, saved queries, query history, quick search (`Ctrl+P`), and keyboard-first workflow
 - **Export Options** - CSV, JSON, Markdown, SQL INSERTs
+- **Auto Updates** - Built-in update system to keep the app up to date with the latest features and fixes
 
 Fully offline and portable. Everything is stored locally in a single `XenSQL-data/` folder that travels with the app.
 
