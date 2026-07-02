@@ -465,7 +465,7 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 	webView.send("setUIDelegate:", del)
 	webView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
 
-	applyWebviewPreferences(webView, config, options.Mac.WebviewPreferences)
+	applyWebviewPreferences(webView, config, options.Mac.WebviewPreferences, options.Mac.EnableFraudulentWebsiteWarnings)
 
 	if options.EnableFileDrop {
 		w.installFileDropView(view, width, height)
@@ -696,15 +696,47 @@ func (w *macosWebviewWindow) installFileDropView(contentView id, width, height i
 	contentView.send("addSubview:", dragView)
 }
 
-func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences) {
+func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences, fraudulentWarnings bool) {
+	wkPrefs := config.send("preferences")
+
+	// Version-gated preferences. In cgo these were #if/@available gates; here we
+	// feature-detect with respondsToSelector: so a build simply skips a setter
+	// the running OS's WebKit does not have (calling a missing selector would
+	// raise an uncatchable NSException).
+	if prefs.TabFocusesLinks.IsSet() && respondsTo(wkPrefs, "setTabFocusesLinks:") {
+		wkPrefs.send("setTabFocusesLinks:", prefs.TabFocusesLinks.Get())
+	}
+	if prefs.TextInteractionEnabled.IsSet() && respondsTo(wkPrefs, "setTextInteractionEnabled:") { // macOS 11.3+
+		wkPrefs.send("setTextInteractionEnabled:", prefs.TextInteractionEnabled.Get())
+	}
+	if prefs.FullscreenEnabled.IsSet() && respondsTo(wkPrefs, "setElementFullscreenEnabled:") { // macOS 12.3+
+		wkPrefs.send("setElementFullscreenEnabled:", prefs.FullscreenEnabled.Get())
+	}
+	if prefs.JavaScriptCanOpenWindowsAutomatically.IsSet() {
+		wkPrefs.send("setJavaScriptCanOpenWindowsAutomatically:", prefs.JavaScriptCanOpenWindowsAutomatically.Get())
+	}
+	if prefs.MinimumFontSize.IsSet() {
+		wkPrefs.send("setMinimumFontSize:", prefs.MinimumFontSize.Get())
+	}
+	if respondsTo(wkPrefs, "setFraudulentWebsiteWarningEnabled:") { // macOS 10.15+
+		wkPrefs.send("setFraudulentWebsiteWarningEnabled:", fraudulentWarnings)
+	}
+
+	// Configuration-level preferences.
+	if prefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		config.send("setAllowsAirPlayForMediaPlayback:", prefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+	if prefs.EnableAutoplayWithoutUserAction.IsSet() && prefs.EnableAutoplayWithoutUserAction.Get() {
+		const wkAudiovisualMediaTypeNone = 0
+		config.send("setMediaTypesRequiringUserActionForPlayback:", uint(wkAudiovisualMediaTypeNone))
+	}
+
+	// WebView-level preferences.
 	if prefs.AllowsBackForwardNavigationGestures.IsSet() {
 		webView.send("setAllowsBackForwardNavigationGestures:", prefs.AllowsBackForwardNavigationGestures.Get())
 	}
 	if prefs.AllowsMagnification.IsSet() {
 		webView.send("setAllowsMagnification:", prefs.AllowsMagnification.Get())
-	}
-	if prefs.AllowsAirPlayForMediaPlayback.IsSet() {
-		config.send("setAllowsAirPlayForMediaPlayback:", prefs.AllowsAirPlayForMediaPlayback.Get())
 	}
 }
 

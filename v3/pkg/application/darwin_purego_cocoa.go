@@ -278,3 +278,56 @@ func registerDelegateClass(name string, super string, ivars []objc.FieldDef, met
 // ptrField is the reflect.Type used for uintptr-sized ivars that hold Go handle
 // values (window ids, indices) bridged into Objective-C instances.
 var ptrField = reflect.TypeOf(uintptr(0))
+
+// ---------------------------------------------------------------------------
+// Version / capability guards
+//
+// A purego build never compiles against a macOS SDK, so the two Objective-C
+// guard mechanisms disappear and are replaced by runtime checks:
+//
+//   #if MAC_OS_X_VERSION_MAX_ALLOWED >= N   -> gone entirely (no SDK ceiling;
+//                                              symbols are resolved by name at
+//                                              runtime, i.e. always weak-linked).
+//   if (@available(macOS X, *))             -> a runtime check, below.
+//
+// Prefer FEATURE detection over VERSION detection:
+//   - respondsTo(obj, "setFoo:")   — the method/property exists on this build
+//   - classExists("NSGlassEffectView") — the class exists on this OS
+// Fall back to macOSAtLeast() only when a selector exists across versions but
+// its behaviour or a constant's meaning changed.
+//
+// IMPORTANT: messaging a selector that does not exist raises an NSException
+// (doesNotRecognizeSelector:) which CANNOT be recovered in pure Go — so every
+// version-gated call MUST be guarded first; there is no @try/@catch safety net.
+// ---------------------------------------------------------------------------
+
+// nsOperatingSystemVersion mirrors Foundation's NSOperatingSystemVersion
+// (three NSInteger fields).
+type nsOperatingSystemVersion struct {
+	Major int
+	Minor int
+	Patch int
+}
+
+var (
+	osVersionOnce  sync.Once
+	osVersionValue nsOperatingSystemVersion
+)
+
+func osVersion() nsOperatingSystemVersion {
+	osVersionOnce.Do(func() {
+		pi := class("NSProcessInfo").send("processInfo")
+		osVersionValue = get[nsOperatingSystemVersion](pi, "operatingSystemVersion")
+	})
+	return osVersionValue
+}
+
+// macOSAtLeast reports whether the running OS is at least major.minor. Use only
+// when respondsTo/classExists feature detection is not possible.
+func macOSAtLeast(major, minor int) bool {
+	v := osVersion()
+	if v.Major != major {
+		return v.Major > major
+	}
+	return v.Minor >= minor
+}
