@@ -361,7 +361,13 @@ func (w *macosWebviewWindow) run() {
 		case WindowStateNormal:
 		}
 
-		if options.InitialPosition == WindowCentered {
+		if options.Screen != nil {
+			if options.InitialPosition == WindowCentered {
+				w.centerOnScreen(options.Screen)
+			} else {
+				w.setPositionOnScreen(options.X, options.Y, options.Screen.ID)
+			}
+		} else if options.InitialPosition == WindowCentered {
 			w.center()
 		} else {
 			w.setPosition(options.X, options.Y)
@@ -385,6 +391,20 @@ func (w *macosWebviewWindow) run() {
 					w.parent.Show()
 					w.setHasShadow(!options.Mac.DisableShadow)
 					w.setAlwaysOnTop(options.AlwaysOnTop)
+				} else {
+					// Shadow/level can only be applied once the window has
+					// been shown; defer until it first becomes key (cgo parity).
+					var cancel func()
+					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
+						InvokeAsync(func() {
+							if !w.isVisible() {
+								w.parent.Show()
+							}
+							w.setHasShadow(!options.Mac.DisableShadow)
+							w.setAlwaysOnTop(options.AlwaysOnTop)
+							cancel()
+						})
+					})
 				}
 			})
 		})
@@ -866,7 +886,17 @@ func (w *macosWebviewWindow) destroy() {
 	})
 }
 
-func (w *macosWebviewWindow) center() { runOnMain(func() { w.win().send("center") }) }
+func (w *macosWebviewWindow) center() {
+	// cgo windowCenter: exact visibleFrame centre of the window's screen
+	// ([NSWindow center] biases toward the top third).
+	runOnMain(func() {
+		vf := get[NSRect](w.windowScreen(), "visibleFrame")
+		frame := get[NSRect](w.win(), "frame")
+		x := vf.Origin.X + (vf.Size.Width-frame.Size.Width)/2
+		y := vf.Origin.Y + (vf.Size.Height-frame.Size.Height)/2
+		w.win().send("setFrame:display:", rect(x, y, frame.Size.Width, frame.Size.Height), true)
+	})
+}
 
 func (w *macosWebviewWindow) focus() {
 	runOnMain(func() {
@@ -958,17 +988,23 @@ func (w *macosWebviewWindow) setResizable(resizable bool) {
 
 func (w *macosWebviewWindow) setSize(width, height int) {
 	runOnMain(func() {
+		// cgo windowSetSize: derive the content size from the requested frame
+		// size, set it, then set the frame (animated).
+		content := get[NSRect](w.win(), "contentRectForFrameRect:", rect(0, 0, CGFloat(width), CGFloat(height)))
+		w.win().send("setContentSize:", content.Size)
 		frame := get[NSRect](w.win(), "frame")
-		frame.Size = CGSize{Width: CGFloat(width), Height: CGFloat(height)}
-		w.win().send("setFrame:display:", frame, true)
+		w.win().send("setFrame:display:animate:",
+			rect(frame.Origin.X, frame.Origin.Y, CGFloat(width), CGFloat(height)), true, true)
 	})
 }
 
 func (w *macosWebviewWindow) size() (int, int) {
+	// cgo windowGetSize reads the window FRAME size (not the content view),
+	// keeping Set/Get symmetric so bounds() round-trips don't shrink the
+	// window by the titlebar height.
 	var wd, ht int
 	runOnMain(func() {
-		cv := w.win().send("contentView")
-		frame := get[NSRect](cv, "frame")
+		frame := get[NSRect](w.win(), "frame")
 		wd, ht = int(frame.Size.Width), int(frame.Size.Height)
 	})
 	return wd, ht
@@ -978,39 +1014,71 @@ func (w *macosWebviewWindow) width() int  { wd, _ := w.size(); return wd }
 func (w *macosWebviewWindow) height() int { _, ht := w.size(); return ht }
 
 func (w *macosWebviewWindow) setMinSize(width, height int) {
-	runOnMain(func() { w.win().send("setContentMinSize:", CGSize{Width: CGFloat(width), Height: CGFloat(height)}) })
+	runOnMain(func() {
+		// cgo treats width/height as FRAME size: convert to content size and
+		// set both limits.
+		content := get[NSRect](w.win(), "contentRectForFrameRect:", rect(0, 0, CGFloat(width), CGFloat(height)))
+		w.win().send("setContentMinSize:", content.Size)
+		w.win().send("setMinSize:", CGSize{Width: CGFloat(width), Height: CGFloat(height)})
+	})
 }
+
 func (w *macosWebviewWindow) setMaxSize(width, height int) {
+	// cgo uses FLT_MAX for unset axes.
+	const fltMax = CGFloat(3.4028234663852886e+38)
 	mw, mh := CGFloat(width), CGFloat(height)
-	if width == 0 {
-		mw = 1 << 30
+	if width <= 0 {
+		mw = fltMax
 	}
-	if height == 0 {
-		mh = 1 << 30
+	if height <= 0 {
+		mh = fltMax
 	}
-	runOnMain(func() { w.win().send("setContentMaxSize:", CGSize{Width: mw, Height: mh}) })
+	runOnMain(func() {
+		content := get[NSRect](w.win(), "contentRectForFrameRect:", rect(0, 0, mw, mh))
+		w.win().send("setContentMaxSize:", content.Size)
+		w.win().send("setMaxSize:", CGSize{Width: mw, Height: mh})
+	})
+}
+
+// primaryScreen returns [[NSScreen screens] firstObject] (the primary screen,
+// whose top-left is the origin of the Wails coordinate space), falling back to
+// mainScreen like the cgo helpers.
+func primaryScreen() id {
+	s := class("NSScreen").send("screens").send("firstObject")
+	if s.isNil() {
+		s = class("NSScreen").send("mainScreen")
+	}
+	return s
+}
+
+// windowScreen returns the screen the window is on, falling back to mainScreen.
+func (w *macosWebviewWindow) windowScreen() id {
+	screen := w.win().send("screen")
+	if screen.isNil() {
+		screen = class("NSScreen").send("mainScreen")
+	}
+	return screen
 }
 
 func (w *macosWebviewWindow) setPosition(x, y int) {
 	runOnMain(func() {
-		// Convert top-left (Wails) to bottom-left (Cocoa) using the main screen.
-		screen := class("NSScreen").send("mainScreen")
-		sf := get[NSRect](screen, "frame")
+		// Canonical Wails coordinates: logical points, Y-down, origin at the
+		// top-left of the PRIMARY screen (cgo windowSetPosition).
+		primaryHeight := get[NSRect](primaryScreen(), "frame").Size.Height
 		frame := get[NSRect](w.win(), "frame")
-		top := sf.Size.Height - CGFloat(y)
-		w.win().send("setFrameTopLeftPoint:", CGPoint{X: CGFloat(x), Y: top})
-		_ = frame
+		frame.Origin.X = CGFloat(x)
+		frame.Origin.Y = primaryHeight - frame.Size.Height - CGFloat(y)
+		w.win().send("setFrame:display:", frame, true)
 	})
 }
 
 func (w *macosWebviewWindow) position() (int, int) {
 	var x, y int
 	runOnMain(func() {
-		screen := class("NSScreen").send("mainScreen")
-		sf := get[NSRect](screen, "frame")
+		primaryHeight := get[NSRect](primaryScreen(), "frame").Size.Height
 		frame := get[NSRect](w.win(), "frame")
 		x = int(frame.Origin.X)
-		y = int(sf.Size.Height - (frame.Origin.Y + frame.Size.Height))
+		y = int(primaryHeight - frame.Origin.Y - frame.Size.Height)
 	})
 	return x, y
 }
@@ -1103,9 +1171,80 @@ func (w *macosWebviewWindow) setBounds(bounds Rect) {
 }
 func (w *macosWebviewWindow) physicalBounds() Rect          { return w.bounds() }
 func (w *macosWebviewWindow) setPhysicalBounds(bounds Rect) { w.setBounds(bounds) }
-func (w *macosWebviewWindow) relativePosition() (int, int)  { return w.position() }
-func (w *macosWebviewWindow) setRelativePosition(x, y int)  { w.setPosition(x, y) }
-func (w *macosWebviewWindow) centerOnScreen(screen *Screen) { w.center() }
+
+// relativePosition returns the window position relative to its own screen's
+// frame origin: X from the screen's left edge, Y from its top edge (Y-down).
+// Mirrors cgo windowGetRelativePosition (issue #5408: must round-trip with
+// setRelativePosition on every screen).
+func (w *macosWebviewWindow) relativePosition() (int, int) {
+	var x, y int
+	runOnMain(func() {
+		frame := get[NSRect](w.win(), "frame")
+		sf := get[NSRect](w.windowScreen(), "frame")
+		x = int(frame.Origin.X - sf.Origin.X)
+		y = int((sf.Origin.Y + sf.Size.Height) - frame.Origin.Y - frame.Size.Height)
+	})
+	return x, y
+}
+
+func (w *macosWebviewWindow) setRelativePosition(x, y int) {
+	runOnMain(func() {
+		frame := get[NSRect](w.win(), "frame")
+		sf := get[NSRect](w.windowScreen(), "frame")
+		frame.Origin.X = sf.Origin.X + CGFloat(x)
+		frame.Origin.Y = (sf.Origin.Y + sf.Size.Height) - frame.Size.Height - CGFloat(y)
+		w.win().send("setFrame:display:animate:", frame, true, false)
+	})
+}
+
+// screenByID resolves an NSScreen by the Wails Screen.ID (its CGDirectDisplayID
+// rendered as a decimal string), falling back to mainScreen like cgo. Both the
+// signed (cgo %d) and unsigned renderings are accepted.
+func screenByID(screenID string) id {
+	screens := class("NSScreen").send("screens")
+	count := get[uint](screens, "count")
+	for i := uint(0); i < count; i++ {
+		s := screens.send("objectAtIndex:", i)
+		num := s.send("deviceDescription").send("objectForKey:", nsString("NSScreenNumber"))
+		if num.isNil() {
+			continue
+		}
+		displayID := get[uint32](num, "unsignedIntValue")
+		if fmt.Sprintf("%d", int32(displayID)) == screenID || fmt.Sprintf("%d", displayID) == screenID {
+			return s
+		}
+	}
+	return class("NSScreen").send("mainScreen")
+}
+
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
+	if screen == nil {
+		w.center()
+		return
+	}
+	runOnMain(func() {
+		vf := get[NSRect](screenByID(screen.ID), "visibleFrame")
+		frame := get[NSRect](w.win(), "frame")
+		x := vf.Origin.X + (vf.Size.Width-frame.Size.Width)/2
+		y := vf.Origin.Y + (vf.Size.Height-frame.Size.Height)/2
+		w.win().send("setFrameOrigin:", CGPoint{X: x, Y: y})
+	})
+}
+
+// setPositionOnScreen positions the window relative to the given screen's
+// visible frame; x/y are DIP top-origin coordinates (cgo
+// windowSetPositionOnScreen parity).
+func (w *macosWebviewWindow) setPositionOnScreen(x, y int, screenID string) {
+	runOnMain(func() {
+		target := screenByID(screenID)
+		scale := get[CGFloat](target, "backingScaleFactor")
+		vf := get[NSRect](target, "visibleFrame")
+		frame := get[NSRect](w.win(), "frame")
+		newX := vf.Origin.X + CGFloat(x)/scale
+		newY := vf.Origin.Y + vf.Size.Height - frame.Size.Height - CGFloat(y)/scale
+		w.win().send("setFrameOrigin:", CGPoint{X: newX, Y: newY})
+	})
+}
 
 func (w *macosWebviewWindow) getScreen() (*Screen, error) { return getScreenForWindow(w) }
 
