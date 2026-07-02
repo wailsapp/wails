@@ -1034,7 +1034,27 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// Hide the menubar in fullscreen mode
 	w32.SetMenu(w.hwnd, 0)
 
-	if w.chromium.GetController() != nil {
+	// The SetWindowPos above re-puts controller bounds via its synchronous
+	// WM_SIZE, but that put silently no-ops when the controller is not ready
+	// yet (a freshly created alarm window fullscreened while Embed is still
+	// pumping), and a Window-to-Visual internal visual resize can lag the put.
+	// Field report (#5701, v200.0.21): all-monitors fullscreen alarm content
+	// parked bottom-right with correct text size on the secondary monitor —
+	// the signature of content centered on a stale, larger canvas. Re-assert
+	// the bounds once, and leave a breadcrumb capturing which value (bounds
+	// vs scale) was stale if it ever recurs.
+	if controller := w.chromium.GetController(); controller != nil {
+		var bw, bh int32
+		if b, err := controller.GetBounds(); err == nil && b != nil {
+			bw, bh = b.Right-b.Left, b.Bottom-b.Top
+		}
+		var cw, ch int32
+		if rect := w32.GetClientRect(w.hwnd); rect != nil {
+			cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
+		}
+		globalApplication.warning("fullscreen: window %d client %dx%d px, controller bounds %dx%d px, raster=%.2f — re-asserting bounds (#5701)",
+			w.parent.id, cw, ch, bw, bh, w.currentWebviewRasterizationScale())
+		w.chromium.Resize()
 		w.chromium.Focus()
 	}
 	w.parent.emit(events.Windows.WindowFullscreen)
@@ -2505,24 +2525,37 @@ func (w *windowsWebviewWindow) currentWebviewRasterizationScale() float64 {
 	return scale
 }
 
-// onWebviewRasterizationScaleChanged is telemetry for the mixed-DPI wrong-size
-// investigation (#5701). With native monitor-scale detection on, the browser
-// re-rasters on its own schedule during monitor moves, and a scale change with
-// no following bounds put re-scales the displayed frame WITHOUT re-laying it
-// out (#5677) — content looks wrongly sized from that instant until the next
-// bounds put (the flip's WM_SIZE resize or the storm settle, whichever races
-// in first). These events are the missing half of that race in field logs.
-// Warning level so New Relic receives them. Fires on the UI thread.
+// onWebviewRasterizationScaleChanged closes the scale/layout race of the
+// mixed-DPI wrong-size investigation (#5701). With native monitor-scale
+// detection on, the browser re-rasters on its own schedule during monitor
+// moves, and a scale change with no following bounds put re-scales the
+// displayed frame WITHOUT re-laying it out (#5677) — v200.0.21 field data:
+// the native scale-put landed a median 12ms AFTER the flip's WM_SIZE
+// bounds-put on 68/91 flips, leaving crisp-but-wrong-sized content visible
+// until the settle (median 3.3s). Re-putting the bounds right here re-lays
+// the content out at the scale the browser just committed, collapsing that
+// exposure to the event latency itself. The re-layout cost rides a re-raster
+// the browser has ALREADY done — this is affordable per event where per-flip
+// scale-puts were not (the v200.0.16/17 browser kills were a windowed-hosting
+// GPU cost; under Window-to-Visual hosting the same session shows zero
+// process failures). No feedback loop: a bounds put never changes the scale.
+// Skipped while minimised (#5605: no controller COM off a possibly-suspended
+// state) and mid-rebuild. Warning level so New Relic receives the breadcrumb.
+// Fires on the UI thread — the same thread as the WM_SIZE resize path.
 func (w *windowsWebviewWindow) onWebviewRasterizationScaleChanged(scale float64) {
 	dpi, _ := w.DPI()
 	sinceFlip := int64(-1)
 	if !w.lastDPITransitionAt.IsZero() {
 		sinceFlip = time.Since(w.lastDPITransitionAt).Milliseconds()
 	}
+	relayout := !w.isMinimizing && !w.webviewRebuildInProgress && scale > 0
+	if relayout {
+		w.chromium.Resize()
+	}
 	globalApplication.warning(
-		"WebView2 rasterization scale now %.2f: window %d (dpi %d → target %.2f), storm=%v, inSizeMove=%v, minimised=%v, %dms after last DPI flip (#5701)",
+		"WebView2 rasterization scale now %.2f: window %d (dpi %d → target %.2f), storm=%v, inSizeMove=%v, minimised=%v, relayout=%v, %dms after last DPI flip (#5701)",
 		scale, w.parent.id, dpi, float64(dpi)/96.0,
-		!w.dpiFlapSuppressUntil.IsZero(), w.inSizeMove, w.isMinimizing, sinceFlip)
+		!w.dpiFlapSuppressUntil.IsZero(), w.inSizeMove, w.isMinimizing, relayout, sinceFlip)
 }
 
 // resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
