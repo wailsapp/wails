@@ -11,6 +11,37 @@ Severity: **critical** = crash or broken core behaviour on common paths;
 **major** = real bug, leak, or user-visible parity break; **minor** = edge
 case, cosmetic parity, or robustness gap.
 
+## Fix status (2026-07-02, commits `94a8391d3..b24f1c387`)
+
+**Fixed:** all three criticals (C1 frameless close via direct `close`;
+C2 `markAsDestroyed` in `destroy()`; C3 scheme-task stop race closed by
+confining check+send atomically to the main thread with `dispatch_sync`) and
+all majors M1–M14 (block `Release()` sweep everywhere, dialog map race +
+non-modal windowless panels, file-input open panel, renderer-crash reload,
+navigation/willClose/universal-link events, full geometry sweep incl.
+`options.Screen`, construction parity + window-level drag destination,
+registry hygiene + body-stream close on stop, notifications typeHint +
+retained block captures, systray deferred `showMenu`, selector guards,
+per-window teardown in `windowWillClose:`, foundation dlopen/superclass
+panics). Most minors fixed in the same commits (show/focus, zoom semantics,
+restore, isVisible, execJS guards, setTitle, min/max sizes, center,
+maximise-button state, hidden else-branch, startDrag anchor, appInit pool,
+terminate re-entrancy, post-run release, screen-ID signedness, go.mod,
+pressure float, parseHexColor, doc comment).
+
+**Left as-is (deliberate):** leaks that are byte-identical in the cgo backend
+(menu `setBitmap` NSImage, `Menu.Update()` rebuild, dialog custom-icon
+NSImage); the single-instance URL-capture timeout start point (ms-level);
+`goStringFromC` double copy and the vet `unsafeptr` notices (benign purego
+idiom); `objc.Send[T]` per-call `RegisterFunc` overhead (perf only);
+`nsString` invalid-UTF-8/NUL behaviour (cgo parity); the pre-existing
+`menuitem_selectors_darwin.go` tag asymmetry.
+
+**Validated:** both backends build (arm64 + amd64 cross), vet clean, and a
+CGO-free lifecycle app (create titled → Close → recreate frameless → Close →
+recreate → Quit) runs to a clean exit on a real macOS 26 desktop;
+`examples/window` renders and serves assets.
+
 ---
 
 ## Critical
