@@ -129,15 +129,13 @@ type windowsWebviewWindow struct {
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
-	// OS-suggested window size per target DPI, recorded on every non-minimised
-	// WM_DPICHANGED (suppressed or not). Suppression skips applying suggested
-	// rects, so the settle applies the settled DPI's suggestion (size-only)
-	// when the storm ended on a suppressed crossing — but ONLY when the
-	// current size matches the OTHER DPI's suggested class, proving it is a
-	// stale cross-monitor artifact and not a snap/maximise/user size (#5701,
-	// v200.0.10: the previous any-deviation heuristic force-resized freshly
-	// snapped windows). Main-thread only.
-	dpiSuggestedSize map[uint32][2]int32
+	// dpiFlapWebviewHidden is true while the webview is hidden for an active
+	// DPI-flap storm (PutIsVisible(false) at trip, shown again at settle).
+	// Content rendered mid-storm is wrongly scaled — the rasterization sync
+	// is deferred to the settle — so hiding shows the window background
+	// instead of garbage, and a hidden controller produces no frames, which
+	// also starves the GPU-process churn that crashes Chromium (#5701).
+	dpiFlapWebviewHidden bool
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -1877,32 +1875,28 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// majority back across the boundary, Windows fires the opposite
 		// WM_DPICHANGED, and the resize/scale storm assert-crashes the WebView2
 		// GPU process (exit code 0x80000003) until Chromium intentionally kills
-		// the browser process. Detect the reversal pattern, stop applying
-		// resizes while it persists, and — unless the user is mid-drag — move
-		// the window fully onto one monitor so the loop's root condition ends.
-		flapSuppressed, resolveStraddle := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), newDPI)
+		// the browser process. Detect the reversal pattern, hide the webview
+		// while it persists (no frames → no wrong-scale content and no GPU
+		// churn; geometry stays OS-applied), and — unless the user is mid-drag
+		// — move the window fully onto one monitor so the loop's root
+		// condition ends.
+		stormActive, resolveStraddle := w.noteDPITransitionAndDetectFlap(uint32(w.lastKnownDPI), newDPI)
 		// Diagnostic breadcrumb (#5701): mixed-DPI monitor crossings are the
 		// trigger for WebView2 GPU-process deaths in the field, so record every
 		// transition — a "WebView2 process failed" shortly after one of these
 		// confirms the correlation. Warning level so log bridges that forward
 		// only Warn+ still ship it; DPI transitions are rare enough not to spam.
-		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
+		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, stormActive=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
-			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
-		// Record the suggested size for the settle's deferred size fix (see
-		// dpiFlapSettleCheck). Minimised suggested rects are scaled for the
-		// parked position's monitor (#5544) and must not be recorded.
-		if !w.isMinimizing && newDPI != 0 {
-			if w.dpiSuggestedSize == nil {
-				w.dpiSuggestedSize = make(map[uint32][2]int32, 2)
-			}
-			w.dpiSuggestedSize[newDPI] = [2]int32{
-				suggested.Right - suggested.Left,
-				suggested.Bottom - suggested.Top,
-			}
-		}
+			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, stormActive)
+		resolved := false
 		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
+			// The resolver placed the window fully onto the target monitor
+			// (or is rate-limited/converged from doing so a moment ago) —
+			// applying the ORIGINAL suggested rect below would put the
+			// straddle right back and re-feed the loop.
+			resolved = true
 		}
 		if !w.isMinimizing {
 			w.lastAppliedDPI = newDPI
@@ -1914,7 +1908,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// restored at 3072x1728 after crossing a 200%→125% boundary while
 		// minimised, #5544). Skip the resize; a fresh WM_DPICHANGED with a
 		// correct rect arrives if the DPI really differs on restore.
-		if !w.ignoreDPIChangeResizing && !w.isMinimizing && !flapSuppressed {
+		// Geometry stays OS-applied even during a storm (Step 15, #5701): the
+		// suggested rect is applied on every transition (except when the
+		// resolver just placed the window itself), so window sizes can never
+		// go stale and snap/maximise sizes are never fought. The storm defence
+		// is now purely visual+scale: the webview is hidden at trip (no
+		// frames, no wrong-scale content, no GPU churn) and the rasterization
+		// sync is deferred to the settle; the parked-straddle resolver still
+		// ends the rect feedback loop at its root.
+		if !w.ignoreDPIChangeResizing && !w.isMinimizing && !resolved {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
 			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
 			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
@@ -1957,7 +1959,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// The manual scale resync + bounds re-assert is part of the churn
 			// the flap breaker exists to stop — skip it while suppressed; the
 			// breaker schedules one settle resync after the storm passes.
-			if !flapSuppressed && w.resyncWebviewRasterizationScale() {
+			if !stormActive && w.resyncWebviewRasterizationScale() {
 				// A scale re-put alone does not make WebView2 re-lay out content
 				// whose bounds are unchanged — the page keeps reporting sizes
 				// computed with the stale scale until the bounds are re-asserted.
@@ -2169,8 +2171,9 @@ const (
 // INTENTIONALLY kills the browser process ("GPU process isn't usable.
 // Goodbye."), so an unbroken storm always ends in a wedged controller.
 //
-// Returns (suppressed, resolveStraddle): suppressed=true → skip the
-// suggested-rect resize and rasterization resync for this transition;
+// Returns (stormActive, resolveStraddle): stormActive=true → the webview is
+// hidden and the rasterization resync is deferred to the settle (the
+// suggested rect is still applied — geometry stays OS-owned, Step 15);
 // resolveStraddle=true → the caller should run the straddle resolver for this
 // transition (further gated there on !inSizeMove: a window the user actively
 // holds must not be repositioned). Detection has two tiers:
@@ -2230,7 +2233,7 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	switch {
 	case parkedReversal:
 		w.dpiFlapResumeCount = 0
-		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — suppressing DPI resizes and resolving (#5701)",
+		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — hiding webview and resolving (#5701)",
 			fromDPI, newDPI, w.parent.id)
 	case resumedStorm:
 		// Each resume proves the last settle fired inside a still-live storm —
@@ -2238,34 +2241,28 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 		// is a scale+bounds re-put, v200.0.8: 41 settles / 30 resumes in one
 		// session) converges instead of tracking the storm cadence.
 		w.dpiFlapResumeCount++
-		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle, resume %d): window %d — re-suppressing on the first reversal (#5701)",
+		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle, resume %d): window %d — re-hiding on the first reversal (#5701)",
 			fromDPI, newDPI, dpiFlapResumeWindow, w.dpiFlapResumeCount, w.parent.id)
 	default:
 		w.dpiFlapResumeCount = 0
-		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
+		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — hiding webview until the storm settles (#5701)",
 			w.parent.id, fromDPI, newDPI)
+	}
+
+	// Hide the webview for the duration of the storm (shown again by the
+	// settle). Mid-storm content is wrongly scaled — the rasterization sync is
+	// deferred — so the user would watch garbage (v200.0.x field reports);
+	// hidden, the window shows its background colour instead, and a hidden
+	// controller produces no frames, starving the GPU churn that CHECK-crashes
+	// Chromium. This is the documented IsVisible pattern (minimize).
+	if !w.dpiFlapWebviewHidden && w.chromium != nil && w.chromium.GetController() != nil {
+		if err := w.chromium.Hide(); err == nil {
+			w.dpiFlapWebviewHidden = true
+		}
 	}
 
 	w.scheduleDPIFlapSettle(dpiFlapQuietSettle + 100*time.Millisecond)
 	return true, true
-}
-
-// dpiSizeMismatch reports whether actual deviates from expected by more than
-// 10% — wide enough to ignore border/rounding differences, tight enough to
-// catch a window still sized for the other monitor of a 125%↔250% pair.
-func dpiSizeMismatch(actual, expected int32) bool {
-	return !dpiSizeWithinPct(actual, expected, 10)
-}
-
-// dpiSizeWithinPct reports whether actual is within pct percent of expected.
-// The stale-size proof uses 15%: the DPI-ratio identity is near-exact, with
-// slack only for non-client borders that do not scale with DPI.
-func dpiSizeWithinPct(actual, expected, pct int32) bool {
-	d := actual - expected
-	if d < 0 {
-		d = -d
-	}
-	return int64(d)*100 <= int64(expected)*int64(pct)
 }
 
 // scheduleDPIFlapSettle arms a settle check after delay. Duplicate pending
@@ -2329,52 +2326,14 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
-	// Apply the settled DPI's suggested size before touching scale/bounds.
-	// Suppression skipped every suggested-rect application, so a storm that
-	// ends on a suppressed crossing leaves the window physically sized for the
-	// other monitor (v200.0.9 field trace: settled on dpi 120 with a 4K-class
-	// 1732x1203 client). Size-only at the current position — where the window
-	// sits is the user's choice; how big it should be at this DPI is the OS's
-	// own suggestion. Fires ONLY on proof of a stale cross-monitor size: the
-	// current size must equal the settled DPI's suggestion scaled by the DPI
-	// ratio (see the identity below). Any other deviation (snap,
-	// maximise-adjacent, user resize mid-storm) is a size the shell or the
-	// user chose, and resizing it fights them (v200.0.10: freshly snapped
-	// 976x1028 windows were force-grown to a stale 1750x1250 suggestion).
-	// Skipped while maximised or mid-drag.
-	if dpi, _ := w.DPI(); dpi != 0 && !w.inSizeMove && !w32.IsZoomed(w.hwnd) {
-		if want, ok := w.dpiSuggestedSize[uint32(dpi)]; ok && want[0] > 0 {
-			if rect := w32.GetWindowRect(w.hwnd); rect != nil {
-				ow, oh := rect.Right-rect.Left, rect.Bottom-rect.Top
-				// The settled DPI's suggestion was computed BY Windows from the
-				// then-current window size during a crossing INTO this monitor:
-				// suggested = current × (settledDPI/otherDPI). A window whose
-				// resize was suppressed therefore measures exactly
-				// want × (otherDPI/settledDPI). Test THAT, not the other DPI's
-				// stored suggestion — suppression freezes the window size, so
-				// each new suggestion rescales from the frozen size and the
-				// other side's store drifts to 2× the stale size (v200.0.11:
-				// the 1732x1203 case matched nothing and was skipped).
-				staleCrossMonitorSize := false
-				for otherDPI := range w.dpiSuggestedSize {
-					if otherDPI == uint32(dpi) || otherDPI == 0 {
-						continue
-					}
-					sw := int32(int64(want[0]) * int64(otherDPI) / int64(dpi))
-					sh := int32(int64(want[1]) * int64(otherDPI) / int64(dpi))
-					if dpiSizeWithinPct(ow, sw, 15) && dpiSizeWithinPct(oh, sh, 15) {
-						staleCrossMonitorSize = true
-						break
-					}
-				}
-				if staleCrossMonitorSize && (dpiSizeMismatch(ow, want[0]) || dpiSizeMismatch(oh, want[1])) {
-					w32.SetWindowPos(w.hwnd, 0, int(rect.Left), int(rect.Top),
-						int(want[0]), int(want[1]),
-						uint(w32.SWP_NOMOVE|w32.SWP_NOZORDER|w32.SWP_NOACTIVATE))
-					globalApplication.warning("DPI flap settle: window %d had a stale cross-monitor size %dx%d px — resized to the settled DPI's suggested %dx%d (#5701)",
-						w.parent.id, ow, oh, want[0], want[1])
-				}
-			}
+	// Show the webview again (hidden at trip). Geometry was OS-applied all
+	// through the storm (Step 15), so the window size is already correct —
+	// only the rasterization scale and controller bounds need one sync below
+	// before the content becomes visible.
+	if w.dpiFlapWebviewHidden {
+		w.dpiFlapWebviewHidden = false
+		if w.chromium != nil && w.chromium.GetController() != nil {
+			_ = w.chromium.Show()
 		}
 	}
 	w.resyncWebviewRasterizationScale()
@@ -2382,10 +2341,9 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	// re-put above was needed. With native monitor-scale detection on, WebView2
 	// often corrects the rasterization scale by itself mid-storm, so the resync
 	// returns false — but a scale change without a bounds re-assert does not
-	// re-lay out the content (#5677), and the storm's suppressed transitions
-	// skipped every bounds update. Gating Resize on the resync result left the
-	// page laid out for stale bounds: wrongly-sized content inside a correctly
-	// sized window (v200.0.8 field report).
+	// re-lay out the content (#5677). Gating Resize on the resync result left
+	// the page laid out for stale bounds: wrongly-sized content inside a
+	// correctly sized window (v200.0.8 field report).
 	if w.chromium.IsReady() {
 		w.chromium.Resize()
 	}
