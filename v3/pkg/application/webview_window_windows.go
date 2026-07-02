@@ -2258,9 +2258,8 @@ func dpiSizeMismatch(actual, expected int32) bool {
 }
 
 // dpiSizeWithinPct reports whether actual is within pct percent of expected.
-// The stale-size proof uses a loose 25%: suggested rects arriving mid-storm
-// are mangled (Step 4b: 1946x1033 vs 1750x1250, no longer 2:1), so a stale
-// cross-monitor size only approximately matches the other DPI's suggestion.
+// The stale-size proof uses 15%: the DPI-ratio identity is near-exact, with
+// slack only for non-client borders that do not scale with DPI.
 func dpiSizeWithinPct(actual, expected, pct int32) bool {
 	d := actual - expected
 	if d < 0 {
@@ -2336,9 +2335,9 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	// other monitor (v200.0.9 field trace: settled on dpi 120 with a 4K-class
 	// 1732x1203 client). Size-only at the current position — where the window
 	// sits is the user's choice; how big it should be at this DPI is the OS's
-	// own suggestion. Fires ONLY when the current size matches the OTHER
-	// DPI's suggested class (within 25% — storm rects arrive mangled, Step 4b):
-	// that is proof of a stale cross-monitor size. Any other deviation (snap,
+	// own suggestion. Fires ONLY on proof of a stale cross-monitor size: the
+	// current size must equal the settled DPI's suggestion scaled by the DPI
+	// ratio (see the identity below). Any other deviation (snap,
 	// maximise-adjacent, user resize mid-storm) is a size the shell or the
 	// user chose, and resizing it fights them (v200.0.10: freshly snapped
 	// 976x1028 windows were force-grown to a stale 1750x1250 suggestion).
@@ -2347,12 +2346,23 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 		if want, ok := w.dpiSuggestedSize[uint32(dpi)]; ok && want[0] > 0 {
 			if rect := w32.GetWindowRect(w.hwnd); rect != nil {
 				ow, oh := rect.Right-rect.Left, rect.Bottom-rect.Top
+				// The settled DPI's suggestion was computed BY Windows from the
+				// then-current window size during a crossing INTO this monitor:
+				// suggested = current × (settledDPI/otherDPI). A window whose
+				// resize was suppressed therefore measures exactly
+				// want × (otherDPI/settledDPI). Test THAT, not the other DPI's
+				// stored suggestion — suppression freezes the window size, so
+				// each new suggestion rescales from the frozen size and the
+				// other side's store drifts to 2× the stale size (v200.0.11:
+				// the 1732x1203 case matched nothing and was skipped).
 				staleCrossMonitorSize := false
-				for otherDPI, other := range w.dpiSuggestedSize {
-					if otherDPI == uint32(dpi) {
+				for otherDPI := range w.dpiSuggestedSize {
+					if otherDPI == uint32(dpi) || otherDPI == 0 {
 						continue
 					}
-					if dpiSizeWithinPct(ow, other[0], 25) && dpiSizeWithinPct(oh, other[1], 25) {
+					sw := int32(int64(want[0]) * int64(otherDPI) / int64(dpi))
+					sh := int32(int64(want[1]) * int64(otherDPI) / int64(dpi))
+					if dpiSizeWithinPct(ow, sw, 15) && dpiSizeWithinPct(oh, sh, 15) {
 						staleCrossMonitorSize = true
 						break
 					}
