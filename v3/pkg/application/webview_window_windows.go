@@ -124,6 +124,7 @@ type windowsWebviewWindow struct {
 	dpiFlapReversals      int
 	dpiFlapSuppressUntil  time.Time
 	dpiFlapStormStartAt   time.Time
+	lastDPIFlapSettledAt  time.Time
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
@@ -1655,6 +1656,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	case w32.WM_EXITSIZEMOVE:
 		w.inSizeMove = false
+		if !w.dpiFlapSuppressUntil.IsZero() {
+			// A drag ended while a DPI-flap storm was open. Once released, a
+			// window off the boundary produces no further transitions, so the
+			// frozen rasterization scale can snap back fast instead of waiting
+			// out the full quiet window (#5701, v200.0.7 field report).
+			w.scheduleDPIFlapSettle(dpiFlapReleaseSettle + 50*time.Millisecond)
+		}
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
 			w.parent.emit(events.Windows.WindowEndMove)
 		} else {
@@ -2111,6 +2119,24 @@ const (
 	// is over; chasing the end of the storm instead of the full suppression
 	// window cuts the visible wrong-scale tail from ~3.5-6.5 s to ~1.6 s.
 	dpiFlapQuietSettle = 1500 * time.Millisecond
+
+	// dpiFlapReleaseSettle is the quiet threshold once the user has released
+	// the drag (!inSizeMove). A parked window that is not straddling produces
+	// no further transitions, so the frozen rasterization scale can snap back
+	// almost immediately — the v200.0.7 field test showed the ~1.6 s tail is
+	// still human-visible when a drag ends inside a suppression window. A
+	// parked STRADDLING window keeps oscillating: a premature settle there
+	// costs one transition before the parked fast path re-trips and the
+	// resolver ends the straddle.
+	dpiFlapReleaseSettle = 400 * time.Millisecond
+
+	// dpiFlapResumeWindow: a reversal this soon after a settle is the SAME
+	// storm resuming (v200.0.7 field trace: fresh transitions 25 ms and
+	// 138 ms after two settles), so re-trip on the FIRST reversal even
+	// in-drag — demanding 3 fresh reversals hands the resumed storm 2-3
+	// unsuppressed transitions of full resize+resync churn, exactly the
+	// exposure the breaker exists to remove.
+	dpiFlapResumeWindow = 10 * time.Second
 )
 
 // noteDPITransitionAndDetectFlap records a WM_DPICHANGED transition and
@@ -2131,7 +2157,10 @@ const (
 //   - parked: ONE reversal within dpiParkedReversalWindow trips immediately —
 //     a parked window ping-ponging its DPI is proof of the feedback loop, and
 //     field data shows the parked oscillation can run slower than any
-//     rapid-reversal threshold while still assert-crashing the GPU process.
+//     rapid-reversal threshold while still assert-crashing the GPU process;
+//   - resumed: ONE reversal within dpiFlapResumeWindow of the last settle
+//     trips immediately even in-drag — a storm restarting right after a lull
+//     is a continuation, not a fresh human wiggle.
 //
 // While suppressed, parked reversals keep resolving: suppression stops the
 // resize churn, but only the resolver ends the straddle feeding the storm. A
@@ -2164,63 +2193,92 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	w.lastDPITransitionFrom = fromDPI
 	w.lastDPITransitionAt = now
 
-	if w.dpiFlapReversals < 3 && !parkedReversal {
+	// A reversal arriving shortly after a settle is the SAME storm resuming
+	// after a lull — trip again on the first reversal instead of handing the
+	// storm 2-3 unsuppressed transitions while the counter refills.
+	resumedStorm := isReversal && reversalAge < dpiFlapReversalWindow &&
+		!w.lastDPIFlapSettledAt.IsZero() && now.Sub(w.lastDPIFlapSettledAt) < dpiFlapResumeWindow
+
+	if w.dpiFlapReversals < 3 && !parkedReversal && !resumedStorm {
 		return false, false
 	}
 	w.dpiFlapReversals = 0
 	w.dpiFlapSuppressUntil = now.Add(dpiFlapSuppression)
 	w.dpiFlapStormStartAt = now
-	if parkedReversal {
+	switch {
+	case parkedReversal:
 		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — suppressing DPI resizes and resolving (#5701)",
 			fromDPI, newDPI, w.parent.id)
-	} else {
+	case resumedStorm:
+		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle): window %d — re-suppressing on the first reversal (#5701)",
+			fromDPI, newDPI, dpiFlapResumeWindow, w.parent.id)
+	default:
 		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — suppressing DPI resizes to break the feedback loop (#5701)",
 			w.parent.id, fromDPI, newDPI)
 	}
 
-	// Settle after the storm: whichever monitor the window rests on, put the
-	// rasterization scale and bounds back in sync. The frozen scale is what
-	// the user SEES as wrongly-sized content, so settle chases the END of the
-	// transition stream (dpiFlapQuietSettle of quiet), not the suppression
-	// window — a storm's last extension can otherwise leave the scale wrong
-	// for another ~3.5-6.5 s (v200.0.6 field trace: last transition 41.663,
-	// settle 47.681). The closure re-arms itself while transitions keep
-	// arriving, so it runs exactly once. The storm/tail breadcrumb quantifies
-	// the user-visible wrong-scale window in field logs. Timer→InvokeAsync so
-	// it never runs inside the WM_DPICHANGED dispatch.
-	var settle func(delay time.Duration)
-	settle = func(delay time.Duration) {
-		time.AfterFunc(delay, func() {
-			InvokeAsync(func() {
-				if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown {
-					return
-				}
-				quiet := time.Since(w.lastDPITransitionAt)
-				if quiet < dpiFlapQuietSettle || w.webviewRebuildInProgress {
-					// Storm (or a rebuild) still active — check again once the
-					// quiet window could next be satisfied.
-					next := dpiFlapQuietSettle - quiet + 100*time.Millisecond
-					if next < 250*time.Millisecond {
-						next = 250 * time.Millisecond
-					}
-					settle(next)
-					return
-				}
-				w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
-				if w.resyncWebviewRasterizationScale() {
-					w.chromium.Resize()
-				}
-				if dpi, _ := w.DPI(); dpi != 0 {
-					w.lastKnownDPI = dpi
-				}
-				storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-				globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail) (#5701)",
-					w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds())
-			})
-		})
-	}
-	settle(dpiFlapQuietSettle + 100*time.Millisecond)
+	w.scheduleDPIFlapSettle(dpiFlapQuietSettle + 100*time.Millisecond)
 	return true, true
+}
+
+// scheduleDPIFlapSettle arms a settle check after delay. Duplicate pending
+// checks are harmless: dpiFlapSettleCheck no-ops once the storm has settled
+// (dpiFlapSuppressUntil zeroed), and each live check either settles or re-arms
+// exactly one successor, so the timer count stays bounded. Callable from any
+// context; the check itself hops to the main thread via InvokeAsync.
+func (w *windowsWebviewWindow) scheduleDPIFlapSettle(delay time.Duration) {
+	time.AfterFunc(delay, func() {
+		InvokeAsync(func() {
+			w.dpiFlapSettleCheck()
+		})
+	})
+}
+
+// dpiFlapSettleCheck resyncs the rasterization scale and ends suppression once
+// the storm is over. The frozen scale is what the user SEES as wrongly-sized
+// content (too small on a higher-DPI monitor, too large on a lower-DPI one),
+// so the check chases the END of the transition stream rather than the
+// suppression window, with the quiet threshold depending on what the user is
+// doing: mid-drag a lull may just be the user hovering near the boundary
+// (dpiFlapQuietSettle), but once the drag is released a non-straddling window
+// produces no further transitions, so the scale can snap back after
+// dpiFlapReleaseSettle (v200.0.7 field report: the ~1.6 s tail was still
+// human-visible when a drag ended inside a suppression window). The storm/tail
+// breadcrumb quantifies the user-visible wrong-scale window in field logs.
+// Main thread only.
+func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
+	if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown {
+		return
+	}
+	if w.dpiFlapSuppressUntil.IsZero() {
+		return // already settled (duplicate check, e.g. from the drag-release path)
+	}
+	threshold := dpiFlapQuietSettle
+	if !w.inSizeMove {
+		threshold = dpiFlapReleaseSettle
+	}
+	quiet := time.Since(w.lastDPITransitionAt)
+	if quiet < threshold || w.webviewRebuildInProgress {
+		// Storm (or a rebuild) still active — check again once the quiet
+		// window could next be satisfied.
+		next := threshold - quiet + 100*time.Millisecond
+		if next < 250*time.Millisecond {
+			next = 250 * time.Millisecond
+		}
+		w.scheduleDPIFlapSettle(next)
+		return
+	}
+	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
+	w.lastDPIFlapSettledAt = time.Now()
+	if w.resyncWebviewRasterizationScale() {
+		w.chromium.Resize()
+	}
+	if dpi, _ := w.DPI(); dpi != 0 {
+		w.lastKnownDPI = dpi
+	}
+	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
+	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail) (#5701)",
+		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds())
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
