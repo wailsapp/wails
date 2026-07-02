@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/ebitengine/purego/objc"
@@ -787,8 +788,19 @@ func (w *macosWebviewWindow) show() {
 
 func (w *macosWebviewWindow) hide() { runOnMain(func() { w.win().send("orderOut:", objc.ID(0)) }) }
 
-func (w *macosWebviewWindow) close() { runOnMain(func() { w.win().send("performClose:", objc.ID(0)) }) }
+func (w *macosWebviewWindow) close() {
+	// Mirror cgo windowClose: send close directly. performClose: consults the
+	// close button and is a documented no-op (beep) on frameless windows,
+	// which have no NSWindowStyleMaskClosable bit.
+	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
+	runOnMain(func() { w.win().send("close") })
+}
+
 func (w *macosWebviewWindow) destroy() {
+	// Mirror cgo: mark destroyed BEFORE the NSWindow deallocs
+	// (releasedWhenClosed defaults to YES) so the public API guards reject
+	// any further calls instead of messaging freed memory.
+	w.parent.markAsDestroyed()
 	runOnMain(func() {
 		delegateToWindowID.Delete(uintptr(w.delegate))
 		nsWindowToID.Delete(uintptr(w.nsWindow))
@@ -1209,6 +1221,8 @@ func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
 	runOnMain(func() {
 		block := objc.NewBlock(func(b objc.Block, returnCode int) {})
 		w.win().send("beginSheet:completionHandler:", modal, block)
+		// beginSheet: copies the block; release our +1.
+		block.Release()
 	})
 }
 
