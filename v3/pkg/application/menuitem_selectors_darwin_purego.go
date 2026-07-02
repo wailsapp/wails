@@ -1,11 +1,15 @@
-// File: v3/pkg/application/menuitem_selectors_darwin.go
-
-//go:build darwin && !server && !purego
+//go:build darwin && purego && !ios && !server
 
 package application
 
-import "C"
-
+// roleToSelector maps a menu Role to the Objective-C selector (by name) that
+// AppKit dispatches up the responder chain for that role. Roles that are
+// submenus (AppMenu, EditMenu, ...) or that have no built-in action map to the
+// empty string and are handled elsewhere.
+//
+// This mirrors the cgo build's menuitem_selectors_darwin.go, but returns the
+// selector as a plain Go string instead of a *C.char since the purego backend
+// drives the runtime directly.
 var roleToSelector = map[Role]string{
 	//AppMenu:             "", // This is a special case, handled separately
 	About: "orderFrontStandardAboutPanel:",
@@ -49,9 +53,12 @@ var roleToSelector = map[Role]string{
 	//No:                  "", // No specific selector for this role
 }
 
-func getSelectorForRole(role Role) *C.char {
-	if selector, ok := roleToSelector[role]; ok && selector != "" {
-		return C.CString(selector)
+// getSelectorForRole returns the selector name for a role, or "" if the role
+// has no built-in AppKit action (in which case the item uses a custom
+// target/action pair driving processMenuItemClick).
+func getSelectorForRole(role Role) string {
+	if selector, ok := roleToSelector[role]; ok {
+		return selector
 	}
-	return nil
+	return ""
 }

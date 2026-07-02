@@ -1,0 +1,738 @@
+//go:build darwin && purego && !ios && !server
+
+package application
+
+import (
+	"fmt"
+	"reflect"
+	"sync"
+	"unsafe"
+
+	"github.com/ebitengine/purego/objc"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+// macosWebviewWindow is the CGO-free implementation of webviewWindowImpl. Field
+// names match the cgo backend (nsWindow) so cross-file references keep working;
+// additional handles are kept for the webview and its delegate.
+type macosWebviewWindow struct {
+	nsWindow  unsafe.Pointer // NSWindow*
+	parent    *WebviewWindow
+	wkWebView unsafe.Pointer // WKWebView*
+	delegate  unsafe.Pointer // WailsWebviewWindowDelegate*
+}
+
+func (w *macosWebviewWindow) win() id     { return id(uintptr(w.nsWindow)) }
+func (w *macosWebviewWindow) webview() id { return id(uintptr(w.wkWebView)) }
+
+// ---------------------------------------------------------------------------
+// Window/webview delegate class
+// ---------------------------------------------------------------------------
+
+var (
+	delegateToWindowID sync.Map // uintptr(delegate) -> uint
+	macEventsVal       = reflect.ValueOf(events.Mac)
+)
+
+// macWindowEventID resolves an events.Mac field (e.g. "WindowDidResize") to its
+// numeric id, so the delegate notification table can be generated from the
+// selector names rather than hand-copying ~60 constants.
+func macWindowEventID(field string) uint {
+	f := macEventsVal.FieldByName(field)
+	if !f.IsValid() {
+		panic("wails/purego: unknown events.Mac field " + field)
+	}
+	return uint(f.Uint())
+}
+
+func windowIDForDelegate(self objc.ID) (uint, bool) {
+	if v, ok := delegateToWindowID.Load(uintptr(self)); ok {
+		return v.(uint), true
+	}
+	return 0, false
+}
+
+// windowNotificationSelectors are the NSWindowDelegate notifications that map
+// 1:1 to an events.Mac.<Field> event (field name = selector without the
+// trailing colon, first letter upper-cased).
+var windowNotificationSelectors = []string{
+	"windowDidBecomeKey:", "windowDidBecomeMain:", "windowDidBeginSheet:",
+	"windowDidChangeAlpha:", "windowDidChangeBackingLocation:", "windowDidChangeBackingProperties:",
+	"windowDidChangeCollectionBehavior:", "windowDidChangeEffectiveAppearance:", "windowDidChangeOrderingMode:",
+	"windowDidChangeScreen:", "windowDidChangeScreenParameters:", "windowDidChangeScreenProfile:",
+	"windowDidChangeScreenSpace:", "windowDidChangeScreenSpaceProperties:", "windowDidChangeSharingType:",
+	"windowDidChangeSpace:", "windowDidChangeSpaceOrderingMode:", "windowDidChangeTitle:",
+	"windowDidChangeToolbar:", "windowDidDeminiaturize:", "windowDidEndSheet:",
+	"windowDidEnterFullScreen:", "windowDidEnterVersionBrowser:", "windowDidExitFullScreen:",
+	"windowDidExitVersionBrowser:", "windowDidExpose:", "windowDidFocus:",
+	"windowDidMiniaturize:", "windowDidMove:", "windowDidOrderOffScreen:",
+	"windowDidOrderOnScreen:", "windowDidResignKey:", "windowDidResignMain:",
+	"windowDidResize:", "windowDidUpdate:", "windowDidUpdateAlpha:",
+	"windowDidUpdateCollectionBehavior:", "windowDidUpdateCollectionProperties:", "windowDidUpdateShadow:",
+	"windowDidUpdateTitle:", "windowDidUpdateToolbar:", "windowWillBecomeKey:",
+	"windowWillBecomeMain:", "windowWillBeginSheet:", "windowWillChangeOrderingMode:",
+	"windowWillDeminiaturize:", "windowWillEnterFullScreen:", "windowWillEnterVersionBrowser:",
+	"windowWillExitFullScreen:", "windowWillExitVersionBrowser:", "windowWillFocus:",
+	"windowWillMiniaturize:", "windowWillMove:",
+}
+
+func selectorToEventField(sel string) string {
+	s := sel[:len(sel)-1] // drop trailing ':'
+	return string(s[0]-'a'+'A') + s[1:]
+}
+
+var registerWindowDelegateOnce sync.Once
+var windowDelegateClass id
+
+func registerWindowDelegateClass() id {
+	registerWindowDelegateOnce.Do(func() {
+		methods := []objc.MethodDef{}
+
+		// Generic notifications -> window events.
+		for _, sel := range windowNotificationSelectors {
+			evID := macWindowEventID(selectorToEventField(sel))
+			methods = append(methods, objc.MethodDef{
+				Cmd: sel_(sel),
+				Fn: func(self objc.ID, cmd objc.SEL, notif objc.ID) {
+					if wid, ok := windowIDForDelegate(self); ok {
+						processWindowEvent(wid, evID)
+					}
+				},
+			})
+		}
+
+		// Occlusion state -> Show/Hide.
+		showID := macWindowEventID("WindowShow")
+		hideID := macWindowEventID("WindowHide")
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("windowDidChangeOcclusionState:"),
+			Fn: func(self objc.ID, cmd objc.SEL, notif objc.ID) {
+				wid, ok := windowIDForDelegate(self)
+				if !ok {
+					return
+				}
+				win := id(notif).send("object")
+				const nsWindowOcclusionStateVisible = 1 << 1
+				state := get[uint](win, "occlusionState")
+				if state&nsWindowOcclusionStateVisible != 0 {
+					processWindowEvent(wid, showID)
+				} else {
+					processWindowEvent(wid, hideID)
+				}
+			},
+		})
+
+		// windowShouldClose: honour hidden / unconditional-close semantics.
+		shouldCloseID := macWindowEventID("WindowShouldClose")
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("windowShouldClose:"),
+			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) bool {
+				wid, ok := windowIDForDelegate(self)
+				if !ok {
+					return true
+				}
+				if windowShouldUnconditionallyClose(wid) {
+					return true
+				}
+				if windowIsHidden(wid) {
+					return false
+				}
+				processWindowEvent(wid, shouldCloseID)
+				return false
+			},
+		})
+
+		// WKScriptMessageHandler: userContentController:didReceiveScriptMessage:
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("userContentController:didReceiveScriptMessage:"),
+			Fn: func(self objc.ID, cmd objc.SEL, ucc objc.ID, message objc.ID) {
+				wid, ok := windowIDForDelegate(self)
+				if !ok {
+					return
+				}
+				msg := id(message)
+				origin := ""
+				frame := msg.send("frameInfo")
+				if !frame.isNil() {
+					req := frame.send("request")
+					if !req.isNil() {
+						u := req.send("URL")
+						if !u.isNil() && !u.send("scheme").isNil() && !u.send("host").isNil() {
+							origin = u.send("absoluteString").string()
+						}
+					}
+				}
+				body := msg.send("body")
+				var bodyStr string
+				if get[bool](body, "isKindOfClass:", class("NSString")) {
+					bodyStr = body.string()
+				} else {
+					bodyStr = body.send("description").string()
+				}
+				isMain := get[bool](frame, "isMainFrame")
+				processMessage(wid, bodyStr, origin, isMain)
+			},
+		})
+
+		// WKURLSchemeHandler: webView:startURLSchemeTask:
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("webView:startURLSchemeTask:"),
+			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, task objc.ID) {
+				if wid, ok := windowIDForDelegate(self); ok {
+					processURLRequest(wid, unsafe.Pointer(uintptr(task)))
+				}
+			},
+		})
+		// WKURLSchemeHandler: webView:stopURLSchemeTask: (no-op; asset writer
+		// tolerates a stopped task).
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("webView:stopURLSchemeTask:"),
+			Fn:  func(self objc.ID, cmd objc.SEL, wv objc.ID, task objc.ID) {},
+		})
+
+		// WKNavigationDelegate: didFinishNavigation.
+		finishNavID := macWindowEventID("WebViewDidFinishNavigation")
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("webView:didFinishNavigation:"),
+			Fn: func(self objc.ID, cmd objc.SEL, wv objc.ID, nav objc.ID) {
+				if wid, ok := windowIDForDelegate(self); ok {
+					processWindowEvent(wid, finishNavID)
+				}
+			},
+		})
+
+		windowDelegateClass = registerDelegateClass("WailsWebviewWindowDelegate", "NSObject", nil, methods)
+	})
+	return windowDelegateClass
+}
+
+// ---------------------------------------------------------------------------
+// Construction
+// ---------------------------------------------------------------------------
+
+func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
+	result := &macosWebviewWindow{parent: parent}
+	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
+		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", result.parent.options.EnableFileDrop)
+		result.execJS(js)
+	})
+	return result
+}
+
+func (w *macosWebviewWindow) run() {
+	for eventId := range w.parent.eventListeners {
+		w.on(eventId)
+	}
+	globalApplication.dispatchOnMainThread(func() {
+		options := w.parent.options
+		w.createWindow(options)
+
+		w.setTitle(options.Title)
+		w.setResizable(!options.DisableResize)
+		if options.MinWidth != 0 || options.MinHeight != 0 {
+			w.setMinSize(options.MinWidth, options.MinHeight)
+		}
+		if options.MaxWidth != 0 || options.MaxHeight != 0 {
+			w.setMaxSize(options.MaxWidth, options.MaxHeight)
+		}
+		w.enableDevTools()
+		w.setContentProtection(options.ContentProtectionEnabled)
+		w.setBackgroundColour(options.BackgroundColour)
+
+		switch options.StartState {
+		case WindowStateMaximised:
+			w.maximise()
+		case WindowStateMinimised:
+			w.minimise()
+		case WindowStateFullscreen:
+			w.fullscreen()
+		case WindowStateNormal:
+		}
+
+		if options.InitialPosition == WindowCentered {
+			w.center()
+		} else {
+			w.setPosition(options.X, options.Y)
+		}
+
+		startURL, err := assetserver.GetStartURL(options.URL)
+		if err != nil {
+			globalApplication.handleFatalError(err)
+		}
+		w.setURL(startURL)
+
+		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+			InvokeAsync(func() {
+				if options.JS != "" {
+					w.execJS(options.JS)
+				}
+				if !options.Hidden {
+					w.parent.Show()
+					w.setAlwaysOnTop(options.AlwaysOnTop)
+				}
+			})
+		})
+
+		if options.HTML != "" {
+			w.setHTML(options.HTML)
+		}
+	})
+}
+
+// createWindow builds the NSWindow, WKWebView, configuration, delegate and
+// scheme/message handlers. Port of the cgo windowNew().
+func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
+	const (
+		styleTitled      = 1 << 0
+		styleClosable    = 1 << 1
+		styleMiniaturize = 1 << 2
+		styleResizable   = 1 << 3
+		styleBorderless  = 0
+		backingBuffered  = 2
+	)
+	styleMask := styleTitled | styleClosable | styleMiniaturize | styleResizable
+	if options.Frameless {
+		styleMask = styleBorderless | styleResizable | styleMiniaturize
+	}
+	width, height := options.Width, options.Height
+	if width == 0 {
+		width = 800
+	}
+	if height == 0 {
+		height = 600
+	}
+
+	win := class("NSWindow").send("alloc").send("initWithContentRect:styleMask:backing:defer:",
+		rect(0, 0, CGFloat(width-1), CGFloat(height-1)), uint(styleMask), uint(backingBuffered), false)
+	w.nsWindow = unsafe.Pointer(win.ptr())
+
+	// Delegate (also the script/scheme/navigation handler).
+	del := registerWindowDelegateClass().send("new")
+	w.delegate = unsafe.Pointer(del.ptr())
+	win.send("setDelegate:", del)
+	delegateToWindowID.Store(del.ptr(), w.parent.id)
+	nsWindowToID.Store(win.ptr(), w.parent.id)
+
+	// Content view.
+	view := class("NSView").send("alloc").send("initWithFrame:", rect(0, 0, CGFloat(width-1), CGFloat(height-1)))
+	const autoWidth, autoHeight = 1 << 1, 1 << 4
+	view.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+	win.send("setContentView:", view)
+
+	// WebView configuration.
+	config := class("WKWebViewConfiguration").send("alloc").send("init")
+	config.send("setSuppressesIncrementalRendering:", true)
+	appName := options.Mac.WebviewPreferences.ApplicationNameForUserAgent
+	if appName == "" {
+		appName = "wails.io"
+	}
+	config.send("setApplicationNameForUserAgent:", nsString(appName))
+	config.send("setURLSchemeHandler:forURLScheme:", del, nsString("wails"))
+
+	// User content controller + external message bridge.
+	ucc := class("WKUserContentController").send("new")
+	ucc.send("addScriptMessageHandler:name:", del, nsString("external"))
+	config.send("setUserContentController:", ucc)
+
+	webView := class("WKWebView").send("alloc").send("initWithFrame:configuration:",
+		rect(0, 0, CGFloat(width), CGFloat(height)), config)
+	w.wkWebView = unsafe.Pointer(webView.ptr())
+	view.send("addSubview:", webView)
+	webView.send("setNavigationDelegate:", del)
+	webView.send("setUIDelegate:", del)
+	webView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+
+	applyWebviewPreferences(webView, config, options.Mac.WebviewPreferences)
+}
+
+func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences) {
+	if prefs.AllowsBackForwardNavigationGestures.IsSet() {
+		webView.send("setAllowsBackForwardNavigationGestures:", prefs.AllowsBackForwardNavigationGestures.Get())
+	}
+	if prefs.AllowsMagnification.IsSet() {
+		webView.send("setAllowsMagnification:", prefs.AllowsMagnification.Get())
+	}
+	if prefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		config.send("setAllowsAirPlayForMediaPlayback:", prefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Core operations
+// ---------------------------------------------------------------------------
+
+func (w *macosWebviewWindow) setTitle(title string) {
+	runOnMain(func() { w.win().send("setTitle:", nsString(title)) })
+}
+
+func (w *macosWebviewWindow) setURL(uri string) {
+	runOnMain(func() {
+		u := nsURL(uri)
+		req := class("NSURLRequest").send("requestWithURL:", u)
+		w.webview().send("loadRequest:", req)
+	})
+}
+
+func (w *macosWebviewWindow) setHTML(html string) {
+	runOnMain(func() { w.webview().send("loadHTMLString:baseURL:", nsString(html), objc.ID(0)) })
+}
+
+func (w *macosWebviewWindow) execJS(js string) {
+	runOnMain(func() {
+		w.webview().send("evaluateJavaScript:completionHandler:", nsString(js), objc.ID(0))
+	})
+}
+
+func (w *macosWebviewWindow) execJSDragOver(buffer []byte) {
+	// buffer is NUL-terminated; trim before wrapping in an NSString.
+	s := buffer
+	if n := len(s); n > 0 && s[n-1] == 0 {
+		s = s[:n-1]
+	}
+	js := string(s)
+	runOnMain(func() {
+		w.webview().send("evaluateJavaScript:completionHandler:", nsString(js), objc.ID(0))
+	})
+}
+
+func (w *macosWebviewWindow) show() {
+	runOnMain(func() {
+		w.win().send("makeKeyAndOrderFront:", objc.ID(0))
+		class("NSApplication").send("sharedApplication").send("activateIgnoringOtherApps:", true)
+	})
+}
+
+func (w *macosWebviewWindow) hide() { runOnMain(func() { w.win().send("orderOut:", objc.ID(0)) }) }
+
+func (w *macosWebviewWindow) close() { runOnMain(func() { w.win().send("performClose:", objc.ID(0)) }) }
+func (w *macosWebviewWindow) destroy() {
+	runOnMain(func() {
+		delegateToWindowID.Delete(uintptr(w.delegate))
+		nsWindowToID.Delete(uintptr(w.nsWindow))
+		clearWindowDragCache(w.parent.id)
+		w.win().send("close")
+	})
+}
+
+func (w *macosWebviewWindow) center() { runOnMain(func() { w.win().send("center") }) }
+
+func (w *macosWebviewWindow) focus() {
+	runOnMain(func() {
+		w.win().send("makeKeyAndOrderFront:", objc.ID(0))
+		class("NSApplication").send("sharedApplication").send("activateIgnoringOtherApps:", true)
+	})
+}
+
+func (w *macosWebviewWindow) reload() { runOnMain(func() { w.webview().send("reload") }) }
+func (w *macosWebviewWindow) forceReload() {
+	runOnMain(func() { w.webview().send("reloadFromOrigin") })
+}
+
+func (w *macosWebviewWindow) minimise() {
+	runOnMain(func() { w.win().send("miniaturize:", objc.ID(0)) })
+}
+func (w *macosWebviewWindow) unminimise() {
+	runOnMain(func() { w.win().send("deminiaturize:", objc.ID(0)) })
+}
+func (w *macosWebviewWindow) maximise() {
+	runOnMain(func() {
+		if !w.isMaximised() {
+			w.win().send("zoom:", objc.ID(0))
+		}
+	})
+}
+func (w *macosWebviewWindow) unmaximise() {
+	runOnMain(func() {
+		if w.isMaximised() {
+			w.win().send("zoom:", objc.ID(0))
+		}
+	})
+}
+func (w *macosWebviewWindow) fullscreen() {
+	runOnMain(func() {
+		if !w.isFullscreen() {
+			w.win().send("toggleFullScreen:", objc.ID(0))
+		}
+	})
+}
+func (w *macosWebviewWindow) unfullscreen() {
+	runOnMain(func() {
+		if w.isFullscreen() {
+			w.win().send("toggleFullScreen:", objc.ID(0))
+		}
+	})
+}
+
+func (w *macosWebviewWindow) isMinimised() bool {
+	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "isMiniaturized") })
+}
+func (w *macosWebviewWindow) isMaximised() bool {
+	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "isZoomed") })
+}
+func (w *macosWebviewWindow) isFullscreen() bool {
+	return w.syncMainThreadReturningBool(func() bool {
+		const nsWindowStyleMaskFullScreen = 1 << 14
+		return get[uint](w.win(), "styleMask")&nsWindowStyleMaskFullScreen != 0
+	})
+}
+func (w *macosWebviewWindow) isVisible() bool {
+	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "isVisible") })
+}
+func (w *macosWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+func (w *macosWebviewWindow) isFocused() bool {
+	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "isKeyWindow") })
+}
+
+func (w *macosWebviewWindow) syncMainThreadReturningBool(fn func() bool) bool {
+	var result bool
+	runOnMain(func() { result = fn() })
+	return result
+}
+
+func (w *macosWebviewWindow) setResizable(resizable bool) {
+	runOnMain(func() {
+		const mask = 1 << 3 // NSWindowStyleMaskResizable
+		cur := get[uint](w.win(), "styleMask")
+		if resizable {
+			cur |= mask
+		} else {
+			cur &^= mask
+		}
+		w.win().send("setStyleMask:", cur)
+	})
+}
+
+func (w *macosWebviewWindow) setSize(width, height int) {
+	runOnMain(func() {
+		frame := get[NSRect](w.win(), "frame")
+		frame.Size = CGSize{Width: CGFloat(width), Height: CGFloat(height)}
+		w.win().send("setFrame:display:", frame, true)
+	})
+}
+
+func (w *macosWebviewWindow) size() (int, int) {
+	var wd, ht int
+	runOnMain(func() {
+		cv := w.win().send("contentView")
+		frame := get[NSRect](cv, "frame")
+		wd, ht = int(frame.Size.Width), int(frame.Size.Height)
+	})
+	return wd, ht
+}
+
+func (w *macosWebviewWindow) width() int  { wd, _ := w.size(); return wd }
+func (w *macosWebviewWindow) height() int { _, ht := w.size(); return ht }
+
+func (w *macosWebviewWindow) setMinSize(width, height int) {
+	runOnMain(func() { w.win().send("setContentMinSize:", CGSize{Width: CGFloat(width), Height: CGFloat(height)}) })
+}
+func (w *macosWebviewWindow) setMaxSize(width, height int) {
+	mw, mh := CGFloat(width), CGFloat(height)
+	if width == 0 {
+		mw = 1 << 30
+	}
+	if height == 0 {
+		mh = 1 << 30
+	}
+	runOnMain(func() { w.win().send("setContentMaxSize:", CGSize{Width: mw, Height: mh}) })
+}
+
+func (w *macosWebviewWindow) setPosition(x, y int) {
+	runOnMain(func() {
+		// Convert top-left (Wails) to bottom-left (Cocoa) using the main screen.
+		screen := class("NSScreen").send("mainScreen")
+		sf := get[NSRect](screen, "frame")
+		frame := get[NSRect](w.win(), "frame")
+		top := sf.Size.Height - CGFloat(y)
+		w.win().send("setFrameTopLeftPoint:", CGPoint{X: CGFloat(x), Y: top})
+		_ = frame
+	})
+}
+
+func (w *macosWebviewWindow) position() (int, int) {
+	var x, y int
+	runOnMain(func() {
+		screen := class("NSScreen").send("mainScreen")
+		sf := get[NSRect](screen, "frame")
+		frame := get[NSRect](w.win(), "frame")
+		x = int(frame.Origin.X)
+		y = int(sf.Size.Height - (frame.Origin.Y + frame.Size.Height))
+	})
+	return x, y
+}
+
+func (w *macosWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
+	runOnMain(func() {
+		const nsFloatingWindowLevel = 3
+		const nsNormalWindowLevel = 0
+		if alwaysOnTop {
+			w.win().send("setLevel:", nsFloatingWindowLevel)
+		} else {
+			w.win().send("setLevel:", nsNormalWindowLevel)
+		}
+	})
+}
+
+func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
+	runOnMain(func() {
+		c := class("NSColor").send("colorWithRed:green:blue:alpha:",
+			CGFloat(colour.Red)/255, CGFloat(colour.Green)/255, CGFloat(colour.Blue)/255, CGFloat(colour.Alpha)/255)
+		w.win().send("setBackgroundColor:", c)
+	})
+}
+
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	runOnMain(func() {
+		const nsWindowSharingNone = 0
+		const nsWindowSharingReadOnly = 1
+		if enabled {
+			w.win().send("setSharingType:", nsWindowSharingNone)
+		} else {
+			w.win().send("setSharingType:", nsWindowSharingReadOnly)
+		}
+	})
+}
+
+func (w *macosWebviewWindow) getZoom() float64 {
+	var z float64
+	runOnMain(func() { z = get[float64](w.webview(), "pageZoom") })
+	if z == 0 {
+		z = 1
+	}
+	return z
+}
+func (w *macosWebviewWindow) setZoom(zoom float64) {
+	runOnMain(func() { w.webview().send("setPageZoom:", zoom) })
+}
+func (w *macosWebviewWindow) zoomIn() { w.setZoom(w.getZoom() + 0.1) }
+func (w *macosWebviewWindow) zoomOut() {
+	z := w.getZoom() - 0.1
+	if z < 0.1 {
+		z = 0.1
+	}
+	w.setZoom(z)
+}
+func (w *macosWebviewWindow) zoomReset() { w.setZoom(1) }
+func (w *macosWebviewWindow) zoom()      { w.zoomReset() }
+
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer { return w.nsWindow }
+
+func (w *macosWebviewWindow) on(eventID uint) { /* hasListeners() is always true */ }
+
+// Standard edit actions dispatched through the responder chain.
+func (w *macosWebviewWindow) sendAction(sel string) {
+	runOnMain(func() {
+		class("NSApplication").send("sharedApplication").
+			send("sendAction:to:from:", sel_(sel), objc.ID(0), w.win())
+	})
+}
+func (w *macosWebviewWindow) cut()       { w.sendAction("cut:") }
+func (w *macosWebviewWindow) copy()      { w.sendAction("copy:") }
+func (w *macosWebviewWindow) paste()     { w.sendAction("paste:") }
+func (w *macosWebviewWindow) delete()    { w.sendAction("delete:") }
+func (w *macosWebviewWindow) selectAll() { w.sendAction("selectAll:") }
+func (w *macosWebviewWindow) undo()      { w.sendAction("undo:") }
+func (w *macosWebviewWindow) redo()      { w.sendAction("redo:") }
+
+// ---------------------------------------------------------------------------
+// Bounds helpers
+// ---------------------------------------------------------------------------
+
+func (w *macosWebviewWindow) bounds() Rect {
+	x, y := w.position()
+	wd, ht := w.size()
+	return Rect{X: x, Y: y, Width: wd, Height: ht}
+}
+func (w *macosWebviewWindow) setBounds(bounds Rect) {
+	w.setPosition(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+}
+func (w *macosWebviewWindow) physicalBounds() Rect          { return w.bounds() }
+func (w *macosWebviewWindow) setPhysicalBounds(bounds Rect) { w.setBounds(bounds) }
+func (w *macosWebviewWindow) relativePosition() (int, int)  { return w.position() }
+func (w *macosWebviewWindow) setRelativePosition(x, y int)  { w.setPosition(x, y) }
+func (w *macosWebviewWindow) centerOnScreen(screen *Screen) { w.center() }
+
+func (w *macosWebviewWindow) getScreen() (*Screen, error) { return getScreenForWindow(w) }
+
+// ---------------------------------------------------------------------------
+// Not-yet-ported operations (compile-complete stubs; see mac-purego STATUS).
+// These keep parity of the interface surface. Tracked for full implementation.
+// ---------------------------------------------------------------------------
+
+func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) { notYet("handleKeyEvent") }
+func (w *macosWebviewWindow) getBorderSizes() *LRTB                   { return &LRTB{} }
+func (w *macosWebviewWindow) print() error                            { notYet("print"); return nil }
+func (w *macosWebviewWindow) startResize(_ string) error              { notYet("startResize"); return nil }
+func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+	notYet("openContextMenu")
+}
+func (w *macosWebviewWindow) setFrameless(frameless bool) { notYet("setFrameless") }
+func (w *macosWebviewWindow) setHasShadow(hasShadow bool) {
+	runOnMain(func() { w.win().send("setHasShadow:", hasShadow) })
+}
+func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
+	notYet("setFullscreenButtonState")
+}
+func (w *macosWebviewWindow) disableSizeConstraints()             { notYet("disableSizeConstraints") }
+func (w *macosWebviewWindow) windowZoom()                         { w.maximise() }
+func (w *macosWebviewWindow) restore()                            { w.unminimise() }
+func (w *macosWebviewWindow) restoreWindow()                      { w.unminimise() }
+func (w *macosWebviewWindow) setEnabled(enabled bool)             { notYet("setEnabled") }
+func (w *macosWebviewWindow) flash(_ bool)                        {}
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) { notYet("setWindowLevel") }
+func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
+	notYet("setCollectionBehavior")
+}
+func (w *macosWebviewWindow) applyLiquidGlass() { notYet("applyLiquidGlass") }
+func (w *macosWebviewWindow) startDrag() error  { notYet("startDrag"); return nil }
+func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
+	setStdButtonState(w, 2, state)
+}
+func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
+	setStdButtonState(w, 1, state)
+}
+func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) { setStdButtonState(w, 0, state) }
+func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
+	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "ignoresMouseEvents") })
+}
+func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	runOnMain(func() { w.win().send("setIgnoresMouseEvents:", ignore) })
+}
+func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) { notYet("attachModal") }
+
+func (w *macosWebviewWindow) showMenuBar()    {}
+func (w *macosWebviewWindow) hideMenuBar()    {}
+func (w *macosWebviewWindow) toggleMenuBar()  {}
+func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {}
+
+// setStdButtonState toggles a standard window button. buttonType: 0=close,
+// 1=zoom, 2=miniaturize (NSWindowButton values).
+func setStdButtonState(w *macosWebviewWindow, buttonType int, state ButtonState) {
+	runOnMain(func() {
+		btn := w.win().send("standardWindowButton:", buttonType)
+		if btn.isNil() {
+			return
+		}
+		switch state {
+		case ButtonHidden:
+			btn.send("setHidden:", true)
+		case ButtonDisabled:
+			btn.send("setHidden:", false)
+			btn.send("setEnabled:", false)
+		default: // ButtonEnabled
+			btn.send("setHidden:", false)
+			btn.send("setEnabled:", true)
+		}
+	})
+}
+
+func notYet(name string) {
+	globalApplication.debug("[purego] window operation not yet implemented", "op", name)
+}

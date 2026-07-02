@@ -1,4 +1,4 @@
-//go:build darwin && !ios && production && !devtools && !server && !purego
+//go:build darwin && purego && !ios && production && !devtools && !server
 
 package application
 
