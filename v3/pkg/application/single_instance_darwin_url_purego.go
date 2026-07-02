@@ -89,6 +89,10 @@ func captureLaunchURL() string {
 
 		mgr.send("removeEventHandlerForEventClass:andEventID:",
 			uint32(kInternetEventClass), uint32(kAEGetURL))
+		// Cancel the pending timeout selector (it retains the handler) and
+		// drop our owning reference.
+		class("NSObject").send("cancelPreviousPerformRequestsWithTarget:", handler)
+		handler.send("release")
 
 		captureMu.Lock()
 		result = capturedLaunchURL

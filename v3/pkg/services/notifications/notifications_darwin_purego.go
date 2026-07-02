@@ -71,16 +71,18 @@ func New() *NotificationService {
 }
 
 func (dn *darwinNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
-	if !isNotificationAvailable() {
-		return fmt.Errorf("notifications are not available on this system")
-	}
-	if !checkBundleIdentifier() {
-		return fmt.Errorf("notifications require a valid bundle identifier")
-	}
-	if !ensureDelegateInitialized() {
-		return fmt.Errorf("failed to initialize notification center delegate")
-	}
-	return nil
+	var err error
+	withAutoreleasePool(func() {
+		switch {
+		case !isNotificationAvailable():
+			err = fmt.Errorf("notifications are not available on this system")
+		case !checkBundleIdentifier():
+			err = fmt.Errorf("notifications require a valid bundle identifier")
+		case !ensureDelegateInitialized():
+			err = fmt.Errorf("failed to initialize notification center delegate")
+		}
+	})
+	return err
 }
 
 func (dn *darwinNotifier) Shutdown() error {
@@ -249,25 +251,33 @@ func (dn *darwinNotifier) RemoveNotificationCategory(categoryId string) error {
 
 // RemoveAllPendingNotifications removes all pending notifications.
 func (dn *darwinNotifier) RemoveAllPendingNotifications() error {
-	notificationCenter().send("removeAllPendingNotificationRequests")
+	withAutoreleasePool(func() {
+		notificationCenter().send("removeAllPendingNotificationRequests")
+	})
 	return nil
 }
 
 // RemovePendingNotification removes a pending notification matching the unique identifier.
 func (dn *darwinNotifier) RemovePendingNotification(identifier string) error {
-	notificationCenter().send("removePendingNotificationRequestsWithIdentifiers:", nsArrayOfStrings(identifier))
+	withAutoreleasePool(func() {
+		notificationCenter().send("removePendingNotificationRequestsWithIdentifiers:", nsArrayOfStrings(identifier))
+	})
 	return nil
 }
 
 // RemoveAllDeliveredNotifications removes all delivered notifications.
 func (dn *darwinNotifier) RemoveAllDeliveredNotifications() error {
-	notificationCenter().send("removeAllDeliveredNotifications")
+	withAutoreleasePool(func() {
+		notificationCenter().send("removeAllDeliveredNotifications")
+	})
 	return nil
 }
 
 // RemoveDeliveredNotification removes a delivered notification matching the unique identifier.
 func (dn *darwinNotifier) RemoveDeliveredNotification(identifier string) error {
-	notificationCenter().send("removeDeliveredNotificationsWithIdentifiers:", nsArrayOfStrings(identifier))
+	withAutoreleasePool(func() {
+		notificationCenter().send("removeDeliveredNotificationsWithIdentifiers:", nsArrayOfStrings(identifier))
+	})
 	return nil
 }
 
@@ -411,6 +421,19 @@ func loadFrameworks() {
 			_, _ = purego.Dlopen(fw, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 		}
 	})
+}
+
+// withAutoreleasePool runs fn inside a fresh NSAutoreleasePool and drains it
+// afterwards. The exported service methods run on arbitrary Go goroutines,
+// which have no ambient autorelease pool, so autoreleased objects created by
+// class-method constructors (stringWithUTF8String:, dictionary, ...) would
+// otherwise leak silently. Objects that must outlive the pool (e.g. captured
+// by asynchronous completion-handler blocks) must be explicitly retained
+// before the pool drains.
+func withAutoreleasePool(fn func()) {
+	pool := class("NSAutoreleasePool").send("alloc").send("init")
+	defer pool.send("drain")
+	fn()
 }
 
 // id is a thin wrapper around objc.ID for fluent message sends.
@@ -616,6 +639,10 @@ func ensureDelegateInitialized() bool {
 		if err != nil {
 			return
 		}
+		// The delegate instance is a process-lifetime singleton by design: it
+		// is alloc/init'd once (+1, so it survives any surrounding autorelease
+		// pool -- the notification center's delegate property is weak) and is
+		// intentionally never released.
 		delegateInstance = id(objc.ID(cls)).send("alloc").send("init")
 		notificationCenter().send("setDelegate:", delegateInstance)
 	})
@@ -681,7 +708,11 @@ func didReceiveNotificationResponseIMP(self objc.ID, cmd objc.SEL, center objc.I
 		didReceiveNotificationResponse("", "Error: failed to serialize notification response")
 	} else {
 		jsonString := class("NSString").send("alloc").send("initWithData:encoding:", jsonData, uint(nsUTF8StringEncoding))
-		didReceiveNotificationResponse(jsonString.string(), "")
+		payload := jsonString.string() // copies into Go memory
+		if !jsonString.isNil() {
+			jsonString.send("release") // balance alloc/init
+		}
+		didReceiveNotificationResponse(payload, "")
 	}
 
 	invokeBlockVoid(completionHandler)
@@ -692,40 +723,44 @@ func didReceiveNotificationResponseIMP(self objc.ID, cmd objc.SEL, center objc.I
 // ===========================================================================
 
 func requestNotificationAuthorization(channelID int) {
-	if !ensureDelegateInitialized() {
-		captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
-		return
-	}
-
-	center := notificationCenter()
-	options := uintptr(unAuthorizationOptionAlert | unAuthorizationOptionSound | unAuthorizationOptionBadge)
-
-	handler := objc.NewBlock(func(_ objc.Block, granted bool, err objc.ID) {
-		if e := id(err); !e.isNil() {
-			captureResult(channelID, false, errorDescription(e))
-		} else {
-			captureResult(channelID, granted, "")
+	withAutoreleasePool(func() {
+		if !ensureDelegateInitialized() {
+			captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
+			return
 		}
+
+		center := notificationCenter()
+		options := uintptr(unAuthorizationOptionAlert | unAuthorizationOptionSound | unAuthorizationOptionBadge)
+
+		handler := objc.NewBlock(func(_ objc.Block, granted bool, err objc.ID) {
+			if e := id(err); !e.isNil() {
+				captureResult(channelID, false, errorDescription(e))
+			} else {
+				captureResult(channelID, granted, "")
+			}
+		})
+		center.send("requestAuthorizationWithOptions:completionHandler:", options, handler)
+		// The framework copies the block during the call above; drop our +1.
+		handler.Release()
 	})
-	center.send("requestAuthorizationWithOptions:completionHandler:", options, handler)
-	// The framework copies the block during the call above; drop our +1.
-	handler.Release()
 }
 
 func checkNotificationAuthorization(channelID int) {
-	if !ensureDelegateInitialized() {
-		captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
-		return
-	}
+	withAutoreleasePool(func() {
+		if !ensureDelegateInitialized() {
+			captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
+			return
+		}
 
-	center := notificationCenter()
-	handler := objc.NewBlock(func(_ objc.Block, settings objc.ID) {
-		status := get[int](id(settings), "authorizationStatus")
-		captureResult(channelID, status == unAuthorizationStatusAuthorized, "")
+		center := notificationCenter()
+		handler := objc.NewBlock(func(_ objc.Block, settings objc.ID) {
+			status := get[int](id(settings), "authorizationStatus")
+			captureResult(channelID, status == unAuthorizationStatusAuthorized, "")
+		})
+		center.send("getNotificationSettingsWithCompletionHandler:", handler)
+		// The framework copies the block during the call above; drop our +1.
+		handler.Release()
 	})
-	center.send("getNotificationSettingsWithCompletionHandler:", handler)
-	// The framework copies the block during the call above; drop our +1.
-	handler.Release()
 }
 
 // ===========================================================================
@@ -842,7 +877,9 @@ func buildTrigger(schedule *NotificationSchedule) id {
 }
 
 // createNotificationContent builds the UNMutableNotificationContent from a
-// NotificationOptions value.
+// NotificationOptions value. The returned object is owned by the caller
+// (alloc/init, +1) and must be released once it has been handed to a
+// UNNotificationRequest (which copies it).
 func createNotificationContent(options NotificationOptions) id {
 	content := class("UNMutableNotificationContent").send("alloc").send("init")
 	content.send("setTitle:", nsString(options.Title))
@@ -870,32 +907,39 @@ func createNotificationContent(options NotificationOptions) id {
 }
 
 func sendNotification(channelID int, options NotificationOptions, withActions bool) {
-	if !ensureDelegateInitialized() {
-		captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
-		return
-	}
-
-	content := createNotificationContent(options)
-	if withActions && options.CategoryID != "" {
-		content.send("setCategoryIdentifier:", nsString(options.CategoryID))
-	}
-
-	trigger := buildTrigger(options.Schedule)
-
-	request := class("UNNotificationRequest").send("requestWithIdentifier:content:trigger:",
-		nsString(options.ID), content, trigger)
-
-	center := notificationCenter()
-	handler := objc.NewBlock(func(_ objc.Block, err objc.ID) {
-		if e := id(err); !e.isNil() {
-			captureResult(channelID, false, errorDescription(e))
-		} else {
-			captureResult(channelID, true, "")
+	withAutoreleasePool(func() {
+		if !ensureDelegateInitialized() {
+			captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
+			return
 		}
+
+		content := createNotificationContent(options)
+		if withActions && options.CategoryID != "" {
+			content.send("setCategoryIdentifier:", nsString(options.CategoryID))
+		}
+
+		trigger := buildTrigger(options.Schedule)
+
+		request := class("UNNotificationRequest").send("requestWithIdentifier:content:trigger:",
+			nsString(options.ID), content, trigger)
+		// The request copies the content; drop our alloc/init +1.
+		content.send("release")
+
+		center := notificationCenter()
+		handler := objc.NewBlock(func(_ objc.Block, err objc.ID) {
+			if e := id(err); !e.isNil() {
+				captureResult(channelID, false, errorDescription(e))
+			} else {
+				captureResult(channelID, true, "")
+			}
+		})
+		// addNotificationRequest: retains the (autoreleased) request and copies
+		// the block synchronously during this call, so neither needs to outlive
+		// the pool.
+		center.send("addNotificationRequest:withCompletionHandler:", request, handler)
+		// The framework copies the block during the call above; drop our +1.
+		handler.Release()
 	})
-	center.send("addNotificationRequest:withCompletionHandler:", request, handler)
-	// The framework copies the block during the call above; drop our +1.
-	handler.Release()
 }
 
 // ===========================================================================
@@ -903,126 +947,131 @@ func sendNotification(channelID int, options NotificationOptions, withActions bo
 // ===========================================================================
 
 func registerNotificationCategory(channelID int, category NotificationCategory) {
-	if !ensureDelegateInitialized() {
-		captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
-		return
-	}
-
-	nsCategoryID := nsString(category.ID)
-	actions := class("NSMutableArray").send("array")
-
-	for _, action := range category.Actions {
-		if action.ID == "" || action.Title == "" {
-			continue
+	withAutoreleasePool(func() {
+		if !ensureDelegateInitialized() {
+			captureResult(channelID, false, "Notification delegate has been lost. Reinitialize the notification service.")
+			return
 		}
-		opts := unNotificationActionOptionNone
-		if action.Destructive {
-			opts |= unNotificationActionOptionDestructive
-		}
-		a := class("UNNotificationAction").send("actionWithIdentifier:title:options:",
-			nsString(action.ID), nsString(action.Title), opts)
-		actions.send("addObject:", a)
-	}
 
-	if category.HasReplyField {
-		textAction := class("UNTextInputNotificationAction").send(
-			"actionWithIdentifier:title:options:textInputButtonTitle:textInputPlaceholder:",
-			nsString("TEXT_REPLY"),
-			nsString(category.ReplyButtonTitle),
-			unNotificationActionOptionNone,
-			nsString(category.ReplyButtonTitle),
-			nsString(category.ReplyPlaceholder),
+		nsCategoryID := nsString(category.ID)
+		actions := class("NSMutableArray").send("array")
+
+		for _, action := range category.Actions {
+			if action.ID == "" || action.Title == "" {
+				continue
+			}
+			opts := unNotificationActionOptionNone
+			if action.Destructive {
+				opts |= unNotificationActionOptionDestructive
+			}
+			a := class("UNNotificationAction").send("actionWithIdentifier:title:options:",
+				nsString(action.ID), nsString(action.Title), opts)
+			actions.send("addObject:", a)
+		}
+
+		if category.HasReplyField {
+			textAction := class("UNTextInputNotificationAction").send(
+				"actionWithIdentifier:title:options:textInputButtonTitle:textInputPlaceholder:",
+				nsString("TEXT_REPLY"),
+				nsString(category.ReplyButtonTitle),
+				unNotificationActionOptionNone,
+				nsString(category.ReplyButtonTitle),
+				nsString(category.ReplyPlaceholder),
+			)
+			actions.send("addObject:", textAction)
+		}
+
+		newCategory := class("UNNotificationCategory").send(
+			"categoryWithIdentifier:actions:intentIdentifiers:options:",
+			nsCategoryID,
+			actions,
+			class("NSArray").send("array"),
+			unNotificationCategoryOptionNone,
 		)
-		actions.send("addObject:", textAction)
-	}
 
-	newCategory := class("UNNotificationCategory").send(
-		"categoryWithIdentifier:actions:intentIdentifiers:options:",
-		nsCategoryID,
-		actions,
-		class("NSArray").send("array"),
-		unNotificationCategoryOptionNone,
-	)
+		center := notificationCenter()
 
-	center := notificationCenter()
+		// The completion handler runs asynchronously, after the surrounding
+		// autorelease pool has drained: retain the captured (autoreleased)
+		// objects now and release them inside the block once it is done with
+		// them.
+		nsCategoryID.send("retain")
+		newCategory.send("retain")
 
-	// The completion handler runs asynchronously, after the caller's
-	// autorelease pool may have drained: retain the captured (autoreleased)
-	// objects now and release them inside the block once it is done with them.
-	nsCategoryID.send("retain")
-	newCategory.send("retain")
+		handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
+			updated := class("NSMutableSet").send("setWithSet:", id(categories))
 
-	handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
-		updated := class("NSMutableSet").send("setWithSet:", id(categories))
-
-		// Remove any existing category with the same identifier.
-		var existing id
-		enumerator := updated.send("objectEnumerator")
-		for {
-			obj := enumerator.send("nextObject")
-			if obj.isNil() {
-				break
+			// Remove any existing category with the same identifier.
+			var existing id
+			enumerator := updated.send("objectEnumerator")
+			for {
+				obj := enumerator.send("nextObject")
+				if obj.isNil() {
+					break
+				}
+				if get[bool](obj.send("identifier"), "isEqualToString:", nsCategoryID) {
+					existing = obj
+					break
+				}
 			}
-			if get[bool](obj.send("identifier"), "isEqualToString:", nsCategoryID) {
-				existing = obj
-				break
+			if !existing.isNil() {
+				updated.send("removeObject:", existing)
 			}
-		}
-		if !existing.isNil() {
-			updated.send("removeObject:", existing)
-		}
 
-		updated.send("addObject:", newCategory)
-		center.send("setNotificationCategories:", updated)
+			updated.send("addObject:", newCategory)
+			center.send("setNotificationCategories:", updated)
 
-		nsCategoryID.send("release")
-		newCategory.send("release")
+			nsCategoryID.send("release")
+			newCategory.send("release")
 
-		captureResult(channelID, true, "")
+			captureResult(channelID, true, "")
+		})
+		center.send("getNotificationCategoriesWithCompletionHandler:", handler)
+		// The framework copies the block during the call above; drop our +1.
+		handler.Release()
 	})
-	center.send("getNotificationCategoriesWithCompletionHandler:", handler)
-	// The framework copies the block during the call above; drop our +1.
-	handler.Release()
 }
 
 func removeNotificationCategory(channelID int, categoryID string) {
-	nsCategoryID := nsString(categoryID)
-	center := notificationCenter()
+	withAutoreleasePool(func() {
+		nsCategoryID := nsString(categoryID)
+		center := notificationCenter()
 
-	// The completion handler runs asynchronously, after the caller's
-	// autorelease pool may have drained: retain the captured (autoreleased)
-	// NSString now and release it inside the block once it is done with it.
-	nsCategoryID.send("retain")
+		// The completion handler runs asynchronously, after the surrounding
+		// autorelease pool has drained: retain the captured (autoreleased)
+		// NSString now and release it inside the block once it is done with it.
+		nsCategoryID.send("retain")
 
-	handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
-		updated := class("NSMutableSet").send("setWithSet:", id(categories))
+		handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
+			updated := class("NSMutableSet").send("setWithSet:", id(categories))
 
-		var toRemove id
-		enumerator := updated.send("objectEnumerator")
-		for {
-			obj := enumerator.send("nextObject")
-			if obj.isNil() {
-				break
+			var toRemove id
+			enumerator := updated.send("objectEnumerator")
+			for {
+				obj := enumerator.send("nextObject")
+				if obj.isNil() {
+					break
+				}
+				if get[bool](obj.send("identifier"), "isEqualToString:", nsCategoryID) {
+					toRemove = obj
+					break
+				}
 			}
-			if get[bool](obj.send("identifier"), "isEqualToString:", nsCategoryID) {
-				toRemove = obj
-				break
+
+			nsCategoryID.send("release")
+
+			if !toRemove.isNil() {
+				updated.send("removeObject:", toRemove)
+				center.send("setNotificationCategories:", updated)
+				captureResult(channelID, true, "")
+			} else {
+				captureResult(channelID, false, fmt.Sprintf("Category '%s' not found", categoryID))
 			}
-		}
-
-		nsCategoryID.send("release")
-
-		if !toRemove.isNil() {
-			updated.send("removeObject:", toRemove)
-			center.send("setNotificationCategories:", updated)
-			captureResult(channelID, true, "")
-		} else {
-			captureResult(channelID, false, fmt.Sprintf("Category '%s' not found", categoryID))
-		}
+		})
+		center.send("getNotificationCategoriesWithCompletionHandler:", handler)
+		// The framework copies the block during the call above; drop our +1.
+		handler.Release()
 	})
-	center.send("getNotificationCategoriesWithCompletionHandler:", handler)
-	// The framework copies the block during the call above; drop our +1.
-	handler.Release()
 }
 
 // containsDot reports whether s contains a ".".

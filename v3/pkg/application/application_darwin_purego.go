@@ -342,15 +342,20 @@ func pushAppEvent(id events.ApplicationEventType, data map[string]any) {
 // ---------------------------------------------------------------------------
 
 func (m *macosApp) isDarkMode() bool {
-	ud := class("NSUserDefaults").send("standardUserDefaults")
-	if ud.isNil() {
-		return false
-	}
-	style := ud.send("stringForKey:", nsString("AppleInterfaceStyle"))
-	if style.isNil() {
-		return false
-	}
-	return get[bool](style, "isEqualToString:", nsString("Dark"))
+	// Called from arbitrary goroutines (no ambient autorelease pool).
+	var dark bool
+	withAutoreleasePool(func() {
+		ud := class("NSUserDefaults").send("standardUserDefaults")
+		if ud.isNil() {
+			return
+		}
+		style := ud.send("stringForKey:", nsString("AppleInterfaceStyle"))
+		if style.isNil() {
+			return
+		}
+		dark = get[bool](style, "isEqualToString:", nsString("Dark"))
+	})
+	return dark
 }
 
 func (m *macosApp) getAccentColor() string {
@@ -397,15 +402,23 @@ func (m *macosApp) setIcon(icon []byte) {
 	runOnMain(func() {
 		image := class("NSImage").send("alloc").send("initWithData:", nsData(icon))
 		class("NSApplication").send("sharedApplication").send("setApplicationIconImage:", image)
+		// The application retains its icon image; drop the creation reference.
+		image.send("release")
 	})
 }
 
 func (m *macosApp) name() string {
-	running := class("NSRunningApplication").send("currentApplication").send("localizedName")
-	if running.isNil() {
-		return class("NSProcessInfo").send("processInfo").send("processName").string()
-	}
-	return running.string()
+	// Called from arbitrary goroutines (no ambient autorelease pool).
+	var name string
+	withAutoreleasePool(func() {
+		running := class("NSRunningApplication").send("currentApplication").send("localizedName")
+		if running.isNil() {
+			name = class("NSProcessInfo").send("processInfo").send("processName").string()
+			return
+		}
+		name = running.string()
+	})
+	return name
 }
 
 func (m *macosApp) getCurrentWindowID() uint {

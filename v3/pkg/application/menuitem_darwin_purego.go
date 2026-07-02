@@ -166,6 +166,8 @@ func (m macosMenuItem) setBitmap(bitmap []byte) {
 	item := idFromPtr(m.nsMenuItem)
 	image := class("NSImage").send("alloc").send("initWithData:", nsData(bitmap))
 	item.send("setImage:", image)
+	// The menu item retains its image; drop the creation reference.
+	image.send("release")
 }
 
 func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
@@ -183,8 +185,14 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 	item.send("setKeyEquivalentModifierMask:", uint(modifier))
 }
 
-func (m macosMenuItem) destroy() {
+// destroy releases the owning +1 from `new`. Idempotent: both a menu rebuild
+// (processMenu) and MenuItem.Destroy() may call it.
+func (m *macosMenuItem) destroy() {
+	if m.nsMenuItem == nil {
+		return
+	}
 	idFromPtr(m.nsMenuItem).send("release")
+	m.nsMenuItem = nil
 }
 
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {

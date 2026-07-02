@@ -48,6 +48,12 @@ func (m *macosMenu) update() {
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	parentMenu := idFromPtr(parent)
 	for _, item := range menu.items {
+		// A rebuild (Menu.Update) replaces every impl: release the previous
+		// NSMenuItem's owning reference first, or each update leaks one item
+		// (removeAllItems only drops the menu's retain, not ours).
+		if old, ok := item.impl.(*macosMenuItem); ok && old != nil && old.nsMenuItem != nil {
+			old.destroy()
+		}
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
@@ -64,6 +70,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			if item.role == WindowMenu {
 				nsApp().send("setWindowsMenu:", nsSubmenu)
 			}
+			// The NSMenuItem retains its submenu; drop our creation reference
+			// so the whole subtree unwinds when the item goes away.
+			nsSubmenu.send("release")
 		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem

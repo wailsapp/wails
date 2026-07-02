@@ -63,6 +63,12 @@ func goStringFromC(p uintptr) string {
 func GetBundleID() string {
 	loadFoundation()
 
+	// Callers are arbitrary goroutines with no ambient autorelease pool; wrap
+	// one around the UTF8String conversion so nothing autoreleased leaks.
+	pool := objc.ID(objc.GetClass("NSAutoreleasePool")).
+		Send(objc.RegisterName("alloc")).Send(objc.RegisterName("init"))
+	defer pool.Send(objc.RegisterName("drain"))
+
 	nsBundle := objc.ID(objc.GetClass("NSBundle"))
 	mainBundle := nsBundle.Send(objc.RegisterName("mainBundle"))
 	if mainBundle == 0 {

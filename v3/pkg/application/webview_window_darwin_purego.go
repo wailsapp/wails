@@ -1737,6 +1737,8 @@ func (w *macosWebviewWindow) setTranslucentBackdrop() {
 	effectView.send("setBlendingMode:", behindWindow)
 	effectView.send("setState:", stateActive)
 	contentView.send("addSubview:positioned:relativeTo:", effectView, belowWindow, objc.ID(0))
+	// The content view retains the subview; drop the creation reference.
+	effectView.send("release")
 }
 
 func (w *macosWebviewWindow) setAppearanceByName(name string) {

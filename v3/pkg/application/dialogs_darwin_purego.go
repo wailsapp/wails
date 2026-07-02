@@ -110,9 +110,10 @@ func getButtonNumber(response int) int {
 	}
 }
 
-// nsImageFromBytes builds an autoreleased-ish NSImage from raw image bytes.
+// nsImageFromBytes builds an autoreleased NSImage from raw image bytes. All
+// call sites run on the main thread (pooled), and setIcon: retains.
 func nsImageFromBytes(b []byte) id {
-	return class("NSImage").send("alloc").send("initWithData:", nsData(b))
+	return class("NSImage").send("alloc").send("initWithData:", nsData(b)).send("autorelease")
 }
 
 // ---------------------------------------------------------------------------
@@ -232,12 +233,16 @@ func (m *macosDialog) show() {
 		})
 
 		// Attach as a sheet when a parent window is supplied (matching the cgo
-		// backend); otherwise run application-modal.
+		// backend); otherwise run application-modal. The NSAlert itself is +1
+		// from alloc/init and must be released once dismissed.
 		parent := dialogParentWindow(m.dialog.window)
 		if parent.isNil() {
-			dialogCallback(callBackID, getButtonNumber(get[int](alert, "runModal")))
+			response := get[int](alert, "runModal")
+			alert.send("release")
+			dialogCallback(callBackID, getButtonNumber(response))
 		} else {
 			block := objc.NewBlock(func(b objc.Block, response int) {
+				alert.send("release")
 				dialogCallback(callBackID, getButtonNumber(response))
 			})
 			alert.send("beginSheetModalForWindow:completionHandler:", parent, block)

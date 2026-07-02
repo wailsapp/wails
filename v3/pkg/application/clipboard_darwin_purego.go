@@ -28,11 +28,17 @@ func (m macosClipboard) setText(text string) bool {
 	clipboardLock.Lock()
 	defer clipboardLock.Unlock()
 
-	pasteboard := class("NSPasteboard").send("generalPasteboard")
-	str := nsString(text)
-	typ := nsString(nsPasteboardTypeString)
-	pasteboard.send("clearContents")
-	return get[bool](pasteboard, "setString:forType:", str, typ)
+	// Callers are arbitrary goroutines with no ambient autorelease pool; the
+	// NSStrings below would otherwise leak.
+	var ok bool
+	withAutoreleasePool(func() {
+		pasteboard := class("NSPasteboard").send("generalPasteboard")
+		str := nsString(text)
+		typ := nsString(nsPasteboardTypeString)
+		pasteboard.send("clearContents")
+		ok = get[bool](pasteboard, "setString:forType:", str, typ)
+	})
+	return ok
 }
 
 // text returns the current plain-text clipboard contents. The bool return
@@ -42,9 +48,12 @@ func (m macosClipboard) text() (string, bool) {
 	clipboardLock.RLock()
 	defer clipboardLock.RUnlock()
 
-	pasteboard := class("NSPasteboard").send("generalPasteboard")
-	typ := nsString(nsPasteboardTypeString)
-	result := pasteboard.send("stringForType:", typ).string()
+	var result string
+	withAutoreleasePool(func() {
+		pasteboard := class("NSPasteboard").send("generalPasteboard")
+		typ := nsString(nsPasteboardTypeString)
+		result = pasteboard.send("stringForType:", typ).string()
+	})
 	return result, true
 }
 

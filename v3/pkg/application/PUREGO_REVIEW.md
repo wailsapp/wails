@@ -29,13 +29,21 @@ maximise-button state, hidden else-branch, startDrag anchor, appInit pool,
 terminate re-entrancy, post-run release, screen-ID signedness, go.mod,
 pressure float, parseHexColor, doc comment).
 
-**Left as-is (deliberate):** leaks that are byte-identical in the cgo backend
-(menu `setBitmap` NSImage, `Menu.Update()` rebuild, dialog custom-icon
-NSImage); the single-instance URL-capture timeout start point (ms-level);
-`goStringFromC` double copy and the vet `unsafeptr` notices (benign purego
-idiom); `objc.Send[T]` per-call `RegisterFunc` overhead (perf only);
-`nsString` invalid-UTF-8/NUL behaviour (cgo parity); the pre-existing
-`menuitem_selectors_darwin.go` tag asymmetry.
+**Leak follow-up (2026-07-03):** the "cgo has the same leak" category was
+subsequently eliminated as well — menu `setBitmap` NSImage, the
+`Menu.Update()` rebuild (old impls destroyed, submenus released, idempotent
+`destroy()`), dialog icons, About/message NSAlert lifetime, app icon,
+translucent-backdrop NSVisualEffectView, notifications content/payload, the
+second-instance URL handler, and autorelease-pool wrapping for every
+entry point that runs ObjC on a plain goroutine thread (clipboard,
+`pkg/mac`, `isDarkMode`/`name`, all notifications APIs). The same leaks were
+fixed in the **cgo** backend on branch `fix/darwin-cgo-leaks` (PR #5714).
+
+**Left as-is (deliberate):** the single-instance URL-capture timeout start
+point (ms-level); `goStringFromC` double copy and the vet `unsafeptr`
+notices (benign purego idiom); `objc.Send[T]` per-call `RegisterFunc`
+overhead (perf only); `nsString` invalid-UTF-8/NUL behaviour (cgo parity);
+the pre-existing `menuitem_selectors_darwin.go` tag asymmetry.
 
 **Validated:** both backends build (arm64 + amd64 cross), vet clean, and a
 CGO-free lifecycle app (create titled → Close → recreate frameless → Close →
