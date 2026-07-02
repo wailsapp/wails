@@ -39,6 +39,9 @@ func (m *macosApp) dispatchOnMainThread(id uint) {
 		dispatchOnMainThreadCallback(id)
 	})
 	dispatchAsync(dispatchMainQueue, block)
+	// dispatch_async takes its own copy of the block synchronously; drop our
+	// +1 so the block (and its pinned Go closure) is freed after execution.
+	block.Release()
 }
 
 // dispatchOnMainThreadCallback runs the Go function previously registered under
@@ -70,5 +73,7 @@ func runOnMain(fn func()) {
 		close(done)
 	})
 	dispatchAsync(dispatchMainQueue, block)
+	// dispatch_async copied the block; release our reference (see above).
+	block.Release()
 	<-done
 }
