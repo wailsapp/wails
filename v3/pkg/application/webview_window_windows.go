@@ -129,6 +129,13 @@ type windowsWebviewWindow struct {
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
+	// The most recent OS-suggested window size and its target DPI, recorded on
+	// every non-minimised WM_DPICHANGED (suppressed or not). Suppression skips
+	// applying suggested rects, so the settle applies the FINAL one (size-only)
+	// when the storm ended on a suppressed crossing (#5701).
+	lastSuggestedSizeDPI uint32
+	lastSuggestedW       int32
+	lastSuggestedH       int32
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -1880,6 +1887,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v, flapSuppressed=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
 			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing, flapSuppressed)
+		// Record the suggested size for the settle's deferred size fix (see
+		// dpiFlapSettleCheck). Minimised suggested rects are scaled for the
+		// parked position's monitor (#5544) and must not be recorded.
+		if !w.isMinimizing && newDPI != 0 {
+			w.lastSuggestedSizeDPI = newDPI
+			w.lastSuggestedW = suggested.Right - suggested.Left
+			w.lastSuggestedH = suggested.Bottom - suggested.Top
+		}
 		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
 		}
@@ -2229,6 +2244,17 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	return true, true
 }
 
+// dpiSizeMismatch reports whether actual deviates from expected by more than
+// 10% — wide enough to ignore border/rounding differences, tight enough to
+// catch a window still sized for the other monitor of a 125%↔250% pair.
+func dpiSizeMismatch(actual, expected int32) bool {
+	d := actual - expected
+	if d < 0 {
+		d = -d
+	}
+	return int64(d)*10 > int64(expected)
+}
+
 // scheduleDPIFlapSettle arms a settle check after delay. Duplicate pending
 // checks are harmless: dpiFlapSettleCheck no-ops once the storm has settled
 // (dpiFlapSuppressUntil zeroed), and each live check either settles or re-arms
@@ -2290,6 +2316,28 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
+	// Apply the storm's FINAL suggested size before touching scale/bounds.
+	// Suppression skipped every suggested-rect application, so a storm that
+	// ends on a suppressed crossing leaves the window physically sized for the
+	// other monitor (v200.0.9 field trace: settled on dpi 120 with a 4K-class
+	// 1732x1203 client). Size-only at the current position — where the window
+	// sits is the user's choice; how big it should be at this DPI is the OS's
+	// own suggestion. Skipped while maximised (the OS owns that size), while
+	// mid-drag, and when the stored suggestion targets the OTHER monitor (then
+	// the window never completed a crossing and its current size is right).
+	if dpi, _ := w.DPI(); dpi != 0 && !w.inSizeMove && !w32.IsZoomed(w.hwnd) &&
+		uint32(dpi) == w.lastSuggestedSizeDPI && w.lastSuggestedW > 0 {
+		if rect := w32.GetWindowRect(w.hwnd); rect != nil {
+			ow, oh := rect.Right-rect.Left, rect.Bottom-rect.Top
+			if dpiSizeMismatch(ow, w.lastSuggestedW) || dpiSizeMismatch(oh, w.lastSuggestedH) {
+				w32.SetWindowPos(w.hwnd, 0, int(rect.Left), int(rect.Top),
+					int(w.lastSuggestedW), int(w.lastSuggestedH),
+					uint(w32.SWP_NOMOVE|w32.SWP_NOZORDER|w32.SWP_NOACTIVATE))
+				globalApplication.warning("DPI flap settle: window %d resized to the storm's final suggested size %dx%d px (was %dx%d) (#5701)",
+					w.parent.id, w.lastSuggestedW, w.lastSuggestedH, ow, oh)
+			}
+		}
+	}
 	w.resyncWebviewRasterizationScale()
 	// ALWAYS re-assert the controller bounds, independent of whether the scale
 	// re-put above was needed. With native monitor-scale detection on, WebView2
