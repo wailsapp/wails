@@ -25,6 +25,7 @@ type macosWebviewWindow struct {
 	parent    *WebviewWindow
 	wkWebView unsafe.Pointer // WKWebView*
 	delegate  unsafe.Pointer // WailsWebviewWindowDelegate*
+	dragView  unsafe.Pointer // WailsWebviewDrag* (only when EnableFileDrop)
 
 	// invisibleTitleBarHeight enables native window dragging from the top
 	// `height` points of a frameless / transparent-titlebar window (see the
@@ -109,7 +110,7 @@ var windowNotificationSelectors = []string{
 	"windowWillBecomeMain:", "windowWillBeginSheet:", "windowWillChangeOrderingMode:",
 	"windowWillDeminiaturize:", "windowWillEnterFullScreen:", "windowWillEnterVersionBrowser:",
 	"windowWillExitFullScreen:", "windowWillExitVersionBrowser:", "windowWillFocus:",
-	"windowWillMiniaturize:", "windowWillMove:", "windowWillClose:",
+	"windowWillMiniaturize:", "windowWillMove:",
 }
 
 func selectorToEventField(sel string) string {
@@ -174,6 +175,120 @@ func registerWindowDelegateClass() id {
 					return false
 				}
 				processWindowEvent(wid, shouldCloseID)
+				return false
+			},
+		})
+
+		// windowWillClose: — emit the event, then run the per-window teardown
+		// the cgo backend performs in the WebviewWindow dealloc: break the
+		// userContentController→delegate retain cycle, nil the assign/weak
+		// delegate pointers before the delegate can die, release our owning
+		// delegate reference (from `new` in createWindow) and clear all
+		// per-window registries. Both the user-initiated close and destroy()
+		// funnel through here.
+		willCloseID := macWindowEventID("WindowWillClose")
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("windowWillClose:"),
+			Fn: func(self objc.ID, cmd objc.SEL, notif objc.ID) {
+				wid, ok := windowIDForDelegate(self)
+				if !ok {
+					return
+				}
+				processWindowEvent(wid, willCloseID)
+
+				if impl := windowImplForID(wid); impl != nil {
+					if wv := impl.webview(); !wv.isNil() {
+						wv.send("configuration").send("userContentController").
+							send("removeScriptMessageHandlerForName:", nsString("external"))
+						wv.send("setNavigationDelegate:", objc.ID(0))
+						wv.send("setUIDelegate:", objc.ID(0))
+					}
+					if impl.dragView != nil {
+						dragViewToWindowID.Delete(uintptr(impl.dragView))
+					}
+				}
+				win := id(notif).send("object")
+				if !win.isNil() {
+					win.send("setDelegate:", objc.ID(0))
+					windowDisableEscape.Delete(win.ptr())
+					nsWindowToID.Delete(win.ptr())
+					clearLeftMouseDown(win)
+				}
+				delegateToWindowID.Delete(uintptr(self))
+				windowImplCache.Delete(wid)
+				clearWindowDragCache(wid)
+				// The configuration still retains us as its URL-scheme
+				// handler, so this autorelease only becomes the final release
+				// once the webview graph is torn down.
+				id(self).send("autorelease")
+			},
+		})
+
+		// NSDraggingDestination — the NSWindow forwards dragging messages to
+		// its delegate. cgo registers EVERY window for file drags, so the
+		// WindowFileDragging* events fire even with EnableFileDrop disabled
+		// (the overlay view, when installed, sits above and takes precedence).
+		dragEnteredID := macWindowEventID("WindowFileDraggingEntered")
+		dragExitedID := macWindowEventID("WindowFileDraggingExited")
+		dragPerformedID := macWindowEventID("WindowFileDraggingPerformed")
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("draggingEntered:"),
+			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) uint {
+				if wid, ok := windowIDForDelegate(self); ok && pasteboardHasFiles(id(sender)) {
+					processWindowEvent(wid, dragEnteredID)
+					return nsDragOperationCopy
+				}
+				return nsDragOperationNone
+			},
+		})
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("draggingExited:"),
+			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) {
+				if wid, ok := windowIDForDelegate(self); ok {
+					processWindowEvent(wid, dragExitedID)
+				}
+			},
+		})
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("prepareForDragOperation:"),
+			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) bool {
+				return true
+			},
+		})
+		methods = append(methods, objc.MethodDef{
+			Cmd: sel_("performDragOperation:"),
+			Fn: func(self objc.ID, cmd objc.SEL, sender objc.ID) bool {
+				wid, ok := windowIDForDelegate(self)
+				if !ok {
+					return false
+				}
+				processWindowEvent(wid, dragPerformedID)
+				s := id(sender)
+				if !pasteboardHasFiles(s) {
+					return false
+				}
+				files := s.send("draggingPasteboard").send("propertyListForType:", nsString(nsFilenamesPboardType))
+				count := get[uint](files, "count")
+				if count == 0 {
+					return false
+				}
+				filenames := make([]string, 0, count)
+				for i := uint(0); i < count; i++ {
+					filenames = append(filenames, files.send("objectAtIndex:", i).string())
+				}
+				// cgo converts the drop point into the webview's coordinate
+				// space and flips Y for the web coordinate system.
+				var x, y int
+				if impl := windowImplForID(wid); impl != nil {
+					if wv := impl.webview(); !wv.isNil() {
+						pt := get[NSPoint](s, "draggingLocation")
+						inView := get[NSPoint](wv, "convertPoint:fromView:", pt, objc.ID(0))
+						h := get[NSRect](wv, "frame").Size.Height
+						x, y = int(inView.X), int(h-inView.Y)
+					}
+				}
+				processDragItems(wid, filenames, x, y)
+				// cgo returns NO here (the drop is fully handled Go-side).
 				return false
 			},
 		})
@@ -507,18 +622,38 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 		rect(0, 0, CGFloat(width-1), CGFloat(height-1)), uint(styleMask), uint(backingBuffered), false)
 	w.nsWindow = unsafe.Pointer(win.ptr())
 
-	// Delegate (also the script/scheme/navigation handler).
+	// cgo's WebviewWindow initWithContentRect: override applies these to every
+	// window (transparent/frameless rendering + drag-by-background).
+	win.send("setAlphaValue:", CGFloat(1.0))
+	win.send("setBackgroundColor:", class("NSColor").send("clearColor"))
+	win.send("setOpaque:", false)
+	win.send("setMovableByWindowBackground:", true)
+
+	// cgo registers every window for file drags (window-level
+	// NSDraggingDestination on the delegate) regardless of EnableFileDrop.
+	win.send("registerForDraggedTypes:",
+		class("NSArray").send("arrayWithObject:", nsString(nsFilenamesPboardType)))
+
+	// Delegate (also the script/scheme/navigation handler). The `new` +1 is
+	// our owning reference, released in the windowWillClose: teardown.
 	del := registerWindowDelegateClass().send("new")
 	w.delegate = unsafe.Pointer(del.ptr())
 	win.send("setDelegate:", del)
 	delegateToWindowID.Store(del.ptr(), w.parent.id)
 	nsWindowToID.Store(win.ptr(), w.parent.id)
+	windowImplCache.Store(w.parent.id, w)
 
-	// Content view.
+	// Content view (owned by the window after setContentView:).
 	view := class("NSView").send("alloc").send("initWithFrame:", rect(0, 0, CGFloat(width-1), CGFloat(height-1)))
 	const autoWidth, autoHeight = 1 << 1, 1 << 4
 	view.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+	if options.Frameless {
+		// cgo: rounded corners for frameless windows.
+		view.send("setWantsLayer:", true)
+		view.send("layer").send("setCornerRadius:", CGFloat(8.0))
+	}
 	win.send("setContentView:", view)
+	view.send("release")
 
 	// WebView configuration.
 	config := class("WKWebViewConfiguration").send("alloc").send("init")
@@ -530,10 +665,13 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 	config.send("setApplicationNameForUserAgent:", nsString(appName))
 	config.send("setURLSchemeHandler:forURLScheme:", del, nsString("wails"))
 
-	// User content controller + external message bridge.
+	// User content controller + external message bridge (retained by the
+	// configuration; the handler registration is undone in windowWillClose:
+	// to break the controller→delegate retain cycle, like cgo's dealloc).
 	ucc := class("WKUserContentController").send("new")
 	ucc.send("addScriptMessageHandler:name:", del, nsString("external"))
 	config.send("setUserContentController:", ucc)
+	ucc.send("release")
 
 	webView := class("WKWebView").send("alloc").send("initWithFrame:configuration:",
 		rect(0, 0, CGFloat(width), CGFloat(height)), config)
@@ -544,6 +682,10 @@ func (w *macosWebviewWindow) createWindow(options WebviewWindowOptions) {
 	webView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
 
 	applyWebviewPreferences(webView, config, options.Mac.WebviewPreferences, options.Mac.EnableFraudulentWebsiteWarnings)
+	// The webview copied the configuration and the content view retains the
+	// webview; drop our creation references (cgo autoreleases both).
+	config.send("release")
+	webView.send("release")
 
 	if options.EnableFileDrop {
 		w.installFileDropView(view, width, height)
@@ -771,7 +913,10 @@ func (w *macosWebviewWindow) installFileDropView(contentView id, width, height i
 	dragView.send("registerForDraggedTypes:",
 		class("NSArray").send("arrayWithObject:", nsString(nsFilenamesPboardType)))
 	dragViewToWindowID.Store(dragView.ptr(), w.parent.id)
+	w.dragView = unsafe.Pointer(dragView.ptr())
 	contentView.send("addSubview:", dragView)
+	// The content view retains the drag view; drop the creation reference.
+	dragView.send("release")
 }
 
 func applyWebviewPreferences(webView, config id, prefs MacWebviewPreferences, fraudulentWarnings bool) {
@@ -890,14 +1035,11 @@ func (w *macosWebviewWindow) close() {
 func (w *macosWebviewWindow) destroy() {
 	// Mirror cgo: mark destroyed BEFORE the NSWindow deallocs
 	// (releasedWhenClosed defaults to YES) so the public API guards reject
-	// any further calls instead of messaging freed memory.
+	// any further calls instead of messaging freed memory. The per-window
+	// registry/delegate teardown runs in the windowWillClose: handler, which
+	// this close triggers.
 	w.parent.markAsDestroyed()
-	runOnMain(func() {
-		delegateToWindowID.Delete(uintptr(w.delegate))
-		nsWindowToID.Delete(uintptr(w.nsWindow))
-		clearWindowDragCache(w.parent.id)
-		w.win().send("close")
-	})
+	runOnMain(func() { w.win().send("close") })
 }
 
 func (w *macosWebviewWindow) center() {
@@ -1551,6 +1693,9 @@ func (w *macosWebviewWindow) setUseToolbar(use bool) {
 	if use {
 		toolbar := class("NSToolbar").send("alloc").send("initWithIdentifier:", nsString("wails.toolbar"))
 		w.win().send("setToolbar:", toolbar)
+		// The window retains its toolbar; drop the creation reference
+		// (cgo autoreleases).
+		toolbar.send("release")
 	} else {
 		w.win().send("setToolbar:", objc.ID(0))
 	}
