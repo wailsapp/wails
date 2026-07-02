@@ -59,16 +59,21 @@ the window-event delegate are wired.
 | Global shortcuts (Carbon), autostart (SMAppService), single-instance | implemented |
 | Bundle id (`pkg/mac`), events | implemented |
 | Dock badge, notifications services | implemented |
-| Frameless native drag, liquid glass, toolbar/titlebar presets, custom window levels/collection behavior, content protection edge cases, context menu, print, native resize | **stubbed** (`notYet`) — tracked for completion |
-
-Stubbed window operations are compile-complete no-ops that log via
-`globalApplication.debug` so nothing panics; they are the remaining work toward
-full 1:1 parity with the cgo backend.
+| Window levels, collection behavior, window buttons, content protection, ignore-mouse | implemented |
+| Titlebar presets (transparent/hide/full-size/toolbar/style/separator), appearance, backdrop (transparent/translucent) | implemented |
+| Context menu, print, attach-modal (sheet), start-drag, disable-size-constraints, frameless toggle, CSS injection, key-event routing | implemented |
+| Frameless native title-bar drag (invisible title-bar mouse tracking), disable-escape-exits-fullscreen, show-toolbar-when-fullscreen | **remaining** — need an NSWindow subclass + local mouse monitors |
+| Liquid glass backdrop (macOS 26 private NSGlass APIs) | **remaining** (no-op; window renders normally) |
+| Native file-drop overlay view (drag-drop of files) | **remaining** — frontend drop plumbing is ported; native `WebviewDrag` overlay pending |
 
 ## Known gaps
 
+- Frameless native drag / escape-exits-fullscreen / show-toolbar-when-fullscreen
+  need a custom `NSWindow` subclass (overriding `cancelOperation:`) plus local
+  `NSEvent` mouse monitors, which are deferred; window dragging still works via
+  the standard title bar.
 - Writing to an already-stopped `WKURLSchemeTask` cannot convert WebKit's
   `NSException` into `errRequestStopped` without a tiny native shim (no
   `@try/@catch` from pure Go); the exception would otherwise propagate.
 - Dialogs are application-modal rather than window sheets.
-- A handful of window operations listed above are stubbed.
+- Liquid glass backdrop is a no-op (requires macOS 26 private APIs).

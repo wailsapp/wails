@@ -241,6 +241,7 @@ func (w *macosWebviewWindow) run() {
 		w.enableDevTools()
 		w.setContentProtection(options.ContentProtectionEnabled)
 		w.setBackgroundColour(options.BackgroundColour)
+		w.applyMacOptions(options)
 
 		switch options.StartState {
 		case WindowStateMaximised:
@@ -269,8 +270,12 @@ func (w *macosWebviewWindow) run() {
 				if options.JS != "" {
 					w.execJS(options.JS)
 				}
+				if options.CSS != "" {
+					runOnMain(func() { w.injectCSS(options.CSS) })
+				}
 				if !options.Hidden {
 					w.parent.Show()
+					w.setHasShadow(!options.Mac.DisableShadow)
 					w.setAlwaysOnTop(options.AlwaysOnTop)
 				}
 			})
@@ -280,6 +285,65 @@ func (w *macosWebviewWindow) run() {
 			w.setHTML(options.HTML)
 		}
 	})
+}
+
+// applyMacOptions applies the macOS-specific window options, mirroring the tail
+// of the cgo run(): backdrop, window level, collection behavior, window
+// buttons, ignore-mouse, and (for non-frameless windows) titlebar presets and
+// appearance.
+func (w *macosWebviewWindow) applyMacOptions(options WebviewWindowOptions) {
+	macOptions := options.Mac
+
+	if macOptions.DisableEscapeExitsFullscreen {
+		// Requires an NSWindow subclass override of cancelOperation:; tracked as
+		// a known gap in PUREGO_MACOS.md.
+	}
+
+	switch macOptions.Backdrop {
+	case MacBackdropTransparent:
+		w.setTransparentBackdrop()
+		w.setWebviewTransparent()
+	case MacBackdropTranslucent:
+		w.setTranslucentBackdrop()
+		w.setWebviewTransparent()
+	case MacBackdropLiquidGlass:
+		w.applyLiquidGlass()
+	case MacBackdropNormal:
+	}
+
+	level := macOptions.WindowLevel
+	if level == "" {
+		level = MacWindowLevelNormal
+	}
+	w.setWindowLevel(level)
+	w.setCollectionBehavior(macOptions.CollectionBehavior)
+
+	// Window buttons. Maximise and Fullscreen both drive the zoom button, so
+	// apply the more restrictive of the two.
+	w.setMinimiseButtonState(options.MinimiseButtonState)
+	w.setCloseButtonState(options.CloseButtonState)
+	zoomState := options.MaximiseButtonState
+	if options.FullscreenButtonState > zoomState {
+		zoomState = options.FullscreenButtonState
+	}
+	w.setMaximiseButtonState(zoomState)
+
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
+
+	titleBar := macOptions.TitleBar
+	if !options.Frameless {
+		w.setTitleBarAppearsTransparent(titleBar.AppearsTransparent)
+		w.setHideTitleBar(titleBar.Hide)
+		w.setTitleVisibility(titleBar.HideTitle)
+		w.setFullSizeContent(titleBar.FullSizeContent)
+		w.setUseToolbar(titleBar.UseToolbar)
+		w.setToolbarStyle(int(titleBar.ToolbarStyle))
+		w.setHideToolbarSeparator(titleBar.HideToolbarSeparator)
+	}
+
+	if macOptions.Appearance != "" {
+		w.setAppearanceByName(string(macOptions.Appearance))
+	}
 }
 
 // createWindow builds the NSWindow, WKWebView, configuration, delegate and
@@ -661,50 +725,176 @@ func (w *macosWebviewWindow) centerOnScreen(screen *Screen) { w.center() }
 func (w *macosWebviewWindow) getScreen() (*Screen, error) { return getScreenForWindow(w) }
 
 // ---------------------------------------------------------------------------
-// Not-yet-ported operations (compile-complete stubs; see mac-purego STATUS).
-// These keep parity of the interface surface. Tracked for full implementation.
+// Remaining window operations
 // ---------------------------------------------------------------------------
 
-func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) { notYet("handleKeyEvent") }
-func (w *macosWebviewWindow) getBorderSizes() *LRTB                   { return &LRTB{} }
-func (w *macosWebviewWindow) print() error                            { notYet("print"); return nil }
-func (w *macosWebviewWindow) startResize(_ string) error              { notYet("startResize"); return nil }
-func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
-	notYet("openContextMenu")
+func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
+	accelerator, err := parseAccelerator(acceleratorString)
+	if err != nil {
+		globalApplication.error("unable to parse accelerator: %w", err)
+		return
+	}
+	w.parent.processKeyBinding(accelerator.String())
 }
-func (w *macosWebviewWindow) setFrameless(frameless bool) { notYet("setFrameless") }
+
+// getBorderSizes returns zero insets, matching the cgo backend.
+func (w *macosWebviewWindow) getBorderSizes() *LRTB { return &LRTB{} }
+
+func (w *macosWebviewWindow) print() error {
+	runOnMain(func() {
+		const paginationAutomatic = 0
+		const orientationLandscape = 1
+		pInfo := class("NSPrintInfo").send("sharedPrintInfo")
+		pInfo.send("setHorizontalPagination:", paginationAutomatic)
+		pInfo.send("setVerticalPagination:", paginationAutomatic)
+		pInfo.send("setVerticallyCentered:", true)
+		pInfo.send("setHorizontallyCentered:", true)
+		pInfo.send("setOrientation:", orientationLandscape)
+		pInfo.send("setLeftMargin:", CGFloat(30))
+		pInfo.send("setRightMargin:", CGFloat(30))
+		pInfo.send("setTopMargin:", CGFloat(30))
+		pInfo.send("setBottomMargin:", CGFloat(30))
+		po := w.webview().send("printOperationWithPrintInfo:", pInfo)
+		po.send("setShowsPrintPanel:", true)
+		po.send("setShowsProgressPanel:", true)
+		po.send("view").send("setFrame:", get[NSRect](w.webview(), "bounds"))
+		// runOperation does not work with WKWebView; must run modal for window.
+		po.send("runOperationModalForWindow:delegate:didRunSelector:contextInfo:",
+			w.win(), id(uintptr(w.delegate)), objc.SEL(0), unsafe.Pointer(nil))
+	})
+	return nil
+}
+
+// startResize is never called; native resize is handled by the OS.
+func (w *macosWebviewWindow) startResize(_ string) error { return nil }
+
+func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+	if menu.impl == nil {
+		menu.impl = newMenuImpl(menu)
+	}
+	thisMenu := menu.impl.(*macosMenu)
+	thisMenu.update()
+	runOnMain(func() {
+		nsMenu := id(uintptr(thisMenu.nsMenu))
+		nsMenu.send("popUpMenuPositioningItem:atLocation:inView:",
+			objc.ID(0), CGPoint{X: CGFloat(data.X), Y: CGFloat(data.Y)}, w.webview())
+	})
+}
+
+func (w *macosWebviewWindow) setFrameless(frameless bool) {
+	runOnMain(func() {
+		w.setFullSizeContent(frameless)
+		if frameless {
+			w.setTitleBarAppearsTransparent(true)
+			w.setTitleVisibility(true)
+		} else {
+			tb := w.parent.options.Mac.TitleBar
+			w.setTitleBarAppearsTransparent(tb.AppearsTransparent)
+			w.setTitleVisibility(tb.HideTitle)
+		}
+	})
+}
+
 func (w *macosWebviewWindow) setHasShadow(hasShadow bool) {
 	runOnMain(func() { w.win().send("setHasShadow:", hasShadow) })
 }
+
 func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
-	notYet("setFullscreenButtonState")
+	eff := effectiveZoomButtonState(state, w.parent.options.MaximiseButtonState)
+	setStdButtonState(w, nsWindowZoomButton, eff)
 }
-func (w *macosWebviewWindow) disableSizeConstraints()             { notYet("disableSizeConstraints") }
-func (w *macosWebviewWindow) windowZoom()                         { w.maximise() }
-func (w *macosWebviewWindow) restore()                            { w.unminimise() }
-func (w *macosWebviewWindow) restoreWindow()                      { w.unminimise() }
-func (w *macosWebviewWindow) setEnabled(enabled bool)             { notYet("setEnabled") }
-func (w *macosWebviewWindow) flash(_ bool)                        {}
-func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) { notYet("setWindowLevel") }
+
+func (w *macosWebviewWindow) disableSizeConstraints() {
+	runOnMain(func() {
+		w.win().send("setContentMinSize:", CGSize{})
+		w.win().send("setContentMaxSize:", CGSize{})
+	})
+}
+
+func (w *macosWebviewWindow) windowZoom()    { w.maximise() }
+func (w *macosWebviewWindow) restore()       { w.unminimise() }
+func (w *macosWebviewWindow) restoreWindow() { w.unminimise() }
+
+// setEnabled matches the cgo backend, where windowSetEnabled is intentionally a
+// no-op.
+func (w *macosWebviewWindow) setEnabled(enabled bool) {}
+
+func (w *macosWebviewWindow) flash(_ bool) {}
+
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
+	// Classic AppKit NSWindowLevel values.
+	lvl := 0
+	switch level {
+	case MacWindowLevelNormal:
+		lvl = 0
+	case MacWindowLevelFloating, MacWindowLevelTornOffMenu:
+		lvl = 3
+	case MacWindowLevelModalPanel:
+		lvl = 8
+	case MacWindowLevelMainMenu:
+		lvl = 24
+	case MacWindowLevelStatus:
+		lvl = 25
+	case MacWindowLevelPopUpMenu:
+		lvl = 101
+	case MacWindowLevelScreenSaver:
+		lvl = 1000
+	}
+	runOnMain(func() { w.win().send("setLevel:", lvl) })
+}
+
 func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionBehavior) {
-	notYet("setCollectionBehavior")
+	runOnMain(func() {
+		const fullScreenPrimary = 1 << 7 // NSWindowCollectionBehaviorFullScreenPrimary
+		b := uint(behavior)
+		if b == 0 {
+			b = fullScreenPrimary
+		}
+		w.win().send("setCollectionBehavior:", b)
+	})
 }
-func (w *macosWebviewWindow) applyLiquidGlass() { notYet("applyLiquidGlass") }
-func (w *macosWebviewWindow) startDrag() error  { notYet("startDrag"); return nil }
+
+func (w *macosWebviewWindow) startDrag() error {
+	runOnMain(func() {
+		ev := class("NSApplication").send("sharedApplication").send("currentEvent")
+		if !ev.isNil() {
+			w.win().send("performWindowDragWithEvent:", ev)
+		}
+	})
+	return nil
+}
+
 func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
-	setStdButtonState(w, 2, state)
+	setStdButtonState(w, nsWindowMiniaturizeButton, state)
 }
 func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
-	setStdButtonState(w, 1, state)
+	setStdButtonState(w, nsWindowZoomButton, state)
 }
-func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) { setStdButtonState(w, 0, state) }
+func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
+	setStdButtonState(w, nsWindowCloseButton, state)
+}
+
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 	return w.syncMainThreadReturningBool(func() bool { return get[bool](w.win(), "ignoresMouseEvents") })
 }
 func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	runOnMain(func() { w.win().send("setIgnoresMouseEvents:", ignore) })
 }
-func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) { notYet("attachModal") }
+
+func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {
+	if modalWindow == nil || modalWindow.impl == nil || modalWindow.isDestroyed() {
+		return
+	}
+	modalNativeWindow := modalWindow.impl.nativeWindow()
+	if modalNativeWindow == nil {
+		return
+	}
+	modal := id(uintptr(modalNativeWindow))
+	runOnMain(func() {
+		block := objc.NewBlock(func(b objc.Block, returnCode int) {})
+		w.win().send("beginSheet:completionHandler:", modal, block)
+	})
+}
 
 func (w *macosWebviewWindow) showMenuBar()    {}
 func (w *macosWebviewWindow) hideMenuBar()    {}
@@ -712,27 +902,124 @@ func (w *macosWebviewWindow) toggleMenuBar()  {}
 func (w *macosWebviewWindow) setMenu(_ *Menu) {}
 func (w *macosWebviewWindow) snapAssist()     {}
 
-// setStdButtonState toggles a standard window button. buttonType: 0=close,
-// 1=zoom, 2=miniaturize (NSWindowButton values).
+// ---------------------------------------------------------------------------
+// Titlebar / backdrop / appearance helpers (used by run()).
+// ---------------------------------------------------------------------------
+
+const (
+	nsWindowCloseButton       = 0
+	nsWindowMiniaturizeButton = 1
+	nsWindowZoomButton        = 2
+)
+
+func (w *macosWebviewWindow) setTitleVisibility(hidden bool) {
+	const nsWindowTitleVisible = 0
+	const nsWindowTitleHidden = 1
+	if hidden {
+		w.win().send("setTitleVisibility:", nsWindowTitleHidden)
+	} else {
+		w.win().send("setTitleVisibility:", nsWindowTitleVisible)
+	}
+}
+
+func (w *macosWebviewWindow) setTitleBarAppearsTransparent(transparent bool) {
+	w.win().send("setTitlebarAppearsTransparent:", transparent)
+}
+
+func (w *macosWebviewWindow) setHideTitleBar(hide bool) {
+	const titled = 1 << 0 // NSWindowStyleMaskTitled
+	cur := get[uint](w.win(), "styleMask")
+	if hide {
+		cur &^= titled
+	} else {
+		cur |= titled
+	}
+	w.win().send("setStyleMask:", cur)
+}
+
+func (w *macosWebviewWindow) setFullSizeContent(fullSize bool) {
+	const fullSizeContent = 1 << 15
+	cur := get[uint](w.win(), "styleMask")
+	if fullSize {
+		cur |= fullSizeContent
+	} else {
+		cur &^= fullSizeContent
+	}
+	w.win().send("setStyleMask:", cur)
+}
+
+func (w *macosWebviewWindow) setUseToolbar(use bool) {
+	if use {
+		toolbar := class("NSToolbar").send("alloc").send("initWithIdentifier:", nsString("wails.toolbar"))
+		w.win().send("setToolbar:", toolbar)
+	} else {
+		w.win().send("setToolbar:", objc.ID(0))
+	}
+}
+
+func (w *macosWebviewWindow) setToolbarStyle(style int) {
+	if !w.win().send("toolbar").isNil() {
+		w.win().send("setToolbarStyle:", style)
+	}
+}
+
+func (w *macosWebviewWindow) setHideToolbarSeparator(hide bool) {
+	toolbar := w.win().send("toolbar")
+	if !toolbar.isNil() {
+		toolbar.send("setShowsBaselineSeparator:", !hide)
+	}
+}
+
+func (w *macosWebviewWindow) setTransparentBackdrop() {
+	w.win().send("setOpaque:", false)
+	w.win().send("setBackgroundColor:", class("NSColor").send("clearColor"))
+}
+
+func (w *macosWebviewWindow) setWebviewTransparent() {
+	w.webview().send("setValue:forKey:", nsNumberBool(false), nsString("drawsBackground"))
+}
+
+func (w *macosWebviewWindow) setTranslucentBackdrop() {
+	contentView := w.win().send("contentView")
+	bounds := get[NSRect](contentView, "bounds")
+	const behindWindow = 0
+	const stateActive = 1
+	const belowWindow = -1
+	const autoWidth, autoHeight = 1 << 1, 1 << 4
+	effectView := class("NSVisualEffectView").send("alloc").send("initWithFrame:", bounds)
+	effectView.send("setAutoresizingMask:", uint(autoWidth|autoHeight))
+	effectView.send("setBlendingMode:", behindWindow)
+	effectView.send("setState:", stateActive)
+	contentView.send("addSubview:positioned:relativeTo:", effectView, belowWindow, objc.ID(0))
+}
+
+func (w *macosWebviewWindow) setAppearanceByName(name string) {
+	appearance := class("NSAppearance").send("appearanceNamed:", nsString(name))
+	w.win().send("setAppearance:", appearance)
+}
+
+func (w *macosWebviewWindow) injectCSS(css string) {
+	js := "(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('" +
+		css + "')); document.head.appendChild(style); })();"
+	w.webview().send("evaluateJavaScript:completionHandler:", nsString(js), objc.ID(0))
+}
+
+// applyLiquidGlass is only meaningful on macOS 26+ and relies on private NSGlass
+// APIs; left as a no-op when unsupported (the window renders normally).
+func (w *macosWebviewWindow) applyLiquidGlass() {
+	globalApplication.debug("[purego] liquid glass backdrop not applied (requires macOS 26 private APIs)")
+}
+
+// setStdButtonState toggles a standard window button, matching the cgo
+// setButtonState semantics exactly: hidden when state==ButtonHidden, disabled
+// when state==ButtonDisabled, else enabled.
 func setStdButtonState(w *macosWebviewWindow, buttonType int, state ButtonState) {
 	runOnMain(func() {
 		btn := w.win().send("standardWindowButton:", buttonType)
 		if btn.isNil() {
 			return
 		}
-		switch state {
-		case ButtonHidden:
-			btn.send("setHidden:", true)
-		case ButtonDisabled:
-			btn.send("setHidden:", false)
-			btn.send("setEnabled:", false)
-		default: // ButtonEnabled
-			btn.send("setHidden:", false)
-			btn.send("setEnabled:", true)
-		}
+		btn.send("setHidden:", state == ButtonHidden)
+		btn.send("setEnabled:", state != ButtonDisabled)
 	})
-}
-
-func notYet(name string) {
-	globalApplication.debug("[purego] window operation not yet implemented", "op", name)
 }
