@@ -123,6 +123,26 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 	}
 	kindName := processFailedKindName(kind)
 
+	// Failure forensics (reason / exit code / process description) from
+	// ICoreWebView2ProcessFailedEventArgs2 — this is what distinguishes a
+	// genuine crash from an external termination, a launch failure or an
+	// out-of-memory kill. Unavailable on very old runtimes; degrade to "n/a".
+	reasonName, exitCode, procDesc := "n/a", "n/a", ""
+	if args != nil {
+		if args2 := args.GetArgs2(); args2 != nil {
+			if r, err := args2.GetReason(); err == nil {
+				reasonName = processFailedReasonName(r)
+			}
+			if c, err := args2.GetExitCode(); err == nil {
+				exitCode = fmt.Sprintf("%d (0x%X)", c, uint32(c))
+			}
+			if d, err := args2.GetProcessDescription(); err == nil {
+				procDesc = d
+			}
+			args2.Release()
+		}
+	}
+
 	// Throttle the stack-trace log PER KIND: RENDER_PROCESS_UNRESPONSIVE
 	// re-fires every few seconds while hung, but a different kind (e.g. the
 	// browser process dying after the GPU process — observed in the field with
@@ -134,8 +154,8 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 			w.processFailedLogAt = make(map[string]time.Time, 2)
 		}
 		w.processFailedLogAt[kindName] = now
-		globalApplication.error("WebView2 process failed (kind=%s, window=%d, runtime=%s) — scheduling recovery (#5701)\n%s",
-			kindName, w.parent.id, webviewRuntimeVersion, debug.Stack())
+		globalApplication.error("WebView2 process failed (kind=%s, reason=%s, exitCode=%s, desc=%q, window=%d, runtime=%s) — scheduling recovery (#5701)\n%s",
+			kindName, reasonName, exitCode, procDesc, w.parent.id, webviewRuntimeVersion, debug.Stack())
 	}
 
 	switch kind {
@@ -164,6 +184,29 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 		// Frame/utility/sandbox/unknown process exits normally self-heal; a
 		// single probe confirms the controller survived.
 		w.scheduleWebviewRecovery(2*time.Second, kindName, webviewRecoveryProbe)
+	}
+}
+
+// processFailedReasonName gives the COREWEBVIEW2_PROCESS_FAILED_REASON enum a
+// human-readable label for the diagnostic log.
+func processFailedReasonName(r edge.COREWEBVIEW2_PROCESS_FAILED_REASON) string {
+	switch r {
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_UNEXPECTED:
+		return "unexpected"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_UNRESPONSIVE:
+		return "unresponsive"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_TERMINATED:
+		return "terminated"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_CRASHED:
+		return "crashed"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_LAUNCH_FAILED:
+		return "launch-failed"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_OUT_OF_MEMORY:
+		return "out-of-memory"
+	case edge.COREWEBVIEW2_PROCESS_FAILED_REASON_PROFILE_DELETED:
+		return "profile-deleted"
+	default:
+		return fmt.Sprintf("reason-%d", uint32(r))
 	}
 }
 
