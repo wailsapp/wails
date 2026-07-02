@@ -129,6 +129,14 @@ type windowsWebviewWindow struct {
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
+	// lastProgrammaticPlacementAt is stamped by setPhysicalBounds (every
+	// app-driven SetBounds/SetPosition/SetSize funnels through it). The
+	// parked-reversal fast path must not trip inside dpiPlacementGrace of it:
+	// a multi-monitor placement legitimately produces back-to-back DPI
+	// reversals, and the resolver "resolving" one moves the window the app
+	// just placed — with a mid-placement rect, onto the wrong monitor
+	// (v200.0.22 alarm field trace, #5701).
+	lastProgrammaticPlacementAt time.Time
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -765,6 +773,7 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 	// Set flag to ignore resizing the window with DPI change because we already calculated the correct size
 	// for the target position, this prevents double resizing issue when the window is moved between screens
+	w.lastProgrammaticPlacementAt = time.Now()
 	previousFlag := w.ignoreDPIChangeResizing
 	w.ignoreDPIChangeResizing = true
 	w32.SetWindowPos(
@@ -1975,36 +1984,25 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// Manual scale+bounds correction runs for CLEAN transitions only and is
-		// DEFERRED to the settle during storms. This exact timing is the field-
-		// mapped optimum on crash-prone GPU drivers (#5701) — both alternatives
-		// were built and failed in the field, do not retry them:
-		//   - correcting AFTER the rect apply on every flip (v200.0.16) added a
-		//     second full re-raster per flip; the doubled GPU load tripped
-		//     Chromium's browser-process kill within ~21s of boundary hammering;
-		//   - pushing the scale BEFORE the rect apply on every flip (v200.0.17)
-		//     was no cheaper (a scale-put re-rasters the whole tree by itself)
-		//     AND instantly re-scales the currently displayed frame without a
-		//     re-layout, so every crossing flashed wrong-sized content while
-		//     the async re-raster caught up ("almost always the wrong size").
-		// Deferring (v200.0.15) costs brief wrong-scale content during a slow
-		// boundary-straddle oscillation — the settle corrects ≤1.6s after the
-		// flips stop — and is the only variant with zero browser-process kills.
-		// While minimised skip everything: the window sits off its restore
-		// monitor, GetDpiForWindow can report the wrong monitor's DPI, and the
-		// controller may be suspended (#5605); a genuine DPI difference is
-		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
+		// No manual scale correction here: with native monitor-scale detection
+		// on, the browser owns the rasterization scale, and the
+		// RasterizationScaleChanged handler re-puts the bounds so the content
+		// re-lays-out at whatever scale the browser commits (the #5677
+		// scale-without-relayout gap). The manual clean-path resync that used
+		// to live here was the crash-adjacent actor in the field: every
+		// remaining GPU-process exit in the v200.0.18 AND v200.0.22 sessions
+		// sat 0.6-2s after one of its scale-puts, while the event-driven path
+		// alone closed the wrong-size race in ≤57ms (#5701). Historical note —
+		// under WINDOWED hosting, per-flip correction in either ordering
+		// (v200.0.16/17) tripped Chromium's browser-process kill within ~21s;
+		// Window-to-Visual hosting removed that cost class, and the manual
+		// puts turned out to be redundant anyway (every settle logged
+		// put=false: native detection had always corrected first).
+		// While minimised skip the bookkeeping: the window sits off its
+		// restore monitor and GetDpiForWindow can report the wrong monitor's
+		// DPI (#5605); a genuine DPI difference is caught on restore by
+		// resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			if !stormActive && !w.webviewRebuildInProgress && w.resyncWebviewRasterizationScale() {
-				// A scale re-put alone does not make WebView2 re-lay out content
-				// whose bounds are unchanged (#5677) — mirror the un-minimise
-				// path and re-assert the bounds. Gating on the resync return
-				// keeps this off an unavailable controller (#5605): a true
-				// return is proof PutRasterizationScale just succeeded.
-				// chromium.Resize() reads w32.GetClientRect, the real pixel
-				// dimensions, not the stale options size.
-				w.chromium.Resize()
-			}
 			// Track the new DPI so the un-minimise comparison stays accurate.
 			if dpi, _ := w.DPI(); dpi != 0 {
 				w.lastKnownDPI = dpi
@@ -2193,6 +2191,18 @@ const (
 	// unsuppressed transitions of full resize+resync churn, exactly the
 	// exposure the breaker exists to remove.
 	dpiFlapResumeWindow = 10 * time.Second
+
+	// dpiPlacementGrace: DPI reversals this soon after an app-driven
+	// setPhysicalBounds are placement side-effects, not a straddle
+	// oscillation — a multi-monitor placement legitimately ping-pongs the
+	// window's DPI while it lands. The parked-reversal fast path and the
+	// resolver stand down inside the grace: the v200.0.22 field trace shows
+	// the resolver "resolving" a freshly placed fullscreen alarm window onto
+	// the wrong monitor with a mid-placement 3456x1944 rect (#5701). 2 s
+	// comfortably covers the placement's transition burst (~10 ms spacing in
+	// the trace) while leaving genuinely parked straddles — which oscillate
+	// for as long as they straddle — to trip right after it expires.
+	dpiPlacementGrace = 2 * time.Second
 )
 
 // noteDPITransitionAndDetectFlap records a WM_DPICHANGED transition and
@@ -2203,15 +2213,15 @@ const (
 // INTENTIONALLY kills the browser process ("GPU process isn't usable.
 // Goodbye."), so an unbroken storm always ends in a wedged controller.
 //
-// Returns (stormActive, resolveStraddle): stormActive=true → our manual
-// rasterization resync is deferred to the settle (the suggested rect is still
-// applied and native scale detection keeps content correct — geometry stays
-// OS-owned, Steps 15/16; per-flip correction in either ordering was field-
-// tested and crashes the GPU into a browser kill, see the WM_DPICHANGED
-// handler comment); resolveStraddle=true → the caller should run the
-// straddle resolver for this transition (further gated there on !inSizeMove:
-// a window the user actively holds must not be repositioned). Detection has
-// two tiers:
+// Returns (stormActive, resolveStraddle): stormActive is telemetry plus the
+// settle-backstop trigger these days (the suggested rect is always applied,
+// native scale detection owns the rasterization scale, and the
+// RasterizationScaleChanged handler re-lays content out per scale change —
+// geometry stays OS-owned, Steps 15/16); resolveStraddle=true → the caller
+// should run the straddle resolver for this transition (further gated there
+// on !inSizeMove: a window the user actively holds must not be repositioned;
+// and suppressed entirely within dpiPlacementGrace of an app-driven
+// placement). Detection has these tiers:
 //   - in-drag: 3 reversals within dpiFlapReversalWindow (a human CAN wiggle a
 //     drag across the boundary, so demand a sustained pattern);
 //   - parked: ONE reversal within dpiParkedReversalWindow trips immediately —
@@ -2231,7 +2241,14 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 	parked := !w.inSizeMove && !w.isMinimizing
 	isReversal := newDPI == w.lastDPITransitionFrom
 	reversalAge := now.Sub(w.lastDPITransitionAt)
-	parkedReversal := parked && isReversal && reversalAge < dpiParkedReversalWindow
+	// A reversal inside the placement grace is the app placing the window
+	// (multi-monitor placement legitimately ping-pongs the DPI), not a parked
+	// straddle oscillation — the resolver must never fight it. v200.0.22 field
+	// trace: it moved a freshly placed fullscreen alarm window onto the wrong
+	// monitor with a mid-placement 3456x1944 rect (#5701).
+	recentPlacement := !w.lastProgrammaticPlacementAt.IsZero() &&
+		now.Sub(w.lastProgrammaticPlacementAt) < dpiPlacementGrace
+	parkedReversal := parked && isReversal && reversalAge < dpiParkedReversalWindow && !recentPlacement
 
 	if now.Before(w.dpiFlapSuppressUntil) {
 		// Still oscillating while suppressed — extend so suppression outlives
@@ -2271,28 +2288,27 @@ func (w *windowsWebviewWindow) noteDPITransitionAndDetectFlap(fromDPI, newDPI ui
 		globalApplication.warning("DPI flap detected (parked reversal %d↔%d): window %d is straddle-oscillating at rest — resolving (#5701)",
 			fromDPI, newDPI, w.parent.id)
 	case resumedStorm:
-		// Each resume proves the last settle fired inside a still-live storm —
-		// escalate the quiet threshold so the settle/resume churn (each cycle
-		// is a scale+bounds re-put, v200.0.8: 41 settles / 30 resumes in one
-		// session) converges instead of tracking the storm cadence.
+		// The ordinal is telemetry only these days: with the settle reduced to
+		// one backstop bounds re-assert (no scale-put), settle/resume churn is
+		// cheap, so the old per-resume threshold escalation was dropped.
 		w.dpiFlapResumeCount++
 		globalApplication.warning("DPI flap resumed (%d↔%d within %s of the last settle, resume %d): window %d — re-tripping on the first reversal (#5701)",
 			fromDPI, newDPI, dpiFlapResumeWindow, w.dpiFlapResumeCount, w.parent.id)
 	default:
 		w.dpiFlapResumeCount = 0
-		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — deferring manual resync until the storm settles (#5701)",
+		globalApplication.warning("DPI flap detected: window %d oscillating %d↔%d — settle backstop armed (#5701)",
 			w.parent.id, fromDPI, newDPI)
 	}
 
 	// The webview stays VISIBLE through the storm (Step 16). With geometry
-	// OS-applied and native monitor-scale detection on, mid-storm content
-	// tracks the correct size on its own — v200.0.13 field data: every settle
-	// landed on the correct size class, while the Step 15 hide blanked
-	// near-every crossing (~1.6s each) without reducing GPU exits at all. A
-	// storm trip now only arms the resolver, defers our redundant manual
-	// resync, and schedules the belt-and-braces settle sync.
+	// OS-applied, native monitor-scale detection owning the scale, and the
+	// RasterizationScaleChanged handler re-laying content out per scale
+	// change, mid-storm content tracks the correct size on its own. A storm
+	// trip now only arms the resolver (except inside the placement grace —
+	// the app knows where its window goes) and schedules the belt-and-braces
+	// settle sync.
 	w.scheduleDPIFlapSettle(dpiFlapQuietSettle + 100*time.Millisecond)
-	return true, true
+	return true, !recentPlacement
 }
 
 // scheduleDPIFlapSettle arms a settle check after delay. Duplicate pending
@@ -2308,18 +2324,18 @@ func (w *windowsWebviewWindow) scheduleDPIFlapSettle(delay time.Duration) {
 	})
 }
 
-// dpiFlapSettleCheck resyncs the rasterization scale and ends suppression once
-// the storm is over. The frozen scale is what the user SEES as wrongly-sized
-// content (too small on a higher-DPI monitor, too large on a lower-DPI one),
-// so the check chases the END of the transition stream rather than the
-// suppression window, with the quiet threshold depending on what the user is
-// doing: mid-drag a lull may just be the user hovering near the boundary
-// (dpiFlapQuietSettle), but once the drag is released a non-straddling window
-// produces no further transitions, so the scale can snap back after
-// dpiFlapReleaseSettle (v200.0.7 field report: the ~1.6 s tail was still
-// human-visible when a drag ended inside a suppression window). The storm/tail
-// breadcrumb quantifies the user-visible wrong-scale window in field logs.
-// Main thread only.
+// dpiFlapSettleCheck ends the storm once the transition stream has been quiet
+// long enough, re-asserts the controller bounds as a backstop, and emits the
+// storm/tail breadcrumb that quantifies the exposure in field logs. It no
+// longer puts the rasterization scale: native detection owns the scale (every
+// settle in the v200.0.21/22 field sessions logged put=false — the browser had
+// always corrected first) and the RasterizationScaleChanged handler does the
+// per-event re-layout; the single Resize below only covers a missed event
+// (registration is non-fatal-logged, so it CAN be absent). Quiet thresholds:
+// mid-drag a lull may just be the user hovering near the boundary
+// (dpiFlapQuietSettle); once the drag is released a non-straddling window
+// produces no further transitions, so dpiFlapReleaseSettle suffices
+// (v200.0.7 field report). Main thread only.
 func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown {
 		return
@@ -2329,19 +2345,7 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	threshold := dpiFlapQuietSettle
 	if !w.inSizeMove {
-		// Released: base 400 ms, doubling per consecutive resume (capped at
-		// the mid-drag threshold). A slow storm flipping every ~1 s otherwise
-		// satisfies the base threshold between flips, and every premature
-		// settle is a scale+bounds re-put feeding the exact churn the breaker
-		// exists to stop (v200.0.8 field trace: settle→resume every ~1.6 s).
-		n := w.dpiFlapResumeCount
-		if n > 2 {
-			n = 2
-		}
-		threshold = time.Duration(1<<n) * dpiFlapReleaseSettle
-		if threshold > dpiFlapQuietSettle {
-			threshold = dpiFlapQuietSettle
-		}
+		threshold = dpiFlapReleaseSettle
 	}
 	quiet := time.Since(w.lastDPITransitionAt)
 	if quiet < threshold || w.webviewRebuildInProgress {
@@ -2356,18 +2360,10 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
-	// put=false in the settle breadcrumb means native detection had already
-	// corrected the scale mid-storm — i.e. the wrong-LAYOUT window (#5677)
-	// opened at that native change and stayed open until the Resize below.
-	rasterBefore := w.currentWebviewRasterizationScale()
-	scalePut := w.resyncWebviewRasterizationScale()
-	// ALWAYS re-assert the controller bounds, independent of whether the scale
-	// re-put above was needed. With native monitor-scale detection on, WebView2
-	// often corrects the rasterization scale by itself mid-storm, so the resync
-	// returns false — but a scale change without a bounds re-assert does not
-	// re-lay out the content (#5677). Gating Resize on the resync result left
-	// the page laid out for stale bounds: wrongly-sized content inside a
-	// correctly sized window (v200.0.8 field report).
+	raster := w.currentWebviewRasterizationScale()
+	// Backstop bounds re-assert: a scale change without a bounds re-assert
+	// does not re-lay out the content (#5677). The event handler normally did
+	// this already; one extra Resize per storm is cheap insurance.
 	if w.chromium.IsReady() {
 		w.chromium.Resize()
 	}
@@ -2376,16 +2372,17 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	// Client size is logged so field data can separate the two wrong-size
 	// failure modes: stale content layout (client size correct for the DPI,
-	// content wrong) vs stale window size (client size still sized for the
-	// other monitor because every suggested rect was suppressed).
+	// content wrong) vs stale window size (client size sized for the other
+	// monitor — e.g. the v200.0.22 alarm placement defect showed here as
+	// client 3456x1945 on dpi 120).
 	var cw, ch int32
 	if rect := w32.GetClientRect(w.hwnd); rect != nil {
 		cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
 	}
 	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-	globalApplication.warning("DPI flap settled: window %d resynced on dpi %d (storm %dms + %dms tail, raster %.2f→%.2f put=%v, client %dx%d px) (#5701)",
+	globalApplication.warning("DPI flap settled: window %d on dpi %d (storm %dms + %dms tail, raster %.2f target %.2f, client %dx%d px) (#5701)",
 		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(),
-		rasterBefore, float64(w.lastKnownDPI)/96.0, scalePut, cw, ch)
+		raster, float64(w.lastKnownDPI)/96.0, cw, ch)
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
