@@ -55,9 +55,15 @@ type Chromium struct {
 		Bottom int32
 	}
 
-	controller                       *ICoreWebView2Controller
-	webview                          *ICoreWebView2
-	inited                           uintptr
+	controller *ICoreWebView2Controller
+	webview    *ICoreWebView2
+	inited     uintptr
+	// embedFailed is set when environment or controller creation fails.
+	// Embed's nested message pump exits on inited OR embedFailed — without it
+	// a creation failure would pump forever (and the previous fatal
+	// errorCallback alternative killed the whole app from a recoverable
+	// controller REBUILD, wailsapp/wails#5701).
+	embedFailed                      uintptr
 	envCompleted                     *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler
 	controllerCompleted              *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler
 	webMessageReceived               *iCoreWebView2WebMessageReceivedEventHandler
@@ -181,19 +187,35 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		}
 	}
 
+	// Environment/controller creation failures are recoverable — the caller
+	// can retry with a fresh Chromium (the recovery ladder does exactly that).
+	// The old fatal errorCallback here killed the whole app from a controller
+	// REBUILD when creation returned 8007139F (browser process mid-teardown /
+	// environment options mismatching the running shared browser process),
+	// wailsapp/wails#5701. Report non-fatally and return false instead.
 	browserArgs := strings.Join(e.AdditionalBrowserArgs, " ")
 	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted, browserArgs); err != nil {
-		e.errorCallback(fmt.Errorf("error calling Webview2Loader: %s", err.Error()))
+		log.Printf("[WebView2] Webview2Loader call failed: %v", err)
+		if e.globalErrorCallback != nil {
+			e.globalErrorCallback(fmt.Errorf("error calling Webview2Loader: %s", err.Error()))
+		}
+		atomic.StoreUintptr(&e.embedFailed, 1)
+		return false
 	}
 
 	e.webview2RuntimeVersion, err = webviewloader.GetAvailableCoreWebView2BrowserVersionString(e.BrowserPath)
 	if err != nil {
-		e.errorCallback(fmt.Errorf("error getting Webview2 runtime version: %s", err.Error()))
+		log.Printf("[WebView2] runtime version query failed: %v", err)
+		if e.globalErrorCallback != nil {
+			e.globalErrorCallback(fmt.Errorf("error getting Webview2 runtime version: %s", err.Error()))
+		}
+		atomic.StoreUintptr(&e.embedFailed, 1)
+		return false
 	}
 
 	var msg w32.Msg
 	for {
-		if atomic.LoadUintptr(&e.inited) != 0 {
+		if atomic.LoadUintptr(&e.inited) != 0 || atomic.LoadUintptr(&e.embedFailed) != 0 {
 			break
 		}
 		r, _, _ := w32.User32GetMessageW.Call(
@@ -207,6 +229,9 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		}
 		w32.User32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
 		w32.User32DispatchMessageW.Call(uintptr(unsafe.Pointer(&msg)))
+	}
+	if atomic.LoadUintptr(&e.embedFailed) != 0 {
+		return false
 	}
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
 	return true
@@ -323,6 +348,8 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 		if e.globalErrorCallback != nil {
 			e.globalErrorCallback(fmt.Errorf("failed to create WebView2 environment: %w", err))
 		}
+		// Without this, Embed's nested pump waits for inited forever.
+		atomic.StoreUintptr(&e.embedFailed, 1)
 		return res
 	}
 
@@ -333,14 +360,29 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 
 	err := env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] CreateCoreWebView2Controller call failed: %v", err)
+		if e.globalErrorCallback != nil {
+			e.globalErrorCallback(fmt.Errorf("error creating WebView2 controller: %w", err))
+		}
+		atomic.StoreUintptr(&e.embedFailed, 1)
 	}
 	return 0
 }
 
 func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller *ICoreWebView2Controller) uintptr {
 	if int32(res) < 0 {
-		e.errorCallback(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
+		// e.g. 8007139F ERROR_INVALID_STATE: the shared browser process is
+		// mid-teardown, or this environment's options mismatch the ones the
+		// running browser process was started with. Recoverable by retrying
+		// with a fresh Chromium — a rebuild after a GPU-crash storm died on
+		// the old fatal errorCallback exactly here (wailsapp/wails#5701).
+		// Return before touching controller: it is not valid on failure.
+		log.Printf("[WebView2] controller creation failed with %08x: %v", res, syscall.Errno(res))
+		if e.globalErrorCallback != nil {
+			e.globalErrorCallback(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
+		}
+		atomic.StoreUintptr(&e.embedFailed, 1)
+		return res
 	}
 
 	var err error

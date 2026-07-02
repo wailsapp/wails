@@ -2636,7 +2636,16 @@ func (w *windowsWebviewWindow) setupChromium() {
 	// is registered when AddProcessFailed runs during controller creation.
 	chromium.ProcessFailedCallback = w.processFailed
 
-	chromium.Embed(w.hwnd)
+	if !chromium.Embed(w.hwnd) {
+		// Environment/controller creation failed — edge reports the error via
+		// the error callback and returns instead of exiting (#5701; the old
+		// fatal path killed the app from a controller rebuild). Bail out:
+		// every chromium call below needs the live controller/webview this
+		// embed did not produce. rebuildWebview sees the missing controller
+		// (IsReady) and retries; the health watchdog is the backstop.
+		globalApplication.error("WebView2 Embed failed for window %d — controller not created (#5701)", w.parent.id)
+		return
+	}
 
 	// Hand DPI/monitor-scale transitions back to WebView2. edge.NewChromium
 	// disables native detection for raw-pixels bounds mode; doing the resync
