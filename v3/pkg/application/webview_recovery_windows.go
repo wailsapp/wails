@@ -77,6 +77,11 @@ const (
 // wedge is still recovered within a few seconds of its first detection.
 const webviewRecoveryConfirmDelay = 2 * time.Second
 
+// webviewRuntimeVersion is the WebView2 runtime version string, recorded by
+// setupChromium and included in ProcessFailed diagnostics so field logs can
+// correlate process deaths with runtime rollouts. Main-thread only.
+var webviewRuntimeVersion string
+
 // webviewRebuildActiveGlobal serializes rebuilds ACROSS windows. Embed pumps a
 // nested thread-wide message loop (GetMessage with hwnd=0), which reentrantly
 // dispatches other windows' queued InvokeAsync callbacks — in the field
@@ -129,7 +134,8 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 			w.processFailedLogAt = make(map[string]time.Time, 2)
 		}
 		w.processFailedLogAt[kindName] = now
-		globalApplication.error("WebView2 process failed (kind=%s) — scheduling recovery (#5701)\n%s", kindName, debug.Stack())
+		globalApplication.error("WebView2 process failed (kind=%s, window=%d, runtime=%s) — scheduling recovery (#5701)\n%s",
+			kindName, w.parent.id, webviewRuntimeVersion, debug.Stack())
 	}
 
 	switch kind {
@@ -343,7 +349,10 @@ func (w *windowsWebviewWindow) rebuildWebview(reason string) {
 	w.setupChromium()
 
 	w.webviewHealthProbeFailures = 0
-	globalApplication.info("WebView2 controller rebuilt after %s (#5701)", reason)
+	// Warning level deliberately: recovery SUCCESS must reach hosts whose log
+	// bridge forwards only Warn+ (the failure that triggered it is error-level,
+	// so a missing success line would read as an unrecovered wedge).
+	globalApplication.warning("WebView2 controller rebuilt after %s (window=%d) (#5701)", reason, w.parent.id)
 }
 
 // startWebviewHealthWatchdog begins a low-frequency controller health probe.

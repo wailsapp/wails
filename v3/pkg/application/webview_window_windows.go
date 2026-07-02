@@ -1821,6 +1821,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
+		// Diagnostic breadcrumb (#5701): mixed-DPI monitor crossings are the
+		// trigger for WebView2 GPU-process deaths in the field, so record every
+		// transition — a "WebView2 process failed" shortly after one of these
+		// confirms the correlation. Warning level so log bridges that forward
+		// only Warn+ still ship it; DPI transitions are rare enough not to spam.
+		{
+			newDPI := uint32(wparam & 0xFFFF)
+			suggested := (*w32.RECT)(unsafe.Pointer(lparam))
+			globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, minimised=%v) (#5701)",
+				w.parent.id, w.lastKnownDPI, newDPI,
+				suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, w.isMinimizing)
+		}
 		// While minimised the window is repositioned off its restore monitor; a
 		// DPI change in that state delivers a suggested rect scaled for whatever
 		// monitor the parked position maps to. Applying it resizes the
@@ -2316,6 +2328,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 		return
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
+	// Recorded for the ProcessFailed diagnostic (#5701): correlating process
+	// deaths with the runtime version identifies whether a crash is fixed or
+	// introduced by a WebView2 runtime rollout.
+	webviewRuntimeVersion = webview2version
 
 	// Browser flags apply globally to the shared WebView2 environment
 	// Use application-level options, not per-window options
