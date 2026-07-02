@@ -75,7 +75,12 @@ the cgo backend, including window-attached dialog sheets and the
 already-stopped-`WKURLSchemeTask` handling (avoided via a stopped-task registry
 rather than an Objective-C `@try/@catch`).
 
-Caveat: this backend has been verified to build (`CGO_ENABLED=0 -tags purego`)
-and to launch and serve its frontend headlessly. On-screen rendering and
-interactive behaviour of every feature should still be smoke-tested on a real
-macOS desktop session before relying on it in production.
+Desktop-validated: built with `CGO_ENABLED=0 -tags purego` and run on a real
+macOS 26 desktop (`examples/window`). Confirmed on screen: a native NSWindow
+(title bar + standard traffic-light buttons), the native application menu bar,
+and a live WKWebView rendering the `wails://` asset-served frontend with
+interactive HTML controls. Interaction was exercised via the accessibility API:
+clicking the native minimize button miniaturised the window (AXMinimized=true)
+and restoring it brought it back intact, with the process staying alive
+throughout. Broader per-feature interactive testing is still recommended before
+production, but the core stack is verified working in the target environment.
