@@ -141,6 +141,8 @@ func onMain(fn func()) {
 		fn()
 	})
 	dispatchSync(dispatchMainQueue, block)
+	// dispatch_sync has returned, so the block has run; drop our +1.
+	block.Release()
 }
 
 // ---------------------------------------------------------------------------

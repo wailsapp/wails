@@ -87,10 +87,31 @@ func (dn *darwinNotifier) Shutdown() error {
 	return nil
 }
 
+// nsOperatingSystemVersion mirrors Foundation's NSOperatingSystemVersion
+// (three NSInteger fields), returned by value from
+// -[NSProcessInfo operatingSystemVersion].
+type nsOperatingSystemVersion struct {
+	Major int
+	Minor int
+	Patch int
+}
+
+// macOSAtLeast reports whether the running OS is at least major.minor.
+func macOSAtLeast(major, minor int) bool {
+	pi := class("NSProcessInfo").send("processInfo")
+	v := get[nsOperatingSystemVersion](pi, "operatingSystemVersion")
+	if v.Major != major {
+		return v.Major > major
+	}
+	return v.Minor >= minor
+}
+
 // isNotificationAvailable checks if notifications are available on the system.
-// UNUserNotificationCenter exists on macOS 11.0+.
+// The cgo implementation requires macOS 11.0+ (@available(macOS 11.0, *)), so
+// mirror that here in addition to checking that UNUserNotificationCenter
+// actually exists.
 func isNotificationAvailable() bool {
-	return !class("UNUserNotificationCenter").isNil()
+	return macOSAtLeast(11, 0) && !class("UNUserNotificationCenter").isNil()
 }
 
 func checkBundleIdentifier() bool {
@@ -687,6 +708,8 @@ func requestNotificationAuthorization(channelID int) {
 		}
 	})
 	center.send("requestAuthorizationWithOptions:completionHandler:", options, handler)
+	// The framework copies the block during the call above; drop our +1.
+	handler.Release()
 }
 
 func checkNotificationAuthorization(channelID int) {
@@ -701,6 +724,8 @@ func checkNotificationAuthorization(channelID int) {
 		captureResult(channelID, status == unAuthorizationStatusAuthorized, "")
 	})
 	center.send("getNotificationSettingsWithCompletionHandler:", handler)
+	// The framework copies the block during the call above; drop our +1.
+	handler.Release()
 }
 
 // ===========================================================================
@@ -753,7 +778,9 @@ func applyAttachments(content id, attachments []NotificationAttachment) {
 		var attOptions id
 		if containsDot(att.Type) {
 			attOptions = class("NSMutableDictionary").send("dictionary")
-			attOptions.send("setObject:forKey:", nsString(att.Type), nsString("UNNotificationAttachmentOptionsTypeHintKey"))
+			// "typeHint" is the runtime value of the framework constant
+			// UNNotificationAttachmentOptionsTypeHintKey.
+			attOptions.send("setObject:forKey:", nsString(att.Type), nsString("typeHint"))
 		}
 
 		a := class("UNNotificationAttachment").send("attachmentWithIdentifier:URL:options:error:",
@@ -867,6 +894,8 @@ func sendNotification(channelID int, options NotificationOptions, withActions bo
 		}
 	})
 	center.send("addNotificationRequest:withCompletionHandler:", request, handler)
+	// The framework copies the block during the call above; drop our +1.
+	handler.Release()
 }
 
 // ===========================================================================
@@ -916,6 +945,13 @@ func registerNotificationCategory(channelID int, category NotificationCategory) 
 	)
 
 	center := notificationCenter()
+
+	// The completion handler runs asynchronously, after the caller's
+	// autorelease pool may have drained: retain the captured (autoreleased)
+	// objects now and release them inside the block once it is done with them.
+	nsCategoryID.send("retain")
+	newCategory.send("retain")
+
 	handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
 		updated := class("NSMutableSet").send("setWithSet:", id(categories))
 
@@ -939,14 +975,24 @@ func registerNotificationCategory(channelID int, category NotificationCategory) 
 		updated.send("addObject:", newCategory)
 		center.send("setNotificationCategories:", updated)
 
+		nsCategoryID.send("release")
+		newCategory.send("release")
+
 		captureResult(channelID, true, "")
 	})
 	center.send("getNotificationCategoriesWithCompletionHandler:", handler)
+	// The framework copies the block during the call above; drop our +1.
+	handler.Release()
 }
 
 func removeNotificationCategory(channelID int, categoryID string) {
 	nsCategoryID := nsString(categoryID)
 	center := notificationCenter()
+
+	// The completion handler runs asynchronously, after the caller's
+	// autorelease pool may have drained: retain the captured (autoreleased)
+	// NSString now and release it inside the block once it is done with it.
+	nsCategoryID.send("retain")
 
 	handler := objc.NewBlock(func(_ objc.Block, categories objc.ID) {
 		updated := class("NSMutableSet").send("setWithSet:", id(categories))
@@ -964,6 +1010,8 @@ func removeNotificationCategory(channelID int, categoryID string) {
 			}
 		}
 
+		nsCategoryID.send("release")
+
 		if !toRemove.isNil() {
 			updated.send("removeObject:", toRemove)
 			center.send("setNotificationCategories:", updated)
@@ -973,6 +1021,8 @@ func removeNotificationCategory(channelID int, categoryID string) {
 		}
 	})
 	center.send("getNotificationCategoriesWithCompletionHandler:", handler)
+	// The framework copies the block during the call above; drop our +1.
+	handler.Release()
 }
 
 // containsDot reports whether s contains a ".".

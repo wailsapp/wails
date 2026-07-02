@@ -250,6 +250,9 @@ func (s *macosSystemTray) createStatusItem() id {
 	monitor := class("NSEvent").send("addLocalMonitorForEventsMatchingMask:handler:",
 		uint(nsEventMaskLeftMouseDown|nsEventMaskRightMouseDown), objc.ID(handler))
 	s.eventMonitor = ptrFromID(monitor)
+	// The monitor holds its own copy of the block (copied synchronously during
+	// the call above); drop our +1.
+	handler.Release()
 
 	return statusItem
 }
@@ -345,13 +348,14 @@ func appendAttributedString(current id, title, fg, bg string) id {
 }
 
 // parseHexColor parses "#rrggbb" or "#rrggbbaa" into an NSColor. It returns a
-// nil id when the string is empty or contains no parseable colour component,
-// matching the cgo behaviour (missing components default to 255).
+// nil id when the string lacks the leading '#' or contains no parseable colour
+// component, matching the cgo behaviour (sscanf("#%02hx...") requires the '#';
+// missing trailing components default to 255).
 func parseHexColor(hex string) id {
-	if hex == "" {
+	if !strings.HasPrefix(hex, "#") {
 		return id(0)
 	}
-	h := strings.TrimPrefix(hex, "#")
+	h := hex[1:]
 	// default white, fully opaque (r=g=b=a=255)
 	comps := [4]float64{255, 255, 255, 255}
 	parsed := 0
@@ -448,8 +452,14 @@ func (s *macosSystemTray) openMenu() {
 // showMenu programmatically enters native menu tracking by synthesizing a
 // mouse-down at the button centre, mirroring the cgo showMenu. Click-triggered
 // menus are handled by the pre-click event monitor instead.
+//
+// The body is ALWAYS deferred to the next run-loop turn via dispatch_async
+// (like the cgo showMenu in systemtray_darwin.m), even when already on the
+// main thread: running it inline would nest the synthesized mouseDown and the
+// menu-tracking run loop inside the real click's sendAction, and would make
+// OpenMenu() block until the menu is dismissed.
 func (s *macosSystemTray) showMenu() {
-	globalApplication.dispatchOnMainThread(func() {
+	block := objc.NewBlock(func(objc.Block) {
 		if s.nsStatusItem == nil || s.nsMenu == nil {
 			return
 		}
@@ -482,7 +492,9 @@ func (s *macosSystemTray) showMenu() {
 			objc.ID(0),
 			int(0),
 			int(1),
-			float64(1.0),
+			// pressure: the ObjC parameter is a C float, so it must be
+			// marshalled as float32 (float64 would be passed as a double).
+			float32(1.0),
 		)
 		button.send("mouseDown:", event)
 
@@ -490,6 +502,9 @@ func (s *macosSystemTray) showMenu() {
 		statusItem.send("setMenu:", id(0))
 		menu.send("setDelegate:", id(0))
 	})
+	dispatchAsync(dispatchMainQueue, block)
+	// dispatch_async copies the block synchronously; drop our +1.
+	block.Release()
 }
 
 // ---------------------------------------------------------------------------
