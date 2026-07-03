@@ -109,8 +109,8 @@
         const name = document.getElementById("name").value;
 
         let person;
-        if (name === "Quincy") {
-            person = await GreetService.GetPerson(name);
+        if (name === "David") {
+            person = await GreetService.GetPerson(name, new Date(1947, 0, 8));
         } else {
             person = new data.Person({ name });
         }

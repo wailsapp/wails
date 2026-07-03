@@ -106,6 +106,14 @@ export function Struct(createField: Record<string, (source: any) => any>):
 }
 
 /**
+ * DateFromTime is a creation function that converts RFC3339 strings
+ * (from Go's time.Time JSON marshaling) to JavaScript Date objects.
+ */
+export function DateFromTime(source: any): Date {
+    return new Date(source);
+}
+
+/**
  * Maps known event names to creation functions for their data types.
  * Will be monkey-patched by the binding generator.
  */

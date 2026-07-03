@@ -6,10 +6,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as time$0 from "../../../../../../../../time/models.js";
-
 /**
  * AllTypes holds a field for every fundamental Go-to-TS type mapping.
  */
@@ -214,9 +210,9 @@ export class AllTypes {
             /**
              * maps to any
              * @member
-             * @type {time$0.Time}
+             * @type {Date}
              */
-            this["Time"] = null;
+            this["Time"] = new Date("0001-01-01T00:00:00.000Z");
         }
         if (!("Err" in $$source)) {
             /**
@@ -243,6 +239,7 @@ export class AllTypes {
         const $$createField24_0 = $$createType6;
         const $$createField25_0 = $$createType7;
         const $$createField26_0 = $$createType8;
+        const $$createField27_0 = $Create.DateFromTime;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("ByteSlice" in $$parsedSource) {
             $$parsedSource["ByteSlice"] = $$createField16_0($$parsedSource["ByteSlice"]);
@@ -267,6 +264,9 @@ export class AllTypes {
         }
         if ("GenericType" in $$parsedSource) {
             $$parsedSource["GenericType"] = $$createField26_0($$parsedSource["GenericType"]);
+        }
+        if ("Time" in $$parsedSource) {
+            $$parsedSource["Time"] = $$createField27_0($$parsedSource["Time"]);
         }
         return new AllTypes(/** @type {Partial<AllTypes>} */($$parsedSource));
     }
