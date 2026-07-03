@@ -8,7 +8,7 @@ import defaultWindowReady from "../../../assets/updater/default-window-ready.png
 import defaultWindowUpToDate from "../../../assets/updater/default-window-up-to-date.png";
 import byoCustomWindow from "../../../assets/updater/byo-custom-window.png";
 
-The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on `app.Updater`, accepts one or more pluggable `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.
+The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on `app.Updater`, accepts one or more pluggable `Provider`s (GitHub Releases, keygen.sh, Sparkle AppCast, the open Wails Update Manifest protocol, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.
 
 <Image src={defaultWindowReady} alt="The default updater window in the Update Ready state — state-aware icon, version pill (v1.0.0 → v2.0.1 · 8.8 MB), Markdown-rendered release notes including a GFM table, and a single primary action." style="max-width: 480px; margin: 1.25rem auto; display: block; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));" />
 
@@ -82,7 +82,7 @@ type Provider interface {
 }
 ```
 
-Three implementations ship in-tree.
+Four implementations ship in-tree.
 
 ### GitHub Releases — `updater/providers/github`
 
@@ -150,6 +150,29 @@ ac, err := appcast.New(appcast.Config{
 Drops in to existing Sparkle / WinSparkle infrastructure unchanged. Reads `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>`, and `sparkle:channel` from the feed.
 
 Sparkle 1's DSA signatures (`sparkle:dsaSignature`) are not supported — projects on that signing scheme should rotate to EdDSA (Sparkle 2).
+
+### Wails Update Manifest — `updater/providers/endpoint`
+
+```go title="endpoint provider"
+ep, err := endpoint.New(endpoint.Config{
+    URL:        "https://updates.example.com/check", // required; supports {{platform}} / {{arch}} / {{version}} / {{channel}} placeholders
+    Channel:    "stable",                            // optional channel filter
+    Headers:    nil,                                 // optional headers, e.g. {"Authorization": "License <key>"}
+    HTTPClient: nil,                                 // optional client override; redirect-strip wrapper still applied
+})
+```
+
+Speaks the open [Wails Update Manifest protocol](/reference/update-manifest): one JSON document describing the latest release and its per-platform artifacts, with checksums and signatures inline. The same document works from a static file host (S3, GitHub Pages, any CDN — publish one manifest per channel listing all platforms) or from a dynamic update server (the provider sends `platform`, `arch`, `version` and `channel` with every check, so the server can return exactly one artifact or gate on a license).
+
+URL placeholders make static layouts one line of config:
+
+```go
+ep, _ := endpoint.New(endpoint.Config{
+    URL: "https://cdn.example.com/updates/{{platform}}/{{arch}}/stable.json",
+})
+```
+
+Configured headers are sent on every manifest request; artifact downloads reuse them only on the manifest's own host, and the `Authorization` header is stripped on any cross-origin redirect.
 
 ### Fallback chain
 
