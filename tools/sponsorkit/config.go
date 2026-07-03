@@ -30,8 +30,8 @@ type TierStyle struct {
 	Accent string
 	// Glow adds a soft blurred halo behind the ring.
 	Glow bool
-	// Badge renders a small pill with the tier name under the sponsor name.
-	Badge string
+	// ExtraSparkle adds a second, counter-rotating orbit sparkle.
+	ExtraSparkle bool
 }
 
 // tiers is ordered from most to least generous. The last entry acts as the
@@ -43,14 +43,14 @@ var tiers = []TierStyle{
 		Avatar: 168, Box: 280, RowGap: 30,
 		ShowName: true, NameSize: 19, MaxName: 26,
 		Ring: "animated", RingWidth: 5, RingGradient: "ringPartner", Accent: "#FF5C5C",
-		Glow: true, Badge: "PARTNER",
+		Glow: true, ExtraSparkle: true,
 	},
 	{
 		Title: "Champion", MinMonthly: 500,
 		Avatar: 144, Box: 236, RowGap: 28,
 		ShowName: true, NameSize: 17, MaxName: 24,
 		Ring: "animated", RingWidth: 4.5, RingGradient: "ringChampion", Accent: "#FF8A5C",
-		Glow: true, Badge: "CHAMPION",
+		Glow: true, ExtraSparkle: true,
 	},
 	{
 		Title: "Gold Sponsors", MinMonthly: 200,

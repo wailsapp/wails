@@ -150,7 +150,6 @@ text {
 .subtitle { font-size: 12.5px; fill: #8B95A9; }
 .tier { font-size: 13px; font-weight: 600; letter-spacing: 3px; }
 .name { font-weight: 500; }
-.badge { font-size: 8.5px; font-weight: 700; letter-spacing: 1.5px; fill: #FFD9D9; }
 .cta { font-size: 14.5px; font-weight: 600; fill: #FFFFFF; }
 .link { cursor: pointer; }
 </style>
@@ -235,11 +234,7 @@ func (r *renderer) tierSection(t TierStyle, group []Sponsor) {
 	if t.ShowName {
 		nameH = t.NameSize + 14
 	}
-	badgeH := 0.0
-	if t.Badge != "" {
-		badgeH = 22
-	}
-	cellH := cellTop + t.Avatar + 2*ringPad + nameH + badgeH
+	cellH := cellTop + t.Avatar + 2*ringPad + nameH
 
 	for start := 0; start < len(group); start += perRow {
 		end := start + perRow
@@ -290,7 +285,7 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 		// Orbiting sparkles for the flagship tiers.
 		if t.Glow {
 			r.sparkle(cx, cy, ringR+3, 2.4, 7, false)
-			if t.Badge != "" {
+			if t.ExtraSparkle {
 				r.sparkle(cx, cy, ringR+6, 1.7, 11, true)
 			}
 		}
@@ -324,14 +319,6 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 		y += t.NameSize + 10
 		r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="name" font-size="%s">%s</text>`,
 			num(cx), num(y), num(t.NameSize), esc(ellipsis(s.DisplayName(), t.MaxName))))
-	}
-	if t.Badge != "" {
-		y += 18
-		badgeW := float64(len(t.Badge))*7.5 + 20
-		r.body.WriteString(fmt.Sprintf(`<rect x="%s" y="%s" width="%s" height="15" rx="7.5" fill="url(#accent)" opacity="0.85"/>`,
-			num(cx-badgeW/2), num(y-11), num(badgeW)))
-		r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="badge">%s</text>`,
-			num(cx), num(y), esc(t.Badge)))
 	}
 	r.body.WriteString(`</a>`)
 }
