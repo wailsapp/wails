@@ -5,8 +5,6 @@ description: Wails를 가능하게 한 기여자들과 프로젝트에 감사의
 
 {/* 자동 생성된 기여자 파일 가져오기 */}
 
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - 프로젝트 오너, 리드 개발자
 - [Stffabi](https://github.com/stffabi) - 기술 리드, 개발자 및 유지보수자
 - [Travis McLane](https://github.com/tmclane) - 교차 컴파일 작업, MacOS 테스트
@@ -42,7 +40,15 @@ import Contributors from "../../../assets/contributors.html";
 
 ## 기여자
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## 특별 언급
 

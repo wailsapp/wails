@@ -1,4 +1,4 @@
-name: Generate Sponsor Image
+name: Generate Sponsor and Contributor Images
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   update-sponsors:
-    name: Update Sponsors
+    name: Update Sponsors and Contributors
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
     permissions:
@@ -30,14 +30,20 @@ jobs:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           GOWORK: "off"
 
-      - name: Commit updated sponsor image
+      - name: Update Contributors
+        run: cd tools/sponsorkit && go run . -mode contributors -repo wailsapp/wails -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx -out ../../website/static/img/contributors.svg
+        env:
+          SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
+          GOWORK: "off"
+
+      - name: Commit updated images
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- website/static/img/sponsors.svg; then
-            echo "No sponsor changes to commit."
+          if git diff --quiet -- website/static/img/sponsors.svg website/static/img/contributors.svg; then
+            echo "No sponsor or contributor changes to commit."
             exit 0
           fi
-          git add website/static/img/sponsors.svg
-          git commit -m "chore: update sponsors.svg [skip ci]"
+          git add website/static/img/sponsors.svg website/static/img/contributors.svg
+          git commit -m "chore: update sponsors.svg and contributors.svg [skip ci]"
           git push

@@ -1,15 +1,19 @@
 # sponsorkit
 
 A dependency-free Go replacement for the Node [sponsorkit](https://github.com/antfu-collective/sponsorkit)
-package. It fetches live GitHub Sponsors data and renders `website/static/img/sponsors.svg`,
-the image embedded in the project READMEs.
+package. It fetches live GitHub data and renders two self-contained SVGs:
 
-## What it does
+- `website/static/img/sponsors.svg` — the sponsors image embedded in the project
+  READMEs and both docs sites.
+- `website/static/img/contributors.svg` — the contributors mosaic embedded on the
+  credits pages of both docs sites.
+
+## Sponsors mode (default)
 
 1. Queries the GitHub GraphQL API for all active sponsors of the configured login.
 2. Buckets them into tiers by monthly amount (see `config.go`). Bigger sponsors get
    bigger avatars and fancier treatments: animated gradient rings, glow halos,
-   light sweeps, orbiting sparkles and tier badges at the top; simple circles at the bottom.
+   light sweeps, orbiting sparkles at the top; simple circles at the bottom.
 3. Downloads each avatar at 2x resolution and re-encodes it as JPEG (Go stdlib only),
    embedding everything as data URIs so the SVG is fully self-contained.
 4. Renders a dark-card SVG. Every avatar is a link to the sponsor's profile with a
@@ -21,47 +25,77 @@ the image embedded in the project READMEs.
    website embeds it with `object` rather than `img`; inside `img` embeds the hover
    layers stay hidden.
 
+## Contributors mode (`-mode contributors`)
+
+1. Fetches the repository's contributors from the REST API (commit counts on the
+   default branch, bots excluded).
+2. Scans the v2 and v3 changelogs for `@login` credits. Squash-merged or
+   hand-applied patches are often credited only there, so changelog-only
+   contributors still appear; markdown profile links (`[@x](https://github.com/y)`)
+   trust the URL rather than the link text, and every changelog-only login is
+   validated against the API so typos and organisations are dropped. A
+   contributor's credit is the larger of their commit count and mention count.
+3. Renders a mosaic of superellipse "squircles" on the same dark card, graded by
+   credit into bands (see `bands` in `config.go`): the most prolific contributors
+   get large named squircles with animated gradient rings and travelling light
+   arcs, the long tail gets small plain squircles. Every squircle links to the
+   contributor's profile.
+4. Hover on the bigger bands lifts the squircle, blooms the ring and pops up a
+   chip showing the commit (or changelog credit) count.
+5. With hundreds of avatars the embedded images dominate the file size, so small
+   bands use lower JPEG quality, flat-colour identicons keep their original PNG
+   when it is smaller, and the squircle geometry is shared via `defs`/`use`.
+
 ## Usage
 
 ```sh
 cd tools/sponsorkit
 SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -out ../../website/static/img/sponsors.svg
+SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -mode contributors \
+  -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx \
+  -out ../../website/static/img/contributors.svg
 ```
 
 Flags:
 
-| Flag       | Default        | Purpose                                  |
-|------------|----------------|------------------------------------------|
-| `-login`   | `leaanthony`   | GitHub account whose sponsors to render   |
-| `-out`     | `sponsors.svg` | Output path                               |
-| `-width`   | `800`          | SVG width in CSS pixels                   |
-| `-scale`   | `2`            | Avatar oversampling for hi-dpi            |
-| `-quality` | `80`           | JPEG quality for embedded avatars         |
+| Flag          | Default          | Purpose                                          |
+|---------------|------------------|--------------------------------------------------|
+| `-mode`       | `sponsors`       | `sponsors` or `contributors`                     |
+| `-login`      | `leaanthony`     | GitHub account whose sponsors to render          |
+| `-repo`       | `wailsapp/wails` | Repository whose contributors to render          |
+| `-changelogs` | (empty)          | Comma-separated changelogs scanned for `@login` credits |
+| `-out`        | `sponsors.svg`   | Output path                                      |
+| `-width`      | `800`            | SVG width in CSS pixels                          |
+| `-scale`      | `2`              | Avatar oversampling for hi-dpi                   |
+| `-quality`    | `80`             | JPEG quality for embedded avatars                |
 
-The token must have sponsor-tier visibility for the account (the maintainer's own
-token, e.g. the `SPONSORS_TOKEN` secret in CI). `GITHUB_TOKEN` is used as a fallback
-env var. Without tier visibility every sponsor lands in the catch-all "Helpers" tier.
+For sponsors, the token must have sponsor-tier visibility for the account (the
+maintainer's own token, e.g. the `SPONSORS_TOKEN` secret in CI); without it every
+sponsor lands in the catch-all "Helpers" tier. For contributors any token works.
+`GITHUB_TOKEN` is used as a fallback env var.
 
-Tier thresholds and styling live in `config.go`; the visual language (gradients,
-filters, animations) lives in `render.go`.
+Tier and band thresholds and styling live in `config.go`; the visual language
+(gradients, filters, animations) lives in `render.go` and `render_contributors.go`.
 
-This tool is run daily by `.github/workflows/generate-sponsor-image.yml`, which
-commits the regenerated SVG when it changes.
+Both images are regenerated daily by
+`.github/workflows/generate-sponsor-image.yml`, which commits them when they
+change.
 
-## Where the image is used
+## Where the images are used
 
-The single source of truth is `website/static/img/sponsors.svg`. It is referenced
-from:
+The single source of truth is `website/static/img/` (deployed to
+`https://wails.io/img/`). The images are referenced from:
 
 - `README.md` and all `README.*.md` translations — `img` with the repo-relative
-  path (GitHub sanitises README HTML, so `object` embeds and therefore hover and
-  in-image links are not possible there).
+  path to `sponsors.svg` (GitHub sanitises README HTML, so `object` embeds and
+  therefore hover and in-image links are not possible there).
 - v2 docs (`website/src/pages/credits.mdx` and the 11
   `website/i18n/*/docusaurus-plugin-content-pages/credits.mdx` copies) — `object`
-  embed of `/img/sponsors.svg`.
+  embeds of `/img/sponsors.svg` and `/img/contributors.svg`.
 - v3 docs (`docs/src/content/docs/credits.mdx` and the 9 locale copies) — `object`
-  embed of `https://wails.io/img/sponsors.svg`, so they always show the latest
-  deployed image.
+  embeds of `https://wails.io/img/sponsors.svg` and
+  `https://wails.io/img/contributors.svg`, so they always show the latest
+  deployed images.
 
-If you add a new place that shows the sponsor image, reference that same file and
-prefer an `object` embed so the per-sponsor links and hover effects work.
+If you add a new place that shows either image, reference that same file and
+prefer an `object` embed so the per-person links and hover effects work.

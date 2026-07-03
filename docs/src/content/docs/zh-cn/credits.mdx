@@ -5,8 +5,6 @@ description: 感谢 Wails 背后的贡献者和项目
 
 {/* 导入自动生成的贡献者文件 */}
 
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - 项目所有者，首席开发者
 - [Stffabi](https://github.com/stffabi) - 技术负责人，开发者与维护者
 - [Travis McLane](https://github.com/tmclane) - 跨编译工作，MacOS 测试
@@ -42,7 +40,15 @@ import Contributors from "../../../assets/contributors.html";
 
 ## 贡献者
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## 特别提及
 
