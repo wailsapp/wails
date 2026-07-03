@@ -47,3 +47,21 @@ filters, animations) lives in `render.go`.
 
 This tool is run daily by `.github/workflows/generate-sponsor-image.yml`, which
 commits the regenerated SVG when it changes.
+
+## Where the image is used
+
+The single source of truth is `website/static/img/sponsors.svg`. It is referenced
+from:
+
+- `README.md` and all `README.*.md` translations — `img` with the repo-relative
+  path (GitHub sanitises README HTML, so `object` embeds and therefore hover and
+  in-image links are not possible there).
+- v2 docs (`website/src/pages/credits.mdx` and the 11
+  `website/i18n/*/docusaurus-plugin-content-pages/credits.mdx` copies) — `object`
+  embed of `/img/sponsors.svg`.
+- v3 docs (`docs/src/content/docs/credits.mdx` and the 9 locale copies) — `object`
+  embed of `https://wails.io/img/sponsors.svg`, so they always show the latest
+  deployed image.
+
+If you add a new place that shows the sponsor image, reference that same file and
+prefer an `object` embed so the per-sponsor links and hover effects work.
