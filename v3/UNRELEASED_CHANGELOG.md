@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Go-based contributors SVG generator and update docs/website credits pages in [PR](https://github.com/wailsapp/wails/pull/5724) by @taliesin-ai
 - Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
 
 ## Changed

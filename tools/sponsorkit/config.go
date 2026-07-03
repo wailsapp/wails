@@ -100,3 +100,82 @@ var tiers = []TierStyle{
 		Ring: "subtle", RingWidth: 1, Accent: "#8B95A9",
 	},
 }
+
+// Band controls how contributors with at least MinCredit credits are drawn
+// on the contributors card. Unlike sponsor tiers, bands have no headings:
+// the card is one continuous mosaic of squircles graded by size.
+type Band struct {
+	// MinCredit is the minimum credit count (commits or changelog mentions)
+	// for this band. Contributors land in the first band whose minimum
+	// they meet.
+	MinCredit int
+	// Avatar is the squircle's edge length in CSS pixels.
+	Avatar float64
+	// Box is the horizontal space reserved per contributor.
+	Box float64
+	// RowGap is vertical space between rows within the band.
+	RowGap float64
+	// ShowName renders the contributor's login under the squircle.
+	ShowName bool
+	// NameSize is the font size for the login.
+	NameSize float64
+	// MaxName is the maximum rune count before the login is ellipsised.
+	MaxName int
+	// Ring selects the ring treatment: "animated", "static" or "subtle".
+	Ring string
+	// RingWidth is the ring stroke width.
+	RingWidth float64
+	// RingGradient is the id of the gradient used for the ring stroke.
+	RingGradient string
+	// Hover enables the hover power-up (lift, bloom, fast sweep, credit chip).
+	Hover bool
+}
+
+// prBandMins replaces the bands' MinCredit thresholds when ranking by
+// merged PRs (-metric prs): one merged PR is a much rarer unit than one
+// commit, so the cut-offs sit far lower.
+var prBandMins = []int{300, 100, 40, 15, 6, 2, 0}
+
+// bands is ordered from most to least prolific, with MinCredit thresholds
+// tuned for the commit metric. The last entry is the catch-all for
+// first-time and drive-by contributors.
+var bands = []Band{
+	{
+		MinCredit: 1000,
+		Avatar:    116, Box: 190, RowGap: 26,
+		ShowName: true, NameSize: 15, MaxName: 22,
+		Ring: "animated", RingWidth: 4.5, RingGradient: "ringPartner", Hover: true,
+	},
+	{
+		MinCredit: 150,
+		Avatar:    94, Box: 152, RowGap: 24,
+		ShowName: true, NameSize: 13.5, MaxName: 18,
+		Ring: "animated", RingWidth: 4, RingGradient: "ringChampion", Hover: true,
+	},
+	{
+		MinCredit: 60,
+		Avatar:    74, Box: 116, RowGap: 22,
+		ShowName: true, NameSize: 12, MaxName: 15,
+		Ring: "static", RingWidth: 3, RingGradient: "ringGold", Hover: true,
+	},
+	{
+		MinCredit: 20,
+		Avatar:    58, Box: 74, RowGap: 16,
+		Ring: "static", RingWidth: 2, RingGradient: "ringSilver", Hover: true,
+	},
+	{
+		MinCredit: 8,
+		Avatar:    46, Box: 59, RowGap: 13,
+		Ring: "subtle", RingWidth: 1.5,
+	},
+	{
+		MinCredit: 3,
+		Avatar:    37, Box: 48, RowGap: 12,
+		Ring: "subtle", RingWidth: 1.25,
+	},
+	{
+		MinCredit: 0,
+		Avatar:    30, Box: 40, RowGap: 11,
+		Ring: "subtle", RingWidth: 1,
+	},
+}

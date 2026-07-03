@@ -3,10 +3,6 @@ title: 致謝
 description: 感謝 Wails 背後的貢獻者與專案
 ---
 
-{/* Import the auto-generated contributors file */}
-
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - 專案負責人、主要開發者
 - [Stffabi](https://github.com/stffabi) - 技術負責人、開發者與維護者
 - [Travis McLane](https://github.com/tmclane) - 跨編譯工作、MacOS 測試
@@ -42,7 +38,15 @@ import Contributors from "../../../assets/contributors.html";
 
 ## 貢獻者
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## 特別提及
 
