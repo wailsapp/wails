@@ -263,9 +263,6 @@ var (
 	g_input_stream_read_all func(uintptr, uintptr, uintptr, uintptr, uintptr, uintptr) int32
 	g_input_stream_close    func(uintptr, uintptr, uintptr) int32
 
-	g_strsplit func(string, string, int32) uintptr
-	g_strfreev func(uintptr)
-	g_strstrip func(uintptr) uintptr
 )
 
 func registerGLibFuncs() {
@@ -293,9 +290,6 @@ func registerGLibFuncs() {
 	register(&g_error_free, libGLib, "g_error_free")
 	register(&g_error_new_literal, libGLib, "g_error_new_literal")
 	register(&g_quark_from_static_string, libGLib, "g_quark_from_static_string")
-	register(&g_strsplit, libGLib, "g_strsplit")
-	register(&g_strfreev, libGLib, "g_strfreev")
-	register(&g_strstrip, libGLib, "g_strstrip")
 
 	register(&g_object_ref, libGObject, "g_object_ref")
 	register(&g_object_unref, libGObject, "g_object_unref")

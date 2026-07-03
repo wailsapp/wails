@@ -98,6 +98,19 @@ window, and the dialog state lives in a Go registry keyed by handle — a late
 button click after teardown resolves to nil and is ignored
 (`linux_purego_callbacks.go: onMessageDialogClosePtr`).
 
+## Parity observation (crash present in BOTH backends, not fixed here)
+
+On a headless X server without DRI (Xvfb; `/dev/dri/*` inaccessible, WebKit on
+the software/EGL-fallback path), closing a second window while the first stays
+open kills the process with an X error — `BadDrawable, request_code 14
+(X_GetGeometry)` — followed in the cgo build by glibc `free(): corrupted
+unsorted chunks`. Verified on Ubuntu 26.04 / GTK 4.22.2 / WebKitGTK 2.52.3
+with byte-identical reproduction steps against both the purego and the cgo
+binaries: both die the same way, so this is an upstream WebKitGTK teardown
+issue in the no-DRI rendering path, not a port defect. Main-window lifecycle
+(open → interact → close → clean exit 0) is unaffected. Worth re-testing on a
+real GPU-backed session before chasing it in Wails.
+
 ## Non-bug deltas (deliberate)
 
 - **Fractional monitor scale on older GTK4:** the cgo build hard-requires
