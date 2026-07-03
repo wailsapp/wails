@@ -412,12 +412,10 @@ func (w *windowsWebviewWindow) rebuildWebview(reason string) {
 		w.scheduleWebviewRecovery(5*time.Second, reason+" (rebuild retry)", webviewRecoveryRebuild)
 		return
 	}
-	// Match the initial run() configuration: edge.NewChromium disables native
-	// monitor-scale detection, and only the run() path re-enabled it (#5701
-	// approach A). Without this, every rebuilt controller silently reverted to
-	// manual-resync-only DPI handling — the configuration whose invalid render
-	// surface on mixed-DPI scale-ups started this whole saga.
-	w.enableNativeMonitorScaleDetection()
+	// Scale ownership is configured inside setupChromium
+	// (configureWebviewScaleOwnership), so the rebuilt controller gets the
+	// same owner + ownership breadcrumb as the initial embed — no separate
+	// re-enable here (the old duplicate call predates that consolidation).
 
 	w.webviewHealthProbeFailures = 0
 	// Warning level deliberately: recovery SUCCESS must reach hosts whose log

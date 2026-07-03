@@ -2,6 +2,36 @@ package application
 
 import "testing"
 
+// TestRasterizationTargetForDPI pins the target formula (#5701): the correct
+// rasterization scale is dpi/96 × the Windows text scale factor. The
+// text-scale term is what the be8e16f7e settle guard missed — comparing
+// raster against a bare dpi/96 mis-flags every text-scaling user's correct
+// scale as stale and "corrects" their text smaller.
+func TestRasterizationTargetForDPI(t *testing.T) {
+	tests := []struct {
+		name      string
+		dpi       uint32
+		textScale float64
+		want      float64
+	}{
+		{name: "216 dpi, no text scaling", dpi: 216, textScale: 1.0, want: 2.25},
+		{name: "120 dpi, no text scaling", dpi: 120, textScale: 1.0, want: 1.25},
+		{name: "216 dpi with 125% text (the be8e16f7e defect case)", dpi: 216, textScale: 1.25, want: 2.8125},
+		{name: "96 dpi with 225% text (max text size)", dpi: 96, textScale: 2.25, want: 2.25},
+		{name: "dpi unreadable yields 0 so callers can gate", dpi: 0, textScale: 1.25, want: 0},
+		{name: "text scale unreadable (0) treated as 1.0", dpi: 216, textScale: 0, want: 2.25},
+		{name: "text scale negative treated as 1.0", dpi: 120, textScale: -1, want: 1.25},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := rasterizationTargetForDPI(tt.dpi, tt.textScale)
+			if got != tt.want {
+				t.Errorf("rasterizationTargetForDPI(%d, %.2f) = %v, want %v", tt.dpi, tt.textScale, got, tt.want)
+			}
+		})
+	}
+}
+
 // TestDpiflapSettleNeedsCorrectivePut pins the v200.0.23 settle guard (#5701):
 // when native monitor-scale detection goes SILENT (no RasterizationScaleChanged
 // event after the last DPI flip), the settle must force one corrective scale

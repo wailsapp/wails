@@ -1700,7 +1700,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				raster = w.currentWebviewRasterizationScale()
 			}
 			globalApplication.warning("DPI flap: drag released mid-storm on window %d (dpi %d → target %.2f, raster=%.2f) — fast settle armed (#5701)",
-				w.parent.id, dpi, float64(dpi)/96.0, raster)
+				w.parent.id, dpi, w.targetRasterizationScale(uint32(dpi)), raster)
 			w.scheduleDPIFlapSettle(dpiFlapReleaseSettle + 50*time.Millisecond)
 		}
 		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
@@ -2368,7 +2368,7 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 		w.lastKnownDPI = dpi
 	}
 	raster := w.currentWebviewRasterizationScale()
-	target := float64(w.lastKnownDPI) / 96.0
+	target := w.targetRasterizationScale(uint32(w.lastKnownDPI))
 	// Settle-time raster==target guard (v200.0.23 field defect, #5701). Native
 	// monitor-scale detection owns the scale during the storm, but if it goes
 	// SILENT — no RasterizationScaleChanged event after the last flip — the
@@ -2517,9 +2517,12 @@ func (w *windowsWebviewWindow) syncWebviewRasterizationScale(dpi uint32) bool {
 	if dpi == 0 {
 		return false
 	}
-	scale := float64(dpi) / 96.0
+	// dpi/96 × text scale — the text-scale term is non-optional: WebView2
+	// defines RasterizationScale as monitor scale × text scale, so putting a
+	// bare dpi/96 would shrink a text-scaling user's content (#5701).
+	scale := w.targetRasterizationScale(dpi)
 	// Compare with a tolerance: GetRasterizationScale returns a float that may
-	// not be bit-identical to dpi/96 for non-25% DPI steps, and an exact ==
+	// not be bit-identical to the target for non-25% DPI steps, and an exact ==
 	// would re-Put the scale on every resync.
 	if current, err := controller3.GetRasterizationScale(); err == nil && math.Abs(current-scale) < 0.001 {
 		return false
@@ -2579,9 +2582,14 @@ func (w *windowsWebviewWindow) onWebviewRasterizationScaleChanged(scale float64)
 	if relayout {
 		w.chromium.Resize()
 	}
+	// target is text-scale aware (see rasterizationTargetForDPI) and diff is
+	// logged explicitly so a field session shows every event where the
+	// browser committed a scale that disagrees with the window's monitor —
+	// the v200.0.24 wrong-scale stick started with exactly such an event.
+	target := w.targetRasterizationScale(uint32(dpi))
 	globalApplication.warning(
-		"WebView2 rasterization scale now %.2f: window %d (dpi %d → target %.2f), storm=%v, inSizeMove=%v, minimised=%v, relayout=%v, %dms after last DPI flip (#5701)",
-		scale, w.parent.id, dpi, float64(dpi)/96.0,
+		"WebView2 rasterization scale now %.3f: window %d (dpi %d → target %.3f, diff %+.3f), storm=%v, inSizeMove=%v, minimised=%v, relayout=%v, %dms after last DPI flip (#5701)",
+		scale, w.parent.id, dpi, target, scale-target,
 		!w.dpiFlapSuppressUntil.IsZero(), w.inSizeMove, w.isMinimizing, relayout, sinceFlip)
 }
 
@@ -2625,23 +2633,27 @@ func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
 // call returned RESOURCE_NOT_IN_CORRECT_STATE forever (wailsapp/wails#5701).
 // Letting WebView2 detect the change natively keeps the surface valid. Only the
 // rasterization scale changes hands; BoundsMode stays USE_RAW_PIXELS, so the
-// app still sets exact pixel bounds. Called once, right after Embed, when the
-// controller is guaranteed live (Embed message-pumps until initialised).
-func (w *windowsWebviewWindow) enableNativeMonitorScaleDetection() {
+// app still sets exact pixel bounds. Called via configureWebviewScaleOwnership
+// right after Embed, when the controller is guaranteed live (Embed
+// message-pumps until initialised). Returns the outcome for the ownership
+// breadcrumb ("on" / "FAILED: …" / "unavailable: …").
+func (w *windowsWebviewWindow) enableNativeMonitorScaleDetection() string {
 	if w.chromium == nil {
-		return
+		return "unavailable: no chromium"
 	}
 	controller := w.chromium.GetController()
 	if controller == nil {
-		return
+		return "unavailable: no controller"
 	}
 	controller3 := controller.GetICoreWebView2Controller3()
 	if controller3 == nil {
-		return
+		return "unavailable: no controller3"
 	}
 	if err := controller3.PutShouldDetectMonitorScaleChanges(true); err != nil {
 		globalApplication.error("failed to enable WebView2 monitor scale detection: %s", err)
+		return "FAILED: " + err.Error()
 	}
+	return "on"
 }
 
 // crossPermissionToWebView2Kind maps a cross-platform PermissionType to the
@@ -2927,13 +2939,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		return
 	}
 
-	// Hand DPI/monitor-scale transitions back to WebView2. edge.NewChromium
-	// disables native detection for raw-pixels bounds mode; doing the resync
-	// manually let the render process terminate on a mixed-DPI / dual-GPU
-	// scale-up, permanently wedging the controller (#5701). Native detection
-	// keeps the render surface valid across the transition. Bounds stay in raw
-	// pixels — only rasterization-scale detection changes hands.
-	w.enableNativeMonitorScaleDetection()
+	// Select the rasterization-scale owner and emit the ownership breadcrumb
+	// (#5701). Bounds stay in raw pixels — only the scale changes hands.
+	w.configureWebviewScaleOwnership()
 
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode

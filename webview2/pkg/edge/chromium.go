@@ -74,6 +74,13 @@ type Chromium struct {
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
 	rasterizationScaleChanged        *ICoreWebView2RasterizationScaleChangedEventHandler
+	// rasterizationScaleEventRegistered records whether the (non-fatal)
+	// AddRasterizationScaleChanged registration succeeded, so the host can
+	// surface a missing scale-event stream in its field telemetry instead of
+	// silently losing every RasterizationScaleChanged breadcrumb
+	// (wailsapp/wails#5701).
+	rasterizationScaleEventRegistered bool
+	rasterizationScaleEventRegErr     error
 
 	environment            *ICoreWebView2Environment
 	webview2RuntimeVersion string
@@ -430,11 +437,19 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 			return setupFailed("PutShouldDetectMonitorScaleChanges", err)
 		}
 
-		// Diagnostic only — the host uses this to timestamp browser-initiated
-		// scale changes (wailsapp/wails#5701). Losing the event must not fail
-		// the embed, so registration failure is log-only, not setupFailed.
+		// The scale-event stream backs the host's DPI verify telemetry: it
+		// fires on browser-initiated scale changes AND on app-initiated puts
+		// (property-change event), so it doubles as a put-ack
+		// (wailsapp/wails#5701). Losing the event must not fail the embed, so
+		// registration failure is non-fatal — but the outcome is recorded so
+		// the host can ship it in its startup breadcrumb.
 		if _, err := controller3.AddRasterizationScaleChanged(e.rasterizationScaleChanged); err != nil {
 			log.Printf("[WebView2] AddRasterizationScaleChanged failed (diagnostic event, non-fatal): %v", err)
+			e.rasterizationScaleEventRegistered = false
+			e.rasterizationScaleEventRegErr = err
+		} else {
+			e.rasterizationScaleEventRegistered = true
+			e.rasterizationScaleEventRegErr = nil
 		}
 	}
 	var token _EventRegistrationToken
@@ -484,6 +499,16 @@ func (e *Chromium) ContainsFullScreenElementChanged(sender *ICoreWebView2, args 
 		e.ContainsFullScreenElementChangedCallback(sender, args)
 	}
 	return 0
+}
+
+// RasterizationScaleEventRegistration reports whether the (non-fatal)
+// AddRasterizationScaleChanged registration succeeded during setup, and the
+// error when it did not. The host ships this in its scale-ownership startup
+// breadcrumb: a failed registration means zero RasterizationScaleChanged
+// telemetry for the whole session, which would otherwise be indistinguishable
+// from "no scale changes happened" (wailsapp/wails#5701).
+func (e *Chromium) RasterizationScaleEventRegistration() (bool, error) {
+	return e.rasterizationScaleEventRegistered, e.rasterizationScaleEventRegErr
 }
 
 func (e *Chromium) RasterizationScaleChanged(sender *ICoreWebView2Controller, args *IUnknown) uintptr {

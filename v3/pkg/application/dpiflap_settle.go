@@ -21,6 +21,27 @@ import "math"
 // CI, not just Windows where the live controller exists).
 const dpiFlapSettleScaleTolerance = 0.01
 
+// rasterizationTargetForDPI is the single definition of the correct WebView2
+// rasterization scale for a window DPI: dpi/96 × the Windows text scale
+// factor. Native monitor-scale detection folds text scaling in (the
+// RasterizationScale docs define the property as "the combination of the
+// monitor DPI scale and text scaling set by the user"), so any target that
+// compares against — or is written to — the controller MUST include it too.
+// Comparing raster against a bare dpi/96 mis-flags every text-scaling user's
+// perfectly-correct scale as a mismatch and "corrects" their text smaller
+// (the be8e16f7e settle-guard defect, #5701). textScale <= 0 (unreadable)
+// is treated as 1.0; dpi 0 (unreadable) yields 0 so callers can gate on it.
+// Pure and platform-independent so mac/linux CI pins the formula.
+func rasterizationTargetForDPI(dpi uint32, textScale float64) float64 {
+	if dpi == 0 {
+		return 0
+	}
+	if textScale <= 0 {
+		textScale = 1.0
+	}
+	return float64(dpi) / 96.0 * textScale
+}
+
 // dpiflapSettleNeedsCorrectivePut decides whether dpiFlapSettleCheck must
 // force one corrective rasterization-scale put before its bounds re-assert. It
 // is the pure (controller-free) core of the v200.0.23 settle guard (#5701):
