@@ -129,6 +129,13 @@ type windowsWebviewWindow struct {
 	lastAppliedDPI        uint32
 	inSizeMove            bool
 	lastStraddleResolveAt time.Time
+	// lastScalePutAt stamps every app-initiated rasterization-scale put (the
+	// verify ladder's corrective puts and, in app-owner mode, the per-flip
+	// puts). decideScaleReconcile rate-limits corrective puts against it —
+	// put churn faster than 1/s means something else is rewriting the scale,
+	// and fighting it per-event is the field-fatal pattern (#5701). Main
+	// thread only.
+	lastScalePutAt time.Time
 	// lastProgrammaticPlacementAt is stamped by setPhysicalBounds (every
 	// app-driven SetBounds/SetPosition/SetSize funnels through it). The
 	// parked-reversal fast path must not trip inside dpiPlacementGrace of it:
@@ -1784,7 +1791,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			if w.isMinimizing {
 				// A maximised window leaving the minimised state arrives
 				// here (not at SIZE_RESTORED), and needs the same DPI
-				// resync as the restore path below (#5544).
+				// resync as the restore path below (#5544). Clear
+				// isMinimizing FIRST: the window has left the minimised
+				// state, and the verify ladder's #5605 gate reads it.
+				w.isMinimizing = false
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
@@ -1807,6 +1817,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// it with another monitor's DPI. Nothing corrects WebView2's
 				// rasterization scale on restore, so window.devicePixelRatio
 				// keeps the wrong monitor's value until a manual resize (#5544).
+				// Clear isMinimizing FIRST: the window has left the minimised
+				// state, and the verify ladder's #5605 gate reads it.
+				w.isMinimizing = false
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
@@ -2174,15 +2187,9 @@ const (
 	// window cuts the visible wrong-scale tail from ~3.5-6.5 s to ~1.6 s.
 	dpiFlapQuietSettle = 1500 * time.Millisecond
 
-	// dpiFlapReleaseSettle is the quiet threshold once the user has released
-	// the drag (!inSizeMove). A parked window that is not straddling produces
-	// no further transitions, so the frozen rasterization scale can snap back
-	// almost immediately — the v200.0.7 field test showed the ~1.6 s tail is
-	// still human-visible when a drag ends inside a suppression window. A
-	// parked STRADDLING window keeps oscillating: a premature settle there
-	// costs one transition before the parked fast path re-trips and the
-	// resolver ends the straddle.
-	dpiFlapReleaseSettle = 400 * time.Millisecond
+	// dpiFlapReleaseSettle lives in dpiflap_settle.go: decideScaleReconcile
+	// uses it as the post-flip quiet gate, and that helper must compile on
+	// every OS for the mac/linux CI regression tests.
 
 	// dpiFlapResumeWindow: a reversal this soon after a settle is the SAME
 	// storm resuming (v200.0.7 field trace: fresh transitions 25 ms and
@@ -2367,36 +2374,10 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	if dpi, _ := w.DPI(); dpi != 0 {
 		w.lastKnownDPI = dpi
 	}
-	raster := w.currentWebviewRasterizationScale()
-	target := w.targetRasterizationScale(uint32(w.lastKnownDPI))
-	// Settle-time raster==target guard (v200.0.23 field defect, #5701). Native
-	// monitor-scale detection owns the scale during the storm, but if it goes
-	// SILENT — no RasterizationScaleChanged event after the last flip — the
-	// per-event re-layout in onWebviewRasterizationScaleChanged never runs and
-	// the settle would otherwise declare victory on a stale raster. v200.0.23
-	// logged exactly this once: raster 1.25 stuck under dpi 216/target 2.25 for
-	// 85s until a maximize/restore forced the change. The storm is now quiet
-	// (>= dpiFlapReleaseSettle / dpiFlapQuietSettle) and Window-to-Visual
-	// hosting has eliminated the GPU/browser-kill class that made per-flip
-	// scale-puts fatal under Windowed hosting, so a single corrective scale-put
-	// here is safe. syncWebviewRasterizationScale no-ops when already in sync,
-	// so the normal native-corrected case stays at zero puts (matching the
-	// v200.0.21/22 put=false field data). Skipped while minimising (#5605: no
-	// controller COM off a possibly-suspended state) and when the controller or
-	// DPI are unavailable.
-	correctivePut := false
-	if dpiflapSettleNeedsCorrectivePut(raster, target, uint32(w.lastKnownDPI), w.isMinimizing) {
-		correctivePut = w.syncWebviewRasterizationScale(uint32(w.lastKnownDPI))
-		if correctivePut {
-			globalApplication.warning("DPI flap settle corrective scale-put: window %d raster %.2f -> target %.2f (#5701)",
-				w.parent.id, raster, target)
-		}
-	}
 	// Backstop bounds re-assert: a scale change without a bounds re-assert
 	// does not re-lay out the content (#5677). The event handler normally did
-	// this already; after a corrective scale-put this Resize is what re-lays
-	// the content out at the corrected scale. One extra Resize per storm is
-	// cheap insurance.
+	// this already; one extra Resize per storm is cheap insurance against a
+	// missed event (registration is non-fatal, so it CAN be absent).
 	if w.chromium.IsReady() {
 		w.chromium.Resize()
 	}
@@ -2410,9 +2391,20 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 		cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
 	}
 	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-	globalApplication.warning("DPI flap settled: window %d on dpi %d (storm %dms + %dms tail, raster %.2f target %.2f, corrective=%v, client %dx%d px) (#5701)",
-		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(),
-		raster, target, correctivePut, cw, ch)
+	globalApplication.warning("DPI flap settled: window %d on dpi %d (storm %dms + %dms tail, client %dx%d px) (#5701)",
+		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(), cw, ch)
+	// The scale story moved to the DPI verify ladder: verify now (absorbing
+	// the v200.0.23 settle guard — if the scale writer left a stale raster,
+	// this is the corrective put), then re-check at +2s and +10s. Wrong-scale
+	// events provably land up to ~6s AFTER the last flip (v200.0.24 field
+	// trace: RasterizationScaleChanged → 1.25 committed 19ms after the final
+	// flip to dpi 216, then silence for 62s), i.e. a settle-time check alone
+	// leaves a post-settle blind window — the probes close it, and every
+	// occurrence becomes a logged MISMATCH line instead of a screenshot-only
+	// defect.
+	w.verifyWebviewScale("settle", true)
+	w.scheduleScaleVerify("settle+2s", scaleVerifyProbeShort, true)
+	w.scheduleScaleVerify("settle+10s", scaleVerifyProbeLong, true)
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
@@ -2480,17 +2472,6 @@ func (w *windowsWebviewWindow) resolveDPIFlapStraddle(suggested *w32.RECT) {
 	w32.SetWindowPos(w.hwnd, 0,
 		int(rect.Left), int(rect.Top), int(width), int(height),
 		uint(w32.SWP_NOZORDER|w32.SWP_NOACTIVATE))
-}
-
-// resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
-// WebView2 controller and reports whether the scale was out of sync. Wails
-// runs WebView2 in raw-pixels bounds mode with ShouldDetectMonitorScaleChanges
-// disabled, so keeping the rasterization scale in step with the window's DPI
-// is the application's responsibility. It is a no-op when the controller is
-// unavailable or already in sync.
-func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
-	dpiX, _ := w.DPI()
-	return w.syncWebviewRasterizationScale(uint32(dpiX))
 }
 
 // syncWebviewRasterizationScale puts the given DPI's scale onto the WebView2
@@ -2587,33 +2568,39 @@ func (w *windowsWebviewWindow) onWebviewRasterizationScaleChanged(scale float64)
 	// browser committed a scale that disagrees with the window's monitor —
 	// the v200.0.24 wrong-scale stick started with exactly such an event.
 	target := w.targetRasterizationScale(uint32(dpi))
-	globalApplication.warning(
-		"WebView2 rasterization scale now %.3f: window %d (dpi %d → target %.3f, diff %+.3f), storm=%v, inSizeMove=%v, minimised=%v, relayout=%v, %dms after last DPI flip (#5701)",
-		scale, w.parent.id, dpi, target, scale-target,
-		!w.dpiFlapSuppressUntil.IsZero(), w.inSizeMove, w.isMinimizing, relayout, sinceFlip)
-}
-
-// resyncWebviewDPIAfterMinimise runs when the window leaves the minimised
-// state (whether it comes back as restored or maximised). If the rasterization
-// scale had drifted while the window was minimised off its restore monitor, a
-// scale re-put alone does not make WebView2 re-lay out content whose bounds are
-// unchanged — the page keeps reporting sizes computed with the stale scale
-// until the bounds are re-asserted (#5544, reporter verification round 2).
-func (w *windowsWebviewWindow) resyncWebviewDPIAfterMinimise() {
-	if w.resyncWebviewRasterizationScale() {
-		w.chromium.Resize()
+	storm := !w.dpiFlapSuppressUntil.IsZero()
+	// A mismatched commit OUTSIDE a storm has no settle chain coming to
+	// correct it — this is exactly how the v200.0.24 62s stick would recur
+	// even with a settle guard (wrong events land up to ~6s after the last
+	// flip, i.e. after the settle). Arm a verify probe rather than putting
+	// inline: the event handler is the historically crash-adjacent context,
+	// and the probe keeps verifyWebviewScale the single put site. No loop: a
+	// corrective put echoes this event with scale==target → diff 0 → no
+	// probe. During storms the settle chain owns the correction.
+	probe := false
+	if !storm && !w.isMinimizing && !w.webviewRebuildInProgress &&
+		math.Abs(scale-target) > dpiFlapSettleScaleTolerance {
+		probe = true
+		w.scheduleScaleVerify("scale-event", scaleVerifyRetryProbe, true)
 	}
+	globalApplication.warning(
+		"WebView2 rasterization scale now %.3f: window %d (dpi %d → target %.3f, diff %+.3f), storm=%v, inSizeMove=%v, minimised=%v, relayout=%v, probe=%v, %dms after last DPI flip (#5701)",
+		scale, w.parent.id, dpi, target, scale-target,
+		storm, w.inSizeMove, w.isMinimizing, relayout, probe, sinceFlip)
 }
 
-// resyncWebviewDPIAfterUnminimiseIfDPIChanged is the un-minimise entry point for
-// the DPI resync. It only touches the WebView2 controller when the window's DPI
-// actually differs from the last value seen while non-minimised — the mixed-DPI
-// case #5544 was meant to fix. In the common case (same monitor, unchanged DPI)
-// it makes zero COM calls, which is what prevents the restore crash in #5605:
-// after a window has been minimised long enough for WebView2 to suspend or for
-// its render/GPU process to be torn down, any COM call into the controller can
-// be fatal, and the resync's GetRasterizationScale probe previously ran on every
-// restore. DPI is read with the Win32 GetDpiForWindow, never via COM.
+// resyncWebviewDPIAfterUnminimiseIfDPIChanged is the un-minimise entry point
+// for the DPI resync (#5544: while minimised the window is parked off its
+// restore monitor, so the rasterization scale can drift). It only proceeds
+// when the window's DPI actually differs from the last value seen while
+// non-minimised — in the common case (same monitor, unchanged DPI) it makes
+// zero COM calls, which is what prevents the restore crash in #5605: after a
+// window has been minimised long enough for WebView2 to suspend or for its
+// render/GPU process to be torn down, any COM call into the controller can be
+// fatal, and the old resync's GetRasterizationScale probe ran on every
+// restore. DPI is read with the Win32 GetDpiForWindow, never via COM. On a
+// genuine change the verify ladder observes, logs, and (if needed) corrects +
+// re-lays-out in one pass. Callers must clear isMinimizing first.
 func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
 	dpi, _ := w.DPI()
 	if dpi == 0 || dpi == w.lastKnownDPI {
@@ -2621,7 +2608,7 @@ func (w *windowsWebviewWindow) resyncWebviewDPIAfterUnminimiseIfDPIChanged() {
 		// call into the WebView2 controller here.
 		return
 	}
-	w.resyncWebviewDPIAfterMinimise()
+	w.verifyWebviewScale("unminimise", true)
 }
 
 // enableNativeMonitorScaleDetection re-enables WebView2's built-in monitor

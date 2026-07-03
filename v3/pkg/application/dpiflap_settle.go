@@ -1,6 +1,23 @@
 package application
 
-import "math"
+import (
+	"math"
+	"time"
+)
+
+// dpiFlapReleaseSettle is the quiet threshold once the user has released
+// the drag (!inSizeMove). A parked window that is not straddling produces
+// no further transitions, so the frozen rasterization scale can snap back
+// almost immediately — the v200.0.7 field test showed the ~1.6 s tail is
+// still human-visible when a drag ends inside a suppression window. A
+// parked STRADDLING window keeps oscillating: a premature settle there
+// costs one transition before the parked fast path re-trips and the
+// resolver ends the straddle.
+//
+// Declared here — not with the other dpiFlap timing constants in
+// webview_window_windows.go — because decideScaleReconcile uses it as the
+// post-flip quiet gate and must compile on every OS for CI.
+const dpiFlapReleaseSettle = 400 * time.Millisecond
 
 // dpiFlapSettleScaleTolerance is the |raster - target| above which the settle
 // treats native monitor-scale detection as having gone SILENT and
@@ -42,17 +59,107 @@ func rasterizationTargetForDPI(dpi uint32, textScale float64) float64 {
 	return float64(dpi) / 96.0 * textScale
 }
 
-// dpiflapSettleNeedsCorrectivePut decides whether dpiFlapSettleCheck must
-// force one corrective rasterization-scale put before its bounds re-assert. It
-// is the pure (controller-free) core of the v200.0.23 settle guard (#5701):
-// extracted so the regression — native detection going silent and leaving the
-// raster stale at settle — is unit-testable on every platform. dpi is the
-// window's current DPI (0 = unknown); raster is the controller's live
-// rasterization scale (<=0 = unavailable); target is dpi/96; isMinimizing
-// gates the controller touch off the #5605 minimised-restore crash class.
-func dpiflapSettleNeedsCorrectivePut(raster, target float64, dpi uint32, isMinimizing bool) bool {
-	if dpi == 0 || raster <= 0 || target <= 0 || isMinimizing {
-		return false
+// scaleReconcileAction is what a DPI verify pass decided to do about the
+// raster-vs-target diff it observed. Every verify logs its action — including
+// OK — so field sessions show the diffs we detected AND the ones we ruled in
+// sync, instead of leaving wrong-scale exposure to be inferred from
+// screenshots (the v200.0.24 62s blind window, #5701).
+type scaleReconcileAction int
+
+const (
+	scaleReconcileOK    scaleReconcileAction = iota // in sync — nothing to do
+	scaleReconcilePut                               // mismatch and safe — one corrective scale-put
+	scaleReconcileDefer                             // mismatch but a gate blocks the put right now
+	scaleReconcileSkip                              // cannot evaluate — reason says why
+)
+
+// scaleReconcileInput is the full decision state for one verify pass,
+// controller-free so the gate order is unit-testable on every platform.
+// raster <= 0 means the live scale was unavailable (or deliberately unread
+// while minimising — COM into a possibly-suspended controller is the #5605
+// restore-crash class, so callers must not read it then). sinceLastFlip /
+// sinceLastPut are -1 when the event has never happened.
+type scaleReconcileInput struct {
+	raster, target    float64
+	dpi               uint32
+	isMinimizing      bool
+	stormActive       bool
+	inSizeMove        bool
+	sinceLastFlip     time.Duration
+	sinceLastPut      time.Duration
+	rebuildInProgress bool
+	controllerReady   bool
+	allowPut          bool
+}
+
+// scaleReconcilePutMinInterval rate-limits corrective puts: reconciliation
+// only ever needs one put to converge (the put itself echoes a
+// RasterizationScaleChanged that then matches the target), so anything faster
+// than 1/s means something else is rewriting the scale and hammering puts
+// would fight it — per-flip-cadence puts are the field-proven browser-kill
+// pattern this ladder exists to avoid (#5701, Steps 18/19).
+const scaleReconcilePutMinInterval = time.Second
+
+// decideScaleReconcile is the single decision point for "the rasterization
+// scale disagrees with the window's DPI — may we correct it?". The returned
+// reason string is the gate that decided (logged verbatim in the DPI verify
+// breadcrumb). Gate order matters and is pinned by tests:
+//
+//  1. evaluability (controller / minimising / rebuild / unreadable dpi or
+//     raster) — SKIP: we cannot even say whether the scale is wrong;
+//  2. |raster-target| <= tolerance — OK: the invariant holds;
+//  3. quiet gates (storm / in-drag / <settle-threshold since the last flip) —
+//     DEFER: WM_DPICHANGED churn is still in flight, the settle chain owns
+//     the correction, and putting mid-storm is the crash-adjacent pattern;
+//  4. allowPut=false — DEFER: a log-only observation pass (e.g. the post-put
+//     re-verify) never writes;
+//  5. put rate limit — DEFER: see scaleReconcilePutMinInterval;
+//  6. PUT.
+func decideScaleReconcile(in scaleReconcileInput) (scaleReconcileAction, string) {
+	if !in.controllerReady {
+		return scaleReconcileSkip, "controller"
 	}
-	return math.Abs(raster-target) > dpiFlapSettleScaleTolerance
+	if in.isMinimizing {
+		return scaleReconcileSkip, "minimising"
+	}
+	if in.rebuildInProgress {
+		return scaleReconcileSkip, "rebuild"
+	}
+	if in.dpi == 0 || in.target <= 0 {
+		return scaleReconcileSkip, "dpi-unreadable"
+	}
+	if in.raster <= 0 {
+		return scaleReconcileSkip, "raster-unavailable"
+	}
+	if math.Abs(in.raster-in.target) <= dpiFlapSettleScaleTolerance {
+		return scaleReconcileOK, "in-sync"
+	}
+	if in.stormActive {
+		return scaleReconcileDefer, "storm"
+	}
+	if in.inSizeMove {
+		return scaleReconcileDefer, "in-drag"
+	}
+	if in.sinceLastFlip >= 0 && in.sinceLastFlip < dpiFlapReleaseSettle {
+		return scaleReconcileDefer, "recent-flip"
+	}
+	if !in.allowPut {
+		return scaleReconcileDefer, "log-only"
+	}
+	if in.sinceLastPut >= 0 && in.sinceLastPut < scaleReconcilePutMinInterval {
+		return scaleReconcileDefer, "rate-limited"
+	}
+	return scaleReconcilePut, "mismatch"
+}
+
+// scaleReconcileRetryGates lists the Defer reasons that arm a +1s retry
+// probe: transient conditions with no other owner watching them. "storm" is
+// excluded (the settle chain re-verifies when the storm ends) and "log-only"
+// is terminal by definition.
+func scaleReconcileShouldRetry(reason string) bool {
+	switch reason {
+	case "in-drag", "recent-flip", "rate-limited":
+		return true
+	}
+	return false
 }

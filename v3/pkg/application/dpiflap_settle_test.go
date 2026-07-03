@@ -1,6 +1,9 @@
 package application
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // TestRasterizationTargetForDPI pins the target formula (#5701): the correct
 // rasterization scale is dpi/96 × the Windows text scale factor. The
@@ -32,50 +35,166 @@ func TestRasterizationTargetForDPI(t *testing.T) {
 	}
 }
 
-// TestDpiflapSettleNeedsCorrectivePut pins the v200.0.23 settle guard (#5701):
-// when native monitor-scale detection goes SILENT (no RasterizationScaleChanged
-// event after the last DPI flip), the settle must force one corrective scale
-// put iff the raster is stale relative to the target. Platform-independent so
-// the regression runs on mac/linux CI, not only on Windows.
-func TestDpiflapSettleNeedsCorrectivePut(t *testing.T) {
+// quietInput is a scaleReconcileInput at rest: controller live, no storm, no
+// drag, last flip long past, no prior put, puts permitted. Tests override the
+// field under test so each case reads as its delta from "quiet and healthy".
+func quietInput() scaleReconcileInput {
+	return scaleReconcileInput{
+		raster:          2.25,
+		target:          2.25,
+		dpi:             216,
+		sinceLastFlip:   5 * time.Second,
+		sinceLastPut:    -1,
+		controllerReady: true,
+		allowPut:        true,
+	}
+}
+
+// TestDecideScaleReconcile pins the single decision point of the DPI verify
+// ladder (#5701): every gate, in order, plus the field-trace regressions.
+// Platform-independent so the matrix runs on mac/linux CI, not only Windows.
+func TestDecideScaleReconcile(t *testing.T) {
+	mismatch := func(mutate func(*scaleReconcileInput)) scaleReconcileInput {
+		in := quietInput()
+		in.raster = 1.25 // vs target 2.25 — the v200.0.23/24 stuck value
+		if mutate != nil {
+			mutate(&in)
+		}
+		return in
+	}
 	tests := []struct {
-		name        string
-		raster      float64
-		target      float64
-		dpi         uint32
-		isMinimizing bool
-		want        bool
+		name       string
+		in         scaleReconcileInput
+		wantAction scaleReconcileAction
+		wantReason string
 	}{
-		// v200.0.23 field defect: raster stuck at 1.25 under dpi 216 (target 2.25)
-		// for 85s after native detection went silent — the exact case the guard
-		// exists to catch.
-		{name: "v200.0.23 stuck raster (216/2.25, raster 1.25)", raster: 1.25, target: 2.25, dpi: 216, want: true},
-		{name: "stale raster the other way (120/1.25, raster 2.25)", raster: 2.25, target: 1.25, dpi: 120, want: true},
+		// The field defects this ladder exists for: raster stuck at 1.25 under
+		// dpi 216/target 2.25 (v200.0.23: 85s; v200.0.24: 62s), quiet system.
+		{"v200.0.23/24 stuck raster corrects", mismatch(nil), scaleReconcilePut, "mismatch"},
+		{"stale raster the other way", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster, in.target, in.dpi = 2.25, 1.25, 120
+			return in
+		}(), scaleReconcilePut, "mismatch"},
+		{"spontaneous mismatch, no flip ever seen", mismatch(func(in *scaleReconcileInput) {
+			in.sinceLastFlip = -1
+		}), scaleReconcilePut, "mismatch"},
 
-		// Normal settles: native detection corrected, raster already matches.
-		{name: "native-corrected on 216", raster: 2.25, target: 2.25, dpi: 216, want: false},
-		{name: "native-corrected on 120", raster: 1.25, target: 1.25, dpi: 120, want: false},
-		{name: "half-step 1.5x corrected", raster: 1.5, target: 1.5, dpi: 144, want: false},
+		// The invariant holding — the routine OK lines field logs must show.
+		{"in sync on 216", quietInput(), scaleReconcileOK, "in-sync"},
+		{"in sync on 120", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster, in.target, in.dpi = 1.25, 1.25, 120
+			return in
+		}(), scaleReconcileOK, "in-sync"},
+		{"in sync even when puts are forbidden", func() scaleReconcileInput {
+			in := quietInput()
+			in.allowPut = false
+			return in
+		}(), scaleReconcileOK, "in-sync"},
+		// Text-scale regression pin (the be8e16f7e defect): a 125%-text user's
+		// raster of 2.8125 on dpi 216 is CORRECT when the target includes text
+		// scale — and a mismatch against a naive dpi/96 target, which is why
+		// rasterizationTargetForDPI exists.
+		{"text-scaled raster vs text-aware target", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster, in.target = 2.8125, rasterizationTargetForDPI(216, 1.25)
+			return in
+		}(), scaleReconcileOK, "in-sync"},
+		{"text-scaled raster vs naive dpi/96 target mis-flags", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster, in.target = 2.8125, 2.25
+			return in
+		}(), scaleReconcilePut, "mismatch"},
 
-		// Tolerance boundary: float jitter inside tolerance must NOT trip a put
-		// (syncWebviewRasterizationScale would no-op anyway, but the gate stays
-		// conservative); just-over-tolerance must.
-		{name: "jitter well under tolerance", raster: 2.245, target: 2.25, dpi: 216, want: false},
-		{name: "just under tolerance (0.009)", raster: 2.259, target: 2.25, dpi: 216, want: false},
-		{name: "just over tolerance (0.011)", raster: 2.261, target: 2.25, dpi: 216, want: true},
+		// Tolerance boundary: float jitter must not put; a real step must.
+		{"jitter well under tolerance", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster = 2.245
+			return in
+		}(), scaleReconcileOK, "in-sync"},
+		{"just under tolerance (0.009)", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster = 2.259
+			return in
+		}(), scaleReconcileOK, "in-sync"},
+		{"just over tolerance (0.011)", func() scaleReconcileInput {
+			in := quietInput()
+			in.raster = 2.261
+			return in
+		}(), scaleReconcilePut, "mismatch"},
 
-		// Safety gates: never touch the controller in these states.
-		{name: "controller unavailable (raster 0)", raster: 0, target: 2.25, dpi: 216, want: false},
-		{name: "dpi unknown (0)", raster: 2.25, target: 0, dpi: 0, want: false},
-		{name: "minimising (#5605 gate)", raster: 1.25, target: 2.25, dpi: 216, isMinimizing: true, want: false},
+		// Evaluability gates, in precedence order.
+		{"controller not ready", mismatch(func(in *scaleReconcileInput) {
+			in.controllerReady = false
+		}), scaleReconcileSkip, "controller"},
+		{"minimising (#5605 gate, raster unread)", mismatch(func(in *scaleReconcileInput) {
+			in.isMinimizing = true
+			in.raster = 0 // callers must not COM-read while minimising
+		}), scaleReconcileSkip, "minimising"},
+		{"rebuild in progress", mismatch(func(in *scaleReconcileInput) {
+			in.rebuildInProgress = true
+		}), scaleReconcileSkip, "rebuild"},
+		{"dpi unreadable", mismatch(func(in *scaleReconcileInput) {
+			in.dpi, in.target = 0, 0
+		}), scaleReconcileSkip, "dpi-unreadable"},
+		{"raster unavailable", mismatch(func(in *scaleReconcileInput) {
+			in.raster = 0
+		}), scaleReconcileSkip, "raster-unavailable"},
+
+		// Quiet gates: mismatches wait for churn to end.
+		{"mismatch during storm defers to the settle chain", mismatch(func(in *scaleReconcileInput) {
+			in.stormActive = true
+		}), scaleReconcileDefer, "storm"},
+		{"mismatch mid-drag defers", mismatch(func(in *scaleReconcileInput) {
+			in.inSizeMove = true
+		}), scaleReconcileDefer, "in-drag"},
+		{"mismatch 300ms after a flip defers", mismatch(func(in *scaleReconcileInput) {
+			in.sinceLastFlip = 300 * time.Millisecond
+		}), scaleReconcileDefer, "recent-flip"},
+		{"mismatch 401ms after a flip puts", mismatch(func(in *scaleReconcileInput) {
+			in.sinceLastFlip = 401 * time.Millisecond
+		}), scaleReconcilePut, "mismatch"},
+
+		// Write gates.
+		{"log-only pass never puts", mismatch(func(in *scaleReconcileInput) {
+			in.allowPut = false
+		}), scaleReconcileDefer, "log-only"},
+		{"put 500ms after the last put is rate-limited", mismatch(func(in *scaleReconcileInput) {
+			in.sinceLastPut = 500 * time.Millisecond
+		}), scaleReconcileDefer, "rate-limited"},
+		{"put 1.1s after the last put proceeds", mismatch(func(in *scaleReconcileInput) {
+			in.sinceLastPut = 1100 * time.Millisecond
+		}), scaleReconcilePut, "mismatch"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := dpiflapSettleNeedsCorrectivePut(tt.raster, tt.target, tt.dpi, tt.isMinimizing)
-			if got != tt.want {
-				t.Errorf("dpiflapSettleNeedsCorrectivePut(raster=%.3f, target=%.3f, dpi=%d, isMinimizing=%v) = %v, want %v",
-					tt.raster, tt.target, tt.dpi, tt.isMinimizing, got, tt.want)
+			action, reason := decideScaleReconcile(tt.in)
+			if action != tt.wantAction || reason != tt.wantReason {
+				t.Errorf("decideScaleReconcile(%+v) = (%v, %q), want (%v, %q)",
+					tt.in, action, reason, tt.wantAction, tt.wantReason)
 			}
 		})
+	}
+}
+
+// TestScaleReconcileShouldRetry pins which deferred gates arm a +1s retry
+// probe: transient conditions with no other watcher. "storm" must NOT retry
+// (the settle chain re-verifies) and "log-only" is terminal by definition.
+func TestScaleReconcileShouldRetry(t *testing.T) {
+	want := map[string]bool{
+		"in-drag":      true,
+		"recent-flip":  true,
+		"rate-limited": true,
+		"storm":        false,
+		"log-only":     false,
+		"in-sync":      false,
+		"mismatch":     false,
+		"controller":   false,
+	}
+	for reason, expected := range want {
+		if got := scaleReconcileShouldRetry(reason); got != expected {
+			t.Errorf("scaleReconcileShouldRetry(%q) = %v, want %v", reason, got, expected)
+		}
 	}
 }
