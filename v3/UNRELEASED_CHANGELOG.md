@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Add explicit Objective-C memory management for Cocoa objects across Darwin dialogs, menus, tray, and notifications in [PR](https://github.com/wailsapp/wails/pull/5714) by @taliesin-ai
 - Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
 
 ## Deprecated
