@@ -255,7 +255,8 @@ func (r *renderer) contributor(c Contributor, bi int, cx, cy float64) {
 
 	if b.Hover {
 		// Glass-glare sweep across the avatar on hover.
-		clipID := "qc" + sanitizeID(c.Login)
+		clipID := fmt.Sprintf("qc%d", r.clipSeq)
+		r.clipSeq++
 		glareW := half * 0.8
 		r.body.WriteString(fmt.Sprintf(`<clipPath id="%s"><use href="#sqa%d" x="%s" y="%s"/></clipPath>`,
 			clipID, bi, num(cx), num(cy)))
