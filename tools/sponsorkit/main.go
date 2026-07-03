@@ -26,7 +26,7 @@ func main() {
 	mode := flag.String("mode", "sponsors", `what to render: "sponsors" or "contributors"`)
 	login := flag.String("login", "leaanthony", "GitHub login whose sponsors to fetch")
 	repo := flag.String("repo", "wailsapp/wails", "owner/name repository whose contributors to fetch")
-	metric := flag.String("metric", "commits", `how contributors are ranked: "commits" or "prs" (merged pull requests)`)
+	metric := flag.String("metric", "prs", `how contributors are ranked: "prs" (merged pull requests) or "commits"`)
 	changelogs := flag.String("changelogs", "", "comma-separated changelog paths scanned for @login credits (contributors mode)")
 	out := flag.String("out", "sponsors.svg", "output SVG path")
 	width := flag.Float64("width", 800, "SVG width in CSS pixels")

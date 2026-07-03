@@ -31,7 +31,7 @@ jobs:
           GOWORK: "off"
 
       - name: Update Contributors
-        run: cd tools/sponsorkit && go run . -mode contributors -repo wailsapp/wails -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx -out ../../website/static/img/contributors.svg
+        run: cd tools/sponsorkit && go run . -mode contributors -metric prs -repo wailsapp/wails -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx -out ../../website/static/img/contributors.svg
         env:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           GOWORK: "off"

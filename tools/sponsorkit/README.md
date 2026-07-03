@@ -27,14 +27,19 @@ package. It fetches live GitHub data and renders two self-contained SVGs:
 
 ## Contributors mode (`-mode contributors`)
 
-1. Fetches the repository's contributors from the REST API (commit counts on the
-   default branch, bots excluded).
+1. Fetches the repository's contributors from the REST API (bots excluded) and
+   counts each author's merged pull requests via GraphQL — one merged PR is one
+   unit of work however it landed, so squash-merged and merge-committed work
+   rank alike (`-metric commits` switches back to raw default-branch commit
+   counts, which reward granular unsquashed histories).
 2. Scans the v2 and v3 changelogs for `@login` credits. Squash-merged or
    hand-applied patches are often credited only there, so changelog-only
    contributors still appear; markdown profile links (`[@x](https://github.com/y)`)
    trust the URL rather than the link text, and every changelog-only login is
    validated against the API so typos and organisations are dropped. A
-   contributor's credit is the larger of their commit count and mention count.
+   contributor's credit is the larger of their metric count and mention count;
+   contributors with commits but no recorded PRs (early direct pushes) stay
+   visible in the tail bands.
 3. Renders a mosaic of superellipse "squircles" on the same dark card, graded by
    credit into bands (see `bands` in `config.go`): the most prolific contributors
    get large named squircles with animated gradient rings and travelling light
@@ -51,7 +56,7 @@ package. It fetches live GitHub data and renders two self-contained SVGs:
 ```sh
 cd tools/sponsorkit
 SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -out ../../website/static/img/sponsors.svg
-SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -mode contributors \
+SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -mode contributors -metric prs \
   -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx \
   -out ../../website/static/img/contributors.svg
 ```
@@ -63,6 +68,7 @@ Flags:
 | `-mode`       | `sponsors`       | `sponsors` or `contributors`                     |
 | `-login`      | `leaanthony`     | GitHub account whose sponsors to render          |
 | `-repo`       | `wailsapp/wails` | Repository whose contributors to render          |
+| `-metric`     | `prs`            | Contributor ranking: `prs` or `commits`          |
 | `-changelogs` | (empty)          | Comma-separated changelogs scanned for `@login` credits |
 | `-out`        | `sponsors.svg`   | Output path                                      |
 | `-width`      | `800`            | SVG width in CSS pixels                          |
