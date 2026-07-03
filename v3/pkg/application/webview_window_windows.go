@@ -2325,17 +2325,21 @@ func (w *windowsWebviewWindow) scheduleDPIFlapSettle(delay time.Duration) {
 }
 
 // dpiFlapSettleCheck ends the storm once the transition stream has been quiet
-// long enough, re-asserts the controller bounds as a backstop, and emits the
-// storm/tail breadcrumb that quantifies the exposure in field logs. It no
-// longer puts the rasterization scale: native detection owns the scale (every
-// settle in the v200.0.21/22 field sessions logged put=false — the browser had
-// always corrected first) and the RasterizationScaleChanged handler does the
-// per-event re-layout; the single Resize below only covers a missed event
-// (registration is non-fatal-logged, so it CAN be absent). Quiet thresholds:
-// mid-drag a lull may just be the user hovering near the boundary
-// (dpiFlapQuietSettle); once the drag is released a non-straddling window
-// produces no further transitions, so dpiFlapReleaseSettle suffices
-// (v200.0.7 field report). Main thread only.
+// long enough, reconciles the rasterization scale, re-asserts the controller
+// bounds as a backstop, and emits the storm/tail breadcrumb that quantifies the
+// exposure in field logs. Native detection owns the scale during the storm
+// (every settle in the v200.0.21/22 field sessions logged put=false — the
+// browser had always corrected first) and the RasterizationScaleChanged
+// handler does the per-event re-layout, so the normal path still puts nothing.
+// The single Resize below covers a missed event (registration is
+// non-fatal-logged, so it CAN be absent), AND a raster==target guard closes the
+// hole v200.0.23 exposed: if native detection went silent (no scale-changed
+// event after the last flip) the settle would lock in a stale raster, so when
+// raster still differs from target at settle we force one corrective scale-put
+// before the Resize. Quiet thresholds: mid-drag a lull may just be the user
+// hovering near the boundary (dpiFlapQuietSettle); once the drag is released a
+// non-straddling window produces no further transitions, so
+// dpiFlapReleaseSettle suffices (v200.0.7 field report). Main thread only.
 func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	if w.hwnd == 0 || w.parent.isDestroyed() || globalApplication.performingShutdown {
 		return
@@ -2360,15 +2364,41 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 	}
 	w.dpiFlapSuppressUntil = time.Time{} // storm over — resume normal DPI handling
 	w.lastDPIFlapSettledAt = time.Now()
-	raster := w.currentWebviewRasterizationScale()
-	// Backstop bounds re-assert: a scale change without a bounds re-assert
-	// does not re-lay out the content (#5677). The event handler normally did
-	// this already; one extra Resize per storm is cheap insurance.
-	if w.chromium.IsReady() {
-		w.chromium.Resize()
-	}
 	if dpi, _ := w.DPI(); dpi != 0 {
 		w.lastKnownDPI = dpi
+	}
+	raster := w.currentWebviewRasterizationScale()
+	target := float64(w.lastKnownDPI) / 96.0
+	// Settle-time raster==target guard (v200.0.23 field defect, #5701). Native
+	// monitor-scale detection owns the scale during the storm, but if it goes
+	// SILENT — no RasterizationScaleChanged event after the last flip — the
+	// per-event re-layout in onWebviewRasterizationScaleChanged never runs and
+	// the settle would otherwise declare victory on a stale raster. v200.0.23
+	// logged exactly this once: raster 1.25 stuck under dpi 216/target 2.25 for
+	// 85s until a maximize/restore forced the change. The storm is now quiet
+	// (>= dpiFlapReleaseSettle / dpiFlapQuietSettle) and Window-to-Visual
+	// hosting has eliminated the GPU/browser-kill class that made per-flip
+	// scale-puts fatal under Windowed hosting, so a single corrective scale-put
+	// here is safe. syncWebviewRasterizationScale no-ops when already in sync,
+	// so the normal native-corrected case stays at zero puts (matching the
+	// v200.0.21/22 put=false field data). Skipped while minimising (#5605: no
+	// controller COM off a possibly-suspended state) and when the controller or
+	// DPI are unavailable.
+	correctivePut := false
+	if dpiflapSettleNeedsCorrectivePut(raster, target, uint32(w.lastKnownDPI), w.isMinimizing) {
+		correctivePut = w.syncWebviewRasterizationScale(uint32(w.lastKnownDPI))
+		if correctivePut {
+			globalApplication.warning("DPI flap settle corrective scale-put: window %d raster %.2f -> target %.2f (#5701)",
+				w.parent.id, raster, target)
+		}
+	}
+	// Backstop bounds re-assert: a scale change without a bounds re-assert
+	// does not re-lay out the content (#5677). The event handler normally did
+	// this already; after a corrective scale-put this Resize is what re-lays
+	// the content out at the corrected scale. One extra Resize per storm is
+	// cheap insurance.
+	if w.chromium.IsReady() {
+		w.chromium.Resize()
 	}
 	// Client size is logged so field data can separate the two wrong-size
 	// failure modes: stale content layout (client size correct for the DPI,
@@ -2380,9 +2410,9 @@ func (w *windowsWebviewWindow) dpiFlapSettleCheck() {
 		cw, ch = rect.Right-rect.Left, rect.Bottom-rect.Top
 	}
 	storm := w.lastDPITransitionAt.Sub(w.dpiFlapStormStartAt)
-	globalApplication.warning("DPI flap settled: window %d on dpi %d (storm %dms + %dms tail, raster %.2f target %.2f, client %dx%d px) (#5701)",
+	globalApplication.warning("DPI flap settled: window %d on dpi %d (storm %dms + %dms tail, raster %.2f target %.2f, corrective=%v, client %dx%d px) (#5701)",
 		w.parent.id, w.lastKnownDPI, storm.Milliseconds(), quiet.Milliseconds(),
-		raster, float64(w.lastKnownDPI)/96.0, cw, ch)
+		raster, target, correctivePut, cw, ch)
 }
 
 // resolveDPIFlapStraddle ends the oscillation's root condition: the window
