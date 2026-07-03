@@ -75,11 +75,20 @@ In debug builds the WebView is inspectable from Chrome at `chrome://inspect`.
 ```bash
 wails3 task android:package             # production release APK
 wails3 task android:deploy-emulator     # install + launch it
+wails3 task android:bundle              # production release AAB (Android App Bundle)
+wails3 task android:bundle:fat          # release AAB containing all ABIs
 ```
 
 Production builds use `-tags production,android`, are stripped, and compile
 out the framework's internal diagnostics. `wails3 task android:package:fat`
 builds both `arm64-v8a` and `x86_64` into a single APK.
+
+Google Play requires the Android App Bundle (`.aab`) format for new app
+submissions. `wails3 task android:bundle:fat` produces
+`bin/<AppName>.aab` with both ABIs included; Google Play generates
+optimised per-device APKs from it, so the fat bundle is the right artifact
+for store uploads. APKs remain the quickest route for local and emulator
+testing, because an `.aab` cannot be installed directly with `adb`.
 
 ## Signing & release builds
 
@@ -94,10 +103,17 @@ ANDROID_KEY_PASSWORD=... \
   wails3 task android:package
 ```
 
+The same variables sign App Bundles: run `wails3 task android:bundle:fat`
+with them set to produce a Play-ready `.aab`. Without them the bundle is
+signed with the debug keystore and Google Play will reject it, so the task
+prints a warning.
+
 <Aside type="tip">
-For Play Store uploads, sign a release artifact with your own keystore — set
-the `ANDROID_KEYSTORE_*` variables, or open `build/android/` in Android
-Studio and use *Build → Generate Signed Bundle / APK* to produce an `.aab`.
+With [Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756),
+the keystore you sign with locally is your **upload key**: Google verifies
+your upload with it, then re-signs the app with the app signing key it
+manages. Also note that Google Play requires a higher `versionCode` for
+every upload; bump it in `build/android/app/build.gradle`.
 </Aside>
 
 ## Configuration

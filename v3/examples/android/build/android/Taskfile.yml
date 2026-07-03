@@ -143,6 +143,30 @@ tasks:
           PRODUCTION: "true"
       - task: assemble:apk:release
 
+  bundle:
+    summary: Packages a production build of the application into a signed release AAB (Android App Bundle)
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+    cmds:
+      - task: assemble:aab:release
+
+  bundle:fat:
+    summary: Packages a production build for all architectures into a release AAB (recommended for Play Store uploads)
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: arm64
+    cmds:
+      - task: compile:go:shared
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+      - task: assemble:aab:release
+
   assemble:apk:
     summary: Assembles a debug APK using Gradle
     preconditions:
@@ -166,6 +190,39 @@ tasks:
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
+
+  assemble:aab:
+    summary: Assembles a debug AAB (Android App Bundle) using Gradle
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
+    cmds:
+      - |
+        cd build/android
+        ./gradlew bundleDebug
+        cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
+        echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
+
+  assemble:aab:release:
+    summary: Assembles a release AAB using Gradle (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
+    cmds:
+      - |
+        # With Play App Signing, the keystore configured here is your UPLOAD
+        # key: Google verifies the upload with it, then re-signs the app with
+        # the app signing key it manages for distribution.
+        if [ -z "$ANDROID_KEYSTORE_FILE" ]; then
+          echo "WARNING: ANDROID_KEYSTORE_FILE is not set, so this AAB will be"
+          echo "signed with the debug keystore. Google Play rejects debug-signed"
+          echo "bundles. Set ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD,"
+          echo "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD before uploading."
+        fi
+        cd build/android
+        ./gradlew bundleRelease
+        cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
+        echo "Release AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
 
   generate:android:bindings:
     internal: true
