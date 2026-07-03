@@ -143,28 +143,10 @@ func RenderContributors(cs []Contributor, opts ContributorRenderOptions) string 
 	return out.String()
 }
 
-// contributorHeader draws a small animated commit graph, the title and a
-// stats line.
+// contributorHeader draws the title and a stats line.
 func (r *renderer) contributorHeader(contributors, commits int) {
 	cx := r.opts.Width / 2
-	r.y = 56
-	// A stretch of git history: three commit nodes on a line, with a bright
-	// commit pulse travelling along it. Solid stroke: gradients vanish on a
-	// zero-height bounding box.
-	y := r.y - 8
-	r.body.WriteString(fmt.Sprintf(`<path d="M%s %s H%s" stroke="#FF3D3D" stroke-width="2.5" fill="none"/>`,
-		num(cx-34), num(y), num(cx+34)))
-	for _, dx := range []float64{-34, 0, 34} {
-		radius := 4.0
-		if dx == 0 {
-			radius = 5.5
-		}
-		r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="#131A2B" stroke="url(#accent)" stroke-width="2.5"/>`,
-			num(cx+dx), num(y), num(radius)))
-	}
-	r.body.WriteString(fmt.Sprintf(`<circle r="3" fill="#FFFFFF" opacity="0.9"><animateMotion path="M%s %s H%s" dur="2.6s" repeatCount="indefinite"/></circle>`,
-		num(cx-34), num(y), num(cx+34)))
-	r.y += 26
+	r.y = 62
 	r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="title">Wails Contributors</text>`, num(cx), num(r.y)))
 	r.y += 24
 	r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="subtitle">%s contributors · %s commits — thank you!</text>`,
