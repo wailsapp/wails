@@ -383,7 +383,7 @@ func verifyUpdaterArtifact(path string, a *updaterManifestArtifact, pub ed25519.
 		return fmt.Errorf("size mismatch: manifest says %d bytes, file is %d", a.Size, size)
 	}
 	if a.Digest != "" {
-		want, err := base64.StdEncoding.DecodeString(a.Digest)
+		want, err := decodeUpdaterB64(a.Digest)
 		if err != nil {
 			return fmt.Errorf("digest is not valid base64: %w", err)
 		}
@@ -397,7 +397,7 @@ func verifyUpdaterArtifact(path string, a *updaterManifestArtifact, pub ed25519.
 	if pub == nil {
 		return errors.New("artifact carries a signature but no -publickey was given")
 	}
-	sig, err := base64.StdEncoding.DecodeString(a.Signature)
+	sig, err := decodeUpdaterB64(a.Signature)
 	if err != nil {
 		return fmt.Errorf("signature is not valid base64: %w", err)
 	}
@@ -528,11 +528,20 @@ func loadUpdaterPublicKey(pathOrB64 string) (ed25519.PublicKey, error) {
 }
 
 // collectUpdaterArtifacts expands the file and directory arguments into a
-// flat list of artifact files. Directories are read non-recursively; key
+// flat list of artifact files. Directories are read non-recursively. Key
 // material, signature sidecars, hidden files and the manifest being written
-// are skipped.
+// are skipped for file arguments too: shell globs (build/*) arrive as
+// explicit files, and silently signing a stray .pub or the manifest itself
+// is worse than announcing the skip.
 func collectUpdaterArtifacts(args []string, outputPath string) ([]string, error) {
 	outputAbs, _ := filepath.Abs(outputPath)
+	skip := func(path string) bool {
+		if skipUpdaterArtifact(filepath.Base(path)) {
+			return true
+		}
+		abs, _ := filepath.Abs(path)
+		return abs == outputAbs
+	}
 	var files []string
 	for _, arg := range args {
 		info, err := os.Stat(arg)
@@ -540,6 +549,10 @@ func collectUpdaterArtifacts(args []string, outputPath string) ([]string, error)
 			return nil, err
 		}
 		if !info.IsDir() {
+			if skip(arg) {
+				pterm.Printf("  skipping %s (not a release artifact)\n", arg)
+				continue
+			}
 			files = append(files, arg)
 			continue
 		}
@@ -548,17 +561,26 @@ func collectUpdaterArtifacts(args []string, outputPath string) ([]string, error)
 			return nil, err
 		}
 		for _, e := range entries {
-			if e.IsDir() || skipUpdaterArtifact(e.Name()) {
+			if e.IsDir() {
 				continue
 			}
 			p := filepath.Join(arg, e.Name())
-			if abs, _ := filepath.Abs(p); abs == outputAbs {
+			if skip(p) {
 				continue
 			}
 			files = append(files, p)
 		}
 	}
 	return files, nil
+}
+
+// decodeUpdaterB64 decodes base64 in standard or raw (unpadded) form, so
+// manifests from third-party tooling that emits unpadded values verify too.
+func decodeUpdaterB64(s string) ([]byte, error) {
+	if b, err := base64.StdEncoding.DecodeString(s); err == nil {
+		return b, nil
+	}
+	return base64.RawStdEncoding.DecodeString(s)
 }
 
 // skipUpdaterArtifact reports whether a directory entry is clearly not a

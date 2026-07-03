@@ -304,3 +304,40 @@ func TestUpdaterManifestEndToEnd(t *testing.T) {
 		t.Errorf("signature from provider does not verify: %v", err)
 	}
 }
+
+func TestCollectUpdaterArtifactsSkipsExplicitSidecars(t *testing.T) {
+	dir := t.TempDir()
+	app := writeArtifact(t, dir, "MyApp-2.1.0-darwin-arm64.zip", "payload")
+	notes := writeArtifact(t, dir, "notes.md", "## notes")
+	pub := writeArtifact(t, dir, "updater.pub", "key material")
+	manifest := writeArtifact(t, dir, "manifest.json", "{}")
+
+	// A shell glob (build/*) arrives as explicit file arguments: sidecars,
+	// key material and the output manifest must still be filtered out.
+	files, err := collectUpdaterArtifacts([]string{app, notes, pub, manifest}, manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 || files[0] != app {
+		t.Fatalf("got %v, want just %s", files, app)
+	}
+}
+
+func TestDecodeUpdaterB64AcceptsUnpadded(t *testing.T) {
+	want := []byte("digest-bytes!")
+	for _, enc := range []string{
+		base64.StdEncoding.EncodeToString(want),
+		base64.RawStdEncoding.EncodeToString(want),
+	} {
+		got, err := decodeUpdaterB64(enc)
+		if err != nil {
+			t.Fatalf("decode %q: %v", enc, err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Fatalf("decode %q = %q, want %q", enc, got, want)
+		}
+	}
+	if _, err := decodeUpdaterB64("!!!"); err == nil {
+		t.Fatal("expected error for invalid base64")
+	}
+}

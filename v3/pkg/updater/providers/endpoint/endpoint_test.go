@@ -328,6 +328,41 @@ func TestCheck_Verification(t *testing.T) {
 	}
 }
 
+func TestCheck_SignatureWithoutAlgoFails(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(manifestJSON(t, map[string]any{
+			"version": "2.0.0",
+			"artifacts": []map[string]any{{
+				"url":       "app.zip",
+				"signature": base64.StdEncoding.EncodeToString([]byte("some signature")),
+			}},
+		}))
+	}))
+	defer srv.Close()
+	p, _ := New(Config{URL: srv.URL})
+	if _, err := p.Check(context.Background(), checkReq()); err == nil {
+		t.Fatal("expected error for signature without signatureAlgo, got nil")
+	}
+}
+
+func TestCheck_UndecodableVerificationFails(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(manifestJSON(t, map[string]any{
+			"version": "2.0.0",
+			"artifacts": []map[string]any{{
+				"url":        "app.zip",
+				"digestAlgo": "sha512",
+				"digest":     "!!! not base64 !!!",
+			}},
+		}))
+	}))
+	defer srv.Close()
+	p, _ := New(Config{URL: srv.URL})
+	if _, err := p.Check(context.Background(), checkReq()); err == nil {
+		t.Fatal("expected error for undecodable digest, got nil")
+	}
+}
+
 func TestDownload_StreamsWithProgress(t *testing.T) {
 	payload := bytes.Repeat([]byte("wails"), 100_000) // 500 KB
 	mux := http.NewServeMux()

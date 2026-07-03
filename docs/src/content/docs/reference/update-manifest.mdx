@@ -112,7 +112,7 @@ Clients ignore unknown fields, so servers may add their own without breaking any
 | `filetype` | string | no | Defaults to the filename extension. |
 | `size` | int | no | Bytes, used for download progress. |
 | `digestAlgo` / `digest` | string / base64 | no | `sha256` or `sha512`. |
-| `signatureAlgo` / `signature` | string / base64 | no | `ed25519`, `ed25519ph`, or `ecdsa-p256`. See the [updater guide](/guides/updater#cryptographic-verification) for what each algorithm signs. |
+| `signatureAlgo` / `signature` | string / base64 | no | `ed25519`, `ed25519ph`, or `ecdsa-p256`. `signatureAlgo` is required whenever `signature` is present. See the [updater guide](/guides/updater#cryptographic-verification) for what each algorithm signs. |
 
 The client selects the **first** artifact whose `platform` and `arch` match the running system. Base64 values are accepted with or without padding.
 
@@ -122,7 +122,7 @@ Whether the manifest is an upgrade is always decided client-side under SemVer 2.
 
 ## Verification and trust
 
-Checksums and signatures ride in the manifest, but the trust root does not: signatures are verified against the public key the application pinned via `updater.Config.PublicKey` at build time. A compromised or substituted update source cannot supply its own key. An artifact that carries a signature when the application has no pinned key fails closed.
+Checksums and signatures ride in the manifest, but the trust root does not: signatures are verified against the public key the application pinned via `updater.Config.PublicKey` at build time. A compromised or substituted update source cannot supply its own key. An artifact that carries a signature when the application has no pinned key fails closed, as does a signature without a declared `signatureAlgo` or one that does not decode — clients never silently fall back to digest-only verification.
 
 Digest-only artifacts install after the digest check, which protects against corruption but relies on TLS plus the host's own integrity for tamper resistance. Ship signatures for anything security-sensitive.
 

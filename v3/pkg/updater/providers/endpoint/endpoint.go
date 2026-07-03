@@ -193,7 +193,12 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 	}
 	rel.Metadata["endpoint.artifact.url"] = resolved
 
-	if v := buildVerification(art); v != nil {
+	v, err := buildVerification(art)
+	if err != nil {
+		return nil, fmt.Errorf("endpoint: manifest %s, artifact for %s/%s: %w",
+			m.Version, req.Platform, req.Arch, err)
+	}
+	if v != nil {
 		rel.Verification = v
 	}
 	return rel, nil
@@ -400,28 +405,34 @@ func archMatches(published, want string) bool {
 
 // buildVerification maps an artifact's digest and signature fields into the
 // framework's Verification struct. Both are base64; raw (unpadded) and
-// standard encodings are accepted.
-func buildVerification(a *manifestArtifact) *updater.Verification {
+// standard encodings are accepted. Malformed values are errors, not
+// omissions: silently dropping a digest or signature the publisher wrote
+// would downgrade verification the client was meant to perform.
+func buildVerification(a *manifestArtifact) (*updater.Verification, error) {
 	if a.Digest == "" && a.Signature == "" {
-		return nil
+		return nil, nil
 	}
 	v := &updater.Verification{}
 	if a.Digest != "" {
-		if d := decodeB64(a.Digest); d != nil {
-			v.DigestAlgo = strings.ToLower(a.DigestAlgo)
-			v.Digest = d
+		d := decodeB64(a.Digest)
+		if d == nil {
+			return nil, errors.New("artifact digest is not valid base64")
 		}
+		v.DigestAlgo = strings.ToLower(a.DigestAlgo)
+		v.Digest = d
 	}
 	if a.Signature != "" {
-		if s := decodeB64(a.Signature); s != nil {
-			v.SignatureAlgo = strings.ToLower(a.SignatureAlgo)
-			v.Signature = s
+		if a.SignatureAlgo == "" {
+			return nil, errors.New("artifact has a signature but no signatureAlgo")
 		}
+		s := decodeB64(a.Signature)
+		if s == nil {
+			return nil, errors.New("artifact signature is not valid base64")
+		}
+		v.SignatureAlgo = strings.ToLower(a.SignatureAlgo)
+		v.Signature = s
 	}
-	if v.Digest == nil && v.Signature == nil {
-		return nil
-	}
-	return v
+	return v, nil
 }
 
 // --- helpers ---
