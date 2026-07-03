@@ -55,6 +55,13 @@ type windowsWebviewWindow struct {
 	// Webview
 	chromium                   *edge.Chromium
 	webviewNavigationCompleted bool
+	// monitorScaleDetectionOn records that ShouldDetectMonitorScaleChanges
+	// was successfully re-enabled on the controller, making WebView2 the
+	// sole owner of the rasterization scale. While set, the host-side
+	// resyncWebviewRasterizationScale is a no-op — two writers racing on
+	// the scale during a mixed-DPI monitor cross is exactly the transient
+	// the re-enable exists to avoid. Main-thread only.
+	monitorScaleDetectionOn bool
 
 	// Window visibility management - robust fallback for issue #2861
 	showRequested     bool        // Track if show() was called before navigation completed
@@ -1835,9 +1842,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode),
-		// so the rasterization scale must follow DPI changes manually — but only
-		// while non-minimised. While minimised the window sits off its restore
+		// When ShouldDetectMonitorScaleChanges is disabled (the webview2
+		// module's raw-pixels default), the rasterization scale must follow
+		// DPI changes manually — but only while non-minimised. When detection
+		// was re-enabled in setupChromium, the resync below is a no-op (Edge
+		// owns the scale) and only lastKnownDPI tracking runs.
+		// While minimised the window sits off its restore
 		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
 		// would push a wrong scale
 		// onto the controller (one the restore-time DPI gate then won't correct,
@@ -1995,6 +2005,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 // is the application's responsibility. It is a no-op when the controller is
 // unavailable or already in sync.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
+	// With monitor-scale detection re-enabled (setupChromium), WebView2 owns
+	// the rasterization scale and updates it on monitor crossings itself. A
+	// concurrent host write here would race Edge's own update mid-transition
+	// — the mixed-DPI degenerate-transform window this hardening targets —
+	// so the host resync stands down entirely. Callers treat false as
+	// "nothing to re-lay-out", which is correct: Edge re-lays out after its
+	// own scale update.
+	if w.monitorScaleDetectionOn {
+		return false
+	}
 	// The #5605 restore crash is prevented by the DPI-change gate in
 	// resyncWebviewDPIAfterUnminimiseIfDPIChanged, which keeps us off the
 	// controller entirely when the DPI is unchanged. The GetController nil
@@ -2317,6 +2337,32 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
 
 	chromium.Embed(w.hwnd)
+
+	// Re-enable automatic monitor-scale detection. The webview2 module
+	// disables ShouldDetectMonitorScaleChanges at controller creation
+	// (alongside PutBoundsMode raw-pixels), leaving rasterization-scale
+	// updates entirely to the host's WM_DPICHANGED handling. In that
+	// host-managed mode, dragging the window across a mixed-DPI monitor
+	// boundary can make the embedded browser compute a degenerate
+	// scale(0,0) transform (ui/gfx/geometry/transform.cc NOTREACHED
+	// "is not invertible"); the resulting compositor frame is rejected by
+	// the viz process as a malformed Mojo message, which kills the GPU
+	// process, and after enough repeat kills the browser process gives up
+	// ("GPU process isn't usable. Goodbye.") taking the controller with
+	// it. Detection-on is the WebView2 default and keeps monitor-cross
+	// scale updates inside Edge, where that path is actually exercised;
+	// bounds stay raw-pixels. While detection is on, the host-side
+	// WM_DPICHANGED / un-minimise scale resyncs stand down (see
+	// monitorScaleDetectionOn) so the scale has exactly one writer.
+	if controller := chromium.GetController(); controller != nil {
+		if c3 := controller.GetICoreWebView2Controller3(); c3 != nil {
+			if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
+				globalApplication.error("webview2: enable monitor scale detection: %v", err)
+			} else {
+				w.monitorScaleDetectionOn = true
+			}
+		}
+	}
 
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
