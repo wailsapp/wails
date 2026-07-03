@@ -1,0 +1,105 @@
+---
+title: Mobile API
+description: Manager application.Mobile lintas platform — satu titik masuk terjaga build untuk kemampuan mobile native yang dibagikan oleh iOS dan Android
+sidebar:
+  order: 5
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Dukungan mobile bersifat eksperimental dan mungkin berubah di rilis mendatang.
+</Aside>
+
+Kemampuan mobile native diekspos dengan dua cara:
+
+- **Manager per platform** — `application.IOS` (dalam file `//go:build ios`) dan
+  `application.Android` (dalam file `//go:build android`). Gunakan ini untuk hal-hal yang bersifat
+  platform-spesifik. Lihat referensi [iOS](/id/guides/mobile/ios) dan
+  [Android](/id/guides/mobile/android) untuk permukaan per-platform selengkapnya.
+- **`application.Mobile`** — satu manager terjaga build yang mencakup subset
+  kemampuan yang berperilaku identik di kedua platform. Gunakan ini saat Anda
+  ingin satu code path yang dikompilasi dan berjalan di mana saja.
+
+## `application.Mobile`
+
+`application.Mobile` mengirimkan ke `IOS` di iOS, ke `Android` di Android, dan ke
+stub no-op di desktop. Karena tidak memiliki build constraint, Anda dapat memanggilnya dari
+Go biasa yang agnostik platform — tidak perlu file `//go:build` Anda sendiri:
+
+```go
+// Bekerja di file mana pun, pada target mana pun.
+// Di desktop ini mengembalikan "" (no-op); di perangkat mengembalikan path yang sebenarnya.
+dbDir := application.Mobile.StoragePath()
+if dbDir == "" {
+    // Di luar perangkat, atau direktori tidak dapat dibuat — tangani sesuai.
+    return
+}
+db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
+```
+
+`StoragePath()` mengembalikan path absolut ke direktori file privat aplikasi —
+`getFilesDir()` di Android, direktori Application Support di iOS — tempat yang direkomendasikan
+untuk database dan file persisten lainnya. Mengembalikan string kosong di desktop, dan di perangkat
+jika direktori tidak tersedia (di iOS, jika tidak dapat dibuat), jadi periksa `""` sebelum menggunakannya.
+
+<Aside type="note">
+Di luar perangkat (build desktop) setiap method `Mobile` adalah no-op dan setiap query
+mengembalikan nilai zero-nya (`""` untuk string). Inilah yang memungkinkan kode lintas platform
+memanggil `application.Mobile.*` tanpa syarat. Saat Anda membutuhkan path yang sebenarnya
+di desktop juga, bercabang berdasarkan platform dan gunakan `os.UserConfigDir()` atau serupa.
+</Aside>
+
+## Kemampuan
+
+Manager `Mobile` mengekspos kemampuan yang tanda tangannya identik di iOS dan Android:
+
+| Kemampuan | API | Catatan |
+|---|---|---|
+| Share sheet | `Mobile.Share(json)` | `{text, url}` |
+| Buka URL eksternal | `Mobile.OpenURL(url)` | Browser sistem |
+| Jaga layar tetap aktif | `Mobile.SetKeepAwake(bool)` | |
+| Senter / flashlight | `Mobile.SetTorch(bool)` | → `common:torch` |
+| Inset safe-area | `Mobile.SafeAreaJSON()` | `{top,bottom,left,right}` |
+| Info aplikasi | `Mobile.AppInfoJSON()` | `{name,version,build,bundleId}` |
+| Kunci orientasi | `Mobile.SetOrientation(mode)` | `portrait` / `landscape` / `auto` |
+| Status bar | `Mobile.SetStatusBar(json)` | style + visibilitas |
+| Info penyimpanan | `Mobile.StorageJSON()` | bytes `{free,total}` |
+| Path penyimpanan | `Mobile.StoragePath()` | Direktori file privat aplikasi |
+| Daya / baterai | `Mobile.PowerJSON()` | `{level,charging,lowPower}` |
+| Status jaringan | `Mobile.NetworkJSON()` | `{connected,type}` |
+| Biometrik | `Mobile.BiometricAuthenticate(reason)` | → `common:biometric` |
+| Penyimpanan aman | `Mobile.SecureGet(key)` / `Mobile.SecureDelete(key)` | Keychain / `EncryptedSharedPreferences` |
+| Geolokasi | `Mobile.GetLocation()` | one-shot → `common:location` |
+| Haptics | `Mobile.Haptic(type)` | impact / notification / selection |
+| Akselerometer | `Mobile.SetMotion(bool)` | → `common:motion` |
+| Proximity | `Mobile.SetProximity(bool)` | → `common:proximity` |
+| Text-to-speech | `Mobile.Speak(text)` / `Mobile.StopSpeak()` | |
+| Inset keyboard | `Mobile.SetKeyboardWatch(bool)` | → `common:keyboard` |
+| Perlindungan tangkapan layar | `Mobile.SetScreenProtect(bool)` | → `common:screenCapture` |
+| Kamera | `Mobile.CapturePhoto()` / `Mobile.CaptureVideo()` | → `common:capture` |
+
+Hasil asinkron tiba sebagai event `common:*`, persis seperti manager per-platform —
+lihat [Events](/id/guides/mobile/ios#events) untuk payload-nya.
+
+## Yang tetap bersifat platform-spesifik
+
+Kemampuan yang berbeda bentuknya antara iOS dan Android **tidak** ada di
+`Mobile`; panggil melalui `application.IOS` / `application.Android` dari file bertag build:
+
+| Keperluan | iOS | Android |
+|---|---|---|
+| Kecerahan (set) | `IOS.SetBrightness(0.0-1.0)` | `Android.SetBrightness(0-100)` |
+| Kecerahan / orientasi (get) | `IOS.GetBrightness()` / `IOS.GetOrientation()` | `Android.BrightnessJSON()` / `Android.OrientationJSON()` |
+| Notifikasi lokal | `IOS.PostNotification(json)` | `Android.Notify(json)` |
+| Penyimpanan aman (tulis) | `IOS.SecureSet(key, value)` | `Android.SecureSet(json)` |
+| Eksekusi latar belakang | `IOS.BeginBackgroundTask` / `EndBackgroundTask` | `Android.StartForegroundService` / `StopForegroundService` |
+
+<Aside type="tip">
+Antarmuka `MobileManager` adalah kontrak di balik `application.Mobile`.
+Karena kedua manager platform harus memenuhinya, setiap method yang tercantum di atas dijamin
+memiliki tanda tangan yang identik di iOS dan Android — jika pernah berbeda, build platform gagal dikompilasi.
+</Aside>
