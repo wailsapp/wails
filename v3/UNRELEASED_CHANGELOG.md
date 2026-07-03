@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Replace Node-based sponsor image pipeline with Go generator in [PR](https://github.com/wailsapp/wails/pull/5719) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
