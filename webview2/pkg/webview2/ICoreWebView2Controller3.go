@@ -3,9 +3,12 @@
 package webview2
 
 import (
-	"golang.org/x/sys/windows"
+	"math"
+
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Controller3Vtbl struct {
@@ -56,10 +59,13 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-
+	// The double parameter is passed BY VALUE: use its bit pattern, not a
+	// pointer (Go mirrors the first four syscall args into XMM0-3, where the
+	// x64 ABI reads double arguments). A pointer here reaches the callee as a
+	// near 0.0 double value, a blank sceen
 	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scale)),
+		uintptr(math.Float64bits(scale)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

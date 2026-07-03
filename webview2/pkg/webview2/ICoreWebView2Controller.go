@@ -3,9 +3,12 @@
 package webview2
 
 import (
-	"golang.org/x/sys/windows"
+	"math"
+
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ControllerVtbl struct {
@@ -113,10 +116,13 @@ func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-
+	// The double parameter is passed BY VALUE: use its bit pattern, not a
+	// pointer (Go mirrors the first four syscall args into XMM0-3, where the
+	// x64 ABI reads double arguments). A pointer here reaches the callee as a
+	// near 0.0 double value
 	hr, _, _ := i.Vtbl.PutZoomFactor.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&zoomFactor)),
+		uintptr(math.Float64bits(zoomFactor)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -153,10 +159,12 @@ func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistratio
 
 func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor float64) error {
 
+	// bounds (a >8-byte struct) is correctly passed by reference per the x64
+	// ABI; the double is by value — bit pattern, not pointer (see PutZoomFactor).
 	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&bounds)),
-		uintptr(unsafe.Pointer(&zoomFactor)),
+		uintptr(math.Float64bits(zoomFactor)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

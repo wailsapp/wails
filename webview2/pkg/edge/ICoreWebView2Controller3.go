@@ -3,9 +3,12 @@
 package edge
 
 import (
-	"golang.org/x/sys/windows"
+	"math"
+
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Controller3Vtbl struct {
@@ -81,10 +84,16 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-
+	// put_RasterizationScale takes the double BY VALUE. Pass its bit pattern
+	// (Go's runtime mirrors the first four syscall args into XMM0-3, which is
+	// where the x64 ABI makes the callee read a double argument) — the same
+	// pattern as PutZoomFactor. Passing &scale here handed the callee a heap
+	// ADDRESS reinterpreted as a double (a near 0.0 value), silently setting
+	// the rasterization scale, blank content, then Chromium CHECK
+	// crashes (0x80000003)
 	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scale)),
+		uintptr(math.Float64bits(scale)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
