@@ -21,6 +21,9 @@ type renderer struct {
 	opts RenderOptions
 	body strings.Builder
 	y    float64
+	// clipSeq numbers per-avatar clipPath ids. Logins are not safe id
+	// material: sanitising them can collide ("foo-bar" vs "foobar").
+	clipSeq int
 }
 
 // num formats a coordinate compactly.
@@ -360,7 +363,8 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	if hover {
 		// Glass-glare stripe that sweeps across the avatar on hover, plus a
 		// pulse ring that emanates while hovered.
-		clipID := "gc" + sanitizeID(s.Login)
+		clipID := fmt.Sprintf("gc%d", r.clipSeq)
+		r.clipSeq++
 		glareW := rad * 0.8
 		r.body.WriteString(fmt.Sprintf(`<clipPath id="%s"><circle cx="%s" cy="%s" r="%s"/></clipPath>`,
 			clipID, num(cx), num(cy), num(rad)))
