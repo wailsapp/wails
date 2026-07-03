@@ -174,6 +174,8 @@ ep, _ := endpoint.New(endpoint.Config{
 
 Configured headers are sent on every manifest request; artifact downloads reuse them only on the manifest's own host, and the `Authorization` header is stripped on any cross-origin redirect.
 
+The CLI owns the publishing side: `wails3 updater manifest` digests, signs and describes your release files in one command, and `wails3 updater verify` re-checks the result before you upload. See [Publishing with the wails3 CLI](/reference/update-manifest#publishing-with-the-wails3-cli).
+
 ### Fallback chain
 
 `Config.Providers` is ordered. The updater walks it sequentially: the first provider that returns a release wins, the first that reports "up to date" short-circuits the chain (fallback is for "primary unreachable", not "providers disagree"). An error advances to the next provider.
@@ -246,11 +248,12 @@ A release with only `Digest` is authenticated against the registry's TLS plus wh
 ### Generating a signing key
 
 ```bash
-# Generate a fresh Ed25519 keypair for signing
-ssh-keygen -t ed25519 -f updater-key -N "" -C "wails-updater"
-# updater-key       — keep secret, use to sign releases
-# updater-key.pub   — bundle in your app via go:embed
+wails3 updater genkey
+# updater.key       — keep secret, use to sign releases
+# updater.key.pub   — bundle in your app via go:embed
 ```
+
+The private key is PKCS#8 PEM, the public key PKIX PEM; `Config.PublicKey` accepts the `.pub` file as-is (it also accepts the raw 32-byte key or its base64, which `genkey` prints for inlining). Sign releases with `wails3 updater manifest -key updater.key ...` or `wails3 updater sign`; see [Publishing with the wails3 CLI](/reference/update-manifest#publishing-with-the-wails3-cli).
 
 Or in Go:
 

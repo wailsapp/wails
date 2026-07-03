@@ -138,6 +138,25 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
+	// Updater publishing tools (the Wails Update Manifest protocol)
+	updaterCmd := app.NewSubCommand("updater", "Self-update publishing tools (keys, signing, manifests)")
+	updaterCmd.NewSubCommandFunction("genkey", "Generate an Ed25519 signing keypair for updates", commands.UpdaterGenKey)
+	updaterSign := updaterCmd.NewSubCommand("sign", "Compute digests and signatures for artifact files")
+	var updaterSignFlags commands.UpdaterSignOptions
+	updaterSign.AddFlags(&updaterSignFlags)
+	updaterSign.Action(func() error {
+		return commands.UpdaterSign(&updaterSignFlags, updaterSign.OtherArgs())
+	})
+	updaterSign.LongDescription("\nUsage: wails3 updater sign -key <private key> <files...>")
+	updaterManifest := updaterCmd.NewSubCommand("manifest", "Generate an update manifest for artifact files")
+	var updaterManifestFlags commands.UpdaterManifestOptions
+	updaterManifest.AddFlags(&updaterManifestFlags)
+	updaterManifest.Action(func() error {
+		return commands.UpdaterManifest(&updaterManifestFlags, updaterManifest.OtherArgs())
+	})
+	updaterManifest.LongDescription("\nUsage: wails3 updater manifest -version <version> [flags] <files or directories...>\n\nDigests every artifact, signs it when -key is given, infers platform/arch\nfrom the filenames and writes a Wails Update Manifest ready to upload\nalongside the artifacts.")
+	updaterCmd.NewSubCommandFunction("verify", "Verify a manifest against the artifact files and public key", commands.UpdaterVerify)
+
 	// iOS tools
 	ios := app.NewSubCommand("ios", "iOS tooling")
 	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
