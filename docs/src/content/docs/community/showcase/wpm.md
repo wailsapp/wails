@@ -6,7 +6,7 @@ description: 一个增强的windows的壁纸程序
 ![My Project Screenshot](../../../../assets/showcase-images/wpm.png)
 
 # [wpm](https://github.com/sugar-is-everythong/wpm) github
-# [塞壁纸](https://github.com/sugar-is-everythong/wpm) gitee
+# [塞壁纸](https://gitee.com/KYshisan/wpm) gitee
 
 ## 项目简介
 往你的屏幕上塞一点壁纸； 支持自定义壁纸，支持多屏幕，随机/顺序壁纸；  
