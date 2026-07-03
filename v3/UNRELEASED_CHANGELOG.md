@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
