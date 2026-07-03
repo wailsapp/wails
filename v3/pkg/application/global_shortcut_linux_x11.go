@@ -1,4 +1,4 @@
-//go:build linux && cgo && !android && !server
+//go:build linux && cgo && !android && !server && !purego
 
 package application
 
