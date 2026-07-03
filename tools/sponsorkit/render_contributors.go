@@ -310,18 +310,17 @@ func (r *renderer) contributor(c Contributor, bi int, cx, cy float64) {
 
 // creditLabel describes what a contributor is being credited for.
 func creditLabel(c Contributor) string {
-	if c.Commits >= c.Mentions {
-		unit := "commits"
-		if c.Commits == 1 {
-			unit = "commit"
-		}
-		return comma(c.Commits) + " " + unit
+	primary, unit, unitOne := c.Commits, "commits", "commit"
+	if creditMetric == "prs" && (c.PRs > 0 || c.Commits == 0) {
+		primary, unit, unitOne = c.PRs, "merged PRs", "merged PR"
 	}
-	unit := "changelog credits"
-	if c.Mentions == 1 {
-		unit = "changelog credit"
+	if c.Mentions > primary {
+		primary, unit, unitOne = c.Mentions, "changelog credits", "changelog credit"
 	}
-	return comma(c.Mentions) + " " + unit
+	if primary == 1 {
+		unit = unitOne
+	}
+	return comma(primary) + " " + unit
 }
 
 // comma formats n with thousands separators.

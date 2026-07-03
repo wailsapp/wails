@@ -20,19 +20,37 @@ type Contributor struct {
 	URL       string
 	// Commits is the default-branch commit count from the contributors API.
 	Commits int
+	// PRs is the number of merged pull requests authored (only populated
+	// with -metric prs).
+	PRs int
 	// Mentions counts @login credits found in the changelogs. Squash-merged
 	// or hand-applied patches are often credited only there.
 	Mentions int
 }
 
-// Credit is the number a contributor is ranked and sized by. Commits and
-// changelog mentions mostly describe the same PRs, so take the larger of
-// the two rather than double counting.
+// creditMetric selects how contributors are ranked and sized: "commits"
+// (default-branch commit count) or "prs" (merged pull requests authored).
+// Commit counts reward granular unsquashed histories; PR counts treat one
+// merged PR as one unit of work regardless of merge style.
+var creditMetric = "commits"
+
+// Credit is the number a contributor is ranked and sized by. The changelog
+// mention count mostly describes the same work as the primary metric, so
+// take the larger of the two rather than double counting.
 func (c Contributor) Credit() int {
-	if c.Mentions > c.Commits {
+	primary := c.Commits
+	if creditMetric == "prs" {
+		primary = c.PRs
+		// Contributors with commits but no recorded PRs (early direct
+		// pushes) stay visible in the tail bands rather than vanishing.
+		if primary == 0 && c.Mentions == 0 && c.Commits > 0 {
+			primary = min(c.Commits, 7)
+		}
+	}
+	if c.Mentions > primary {
 		return c.Mentions
 	}
-	return c.Commits
+	return primary
 }
 
 type restContributor struct {
@@ -77,6 +95,32 @@ func FetchContributors(client *http.Client, token, repo string, changelogs []str
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
+	}
+
+	if creditMetric == "prs" {
+		prCounts, err := fetchMergedPRCounts(client, token, repo)
+		if err != nil {
+			return nil, fmt.Errorf("fetching merged PRs: %w", err)
+		}
+		for key, n := range prCounts {
+			if c, ok := byLogin[key]; ok {
+				c.PRs = n
+				continue
+			}
+			// Authored merged PRs but absent from the commit history (e.g.
+			// unlinked commit email). Same validation as changelog mentions.
+			u, err := lookupUser(client, token, key)
+			if err != nil || u.Type != "User" || isBot(u.Login, u.Type) {
+				continue
+			}
+			byLogin[key] = &Contributor{
+				Login:     u.Login,
+				AvatarURL: u.AvatarURL,
+				URL:       u.HTMLURL,
+				PRs:       n,
+			}
+			order = append(order, key)
+		}
 	}
 
 	mentions := changelogMentions(changelogs)
@@ -169,6 +213,101 @@ func changelogMentions(paths []string) map[string]int {
 		}
 	}
 	return counts
+}
+
+// mergedPRQuery pages through every merged PR's author. Unlike the search
+// API this has no 1000-result cap.
+const mergedPRQuery = `query($owner: String!, $name: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(states: MERGED, first: 100, after: $after) {
+      pageInfo { hasNextPage endCursor }
+      nodes { author { login } }
+    }
+  }
+}`
+
+type mergedPRResponse struct {
+	Data struct {
+		Repository struct {
+			PullRequests struct {
+				PageInfo struct {
+					HasNextPage bool   `json:"hasNextPage"`
+					EndCursor   string `json:"endCursor"`
+				} `json:"pageInfo"`
+				Nodes []struct {
+					Author *struct {
+						Login string `json:"login"`
+					} `json:"author"`
+				} `json:"nodes"`
+			} `json:"pullRequests"`
+		} `json:"repository"`
+	} `json:"data"`
+	Errors []struct {
+		Message string `json:"message"`
+	} `json:"errors"`
+}
+
+// fetchMergedPRCounts returns merged-PR counts keyed by lowercased author
+// login, bots excluded.
+func fetchMergedPRCounts(client *http.Client, token, repo string) (map[string]int, error) {
+	owner, name, ok := strings.Cut(repo, "/")
+	if !ok {
+		return nil, fmt.Errorf("repo %q is not owner/name", repo)
+	}
+	counts := map[string]int{}
+	after := ""
+	for {
+		variables := map[string]any{"owner": owner, "name": name}
+		if after != "" {
+			variables["after"] = after
+		}
+		body, err := json.Marshal(map[string]any{"query": mergedPRQuery, "variables": variables})
+		if err != nil {
+			return nil, err
+		}
+		req, err := http.NewRequest(http.MethodPost, "https://api.github.com/graphql", bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", "bearer "+token)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", "wails-sponsorkit")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		data, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("github graphql: %s: %s", resp.Status, truncate(string(data), 300))
+		}
+		var parsed mergedPRResponse
+		if err := json.Unmarshal(data, &parsed); err != nil {
+			return nil, fmt.Errorf("parsing graphql response: %w", err)
+		}
+		if len(parsed.Errors) > 0 {
+			return nil, fmt.Errorf("github graphql: %s", parsed.Errors[0].Message)
+		}
+
+		conn := parsed.Data.Repository.PullRequests
+		for _, node := range conn.Nodes {
+			if node.Author == nil || node.Author.Login == "" || isBot(node.Author.Login, "") {
+				continue
+			}
+			counts[strings.ToLower(node.Author.Login)]++
+		}
+		if !conn.PageInfo.HasNextPage {
+			break
+		}
+		after = conn.PageInfo.EndCursor
+		time.Sleep(100 * time.Millisecond)
+	}
+	return counts, nil
 }
 
 type restUser struct {

@@ -26,6 +26,7 @@ func main() {
 	mode := flag.String("mode", "sponsors", `what to render: "sponsors" or "contributors"`)
 	login := flag.String("login", "leaanthony", "GitHub login whose sponsors to fetch")
 	repo := flag.String("repo", "wailsapp/wails", "owner/name repository whose contributors to fetch")
+	metric := flag.String("metric", "commits", `how contributors are ranked: "commits" or "prs" (merged pull requests)`)
 	changelogs := flag.String("changelogs", "", "comma-separated changelog paths scanned for @login credits (contributors mode)")
 	out := flag.String("out", "sponsors.svg", "output SVG path")
 	width := flag.Float64("width", 800, "SVG width in CSS pixels")
@@ -50,6 +51,17 @@ func main() {
 	case "sponsors":
 		svg, err = generateSponsors(client, token, *login, *width, *scale, *quality)
 	case "contributors":
+		switch *metric {
+		case "commits":
+		case "prs":
+			creditMetric = "prs"
+			for i := range bands {
+				bands[i].MinCredit = prBandMins[i]
+			}
+		default:
+			fmt.Fprintf(os.Stderr, "error: unknown -metric %q\n", *metric)
+			os.Exit(1)
+		}
 		svg, err = generateContributors(client, token, *repo, splitPaths(*changelogs), *width, *scale, *quality)
 	default:
 		err = fmt.Errorf("unknown -mode %q", *mode)

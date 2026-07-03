@@ -131,8 +131,14 @@ type Band struct {
 	Hover bool
 }
 
-// bands is ordered from most to least prolific. The last entry is the
-// catch-all for first-time and drive-by contributors.
+// prBandMins replaces the bands' MinCredit thresholds when ranking by
+// merged PRs (-metric prs): one merged PR is a much rarer unit than one
+// commit, so the cut-offs sit far lower.
+var prBandMins = []int{300, 100, 40, 15, 6, 2, 0}
+
+// bands is ordered from most to least prolific, with MinCredit thresholds
+// tuned for the commit metric. The last entry is the catch-all for
+// first-time and drive-by contributors.
 var bands = []Band{
 	{
 		MinCredit: 1000,
