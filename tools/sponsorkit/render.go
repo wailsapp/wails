@@ -181,8 +181,8 @@ func starField(width float64) string {
 func (r *renderer) header() {
 	cx := r.opts.Width / 2
 	r.y = 58
-	// Heart mark above the title.
-	r.body.WriteString(fmt.Sprintf(`<g transform="translate(%s %s) scale(1.15)"><path d="M0 4.8 C -1.6 1.2 -6.5 0.2 -6.5 -3.4 C -6.5 -5.8 -4.7 -7 -3.1 -7 C -1.9 -7 -0.7 -6.3 0 -4.9 C 0.7 -6.3 1.9 -7 3.1 -7 C 4.7 -7 6.5 -5.8 6.5 -3.4 C 6.5 0.2 1.6 1.2 0 4.8 Z" fill="url(#accent)"/></g>`,
+	// Heart mark above the title, with a double-thump heartbeat.
+	r.body.WriteString(fmt.Sprintf(`<g transform="translate(%s %s)"><g><path d="M0 4.8 C -1.6 1.2 -6.5 0.2 -6.5 -3.4 C -6.5 -5.8 -4.7 -7 -3.1 -7 C -1.9 -7 -0.7 -6.3 0 -4.9 C 0.7 -6.3 1.9 -7 3.1 -7 C 4.7 -7 6.5 -5.8 6.5 -3.4 C 6.5 0.2 1.6 1.2 0 4.8 Z" fill="url(#accent)"/><animateTransform attributeName="transform" type="scale" values="1.15;1.35;1.15;1.3;1.15;1.15" keyTimes="0;0.08;0.16;0.24;0.34;1" dur="2.2s" repeatCount="indefinite"/></g></g>`,
 		num(cx), num(r.y-10)))
 	r.y += 26
 	r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="title">Wails Sponsors</text>`, num(cx), num(r.y)))
@@ -269,9 +269,9 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(s.URL)))
 	r.body.WriteString(fmt.Sprintf(`<title>%s (@%s)</title>`, esc(s.DisplayName()), esc(s.Login)))
 
-	// Halo behind the ring for the top tiers.
+	// Halo behind the ring for the top tiers, breathing gently.
 	if t.Glow {
-		r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s" opacity="0.55" filter="url(#soften)"/>`,
+		r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s" opacity="0.55" filter="url(#soften)"><animate attributeName="opacity" values="0.35;0.8;0.35" dur="3.6s" repeatCount="indefinite"/></circle>`,
 			num(cx), num(cy), num(ringR), t.RingGradient, num(t.RingWidth+4)))
 	}
 
@@ -281,6 +281,19 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 		r.body.WriteString(fmt.Sprintf(`<g><circle cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s"/><animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="9s" repeatCount="indefinite"/></g>`,
 			num(cx), num(cy), num(ringR), t.RingGradient, num(t.RingWidth),
 			num(cx), num(cy), num(cx), num(cy)))
+		// A bright arc sweeping around the ring, faster and opposite the
+		// gradient rotation so the two never look locked together.
+		circ := 2 * math.Pi * ringR
+		r.body.WriteString(fmt.Sprintf(`<g><circle cx="%s" cy="%s" r="%s" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="%s" stroke-linecap="round" stroke-dasharray="%s %s"/><animateTransform attributeName="transform" type="rotate" from="360 %s %s" to="0 %s %s" dur="5s" repeatCount="indefinite"/></g>`,
+			num(cx), num(cy), num(ringR), num(t.RingWidth*0.6), num(circ*0.14), num(circ*0.86),
+			num(cx), num(cy), num(cx), num(cy)))
+		// Orbiting sparkles for the flagship tiers.
+		if t.Glow {
+			r.sparkle(cx, cy, ringR+3, 2.4, 7, false)
+			if t.Badge != "" {
+				r.sparkle(cx, cy, ringR+6, 1.7, 11, true)
+			}
+		}
 	case "static":
 		r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s"/>`,
 			num(cx), num(cy), num(ringR), t.RingGradient, num(t.RingWidth)))
@@ -323,11 +336,25 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	r.body.WriteString(`</a>`)
 }
 
+// sparkle draws a small twinkling dot orbiting (cx, cy) at radius orbit.
+func (r *renderer) sparkle(cx, cy, orbit, size, dur float64, reverse bool) {
+	from, to := "0", "360"
+	if reverse {
+		from, to = "360", "0"
+	}
+	r.body.WriteString(fmt.Sprintf(`<g><circle cx="%s" cy="%s" r="%s" fill="#FFFFFF"><animate attributeName="opacity" values="0.15;1;0.15" dur="2.3s" repeatCount="indefinite"/></circle><animateTransform attributeName="transform" type="rotate" from="%s %s %s" to="%s %s %s" dur="%ss" repeatCount="indefinite"/></g>`,
+		num(cx+orbit), num(cy), num(size),
+		from, num(cx), num(cy), to, num(cx), num(cy), num(dur)))
+}
+
 func (r *renderer) footer() {
 	cx := r.opts.Width / 2
 	r.y += 36
 	btnW, btnH := 210.0, 42.0
 	r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(r.opts.SponsorURL)))
+	// Soft breathing glow behind the button.
+	r.body.WriteString(fmt.Sprintf(`<rect x="%s" y="%s" width="%s" height="%s" rx="21" fill="url(#accent)" filter="url(#soften)" opacity="0.5"><animate attributeName="opacity" values="0.3;0.75;0.3" dur="3s" repeatCount="indefinite"/></rect>`,
+		num(cx-btnW/2), num(r.y), num(btnW), num(btnH)))
 	r.body.WriteString(fmt.Sprintf(`<rect x="%s" y="%s" width="%s" height="%s" rx="21" fill="url(#accent)"/>`,
 		num(cx-btnW/2), num(r.y), num(btnW), num(btnH)))
 	r.body.WriteString(fmt.Sprintf(`<rect x="%s" y="%s" width="%s" height="%s" rx="21" fill="none" stroke="#FFFFFF" stroke-opacity="0.25"/>`,
