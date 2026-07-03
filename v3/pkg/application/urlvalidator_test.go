@@ -238,6 +238,12 @@ func TestValidateURL(t *testing.T) {
 			errMsg:    "dangerous unicode",
 		},
 		{
+			name:      "next line (NEL)",
+			url:       "https://example.com/\u0085",
+			shouldErr: true,
+			errMsg:    "dangerous unicode",
+		},
+		{
 			name:      "invalid URL format",
 			url:       "ht!tp://[invalid",
 			shouldErr: true,

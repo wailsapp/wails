@@ -82,7 +82,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         didReceiveNotificationResponse(NULL, [errorMsg UTF8String]);
     } else {
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        // The Go side copies the C string during the call
         didReceiveNotificationResponse([jsonString UTF8String], NULL);
+        [jsonString release];
     }
     
     completionHandler();
@@ -361,6 +363,8 @@ void sendNotification(int channelID, const char *options_json) {
     UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
 
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+    // The request keeps its own copy of the content
+    [content release];
 
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
@@ -399,6 +403,8 @@ void sendNotificationWithActions(int channelID, const char *options_json) {
     UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
 
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+    // The request keeps its own copy of the content
+    [content release];
 
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
