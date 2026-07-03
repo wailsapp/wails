@@ -140,6 +140,11 @@ const defs = `<defs>
 <clipPath id="circle" clipPathUnits="objectBoundingBox">
   <circle cx="0.5" cy="0.5" r="0.5"/>
 </clipPath>
+<linearGradient id="glare" x1="0" y1="0" x2="1" y2="0" gradientTransform="rotate(18 0.5 0.5)">
+  <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+  <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="1"/>
+  <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+</linearGradient>
 </defs>
 <style>
 text {
@@ -152,6 +157,29 @@ text {
 .name { font-weight: 500; }
 .cta { font-size: 14.5px; font-weight: 600; fill: #FFFFFF; }
 .link { cursor: pointer; }
+/* Hover "power-up" for Gold+ sponsors. Only fires when the SVG is loaded
+   as a document (object/inline embeds or direct view); in img embeds the
+   hover layers simply stay hidden. */
+.cell { transform-box: fill-box; transform-origin: center; transition: transform 0.2s ease; }
+.sp:hover .cell { transform: translateY(-4px); }
+.sp image { transition: filter 0.3s ease; }
+.sp:hover image { filter: saturate(1.35) brightness(1.08); }
+.bloom, .fast { opacity: 0; transition: opacity 0.3s ease; }
+.sp:hover .bloom { opacity: 0.85; }
+.sp:hover .fast { opacity: 0.9; }
+.glare { opacity: 0; transform: translateX(calc(-1 * var(--d))); transition: transform 0.65s ease, opacity 0.2s ease; }
+.sp:hover .glare { opacity: 0.55; transform: translateX(var(--d)); }
+.pulse { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.sp:hover .pulse { animation: pulseOut 1.5s ease-out infinite; }
+@keyframes pulseOut { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.35); opacity: 0; } }
+.uline { transform: scaleX(0); transform-box: fill-box; transform-origin: center; transition: transform 0.3s ease; }
+.sp:hover .uline { transform: scaleX(1); }
+.name { transition: fill 0.2s ease; }
+.sp:hover .name { fill: #FFFFFF; }
+@media (prefers-reduced-motion: reduce) {
+  .cell, .sp image, .glare, .uline { transition: none; }
+  .sp:hover .pulse { animation: none; }
+}
 </style>
 `
 
@@ -260,9 +288,17 @@ func (r *renderer) tierSection(t TierStyle, group []Sponsor) {
 func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	rad := t.Avatar / 2
 	ringR := rad + 2 + t.RingWidth/2
+	hover := t.Ring == "animated"
 
-	r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(s.URL)))
+	if hover {
+		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link sp" style="--d:%spx">`, esc(s.URL), num(rad*1.5)))
+	} else {
+		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(s.URL)))
+	}
 	r.body.WriteString(fmt.Sprintf(`<title>%s (@%s)</title>`, esc(s.DisplayName()), esc(s.Login)))
+	if hover {
+		r.body.WriteString(`<g class="cell">`)
+	}
 
 	// Halo behind the ring for the top tiers, breathing gently.
 	if t.Glow {
@@ -289,6 +325,13 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 				r.sparkle(cx, cy, ringR+6, 1.7, 11, true)
 			}
 		}
+		// Hover-only layers: a wider glow bloom and a second, much faster
+		// light sweep that "spins up" while the pointer is over the sponsor.
+		r.body.WriteString(fmt.Sprintf(`<circle class="bloom" cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s" filter="url(#soften)"/>`,
+			num(cx), num(cy), num(ringR+2), t.RingGradient, num(t.RingWidth+7)))
+		r.body.WriteString(fmt.Sprintf(`<g><circle class="fast" cx="%s" cy="%s" r="%s" fill="none" stroke="#FFFFFF" stroke-width="%s" stroke-linecap="round" stroke-dasharray="%s %s"/><animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="1.4s" repeatCount="indefinite"/></g>`,
+			num(cx), num(cy), num(ringR), num(t.RingWidth*0.7), num(circ*0.08), num(circ*0.92),
+			num(cx), num(cy), num(cx), num(cy)))
 	case "static":
 		r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="%s"/>`,
 			num(cx), num(cy), num(ringR), t.RingGradient, num(t.RingWidth)))
@@ -314,11 +357,34 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	r.body.WriteString(fmt.Sprintf(`<circle cx="%s" cy="%s" r="%s" fill="none" stroke="#000000" stroke-opacity="0.35"/>`,
 		num(cx), num(cy), num(rad)))
 
+	if hover {
+		// Glass-glare stripe that sweeps across the avatar on hover, plus a
+		// pulse ring that emanates while hovered.
+		clipID := "gc" + sanitizeID(s.Login)
+		glareW := rad * 0.8
+		r.body.WriteString(fmt.Sprintf(`<clipPath id="%s"><circle cx="%s" cy="%s" r="%s"/></clipPath>`,
+			clipID, num(cx), num(cy), num(rad)))
+		r.body.WriteString(fmt.Sprintf(`<g clip-path="url(#%s)"><rect class="glare" x="%s" y="%s" width="%s" height="%s" fill="url(#glare)"/></g>`,
+			clipID, num(cx-glareW/2), num(cy-rad), num(glareW), num(t.Avatar)))
+		r.body.WriteString(fmt.Sprintf(`<circle class="pulse" cx="%s" cy="%s" r="%s" fill="none" stroke="url(#%s)" stroke-width="2"/>`,
+			num(cx), num(cy), num(ringR+1), t.RingGradient))
+	}
+
 	y := cy + rad + t.RingWidth
 	if t.ShowName {
 		y += t.NameSize + 10
+		name := ellipsis(s.DisplayName(), t.MaxName)
 		r.body.WriteString(fmt.Sprintf(`<text x="%s" y="%s" text-anchor="middle" class="name" font-size="%s">%s</text>`,
-			num(cx), num(y), num(t.NameSize), esc(ellipsis(s.DisplayName(), t.MaxName))))
+			num(cx), num(y), num(t.NameSize), esc(name)))
+		if hover {
+			// Gradient underline that draws itself under the name on hover.
+			ulW := float64(len([]rune(name))) * t.NameSize * 0.52
+			r.body.WriteString(fmt.Sprintf(`<rect class="uline" x="%s" y="%s" width="%s" height="2.5" rx="1.25" fill="url(#accent)"/>`,
+				num(cx-ulW/2), num(y+5), num(ulW)))
+		}
+	}
+	if hover {
+		r.body.WriteString(`</g>`)
 	}
 	r.body.WriteString(`</a>`)
 }

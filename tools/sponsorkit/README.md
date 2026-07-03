@@ -15,6 +15,11 @@ the image embedded in the project READMEs.
 4. Renders a dark-card SVG. Every avatar is a link to the sponsor's profile with a
    tooltip, animations are SMIL (they run even inside GitHub's image proxy), and a
    "Become a Sponsor" button links to the sponsors page.
+5. Gold+ sponsors get a hover "power-up" (lift, glare sweep across the avatar, glow
+   bloom, a fast light ring, an emanating pulse and a name underline). Hover and the
+   per-sponsor links only work where the SVG loads as a document, which is why the
+   website embeds it with `object` rather than `img`; inside `img` embeds the hover
+   layers stay hidden.
 
 ## Usage
 
