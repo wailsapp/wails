@@ -74,11 +74,14 @@ void systemTraySetANSILabel(void* nsStatusItem, void* label) {
 
     NSMutableAttributedString* attributedString = (NSMutableAttributedString*) label;
 
-    // Set the label. setAttributedTitle: copies the string, so drop the
-    // owning reference we accumulated while building it.
-    NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-    [statusItem setAttributedTitle:attributedString];
-    [attributedString release];
+    // Set the label on the main thread.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // setAttributedTitle: copies the string, so drop the owning
+        // reference we accumulated while building it.
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setAttributedTitle:attributedString];
+        [attributedString release];
+    });
 }
 
 void* appendAttributedString(void *currentString, char *title, char *FG, char *BG) {
