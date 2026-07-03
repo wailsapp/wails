@@ -51,6 +51,11 @@ type windowsApp struct {
 
 	// Restart taskbar flag
 	restartingTaskbar atomic.Bool
+
+	// lastSettingChangeScaleVerify debounces the per-window DPI verify fanned
+	// out on WM_SETTINGCHANGE bursts (app-owner mode, #5701). Main thread
+	// only (the app WndProc).
+	lastSettingChangeScaleVerify time.Time
 }
 
 func (m *windowsApp) isDarkMode() bool {
@@ -289,6 +294,13 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 				m.isCurrentlyDarkMode = isDarkMode
 			}
 		}
+		// App-owner mode covers accessibility text-scale changes here: they
+		// arrive as WM_SETTINGCHANGE (no WM_DPICHANGED), and with native
+		// monitor-scale detection off nothing else re-derives the target.
+		// Deliberately not filtered on the setting string — the broadcast's
+		// area name for text scaling is not contractual — the verify passes
+		// are debounced and no-op to an OK line when nothing changed (#5701).
+		m.scheduleScaleVerifyOnSettingChange()
 		return 0
 	case w32.WM_POWERBROADCAST:
 		switch wParam {

@@ -1940,9 +1940,30 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if !w.isMinimizing {
 			rasterScale = w.currentWebviewRasterizationScale()
 		}
-		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, raster=%.2f, minimised=%v, inSizeMove=%v, stormActive=%v) (#5701)",
+		// App-owner mode: put the incoming DPI's scale NOW, before the
+		// suggested rect applies (Step-19 ordering — the rect's WM_SIZE
+		// re-layout then rasters at the correct scale). This is Microsoft's
+		// canonical single-writer pattern (detection off + put from
+		// WM_DPICHANGED, per the RasterizationScale docs and WinUI's
+		// production implementation): the message's DPI is authoritative for
+		// the top-level window, unlike native detection, which samples
+		// WebView2's own child HWND's monitor and commits the WRONG monitor's
+		// scale mid-drag (WebView2Feedback #58 — the v200.0.23/24 stuck-scale
+		// class). Put cadence during storms equals what native detection
+		// already did under W2V hosting (v200.0.21: zero process failures);
+		// if field data ever shows gpu-exits riding these puts again, gate
+		// this on w.dpiFlapSuppressUntil.IsZero() to defer storm-time puts to
+		// the settle. Skipped while minimising (#5605 — no controller COM).
+		put := false
+		if appOwnsWebviewScale() && !w.isMinimizing {
+			put = w.syncWebviewRasterizationScale(newDPI)
+			if put {
+				w.lastScalePutAt = time.Now()
+			}
+		}
+		globalApplication.warning("DPI transition: window %d dpi %d -> %d (suggested %dx%d px, raster=%.2f, owner=%s put=%v, minimised=%v, inSizeMove=%v, stormActive=%v) (#5701)",
 			w.parent.id, w.lastKnownDPI, newDPI,
-			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, rasterScale, w.isMinimizing, w.inSizeMove, stormActive)
+			suggested.Right-suggested.Left, suggested.Bottom-suggested.Top, rasterScale, scaleOwnerName(), put, w.isMinimizing, w.inSizeMove, stormActive)
 		resolved := false
 		if resolveStraddle && !w.inSizeMove && !w.isMinimizing {
 			w.resolveDPIFlapStraddle(suggested)
@@ -1997,20 +2018,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// No manual scale correction here: with native monitor-scale detection
-		// on, the browser owns the rasterization scale, and the
-		// RasterizationScaleChanged handler re-puts the bounds so the content
-		// re-lays-out at whatever scale the browser commits (the #5677
-		// scale-without-relayout gap). The manual clean-path resync that used
-		// to live here was the crash-adjacent actor in the field: every
-		// remaining GPU-process exit in the v200.0.18 AND v200.0.22 sessions
-		// sat 0.6-2s after one of its scale-puts, while the event-driven path
-		// alone closed the wrong-size race in ≤57ms (#5701). Historical note —
-		// under WINDOWED hosting, per-flip correction in either ordering
-		// (v200.0.16/17) tripped Chromium's browser-process kill within ~21s;
-		// Window-to-Visual hosting removed that cost class, and the manual
-		// puts turned out to be redundant anyway (every settle logged
-		// put=false: native detection had always corrected first).
+		// Post-rect scale handling: in app-owner mode the put already happened
+		// above (pre-apply, so the rect's WM_SIZE re-layout rasters right); in
+		// webview2-owner mode native detection commits the scale on its own
+		// schedule and the RasterizationScaleChanged handler re-puts the
+		// bounds so content re-lays-out at whatever it commits (the #5677
+		// scale-without-relayout gap). Either way the DPI verify ladder is
+		// the reconciler of last resort. Historical note — under WINDOWED
+		// hosting, per-flip correction in either ordering (v200.0.16/17)
+		// tripped Chromium's browser-process kill within ~21s, and the
+		// clean-path resync stayed crash-adjacent in v200.0.18/22;
+		// Window-to-Visual hosting removed that cost class (v200.0.21: zero
+		// process failures at identical re-raster cadence).
 		// While minimised skip the bookkeeping: the window sits off its
 		// restore monitor and GetDpiForWindow can report the wrong monitor's
 		// DPI (#5605); a genuine DPI difference is caught on restore by

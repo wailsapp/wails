@@ -3,6 +3,8 @@
 package application
 
 import (
+	"os"
+	"sync"
 	"time"
 
 	"golang.org/x/sys/windows/registry"
@@ -64,9 +66,38 @@ func (w *windowsWebviewWindow) targetRasterizationScale(dpi uint32) float64 {
 	return rasterizationTargetForDPI(dpi, windowsTextScaleFactor())
 }
 
+var (
+	scaleOwnerOnce  sync.Once
+	scaleOwnerIsApp bool
+)
+
+// appOwnsWebviewScale reports whether the APP writes the rasterization scale
+// (Microsoft's canonical single-writer pattern: detection off at controller
+// creation, put dpi/96 × textScale from WM_DPICHANGED — the official API
+// sample and WinUI's production configuration) or WebView2's native
+// monitor-scale detection does. App ownership is the default: native
+// detection samples WebView2's own child HWND's monitor, which resolves to
+// the WRONG monitor mid-drag and never re-checks (WebView2Feedback #58 — the
+// v200.0.23/24 stuck-scale field defects, #5701).
+//
+// Env toggle WAILS_DPI_SCALE_OWNER=webview2 reverts to native detection (plus
+// the verify ladder as reconciler) WITHOUT a rebuild, so mixed-DPI field rigs
+// can A/B the two owners in one binary. Read once — ownership must not change
+// mid-session (the breadcrumbs assume one writer per controller lifetime).
+func appOwnsWebviewScale() bool {
+	scaleOwnerOnce.Do(func() {
+		scaleOwnerIsApp = os.Getenv("WAILS_DPI_SCALE_OWNER") != "webview2"
+	})
+	return scaleOwnerIsApp
+}
+
 // scaleOwnerName names the configured rasterization-scale writer for the
-// telemetry lines ("webview2" = native monitor-scale detection).
+// telemetry lines ("app" = canonical app ownership, "webview2" = native
+// monitor-scale detection).
 func scaleOwnerName() string {
+	if appOwnsWebviewScale() {
+		return "app"
+	}
 	return "webview2"
 }
 
@@ -222,7 +253,25 @@ func (w *windowsWebviewWindow) configureWebviewScaleOwnership() {
 	if w.webviewRebuildInProgress {
 		reason = "rebuild"
 	}
-	detectionStatus := w.enableNativeMonitorScaleDetection()
+	var detectionStatus string
+	if appOwnsWebviewScale() {
+		// Canonical single ownership: edge.NewChromium already put
+		// ShouldDetectMonitorScaleChanges(false) at creation — leaving it off
+		// IS the configuration. The app writes the scale from WM_DPICHANGED.
+		detectionStatus = "off (app-owned)"
+		// Seed the fresh controller: its default scale is whatever monitor it
+		// initialised on, not necessarily this window's. This is the owner
+		// writing at controller birth, not a reconcile — done directly
+		// because an immediate verify would Skip during a rebuild
+		// (webviewRebuildInProgress is still set here).
+		if dpi, _ := w.DPI(); dpi != 0 && !w.isMinimizing {
+			if w.syncWebviewRasterizationScale(uint32(dpi)) {
+				w.lastScalePutAt = time.Now()
+			}
+		}
+	} else {
+		detectionStatus = w.enableNativeMonitorScaleDetection()
+	}
 	regStatus := "ok"
 	if ok, err := w.chromium.RasterizationScaleEventRegistration(); !ok {
 		regStatus = "FAILED: " + errString(err)
@@ -230,6 +279,12 @@ func (w *windowsWebviewWindow) configureWebviewScaleOwnership() {
 	globalApplication.warning(
 		"WebView2 scale ownership [%s]: window %d owner=%s AddRasterizationScaleChanged=%s ShouldDetectMonitorScaleChanges=%s textScale %.2f (#5701)",
 		reason, w.parent.id, scaleOwnerName(), regStatus, detectionStatus, windowsTextScaleFactor())
+	if appOwnsWebviewScale() {
+		// Observe (and correct, once the rebuild flag has cleared) shortly
+		// after the controller comes up — this is the line that proves the
+		// seed took, or logs the MISMATCH if it did not.
+		w.scheduleScaleVerify(reason, scaleVerifyRetryProbe, true)
+	}
 }
 
 // errString renders an error for a breadcrumb without panicking on nil (a
@@ -240,4 +295,27 @@ func errString(err error) string {
 		return "unknown"
 	}
 	return err.Error()
+}
+
+// scheduleScaleVerifyOnSettingChange fans a debounced DPI verify out to every
+// window after a WM_SETTINGCHANGE broadcast. Only relevant in app-owner mode:
+// an accessibility text-scale change alters the TARGET without any
+// WM_DPICHANGED, and with native detection off nothing else would notice
+// until the next monitor crossing. Runs on the main thread (the app WndProc);
+// the 1s debounce collapses the multi-broadcast bursts Windows sends per
+// settings change into one verify pass per window.
+func (m *windowsApp) scheduleScaleVerifyOnSettingChange() {
+	if !appOwnsWebviewScale() {
+		return
+	}
+	now := time.Now()
+	if !m.lastSettingChangeScaleVerify.IsZero() && now.Sub(m.lastSettingChangeScaleVerify) < time.Second {
+		return
+	}
+	m.lastSettingChangeScaleVerify = now
+	m.windowMapLock.RLock()
+	defer m.windowMapLock.RUnlock()
+	for _, window := range m.windowMap {
+		window.scheduleScaleVerify("settingchange", time.Second, true)
+	}
 }
