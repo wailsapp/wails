@@ -3,6 +3,8 @@
 package edge
 
 import (
+	"math"
+
 	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
@@ -81,10 +83,18 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-
+	// put_RasterizationScale takes the double BY VALUE. Pass its bit pattern
+	// (Go's runtime mirrors the first four syscall args into XMM0-3, which is
+	// where the x64 ABI makes the callee read a double argument) — the same
+	// pattern as PutZoomFactor. Passing &scale here handed the callee a heap
+	// ADDRESS reinterpreted as a double (a denormal ≈ 0.0), silently setting
+	// the rasterization scale to ~0: blank content, then Chromium CHECK
+	// crashes (0x80000003) — the v200.0.26 blank-screen field defect, and
+	// the likely mechanism behind every earlier "scale-put-adjacent" process
+	// death (wailsapp/wails#5701).
 	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scale)),
+		uintptr(math.Float64bits(scale)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
