@@ -3,6 +3,8 @@
 package webview2
 
 import (
+	"math"
+
 	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
@@ -137,9 +139,13 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 
+	// The double parameter is passed BY VALUE: use its bit pattern, not a
+	// pointer (Go mirrors the first four syscall args into XMM0-3, where the
+	// x64 ABI reads double arguments). A pointer here reaches the callee as a
+	// denormal ~0.0 double (wailsapp/wails#5701, v200.0.26 blank screen).
 	hr, _, _ := i.Vtbl.PutExpires.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&expires)),
+		uintptr(math.Float64bits(expires)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
