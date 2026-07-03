@@ -62,6 +62,12 @@ type windowsWebviewWindow struct {
 	// the scale during a mixed-DPI monitor cross is exactly the transient
 	// the re-enable exists to avoid. Main-thread only.
 	monitorScaleDetectionOn bool
+	// lastNavigatedURL is the most recent URL passed to setURL. It is what
+	// processFailed restores after a WebView2 process failure: the live
+	// webview cannot be queried at that point (its COM objects are dead),
+	// so the last host-requested navigation is the only reliable record.
+	// Main-thread only, like the rest of the webview state.
+	lastNavigatedURL string
 
 	// Window visibility management - robust fallback for issue #2861
 	showRequested     bool        // Track if show() was called before navigation completed
@@ -326,6 +332,7 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 func (w *windowsWebviewWindow) setURL(url string) {
 	// Navigate to the given URL in the webview
 	w.webviewNavigationCompleted = false
+	w.lastNavigatedURL = url
 	w.chromium.Navigate(url)
 }
 
@@ -2429,6 +2436,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.NavigationStartingCallback = w.navigationStarting
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
+	chromium.ProcessFailedCallback = w.processFailed
 
 	chromium.Embed(w.hwnd)
 
@@ -3029,4 +3037,52 @@ func (w *windowsWebviewWindow) applyDisplayAffinity(affinity uint32) bool {
 		return false
 	}
 	return true
+}
+
+// processFailed handles WebView2 process-failure notifications. Without a
+// handler, a dead browser process leaves the controller in a permanent
+// invalid state: every subsequent COM call fails with ERROR_INVALID_STATE
+// (0x8007139F), the window renders blank, and only an app restart recovers.
+// Renderer-level failures recover with a re-navigation; a browser-process
+// exit requires a full controller rebuild, deferred out of the callback per
+// WebView2 guidance. GPU and utility process failures are deliberately left
+// alone: Chromium restarts those processes itself, and if it gives up it
+// exits the browser process, which arrives here as BROWSER_PROCESS_EXITED.
+func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+	kind, err := args.GetProcessFailedKind()
+	if err != nil {
+		globalApplication.error("webview2: process failed and failure kind unavailable: %v", err)
+		return
+	}
+	globalApplication.error("webview2: process failed: kind=%d", kind)
+	switch kind {
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+		InvokeAsync(w.rebuildWebView)
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
+		edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_UNRESPONSIVE:
+		if url := w.lastNavigatedURL; url != "" {
+			InvokeAsync(func() {
+				w.chromium.Navigate(url)
+			})
+		}
+	}
+}
+
+// rebuildWebView replaces a dead WebView2 controller with a fresh one and
+// restores the last navigated URL. The old Chromium instance is abandoned
+// rather than re-embedded: after a browser-process exit every COM reference
+// it holds is dangling, and edge.Chromium.Embed's init-wait loop keys on a
+// per-instance flag that a used instance has already set, so re-embedding
+// the same instance would return before the new controller exists. The
+// construction mirrors run().
+func (w *windowsWebviewWindow) rebuildWebView() {
+	globalApplication.info("webview2: rebuilding controller after browser process exit")
+	w.chromium = edge.NewChromium()
+	if globalApplication.options.ErrorHandler != nil {
+		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
+	}
+	w.setupChromium()
+	if url := w.lastNavigatedURL; url != "" {
+		w.setURL(url)
+	}
 }
