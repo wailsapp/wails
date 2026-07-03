@@ -25,7 +25,7 @@ jobs:
           go-version: "1.25"
 
       - name: Update Sponsors
-        run: cd tools/sponsorkit && go run . -out ../../website/static/img/sponsors.svg
+        run: cd tools/sponsorkit && go run . -login leaanthony -out ../../website/static/img/sponsors.svg
         env:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           GOWORK: "off"

@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"image"
-	"image/color"
 	"image/draw"
 	_ "image/gif"
 	"image/jpeg"
@@ -16,11 +15,6 @@ import (
 	"strconv"
 	"sync"
 )
-
-// cardBackground is composited under transparent avatars before JPEG
-// encoding. It should match the rendered card so circle-clipped avatars
-// blend in.
-var cardBackground = color.RGBA{R: 0x11, G: 0x16, B: 0x24, A: 0xff}
 
 // FetchAvatars downloads every sponsor's avatar at pixel size px (already
 // scaled for hi-dpi), re-encodes it as JPEG and returns data URIs keyed by

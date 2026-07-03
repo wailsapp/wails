@@ -291,9 +291,9 @@ func (r *renderer) sponsor(s Sponsor, t TierStyle, cx, cy float64) {
 	hover := t.Ring == "animated"
 
 	if hover {
-		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link sp" style="--d:%spx">`, esc(s.URL), num(rad*1.5)))
+		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer" class="link sp" style="--d:%spx">`, esc(s.URL), num(rad*1.5)))
 	} else {
-		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(s.URL)))
+		r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer" class="link">`, esc(s.URL)))
 	}
 	r.body.WriteString(fmt.Sprintf(`<title>%s (@%s)</title>`, esc(s.DisplayName()), esc(s.Login)))
 	if hover {
@@ -404,7 +404,7 @@ func (r *renderer) footer() {
 	cx := r.opts.Width / 2
 	r.y += 36
 	btnW, btnH := 210.0, 42.0
-	r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" class="link">`, esc(r.opts.SponsorURL)))
+	r.body.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer" class="link">`, esc(r.opts.SponsorURL)))
 	// Soft breathing glow behind the button.
 	r.body.WriteString(fmt.Sprintf(`<rect x="%s" y="%s" width="%s" height="%s" rx="21" fill="url(#accent)" filter="url(#soften)" opacity="0.5"><animate attributeName="opacity" values="0.3;0.75;0.3" dur="3s" repeatCount="indefinite"/></rect>`,
 		num(cx-btnW/2), num(r.y), num(btnW), num(btnH)))

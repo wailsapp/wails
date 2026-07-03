@@ -99,6 +99,8 @@ func FetchSponsors(client *http.Client, token, login string) ([]Sponsor, error) 
 		}
 		req.Header.Set("Authorization", "bearer "+token)
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", "wails-sponsorkit")
 
 		resp, err := client.Do(req)
 		if err != nil {

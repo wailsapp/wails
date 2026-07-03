@@ -1,5 +1,13 @@
 package main
 
+import "image/color"
+
+// cardBackground is the card's midpoint colour. It is composited under
+// transparent avatars before JPEG encoding so circle-clipped avatars blend
+// into the card. Keep it in sync with the "bg" gradient in render.go
+// (#131A2B at the top fading to #0B0F1A).
+var cardBackground = color.RGBA{R: 0x11, G: 0x16, B: 0x24, A: 0xff}
+
 // TierStyle controls how sponsors in a tier are drawn. Bigger tiers get
 // bigger avatars and fancier ring treatments.
 type TierStyle struct {

@@ -70,6 +70,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
-	info, _ := os.Stat(*out)
-	fmt.Printf("Wrote %s (%d KiB)\n", *out, info.Size()/1024)
+	fmt.Printf("Wrote %s (%d KiB)\n", *out, len(svg)/1024)
 }
