@@ -29,10 +29,6 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return false
-		}
-
 		return m.needsCreateImpl(types.Unalias(typ), visited)
 
 	case *types.Named:
@@ -51,7 +47,16 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if m.collector.IsVoidAlias(obj) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(obj):
+			switch m.TimeType {
+			case "Date":
+				return true
+			default:
+				return false
+			}
+		case m.collector.IsVoidAlias(obj):
 			return false
 		}
 
@@ -113,10 +118,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return "$Create.Any"
-		}
-
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array, *types.Pointer:
@@ -148,7 +149,16 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if m.collector.IsVoidAlias(t.Obj()) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(t.Obj()):
+			switch m.TimeType {
+			case "Date":
+				return "$Create.DateFromTime"
+			default:
+				return "$Create.Any"
+			}
+		case m.collector.IsVoidAlias(t.Obj()):
 			return "$Create.Any"
 		}
 

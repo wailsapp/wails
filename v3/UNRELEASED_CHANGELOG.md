@@ -17,12 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Replace Node-based sponsor image pipeline with Go generator in [PR](https://github.com/wailsapp/wails/pull/5719) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
+- Reject the U+0085 (NEXT LINE) control character in `ValidateAndSanitizeURL`, completing the whitespace coverage of the URL validator
+- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+- Add explicit Objective-C memory management for Cocoa objects across Darwin dialogs, menus, tray, and notifications in [PR](https://github.com/wailsapp/wails/pull/5714) by @taliesin-ai
 - Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
 
 ## Deprecated
