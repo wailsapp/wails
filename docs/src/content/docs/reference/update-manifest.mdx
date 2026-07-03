@@ -122,7 +122,7 @@ Whether the manifest is an upgrade is always decided client-side under SemVer 2.
 
 ## Verification and trust
 
-Checksums and signatures ride in the manifest, but the trust root does not: signatures are verified against the public key the application pinned via `updater.Config.PublicKey` at build time. A compromised or substituted update source cannot supply its own key. An artifact that carries a signature when the application has no pinned key fails closed, as does a signature without a declared `signatureAlgo` or one that does not decode — clients never silently fall back to digest-only verification.
+Checksums and signatures ride in the manifest, but the trust root does not: signatures are verified against the public key the application pinned via `updater.Config.PublicKey` at build time. A compromised or substituted update source cannot supply its own key. An artifact that carries a signature when the application has no pinned key fails closed, as does a signature without a declared `signatureAlgo` or one that does not decode: clients never silently fall back to digest-only verification.
 
 Digest-only artifacts install after the digest check, which protects against corruption but relies on TLS plus the host's own integrity for tamper resistance. Ship signatures for anything security-sensitive.
 
@@ -165,7 +165,7 @@ wails3 updater verify -manifest manifest.json -publickey updater.key.pub
 
 ## Authentication
 
-Authentication is the server's business; the protocol just carries headers. The client resends its configured headers on every manifest request. For artifact downloads the `Authorization` header is sent only when the artifact URL is on the same host as the manifest, and it is stripped on any cross-origin redirect, so credentials never leak to a CDN or object store.
+Authentication is the server's business; the protocol just carries headers. The client resends its configured headers on every manifest request. For artifact downloads the `Authorization` header is sent only when the artifact URL is on the same host as the manifest and does not downgrade from `https` to `http`, and it is stripped on any cross-origin or downgrading redirect, so credentials never leak to a CDN or object store and never travel in cleartext.
 
 License-gated example, pairing naturally with hosted licensing services:
 

@@ -56,8 +56,9 @@ type Config struct {
 
 	// Headers are added to every manifest request, e.g. an Authorization
 	// header for license-gated update servers. Artifact downloads reuse them
-	// only when the artifact URL is on the same host as the manifest URL;
-	// cross-origin downloads never carry the Authorization header.
+	// only when the artifact URL is on the same host as the manifest URL and
+	// does not downgrade from https to http; cross-origin downloads never
+	// carry the Authorization header.
 	Headers map[string]string
 
 	// HTTPClient lets callers inject a custom client. Nil uses a 30s-timeout
@@ -206,9 +207,9 @@ func (p *Provider) Check(ctx context.Context, req updater.CheckRequest) (*update
 
 // Download implements updater.Provider. It streams the artifact URL that
 // Check stashed in the release metadata. Configured headers are sent only
-// when the artifact lives on the same host as the manifest; the
-// Authorization header never crosses origins, either on the first request
-// or on redirects.
+// when the artifact lives on the same host as the manifest over an equal or
+// upgraded scheme; the Authorization header never crosses origins or rides
+// an https-to-http downgrade, either on the first request or on redirects.
 func (p *Provider) Download(ctx context.Context, rel *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
 	if rel == nil || rel.Metadata == nil {
 		return errors.New("endpoint: release missing metadata")
@@ -223,7 +224,7 @@ func (p *Provider) Download(ctx context.Context, rel *updater.Release, dst io.Wr
 		return err
 	}
 	req.Header.Set("Accept", "application/octet-stream")
-	if sameHost(p.cfg.URL, urlStr) {
+	if headersAllowedFor(p.cfg.URL, urlStr) {
 		for k, v := range p.cfg.Headers {
 			req.Header.Set(k, v)
 		}
@@ -465,16 +466,24 @@ func resolveURL(base, ref string) (string, error) {
 	return resolved.String(), nil
 }
 
-func sameHost(a, b string) bool {
-	ua, err := url.Parse(a)
+// headersAllowedFor reports whether the configured headers may accompany a
+// request to target: the host must match the manifest's, and the scheme must
+// not downgrade from https to http. Without the scheme rule, credentials
+// configured for a secure endpoint could be replayed in cleartext to an
+// http URL on the same host.
+func headersAllowedFor(manifestURL, target string) bool {
+	m, err := url.Parse(manifestURL)
 	if err != nil {
 		return false
 	}
-	ub, err := url.Parse(b)
+	t, err := url.Parse(target)
 	if err != nil {
 		return false
 	}
-	return strings.EqualFold(ua.Host, ub.Host)
+	if !strings.EqualFold(m.Host, t.Host) {
+		return false
+	}
+	return !(strings.EqualFold(m.Scheme, "https") && strings.EqualFold(t.Scheme, "http"))
 }
 
 func filenameFromURL(u string) string {
@@ -496,14 +505,19 @@ func filetypeFromFilename(name string) string {
 }
 
 // wrapStripAuthOnRedirect installs a CheckRedirect on c that drops the
-// Authorization header when a redirect crosses origins (e.g. update server
-// to CDN or object storage).
+// Authorization header when a redirect crosses hosts (e.g. update server to
+// CDN or object storage) or downgrades from https to http on the same host.
 func wrapStripAuthOnRedirect(c *http.Client) *http.Client {
 	clone := *c
 	prev := clone.CheckRedirect
 	clone.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if len(via) > 0 && !strings.EqualFold(via[len(via)-1].URL.Host, req.URL.Host) {
-			req.Header.Del("Authorization")
+		if len(via) > 0 {
+			last := via[len(via)-1].URL
+			crossHost := !strings.EqualFold(last.Host, req.URL.Host)
+			downgrade := strings.EqualFold(last.Scheme, "https") && strings.EqualFold(req.URL.Scheme, "http")
+			if crossHost || downgrade {
+				req.Header.Del("Authorization")
+			}
 		}
 		if prev != nil {
 			return prev(req, via)

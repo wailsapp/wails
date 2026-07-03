@@ -4,10 +4,16 @@ import (
 	"bytes"
 	"context"
 	"crypto"
+	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -26,9 +32,13 @@ func genTestKey(t *testing.T) (string, ed25519.PublicKey) {
 	if err := UpdaterGenKey(&UpdaterGenKeyOptions{Out: keyPath}); err != nil {
 		t.Fatalf("genkey: %v", err)
 	}
-	pub, err := loadUpdaterPublicKey(keyPath + ".pub")
+	pubAny, err := loadUpdaterPublicKey(keyPath + ".pub")
 	if err != nil {
 		t.Fatalf("load public key: %v", err)
+	}
+	pub, ok := pubAny.(ed25519.PublicKey)
+	if !ok {
+		t.Fatalf("genkey produced a %T public key, want ed25519", pubAny)
 	}
 	return keyPath, pub
 }
@@ -339,5 +349,71 @@ func TestDecodeUpdaterB64AcceptsUnpadded(t *testing.T) {
 	}
 	if _, err := decodeUpdaterB64("!!!"); err == nil {
 		t.Fatal("expected error for invalid base64")
+	}
+}
+
+func TestUpdaterVerifyRejectsUnverifiableArtifact(t *testing.T) {
+	// An entry with neither digest nor signature must fail verification:
+	// reporting an unchecked file as verified would defeat the CI gate.
+	dir := t.TempDir()
+	writeArtifact(t, dir, "app.zip", "payload")
+	writeArtifact(t, dir, "manifest.json", `{
+		"schemaVersion": 1,
+		"version": "1.0.0",
+		"publishedAt": "2026-01-01T00:00:00Z",
+		"artifacts": [{"url": "app.zip"}]
+	}`)
+	err := UpdaterVerify(&UpdaterVerifyOptions{Manifest: filepath.Join(dir, "manifest.json")})
+	if err == nil {
+		t.Fatal("expected verify to fail for an artifact with neither digest nor signature")
+	}
+}
+
+func TestUpdaterVerifyECDSAP256(t *testing.T) {
+	// Third-party publishers may sign with ecdsa-p256; verify must support
+	// every algorithm the runtime verifier does.
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	content := "ecdsa signed payload"
+	writeArtifact(t, dir, "app.zip", content)
+	digest := sha256.Sum256([]byte(content))
+	sigDER, err := ecdsa.SignASN1(rand.Reader, key, digest[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubPath := filepath.Join(dir, "ec.pub")
+	if err := os.WriteFile(pubPath, pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER}), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	manifest := map[string]any{
+		"schemaVersion": 1,
+		"version":       "1.0.0",
+		"publishedAt":   "2026-01-01T00:00:00Z",
+		"artifacts": []map[string]any{{
+			"url":           "app.zip",
+			"digestAlgo":    "sha256",
+			"digest":        base64.StdEncoding.EncodeToString(digest[:]),
+			"signatureAlgo": "ecdsa-p256",
+			"signature":     base64.StdEncoding.EncodeToString(sigDER),
+		}},
+	}
+	raw, _ := json.Marshal(manifest)
+	writeArtifact(t, dir, "manifest.json", string(raw))
+	manifestPath := filepath.Join(dir, "manifest.json")
+
+	if err := UpdaterVerify(&UpdaterVerifyOptions{Manifest: manifestPath, PublicKey: pubPath}); err != nil {
+		t.Fatalf("ecdsa-p256 verify failed: %v", err)
+	}
+	// Tampering must still fail.
+	writeArtifact(t, dir, "app.zip", "tampered")
+	if err := UpdaterVerify(&UpdaterVerifyOptions{Manifest: manifestPath, PublicKey: pubPath}); err == nil {
+		t.Fatal("ecdsa-p256 verify passed on tampered artifact")
 	}
 }

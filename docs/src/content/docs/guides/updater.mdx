@@ -172,7 +172,7 @@ ep, _ := endpoint.New(endpoint.Config{
 })
 ```
 
-Configured headers are sent on every manifest request; artifact downloads reuse them only on the manifest's own host, and the `Authorization` header is stripped on any cross-origin redirect.
+Configured headers are sent on every manifest request; artifact downloads reuse them only on the manifest's own host with no `https` to `http` downgrade, and the `Authorization` header is stripped on any cross-origin or downgrading redirect.
 
 The CLI owns the publishing side: `wails3 updater manifest` digests, signs and describes your release files in one command, and `wails3 updater verify` re-checks the result before you upload. See [Publishing with the wails3 CLI](/reference/update-manifest#publishing-with-the-wails3-cli).
 

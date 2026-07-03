@@ -3,11 +3,14 @@ package commands
 import (
 	"bytes"
 	"crypto"
+	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
@@ -15,6 +18,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -335,7 +339,7 @@ func UpdaterVerify(options *UpdaterVerifyOptions) error {
 		return errors.New("manifest has no artifacts")
 	}
 
-	var pub ed25519.PublicKey
+	var pub crypto.PublicKey
 	if options.PublicKey != "" {
 		pub, err = loadUpdaterPublicKey(options.PublicKey)
 		if err != nil {
@@ -358,11 +362,16 @@ func UpdaterVerify(options *UpdaterVerifyOptions) error {
 			pterm.Error.Printfln("%s: %v", name, err)
 			continue
 		}
-		status := "digest ok"
-		if a.Signature != "" {
-			status = "digest ok, signature ok"
+		// Report only the checks that actually ran; verifyUpdaterArtifact
+		// guarantees at least one of them did.
+		var checks []string
+		if a.Digest != "" {
+			checks = append(checks, "digest ok")
 		}
-		pterm.Success.Printfln("%s: %s", name, status)
+		if a.Signature != "" {
+			checks = append(checks, "signature ok")
+		}
+		pterm.Success.Printfln("%s: %s", name, strings.Join(checks, ", "))
 	}
 	if len(failures) > 0 {
 		return fmt.Errorf("%d of %d artifact(s) failed verification", len(failures), len(m.Artifacts))
@@ -373,8 +382,13 @@ func UpdaterVerify(options *UpdaterVerifyOptions) error {
 
 // verifyUpdaterArtifact checks one artifact file against its manifest entry.
 // pub may be nil, in which case a signature-bearing entry is an error (the
-// same fail-closed rule the framework applies).
-func verifyUpdaterArtifact(path string, a *updaterManifestArtifact, pub ed25519.PublicKey) error {
+// same fail-closed rule the framework applies). An entry that carries
+// neither a digest nor a signature is also an error: this command is a CI
+// gate, and reporting an unchecked file as verified would defeat it.
+func verifyUpdaterArtifact(path string, a *updaterManifestArtifact, pub crypto.PublicKey) error {
+	if a.Digest == "" && a.Signature == "" {
+		return errors.New("artifact has neither digest nor signature; nothing to verify")
+	}
 	digest, size, err := hashUpdaterFile(path, a.DigestAlgo)
 	if err != nil {
 		return err
@@ -401,22 +415,66 @@ func verifyUpdaterArtifact(path string, a *updaterManifestArtifact, pub ed25519.
 	if err != nil {
 		return fmt.Errorf("signature is not valid base64: %w", err)
 	}
-	switch strings.ToLower(a.SignatureAlgo) {
+	switch algo := strings.ToLower(a.SignatureAlgo); algo {
 	case "ed25519ph":
+		edPub, ok := pub.(ed25519.PublicKey)
+		if !ok {
+			return fmt.Errorf("ed25519ph requires an Ed25519 public key, got %T", pub)
+		}
 		if strings.ToLower(a.DigestAlgo) != "sha512" {
 			return fmt.Errorf("ed25519ph requires a sha512 digest, manifest declares %q", a.DigestAlgo)
 		}
-		if err := ed25519.VerifyWithOptions(pub, digest, sig, &ed25519.Options{Hash: crypto.SHA512}); err != nil {
+		if err := ed25519.VerifyWithOptions(edPub, digest, sig, &ed25519.Options{Hash: crypto.SHA512}); err != nil {
 			return errors.New("ed25519ph signature did not verify")
 		}
 	case "ed25519":
-		if !ed25519.Verify(pub, digest, sig) {
+		edPub, ok := pub.(ed25519.PublicKey)
+		if !ok {
+			return fmt.Errorf("ed25519 requires an Ed25519 public key, got %T", pub)
+		}
+		if !ed25519.Verify(edPub, digest, sig) {
 			return errors.New("ed25519 signature did not verify")
+		}
+	case "ecdsa-p256":
+		ecPub, ok := pub.(*ecdsa.PublicKey)
+		if !ok {
+			return fmt.Errorf("ecdsa-p256 requires an ECDSA public key, got %T", pub)
+		}
+		if ecPub.Curve != elliptic.P256() {
+			return fmt.Errorf("ecdsa-p256 requires a P-256 key, got %s", ecPub.Curve.Params().Name)
+		}
+		r, s, err := splitUpdaterECDSASig(sig)
+		if err != nil {
+			return err
+		}
+		if !ecdsa.Verify(ecPub, digest, r, s) {
+			return errors.New("ecdsa-p256 signature did not verify")
 		}
 	default:
 		return fmt.Errorf("cannot verify signature algorithm %q with this CLI", a.SignatureAlgo)
 	}
 	return nil
+}
+
+// splitUpdaterECDSASig accepts the same two encodings the framework's
+// verifier does: raw r||s (64 bytes for P-256) or ASN.1 DER with no
+// trailing data.
+func splitUpdaterECDSASig(sig []byte) (r, s *big.Int, err error) {
+	if len(sig) == 64 {
+		return new(big.Int).SetBytes(sig[:32]), new(big.Int).SetBytes(sig[32:]), nil
+	}
+	var seq struct{ R, S *big.Int }
+	rest, err := asn1.Unmarshal(sig, &seq)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ecdsa signature format unrecognised: %w", err)
+	}
+	if len(rest) != 0 {
+		return nil, nil, errors.New("ecdsa signature has trailing data")
+	}
+	if seq.R == nil || seq.S == nil {
+		return nil, nil, errors.New("ecdsa signature missing r/s")
+	}
+	return seq.R, seq.S, nil
 }
 
 // --- shared helpers ---
@@ -501,9 +559,10 @@ func loadUpdaterPrivateKey(path string) (ed25519.PrivateKey, error) {
 }
 
 // loadUpdaterPublicKey accepts a path to a PEM/DER public key file or a
-// base64 string of either the raw 32-byte key or its DER encoding — the same
-// forms updater.Config.PublicKey accepts.
-func loadUpdaterPublicKey(pathOrB64 string) (ed25519.PublicKey, error) {
+// base64 string of either the raw 32-byte Ed25519 key or a DER encoding,
+// the same forms updater.Config.PublicKey accepts. Ed25519 and ECDSA P-256
+// keys are supported, matching the framework's verifier registry.
+func loadUpdaterPublicKey(pathOrB64 string) (crypto.PublicKey, error) {
 	raw := []byte(pathOrB64)
 	if b, err := os.ReadFile(pathOrB64); err == nil {
 		raw = b
@@ -520,11 +579,11 @@ func loadUpdaterPublicKey(pathOrB64 string) (ed25519.PublicKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse public key %q: %w", pathOrB64, err)
 	}
-	pub, ok := pubAny.(ed25519.PublicKey)
-	if !ok {
-		return nil, fmt.Errorf("public key is a %T, need Ed25519", pubAny)
+	switch pubAny.(type) {
+	case ed25519.PublicKey, *ecdsa.PublicKey:
+		return pubAny, nil
 	}
-	return pub, nil
+	return nil, fmt.Errorf("public key is a %T, need Ed25519 or ECDSA P-256", pubAny)
 }
 
 // collectUpdaterArtifacts expands the file and directory arguments into a

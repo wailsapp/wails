@@ -508,3 +508,55 @@ func mustParse(t *testing.T, s string) *url.URL {
 	}
 	return u
 }
+
+func TestHeadersAllowedFor(t *testing.T) {
+	tests := []struct {
+		manifest, target string
+		want             bool
+	}{
+		{"https://u.example.com/m.json", "https://u.example.com/app.zip", true},
+		{"https://u.example.com/m.json", "http://u.example.com/app.zip", false}, // https→http downgrade leaks auth in cleartext
+		{"http://u.example.com/m.json", "https://u.example.com/app.zip", true},  // upgrade is fine
+		{"http://u.example.com/m.json", "http://u.example.com/app.zip", true},
+		{"https://u.example.com/m.json", "https://cdn.example.com/app.zip", false},
+		{"https://u.example.com:8443/m.json", "https://u.example.com/app.zip", false}, // port is part of the host
+	}
+	for _, tt := range tests {
+		if got := headersAllowedFor(tt.manifest, tt.target); got != tt.want {
+			t.Errorf("headersAllowedFor(%q, %q) = %v, want %v", tt.manifest, tt.target, got, tt.want)
+		}
+	}
+}
+
+func TestRedirectStripsAuthOnSchemeDowngrade(t *testing.T) {
+	// Same host, https → http: the transport would happily copy the
+	// Authorization header (Go only strips on host changes), so our
+	// CheckRedirect must drop it.
+	c := wrapStripAuthOnRedirect(&http.Client{})
+	mkReq := func(u string) *http.Request {
+		r, err := http.NewRequest(http.MethodGet, u, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	next := mkReq("http://updates.example.com/app.zip")
+	next.Header.Set("Authorization", "License secret")
+	via := []*http.Request{mkReq("https://updates.example.com/app.zip")}
+	if err := c.CheckRedirect(next, via); err != nil {
+		t.Fatal(err)
+	}
+	if got := next.Header.Get("Authorization"); got != "" {
+		t.Errorf("Authorization survived an https→http downgrade redirect: %q", got)
+	}
+
+	// Same host and scheme: the header must survive.
+	next = mkReq("https://updates.example.com/other.zip")
+	next.Header.Set("Authorization", "License secret")
+	if err := c.CheckRedirect(next, via); err != nil {
+		t.Fatal(err)
+	}
+	if next.Header.Get("Authorization") == "" {
+		t.Error("Authorization dropped on a same-origin redirect")
+	}
+}
