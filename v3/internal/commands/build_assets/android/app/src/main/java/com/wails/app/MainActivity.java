@@ -212,9 +212,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void launchCameraCapture(boolean video) {
         if (checkSelfPermission("android.permission.CAMERA") != PackageManager.PERMISSION_GRANTED) {
+            pendingCaptureIsVideo = video;
             requestPermissions(new String[]{"android.permission.CAMERA"}, CAMERA_PERMISSION_REQUEST);
-            bridge.emitEvent("common:capture",
-                    "{\"error\":\"camera permission requested \u2014 tap again once granted\"}");
             return;
         }
         try {
@@ -235,6 +234,22 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "launchCameraCapture failed", e);
             bridge.emitEvent("common:capture", "{\"error\":\"capture failed\"}");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                launchCameraCapture(pendingCaptureIsVideo);
+            } else {
+                bridge.emitEvent("common:capture", "{\"error\":\"camera permission denied\"}");
+            }
+            return;
+        }
+        if (bridge != null) {
+            bridge.onRequestPermissionsResult(requestCode, grantResults);
         }
     }
 
