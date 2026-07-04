@@ -355,9 +355,8 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 		err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
 	} else {
 		err = e.createCoreWebView2CompositionController(env)
-		if errors.Is(err, UnsupportedCapabilityError) {
-			e.CompositionControllerEnabled = false
-			err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+		if err != nil {
+			err = e.fallbackToCoreWebView2Controller(fmt.Errorf("composition controller setup failed: %w", err))
 		}
 	}
 	if err != nil {
@@ -392,7 +391,17 @@ func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Env
 
 func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
 	if int32(res) < 0 {
-		e.errorCallback(fmt.Errorf("error creating composition controller with %08x: %s", res, syscall.Errno(res)))
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error creating composition controller with %08x: %s", res, syscall.Errno(res))); err != nil {
+			e.errorCallback(err)
+		}
+		return 0
+	}
+
+	if compositionController == nil {
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("composition controller completed without a controller")); err != nil {
+			e.errorCallback(err)
+		}
+		return 0
 	}
 
 	compositionController.AddRef()
@@ -400,15 +409,59 @@ func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr,
 	e.compositionController4 = compositionController.GetICoreWebView2CompositionController4()
 
 	if err := e.compositionHost.attachController(e.compositionController); err != nil {
-		e.errorCallback(err)
+		if fallbackErr := e.fallbackToCoreWebView2Controller(fmt.Errorf("attaching composition controller failed: %w", err)); fallbackErr != nil {
+			e.errorCallback(fallbackErr)
+		}
+		return 0
 	}
 
 	controller := compositionController.GetICoreWebView2Controller()
 	if controller == nil {
-		e.errorCallback(fmt.Errorf("error getting controller from composition controller"))
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error getting controller from composition controller")); err != nil {
+			e.errorCallback(err)
+		}
+		return 0
 	}
 
 	return e.initializeController(controller)
+}
+
+func (e *Chromium) fallbackToCoreWebView2Controller(reason error) error {
+	log.Printf("[WebView2] Composition hosting unavailable, falling back to HWND controller: %v\n", reason)
+
+	e.releaseCompositionController()
+	e.releaseCompositionHost()
+	e.CompositionControllerEnabled = false
+
+	if e.environment == nil {
+		return fmt.Errorf("cannot fall back to WebView2 HWND controller without an environment: %w", reason)
+	}
+	if err := e.environment.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted); err != nil {
+		return fmt.Errorf("composition hosting failed (%v), and HWND controller fallback failed: %w", reason, err)
+	}
+	return nil
+}
+
+func (e *Chromium) releaseCompositionController() {
+	if e.compositionController4 != nil {
+		e.compositionController4.Release()
+		e.compositionController4 = nil
+	}
+	if e.compositionController != nil {
+		if controller := e.compositionController.GetICoreWebView2Controller(); controller != nil {
+			_ = controller.Close()
+			controller.Release()
+		}
+		e.compositionController.Release()
+		e.compositionController = nil
+	}
+}
+
+func (e *Chromium) releaseCompositionHost() {
+	if e.compositionHost != nil {
+		e.compositionHost.release()
+		e.compositionHost = nil
+	}
 }
 
 func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uintptr {

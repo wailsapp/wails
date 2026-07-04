@@ -20,10 +20,13 @@ func newCompositionHost(hwnd uintptr) (*compositionHost, error) {
 	}
 	target, err := device.CreateTargetForHwnd(hwnd, true)
 	if err != nil {
+		device.Release()
 		return nil, err
 	}
 	visual, err := device.CreateVisual()
 	if err != nil {
+		target.Release()
+		device.Release()
 		return nil, err
 	}
 	return &compositionHost{
@@ -44,4 +47,22 @@ func (h *compositionHost) attachController(controller *ICoreWebView2CompositionC
 		return err
 	}
 	return h.device.Commit()
+}
+
+func (h *compositionHost) release() {
+	if h == nil {
+		return
+	}
+	if h.visual != nil {
+		h.visual.Release()
+		h.visual = nil
+	}
+	if h.target != nil {
+		h.target.Release()
+		h.target = nil
+	}
+	if h.device != nil {
+		h.device.Release()
+		h.device = nil
+	}
 }
