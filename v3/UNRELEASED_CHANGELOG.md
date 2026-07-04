@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
+- Bump `webview2` to v1.0.28 ([release notes](https://github.com/wailsapp/wails/releases/tag/webview2%2Fv1.0.28)).
 <!-- Changes in existing functionality -->
 - Bump the Android template `compileSdk`/`targetSdk` from 34 to 35, which Google Play requires for new app submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 
