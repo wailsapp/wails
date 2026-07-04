@@ -74,10 +74,14 @@ void systemTraySetANSILabel(void* nsStatusItem, void* label) {
 
     NSMutableAttributedString* attributedString = (NSMutableAttributedString*) label;
 
-    // Set the label
-    NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-    [statusItem setAttributedTitle:attributedString];
-    // [attributedString release];
+    // Set the label on the main thread.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // setAttributedTitle: copies the string, so drop the owning
+        // reference we accumulated while building it.
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setAttributedTitle:attributedString];
+        [attributedString release];
+    });
 }
 
 void* appendAttributedString(void *currentString, char *title, char *FG, char *BG) {
@@ -86,6 +90,9 @@ void* appendAttributedString(void *currentString, char *title, char *FG, char *B
     if( currentString != NULL ) {
         NSMutableAttributedString* current = (NSMutableAttributedString*)currentString;
         [current appendAttributedString:newString];
+        // appendAttributedString: copies the run; drop the +1 from
+        // createAttributedString
+        [newString release];
         newString = current;
     }
 
@@ -129,6 +136,8 @@ void* createAttributedString(char *title, char *FG, char *BG) {
             }
     }
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithUTF8String:title] attributes:dictionary];
+    // The attributed string keeps its own copy of the attributes
+    [dictionary release];
     return (void*)attributedString;
 }
 

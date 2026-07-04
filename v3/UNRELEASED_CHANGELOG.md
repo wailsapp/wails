@@ -17,17 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Implement macOS WebView reload and force reload, and add recovery for WebContent process termination in [PR](https://github.com/wailsapp/wails/pull/5129) by @wayneforrest
-- Add comprehensive German documentation for contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5396) by @leaanthony
-- Enhance notifications with sound, attachments, scheduling, and update API in [PR](https://github.com/wailsapp/wails/pull/5333) by @popaprozac
+- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing
+- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
-- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
+- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

@@ -74,6 +74,7 @@ import java.util.concurrent.Executor;
 public class WailsBridge {
     private static final String TAG = "WailsBridge";
     private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final int LOCATION_PERMISSION_REQUEST = 1002;
 
     static {
         // Load the native Go library
@@ -97,6 +98,7 @@ public class WailsBridge {
     private boolean motionWanted = false;
     private boolean proximityWanted = false;
     private boolean torchOn = false;
+    private boolean pendingLocationRequest = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -826,6 +828,32 @@ public class WailsBridge {
         }
     }
 
+    private boolean hasLocationPermission() {
+        return hasFineLocationPermission()
+                || activity.checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION")
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasFineLocationPermission() {
+        return activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION")
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public void onRequestPermissionsResult(int requestCode, int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            boolean shouldResume = pendingLocationRequest;
+            pendingLocationRequest = false;
+            if (!shouldResume) {
+                return;
+            }
+            if (hasLocationPermission()) {
+                getLocation();
+            } else {
+                emitLocationError("location permission denied");
+            }
+        }
+    }
+
     /**
      * Request a one-shot location fix. Emits "common:location"
      * {lat,lng,accuracy} or {error}. Requests ACCESS_FINE_LOCATION on first use.
@@ -833,19 +861,22 @@ public class WailsBridge {
     public void getLocation() {
         mainHandler.post(() -> {
             try {
-                if (activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION")
-                        != PackageManager.PERMISSION_GRANTED) {
+                if (!hasLocationPermission()) {
+                    pendingLocationRequest = true;
                     activity.requestPermissions(new String[]{
                             "android.permission.ACCESS_FINE_LOCATION",
-                            "android.permission.ACCESS_COARSE_LOCATION"}, 1002);
-                    emitLocationError("location permission requested — tap again once granted");
+                            "android.permission.ACCESS_COARSE_LOCATION"}, LOCATION_PERMISSION_REQUEST);
                     return;
                 }
                 LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
                 if (lm == null) { emitLocationError("location unavailable"); return; }
                 Location best = null;
-                for (String provider : new String[]{LocationManager.GPS_PROVIDER,
-                        LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER}) {
+                boolean fineLocation = hasFineLocationPermission();
+                String[] providers = fineLocation
+                        ? new String[]{LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER,
+                        LocationManager.PASSIVE_PROVIDER}
+                        : new String[]{LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER};
+                for (String provider : providers) {
                     try {
                         Location l = lm.getLastKnownLocation(provider);
                         if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
@@ -857,7 +888,7 @@ public class WailsBridge {
                     return;
                 }
                 // No cached fix: request a single update from whichever provider is enabled.
-                String provider = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                String provider = fineLocation && lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                         ? LocationManager.GPS_PROVIDER
                         : lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
                         ? LocationManager.NETWORK_PROVIDER : null;
