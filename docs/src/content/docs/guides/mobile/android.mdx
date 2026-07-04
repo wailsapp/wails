@@ -75,11 +75,22 @@ In debug builds the WebView is inspectable from Chrome at `chrome://inspect`.
 ```bash
 wails3 task android:package             # production release APK
 wails3 task android:deploy-emulator     # install + launch it
+wails3 task android:run:device          # debug install + launch on a physical device
+wails3 task android:deploy-device       # install + launch on a physical device
+DEVICE_ID=<serial> wails3 task android:run:device
+DEVICE_ID=<serial> wails3 task android:deploy-device
 ```
 
 Production builds use `-tags production,android`, are stripped, and compile
 out the framework's internal diagnostics. `wails3 task android:package:fat`
 builds both `arm64-v8a` and `x86_64` into a single APK.
+
+`android:run` and `android:deploy-emulator` are emulator-oriented tasks. For a
+physical Android device, use `android:run:device` for a debug APK or
+`android:deploy-device` for a release APK. Both build for `arm64`, select the
+first connected non-emulator entry from `adb devices`, install it, and launch
+`com.wails.app.MainActivity`. Pass `DEVICE_ID=<serial>` to target a specific
+device.
 
 ## Signing & release builds
 
@@ -120,6 +131,7 @@ the build tasks.
 | Screens API | ✅ WindowMetrics incl. system-bar work area |
 | Lifecycle events (`events.Android.*`) | ✅ |
 | Haptics, device info, toast | ✅ `Android.*` runtime API |
+| Emulator + physical device builds | ✅ `android:run`, `android:run:device`, `android:deploy-emulator`, `android:deploy-device` |
 | Window geometry, menus, system tray | Intentional no-ops |
 | Multiple windows | Only the first window is displayed |
 

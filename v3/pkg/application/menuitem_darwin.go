@@ -340,6 +340,8 @@ void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
 	MenuItem *menuItem = (MenuItem *)nsMenuItem;
 	NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:bitmap length:length]];
 	[menuItem setImage:image];
+	// The menu item retains its image
+	[image release];
 }
 
 void destroyMenuItem(void* nsMenuItem) {
@@ -395,8 +397,14 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
-func (m macosMenuItem) destroy() {
+// destroy releases the owning +1 from [MenuItem new]. Idempotent: both a
+// menu rebuild (processMenu) and MenuItem.Destroy() may call it.
+func (m *macosMenuItem) destroy() {
+	if m.nsMenuItem == nil {
+		return
+	}
 	C.destroyMenuItem(m.nsMenuItem)
+	m.nsMenuItem = nil
 }
 
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {

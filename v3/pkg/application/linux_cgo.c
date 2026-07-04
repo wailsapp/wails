@@ -789,7 +789,10 @@ static gboolean on_message_dialog_close(GtkWindow *window, gpointer user_data) {
     int result = (data->cancel_button >= 0) ? data->cancel_button : -1;
     alertDialogCallback(data->request_id, result);
     message_dialog_cleanup(data);
-    return TRUE;
+    // FALSE lets GTK's default close-request handler destroy the window.
+    // Returning TRUE means "handled, don't close": the dialog would stay on
+    // screen forever with its buttons wired to the freed MessageDialogData.
+    return FALSE;
 }
 
 static gboolean on_message_dialog_key_pressed(GtkEventControllerKey *controller,
@@ -921,38 +924,44 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
 // Clipboard (async API for GTK4)
 // ============================================================================
 
-static char *clipboard_sync_result = NULL;
-static gboolean clipboard_sync_done = FALSE;
+// Per-call state: the nested g_main_context_iteration loop below can dispatch
+// arbitrary main-loop sources, including another clipboard_get_text_sync call.
+// With static globals the two calls would clobber each other's result/done
+// flags; with stack-allocated state each call completes independently.
+typedef struct {
+    char *result;
+    gboolean done;
+} ClipboardSyncData;
 
 static void on_clipboard_sync_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    ClipboardSyncData *data = (ClipboardSyncData *)user_data;
     GdkClipboard *clipboard = GDK_CLIPBOARD(source);
     GError *error = NULL;
 
-    clipboard_sync_result = gdk_clipboard_read_text_finish(clipboard, result, &error);
+    data->result = gdk_clipboard_read_text_finish(clipboard, result, &error);
 
     if (error != NULL) {
         DEBUG_LOG("clipboard read error: %s", error->message);
         g_error_free(error);
-        clipboard_sync_result = NULL;
+        data->result = NULL;
     }
-    clipboard_sync_done = TRUE;
+    data->done = TRUE;
 }
 
 char* clipboard_get_text_sync(void) {
     GdkDisplay *display = gdk_display_get_default();
     GdkClipboard *clipboard = gdk_display_get_clipboard(display);
-    
-    clipboard_sync_done = FALSE;
-    clipboard_sync_result = NULL;
-    
-    gdk_clipboard_read_text_async(clipboard, NULL, on_clipboard_sync_finish, NULL);
-    
+
+    ClipboardSyncData data = { NULL, FALSE };
+
+    gdk_clipboard_read_text_async(clipboard, NULL, on_clipboard_sync_finish, &data);
+
     GMainContext *ctx = g_main_context_default();
-    while (!clipboard_sync_done) {
+    while (!data.done) {
         g_main_context_iteration(ctx, TRUE);
     }
-    
-    return clipboard_sync_result;
+
+    return data.result;
 }
 
 void clipboard_free_text(char *text) {
