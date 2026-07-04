@@ -89,6 +89,14 @@ type windowsWebviewWindow struct {
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
 
+	nonClientHitTest nonClientHitTestState
+	// Tracks the caption button currently pressed through forwarded non-client input.
+	// Once capture is active, Windows reports movement as normal client mouse input,
+	// so we need this state to keep WebView hover/pressed transitions native-like.
+	activeNonClientButton        uintptr
+	activeNonClientButtonHovered bool
+	compositionCursor            w32.HCURSOR
+
 	// lastKnownDPI is the window's DPI the last time it was in a non-minimised
 	// state. It is used on the un-minimise path to decide whether the WebView2
 	// rasterization scale actually needs resyncing: when the DPI is unchanged
@@ -1639,7 +1647,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// Now do the actual close
 		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
-
+	case w32.WM_SETCURSOR:
+		if w.compositionCursor != 0 && w32.LOWORD(uint32(lparam)) == w32.HTCLIENT {
+			w32.SetCursor(w.compositionCursor)
+			return 1
+		}
 	case w32.WM_KILLFOCUS:
 		if w.focusingChromium {
 			return 0

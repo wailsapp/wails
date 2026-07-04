@@ -47,7 +47,7 @@ func (w *windowsWebviewWindow) applyCompositionCursor(cursor edge.HCURSOR, syste
 		return
 	}
 
-	w32.SetClassCursor(w.hwnd, hcursor)
+	w.compositionCursor = hcursor
 	w32.SetCursor(hcursor)
 }
 
