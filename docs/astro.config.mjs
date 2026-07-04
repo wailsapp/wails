@@ -142,6 +142,7 @@ export default defineConfig({
         fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
         pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
         de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
+        id:      { label: "Bahasa Indonesia",      lang: "id",    dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),

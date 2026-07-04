@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 /**
  * Person holds someone's most important attributes
@@ -32,6 +32,14 @@ export class Person {
              */
             this["counts"] = [];
         }
+        if (!("birthday" in $$source)) {
+            /**
+             * Birthday is the person's birthday
+             * @member
+             * @type {Date}
+             */
+            this["birthday"] = new Date("0001-01-01T00:00:00.000Z");
+        }
 
         Object.assign(this, $$source);
     }
@@ -43,9 +51,13 @@ export class Person {
      */
     static createFrom($$source = {}) {
         const $$createField1_0 = $$createType0;
+        const $$createField2_0 = $Create.DateFromTime;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("counts" in $$parsedSource) {
             $$parsedSource["counts"] = $$createField1_0($$parsedSource["counts"]);
+        }
+        if ("birthday" in $$parsedSource) {
+            $$parsedSource["birthday"] = $$createField2_0($$parsedSource["birthday"]);
         }
         return new Person(/** @type {Partial<Person>} */($$parsedSource));
     }

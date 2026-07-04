@@ -1,0 +1,442 @@
+---
+title: Instalasi
+description: Instal Wails dan siapkan untuk membangun aplikasi
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+## Instalasi Cepat (5 Menit)
+
+:::tip[TL;DR - Pengembang Berpengalaman]
+```bash
+# Instal Go 1.25+, lalu:
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+wails3 setup   # Wizard setup interaktif (eksperimental)
+```
+
+Atau verifikasi manual dengan `wails3 doctor`. [Lewati ke Aplikasi Pertama →](/id/quick-start/first-app)
+:::
+
+## Instalasi Langkah demi Langkah
+
+<Steps>
+
+1. **Instal Go (Wajib)**
+
+   Wails memerlukan Go 1.25 atau lebih baru.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       Unduh installer Windows dari **[go.dev/dl](https://go.dev/dl/)** dan jalankan.
+
+       **Verifikasi instalasi:**
+       ```powershell
+       go version  # Harus menampilkan 1.25 atau lebih baru
+       ```
+
+       **Periksa PATH:**
+       ```powershell
+       $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+       ```
+
+       Jika kosong, tambahkan `C:\Users\YourName\go\bin` ke PATH Anda.
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Opsi 1: Installer Resmi**
+
+       Unduh installer macOS (file .pkg) dari **[go.dev/dl](https://go.dev/dl/)** dan jalankan.
+
+       **Opsi 2: Homebrew**
+       ```bash
+       brew install go
+       ```
+
+       **Verifikasi instalasi:**
+       ```bash
+       go version  # Harus menampilkan 1.25 atau lebih baru
+       echo $PATH | grep go/bin  # Harus menampilkan ~/go/bin
+       ```
+
+       Jika `~/go/bin` tidak ada di PATH, tambahkan ke `~/.zshrc` atau `~/.bash_profile`:
+       ```bash
+       export PATH=$PATH:~/go/bin
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Opsi 1: Tarball Resmi**
+
+       Unduh tarball Linux dari **[go.dev/dl](https://go.dev/dl/)**, lalu:
+       ```bash
+       sudo rm -rf /usr/local/go
+       sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+       ```
+
+       **Opsi 2: Package Manager**
+       ```bash
+       # Ubuntu/Debian
+       sudo apt install golang-go
+
+       # Fedora
+       sudo dnf install golang
+
+       # Arch
+       sudo pacman -S go
+       ```
+
+       **Tambahkan ke PATH** (tambahkan ke `~/.bashrc` atau `~/.zshrc`):
+       ```bash
+       export PATH=$PATH:/usr/local/go/bin:~/go/bin
+       source ~/.bashrc  # Muat ulang
+       ```
+
+       **Verifikasi:**
+       ```bash
+       go version
+       echo $PATH | grep go/bin
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **Instal Dependensi Platform**
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       **WebView2 Runtime** (biasanya sudah terinstal)
+
+       Windows 10/11 sudah menyertakan WebView2 secara default. Jika tidak ada:
+       - Unduh dari [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+       - Atau jalankan `wails3 doctor` nanti — akan memandu Anda
+
+       **Itu saja!** Tidak ada dependensi lain yang diperlukan.
+
+       :::tip[Tip Performa untuk Windows 11]
+       Pertimbangkan menggunakan [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) untuk menyimpan proyek Anda. Dev Drive dioptimalkan untuk beban kerja developer dan dapat meningkatkan waktu build serta kecepatan akses disk hingga 30%.
+       :::
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Xcode Command Line Tools** (wajib)
+
+       ```bash
+       xcode-select --install
+       ```
+
+       Klik "Install" pada dialog yang muncul.
+
+       **Verifikasi:**
+       ```bash
+       xcode-select -p  # Harus menampilkan /Library/Developer/CommandLineTools
+       ```
+
+       **Itu saja!** macOS sudah menyertakan WebKit secara default.
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Alat build dan WebKit**
+
+       :::caution[Versi distro minimum]
+       Wails v3 memerlukan **WebKitGTK 6.0** secara default. Distribusi yang hanya menyediakan WebKit2GTK 4.1 — Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x — harus build dengan opt-in legacy `-tags gtk3`. Rilis lama yang hanya menyediakan WebKit2GTK 4.0 (Ubuntu 20.04, Debian 11, RHEL 8) tidak didukung.
+       :::
+
+       <Tabs syncKey="distro">
+         <TabItem label="Ubuntu/Debian">
+           Memerlukan Ubuntu 24.04+ atau Debian 13+ untuk stack GTK4 default.
+           ```bash
+           sudo apt update
+           sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+           ```
+         </TabItem>
+
+         <TabItem label="Fedora">
+           ```bash
+           sudo dnf install gcc pkg-config gtk4-devel webkitgtk6.0-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Arch">
+           ```bash
+           sudo pacman -S base-devel gtk4 webkitgtk-6.0
+           ```
+         </TabItem>
+
+         <TabItem label="openSUSE">
+           ```bash
+           sudo zypper install gcc pkg-config gtk4-devel webkitgtk-6_0-devel
+           ```
+         </TabItem>
+
+         <TabItem label="Gentoo">
+           ```bash
+           sudo emerge --ask net-libs/webkit-gtk:6
+           ```
+         </TabItem>
+
+         <TabItem label="NixOS">
+           Tambahkan ke `shell.nix` atau `devShell` Anda:
+           ```nix
+           buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
+           ```
+         </TabItem>
+
+         <TabItem label="Other">
+           Jalankan `wails3 doctor` setelah menginstal Wails — akan menampilkan paket yang tepat untuk distribusi Anda.
+         </TabItem>
+       </Tabs>
+
+       :::note[Stack GTK3 legacy]
+       Jika distribusi target Anda belum menyediakan WebKitGTK 6.0 (mis. Ubuntu 22.04 LTS, Debian 12), instal library pengembangan GTK3 + WebKit2GTK 4.1 (`libgtk-3-dev libwebkit2gtk-4.1-dev` di Debian/Ubuntu; setara di distro lain) dan build dengan `wails3 build -tags gtk3`. Jalur legacy didukung hingga rilis v3.0.x dan akan dihapus di v3.1. Lihat [Linux Packaging - Legacy GTK3 Support](/id/guides/build/linux#legacy-gtk3-support) untuk detail.
+       :::
+     </TabItem>
+   </Tabs>
+
+3. **Instal Wails CLI**
+
+   ```bash
+   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+   ```
+
+   Perintah ini menginstal perintah `wails3` ke `~/go/bin` (atau `%USERPROFILE%\go\bin` di Windows).
+
+4. **Jalankan Wizard Setup (Disarankan)**
+
+   ```bash
+   wails3 setup
+   ```
+
+   Wizard setup akan memeriksa dependensi Anda, membantu menginstal yang hilang, dan mengonfigurasi default proyek.
+
+   :::caution[Eksperimental]
+   Wizard setup masih baru dan terutama diuji di Linux. Jika Anda mengalami masalah, [laporkan](https://github.com/wailsapp/wails/issues/4904) dan gunakan `wails3 doctor` sebagai gantinya.
+   :::
+
+5. **Verifikasi Instalasi**
+
+   ```bash
+   wails3 doctor
+   ```
+
+   **Output yang diharapkan (atau serupa):**
+   ```
+   Wails (v3.0.0-dev)  Wails Doctor
+
+   # System
+
+   ┌──────────────────────────────────────────────────┐
+   | Name          | MacOS                            |
+   | Version       | 26.0                             |
+   | ID            | 25A354                           |
+   | Branding      | MacOS 26.0                       |
+   | Platform      | darwin                           |
+   | Architecture  | arm64                            |
+   | Apple Silicon | true                             |
+   | CPU           | Apple M2 Pro                     |
+   | CPU 1         | Apple M2 Pro                     |
+   | CPU 2         | Apple M2 Pro                     |
+   | GPU           | 16 cores, Metal Support: Metal 4 |
+   | Memory        | 16 GB                            |
+   └──────────────────────────────────────────────────┘
+
+   # Build Environment
+
+   ┌─────────────┬─────────────────┐
+   | Wails CLI   | v3.0.0-alpha.40 |
+   | Go Version  | go1.24.6        |
+   └─────────────┴─────────────────┘
+
+   # Dependencies
+
+   ┌─────────────────┬─────────────────────────────────────────────────┐
+   | npm             | 11.6.2                                          |
+   | *NSIS           | Not Installed. Install with `brew install...`.  |
+   | Xcode cli tools | 2412                                            |
+   └─────────────────┴─────────────────────────────────────────────────┘
+
+   # Checking for issues
+
+   SUCCESS No issues found
+
+   # Diagnosis
+
+   SUCCESS Your system is ready for Wails development!
+   ```
+
+   :::note[Jika perintah `wails3` tidak ditemukan]
+   `~/go/bin` Anda tidak ada di PATH. Lihat langkah 1 di atas untuk memperbaikinya, lalu restart terminal Anda.
+   :::
+
+6. **Instal npm (Opsional tetapi Disarankan)**
+
+   Sebagian besar template Wails menggunakan npm untuk tooling frontend.
+
+   <Tabs syncKey="os">
+     <TabItem label="Windows" icon="seti:windows">
+       Unduh dari [nodejs.org](https://nodejs.org/) dan jalankan installer.
+
+       **Verifikasi:**
+       ```powershell
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="macOS" icon="apple">
+       **Opsi 1: Installer Resmi**
+       Unduh dari [nodejs.org](https://nodejs.org/)
+
+       **Opsi 2: Homebrew**
+       ```bash
+       brew install node
+       ```
+
+       **Verifikasi:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+
+     <TabItem label="Linux" icon="linux">
+       **Opsi 1: NodeSource**
+       ```bash
+       curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+       sudo apt-get install -y nodejs  # Ubuntu/Debian
+       ```
+
+       **Opsi 2: Package Manager**
+       ```bash
+       sudo dnf install nodejs  # Fedora
+       sudo pacman -S nodejs npm  # Arch
+       ```
+
+       **Verifikasi:**
+       ```bash
+       npm --version
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip[Package Manager Alternatif]
+   Lebih suka `pnpm`, `yarn`, atau `bun`? Tidak masalah! Cukup perbarui `Taskfile.yml` di proyek Anda untuk menggunakan alat pilihan Anda.
+   :::
+
+</Steps>
+
+## Troubleshooting
+
+#### Perintah `wails3` tidak ditemukan
+
+**Penyebab:** `~/go/bin` (atau `%USERPROFILE%\go\bin`) tidak ada di PATH Anda.
+
+**Solusi:**
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    1. Buka "Environment Variables" (cari di menu Start)
+    2. Di bawah "User variables", temukan `Path`
+    3. Klik "Edit" → "New"
+    4. Tambahkan: `C:\Users\YourName\go\bin` (ganti `YourName`)
+    5. Klik "OK" pada semua dialog
+    6. **Restart terminal Anda**
+
+    **Verifikasi:**
+    ```powershell
+    $env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }
+    ```
+  </TabItem>
+
+  <TabItem label="macOS/Linux" icon="apple">
+    Tambahkan ke `~/.zshrc` (macOS) atau `~/.bashrc` (Linux):
+    ```bash
+    export PATH=$PATH:~/go/bin
+    ```
+
+    Muat ulang:
+    ```bash
+    source ~/.zshrc  # atau ~/.bashrc
+    ```
+
+    **Verifikasi:**
+    ```bash
+    echo $PATH | grep go/bin
+    wails3 version
+    ```
+  </TabItem>
+</Tabs>
+---
+
+#### `wails3 doctor` melaporkan dependensi yang hilang
+
+**Linux:** Output memberi tahu paket mana yang perlu diinstal. Contoh:
+```
+❌ webkit2gtk not found
+   Install with: sudo apt install libwebkit2gtk-4.1-dev
+```
+
+**Windows:** Jika WebView2 tidak ada:
+- Unduh dari [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/)
+- Atau akan terinstal otomatis saat Anda menjalankan aplikasi pertama
+
+**macOS:** Jika Xcode tools tidak ada:
+```bash
+xcode-select --install
+```
+---
+#### Versi Go terlalu lama
+
+Wails v3 memerlukan Go 1.25+. Jika Anda memiliki versi lama:
+
+<Tabs syncKey="os">
+  <TabItem label="Windows/macOS" icon="seti:windows">
+    Unduh versi terbaru dari [go.dev/dl](https://go.dev/dl/) dan instal ulang.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Unduh tarball terbaru dari [go.dev/dl](https://go.dev/dl/), lalu:
+    ```bash
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
+    ```
+  </TabItem>
+</Tabs>
+
+## Versi Pengembangan (Bleeding Edge)
+
+Ingin menggunakan kode terbaru dari branch pengembangan utama? Ini memberi Anda akses ke fitur dan perbaikan baru sebelum dirilis, tetapi disertai risiko bug dan breaking change. Hanya disarankan untuk kontributor atau mereka yang perlu menguji fitur mendatang.
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3
+cd v3/cmd/wails3
+go install
+```
+
+:::caution[Versi Pengembangan]
+- Mungkin memiliki bug atau breaking change
+- Proyek yang dibuat akan menggunakan directive `replace` untuk menunjuk ke Wails lokal
+- Hanya disarankan untuk kontributor atau pengujian fitur baru
+:::
+
+## Langkah Selanjutnya
+
+**Instalasi Selesai!** Sistem Anda siap untuk pengembangan Wails.
+
+<Card title="Bangun Aplikasi Pertama Anda" icon="rocket">
+  Buat aplikasi yang berfungsi dalam 10 menit.
+
+  [Tutorial Aplikasi Pertama →](/id/quick-start/first-app)
+</Card>
+
+<Card title="Jelajahi Template" icon="open-book">
+  Lihat apa yang tersedia out of the box.
+
+  ```bash
+  wails3 init -l  # Daftar template
+  ```
+</Card>
+
+---
+
+**Mengalami masalah?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau [buka issue](https://github.com/wailsapp/wails/issues).

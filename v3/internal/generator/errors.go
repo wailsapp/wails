@@ -13,7 +13,12 @@ import (
 // ErrNoContextPackage indicates that
 // the canonical path for the standard context package
 // did not match any actual package.
-var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context'): is the Wails v3 module properly installed? ")
+var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context') ")
+
+// ErrNoTimePackage indicates that
+// the canonical path for the standard time package
+// did not match any actual package.
+var ErrNoTimePackage = errors.New("standard time package not found at canonical import path ('time') ")
 
 // ErrNoApplicationPackage indicates that
 // the canonical path for the Wails application package
