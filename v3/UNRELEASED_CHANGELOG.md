@@ -30,6 +30,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Update French documentation for SvelteKit and options in [PR](https://github.com/wailsapp/wails/pull/5744) by @leaanthony
 - Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
 - Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 
