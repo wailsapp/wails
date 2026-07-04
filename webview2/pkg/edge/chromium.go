@@ -470,24 +470,30 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	controller.AddRef()
 	e.controller = controller
 
-	// Try to get ICoreWebView2Controller3 interface for better performance
+	// Try to get ICoreWebView2Controller3 interface for better performance.
+	// Keep composition-hosted WebViews on WebView2-managed scale detection:
+	// the DirectComposition surface is owned by WebView2, and manually
+	// reasserting RasterizationScale during monitor transitions can leave that
+	// surface black after DPI increases.
 	if controller3 := e.controller.GetICoreWebView2Controller3(); controller3 != nil {
-		// Use raw pixels mode for better performance during resize
-		if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
-			e.errorCallback(err)
-		}
+		if !e.CompositionControllerEnabled {
+			// Use raw pixels mode for better performance during resize.
+			if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
+				e.errorCallback(err)
+			}
 
-		// ShouldDetectMonitorScaleChanges is deliberately left at its default
-		// (enabled): WebView2 tracks monitor DPI changes and updates its own
-		// rasterization scale. This module previously disabled it and left the
-		// scale to the host's WM_DPICHANGED handling, but an externally
-		// written scale races the browser process's internal display
-		// bookkeeping during a mixed-DPI monitor cross — the browser can land
-		// on a degenerate scale(0,0) compositor transform, which kills the
-		// GPU process on every frame until the browser process itself exits
-		// (wailsapp/wails#5732). Detection stays on so the scale has exactly
-		// one writer, on the code path every mainstream embedder exercises;
-		// bounds remain raw pixels, which is orthogonal.
+			// ShouldDetectMonitorScaleChanges is deliberately left at its default
+			// (enabled): WebView2 tracks monitor DPI changes and updates its own
+			// rasterization scale. This module previously disabled it and left the
+			// scale to the host's WM_DPICHANGED handling, but an externally
+			// written scale races the browser process's internal display
+			// bookkeeping during a mixed-DPI monitor cross — the browser can land
+			// on a degenerate scale(0,0) compositor transform, which kills the
+			// GPU process on every frame until the browser process itself exits
+			// (wailsapp/wails#5732). Detection stays on so the scale has exactly
+			// one writer, on the code path every mainstream embedder exercises;
+			// bounds remain raw pixels, which is orthogonal.
+		}
 	}
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()

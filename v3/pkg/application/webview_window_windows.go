@@ -1889,11 +1889,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// DPI changes manually — but only while non-minimised. When detection
 		// was re-enabled in setupChromium, the resync below is a no-op (Edge
 		// owns the scale) and only lastKnownDPI tracking runs.
-		// While minimised the window sits off its restore
-		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
-		// would push a wrong scale
-		// onto the controller (one the restore-time DPI gate then won't correct,
-		// since DPI == lastKnownDPI) and would make a COM call into a possibly
+		// While minimised the window sits off its restore monitor, so
+		// GetDpiForWindow can report a different monitor's DPI, which would
+		// push a wrong scale onto the controller (one the restore-time DPI gate
+		// then won't correct, since DPI == lastKnownDPI) and would make a COM
+		// call into a possibly
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
@@ -2042,10 +2042,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 
 // resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
 // WebView2 controller and reports whether the scale was out of sync. Wails
-// runs WebView2 in raw-pixels bounds mode with ShouldDetectMonitorScaleChanges
-// disabled, so keeping the rasterization scale in step with the window's DPI
-// is the application's responsibility. It is a no-op when the controller is
-// unavailable or already in sync.
+// keeps this as a fallback for controllers where monitor-scale detection could
+// not be re-enabled; when WebView2 owns monitor scale detection, the host-side
+// resync stands down.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 	// With monitor-scale detection re-enabled (setupChromium), WebView2 owns
 	// the rasterization scale and updates it on monitor crossings itself. A
