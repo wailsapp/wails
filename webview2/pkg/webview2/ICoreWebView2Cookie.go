@@ -3,8 +3,6 @@
 package webview2
 
 import (
-	"math"
-
 	"syscall"
 	"unsafe"
 
@@ -140,14 +138,15 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 
-	// The double parameter is passed BY VALUE: use its bit pattern, not a
-	// pointer (Go mirrors the first four syscall args into XMM0-3, where the
-	// x64 ABI reads double arguments). A pointer here reaches the callee as a
-	// near 0.0 double value, a blank screen
-	hr, _, _ := i.Vtbl.PutExpires.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(math.Float64bits(expires)),
-	)
+	// The double parameter is passed BY VALUE: a pointer here reaches the
+	// callee as a near 0.0 double value (an epoch-zero expiry). The per-arch
+	// appendDoubleArg helpers pass it correctly for the target ABI.
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutExpires.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -172,9 +171,15 @@ func (i *ICoreWebView2Cookie) GetIsHttpOnly() (bool, error) {
 
 func (i *ICoreWebView2Cookie) PutIsHttpOnly(isHttpOnly bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isHttpOnlyInt int32
+	if isHttpOnly {
+		_isHttpOnlyInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsHttpOnly.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isHttpOnly)),
+		uintptr(_isHttpOnlyInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -226,9 +231,15 @@ func (i *ICoreWebView2Cookie) GetIsSecure() (bool, error) {
 
 func (i *ICoreWebView2Cookie) PutIsSecure(isSecure bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isSecureInt int32
+	if isSecure {
+		_isSecureInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsSecure.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isSecure)),
+		uintptr(_isSecureInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

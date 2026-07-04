@@ -52,9 +52,15 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetContentMimeType() (string, er
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutCancel(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -80,9 +86,15 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetCancel() (bool, error) {
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutSuppressDefaultDialog(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutSuppressDefaultDialog.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -157,9 +169,15 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetSaveAsFilePath() (string, err
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutAllowReplace(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAllowReplace.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

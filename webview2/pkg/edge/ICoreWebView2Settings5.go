@@ -79,9 +79,15 @@ func (i *ICoreWebView2Settings5) GetIsPinchZoomEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings5) PutIsPinchZoomEnabled(enabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _enabledInt int32
+	if enabled {
+		_enabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsPinchZoomEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(_enabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

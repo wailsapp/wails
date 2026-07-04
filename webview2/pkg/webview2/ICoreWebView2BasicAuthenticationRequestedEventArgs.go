@@ -93,9 +93,15 @@ func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) GetCancel() (bool, 
 
 func (i *ICoreWebView2BasicAuthenticationRequestedEventArgs) PutCancel(cancel bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _cancelInt int32
+	if cancel {
+		_cancelInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&cancel)),
+		uintptr(_cancelInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

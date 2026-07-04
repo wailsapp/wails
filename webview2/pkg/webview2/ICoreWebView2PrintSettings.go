@@ -88,11 +88,15 @@ func (i *ICoreWebView2PrintSettings) GetScaleFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutScaleFactor(scaleFactor float64) error {
-
-	hr, _, _ := i.Vtbl.PutScaleFactor.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scaleFactor)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scaleFactor)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutScaleFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -114,11 +118,15 @@ func (i *ICoreWebView2PrintSettings) GetPageWidth() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutPageWidth(pageWidth float64) error {
-
-	hr, _, _ := i.Vtbl.PutPageWidth.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&pageWidth)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageWidth)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutPageWidth.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -140,11 +148,15 @@ func (i *ICoreWebView2PrintSettings) GetPageHeight() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutPageHeight(pageHeight float64) error {
-
-	hr, _, _ := i.Vtbl.PutPageHeight.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&pageHeight)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageHeight)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutPageHeight.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -166,11 +178,15 @@ func (i *ICoreWebView2PrintSettings) GetMarginTop() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginTop(marginTop float64) error {
-
-	hr, _, _ := i.Vtbl.PutMarginTop.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&marginTop)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginTop)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutMarginTop.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -192,11 +208,15 @@ func (i *ICoreWebView2PrintSettings) GetMarginBottom() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginBottom(marginBottom float64) error {
-
-	hr, _, _ := i.Vtbl.PutMarginBottom.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&marginBottom)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginBottom)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutMarginBottom.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -218,11 +238,15 @@ func (i *ICoreWebView2PrintSettings) GetMarginLeft() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginLeft(marginLeft float64) error {
-
-	hr, _, _ := i.Vtbl.PutMarginLeft.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&marginLeft)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginLeft)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutMarginLeft.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -244,11 +268,15 @@ func (i *ICoreWebView2PrintSettings) GetMarginRight() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginRight(marginRight float64) error {
-
-	hr, _, _ := i.Vtbl.PutMarginRight.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&marginRight)),
-	)
+	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI (a pointer here reached
+	// the callee as a garbage near-0.0 value).
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginRight)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return nil
+	}
+	hr, _, _ := i.Vtbl.PutMarginRight.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -272,10 +300,15 @@ func (i *ICoreWebView2PrintSettings) GetShouldPrintBackgrounds() (bool, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutShouldPrintBackgrounds(shouldPrintBackgrounds bool) error {
-
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// (and not a 1-byte Go bool).
+	var v int32
+	if shouldPrintBackgrounds {
+		v = 1
+	}
 	hr, _, _ := i.Vtbl.PutShouldPrintBackgrounds.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&shouldPrintBackgrounds)),
+		uintptr(v),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -300,10 +333,15 @@ func (i *ICoreWebView2PrintSettings) GetShouldPrintSelectionOnly() (bool, error)
 }
 
 func (i *ICoreWebView2PrintSettings) PutShouldPrintSelectionOnly(shouldPrintSelectionOnly bool) error {
-
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// (and not a 1-byte Go bool).
+	var v int32
+	if shouldPrintSelectionOnly {
+		v = 1
+	}
 	hr, _, _ := i.Vtbl.PutShouldPrintSelectionOnly.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&shouldPrintSelectionOnly)),
+		uintptr(v),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -328,10 +366,15 @@ func (i *ICoreWebView2PrintSettings) GetShouldPrintHeaderAndFooter() (bool, erro
 }
 
 func (i *ICoreWebView2PrintSettings) PutShouldPrintHeaderAndFooter(shouldPrintHeaderAndFooter bool) error {
-
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// (and not a 1-byte Go bool).
+	var v int32
+	if shouldPrintHeaderAndFooter {
+		v = 1
+	}
 	hr, _, _ := i.Vtbl.PutShouldPrintHeaderAndFooter.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&shouldPrintHeaderAndFooter)),
+		uintptr(v),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

@@ -47,9 +47,15 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetCancelSave() (b
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutCancelSave(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutCancelSave.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -126,9 +132,15 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetSuppressDefault
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutSuppressDefaultPolicy(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutSuppressDefaultPolicy.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
