@@ -21,18 +21,26 @@ the **Mobile** and **Hardware** tabs appear on both iOS and Android.
 
 ```bash
 # iOS Simulator (requires full Xcode)
-wails3 task ios:run
+GOWORK=off wails3 task ios:run
 
 # Android emulator (requires the Android SDK + NDK + a JDK)
-wails3 task android:run
+GOWORK=off wails3 task android:run
+
+# Android physical device (USB debugging enabled)
+adb devices
+GOWORK=off DEVICE_ID=<serial> wails3 task android:run:device
+GOWORK=off DEVICE_ID=<serial> wails3 task android:deploy-device
 
 # Desktop
-wails3 task run
+GOWORK=off wails3 task run
 ```
 
-`wails3 task ios:package` / `android:package` produce release builds. See
+`GOWORK=off wails3 task ios:package` / `GOWORK=off wails3 task android:package`
+produce release builds. See
 [`../../IOS.md`](../../IOS.md) and [`../../ANDROID.md`](../../ANDROID.md) for the
-toolchain requirements and device/signing details.
+toolchain requirements and device/signing details. `GOWORK=off` is only needed
+when running this checked-in example from inside the Wails repository so Go uses
+the example module instead of the repository workspace.
 
 ## How it works
 

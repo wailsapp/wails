@@ -4,7 +4,6 @@ import (
 	"go/ast"
 	"go/types"
 	"sync"
-	"sync/atomic"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
@@ -43,8 +42,9 @@ type Collector struct {
 
 	// events holds collected information about registered custom events.
 	events *EventMap
-	// appVoidType caches the application.Void named type that stands in for the void TS type.
-	appVoidType atomic.Value
+
+	// SpecialTypeCache caches types that are treated as special cases in the generation process.
+	SpecialTypeCache
 
 	systemPaths *config.SystemPaths
 	options     *flags.GenerateBindingsOptions
@@ -56,6 +56,8 @@ type Collector struct {
 func NewCollector(pkgs []*packages.Package, registerEvent types.Object, systemPaths *config.SystemPaths, options *flags.GenerateBindingsOptions, scheduler Scheduler, logger config.Logger) *Collector {
 	collector := &Collector{
 		pkgs: make(map[*types.Package]*PackageInfo, len(pkgs)),
+
+		SpecialTypeCache: NewSpecialTypeCache(systemPaths),
 
 		systemPaths: systemPaths,
 		options:     options,

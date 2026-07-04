@@ -33,7 +33,7 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 | Window geometry (SetSize/SetPosition/Minimize/...) | Intentional no-ops (apps are fullscreen) |
 | Menus, system tray | Intentional no-ops |
 | Multiple windows | ⚠️ Only the first window is displayed |
-| Emulator + device builds | ✅ `wails3 task android:run` / `android:package` |
+| Emulator + device builds | ✅ emulator: `wails3 task android:run` / `android:deploy-emulator`; physical device: `android:run:device` / `android:deploy-device` |
 | Release signing | ✅ Debug keystore by default; real keystore via env vars |
 | Play Store submission pipeline | ⚠️ Sign a release APK/AAB with your own keystore (see below) |
 
@@ -74,17 +74,30 @@ installs and launches it. Stream logs with `wails3 task android:logs`. In
 debug builds the WebView is inspectable from Chrome at `chrome://inspect`.
 
 `wails3 task android:package` produces a production release APK
-(`-tags production,android`, stripped, framework diagnostics compiled out);
-`wails3 task android:deploy-emulator` installs and launches it.
+(`-tags production,android`, stripped, framework diagnostics compiled out).
+`wails3 task android:run` and `wails3 task android:deploy-emulator` are
+emulator-oriented tasks; they use `ensure-emulator` and do not select a
+physical device.
 
 ## Device & release builds
 
 ```bash
-# Debug build/install on a connected device (arm64) or the emulator
+# Debug build/install in the Android Emulator
 wails3 task android:run
+
+# Debug build/install on the first connected physical Android device (arm64)
+wails3 task android:run:device
 
 # Production release APK (signed with the debug keystore by default)
 wails3 task android:package
+
+# Production release APK installed and launched on the first connected
+# physical Android device (arm64)
+wails3 task android:deploy-device
+
+# Target a specific physical device serial
+DEVICE_ID=<serial> wails3 task android:run:device
+DEVICE_ID=<serial> wails3 task android:deploy-device
 
 # Production release APK signed with your own keystore
 ANDROID_KEYSTORE_FILE=/path/to/release.jks \
@@ -97,6 +110,14 @@ ANDROID_KEY_PASSWORD=... \
 - `wails3 task android:package:fat` builds both `arm64-v8a` and `x86_64`
   into one APK (useful for distributing a single artifact that runs on
   devices and emulators).
+- `wails3 task android:run:device` builds a debug APK for `arm64`, selects the
+  first connected non-emulator device from `adb devices`, installs it with that
+  device serial, and launches `com.wails.app.MainActivity`.
+- `wails3 task android:deploy-device` does the same for a production APK.
+  If no physical device is connected, pass `DEVICE_ID=<serial>` to either task;
+  find serials with `adb devices`.
+- `wails3 task android:deploy-emulator` installs and launches a production APK
+  in the Android Emulator after ensuring an emulator is running.
 - Without keystore env vars, release builds are signed with the Android
   **debug** keystore so they install for testing. **Play Store uploads
   require your own keystore** (set the `ANDROID_KEYSTORE_*` variables, or

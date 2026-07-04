@@ -101,6 +101,12 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return
 	}
 
+	// Validate options.
+	err = generator.validateOptions()
+	if err != nil {
+		return
+	}
+
 	// Parse build flags.
 	buildFlags, err := generator.options.BuildFlags()
 	if err != nil {
@@ -339,6 +345,22 @@ func buildDirToPkgPath(pkgs []*packages.Package) map[string]string {
 		out[filepath.Dir(pkg.GoFiles[0])] = pkg.PkgPath
 	}
 	return out
+}
+
+// validateOptions validates user-provided configuration options.
+func (generator *Generator) validateOptions() error {
+	switch generator.options.TimeType {
+	case "string":
+		// No special handling needed.
+	case "Date":
+		if generator.options.UseInterfaces {
+			return fmt.Errorf("time type '%s' is not supported in interface mode", generator.options.TimeType)
+		}
+	default:
+		return fmt.Errorf("invalid time type: %s (must be either 'string' or 'Date')", generator.options.TimeType)
+	}
+
+	return nil
 }
 
 // scheduler provides an implementation of the [collect.Scheduler] interface.

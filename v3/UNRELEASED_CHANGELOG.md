@@ -17,24 +17,24 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add HappyTools to community showcase in [PR](https://github.com/wailsapp/wails/pull/5061) by @Aliuyanfeng
-- Add Indonesian locale support and comprehensive documentation in [PR](https://github.com/wailsapp/wails/pull/5643) by @triadmoko
-- Add DisableMenu option to WindowsWindow in [PR](https://github.com/wailsapp/wails/pull/4813) by @leaanthony
+- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing
+- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update Taskfile template and CLI to dispatch build/package tasks with GOOS and ARCH in [PR](https://github.com/wailsapp/wails/pull/5617) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixes issue with mac window tabbing in [PR](https://github.com/wailsapp/wails/pull/5708) by @taliesin-ai
+- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
+- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove German translated MDX files from contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5702) by @taliesin-ai
 
 ## Security
 <!-- Security-related changes -->
