@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix baked avatar masks in sponsorkit in [PR](https://github.com/wailsapp/wails/pull/5745) by @leaanthony
 - Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 - Fix the setup wizard suggesting an outdated Android NDK version (now 26.3.11579264, matching the documented requirement) in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 - Update French documentation for SvelteKit and options in [PR](https://github.com/wailsapp/wails/pull/5744) by @leaanthony
