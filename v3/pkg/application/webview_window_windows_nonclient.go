@@ -5,6 +5,7 @@ package application
 import (
 	"slices"
 	"sync"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"github.com/wailsapp/wails/webview2/pkg/edge"
@@ -76,6 +77,8 @@ func (w *windowsWebviewWindow) routeNonClientInput(msg uint32, wparam, lparam ui
 		if !ok || hitTest != wparam {
 			return 0, false
 		}
+
+		w.trackCompositionMouseLeave(true)
 
 		clientX, clientY, ok := w32.ScreenToClient(
 			w.hwnd,
@@ -334,6 +337,10 @@ func (w *windowsWebviewWindow) routeCompositionMouseInput(msg uint32, wparam, lp
 		return false
 	}
 
+	if msg == w32.WM_MOUSEMOVE {
+		w.trackCompositionMouseLeave(false)
+	}
+
 	clientX, clientY, ok := w.compositionMouseClientPoint(msg, lparam)
 	if !ok {
 		return false
@@ -369,6 +376,19 @@ func (w *windowsWebviewWindow) routeCompositionMouseInput(msg uint32, wparam, lp
 	w.updateCompositionMouseCapture(msg)
 
 	return true
+}
+
+func (w *windowsWebviewWindow) trackCompositionMouseLeave(nonClient bool) {
+	flags := uint32(w32.TME_LEAVE)
+	if nonClient {
+		flags |= w32.TME_NONCLIENT
+	}
+
+	w32.TrackMouseEvent(&w32.TRACKMOUSEEVENT{
+		CbSize:    uint32(unsafe.Sizeof(w32.TRACKMOUSEEVENT{})),
+		DwFlags:   flags,
+		HwndTrack: w.hwnd,
+	})
 }
 
 func (w *windowsWebviewWindow) compositionMouseClientPoint(msg uint32, lparam uintptr) (int, int, bool) {
