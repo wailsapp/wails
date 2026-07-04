@@ -175,6 +175,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleDebug
         cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -187,6 +190,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -199,6 +205,7 @@ tasks:
     cmds:
       - |
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleDebug
         cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
@@ -211,6 +218,7 @@ tasks:
     cmds:
       - |
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleRelease
         cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "Release AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
