@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add a warning when building a release AAB without `ANDROID_KEYSTORE_FILE` set (Google Play rejects debug-signed bundles) and document App Bundle packaging and signing in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 - Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
 - Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
 - Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing in [PR](https://github.com/wailsapp/wails/pull/5728) by @mortenolsrud (fixes [#5726](https://github.com/wailsapp/wails/issues/5726))
@@ -24,9 +25,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Bump the Android template `compileSdk`/`targetSdk` from 34 to 35, which Google Play requires for new app submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Fix the setup wizard suggesting an outdated Android NDK version (now 26.3.11579264, matching the documented requirement) in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 - Update French documentation for SvelteKit and options in [PR](https://github.com/wailsapp/wails/pull/5744) by @leaanthony
 - Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
 - Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
