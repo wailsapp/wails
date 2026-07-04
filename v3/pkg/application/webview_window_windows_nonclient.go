@@ -218,11 +218,12 @@ func (w *windowsWebviewWindow) resizeBorderHitTest(screenX, screenY int) (uintpt
 		return 0, false
 	}
 
-	borderX := int(w.resizeBorderWidth) + w32.GetSystemMetrics(w32.SM_CXPADDEDBORDER)
+	dpi, _ := w.DPI()
+	borderX := systemMetricForDPI(w32.SM_CXSIZEFRAME, dpi) + systemMetricForDPI(w32.SM_CXPADDEDBORDER, dpi)
 	if borderX < 1 {
 		borderX = 1
 	}
-	borderY := int(w.resizeBorderHeight) + w32.GetSystemMetrics(w32.SM_CXPADDEDBORDER)
+	borderY := systemMetricForDPI(w32.SM_CYSIZEFRAME, dpi) + systemMetricForDPI(w32.SM_CXPADDEDBORDER, dpi)
 	if borderY < 1 {
 		borderY = 1
 	}
@@ -252,6 +253,13 @@ func (w *windowsWebviewWindow) resizeBorderHitTest(screenX, screenY int) (uintpt
 	default:
 		return 0, false
 	}
+}
+
+func systemMetricForDPI(index int, dpi w32.UINT) int {
+	if dpi != 0 && w32.HasGetSystemMetricsForDpiFunc() {
+		return w32.GetSystemMetricsForDpi(index, dpi)
+	}
+	return w32.GetSystemMetrics(index)
 }
 
 func (w *windowsWebviewWindow) forwardFrontendNonClientButtonInput(msg uint32, wparam, lparam uintptr) bool {

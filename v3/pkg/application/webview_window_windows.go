@@ -70,11 +70,8 @@ type windowsWebviewWindow struct {
 	// Track whether content protection has been applied to the native window yet
 	contentProtectionApplied bool
 
-	// resizeBorder* is the width/height of the resize border in pixels.
-	resizeBorderWidth  int32
-	resizeBorderHeight int32
-	focusingChromium   bool
-	onceDo             sync.Once
+	focusingChromium bool
+	onceDo           sync.Once
 
 	// Window move debouncer
 	moveDebouncer func(func())
@@ -1367,9 +1364,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 	result := &windowsWebviewWindow{
-		parent:             parent,
-		resizeBorderWidth:  int32(w32.GetSystemMetrics(w32.SM_CXSIZEFRAME)),
-		resizeBorderHeight: int32(w32.GetSystemMetrics(w32.SM_CYSIZEFRAME)),
+		parent: parent,
 		// Initialize visibility tracking fields
 		showRequested:     false,
 		visibilityTimeout: nil,

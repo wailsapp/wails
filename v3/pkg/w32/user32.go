@@ -78,6 +78,7 @@ var (
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
 	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
+	procGetSystemMetricsForDpi        = moduser32.NewProc("GetSystemMetricsForDpi")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterHotKey                = moduser32.NewProc("RegisterHotKey")
 	procUnregisterHotKey              = moduser32.NewProc("UnregisterHotKey")
@@ -831,6 +832,18 @@ func MessageBox(hwnd HWND, title, caption string, flags uint) int {
 func GetSystemMetrics(index int) int {
 	ret, _, _ := procGetSystemMetrics.Call(
 		uintptr(index))
+
+	return int(ret)
+}
+
+func HasGetSystemMetricsForDpiFunc() bool {
+	return procGetSystemMetricsForDpi.Find() == nil
+}
+
+func GetSystemMetricsForDpi(index int, dpi UINT) int {
+	ret, _, _ := procGetSystemMetricsForDpi.Call(
+		uintptr(index),
+		uintptr(dpi))
 
 	return int(ret)
 }
