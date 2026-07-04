@@ -2338,10 +2338,11 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.Embed(w.hwnd)
 
-	// Re-enable automatic monitor-scale detection. The webview2 module
-	// disables ShouldDetectMonitorScaleChanges at controller creation
-	// (alongside PutBoundsMode raw-pixels), leaving rasterization-scale
-	// updates entirely to the host's WM_DPICHANGED handling. In that
+	// Ensure automatic monitor-scale detection is on. Published webview2
+	// module versions up to v1.0.27 disable ShouldDetectMonitorScaleChanges
+	// at controller creation (the in-repo module no longer does), leaving
+	// rasterization-scale updates entirely to the host's WM_DPICHANGED
+	// handling. In that
 	// host-managed mode, dragging the window across a mixed-DPI monitor
 	// boundary can make the embedded browser compute a degenerate
 	// scale(0,0) transform (ui/gfx/geometry/transform.cc NOTREACHED
