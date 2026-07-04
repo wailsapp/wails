@@ -6,7 +6,7 @@ includes:
 vars:
   APP_ID: '{{.APP_ID | default "com.wails.app"}}'
   MIN_SDK: '21'
-  TARGET_SDK: '34'
+  TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
@@ -265,7 +265,7 @@ tasks:
         AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
         if [ -z "$AVD_NAME" ]; then
           echo "No Android Virtual Devices found. Create one with:"
-          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
+          echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
           exit 1
         fi
 

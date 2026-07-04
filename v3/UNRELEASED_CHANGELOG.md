@@ -25,9 +25,11 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Bump the Android template `compileSdk`/`targetSdk` from 34 to 35, which Google Play requires for new app submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
 - Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
 - Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 

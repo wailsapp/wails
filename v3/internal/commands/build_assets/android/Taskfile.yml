@@ -6,7 +6,7 @@ includes:
 vars:
   APP_ID: '{{.APP_ID | default "com.wails.app"}}'
   MIN_SDK: '21'
-  TARGET_SDK: '34'
+  TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
@@ -299,8 +299,8 @@ tasks:
           else
             echo "No Android Virtual Devices found, and no system image is installed to create one from."
             echo "Install a system image and create an AVD, e.g.:"
-            echo "  sdkmanager 'system-images;android-34;google_apis;$ABI'"
-            echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;$ABI' --device pixel_7"
+            echo "  sdkmanager 'system-images;android-35;google_apis;$ABI'"
+            echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;$ABI' --device pixel_7"
             exit 1
           fi
         fi

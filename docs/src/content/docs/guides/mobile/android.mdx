@@ -32,7 +32,7 @@ Go files guarded by `//go:build android`.
 
 ## Requirements
 
-- The **Android SDK** with platform-tools, an SDK platform (API 34),
+- The **Android SDK** with platform-tools, an SDK platform (API 35),
   build-tools and the **NDK** (26.3.x) — `wails3 doctor` shows what it finds
 - A **JDK** (e.g. OpenJDK 21) for Gradle; set `JAVA_HOME` if `java` is not on
   your `PATH`
@@ -42,11 +42,11 @@ Go files guarded by `//go:build android`.
 Install the SDK pieces with the command-line tools:
 
 ```bash
-sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" \
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" \
            "ndk;26.3.11579264" "emulator" \
-           "system-images;android-34;google_apis;arm64-v8a"
+           "system-images;android-35;google_apis;arm64-v8a"
 avdmanager create avd --name wails \
-           --package "system-images;android-34;google_apis;arm64-v8a" \
+           --package "system-images;android-35;google_apis;arm64-v8a" \
            --device pixel_7
 ```
 
@@ -88,7 +88,9 @@ out the framework's internal diagnostics. `wails3 task android:package:fat`
 builds both `arm64-v8a` and `x86_64` into a single APK.
 
 Google Play requires the Android App Bundle (`.aab`) format for new app
-submissions. `wails3 task android:bundle:fat` produces
+submissions, and new submissions must target Android 15 (API 35) or higher;
+the project template sets `compileSdk` and `targetSdk` to 35 in
+`build/android/app/build.gradle`. `wails3 task android:bundle:fat` produces
 `bin/<AppName>.aab` with both ABIs included; Google Play generates
 optimised per-device APKs from it, so the fat bundle is the right artifact
 for store uploads. APKs remain the quickest route for local and emulator
