@@ -1274,6 +1274,14 @@ func (w *windowsWebviewWindow) hide() {
 	w.windowShown = false
 	w.showRequested = false
 
+	// Symmetric with show()'s chromium.Show(): under UseVisualHosting a bare
+	// SW_HIDE leaves the DirectComposition input surface hit-testing where the
+	// window was (a desktop right-click "dead zone"). Restore is always
+	// programmatic via Show() -> show() -> chromium.Show().
+	if w.chromium != nil {
+		_ = w.chromium.Hide()
+	}
+
 	// Cancel any pending visibility timeout
 	if w.visibilityTimeout != nil {
 		w.visibilityTimeout.Stop()
@@ -1694,6 +1702,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// here (not at SIZE_RESTORED), and needs the same DPI
 				// resync as the restore path below (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Re-assert controller visibility hidden on SIZE_MINIMIZED so the
+				// (visual-hosted) window does not restore blank.
+				if w.chromium != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1716,6 +1729,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// rasterization scale on restore, so window.devicePixelRatio
 				// keeps the wrong monitor's value until a manual resize (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Re-assert controller visibility hidden on SIZE_MINIMIZED so the
+				// (visual-hosted) window does not restore blank.
+				if w.chromium != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1731,6 +1749,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
+			// Under UseVisualHosting (WINDOW_TO_VISUAL) the WebView2 content is a
+			// DirectComposition visual whose input surface keeps hit-testing at the
+			// window's last on-screen rectangle after a bare SW_MINIMIZE — leaving a
+			// desktop right-click "dead zone". Tell the controller to become
+			// invisible (also the WebView2-recommended action on minimize); the
+			// SIZE_RESTORED/SIZE_MAXIMIZED un-minimize branches re-assert it.
+			if w.chromium != nil {
+				_ = w.chromium.Hide()
+			}
 		}
 		w.lastSizeWParam = wparam
 
