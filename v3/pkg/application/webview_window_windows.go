@@ -2380,6 +2380,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
+	chromium.NavigationStartingCallback = w.navigationStarting
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
 
@@ -2566,6 +2567,10 @@ func (w *windowsWebviewWindow) fullscreenChanged(
 
 func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
+}
+
+func (w *windowsWebviewWindow) navigationStarting(_ *edge.ICoreWebView2) {
+	w.setNonClientHitTestRegions(nil)
 }
 
 func (w *windowsWebviewWindow) navigationCompleted(

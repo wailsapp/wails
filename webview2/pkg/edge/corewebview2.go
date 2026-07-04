@@ -209,6 +209,19 @@ func (i *ICoreWebView2) AddContainsFullScreenElementChanged(eventHandler *ICoreW
 	return nil
 }
 
+func (i *ICoreWebView2) AddNavigationStarting(eventHandler *ICoreWebView2NavigationStartingEventHandler, token *_EventRegistrationToken) error {
+	hr, _, _ := i.vtbl.AddNavigationStarting.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(token)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+
+	return nil
+}
+
 func (i *ICoreWebView2) AddNavigationCompleted(eventHandler *ICoreWebView2NavigationCompletedEventHandler, token *_EventRegistrationToken) error {
 	hr, _, _ := i.vtbl.AddNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),

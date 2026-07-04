@@ -848,31 +848,36 @@ func (w *WebviewWindow) handleNonClientRegionMessage(payload string) {
 		return
 	}
 
-	for i, r := range message.Regions {
-		if err := validateNonClientHitTestRegion(r); err != nil {
+	regions := make([]nonClientHitTestRegion, 0, len(message.Regions))
+	for i, region := range message.Regions {
+		normalised, err := normaliseNonClientHitTestRegion(region)
+		if err != nil {
 			w.Error("region %d: %w", i, err)
-			return
+			continue
 		}
+		regions = append(regions, normalised)
 	}
 
 	InvokeSync(func() {
-		w.impl.setNonClientHitTestRegions(message.Regions)
+		w.impl.setNonClientHitTestRegions(regions)
 	})
 }
 
-func validateNonClientHitTestRegion(region nonClientHitTestRegion) error {
+func normaliseNonClientHitTestRegion(region nonClientHitTestRegion) (nonClientHitTestRegion, error) {
 	if region.Right <= region.Left || region.Bottom <= region.Top {
-		return fmt.Errorf("invalid rectangle")
+		return nonClientHitTestRegion{}, fmt.Errorf("invalid rectangle")
 	}
 
-	switch nonClientHitTestKind(strings.ToLower(string(region.Kind))) {
+	kind := nonClientHitTestKind(strings.ToLower(string(region.Kind)))
+	switch kind {
 	case nonClientHitTestKindCaption,
 		nonClientHitTestKindMinimize,
 		nonClientHitTestKindMaximize,
 		nonClientHitTestKindClose:
-		return nil
+		region.Kind = kind
+		return region, nil
 	default:
-		return fmt.Errorf("unknown region kind %q", region.Kind)
+		return nonClientHitTestRegion{}, fmt.Errorf("unknown region kind %q", region.Kind)
 	}
 }
 

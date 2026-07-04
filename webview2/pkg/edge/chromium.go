@@ -69,6 +69,7 @@ type Chromium struct {
 	webResourceRequested             *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
 	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
+	navigationStarting               *ICoreWebView2NavigationStartingEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
 
@@ -92,6 +93,7 @@ type Chromium struct {
 	MessageCallback                          func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	MessageWithAdditionalObjectsCallback     func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	WebResourceRequestedCallback             func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
+	NavigationStartingCallback               func(sender *ICoreWebView2)
 	NavigationCompletedCallback              func(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs)
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
@@ -129,6 +131,7 @@ func NewChromium() *Chromium {
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
 	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
+	e.navigationStarting = newICoreWebView2NavigationStartingEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
 	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.containsFullScreenElementChanged = newICoreWebView2ContainsFullScreenElementChangedEventHandler(e)
@@ -459,6 +462,10 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	if err != nil {
 		e.errorCallback(err)
 	}
+	err = e.webview.AddNavigationStarting(e.navigationStarting, &token)
+	if err != nil {
+		e.errorCallback(err)
+	}
 	err = e.webview.AddNavigationCompleted(e.navigationCompleted, &token)
 	if err != nil {
 		e.errorCallback(err)
@@ -676,6 +683,13 @@ func (e *Chromium) IsReady() bool {
 func boolToInt(input bool) int {
 	if input {
 		return 1
+	}
+	return 0
+}
+
+func (e *Chromium) NavigationStarting(sender *ICoreWebView2, _ *IUnknown) uintptr {
+	if e.NavigationStartingCallback != nil {
+		e.NavigationStartingCallback(sender)
 	}
 	return 0
 }
