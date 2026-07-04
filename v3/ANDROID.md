@@ -39,7 +39,7 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 
 ## Requirements
 
-- The **Android SDK** with platform-tools, an SDK platform (API 34),
+- The **Android SDK** with platform-tools, an SDK platform (API 35),
   build-tools and the **NDK** (r26+/26.3.x). `wails3 doctor` reports what it
   can see.
 - A **JDK** (e.g. OpenJDK 21) for Gradle. Set `JAVA_HOME` if `java` is not on
@@ -51,11 +51,11 @@ toolchain) and loaded by a small Java host (`MainActivity` + `WailsBridge`).
 Install the SDK pieces with the command-line tools:
 
 ```bash
-sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" \
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" \
            "ndk;26.3.11579264" "emulator" \
-           "system-images;android-34;google_apis;arm64-v8a"
+           "system-images;android-35;google_apis;arm64-v8a"
 avdmanager create avd --name wails \
-           --package "system-images;android-34;google_apis;arm64-v8a" \
+           --package "system-images;android-35;google_apis;arm64-v8a" \
            --device pixel_7
 ```
 

@@ -6,7 +6,7 @@ includes:
 vars:
   APP_ID: '{{.APP_ID | default "com.wails.app"}}'
   MIN_SDK: '21'
-  TARGET_SDK: '34'
+  TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
@@ -175,6 +175,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleDebug
         cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -187,6 +190,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -199,6 +205,7 @@ tasks:
     cmds:
       - |
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleDebug
         cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
@@ -210,7 +217,17 @@ tasks:
         msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
     cmds:
       - |
+        # With Play App Signing, the keystore configured here is your UPLOAD
+        # key: Google verifies the upload with it, then re-signs the app with
+        # the app signing key it manages for distribution.
+        if [ -z "$ANDROID_KEYSTORE_FILE" ]; then
+          echo "WARNING: ANDROID_KEYSTORE_FILE is not set, so this AAB will be"
+          echo "signed with the debug keystore. Google Play rejects debug-signed"
+          echo "bundles. Set ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD,"
+          echo "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD before uploading."
+        fi
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleRelease
         cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "Release AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
@@ -248,7 +265,7 @@ tasks:
         AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
         if [ -z "$AVD_NAME" ]; then
           echo "No Android Virtual Devices found. Create one with:"
-          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
+          echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;{{if eq .HOST_ARCH \"arm64\"}}arm64-v8a{{else}}x86_64{{end}}' --device pixel_7"
           exit 1
         fi
 
