@@ -1288,7 +1288,10 @@ func (w *windowsWebviewWindow) hide() {
 	// SW_HIDE leaves the DirectComposition input surface hit-testing where the
 	// window was (a desktop right-click "dead zone"). Restore is always
 	// programmatic via Show() -> show() -> chromium.Show().
-	if w.chromium != nil {
+	// The controller can still be nil while WebView2 creation is in flight
+	// (a background-goroutine Hide() is dispatched inside Embed's nested
+	// message pump), so guard like the other controller call sites do.
+	if w.chromium != nil && w.chromium.GetController() != nil {
 		_ = w.chromium.Hide()
 	}
 
@@ -1712,9 +1715,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// here (not at SIZE_RESTORED), and needs the same DPI
 				// resync as the restore path below (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
-				// Re-assert controller visibility hidden on SIZE_MINIMIZED so the
-				// (visual-hosted) window does not restore blank.
-				if w.chromium != nil {
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.chromium != nil && w.chromium.GetController() != nil {
 					_ = w.chromium.Show()
 				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
@@ -1739,9 +1745,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// rasterization scale on restore, so window.devicePixelRatio
 				// keeps the wrong monitor's value until a manual resize (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
-				// Re-assert controller visibility hidden on SIZE_MINIMIZED so the
-				// (visual-hosted) window does not restore blank.
-				if w.chromium != nil {
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.chromium != nil && w.chromium.GetController() != nil {
 					_ = w.chromium.Show()
 				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
@@ -1765,7 +1774,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// desktop right-click "dead zone". Tell the controller to become
 			// invisible (also the WebView2-recommended action on minimize); the
 			// SIZE_RESTORED/SIZE_MAXIMIZED un-minimize branches re-assert it.
-			if w.chromium != nil {
+			// The controller can be nil while creation is in flight; guard like
+			// the other controller call sites.
+			if w.chromium != nil && w.chromium.GetController() != nil {
 				_ = w.chromium.Hide()
 			}
 		}
