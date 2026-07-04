@@ -310,6 +310,36 @@ tasks:
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
+  deploy-device:
+    summary: Deploy the packaged release APK to a connected physical Android device
+    deps:
+      - task: package
+        vars:
+          ARCH: arm64
+    cmds:
+      - |
+        DEVICE='{{.DEVICE_ID | default ""}}'
+        if [ -z "$DEVICE" ]; then
+          DEVICE="${DEVICE_ID:-}"
+        fi
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
+
   run:
     summary: Build, install and launch a debug build in the Android Emulator
     deps:
@@ -320,6 +350,37 @@ tasks:
       - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
+
+  run:device:
+    summary: Build, install and launch a debug build on a connected physical Android device
+    deps:
+      - task: build
+        vars:
+          ARCH: arm64
+    cmds:
+      - task: assemble:apk
+      - |
+        DEVICE='{{.DEVICE_ID | default ""}}'
+        if [ -z "$DEVICE" ]; then
+          DEVICE="${DEVICE_ID:-}"
+        fi
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   logs:
     summary: Stream Android logcat filtered to this app

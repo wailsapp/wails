@@ -89,5 +89,10 @@ func fetchAvatar(client *http.Client, avatarURL string, px, quality int) (string
 	if err := jpeg.Encode(&buf, flat, &jpeg.Options{Quality: quality}); err != nil {
 		return "", err
 	}
+	// Flat-colour identicons compress far better in their original PNG than
+	// as JPEG, so keep whichever encoding is smaller.
+	if mime := resp.Header.Get("Content-Type"); mime != "" && len(data) < buf.Len() {
+		return "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data), nil
+	}
 	return "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }

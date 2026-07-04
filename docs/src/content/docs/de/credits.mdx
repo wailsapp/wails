@@ -3,10 +3,6 @@ title: Credits
 description: Anerkennung der Mitwirkenden und Projekte hinter Wails
 ---
 
-{/* Import the auto-generated contributors file */}
-
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - Projektinhaber, Lead-Entwickler
 - [Stffabi](https://github.com/stffabi) - Technischer Leiter, Entwickler und
   Maintainer
@@ -43,7 +39,15 @@ Besonderer Dank:
 
 ## Mitwirkende
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## Besondere Erwähnungen
 
