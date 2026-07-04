@@ -19,6 +19,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
+- Bump `webview2` to v1.0.24 ([release notes](https://github.com/savely-krasovsky/wails/releases/tag/webview2%2Fv1.0.24)).
 <!-- Changes in existing functionality -->
 
 ## Fixed
