@@ -355,10 +355,17 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 			e.errorCallback(err)
 		}
 
-		// Disable monitor scale changes since we're using raw pixels
-		if err := controller3.PutShouldDetectMonitorScaleChanges(false); err != nil {
-			e.errorCallback(err)
-		}
+		// ShouldDetectMonitorScaleChanges is deliberately left at its default
+		// (enabled): WebView2 tracks monitor DPI changes and updates its own
+		// rasterization scale. This module previously disabled it and left the
+		// scale to the host's WM_DPICHANGED handling, but an externally
+		// written scale races the browser process's internal display
+		// bookkeeping during a mixed-DPI monitor cross — the browser can land
+		// on a degenerate scale(0,0) compositor transform, which kills the
+		// GPU process on every frame until the browser process itself exits
+		// (wailsapp/wails#5732). Detection stays on so the scale has exactly
+		// one writer, on the code path every mainstream embedder exercises;
+		// bounds remain raw pixels, which is orthogonal.
 	}
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
