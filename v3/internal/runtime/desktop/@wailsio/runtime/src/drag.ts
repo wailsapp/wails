@@ -159,6 +159,9 @@ function primaryDown(event: MouseEvent): void {
     }
 
     if (resizeEdge) {
+        // Do not arm edge resize from synthesized presses observed on move/up:
+        // entering the window with the primary button already held should not
+        // steal another gesture into a resize.
         if (event.type !== 'mousedown') {
             return;
         }
