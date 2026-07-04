@@ -98,7 +98,7 @@ func generateSponsors(client *http.Client, token, login string, width float64, s
 	}
 
 	fmt.Println("Fetching avatars...")
-	uris := FetchAvatars(client, sponsors, sizes, quality)
+	uris := FetchAvatars(client, sponsors, sizes, quality, maskCircle)
 
 	return Render(sponsors, RenderOptions{
 		Width:      width,
@@ -141,7 +141,7 @@ func generateContributors(client *http.Client, token, repo string, changelogs []
 	fmt.Println("Fetching avatars...")
 	uris := map[string]string{}
 	for q, list := range byQuality {
-		for login, uri := range FetchAvatars(client, list, sizes, q) {
+		for login, uri := range FetchAvatars(client, list, sizes, q, maskSquircle) {
 			uris[login] = uri
 		}
 	}
