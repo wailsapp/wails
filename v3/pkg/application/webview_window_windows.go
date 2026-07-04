@@ -369,6 +369,21 @@ func (w *windowsWebviewWindow) framelessWithDecorations() bool {
 	return w.parent.options.Frameless && !w.parent.options.Windows.DisableFramelessWindowDecorations
 }
 
+func (w *windowsWebviewWindow) extendFrameIntoClientArea(extend bool) error {
+	if !extend || !w.chromium.CompositionControllerEnabled {
+		return w32.ExtendFrameIntoClientArea(w.hwnd, extend)
+	}
+
+	// Leave the top edge unextended for composition-hosted non-client regions so
+	// the Windows 11 Snap Layout flyout does not cover custom HTMAXBUTTON areas.
+	return w32.ExtendFrameIntoClientAreaWithMargins(w.hwnd, w32.MARGINS{
+		CxLeftWidth:    1,
+		CxRightWidth:   1,
+		CyTopHeight:    0,
+		CyBottomHeight: 1,
+	})
+}
+
 func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
@@ -977,7 +992,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		err := w32.ExtendFrameIntoClientArea(w.hwnd, false)
+		err := w.extendFrameIntoClientArea(false)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
@@ -1027,7 +1042,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+		err := w.extendFrameIntoClientArea(true)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
@@ -1596,7 +1611,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// As a result we have hidden the titlebar but still have the default window frame styling.
 		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 		if w.framelessWithDecorations() {
-			err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+			err := w.extendFrameIntoClientArea(true)
 			if err != nil {
 				globalApplication.handleFatalError(err)
 			}
@@ -1853,7 +1868,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// For frameless windows with decorations, re-extend the frame into client area
 			// to ensure proper window frame styling after DPI change.
 			if w.framelessWithDecorations() {
-				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+				if err := w.extendFrameIntoClientArea(true); err != nil {
 					globalApplication.handleFatalError(err)
 				}
 			}
@@ -1943,7 +1958,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 			if w.framelessWithDecorations() {
-				err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+				err := w.extendFrameIntoClientArea(true)
 				if err != nil {
 					globalApplication.handleFatalError(err)
 				}

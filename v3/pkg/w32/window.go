@@ -64,11 +64,12 @@ func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	//     are shown if transparent ant translucent.
 	var margins MARGINS
 	if extend {
-		// Leave the top edge unextended so the Windows 11 Snap Layout flyout does
-		// not appear over custom HTMAXBUTTON regions. Side and bottom margins
-		// preserve the default frame styling.
-		margins = MARGINS{1, 1, 0, 1}
+		margins = MARGINS{1, 1, 1, 1}
 	}
+	return ExtendFrameIntoClientAreaWithMargins(hwnd, margins)
+}
+
+func ExtendFrameIntoClientAreaWithMargins(hwnd uintptr, margins MARGINS) error {
 	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
 		return fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err)
 	}
