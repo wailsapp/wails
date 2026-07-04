@@ -2548,6 +2548,16 @@ func (w *windowsWebviewWindow) navigationCompleted(
 		}
 		w.update()
 	}
+
+	// The first-paint nudge above ends with the controller IsVisible=true. For a
+	// window created Hidden that is never shown (e.g. a pre-created tray popup),
+	// that leaves a live WINDOW_TO_VISUAL DirectComposition input surface
+	// hit-testing at the window's location — an invisible desktop right-click
+	// "dead zone". Re-hide the controller so a never-shown window has no live
+	// surface; show() re-asserts IsVisible(true) when the window is actually shown.
+	if w.parent.options.Hidden && !w.windowShown && !w.showRequested {
+		_ = w.chromium.Hide()
+	}
 }
 
 func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
