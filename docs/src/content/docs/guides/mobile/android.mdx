@@ -77,6 +77,10 @@ wails3 task android:package             # production release APK
 wails3 task android:deploy-emulator     # install + launch it
 wails3 task android:bundle              # production release AAB (Android App Bundle)
 wails3 task android:bundle:fat          # release AAB containing all ABIs
+wails3 task android:run:device          # debug install + launch on a physical device
+wails3 task android:deploy-device       # install + launch on a physical device
+DEVICE_ID=<serial> wails3 task android:run:device
+DEVICE_ID=<serial> wails3 task android:deploy-device
 ```
 
 Production builds use `-tags production,android`, are stripped, and compile
@@ -89,6 +93,13 @@ submissions. `wails3 task android:bundle:fat` produces
 optimised per-device APKs from it, so the fat bundle is the right artifact
 for store uploads. APKs remain the quickest route for local and emulator
 testing, because an `.aab` cannot be installed directly with `adb`.
+
+`android:run` and `android:deploy-emulator` are emulator-oriented tasks. For a
+physical Android device, use `android:run:device` for a debug APK or
+`android:deploy-device` for a release APK. Both build for `arm64`, select the
+first connected non-emulator entry from `adb devices`, install it, and launch
+`com.wails.app.MainActivity`. Pass `DEVICE_ID=<serial>` to target a specific
+device.
 
 ## Signing & release builds
 
@@ -136,6 +147,7 @@ the build tasks.
 | Screens API | ✅ WindowMetrics incl. system-bar work area |
 | Lifecycle events (`events.Android.*`) | ✅ |
 | Haptics, device info, toast | ✅ `Android.*` runtime API |
+| Emulator + physical device builds | ✅ `android:run`, `android:run:device`, `android:deploy-emulator`, `android:deploy-device` |
 | Window geometry, menus, system tray | Intentional no-ops |
 | Multiple windows | Only the first window is displayed |
 

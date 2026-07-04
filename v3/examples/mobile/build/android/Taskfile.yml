@@ -21,10 +21,6 @@ vars:
     sh: 'command -v adb || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/platform-tools/adb"'
   EMULATOR:
     sh: 'command -v emulator || echo "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}/emulator/emulator"'
-  # avdmanager lives under cmdline-tools/<version>/bin; used to auto-create an
-  # AVD when none exists (mirrors the iOS `ensure-simulator` auto-create flow).
-  AVDMANAGER:
-    sh: 'command -v avdmanager || ls "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$([ -d "$HOME/Library/Android/sdk" ] && echo "$HOME/Library/Android/sdk" || echo "$HOME/Android/Sdk")}}"/cmdline-tools/*/bin/avdmanager 2>/dev/null | sort -V | tail -1 || true'
 
 tasks:
   install:deps:
@@ -147,7 +143,7 @@ tasks:
       - task: assemble:apk:release
 
   bundle:
-    summary: Packages a production build of the application into a signed release AAB (Android App Bundle)
+    summary: Packages a production AAB (Android App Bundle) for Play Store submission
     deps:
       - task: build
         vars:
@@ -157,7 +153,7 @@ tasks:
       - task: assemble:aab:release
 
   bundle:fat:
-    summary: Packages a production build for all architectures into a release AAB (recommended for Play Store uploads)
+    summary: Packages a production AAB for all architectures
     deps:
       - task: build
         vars:
@@ -208,15 +204,13 @@ tasks:
     cmds:
       - |
         cd build/android
-        # The exec bit is lost when gradlew is extracted from the embedded
-        # build assets, so restore it before invoking the wrapper.
         chmod +x ./gradlew
         ./gradlew bundleDebug
         cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
 
   assemble:aab:release:
-    summary: Assembles a release AAB using Gradle (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    summary: Assembles a release AAB for Play Store upload (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
     preconditions:
       - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
         msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
@@ -232,8 +226,6 @@ tasks:
           echo "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD before uploading."
         fi
         cd build/android
-        # The exec bit is lost when gradlew is extracted from the embedded
-        # build assets, so restore it before invoking the wrapper.
         chmod +x ./gradlew
         ./gradlew bundleRelease
         cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
@@ -282,27 +274,9 @@ tasks:
         # Get first available AVD
         AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
         if [ -z "$AVD_NAME" ]; then
-          # No AVD yet. Mirror the iOS `ensure-simulator` flow and create one
-          # automatically — but ONLY from a system image that is already
-          # installed. We never trigger an sdkmanager download from a `run`
-          # task (that would be a surprise multi-GB download + license prompt).
-          # Pick the highest-API installed image matching the host ABI.
-          SDK_ROOT="{{.SDK_ROOT}}"
-          ABI="{{.ANDROID_ABI}}"
-          IMG=$(ls -d "$SDK_ROOT"/system-images/android-*/*/"$ABI" 2>/dev/null | sort -V | tail -1)
-          AVDMANAGER="{{.AVDMANAGER}}"
-          if [ -n "$IMG" ] && [ -x "$AVDMANAGER" ]; then
-            PKG="system-images;$(echo "$IMG" | sed "s|$SDK_ROOT/system-images/||" | tr '/' ';')"
-            echo "No Android Virtual Devices found. Creating 'wails' from $PKG..."
-            echo "no" | "$AVDMANAGER" create avd --name wails --package "$PKG" --device pixel_7 --force
-            AVD_NAME=wails
-          else
-            echo "No Android Virtual Devices found, and no system image is installed to create one from."
-            echo "Install a system image and create an AVD, e.g.:"
-            echo "  sdkmanager 'system-images;android-34;google_apis;$ABI'"
-            echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;$ABI' --device pixel_7"
-            exit 1
-          fi
+          echo "No Android Virtual Devices found. Create one with:"
+          echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;{{.ANDROID_ABI}}' --device pixel_7"
+          exit 1
         fi
 
         echo "Starting emulator: $AVD_NAME"
@@ -345,6 +319,36 @@ tasks:
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
+  deploy-device:
+    summary: Deploy the packaged release APK to a connected physical Android device
+    deps:
+      - task: package
+        vars:
+          ARCH: arm64
+    cmds:
+      - |
+        DEVICE='{{.DEVICE_ID | default ""}}'
+        if [ -z "$DEVICE" ]; then
+          DEVICE="${DEVICE_ID:-}"
+        fi
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
+
   run:
     summary: Build, install and launch a debug build in the Android Emulator
     deps:
@@ -356,68 +360,36 @@ tasks:
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
-  device:list:
-    summary: Lists connected Android devices and emulators (serials)
-    cmds:
-      - '"{{.ADB}}" devices -l'
-
   run:device:
-    summary: Build, install and launch a debug build on a connected Android device
+    summary: Build, install and launch a debug build on a connected physical Android device
     deps:
       - task: build
+        vars:
+          ARCH: arm64
     cmds:
       - task: assemble:apk
       - |
-        # Resolve a target device. Use DEVICE_ID if given, else the first
-        # device reporting "device" state (see: task android:device:list).
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
+        DEVICE='{{.DEVICE_ID | default ""}}'
         if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+          DEVICE="${DEVICE_ID:-}"
         fi
         if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
           exit 1
         fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
 
-  deploy-device:
-    summary: Deploy the packaged release APK to a connected Android device
-    deps: [package]
-    cmds:
-      - |
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
-        if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
-        fi
-        if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
-          exit 1
-        fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
-
-  studio:
-    summary: Open the generated Android project in Android Studio
-    cmds:
-      - |
-        if command -v studio >/dev/null 2>&1; then
-          studio build/android
-        elif [ -d "/Applications/Android Studio.app" ]; then
-          open -a "Android Studio" build/android
-        else
-          echo "Android Studio not found. Install it from https://developer.android.com/studio,"
-          echo "then open the build/android directory."
-          exit 1
-        fi
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   logs:
     summary: Stream Android logcat filtered to this app

@@ -144,7 +144,7 @@ tasks:
       - task: assemble:apk:release
 
   bundle:
-    summary: Packages a production build of the application into a signed release AAB (Android App Bundle)
+    summary: Packages a production AAB (Android App Bundle) for Play Store submission
     deps:
       - task: build
         vars:
@@ -154,7 +154,7 @@ tasks:
       - task: assemble:aab:release
 
   bundle:fat:
-    summary: Packages a production build for all architectures into a release AAB (recommended for Play Store uploads)
+    summary: Packages a production AAB for all architectures
     deps:
       - task: build
         vars:
@@ -175,6 +175,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleDebug
         cp app/build/outputs/apk/debug/app-debug.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -187,6 +190,9 @@ tasks:
     cmds:
       - |
         cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
@@ -199,12 +205,13 @@ tasks:
     cmds:
       - |
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleDebug
         cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
 
   assemble:aab:release:
-    summary: Assembles a release AAB using Gradle (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    summary: Assembles a release AAB for Play Store upload (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
     preconditions:
       - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
         msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
@@ -220,6 +227,7 @@ tasks:
           echo "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD before uploading."
         fi
         cd build/android
+        chmod +x ./gradlew
         ./gradlew bundleRelease
         cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
         echo "Release AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
@@ -294,6 +302,36 @@ tasks:
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
 
+  deploy-device:
+    summary: Deploy the packaged release APK to a connected physical Android device
+    deps:
+      - task: package
+        vars:
+          ARCH: arm64
+    cmds:
+      - |
+        DEVICE='{{.DEVICE_ID | default ""}}'
+        if [ -z "$DEVICE" ]; then
+          DEVICE="${DEVICE_ID:-}"
+        fi
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
+
   run:
     summary: Build, install and launch a debug build in the Android Emulator
     deps:
@@ -304,6 +342,37 @@ tasks:
       - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
       - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
       - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
+
+  run:device:
+    summary: Build, install and launch a debug build on a connected physical Android device
+    deps:
+      - task: build
+        vars:
+          ARCH: arm64
+    cmds:
+      - task: assemble:apk
+      - |
+        DEVICE='{{.DEVICE_ID | default ""}}'
+        if [ -z "$DEVICE" ]; then
+          DEVICE="${DEVICE_ID:-}"
+        fi
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   logs:
     summary: Stream Android logcat filtered to this app

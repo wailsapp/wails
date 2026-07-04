@@ -147,7 +147,7 @@ tasks:
       - task: assemble:apk:release
 
   bundle:
-    summary: Packages a production build of the application into a signed release AAB (Android App Bundle)
+    summary: Packages a production AAB (Android App Bundle) for Play Store submission
     deps:
       - task: build
         vars:
@@ -157,7 +157,7 @@ tasks:
       - task: assemble:aab:release
 
   bundle:fat:
-    summary: Packages a production build for all architectures into a release AAB (recommended for Play Store uploads)
+    summary: Packages a production AAB for all architectures
     deps:
       - task: build
         vars:
@@ -216,7 +216,7 @@ tasks:
         echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
 
   assemble:aab:release:
-    summary: Assembles a release AAB using Gradle (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    summary: Assembles a release AAB for Play Store upload (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
     preconditions:
       - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
         msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
@@ -362,48 +362,65 @@ tasks:
       - '"{{.ADB}}" devices -l'
 
   run:device:
-    summary: Build, install and launch a debug build on a connected Android device
+    summary: Build, install and launch a debug build on a connected physical Android device
     deps:
       - task: build
+        vars:
+          ARCH: arm64
     cmds:
       - task: assemble:apk
       - |
-        # Resolve a target device. Use DEVICE_ID if given, else the first
-        # device reporting "device" state (see: task android:device:list).
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
+        DEVICE='{{.DEVICE_ID | default ""}}'
         if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+          DEVICE="${DEVICE_ID:-}"
         fi
         if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
           exit 1
         fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   deploy-device:
-    summary: Deploy the packaged release APK to a connected Android device
-    deps: [package]
+    summary: Deploy the packaged release APK to a connected physical Android device
+    deps:
+      - task: package
+        vars:
+          ARCH: arm64
     cmds:
       - |
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
+        DEVICE='{{.DEVICE_ID | default ""}}'
         if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+          DEVICE="${DEVICE_ID:-}"
         fi
         if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
           exit 1
         fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   studio:
     summary: Open the generated Android project in Android Studio

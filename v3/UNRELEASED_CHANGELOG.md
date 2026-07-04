@@ -17,22 +17,19 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add Android App Bundle (AAB) packaging tasks `android:bundle`, `android:bundle:fat`, `android:assemble:aab` and `android:assemble:aab:release` for Google Play submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
-- Add Go-based contributors SVG generator and update docs/website credits pages in [PR](https://github.com/wailsapp/wails/pull/5724) by @taliesin-ai
+- Add a warning when building a release AAB without `ANDROID_KEYSTORE_FILE` set (Google Play rejects debug-signed bundles) and document App Bundle packaging and signing in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
 - Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing in [PR](https://github.com/wailsapp/wails/pull/5728) by @mortenolsrud (fixes [#5726](https://github.com/wailsapp/wails/issues/5726))
+- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Replace Node-based sponsor image pipeline with Go generator in [PR](https://github.com/wailsapp/wails/pull/5719) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Android build asset dependency installation script in [PR](https://github.com/wailsapp/wails/pull/5729) by @taliesin-ai
-- Reject the U+0085 (NEXT LINE) control character in `ValidateAndSanitizeURL`, completing the whitespace coverage of the URL validator
-- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
-- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
-- Add explicit Objective-C memory management for Cocoa objects across Darwin dialogs, menus, tray, and notifications in [PR](https://github.com/wailsapp/wails/pull/5714) by @taliesin-ai
-- Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
+- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
+- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
