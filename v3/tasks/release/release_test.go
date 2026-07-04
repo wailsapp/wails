@@ -512,9 +512,9 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 // out-ranking the stray tag.
 func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
 	const (
-		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		strayTag     = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
 		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
-		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+		nextTag      = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
 	)
 
 	for _, v := range []string{strayTag, legacyLatest, nextTag} {
@@ -954,12 +954,12 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create initial changelog
-	changelogFile := filepath.Join(projectRoot, "docs", "src", "content", "docs", "changelog.mdx")
+	changelogPath := filepath.Join(projectRoot, "docs", "src", "content", "docs", "changelog.mdx")
 	initialChangelog := `---
 title: Changelog
 ---
 
-## [Unreleased]
+` + changelogInsertMarker + `
 
 ## v1.0.0-alpha.4 - 2024-01-01
 
@@ -967,7 +967,7 @@ title: Changelog
 - Previous feature
 
 `
-	err = os.WriteFile(changelogFile, []byte(initialChangelog), 0644)
+	err = os.WriteFile(changelogPath, []byte(initialChangelog), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create changelog file: %v", err)
 	}
@@ -1030,39 +1030,82 @@ title: Changelog
 		}
 	}
 
-	// Simulate updating the main changelog
-	changelogData, _ := os.ReadFile(changelogFile)
-	changelog := string(changelogData)
-	changelogSplit := strings.Split(changelog, "## [Unreleased]")
+	// Update the main changelog for real, via the same code path the release uses
+	origChangelogFile := changelogFile
+	changelogFile = changelogPath
+	defer func() { changelogFile = origChangelogFile }()
 
 	newVersion := "v1.0.0-alpha.6"
-	today := "2024-01-15"
-	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + changelogSplit[1]
+	if err := applyChangelogUpdates(newVersion, strings.TrimSpace(changelogContent)); err != nil {
+		t.Fatalf("applyChangelogUpdates() failed: %v", err)
+	}
+
+	newChangelogData, err := os.ReadFile(changelogPath)
+	if err != nil {
+		t.Fatalf("Failed to read updated changelog: %v", err)
+	}
+	newChangelog := string(newChangelogData)
 
 	// Verify the final changelog format
-	if !strings.Contains(newChangelog, "## v1.0.0-alpha.6 - 2024-01-15") {
+	if !strings.Contains(newChangelog, "## "+newVersion+" - ") {
 		t.Error("Expected new version header in changelog")
+	}
+	if !strings.Contains(newChangelog, changelogInsertMarker) {
+		t.Error("Expected insert marker to be preserved in changelog")
+	}
+	if strings.Index(newChangelog, changelogInsertMarker) > strings.Index(newChangelog, "## "+newVersion) {
+		t.Error("Expected new version section to be inserted below the marker")
 	}
 
 	// Count occurrences of section headers in the new version section
 	newVersionSection := strings.Split(newChangelog, "## v1.0.0-alpha.4")[0]
 
-	addedCount := strings.Count(newVersionSection, "## Added")
+	// Category headers must be demoted to h3 for the site's table of contents
+	addedCount := strings.Count(newVersionSection, "### Added")
 	if addedCount != 1 {
-		t.Errorf("Expected exactly 1 '## Added' section, got %d", addedCount)
+		t.Errorf("Expected exactly 1 '### Added' section, got %d", addedCount)
 	}
 
-	deprecatedCount := strings.Count(newVersionSection, "## Deprecated")
+	deprecatedCount := strings.Count(newVersionSection, "### Deprecated")
 	if deprecatedCount != 1 {
-		t.Errorf("Expected exactly 1 '## Deprecated' section, got %d", deprecatedCount)
+		t.Errorf("Expected exactly 1 '### Deprecated' section, got %d", deprecatedCount)
+	}
+	if strings.Contains(newVersionSection, "\n## Added") || strings.Contains(newVersionSection, "\n## Deprecated") {
+		t.Error("Expected category headers to be demoted from '##' to '###'")
 	}
 
 	// Ensure no empty sections in the new version section
-	for _, section := range []string{"## Changed", "## Fixed", "## Removed", "## Security"} {
+	for _, section := range []string{"### Changed", "### Fixed", "### Removed", "### Security"} {
 		count := strings.Count(newVersionSection, section)
 		if count > 0 {
 			t.Errorf("Expected 0 occurrences of empty section '%s', got %d", section, count)
 		}
+	}
+}
+
+func TestFormatChangelogForSite(t *testing.T) {
+	input := strings.Join([]string{
+		"## Added",
+		"- New feature with ## in the middle",
+		"",
+		"## Fixed",
+		"- A fix",
+		"### Already h3",
+	}, "\n")
+
+	got := formatChangelogForSite(input)
+
+	if !strings.Contains(got, "### Added") || !strings.Contains(got, "### Fixed") {
+		t.Errorf("Expected category headers demoted to h3, got:\n%s", got)
+	}
+	if strings.Contains(got, "\n## ") || strings.HasPrefix(got, "## ") {
+		t.Errorf("Expected no h2 headers to remain, got:\n%s", got)
+	}
+	if !strings.Contains(got, "- New feature with ## in the middle") {
+		t.Errorf("Expected bullet content to be untouched, got:\n%s", got)
+	}
+	if !strings.Contains(got, "### Already h3") {
+		t.Errorf("Expected existing h3 headers to be left as-is, got:\n%s", got)
 	}
 }
 

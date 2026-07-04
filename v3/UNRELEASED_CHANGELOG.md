@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Generate the docs changelog page in a site-friendly format: the page now starts with the latest release and category headers nest under version headers in the table of contents
 
 ## Fixed
 <!-- Bug fixes -->
