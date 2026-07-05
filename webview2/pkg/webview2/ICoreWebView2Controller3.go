@@ -3,9 +3,10 @@
 package webview2
 
 import (
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Controller3Vtbl struct {
@@ -56,11 +57,16 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-
-	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&scale)),
-	)
+	// The double parameter is passed BY VALUE: a pointer here reaches the
+	// callee as a near 0.0 double value, giving a degenerate rasterization
+	// scale (blank content). The per-arch appendDoubleArg helpers pass it
+	// correctly for the target ABI.
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scale)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
+	}
+	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

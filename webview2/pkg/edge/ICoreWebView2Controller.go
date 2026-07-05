@@ -151,11 +151,14 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 }
 
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-
-	hr, _, _ := i.vtbl.PutZoomFactor.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(math.Float64bits(zoomFactor)),
-	)
+	// put_ZoomFactor takes the double BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI.
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
+	}
+	hr, _, _ := i.vtbl.PutZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return windows.Errno(hr)
 	}

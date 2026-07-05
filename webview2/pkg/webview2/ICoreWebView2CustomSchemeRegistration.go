@@ -63,9 +63,15 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetTreatAsSecure() (bool, error)
 
 func (i *ICoreWebView2CustomSchemeRegistration) PutTreatAsSecure(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutTreatAsSecure.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -126,9 +132,15 @@ func (i *ICoreWebView2CustomSchemeRegistration) GetHasAuthorityComponent() (bool
 
 func (i *ICoreWebView2CustomSchemeRegistration) PutHasAuthorityComponent(hasAuthorityComponent bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _hasAuthorityComponentInt int32
+	if hasAuthorityComponent {
+		_hasAuthorityComponentInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutHasAuthorityComponent.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&hasAuthorityComponent)),
+		uintptr(_hasAuthorityComponentInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

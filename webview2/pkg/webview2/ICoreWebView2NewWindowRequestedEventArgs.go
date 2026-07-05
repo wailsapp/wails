@@ -74,9 +74,15 @@ func (i *ICoreWebView2NewWindowRequestedEventArgs) GetNewWindow() (*ICoreWebView
 
 func (i *ICoreWebView2NewWindowRequestedEventArgs) PutHandled(handled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _handledInt int32
+	if handled {
+		_handledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&handled)),
+		uintptr(_handledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

@@ -3,9 +3,10 @@
 package webview2
 
 import (
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ControllerVtbl struct {
@@ -62,9 +63,15 @@ func (i *ICoreWebView2Controller) GetIsVisible() (bool, error) {
 
 func (i *ICoreWebView2Controller) PutIsVisible(isVisible bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isVisibleInt int32
+	if isVisible {
+		_isVisibleInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsVisible.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isVisible)),
+		uintptr(_isVisibleInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -113,11 +120,15 @@ func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-
-	hr, _, _ := i.Vtbl.PutZoomFactor.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&zoomFactor)),
-	)
+	// The double parameter is passed BY VALUE: a pointer here reaches the
+	// callee as a near 0.0 double value. The per-arch appendDoubleArg helpers
+	// pass it correctly for the target ABI.
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
+	}
+	hr, _, _ := i.Vtbl.PutZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -152,12 +163,19 @@ func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistratio
 }
 
 func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor float64) error {
-
-	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&bounds)),
-		uintptr(unsafe.Pointer(&zoomFactor)),
-	)
+	// Both parameters are passed BY VALUE: the 16-byte RECT per the target
+	// ABI's aggregate rules (appendRectArg) and the double per its
+	// floating-point rules (appendDoubleArg).
+	args, ok := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
+	if !ok {
+		return ErrDoubleArgUnsupported
+	}
+	args, ok = appendDoubleArg(args, zoomFactor)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
+	}
+	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

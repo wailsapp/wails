@@ -73,9 +73,15 @@ func (i *ICoreWebView2Settings3) GetAreBrowserAcceleratorKeysEnabled() (bool, er
 
 func (i *ICoreWebView2Settings3) PutAreBrowserAcceleratorKeysEnabled(areBrowserAcceleratorKeysEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _areBrowserAcceleratorKeysEnabledInt int32
+	if areBrowserAcceleratorKeysEnabled {
+		_areBrowserAcceleratorKeysEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAreBrowserAcceleratorKeysEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&areBrowserAcceleratorKeysEnabled)),
+		uintptr(_areBrowserAcceleratorKeysEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

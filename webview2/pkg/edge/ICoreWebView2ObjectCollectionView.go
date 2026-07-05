@@ -31,7 +31,7 @@ func (i *ICoreWebView2ObjectCollectionView) Release() error {
 }
 
 func (i *ICoreWebView2ObjectCollectionView) GetCount() (uint32, error) {
-	
+
 	var value uint32
 	hr, _, _ := i.vtbl.GetCount.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -44,7 +44,7 @@ func (i *ICoreWebView2ObjectCollectionView) GetCount() (uint32, error) {
 }
 
 func (i *ICoreWebView2ObjectCollectionView) GetValueAtIndex(index uint32) (*_IUnknownVtbl, error) {
-	
+
 	var value *_IUnknownVtbl
 	hr, _, _ := i.vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),

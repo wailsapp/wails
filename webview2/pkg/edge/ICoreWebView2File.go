@@ -30,7 +30,7 @@ func (i *ICoreWebView2File) Release() uint32 {
 }
 
 func (i *ICoreWebView2File) GetPath() (string, error) {
-	
+
 	var _path *uint16
 	hr, _, _ := i.vtbl.GetPath.Call(
 		uintptr(unsafe.Pointer(i)),

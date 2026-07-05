@@ -152,9 +152,15 @@ func (i *ICoreWebView2EnvironmentOptions) GetAllowSingleSignOnUsingOSPrimaryAcco
 
 func (i *ICoreWebView2EnvironmentOptions) PutAllowSingleSignOnUsingOSPrimaryAccount(allow bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _allowInt int32
+	if allow {
+		_allowInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAllowSingleSignOnUsingOSPrimaryAccount.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&allow)),
+		uintptr(_allowInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
