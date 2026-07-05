@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -128,7 +128,7 @@ func main() {
 		fmt.Println("Setup instructions:")
 		fmt.Println("1. Install Android Studio: https://developer.android.com/studio")
 		fmt.Println("2. Open SDK Manager and install:")
-		fmt.Println("   - Android SDK Platform (API 34)")
+		fmt.Println("   - Android SDK Platform (API 35)")
 		fmt.Println("   - Android SDK Build-Tools")
 		fmt.Println("   - Android SDK Platform-Tools")
 		fmt.Println("   - Android Emulator")
@@ -165,12 +165,22 @@ func offerCreateAVD(androidHome string) {
 	}
 
 	// Find the highest-API installed system image matching the host ABI.
+	// The API level must be compared numerically: lexicographic sorting
+	// would rank android-9 above android-35.
 	var img string
 	if androidHome != "" {
 		matches, _ := filepath.Glob(filepath.Join(androidHome, "system-images", "android-*", "*", abi))
-		sort.Strings(matches)
-		if len(matches) > 0 {
-			img = matches[len(matches)-1]
+		bestAPI := -1
+		for _, m := range matches {
+			apiDir := filepath.Base(filepath.Dir(filepath.Dir(m)))
+			api, err := strconv.Atoi(strings.TrimPrefix(apiDir, "android-"))
+			if err != nil {
+				continue // preview/extension images (e.g. android-35-ext14)
+			}
+			if api > bestAPI {
+				bestAPI = api
+				img = m
+			}
 		}
 	}
 
@@ -179,14 +189,14 @@ func offerCreateAVD(androidHome string) {
 	if img == "" || avdmanager == "" {
 		fmt.Println("⚠ No Android Virtual Devices found.")
 		fmt.Println("   Install a system image and create an AVD, e.g.:")
-		fmt.Printf("     sdkmanager 'system-images;android-34;google_apis;%s'\n", abi)
-		fmt.Printf("     avdmanager create avd --name wails --package 'system-images;android-34;google_apis;%s' --device pixel_7\n", abi)
+		fmt.Printf("     sdkmanager 'system-images;android-35;google_apis;%s'\n", abi)
+		fmt.Printf("     avdmanager create avd --name wails --package 'system-images;android-35;google_apis;%s' --device pixel_7\n", abi)
 		return
 	}
 
 	// Derive the package path from the installed image directory, e.g.
-	//   <sdk>/system-images/android-34/google_apis/arm64-v8a
-	//   -> system-images;android-34;google_apis;arm64-v8a
+	//   <sdk>/system-images/android-35/google_apis/arm64-v8a
+	//   -> system-images;android-35;google_apis;arm64-v8a
 	rel := strings.TrimPrefix(img, filepath.Join(androidHome, "system-images")+string(os.PathSeparator))
 	pkg := "system-images;" + strings.ReplaceAll(rel, string(os.PathSeparator), ";")
 
@@ -217,10 +227,25 @@ func findAVDManager(androidHome string) string {
 	}
 	if androidHome != "" {
 		matches, _ := filepath.Glob(filepath.Join(androidHome, "cmdline-tools", "*", "bin", "avdmanager"))
-		sort.Strings(matches)
-		if len(matches) > 0 {
-			return matches[len(matches)-1]
+		// Prefer the "latest" alias; otherwise compare versions numerically
+		// ("9.0" would lexicographically outrank "11.0").
+		best := ""
+		bestVersion := -1.0
+		for _, m := range matches {
+			version := filepath.Base(filepath.Dir(filepath.Dir(m)))
+			if version == "latest" {
+				return m
+			}
+			v, err := strconv.ParseFloat(version, 64)
+			if err != nil {
+				v = 0
+			}
+			if v > bestVersion {
+				bestVersion = v
+				best = m
+			}
 		}
+		return best
 	}
 	return ""
 }
