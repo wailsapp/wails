@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Before opening a feature request, please check the [Roadmap](https://github.com/wailsapp/wails/discussions/1484) to see if it has already been requested.
-        ***Please note: No new feature requests are being accepted for Wails v1***
+        ***Please note: Enhancements should be discussed on [Discord](https://discord.gg/JDdSxwjhGf) or [GitHub Discussions](https://github.com/wailsapp/wails/discussions) before opening a feature request. See the [feedback guide](https://v3.wails.io/feedback/) for details.***
 
   - type: textarea
     attributes:
