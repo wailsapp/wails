@@ -6,7 +6,7 @@ includes:
 vars:
   APP_ID: '{{.APP_ID | default "com.wails.app"}}'
   MIN_SDK: '21'
-  TARGET_SDK: '34'
+  TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
   HOST_ARCH:
     sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
@@ -146,6 +146,30 @@ tasks:
           PRODUCTION: "true"
       - task: assemble:apk:release
 
+  bundle:
+    summary: Packages a production AAB (Android App Bundle) for Play Store submission
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+    cmds:
+      - task: assemble:aab:release
+
+  bundle:fat:
+    summary: Packages a production AAB for all architectures
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: arm64
+    cmds:
+      - task: compile:go:shared
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+      - task: assemble:aab:release
+
   assemble:apk:
     summary: Assembles a debug APK using Gradle
     preconditions:
@@ -175,6 +199,45 @@ tasks:
         ./gradlew assembleRelease
         cp app/build/outputs/apk/release/app-release.apk "../../{{.BIN_DIR}}/{{.APP_NAME}}.apk"
         echo "Release APK created: {{.BIN_DIR}}/{{.APP_NAME}}.apk"
+
+  assemble:aab:
+    summary: Assembles a debug AAB (Android App Bundle) using Gradle
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
+    cmds:
+      - |
+        cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
+        ./gradlew bundleDebug
+        cp app/build/outputs/bundle/debug/app-debug.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
+        echo "AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
+
+  assemble:aab:release:
+    summary: Assembles a release AAB for Play Store upload (signed with the debug keystore unless ANDROID_KEYSTORE_FILE is set)
+    preconditions:
+      - sh: 'command -v java >/dev/null || [ -n "$JAVA_HOME" ]'
+        msg: "Java not found. Install a JDK (e.g. brew install openjdk@21) and/or set JAVA_HOME"
+    cmds:
+      - |
+        # With Play App Signing, the keystore configured here is your UPLOAD
+        # key: Google verifies the upload with it, then re-signs the app with
+        # the app signing key it manages for distribution.
+        if [ -z "$ANDROID_KEYSTORE_FILE" ]; then
+          echo "WARNING: ANDROID_KEYSTORE_FILE is not set, so this AAB will be"
+          echo "signed with the debug keystore. Google Play rejects debug-signed"
+          echo "bundles. Set ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD,"
+          echo "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD before uploading."
+        fi
+        cd build/android
+        # The exec bit is lost when gradlew is extracted from the embedded
+        # build assets, so restore it before invoking the wrapper.
+        chmod +x ./gradlew
+        ./gradlew bundleRelease
+        cp app/build/outputs/bundle/release/app-release.aab "../../{{.BIN_DIR}}/{{.APP_NAME}}.aab"
+        echo "Release AAB created: {{.BIN_DIR}}/{{.APP_NAME}}.aab"
 
   generate:android:overlay:
     internal: true
@@ -236,8 +299,8 @@ tasks:
           else
             echo "No Android Virtual Devices found, and no system image is installed to create one from."
             echo "Install a system image and create an AVD, e.g.:"
-            echo "  sdkmanager 'system-images;android-34;google_apis;$ABI'"
-            echo "  avdmanager create avd --name wails --package 'system-images;android-34;google_apis;$ABI' --device pixel_7"
+            echo "  sdkmanager 'system-images;android-35;google_apis;$ABI'"
+            echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;$ABI' --device pixel_7"
             exit 1
           fi
         fi
@@ -299,48 +362,65 @@ tasks:
       - '"{{.ADB}}" devices -l'
 
   run:device:
-    summary: Build, install and launch a debug build on a connected Android device
+    summary: Build, install and launch a debug build on a connected physical Android device
     deps:
       - task: build
+        vars:
+          ARCH: arm64
     cmds:
       - task: assemble:apk
       - |
-        # Resolve a target device. Use DEVICE_ID if given, else the first
-        # device reporting "device" state (see: task android:device:list).
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
+        DEVICE='{{.DEVICE_ID | default ""}}'
         if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+          DEVICE="${DEVICE_ID:-}"
         fi
         if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
           exit 1
         fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   deploy-device:
-    summary: Deploy the packaged release APK to a connected Android device
-    deps: [package]
+    summary: Deploy the packaged release APK to a connected physical Android device
+    deps:
+      - task: package
+        vars:
+          ARCH: arm64
     cmds:
       - |
-        ADB="{{.ADB}}"
-        DEVICE="{{.DEVICE_ID}}"
+        DEVICE='{{.DEVICE_ID | default ""}}'
         if [ -z "$DEVICE" ]; then
-          DEVICE=$("$ADB" devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+          DEVICE="${DEVICE_ID:-}"
         fi
         if [ -z "$DEVICE" ]; then
-          echo "No connected device found. Enable USB debugging and connect a device,"
-          echo "or pass DEVICE_ID=<serial> (see: task android:device:list)."
+          DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 !~ /^emulator-/ { print $1; exit }')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected physical Android device found."
+          echo "Pass DEVICE_ID=<serial> to target a device explicitly."
+          echo "Find connected device serials with: {{.ADB}} devices"
           exit 1
         fi
-        echo "Deploying to device: $DEVICE"
-        "$ADB" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
-        "$ADB" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
-        "$ADB" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to device $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
+    preconditions:
+      - sh: '[ -x "{{.ADB}}" ] || command -v adb'
+        msg: "adb not found. Install the Android SDK platform-tools (or set ANDROID_HOME)"
 
   studio:
     summary: Open the generated Android project in Android Studio

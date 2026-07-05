@@ -124,7 +124,7 @@ func main() {
 		fmt.Println("Setup instructions:")
 		fmt.Println("1. Install Android Studio: https://developer.android.com/studio")
 		fmt.Println("2. Open SDK Manager and install:")
-		fmt.Println("   - Android SDK Platform (API 34)")
+		fmt.Println("   - Android SDK Platform (API 35)")
 		fmt.Println("   - Android SDK Build-Tools")
 		fmt.Println("   - Android SDK Platform-Tools")
 		fmt.Println("   - Android Emulator")
