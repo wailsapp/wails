@@ -89,10 +89,8 @@ func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
 	// CHECK crashes (0x80000003)
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scale)
 	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583):
-		// skip rather than corrupt the scale. WebView2's own monitor-scale
-		// detection owns the scale by default (#5734), so this is a safe no-op.
-		return nil
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {

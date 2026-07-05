@@ -42,7 +42,7 @@ func (i *ICoreWebView2CookieManager) Release() uint32 {
 // CreateCookie creates a new cookie with the given parameters
 func (i *ICoreWebView2CookieManager) CreateCookie(name, value, domain, path string) (*ICoreWebView2Cookie, error) {
 	var cookie *ICoreWebView2Cookie
-	
+
 	nameutf16, err := windows.UTF16PtrFromString(name)
 	if err != nil {
 		return nil, err

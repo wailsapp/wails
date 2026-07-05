@@ -94,7 +94,7 @@ func (i *ICoreWebView2PrintSettings) PutScaleFactor(scaleFactor float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scaleFactor)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutScaleFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -124,7 +124,7 @@ func (i *ICoreWebView2PrintSettings) PutPageWidth(pageWidth float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageWidth)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutPageWidth.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -154,7 +154,7 @@ func (i *ICoreWebView2PrintSettings) PutPageHeight(pageHeight float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageHeight)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutPageHeight.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -184,7 +184,7 @@ func (i *ICoreWebView2PrintSettings) PutMarginTop(marginTop float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginTop)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutMarginTop.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -214,7 +214,7 @@ func (i *ICoreWebView2PrintSettings) PutMarginBottom(marginBottom float64) error
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginBottom)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutMarginBottom.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -244,7 +244,7 @@ func (i *ICoreWebView2PrintSettings) PutMarginLeft(marginLeft float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginLeft)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutMarginLeft.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -274,7 +274,7 @@ func (i *ICoreWebView2PrintSettings) PutMarginRight(marginRight float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginRight)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutMarginRight.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {

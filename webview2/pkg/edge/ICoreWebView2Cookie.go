@@ -131,9 +131,8 @@ func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 	// helpers pass it correctly for the target ABI.
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
 	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583);
-		// the cookie keeps its current expiry rather than a garbage one.
-		return nil
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.vtbl.PutExpires.Call(args...)
 	if hr != 0 {

@@ -144,7 +144,7 @@ func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutExpires.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {

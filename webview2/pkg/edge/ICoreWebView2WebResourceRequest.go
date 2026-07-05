@@ -52,7 +52,7 @@ func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 }
 
 func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
-	
+
 	// Create *uint16 to hold result
 	var _uri *uint16
 	hr, _, _ := i.vtbl.GetUri.Call(

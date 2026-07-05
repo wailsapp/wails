@@ -155,9 +155,8 @@ func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
 	// helpers pass it correctly for the target ABI.
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
 	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583);
-		// zoom stays at the WebView2 default rather than a garbage value.
-		return nil
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.vtbl.PutZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {

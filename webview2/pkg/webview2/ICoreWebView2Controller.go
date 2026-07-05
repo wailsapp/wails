@@ -126,7 +126,7 @@ func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
 	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.PutZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
@@ -163,20 +163,17 @@ func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistratio
 }
 
 func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor float64) error {
-
-	// bounds (a >8-byte struct) is passed by reference per the x64 ABI; the
-	// double is by value (see PutZoomFactor).
-	// TODO: on 386 a by-value RECT is passed as four stack words and on arm64
-	// as two registers (see edge.Chromium.SetSize per-arch files), so the
-	// &bounds word here is amd64-only; this package builds but is not yet
-	// arch-correct for by-value structs on 386/arm64.
-	args, ok := appendDoubleArg([]uintptr{
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&bounds)),
-	}, zoomFactor)
+	// Both parameters are passed BY VALUE: the 16-byte RECT per the target
+	// ABI's aggregate rules (appendRectArg) and the double per its
+	// floating-point rules (appendDoubleArg).
+	args, ok := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
+	if !ok {
+		return ErrDoubleArgUnsupported
+	}
+	args, ok = appendDoubleArg(args, zoomFactor)
 	if !ok {
 		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return nil
+		return ErrDoubleArgUnsupported
 	}
 	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
