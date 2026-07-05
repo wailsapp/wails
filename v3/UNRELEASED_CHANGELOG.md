@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Synchronize WebView2 controller visibility with window minimize/maximize/restore in [PR](https://github.com/wailsapp/wails/pull/5742) by @wayneforrest
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
