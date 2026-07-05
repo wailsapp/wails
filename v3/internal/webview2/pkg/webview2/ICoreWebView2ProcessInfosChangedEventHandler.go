@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ProcessInfosChangedEventHandler struct {
 	impl ICoreWebView2ProcessInfosChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ProcessInfosChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ProcessInfosChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ProcessInfosChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ProcessInfosChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ProcessInfosChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ProcessInfosChangedEventHandlerIUnknownQueryInterface(this *IC
 }
 
 func ICoreWebView2ProcessInfosChangedEventHandlerIUnknownAddRef(this *ICoreWebView2ProcessInfosChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ProcessInfosChangedEventHandlerIUnknownRelease(this *ICoreWebView2ProcessInfosChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ProcessInfosChangedEventHandlerInvoke(this *ICoreWebView2ProcessInfosChangedEventHandler, sender *ICoreWebView2Environment, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ProcessInfosChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ProcessInfosChangedEventHandlerFn = ICoreWebView2ProcessInfosChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ProcessInfosChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ProcessInfosChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ProcessInfosChangedEventHandlerIUnknownRelease),

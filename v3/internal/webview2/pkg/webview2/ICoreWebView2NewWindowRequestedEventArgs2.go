@@ -1,15 +1,14 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2NewWindowRequestedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NewWindowRequestedEventArgsVtbl
 	GetName ComProc
 }
 
@@ -17,30 +16,43 @@ type ICoreWebView2NewWindowRequestedEventArgs2 struct {
 	Vtbl *ICoreWebView2NewWindowRequestedEventArgs2Vtbl
 }
 
-func (i *ICoreWebView2NewWindowRequestedEventArgs2) AddRef() uintptr {
+func (i *ICoreWebView2NewWindowRequestedEventArgs2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2NewWindowRequestedEventArgs2() *ICoreWebView2NewWindowRequestedEventArgs2 {
+func (i *ICoreWebView2NewWindowRequestedEventArgs2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2NewWindowRequestedEventArgs2 queries the object for its ICoreWebView2NewWindowRequestedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2NewWindowRequestedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2NewWindowRequestedEventArgs) GetICoreWebView2NewWindowRequestedEventArgs2() (*ICoreWebView2NewWindowRequestedEventArgs2, error) {
 	var result *ICoreWebView2NewWindowRequestedEventArgs2
 
 	iidICoreWebView2NewWindowRequestedEventArgs2 := NewGUID("{bbc7baed-74c6-4c92-b63a-7f5aeae03de3}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2NewWindowRequestedEventArgs2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2NewWindowRequestedEventArgs2) GetName() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

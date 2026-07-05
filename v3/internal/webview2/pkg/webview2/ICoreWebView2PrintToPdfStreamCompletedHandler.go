@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2PrintToPdfStreamCompletedHandler struct {
 	impl ICoreWebView2PrintToPdfStreamCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2PrintToPdfStreamCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2PrintToPdfStreamCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2PrintToPdfStreamCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2PrintToPdfStreamCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownAddRef(this *ICoreWebView2PrintToPdfStreamCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownRelease(this *ICoreWebView2PrintToPdfStreamCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2PrintToPdfStreamCompletedHandlerInvoke(this *ICoreWebView2PrintToPdfStreamCompletedHandler, errorCode uintptr, result *IStream) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2PrintToPdfStreamCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2PrintToPdfStreamCompletedHandlerFn = ICoreWebView2PrintToPdfStreamCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2PrintToPdfStreamCompletedHandlerIUnknownRelease),

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2SaveAsUIShowingEventHandler struct {
 	impl ICoreWebView2SaveAsUIShowingEventHandlerImpl
 }
 
-func (i *ICoreWebView2SaveAsUIShowingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2SaveAsUIShowingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2SaveAsUIShowingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2SaveAsUIShowingEventHandlerIUnknownQueryInterface(this *ICoreWebView2SaveAsUIShowingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2SaveAsUIShowingEventHandlerIUnknownQueryInterface(this *ICoreW
 }
 
 func ICoreWebView2SaveAsUIShowingEventHandlerIUnknownAddRef(this *ICoreWebView2SaveAsUIShowingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2SaveAsUIShowingEventHandlerIUnknownRelease(this *ICoreWebView2SaveAsUIShowingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2SaveAsUIShowingEventHandlerInvoke(this *ICoreWebView2SaveAsUIShowingEventHandler, sender *ICoreWebView2, args *ICoreWebView2SaveAsUIShowingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2SaveAsUIShowingEventHandlerImpl interface {
 }
 
 var ICoreWebView2SaveAsUIShowingEventHandlerFn = ICoreWebView2SaveAsUIShowingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2SaveAsUIShowingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2SaveAsUIShowingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2SaveAsUIShowingEventHandlerIUnknownRelease),

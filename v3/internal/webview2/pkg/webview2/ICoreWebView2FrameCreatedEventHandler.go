@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FrameCreatedEventHandler struct {
 	impl ICoreWebView2FrameCreatedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FrameCreatedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FrameCreatedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FrameCreatedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FrameCreatedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FrameCreatedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FrameCreatedEventHandlerIUnknownQueryInterface(this *ICoreWebV
 }
 
 func ICoreWebView2FrameCreatedEventHandlerIUnknownAddRef(this *ICoreWebView2FrameCreatedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FrameCreatedEventHandlerIUnknownRelease(this *ICoreWebView2FrameCreatedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FrameCreatedEventHandlerInvoke(this *ICoreWebView2FrameCreatedEventHandler, sender *ICoreWebView2, args *ICoreWebView2FrameCreatedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FrameCreatedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FrameCreatedEventHandlerFn = ICoreWebView2FrameCreatedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FrameCreatedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FrameCreatedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FrameCreatedEventHandlerIUnknownRelease),

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ContainsFullScreenElementChangedEventHandler struct {
 	impl ICoreWebView2ContainsFullScreenElementChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ContainsFullScreenElementChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ContainsFullScreenElementChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ContainsFullScreenElementChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownQueryInter
 }
 
 func ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownAddRef(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownRelease(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ContainsFullScreenElementChangedEventHandlerInvoke(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ContainsFullScreenElementChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ContainsFullScreenElementChangedEventHandlerFn = ICoreWebView2ContainsFullScreenElementChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownRelease),

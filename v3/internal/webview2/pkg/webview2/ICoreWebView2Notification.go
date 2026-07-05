@@ -1,43 +1,48 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2NotificationVtbl struct {
 	IUnknownVtbl
-	AddCloseRequested      ComProc
-	RemoveCloseRequested   ComProc
-	ReportShown            ComProc
-	ReportClicked          ComProc
-	ReportClosed           ComProc
-	GetBody                ComProc
-	GetDirection           ComProc
-	GetLanguage            ComProc
-	GetTag                 ComProc
-	GetIconUri             ComProc
-	GetTitle               ComProc
-	GetBadgeUri            ComProc
-	GetBodyImageUri        ComProc
-	GetShouldRenotify      ComProc
+	AddCloseRequested ComProc
+	RemoveCloseRequested ComProc
+	ReportShown ComProc
+	ReportClicked ComProc
+	ReportClosed ComProc
+	GetBody ComProc
+	GetDirection ComProc
+	GetLanguage ComProc
+	GetTag ComProc
+	GetIconUri ComProc
+	GetTitle ComProc
+	GetBadgeUri ComProc
+	GetBodyImageUri ComProc
+	GetShouldRenotify ComProc
 	GetRequiresInteraction ComProc
-	GetIsSilent            ComProc
-	GetTimestamp           ComProc
-	GetVibrationPattern    ComProc
+	GetIsSilent ComProc
+	GetTimestamp ComProc
+	GetVibrationPattern ComProc
 }
 
 type ICoreWebView2Notification struct {
 	Vtbl *ICoreWebView2NotificationVtbl
 }
 
-func (i *ICoreWebView2Notification) AddRef() uintptr {
+func (i *ICoreWebView2Notification) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Notification) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Notification) AddCloseRequested(eventHandler *ICoreWebView2NotificationCloseRequestedEventHandler) (EventRegistrationToken, error) {
 
@@ -56,10 +61,22 @@ func (i *ICoreWebView2Notification) AddCloseRequested(eventHandler *ICoreWebView
 
 func (i *ICoreWebView2Notification) RemoveCloseRequested(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveCloseRequested.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveCloseRequested.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveCloseRequested.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -67,6 +84,7 @@ func (i *ICoreWebView2Notification) RemoveCloseRequested(token EventRegistration
 }
 
 func (i *ICoreWebView2Notification) ReportShown() error {
+
 
 	hr, _, _ := i.Vtbl.ReportShown.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -79,6 +97,7 @@ func (i *ICoreWebView2Notification) ReportShown() error {
 
 func (i *ICoreWebView2Notification) ReportClicked() error {
 
+
 	hr, _, _ := i.Vtbl.ReportClicked.Call(
 		uintptr(unsafe.Pointer(i)),
 	)
@@ -89,6 +108,7 @@ func (i *ICoreWebView2Notification) ReportClicked() error {
 }
 
 func (i *ICoreWebView2Notification) ReportClosed() error {
+
 
 	hr, _, _ := i.Vtbl.ReportClosed.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -103,9 +123,10 @@ func (i *ICoreWebView2Notification) GetBody() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetBody.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -134,9 +155,10 @@ func (i *ICoreWebView2Notification) GetLanguage() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetLanguage.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -151,9 +173,10 @@ func (i *ICoreWebView2Notification) GetTag() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetTag.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -168,9 +191,10 @@ func (i *ICoreWebView2Notification) GetIconUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetIconUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -185,9 +209,10 @@ func (i *ICoreWebView2Notification) GetTitle() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetTitle.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -202,9 +227,10 @@ func (i *ICoreWebView2Notification) GetBadgeUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetBadgeUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -219,9 +245,10 @@ func (i *ICoreWebView2Notification) GetBodyImageUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetBodyImageUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -244,7 +271,7 @@ func (i *ICoreWebView2Notification) GetShouldRenotify() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -260,7 +287,7 @@ func (i *ICoreWebView2Notification) GetRequiresInteraction() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -276,7 +303,7 @@ func (i *ICoreWebView2Notification) GetIsSilent() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
