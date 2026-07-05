@@ -343,7 +343,19 @@ func (s *windowsSystemTray) updateIcon() {
 	}
 
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		panic(syscall.GetLastError())
+		// The icon isn't currently registered with the shell. This happens
+		// transiently when Explorer / the taskbar restarts and our icon is
+		// dropped before the TaskbarCreated handler (reshowSystrays) re-adds it.
+		// Previously this called panic(syscall.GetLastError()); when the thread's
+		// last-error is 0 that is panic(nil), which on Go 1.21+ surfaces as
+		// "panic called with nil argument" and crashes the host app.
+		//
+		// Match the other NIM_MODIFY callers (Show/Hide/setTooltip): log and
+		// return. Roll back currentIcon so the next updateIcon retries once the
+		// icon is registered again; keep the old handle (do not release it).
+		globalApplication.warning("ShellNotifyIcon NIM_MODIFY failed in updateIcon (icon not registered): %v", syscall.GetLastError())
+		s.currentIcon = oldIcon
+		return
 	}
 
 	// Track ownership of the current icon so we know if we can destroy it later
@@ -539,7 +551,10 @@ func (s *windowsSystemTray) destroy() {
 	// destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
-		globalApplication.debug(syscall.GetLastError().Error())
+		// Pass the error as an arg rather than calling .Error() on it: when the
+		// thread's last-error is 0, syscall.GetLastError() returns a nil error,
+		// and nil.Error() would nil-deref panic (mirrors the updateIcon fix).
+		globalApplication.debug("ShellNotifyIcon NIM_DELETE failed", "error", syscall.GetLastError())
 	}
 
 	// Clean up icon handles

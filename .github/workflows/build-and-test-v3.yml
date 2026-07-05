@@ -109,18 +109,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -223,18 +220,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
-          version: 1.0
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
