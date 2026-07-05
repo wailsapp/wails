@@ -18,17 +18,22 @@ import (
 )
 
 const (
-	versionFile          = "../../internal/version/version.txt"
-	changelogFile        = "../../../docs/src/content/docs/changelog.mdx"
-	defaultReleaseBranch = "master"
-	defaultReleaseTitle  = "Wails %s"
-	defaultReleaseTarget = "master"
-	githubDefaultAPI     = "https://api.github.com"
-	githubAPIVersion     = "2022-11-28"
+	versionFile = "../../internal/version/version.txt"
+	// changelogInsertMarker is the hidden MDX comment in changelog.mdx below
+	// which new release sections are inserted. The docs page has no visible
+	// "[Unreleased]" heading: the site changelog starts with the latest
+	// release, so the insertion point is an invisible anchor instead.
+	changelogInsertMarker = "{/* CHANGELOG-INSERT-MARKER: new releases are inserted below this line by the release workflow. Do not edit or remove it. */}"
+	defaultReleaseBranch  = "master"
+	defaultReleaseTitle   = "Wails %s"
+	defaultReleaseTarget  = "master"
+	githubDefaultAPI      = "https://api.github.com"
+	githubAPIVersion      = "2022-11-28"
 )
 
 var (
 	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
+	changelogFile           = "../../../docs/src/content/docs/changelog.mdx"
 )
 
 type releaseOptions struct {
@@ -700,19 +705,35 @@ func validateToken(token, repoSlug string) error {
 	}
 }
 
+// formatChangelogForSite reformats extracted UNRELEASED_CHANGELOG.md content
+// for the docs changelog page. The working file uses "## Added" style category
+// headers; on the site those must sit one level below the "## <version>"
+// headers so the table of contents nests them, so every category header is
+// demoted to "###".
+func formatChangelogForSite(changelogContent string) string {
+	lines := strings.Split(changelogContent, "\n")
+	for i, line := range lines {
+		if strings.HasPrefix(line, "## ") {
+			lines[i] = "#" + line
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func applyChangelogUpdates(newVersion, changelogContent string) error {
 	changelogData, err := os.ReadFile(changelogFile)
 	if err != nil {
 		return fmt.Errorf("failed to read changelog.mdx: %w", err)
 	}
 	changelog := string(changelogData)
-	split := strings.Split(changelog, "## [Unreleased]")
+	split := strings.Split(changelog, changelogInsertMarker)
 	if len(split) != 2 {
-		return fmt.Errorf("could not find '## [Unreleased]' section in changelog.mdx")
+		return fmt.Errorf("could not find the insert marker %q in changelog.mdx", changelogInsertMarker)
 	}
 
 	today := time.Now().Format("2006-01-02")
-	newChangelog := split[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + split[1]
+	newSection := "## " + newVersion + " - " + today + "\n\n" + formatChangelogForSite(changelogContent)
+	newChangelog := split[0] + changelogInsertMarker + "\n\n" + newSection + "\n\n" + strings.TrimLeft(split[1], "\n")
 
 	if err := safeFileOperation(changelogFile, func() error {
 		return os.WriteFile(changelogFile, []byte(newChangelog), 0o644)
