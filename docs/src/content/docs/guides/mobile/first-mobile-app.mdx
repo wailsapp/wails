@@ -118,11 +118,11 @@ You need the **Android SDK**, **NDK**, and a **JDK**. The easiest way is Android
 
    ```bash
    sdkmanager "platform-tools" \
-              "platforms;android-34" \
-              "build-tools;34.0.0" \
+              "platforms;android-35" \
+              "build-tools;35.0.0" \
               "ndk;26.3.11579264" \
               "emulator" \
-              "system-images;android-34;google_apis;arm64-v8a"
+              "system-images;android-35;google_apis;arm64-v8a"
    ```
 
 3. **Create an emulator**
@@ -130,7 +130,7 @@ You need the **Android SDK**, **NDK**, and a **JDK**. The easiest way is Android
    ```bash
    avdmanager create avd \
      --name wails \
-     --package "system-images;android-34;google_apis;arm64-v8a" \
+     --package "system-images;android-35;google_apis;arm64-v8a" \
      --device pixel_7
    ```
 

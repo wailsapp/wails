@@ -17,18 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
-- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
-- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing
-- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai
-- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
