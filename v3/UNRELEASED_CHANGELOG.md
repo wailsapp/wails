@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Move WebView2 monitor-scale detection and DPI-change host resync fix to Unreleased section in [PR](https://github.com/wailsapp/wails/pull/5750) by @taliesin-ai
 - Update WebView2 COM marshaling for float64 and BOOL parameters in [PR](https://github.com/wailsapp/wails/pull/5741) by @wayneforrest
 - Prevent panic and nil dereference in Windows system tray icon updates and destruction in [PR](https://github.com/wailsapp/wails/pull/5703) by @wayneforrest
 - Fixes hidden windows not re-hiding correctly on Windows in [PR](https://github.com/wailsapp/wails/pull/5743) by @wayneforrest
