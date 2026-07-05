@@ -113,9 +113,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.apt-archives
-          key: apt-install-linux-dependencies-gtk4-default--${{ github.run_id }}
+          key: apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            apt-install-linux-dependencies-gtk4-default--
+            apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-
 
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
@@ -237,9 +237,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.apt-archives
-          key: apt-install-linux-dependencies-gtk4-default--${{ github.run_id }}
+          key: apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            apt-install-linux-dependencies-gtk4-default--
+            apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-
 
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'

@@ -70,9 +70,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.apt-archives
-          key: apt-install-linux-dependencies-22-04-libgtk--${{ github.run_id }}
+          key: apt-install-linux-dependencies-22-04-libgtk--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            apt-install-linux-dependencies-22-04-libgtk--
+            apt-install-linux-dependencies-22-04-libgtk--${{ github.job }}-${{ runner.arch }}-
 
       - name: Install linux dependencies (22.04)
         if: matrix.os == 'ubuntu-22.04'
@@ -87,9 +87,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.apt-archives
-          key: apt-install-linux-dependencies-24-04-libgtk--${{ github.run_id }}
+          key: apt-install-linux-dependencies-24-04-libgtk--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            apt-install-linux-dependencies-24-04-libgtk--
+            apt-install-linux-dependencies-24-04-libgtk--${{ github.job }}-${{ runner.arch }}-
 
       - name: Install linux dependencies (24.04)
         if: matrix.os == 'ubuntu-24.04'

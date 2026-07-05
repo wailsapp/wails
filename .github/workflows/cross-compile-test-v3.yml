@@ -95,9 +95,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.apt-archives
-          key: apt-cross-compile-${{ github.run_id }}
+          key: apt-cross-compile-${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            apt-cross-compile-
+            apt-cross-compile-${{ github.job }}-${{ runner.arch }}-
 
       - name: Install Linux dependencies
         run: |
