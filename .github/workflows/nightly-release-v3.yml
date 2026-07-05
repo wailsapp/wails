@@ -1,4 +1,4 @@
-name: Nightly Release v3-alpha
+name: Nightly Release v3
 
 on:
   schedule:
@@ -118,10 +118,11 @@ jobs:
           fi
         else
           # No current tag, check against latest release.
-          # Only consider the active "alpha2.*" series: it outranks the legacy
-          # "alpha.*" tags in semver, and on the very first run (no alpha2 tag
-          # yet) the empty result correctly forces the inaugural alpha2 release.
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" | sort -V | tail -1)
+          # Only consider the active release series (alpha2/beta/rc): they
+          # outrank the legacy "alpha.*" tags in semver, and matching them
+          # explicitly keeps stray legacy tags (e.g. v3.0.0-alpha.98-tui) from
+          # being picked up as the latest release by a blanket glob.
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
           if [ -z "$LATEST_TAG" ]; then
             echo "No previous release found, proceeding with release"
             echo "has_changes=true" >> $GITHUB_OUTPUT
