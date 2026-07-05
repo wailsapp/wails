@@ -20,11 +20,11 @@ import (
 	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
-	"github.com/wailsapp/wails/webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/webview2/pkg/edge"
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{

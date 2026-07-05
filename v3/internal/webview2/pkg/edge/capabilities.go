@@ -1,6 +1,8 @@
+//go:build windows
+
 package edge
 
-import "github.com/wailsapp/wails/webview2/webviewloader"
+import "github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 type Capability string
 

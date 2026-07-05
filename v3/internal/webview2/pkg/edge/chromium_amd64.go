@@ -6,7 +6,7 @@ package edge
 import (
 	"log"
 
-	"github.com/wailsapp/wails/webview2/internal/w32"
+	"github.com/wailsapp/wails/v3/internal/webview2/internal/w32"
 )
 
 func (e *Chromium) SetSize(bounds w32.Rect) {

@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Fold the `webview2` binding into the v3 module as `v3/internal/webview2`, removing the standalone module, its nightly release/sync workflows, and the go.mod version dance (v3 is its only consumer) in [PR](https://github.com/wailsapp/wails/pull/5711) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
