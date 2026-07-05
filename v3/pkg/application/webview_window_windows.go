@@ -2611,6 +2611,20 @@ func (w *windowsWebviewWindow) navigationCompleted(
 		}
 		w.update()
 	}
+
+	// The first-paint nudge above ends with the controller IsVisible=true. For
+	// any window that is not logically visible at this point — one created
+	// Hidden and never shown (e.g. a pre-created tray popup), or one the app
+	// hid before this first NavigationCompleted arrived — that leaves a live
+	// WINDOW_TO_VISUAL DirectComposition input surface hit-testing at the
+	// window's location: an invisible desktop right-click "dead zone".
+	// Re-hide the controller so a hidden window has no live surface; show()
+	// re-asserts IsVisible(true) when the window is actually shown.
+	// showRequested is initialised to !options.Hidden and only show()/hide()
+	// flip it, so these two flags alone identify both cases.
+	if !w.windowShown && !w.showRequested {
+		_ = w.chromium.Hide()
+	}
 }
 
 func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
