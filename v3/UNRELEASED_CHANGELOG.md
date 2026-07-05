@@ -17,16 +17,19 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
-- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing
-- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
 - Generate the docs changelog page in a site-friendly format: the page now starts with the latest release and category headers nest under version headers in the table of contents
+- Fold the `webview2` binding into the v3 module as `v3/internal/webview2`, removing the standalone module, its nightly release/sync workflows, and the go.mod version dance (v3 is its only consumer) in [PR](https://github.com/wailsapp/wails/pull/5711) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
+- Move WebView2 monitor-scale detection and DPI-change host resync fix to Unreleased section in [PR](https://github.com/wailsapp/wails/pull/5750) by @taliesin-ai
+- Update WebView2 COM marshaling for float64 and BOOL parameters in [PR](https://github.com/wailsapp/wails/pull/5741) by @wayneforrest
+- Prevent panic and nil dereference in Windows system tray icon updates and destruction in [PR](https://github.com/wailsapp/wails/pull/5703) by @wayneforrest
+- Fixes hidden windows not re-hiding correctly on Windows in [PR](https://github.com/wailsapp/wails/pull/5743) by @wayneforrest
+- Synchronize WebView2 controller visibility with window minimize/maximize/restore in [PR](https://github.com/wailsapp/wails/pull/5742) by @wayneforrest
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
