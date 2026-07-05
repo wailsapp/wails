@@ -1,4 +1,4 @@
-name: Nightly Release v3-alpha
+name: Nightly Release v3
 
 on:
   schedule:

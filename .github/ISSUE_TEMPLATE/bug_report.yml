@@ -7,9 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ***Please note: No bug reports are currently being accepted for Wails v3***
-        ***Please note: No bug reports are currently being accepted for Wails v3***
-        ***Please note: No bug reports are currently being accepted for Wails v3***
+        ***For Wails v3 bugs: please use the latest tagged alpha (e.g. `v3.0.0-alpha2.113`), not a source install, and include the output of `wails3 doctor`.***
         Before submitting this issue, please do the following:
         - Do a web search for your error. This usually leads to a much better understanding of the issue.
         - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce. 
@@ -17,7 +15,7 @@ body:
         - Search the [discussion forums](https://github.com/wailsapp/wails/discussions?discussions_q=type+your+issue+here).
         - Read the [Troubleshooting Guide](https://wails.io/docs/next/guides/troubleshooting).
         - Create a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example) and link to it in the issue.
-        - If your issue is related to TypeScript generation, please open a ticket and create a PR with a failing test case.
+        - (v2) If your issue is related to TypeScript generation, please open a ticket and create a PR with a failing test case.
         TS tests can be found [here](https://github.com/wailsapp/wails/tree/master/v2/internal/binding/binding_test). Remember to add
         your test to the `binding_test.go` file.
         - Try to fix it yourself. Keep a list of things you have done to fix the problem.   
@@ -75,7 +73,7 @@ body:
     id: systemdetails
     attributes:
       label: System Details
-      description: Please add the output of `wails doctor`.
+      description: Please add the output of `wails doctor` (v2) or `wails3 doctor` (v3).
       render: shell
     validations:
       required: true

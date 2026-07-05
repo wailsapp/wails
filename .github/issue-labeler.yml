@@ -6,7 +6,6 @@ v2-only:
   - 'version 2'
   - 'wails v2'
   - 'using v2'
-  - 'master branch'
 
 v3-alpha:
   - '\[v3\]'
