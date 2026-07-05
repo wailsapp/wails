@@ -107,6 +107,37 @@ static WebKitWebView* webkit_web_view(GtkWidget *webview) {
 	return WEBKIT_WEB_VIEW(webview);
 }
 
+// Discards the result/error; execute_js_sync's callers never need one.
+static void on_evaluate_javascript_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+	gboolean *done = (gboolean *)user_data;
+	GError *error = NULL;
+	JSCValue *value = webkit_web_view_evaluate_javascript_finish(WEBKIT_WEB_VIEW(source), result, &error);
+	if (error != NULL) {
+		g_error_free(error);
+	}
+	if (value != NULL) {
+		g_object_unref(value);
+	}
+	*done = TRUE;
+}
+
+// Blocks until WebKit confirms `script` actually finished — callback=NULL
+// (the old behavior) only confirms WebKit accepted the request, not that
+// back-to-back calls execute in the order they were issued. Same nested
+// main-loop technique as clipboard_get_text_sync (linux_cgo.c): blocking on
+// a condvar instead would freeze the loop our own completion callback needs
+// to run on. `done` is stack-local, so concurrent calls stay independent.
+static void execute_js_sync(WebKitWebView *web_view, const char *script, gssize length,
+                             const char *world_name, const char *source_uri) {
+	gboolean done = FALSE;
+	webkit_web_view_evaluate_javascript(web_view, script, length, world_name, source_uri,
+		NULL, on_evaluate_javascript_finish, &done);
+	GMainContext *ctx = g_main_context_default();
+	while (!done) {
+		g_main_context_iteration(ctx, TRUE);
+	}
+}
+
 // Wrapper for the WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST macro
 static int is_user_media_permission_request(WebKitPermissionRequest *request) {
 	return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
@@ -1151,14 +1182,7 @@ func (w *linuxWebviewWindow) disableDND() {
 func (w *linuxWebviewWindow) execJS(js string) {
 	InvokeAsync(func() {
 		value := C.CString(js)
-		C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
-			value,
-			C.long(len(js)),
-			nil,
-			emptyWorldName,
-			nil,
-			nil,
-			nil)
+		C.execute_js_sync(w.webKitWebView(), value, C.long(len(js)), nil, emptyWorldName)
 		C.free(unsafe.Pointer(value))
 	})
 }
