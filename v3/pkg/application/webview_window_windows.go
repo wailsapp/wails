@@ -1720,7 +1720,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// logically hidden windows (Hide() called while minimised):
 				// re-showing their controller would resurrect the invisible
 				// input surface ("dead zone") that hiding it avoids.
-				if (w.windowShown || w.showRequested) && w.chromium != nil && w.chromium.GetController() != nil {
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
 					_ = w.chromium.Show()
 				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
@@ -1750,7 +1751,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// logically hidden windows (Hide() called while minimised):
 				// re-showing their controller would resurrect the invisible
 				// input surface ("dead zone") that hiding it avoids.
-				if (w.windowShown || w.showRequested) && w.chromium != nil && w.chromium.GetController() != nil {
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
 					_ = w.chromium.Show()
 				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
