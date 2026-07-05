@@ -9,7 +9,7 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Detailed contributor guide: [wails.io/community-guide](https://wails.io/community-guide).
 - Changelog: update `website/src/pages/changelog.mdx` under the `[Unreleased]` heading.
 
-## v3 (alpha)
+## v3 (beta)
 
 - Source: the `v3/` directory on the `master` branch.
 - Docs: [v3.wails.io](https://v3.wails.io/).

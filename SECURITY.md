@@ -5,6 +5,7 @@
 | Version | Supported          |
 | ------- | ------------------ |
 | 2.x.x   | :white_check_mark: |
+| 3.0.x-beta    | :white_check_mark: |
 | 3.0.x-alpha   | :x:                |
 
 

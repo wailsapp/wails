@@ -21,6 +21,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 
+- Promote v3 from alpha to beta
+
 ## Fixed
 <!-- Bug fixes -->
 
