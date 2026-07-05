@@ -61,15 +61,17 @@ func (i *ICoreWebViewSettings) Release() uint32 {
 }
 
 func (i *ICoreWebViewSettings) GetIsScriptEnabled() (bool, error) {
-	var isScriptEnabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _isScriptEnabledInt int32
 	hr, _, _ := i.vtbl.GetIsScriptEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isScriptEnabled)),
+		uintptr(unsafe.Pointer(&_isScriptEnabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return isScriptEnabled, nil
+	return _isScriptEnabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsScriptEnabled(isScriptEnabled bool) error {
@@ -84,15 +86,17 @@ func (i *ICoreWebViewSettings) PutIsScriptEnabled(isScriptEnabled bool) error {
 }
 
 func (i *ICoreWebViewSettings) GetIsWebMessageEnabled() (bool, error) {
-	var isWebMessageEnabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _isWebMessageEnabledInt int32
 	hr, _, _ := i.vtbl.GetIsWebMessageEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isWebMessageEnabled)),
+		uintptr(unsafe.Pointer(&_isWebMessageEnabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return isWebMessageEnabled, nil
+	return _isWebMessageEnabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsWebMessageEnabled(isWebMessageEnabled bool) error {
@@ -107,15 +111,17 @@ func (i *ICoreWebViewSettings) PutIsWebMessageEnabled(isWebMessageEnabled bool) 
 }
 
 func (i *ICoreWebViewSettings) GetAreDefaultScriptDialogsEnabled() (bool, error) {
-	var areDefaultScriptDialogsEnabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _areDefaultScriptDialogsEnabledInt int32
 	hr, _, _ := i.vtbl.GetAreDefaultScriptDialogsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&areDefaultScriptDialogsEnabled)),
+		uintptr(unsafe.Pointer(&_areDefaultScriptDialogsEnabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return areDefaultScriptDialogsEnabled, nil
+	return _areDefaultScriptDialogsEnabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutAreDefaultScriptDialogsEnabled(areDefaultScriptDialogsEnabled bool) error {
@@ -130,15 +136,17 @@ func (i *ICoreWebViewSettings) PutAreDefaultScriptDialogsEnabled(areDefaultScrip
 }
 
 func (i *ICoreWebViewSettings) GetIsStatusBarEnabled() (bool, error) {
-	var isStatusBarEnabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _isStatusBarEnabledInt int32
 	hr, _, _ := i.vtbl.GetIsStatusBarEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isStatusBarEnabled)),
+		uintptr(unsafe.Pointer(&_isStatusBarEnabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return isStatusBarEnabled, nil
+	return _isStatusBarEnabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsStatusBarEnabled(isStatusBarEnabled bool) error {
@@ -153,15 +161,17 @@ func (i *ICoreWebViewSettings) PutIsStatusBarEnabled(isStatusBarEnabled bool) er
 }
 
 func (i *ICoreWebViewSettings) GetAreDevToolsEnabled() (bool, error) {
-	var areDevToolsEnabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _areDevToolsEnabledInt int32
 	hr, _, _ := i.vtbl.GetAreDevToolsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&areDevToolsEnabled)),
+		uintptr(unsafe.Pointer(&_areDevToolsEnabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return areDevToolsEnabled, nil
+	return _areDevToolsEnabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutAreDevToolsEnabled(areDevToolsEnabled bool) error {
@@ -176,15 +186,17 @@ func (i *ICoreWebViewSettings) PutAreDevToolsEnabled(areDevToolsEnabled bool) er
 }
 
 func (i *ICoreWebViewSettings) GetAreDefaultContextMenusEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetAreDefaultContextMenusEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutAreDefaultContextMenusEnabled(enabled bool) error {
@@ -199,15 +211,17 @@ func (i *ICoreWebViewSettings) PutAreDefaultContextMenusEnabled(enabled bool) er
 }
 
 func (i *ICoreWebViewSettings) GetAreHostObjectsAllowed() (bool, error) {
-	var allowed bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _allowedInt int32
 	hr, _, _ := i.vtbl.GetAreHostObjectsAllowed.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&allowed)),
+		uintptr(unsafe.Pointer(&_allowedInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return allowed, nil
+	return _allowedInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutAreHostObjectsAllowed(allowed bool) error {
@@ -222,15 +236,17 @@ func (i *ICoreWebViewSettings) PutAreHostObjectsAllowed(allowed bool) error {
 }
 
 func (i *ICoreWebViewSettings) GetIsZoomControlEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetIsZoomControlEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsZoomControlEnabled(enabled bool) error {
@@ -245,15 +261,17 @@ func (i *ICoreWebViewSettings) PutIsZoomControlEnabled(enabled bool) error {
 }
 
 func (i *ICoreWebViewSettings) GetIsBuiltInErrorPageEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetIsBuiltInErrorPageEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsBuiltInErrorPageEnabled(enabled bool) error {
@@ -283,7 +301,7 @@ func (i *ICoreWebViewSettings) GetUserAgent() (string, error) {
 }
 
 func (i *ICoreWebViewSettings) PutUserAgent(userAgent string) error {
-	
+
 	// Convert string 'userAgent' to *uint16
 	_userAgent, err := windows.UTF16PtrFromString(userAgent)
 	if err != nil {
@@ -301,15 +319,17 @@ func (i *ICoreWebViewSettings) PutUserAgent(userAgent string) error {
 }
 
 func (i *ICoreWebViewSettings) GetAreBrowserAcceleratorKeysEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetAreBrowserAcceleratorKeysEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutAreBrowserAcceleratorKeysEnabled(enabled bool) error {
@@ -324,15 +344,17 @@ func (i *ICoreWebViewSettings) PutAreBrowserAcceleratorKeysEnabled(enabled bool)
 }
 
 func (i *ICoreWebViewSettings) GetIsPinchZoomEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetIsPinchZoomEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsPinchZoomEnabled(enabled bool) error {
@@ -347,15 +369,17 @@ func (i *ICoreWebViewSettings) PutIsPinchZoomEnabled(enabled bool) error {
 }
 
 func (i *ICoreWebViewSettings) GetIsSwipeNavigationEnabled() (bool, error) {
-	var enabled bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _enabledInt int32
 	hr, _, _ := i.vtbl.GetIsSwipeNavigationEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(unsafe.Pointer(&_enabledInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return enabled, nil
+	return _enabledInt != 0, nil
 }
 
 func (i *ICoreWebViewSettings) PutIsSwipeNavigationEnabled(enabled bool) error {

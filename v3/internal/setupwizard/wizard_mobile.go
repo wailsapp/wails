@@ -260,7 +260,7 @@ func checkAndroidNDK() DependencyStatus {
 	dep.Message = "The NDK is required to compile Go for Android"
 	// Auto-installable once sdkmanager (from the cmdline-tools) is on PATH.
 	if commandExists("sdkmanager") {
-		dep.InstallCommand = "sdkmanager --install ndk;26.1.10909125"
+		dep.InstallCommand = "sdkmanager --install ndk;26.3.11579264"
 	} else {
 		dep.HelpURL = "https://developer.android.com/studio/projects/install-ndk"
 		dep.HelpLabel = "Install via Android Studio's SDK Manager"

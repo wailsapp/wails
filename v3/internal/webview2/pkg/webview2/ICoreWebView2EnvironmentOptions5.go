@@ -41,9 +41,15 @@ func (i *ICoreWebView2EnvironmentOptions5) GetEnableTrackingPrevention() (bool, 
 
 func (i *ICoreWebView2EnvironmentOptions5) PutEnableTrackingPrevention(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutEnableTrackingPrevention.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

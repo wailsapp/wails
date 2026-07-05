@@ -3,8 +3,8 @@
 package edge
 
 import (
-	"unsafe"
 	"math"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
@@ -129,10 +129,14 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 // PutExpires sets the cookie expiration time
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
-	hr, _, _ := i.vtbl.PutExpires.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(math.Float64bits(expires)),
-	)
+	// put_Expires takes the double BY VALUE; the per-arch appendDoubleArg
+	// helpers pass it correctly for the target ABI.
+	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
+	if !ok {
+		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
+		return ErrDoubleArgUnsupported
+	}
+	hr, _, _ := i.vtbl.PutExpires.Call(args...)
 	if hr != 0 {
 		return windows.Errno(hr)
 	}

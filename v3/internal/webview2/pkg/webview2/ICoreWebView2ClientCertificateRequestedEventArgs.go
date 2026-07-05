@@ -152,9 +152,15 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetCancel() (bool, er
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) PutCancel(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -180,9 +186,15 @@ func (i *ICoreWebView2ClientCertificateRequestedEventArgs) GetHandled() (bool, e
 
 func (i *ICoreWebView2ClientCertificateRequestedEventArgs) PutHandled(value bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _valueInt int32
+	if value {
+		_valueInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(_valueInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

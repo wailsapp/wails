@@ -338,15 +338,17 @@ func (i *ICoreWebView2) GetSource() (string, error) {
 }
 
 func (i *ICoreWebView2) GetContainsFullScreenElement() (bool, error) {
-	var result bool
+	// BOOL out-params are 4 bytes; receiving into a 1-byte Go bool lets the
+	// callee write 3 bytes out of bounds on the stack.
+	var _resultInt int32
 	hr, _, _ := i.vtbl.GetContainsFullScreenElement.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&result)),
+		uintptr(unsafe.Pointer(&_resultInt)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return false, windows.Errno(hr)
 	}
-	return result, nil
+	return _resultInt != 0, nil
 }
 
 func (i *ICoreWebView2) Navigate(url string) error {

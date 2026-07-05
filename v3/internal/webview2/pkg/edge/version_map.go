@@ -3,8 +3,8 @@
 package edge
 
 type Version struct {
-	SDKVersion         string
-	ReleaseNotes           string
+	SDKVersion     string
+	ReleaseNotes   string
 	RuntimeVersion string
 	Notes          string
 }
@@ -14,7 +14,7 @@ var versionMapping = map[string]Version{
 		SDKVersion:     "1.0.2903.40",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#10290340",
 		RuntimeVersion: "131.0.2903.40",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Promotions
@@ -114,7 +114,7 @@ Release Date: November 18, 2024`,
 		SDKVersion:     "1.0.2950-prerelease",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#102950-prerelease",
 		RuntimeVersion: "132.0.2950.0",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Experimental APIs
@@ -156,7 +156,7 @@ Release Date: October 21, 2024`,
 		SDKVersion:     "1.0.2849.39",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#10284939",
 		RuntimeVersion: "130.0.2849.39",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Promotions
@@ -251,7 +251,7 @@ Release Date: October 21, 2024`,
 		SDKVersion:     "1.0.2895-prerelease",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#102895-prerelease",
 		RuntimeVersion: "131.0.2895.0",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Experimental APIs
@@ -452,7 +452,7 @@ Release Date: September 23, 2024`,
 		SDKVersion:     "1.0.2792.45",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#10279245",
 		RuntimeVersion: "129.0.2792.45",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Promotions
@@ -480,7 +480,7 @@ Release Date: September 23, 2024`,
 		SDKVersion:     "1.0.2839-prerelease",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#102839-prerelease",
 		RuntimeVersion: "130.0.2839.0",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Experimental APIs
@@ -528,7 +528,7 @@ Release Date: August 26, 2024`,
 		SDKVersion:     "1.0.2739.15",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#10273915",
 		RuntimeVersion: "128.0.2739.15",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Promotions
@@ -774,7 +774,7 @@ Release Date: August 26, 2024`,
 		SDKVersion:     "1.0.2783-prerelease",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#102783-prerelease",
 		RuntimeVersion: "129.0.2783.0",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Experimental APIs
@@ -833,7 +833,7 @@ Release Date: August 13, 2024`,
 		SDKVersion:     "1.0.2651.64",
 		ReleaseNotes:   "https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes?tabs=win32cpp#10265164",
 		RuntimeVersion: "127.0.2651.64",
-		Notes: 			`
+		Notes: `
 
 <!-- ------------------------------ -->
 #### Promotions

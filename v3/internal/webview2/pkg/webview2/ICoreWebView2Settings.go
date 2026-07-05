@@ -57,9 +57,15 @@ func (i *ICoreWebView2Settings) GetIsScriptEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutIsScriptEnabled(isScriptEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isScriptEnabledInt int32
+	if isScriptEnabled {
+		_isScriptEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsScriptEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isScriptEnabled)),
+		uintptr(_isScriptEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -85,9 +91,15 @@ func (i *ICoreWebView2Settings) GetIsWebMessageEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutIsWebMessageEnabled(isWebMessageEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isWebMessageEnabledInt int32
+	if isWebMessageEnabled {
+		_isWebMessageEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsWebMessageEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isWebMessageEnabled)),
+		uintptr(_isWebMessageEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -113,9 +125,15 @@ func (i *ICoreWebView2Settings) GetAreDefaultScriptDialogsEnabled() (bool, error
 
 func (i *ICoreWebView2Settings) PutAreDefaultScriptDialogsEnabled(areDefaultScriptDialogsEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _areDefaultScriptDialogsEnabledInt int32
+	if areDefaultScriptDialogsEnabled {
+		_areDefaultScriptDialogsEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAreDefaultScriptDialogsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&areDefaultScriptDialogsEnabled)),
+		uintptr(_areDefaultScriptDialogsEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -141,9 +159,15 @@ func (i *ICoreWebView2Settings) GetIsStatusBarEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutIsStatusBarEnabled(isStatusBarEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _isStatusBarEnabledInt int32
+	if isStatusBarEnabled {
+		_isStatusBarEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsStatusBarEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&isStatusBarEnabled)),
+		uintptr(_isStatusBarEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -169,9 +193,15 @@ func (i *ICoreWebView2Settings) GetAreDevToolsEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutAreDevToolsEnabled(areDevToolsEnabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _areDevToolsEnabledInt int32
+	if areDevToolsEnabled {
+		_areDevToolsEnabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAreDevToolsEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&areDevToolsEnabled)),
+		uintptr(_areDevToolsEnabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -197,9 +227,15 @@ func (i *ICoreWebView2Settings) GetAreDefaultContextMenusEnabled() (bool, error)
 
 func (i *ICoreWebView2Settings) PutAreDefaultContextMenusEnabled(enabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _enabledInt int32
+	if enabled {
+		_enabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAreDefaultContextMenusEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(_enabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -225,9 +261,15 @@ func (i *ICoreWebView2Settings) GetAreHostObjectsAllowed() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutAreHostObjectsAllowed(allowed bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _allowedInt int32
+	if allowed {
+		_allowedInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutAreHostObjectsAllowed.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&allowed)),
+		uintptr(_allowedInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -253,9 +295,15 @@ func (i *ICoreWebView2Settings) GetIsZoomControlEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutIsZoomControlEnabled(enabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _enabledInt int32
+	if enabled {
+		_enabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsZoomControlEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(_enabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -281,9 +329,15 @@ func (i *ICoreWebView2Settings) GetIsBuiltInErrorPageEnabled() (bool, error) {
 
 func (i *ICoreWebView2Settings) PutIsBuiltInErrorPageEnabled(enabled bool) error {
 
+	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
+	// to a 1-byte Go bool.
+	var _enabledInt int32
+	if enabled {
+		_enabledInt = 1
+	}
 	hr, _, _ := i.Vtbl.PutIsBuiltInErrorPageEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&enabled)),
+		uintptr(_enabledInt),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

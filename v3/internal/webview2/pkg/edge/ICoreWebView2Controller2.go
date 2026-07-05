@@ -48,7 +48,7 @@ func (i *ICoreWebView2Controller2) AddRef() uintptr {
 }
 
 func (i *ICoreWebView2Controller2) GetDefaultBackgroundColor() (*COREWEBVIEW2_COLOR, error) {
-	
+
 	var backgroundColor *COREWEBVIEW2_COLOR
 	hr, _, _ := i.vtbl.GetDefaultBackgroundColor.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -61,7 +61,6 @@ func (i *ICoreWebView2Controller2) GetDefaultBackgroundColor() (*COREWEBVIEW2_CO
 }
 
 func (i *ICoreWebView2Controller2) PutDefaultBackgroundColor(backgroundColor COREWEBVIEW2_COLOR) error {
-	
 
 	// Cast to a uint32 as that's what the call is expecting
 	col := *(*uint32)(unsafe.Pointer(&backgroundColor))

@@ -1284,6 +1284,17 @@ func (w *windowsWebviewWindow) hide() {
 	w.windowShown = false
 	w.showRequested = false
 
+	// Symmetric with show()'s chromium.Show(): under UseVisualHosting a bare
+	// SW_HIDE leaves the DirectComposition input surface hit-testing where the
+	// window was (a desktop right-click "dead zone"). Restore is always
+	// programmatic via Show() -> show() -> chromium.Show().
+	// The controller can still be nil while WebView2 creation is in flight
+	// (a background-goroutine Hide() is dispatched inside Embed's nested
+	// message pump), so guard like the other controller call sites do.
+	if w.chromium != nil && w.chromium.GetController() != nil {
+		_ = w.chromium.Hide()
+	}
+
 	// Cancel any pending visibility timeout
 	if w.visibilityTimeout != nil {
 		w.visibilityTimeout.Stop()
@@ -1704,6 +1715,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// here (not at SIZE_RESTORED), and needs the same DPI
 				// resync as the restore path below (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1726,6 +1746,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// rasterization scale on restore, so window.devicePixelRatio
 				// keeps the wrong monitor's value until a manual resize (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1741,6 +1770,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
+			// Under UseVisualHosting (WINDOW_TO_VISUAL) the WebView2 content is a
+			// DirectComposition visual whose input surface keeps hit-testing at the
+			// window's last on-screen rectangle after a bare SW_MINIMIZE — leaving a
+			// desktop right-click "dead zone". Tell the controller to become
+			// invisible (also the WebView2-recommended action on minimize); the
+			// SIZE_RESTORED/SIZE_MAXIMIZED un-minimize branches re-assert it.
+			// The controller can be nil while creation is in flight; guard like
+			// the other controller call sites.
+			if w.chromium != nil && w.chromium.GetController() != nil {
+				_ = w.chromium.Hide()
+			}
 		}
 		w.lastSizeWParam = wparam
 
@@ -2570,6 +2610,20 @@ func (w *windowsWebviewWindow) navigationCompleted(
 			w.parent.Show()
 		}
 		w.update()
+	}
+
+	// The first-paint nudge above ends with the controller IsVisible=true. For
+	// any window that is not logically visible at this point — one created
+	// Hidden and never shown (e.g. a pre-created tray popup), or one the app
+	// hid before this first NavigationCompleted arrived — that leaves a live
+	// WINDOW_TO_VISUAL DirectComposition input surface hit-testing at the
+	// window's location: an invisible desktop right-click "dead zone".
+	// Re-hide the controller so a hidden window has no live surface; show()
+	// re-asserts IsVisible(true) when the window is actually shown.
+	// showRequested is initialised to !options.Hidden and only show()/hide()
+	// flip it, so these two flags alone identify both cases.
+	if !w.windowShown && !w.showRequested {
+		_ = w.chromium.Hide()
 	}
 }
 
