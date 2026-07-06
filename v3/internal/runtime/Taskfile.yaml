@@ -2,9 +2,15 @@
 
 version: "3"
 
+vars:
+  ESBUILD: desktop/@wailsio/runtime/node_modules/.bin/esbuild
+
 tasks:
   install-deps:
     internal: true
+    # once: build:debug and build:production dep on this in parallel; two
+    # concurrent npm installs in the same directory corrupt node_modules.
+    run: once
     dir: desktop/@wailsio/runtime
     sources:
       - package.json
@@ -27,13 +33,17 @@ tasks:
 
   build:debug:
     internal: true
+    deps:
+      - install-deps
     cmds:
-      - desktop/@wailsio/runtime/node_modules/.bin/esbuild desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
+      - "{{.ESBUILD}} desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true"
 
   build:production:
     internal: true
+    deps:
+      - install-deps
     cmds:
-      - desktop/@wailsio/runtime/node_modules/.bin/esbuild desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
+      - "{{.ESBUILD}} desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console"
 
   build:docs:
     internal: true
@@ -52,7 +62,7 @@ tasks:
       - npm run build:docs:md
 
   build:assets:
-    desc: Rebuild only the embedded runtime bundles (bundledassets). Run `npm ci` in desktop/@wailsio/runtime first; CI verifies PR bundles against this exact output.
+    desc: Rebuild only the embedded runtime bundles (bundledassets); CI verifies PR bundles against this exact output.
     deps:
       - build:debug
       - build:production
