@@ -119,7 +119,11 @@ function regionElements(): Element[] {
     }
     if (document.body) {
         elements.push(document.body);
-        elements.push(...document.body.querySelectorAll("*"));
+        // Append via a loop: spreading a huge NodeList into push() overflows
+        // the engine's argument limit on very large documents.
+        for (const element of document.body.querySelectorAll("*")) {
+            elements.push(element);
+        }
     }
 
     return elements;
