@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows build failure when using the `server` build tag, caused by Windows GUI files missing the `!server` build constraint that the macOS and Linux equivalents already have (#5680)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
