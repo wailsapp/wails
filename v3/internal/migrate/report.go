@@ -44,6 +44,12 @@ func (r *Report) Markdown() string {
 	var sb strings.Builder
 	sb.WriteString("# Migration Report\n\n")
 	sb.WriteString("This project was migrated from Wails v2 by `wails3 migrate`.\n\n")
+	sb.WriteString("> **The migrate command is experimental.** It handles the common project shapes\n")
+	sb.WriteString("> well, but your mileage may vary: review the generated code and test your\n")
+	sb.WriteString("> application thoroughly before relying on it. If migration produced something\n")
+	sb.WriteString("> wrong or missed something your project needs, please help us improve the tool\n")
+	sb.WriteString("> by opening an issue at https://github.com/wailsapp/wails/issues with the\n")
+	sb.WriteString("> details. Pull requests are very welcome.\n\n")
 	sb.WriteString("## Next steps\n\n")
 	sb.WriteString("1. Run `wails3 doctor` to check your environment.\n")
 	sb.WriteString("2. Run `wails3 dev` to build and run the migrated app.\n")

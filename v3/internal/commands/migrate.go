@@ -33,6 +33,8 @@ func Migrate(options *flags.Migrate) error {
 		term.DisableOutput()
 	}
 	term.Header("Migrate Wails v2 project")
+	term.Warningf("This command is experimental. Review the generated project and test it thoroughly.\n")
+	term.Warningf("Please report problems at https://github.com/wailsapp/wails/issues - PRs improving the tool are very welcome.\n")
 
 	if options.OutputDir == "" {
 		return errors.New("please use the -o flag to specify an output directory for the migrated project")
