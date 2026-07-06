@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
@@ -1666,11 +1666,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if w.parent.options.BackgroundType == BackgroundTypeSolid {
 			col := w.parent.options.BackgroundColour
 			hdc := w32.HDC(wparam)
-			rc := w32.GetClientRect(w.hwnd)
-			colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
-			hbrush := w32.CreateSolidBrush(colorRef)
-			w32.FillRect(hdc, rc, hbrush)
-			w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			// GetClientRect can legitimately return nil for a window in a
+			// transient state (minimise/restore transitions are especially
+			// prone to triggering it). FillRect with a nil rect crashes, so it
+			// must be checked before painting.
+			if rc := w32.GetClientRect(w.hwnd); rc != nil {
+				colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
+				hbrush := w32.CreateSolidBrush(colorRef)
+				w32.FillRect(hdc, rc, hbrush)
+				w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			}
 		}
 		return 1
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
@@ -2806,15 +2811,6 @@ func (w *windowsWebviewWindow) disableRedrawWithCallback(callback func()) {
 	callback()
 	w.enableRedraw()
 
-}
-
-func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
-	var err error
-	var result w32.HICON
-	if result = w32.LoadIconWithResourceID(instance, resId); result == 0 {
-		err = fmt.Errorf("cannot load icon from resource with id %v", resId)
-	}
-	return result, err
 }
 
 func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
