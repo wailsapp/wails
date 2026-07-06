@@ -20,9 +20,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Fold the `webview2` binding into the v3 module as `v3/internal/webview2`, removing the standalone module, its nightly release/sync workflows, and the go.mod version dance (v3 is its only consumer) in [PR](https://github.com/wailsapp/wails/pull/5711) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
+- Move WebView2 monitor-scale detection and DPI-change host resync fix to Unreleased section in [PR](https://github.com/wailsapp/wails/pull/5750) by @taliesin-ai
+- Update WebView2 COM marshaling for float64 and BOOL parameters in [PR](https://github.com/wailsapp/wails/pull/5741) by @wayneforrest
+- Prevent panic and nil dereference in Windows system tray icon updates and destruction in [PR](https://github.com/wailsapp/wails/pull/5703) by @wayneforrest
+- Fixes hidden windows not re-hiding correctly on Windows in [PR](https://github.com/wailsapp/wails/pull/5743) by @wayneforrest
+- Synchronize WebView2 controller visibility with window minimize/maximize/restore in [PR](https://github.com/wailsapp/wails/pull/5742) by @wayneforrest
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
