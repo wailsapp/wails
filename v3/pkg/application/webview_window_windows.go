@@ -2378,26 +2378,45 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.Embed(w.hwnd)
 
-	// Ensure automatic monitor-scale detection is on. Published webview2
-	// module versions up to v1.0.27 disable ShouldDetectMonitorScaleChanges
-	// at controller creation (the in-repo module no longer does), leaving
-	// rasterization-scale updates entirely to the host's WM_DPICHANGED
-	// handling. In that
-	// host-managed mode, dragging the window across a mixed-DPI monitor
-	// boundary can make the embedded browser compute a degenerate
-	// scale(0,0) transform (ui/gfx/geometry/transform.cc NOTREACHED
-	// "is not invertible"); the resulting compositor frame is rejected by
-	// the viz process as a malformed Mojo message, which kills the GPU
-	// process, and after enough repeat kills the browser process gives up
-	// ("GPU process isn't usable. Goodbye.") taking the controller with
-	// it. Detection-on is the WebView2 default and keeps monitor-cross
-	// scale updates inside Edge, where that path is actually exercised;
-	// bounds stay raw-pixels. While detection is on, the host-side
-	// WM_DPICHANGED / un-minimise scale resyncs stand down (see
+	// Configure who owns the WebView2 rasterization scale on a monitor-DPI
+	// change. Two hosting modes need opposite answers:
+	//
+	// Windowed (HWND-child) hosting — the default: enable automatic
+	// monitor-scale detection. Published webview2 module versions up to
+	// v1.0.27 disabled ShouldDetectMonitorScaleChanges at controller creation
+	// (the in-repo module no longer does), leaving rasterization-scale updates
+	// entirely to the host's WM_DPICHANGED handling. In that host-managed mode,
+	// dragging the window across a mixed-DPI monitor boundary can make the
+	// embedded browser compute a degenerate scale(0,0) transform
+	// (ui/gfx/geometry/transform.cc NOTREACHED "is not invertible"); the
+	// resulting compositor frame is rejected by the viz process as a malformed
+	// Mojo message, which kills the GPU process, and after enough repeat kills
+	// the browser process gives up ("GPU process isn't usable. Goodbye.")
+	// taking the controller with it. Detection-on is the WebView2 default and
+	// keeps monitor-cross scale updates inside Edge, where that path is
+	// actually exercised; bounds stay raw-pixels. While detection is on, the
+	// host-side WM_DPICHANGED / un-minimise scale resyncs stand down (see
 	// monitorScaleDetectionOn) so the scale has exactly one writer.
+	//
+	// Visual hosting (UseVisualHosting -> COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL):
+	// the content is a DirectComposition visual, decoupled from the child HWND
+	// that automatic detection tracks. Across a mixed-DPI boundary detection
+	// then reads the wrong monitor and settles the visual on a stale scale, so
+	// the whole UI renders shrunk. There the host must own the scale via
+	// resyncWebviewRasterizationScale (correct per WebView2Feedback #3665, and
+	// reliable now that the by-value PutRasterizationScale bug is fixed). The
+	// module leaves detection at its platform default (enabled), so visual
+	// hosting must disable it *explicitly* — merely skipping the enable would
+	// leave detection on AND the host resync running, i.e. two writers racing,
+	// which is the scale(0,0) crash above. Keeping monitorScaleDetectionOn
+	// false lets resyncWebviewRasterizationScale run its real body.
 	if controller := chromium.GetController(); controller != nil {
 		if c3 := controller.GetICoreWebView2Controller3(); c3 != nil {
-			if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
+			if globalApplication.options.Windows.UseVisualHosting {
+				if err := c3.PutShouldDetectMonitorScaleChanges(false); err != nil {
+					globalApplication.error("webview2: disable monitor scale detection (visual hosting): %v", err)
+				}
+			} else if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
 				globalApplication.error("webview2: enable monitor scale detection: %v", err)
 			} else {
 				w.monitorScaleDetectionOn = true
