@@ -11,10 +11,6 @@ import (
 	"strings"
 )
 
-// v2compatAlias is the local name used for the v2compat runtime import in
-// generated code (avoids clashing with a stdlib runtime import).
-const v2compatAlias = "v2runtime"
-
 // GenerateMain performs textual surgery on the file containing wails.Run:
 // the import block and the wails.Run statement are replaced with their v3
 // equivalents, everything else is preserved byte-for-byte, and the result is
@@ -24,8 +20,9 @@ func GenerateMain(proj *V2Project, opts *V3Options) ([]byte, error) {
 	src := main.Source
 
 	appVar := pickIdent(main.File, "app", "wailsApp", "wailsV3App")
+	winVar := pickIdent(main.File, "mainWindow", "wailsWindow")
 
-	block := buildV3Block(proj, opts, appVar)
+	block := buildV3Block(proj, opts, appVar, winVar)
 
 	type edit struct {
 		start, end int
@@ -96,29 +93,23 @@ func writeFields(sb *strings.Builder, fields []GenField, indent string) {
 }
 
 // buildV3Block renders the replacement for the wails.Run statement.
-func buildV3Block(proj *V2Project, opts *V3Options, appVar string) string {
+func buildV3Block(proj *V2Project, opts *V3Options, appVar, winVar string) string {
 	var sb strings.Builder
 
 	sb.WriteString(appVar + " := application.New(application.Options{\n")
 	writeFields(&sb, opts.App, "\t")
 
-	// Services (bound structs first, lifecycle bridge last).
-	if len(opts.Services) > 0 || opts.NeedsLifecycleService() {
+	if len(opts.Services) > 0 {
 		sb.WriteString("\tServices: []application.Service{\n")
 		for _, svc := range opts.Services {
 			sb.WriteString("\t\tapplication.NewService(" + svc + "),\n")
 		}
-		if opts.NeedsLifecycleService() {
-			args := []string{"nil", "nil", "nil"}
-			for i, cb := range []string{opts.OnStartup, opts.OnDomReady, opts.OnShutdown} {
-				if cb != "" {
-					args[i] = cb
-				}
-			}
-			sb.WriteString("\t\t// Bridges the v2 OnStartup/OnDomReady/OnShutdown callbacks.\n")
-			sb.WriteString("\t\t" + v2compatAlias + ".NewLifecycleService(" + strings.Join(args, ", ") + "),\n")
-		}
 		sb.WriteString("\t},\n")
+	}
+
+	if opts.OnShutdown != "" {
+		sb.WriteString("\t// v2 OnShutdown. The context is a placeholder: v3 has no context-based runtime.\n")
+		sb.WriteString("\tOnShutdown: func() {\n\t\t(" + opts.OnShutdown + ")(context.Background())\n\t},\n")
 	}
 
 	if opts.OnBeforeClose != "" {
@@ -148,7 +139,19 @@ func buildV3Block(proj *V2Project, opts *V3Options, appVar string) string {
 	}
 	sb.WriteString("})\n\n")
 
-	sb.WriteString(appVar + ".Window.NewWithOptions(application.WebviewWindowOptions{\n")
+	if opts.OnStartup != "" {
+		sb.WriteString("// v2 OnStartup. Consider converting your struct into a v3 service with a\n")
+		sb.WriteString("// ServiceStartup method instead - see MIGRATION.md.\n")
+		sb.WriteString(appVar + ".Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {\n")
+		sb.WriteString("\t(" + opts.OnStartup + ")(context.Background())\n")
+		sb.WriteString("})\n\n")
+	}
+
+	windowAssign := ""
+	if opts.OnDomReady != "" {
+		windowAssign = winVar + " := "
+	}
+	sb.WriteString(windowAssign + appVar + ".Window.NewWithOptions(application.WebviewWindowOptions{\n")
 	writeFields(&sb, opts.Win, "\t")
 	if len(opts.WinMac) > 0 {
 		sb.WriteString("\tMac: application.MacWindow{\n")
@@ -166,6 +169,13 @@ func buildV3Block(proj *V2Project, opts *V3Options, appVar string) string {
 		sb.WriteString("\t},\n")
 	}
 	sb.WriteString("})\n\n")
+
+	if opts.OnDomReady != "" {
+		sb.WriteString("// v2 OnDomReady: fires when the frontend runtime is ready in the window.\n")
+		sb.WriteString(winVar + ".OnWindowEvent(events.Common.WindowRuntimeReady, func(event *application.WindowEvent) {\n")
+		sb.WriteString("\t(" + opts.OnDomReady + ")(context.Background())\n")
+		sb.WriteString("})\n\n")
+	}
 
 	// Preserve the original error-handling shape.
 	main := proj.Main
@@ -209,10 +219,10 @@ func buildImports(proj *V2Project, opts *V3Options) string {
 		}
 	}
 	add("", "github.com/wailsapp/wails/v3/pkg/application")
-	if opts.NeedsLifecycleService() {
-		add(v2compatAlias, proj.CompatRuntimeImport())
+	if opts.OnStartup != "" || opts.OnDomReady != "" {
+		add("", "github.com/wailsapp/wails/v3/pkg/events")
 	}
-	if opts.OnBeforeClose != "" {
+	if opts.NeedsLifecycleService() || opts.OnBeforeClose != "" {
 		add("", "context")
 	}
 

@@ -308,13 +308,13 @@ func (m *mapper) mapAppField(name string, value ast.Expr) {
 		m.manual(name, "v3 uses the standard library `log/slog`: set `application.Options.Logger` (a *slog.Logger) and `application.Options.LogLevel`.")
 	case "OnStartup":
 		out.OnStartup = m.src(value)
-		m.proj.Report.Mapped("options.App.OnStartup", "v2compat lifecycle service (ServiceStartup)")
+		m.proj.Report.Mapped("options.App.OnStartup", "wired via events.Common.ApplicationStarted (consider a v3 ServiceStartup)")
 	case "OnDomReady":
 		out.OnDomReady = m.src(value)
-		m.proj.Report.Mapped("options.App.OnDomReady", "v2compat lifecycle service (WindowRuntimeReady)")
+		m.proj.Report.Mapped("options.App.OnDomReady", "wired via events.Common.WindowRuntimeReady")
 	case "OnShutdown":
 		out.OnShutdown = m.src(value)
-		m.proj.Report.Mapped("options.App.OnShutdown", "v2compat lifecycle service (ServiceShutdown)")
+		m.proj.Report.Mapped("options.App.OnShutdown", "application.Options.OnShutdown")
 	case "OnBeforeClose":
 		out.OnBeforeClose = m.src(value)
 		m.proj.Report.Mapped("options.App.OnBeforeClose", "application.Options.ShouldQuit")

@@ -57,7 +57,11 @@ func main() {
 `,
 		"app.go": `package main
 
-import "context"
+import (
+	"context"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
 
 type App struct {
 	ctx context.Context
@@ -72,6 +76,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) Greet(name string) string {
+	runtime.EventsEmit(a.ctx, "greeted", name)
 	return "Hello " + name
 }
 `,
@@ -118,11 +123,7 @@ func TestMigrateEndToEnd(t *testing.T) {
 		"build/darwin/Taskfile.yml",
 		"build/appicon.png",
 		"frontend/package.json",
-		"frontend/wailsjs/runtime/runtime.js",
-		"frontend/wailsjs/go/main/App.js",
 		"frontend/dist/.gitkeep",
-		"v2compat/runtime/window.go",
-		"v2compat/runtime/lifecycle.go",
 	}
 	for _, rel := range mustExist {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {
@@ -133,6 +134,8 @@ func TestMigrateEndToEnd(t *testing.T) {
 	mustNotExist := []string{
 		"wails.json",
 		"go.sum",
+		"frontend/wailsjs",
+		"v2compat",
 	}
 	for _, rel := range mustNotExist {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err == nil {
@@ -176,6 +179,26 @@ func TestMigrateEndToEnd(t *testing.T) {
 	}
 	if !strings.Contains(string(goMod), "github.com/wailsapp/wails/v3") || strings.Contains(string(goMod), "wails/v2") {
 		t.Errorf("go.mod not transformed:\n%s", goMod)
+	}
+
+	// The runtime call in app.go must be enumerated with its replacement.
+	report, err := os.ReadFile(filepath.Join(outDir, "MIGRATION.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Port these to the v3 API", "app.go:", "runtime.EventsEmit", "app.Event.Emit"} {
+		if !strings.Contains(string(report), want) {
+			t.Errorf("MIGRATION.md missing %q\n---\n%s", want, report)
+		}
+	}
+
+	// app.go is copied untouched: porting it is the user's (documented) job.
+	appSrc, err := os.ReadFile(filepath.Join(outDir, "app.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(appSrc), "github.com/wailsapp/wails/v2/pkg/runtime") {
+		t.Errorf("app.go should be untouched:\n%s", appSrc)
 	}
 }
 

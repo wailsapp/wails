@@ -20,12 +20,14 @@ import (
 //
 //	wails3 migrate -d ./myv2project -o ./myv3project
 //
-// It parses wails.json and the declarative options.App literal passed to
-// wails.Run, generates an equivalent programmatic v3 main file, scaffolds the
-// v3 build system (Taskfile + build assets), migrates the frontend (rewriting
-// the generated wailsjs modules onto @wailsio/runtime) and rewrites v2
-// runtime imports to the v3 compatibility bridge. Everything that cannot be
-// migrated automatically is recorded in MIGRATION.md.
+// It migrates the parts that map deterministically - wails.json and the
+// declarative options.App literal become the v3 build system (Taskfile +
+// build assets + config.yml) and a programmatic v3 main file, go.mod swaps to
+// v3 and the frontend is carried over - and it deliberately does NOT rewrite
+// v2 runtime call sites or generate compatibility layers. Every remaining v2
+// API usage (Go runtime calls, frontend wailsjs imports) is enumerated in
+// MIGRATION.md with its concrete v3 replacement, and the compiler points at
+// exactly those locations until the user ports them.
 func Migrate(options *flags.Migrate) error {
 	DisableFooter = true
 
@@ -90,15 +92,6 @@ func Migrate(options *flags.Migrate) error {
 		return err
 	}
 
-	// The compatibility bridge is generated into the project (not shipped as
-	// part of the v3 module) so that only migrated projects carry it, and its
-	// owners can delete it as they finish porting to the v3 API.
-	if proj.UsesV2Runtime || v3opts.NeedsLifecycleService() {
-		if err := migrate.WriteCompatBridge(proj, outDir); err != nil {
-			return err
-		}
-	}
-
 	// go.mod: swap wails/v2 for wails/v3, keep everything else.
 	// LatestStable is the released tag even in dev builds, so the generated
 	// require is always resolvable.
@@ -122,7 +115,13 @@ func Migrate(options *flags.Migrate) error {
 		return err
 	}
 
-	if !options.SkipGoModTidy {
+	// While v2 API call sites remain, `go mod tidy` would re-add the v2
+	// dependency (it scans imports). Leave the module intentionally
+	// non-tidied: the compiler and MIGRATION.md point at the exact call
+	// sites to port, after which the user runs `go mod tidy` themselves.
+	if proj.UsesV2Runtime {
+		term.Warningf("Skipping go mod tidy: v2 API call sites remain. Port them (see MIGRATION.md), then run `go mod tidy`.\n")
+	} else if !options.SkipGoModTidy {
 		term.Info("Running go mod tidy...")
 		cmd := exec.Command("go", "mod", "tidy")
 		cmd.Dir = outDir
@@ -134,11 +133,15 @@ func Migrate(options *flags.Migrate) error {
 
 	term.Infof("Migration complete: %s\n", outDir)
 	if proj.Report.HasManualSteps() {
-		term.Warningf("Some options need manual attention - see %s\n", reportPath)
+		term.Warningf("Work remains - see %s\n", reportPath)
 	} else {
 		term.Infof("See %s for the migration summary.\n", reportPath)
 	}
-	term.Infof("Next: cd %s && wails3 dev\n", options.OutputDir)
+	if proj.UsesV2Runtime {
+		term.Infof("Next: port the call sites listed in MIGRATION.md, then run `wails3 dev` in %s\n", options.OutputDir)
+	} else {
+		term.Infof("Next: cd %s && wails3 dev\n", options.OutputDir)
+	}
 	return nil
 }
 

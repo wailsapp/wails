@@ -4,8 +4,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 // copyTree copies src into dst, creating directories as needed. The include
@@ -99,41 +97,6 @@ func CopyProjectFiles(proj *V2Project, outDir string) error {
 			return nil
 		}
 		target := filepath.Join(outDir, rel)
-		if strings.HasSuffix(path, ".go") {
-			data, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			data = RewriteGoImports(proj, rel, data)
-			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-				return err
-			}
-			return os.WriteFile(target, data, info.Mode().Perm())
-		}
 		return copyFile(path, target, info.Mode().Perm())
 	})
-}
-
-// RewriteGoImports rewrites the v2 runtime import to the v3 compatibility
-// bridge and records remaining v2 imports as manual steps.
-func RewriteGoImports(proj *V2Project, rel string, src []byte) []byte {
-	content := string(src)
-	if strings.Contains(content, strconv.Quote(V2RuntimeImport)) {
-		content = strings.ReplaceAll(content, strconv.Quote(V2RuntimeImport), strconv.Quote(proj.CompatRuntimeImport()))
-		proj.Report.Mapped(rel+": "+V2RuntimeImport, proj.CompatRuntimeImport()+" (generated bridge)")
-	}
-
-	// Report any other v2 imports that remain.
-	for _, line := range strings.Split(content, "\n") {
-		trimmed := strings.TrimSpace(line)
-		idx := strings.Index(trimmed, `"github.com/wailsapp/wails/v2`)
-		if idx < 0 {
-			continue
-		}
-		importPath := strings.Trim(trimmed[idx:], `"`)
-		proj.Report.Manual(rel+": import "+importPath,
-			"This Wails v2 package has no automatic v3 replacement; port the code using it to the v3 API (github.com/wailsapp/wails/v3/pkg/application).")
-	}
-
-	return []byte(content)
 }
