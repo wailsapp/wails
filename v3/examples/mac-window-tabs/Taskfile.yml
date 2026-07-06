@@ -1,0 +1,69 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+# This example is a standalone Go module (its own go.mod, with a `replace`
+# pointing at the local Wails checkout because MacWindowTabbingMode is not in a
+# published release yet). It physically lives under v3/, which is a member of
+# the repo's root go.work. An active workspace would shadow this module: binding
+# generation would find 0 services and `go mod tidy` would target v3 instead.
+# Force workspace mode off so the example always builds as itself. This is
+# inherited by the wails3 dev/build subprocess tree and is a harmless no-op
+# outside the monorepo, where there is no go.work.
+env:
+  GOWORK: "off"
+
+vars:
+  APP_NAME: "mac-window-tabs"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+  setup:docker:
+    summary: Builds Docker image for cross-compilation (~800MB download)
+    cmds:
+      - task: common:setup:docker
+
+  build:server:
+    summary: Builds the application in server mode (no GUI, HTTP server only)
+    cmds:
+      - task: common:build:server
+
+  run:server:
+    summary: Runs the application in server mode
+    cmds:
+      - task: common:run:server
+
+  build:docker:
+    summary: Builds a Docker image for server mode deployment
+    cmds:
+      - task: common:build:docker
+
+  run:docker:
+    summary: Builds and runs the Docker image
+    cmds:
+      - task: common:run:docker

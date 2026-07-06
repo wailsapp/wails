@@ -745,12 +745,12 @@ To perform cleanup when a window closes, use `OnWindowEvent` with the `WindowClo
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
     // Cleanup code runs here
     fmt.Printf("Window %s is closing\n", window.Name())
-    
+
     // Close database connection
     if db != nil {
         db.Close()
     }
-    
+
     // Remove from window list
     removeWindow(window.ID())
 })
@@ -777,13 +777,13 @@ func ShowSettings(app *application.App) {
             Width: 600,
             Height: 400,
         })
-        
+
         // Cleanup on close
         settingsWindow.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
             settingsWindow = nil
         })
     }
-    
+
     // Show and focus
     settingsWindow.Show()
     settingsWindow.Focus()
@@ -806,6 +806,7 @@ Mac: application.MacWindow{
     InvisibleTitleBarHeight: 50,
     WindowLevel:             application.MacWindowLevelNormal,
     CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
+    TabbingMode:             application.MacWindowTabbingModeDisallowed,
 },
 ```
 
@@ -878,6 +879,32 @@ Mac: application.MacWindow{
 },
 ```
 
+**TabbingMode** (`MacWindowTabbingMode`)
+
+Controls window tabbing behavior on macOS 10.12 and later. Window tabbing allows multiple windows to be grouped as tabs.
+
+**Options:**
+- `MacWindowTabbingModeDefault` - Zero-value sentinel (not explicitly set). At runtime, defaults to disallowing tabbing
+- `MacWindowTabbingModeAutomatic` - System determines tabbing behavior
+- `MacWindowTabbingModePreferred` - Window prefers to be in tabbing mode
+- `MacWindowTabbingModeDisallowed` - Disables window tabbing
+
+**Example - Disable window tabbing:**
+
+```go
+Mac: application.MacWindow{
+    TabbingMode: application.MacWindowTabbingModeDisallowed,
+},
+```
+
+**Example - Prefer window tabbing:**
+
+```go
+Mac: application.MacWindow{
+    TabbingMode: application.MacWindowTabbingModePreferred,
+},
+```
+
 **WebviewPreferences** (`MacWebviewPreferences`)
 
 Fine-grained control over the underlying `WKWebView` configuration. All fields are optional — unset fields leave the WebKit default unchanged.
@@ -917,6 +944,7 @@ The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions
 ```go
 Windows: application.WindowsWindow{
     DisableIcon:                       false,
+    DisableMenu:                       false,
     BackdropType:                      application.Auto,
     CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
@@ -925,6 +953,10 @@ Windows: application.WindowsWindow{
 
 **DisableIcon** (`bool`)
 - Remove icon from title bar.
+
+**DisableMenu** (`bool`)
+- Disable the menu bar for the window. When `true`, the window does not display a menu bar even if one is configured.
+- Default: `false`
 
 **BackdropType** (`BackdropType`)
 - `application.Auto` - System default

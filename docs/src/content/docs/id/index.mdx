@@ -1,0 +1,187 @@
+---
+title: Bangun Aplikasi Desktop dengan Go
+description: "Aplikasi desktop native menggunakan Go dan teknologi web"
+banner:
+    content: |
+        Wails v3 dalam tahap ALPHA. <a href="https://wails.io">dokumentasi v2</a>
+template: splash
+hero:
+  tagline: Bangun aplikasi yang indah dan performa tinggi menggunakan Go dan teknologi web modern. Satu codebase. Tiga platform. Tanpa browser.*
+  image:
+    dark: ../../../assets/wails-logo-dark.svg
+    light: ../../../assets/wails-logo-light.svg
+    alt: Logo Wails
+  actions:
+    - text: Memulai
+      link: /id/quick-start/installation
+      icon: right-arrow
+      variant: primary
+    - text: Lihat Tutorial
+      link: /id/tutorials/03-notes-vanilla
+      icon: open-book
+      variant: secondary
+---
+{/* Updated 2025-11-23 */}
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import MorphText from "@components/MorphText.astro";
+
+<style>{`
+  /* Hero background — the neon "digital Wales" mountain, full-bleed and fixed. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: url('/digital_wales_master.webp') center center / cover no-repeat;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  
+  /* Gradient overlay - highest z-index */
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(to bottom, var(--sl-color-bg) 0%, transparent 15%, transparent 85%, var(--sl-color-bg) 100%),
+      linear-gradient(to right, var(--sl-color-bg) 0%, transparent 10%, transparent 90%, var(--sl-color-bg) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  
+  /* Hero padding */
+  .hero {
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  .small-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .small-buttons a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    text-decoration: none;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-gray-5);
+    transition: all 0.2s;
+  }
+  
+  .small-buttons a:hover {
+    background: var(--sl-color-gray-5);
+    border-color: var(--sl-color-accent);
+  }
+  
+  /* Round card corners and add translucent blur effect */
+  .card {
+    border-radius: 12px;
+    background: rgba(var(--sl-color-gray-6-rgb), 0.6) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+`}</style>
+
+<MorphText />
+
+## Memulai Cepat
+
+```bash
+# 1. Instal Wails CLI
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 2. Jalankan wizard setup (eksperimental)
+wails3 setup
+```
+
+Kemudian Anda siap untuk proyek pertama:
+
+```bash
+wails3 init -n myapp -t vanilla
+cd myapp && wails3 dev
+```
+
+**Aplikasi Anda sekarang berjalan** dengan hot reload dan binding Go-ke-JS yang type-safe.
+
+<p style="font-size: 0.875rem; color: var(--sl-color-gray-3); margin-top: 0.5rem;">Mengalami masalah dengan <code>wails3 setup</code>? Lihat <a href="/id/quick-start/installation">panduan instalasi manual</a>.</p>
+
+
+## Aplikasi desktop Anda sudah menjadi aplikasi mobile
+
+```bash
+wails3 task ios:run      # jalankan aplikasi Anda di iOS Simulator
+wails3 task android:run  # jalankan aplikasi Anda di Android Emulator
+```
+
+**Tanpa perubahan pada kode Go Anda.** `main.go` yang sama, layanan yang sama, frontend yang sama — Wails mengompilasinya untuk iOS dan Android secara otomatis. Fitur spesifik platform (haptik, dialog native, safe area) tersedia saat Anda membutuhkannya, tetapi Anda tidak memerlukannya untuk rilis.
+
+[Dokumentasi mobile →](/id/guides/mobile)
+
+---
+
+## Mengapa Wails?
+
+<CardGrid>
+  <Card title="Performa yang Dirasakan Pengguna" icon="rocket">
+    - ~15MB binary vs 150MB Electron
+    - ~10MB memori baseline vs 100MB+
+    - &lt;0,5s waktu startup vs 2-3s
+    - Rendering native menggunakan WebView OS
+    - Tanpa overhead browser yang dibundel
+  </Card>
+  
+  <Card title="Pengalaman Pengembang" icon="setting">
+    - Satu codebase Go untuk semua platform
+    - Framework web apa pun — React, Vue, Svelte
+    - Hot reload selama pengembangan
+    - Binding otomatis untuk memanggil Go dari JavaScript dengan mudah
+    - IPC in-memory. Tanpa port jaringan
+  </Card>
+  
+  <Card title="Siap Produksi" icon="approve-check">
+    - Beberapa jendela dengan lifecycle
+    - Menu native dan system tray
+    - Dialog file native platform
+    - Integrasi sistem dan shortcut
+    - Alat code signing dan packaging
+  </Card>
+  
+  <Card title="Desktop & Mobile" icon="laptop">
+    - Windows, macOS, Linux, iOS, Android
+    - Codebase yang sama, tanpa penulisan ulang
+    - WebView native di setiap platform
+    - Tanpa port terbuka, tanpa server localhost
+    - Fitur platform tersedia saat dibutuhkan
+  </Card>
+</CardGrid>
+
+
+
+
+## Langkah Selanjutnya
+
+Selanjutnya: [Bangun aplikasi lengkap](/id/tutorials/03-notes-vanilla), jelajahi [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples), atau lihat [referensi API](/id/reference/application). Migrasi dari v2? Lihat [panduan upgrade](/id/migration/v2-to-v3).
+
+
+:::note[Siap Produksi]
+Wails v3 dalam tahap **ALPHA**. API *cukup* stabil, dan aplikasi sudah berjalan di produksi. Kami menyempurnakan dokumentasi dan tooling sebelum rilis final.
+:::
+
+<Card title="Dukung Pengembangan Wails" icon="heart">
+  Wails gratis dan open source, dibangun oleh developer untuk developer. Jika Wails membantu Anda membangun aplikasi yang luar biasa, pertimbangkan untuk mendukung pengembangannya.
+
+  Sponsorship Anda membantu memelihara proyek, meningkatkan dokumentasi, dan mengembangkan fitur baru yang bermanfaat bagi seluruh komunitas.
+
+  [Jadi Sponsor →](https://github.com/sponsors/leaanthony)
+</Card>

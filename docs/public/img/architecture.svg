@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 584" width="720" height="584" role="img" aria-labelledby="archTitle">
+<title id="archTitle">Wails architecture: a Go backend and your web UI compiled into one native binary, connected by generated bindings and rendered by the operating system's WebView.</title>
+<!-- Hand-drawn to match the Wails sponsors/contributors card theme (tools/sponsorkit) -->
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#131A2B"/>
+  <stop offset="1" stop-color="#0B0F1A"/>
+</linearGradient>
+<radialGradient id="topGlow" cx="0.5" cy="0" r="0.9">
+  <stop offset="0" stop-color="#DF0000" stop-opacity="0.14"/>
+  <stop offset="0.5" stop-color="#DF0000" stop-opacity="0.03"/>
+  <stop offset="1" stop-color="#DF0000" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="border" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#FF5C5C" stop-opacity="0.45"/>
+  <stop offset="0.25" stop-color="#FFFFFF" stop-opacity="0.10"/>
+  <stop offset="1" stop-color="#DF0000" stop-opacity="0.25"/>
+</linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0" stop-color="#FF3D3D"/>
+  <stop offset="1" stop-color="#DF0000"/>
+</linearGradient>
+<linearGradient id="goRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#5CD6F2"/>
+  <stop offset="0.5" stop-color="#00ADD8"/>
+  <stop offset="1" stop-color="#0E7FA8"/>
+</linearGradient>
+<linearGradient id="uiRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#C4B5FD"/>
+  <stop offset="0.5" stop-color="#8B5CF6"/>
+  <stop offset="1" stop-color="#6D28D9"/>
+</linearGradient>
+<linearGradient id="osRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#F2F4F8"/>
+  <stop offset="0.5" stop-color="#9BA3B4"/>
+  <stop offset="1" stop-color="#DDE2EC"/>
+</linearGradient>
+<filter id="soften" x="-60%" y="-60%" width="220%" height="220%">
+  <feGaussianBlur stdDeviation="5"/>
+</filter>
+</defs>
+<style>
+text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  fill: #E8ECF4;
+}
+.title { font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
+.subtitle { font-size: 12.5px; fill: #8B95A9; }
+.section { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; fill: #FF6B6B; }
+.tag { font-size: 11px; fill: #8B95A9; }
+.boxtitle { font-size: 15.5px; font-weight: 600; }
+.boxsub { font-size: 11px; fill: #8B95A9; }
+.badgetitle { font-size: 13px; font-weight: 600; fill: #FFFFFF; }
+.badgesub { font-size: 10.5px; fill: #8B95A9; }
+.chiptitle { font-size: 12.5px; font-weight: 600; }
+.ostitle { font-size: 13px; font-weight: 600; fill: #C7CEDC; }
+</style>
+
+<!-- Card -->
+<rect x="0.5" y="0.5" width="719" height="583" rx="16" fill="url(#bg)"/>
+<rect x="0.5" y="0.5" width="719" height="583" rx="16" fill="url(#topGlow)"/>
+<rect x="0.5" y="0.5" width="719" height="583" rx="16" fill="none" stroke="url(#border)"/>
+
+<!-- Star field -->
+<g fill="#FFFFFF">
+<circle cx="58" cy="40" r="1.4" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="4.2s" repeatCount="indefinite"/></circle>
+<circle cx="115" cy="84" r="1" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="3.4s" begin="1.1s" repeatCount="indefinite"/></circle>
+<circle cx="166" cy="28" r="1.2" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="5s" begin="0.4s" repeatCount="indefinite"/></circle>
+<circle cx="224" cy="74" r="0.9" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="3.8s" begin="2s" repeatCount="indefinite"/></circle>
+<circle cx="317" cy="22" r="1.1" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="4.6s" begin="0.9s" repeatCount="indefinite"/></circle>
+<circle cx="403" cy="80" r="1.3" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="3.6s" begin="1.6s" repeatCount="indefinite"/></circle>
+<circle cx="490" cy="30" r="1" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="4.4s" begin="0.2s" repeatCount="indefinite"/></circle>
+<circle cx="554" cy="88" r="1.2" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="3.9s" begin="2.4s" repeatCount="indefinite"/></circle>
+<circle cx="619" cy="46" r="1.4" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="4.8s" begin="1.3s" repeatCount="indefinite"/></circle>
+<circle cx="669" cy="92" r="0.9" opacity="0.25"><animate attributeName="opacity" values="0.08;0.5;0.08" dur="3.5s" begin="0.7s" repeatCount="indefinite"/></circle>
+</g>
+
+<!-- Header -->
+<text x="360" y="50" text-anchor="middle" class="title">Wails Architecture</text>
+<text x="360" y="74" text-anchor="middle" class="subtitle">Go backend · web frontend · one small native binary</text>
+
+<!-- Application container -->
+<rect x="70" y="104" width="580" height="380" rx="14" fill="#FFFFFF" fill-opacity="0.02" stroke="#FFFFFF" stroke-opacity="0.1"/>
+<text x="94" y="133" class="section">YOUR APPLICATION</text>
+<text x="626" y="133" text-anchor="end" class="tag">one native binary · ~15 MB</text>
+
+<!-- Go backend -->
+<rect x="170" y="156" width="380" height="84" rx="12" fill="#1D2536" stroke="url(#goRing)" stroke-width="1.5"/>
+<text x="360" y="192" text-anchor="middle" class="boxtitle">Go Backend</text>
+<text x="360" y="214" text-anchor="middle" class="boxsub">Business logic · System APIs · Services</text>
+
+<!-- Bindings bridge -->
+<path d="M344 334 L344 252" stroke="#FF4A4A" stroke-opacity="0.35" stroke-width="2"/>
+<path d="M344 334 L344 252" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 9">
+  <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1.4s" repeatCount="indefinite"/>
+</path>
+<path d="M344 242 L339 252 L349 252 Z" fill="#FF5C5C"/>
+<path d="M376 250 L376 332" stroke="#FF4A4A" stroke-opacity="0.35" stroke-width="2"/>
+<path d="M376 250 L376 332" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 9">
+  <animate attributeName="stroke-dashoffset" from="0" to="-28" dur="1.4s" repeatCount="indefinite"/>
+</path>
+<path d="M376 342 L371 332 L381 332 Z" fill="#FF5C5C"/>
+
+<rect x="272" y="268" width="176" height="44" rx="22" fill="url(#accent)" filter="url(#soften)" opacity="0.35">
+  <animate attributeName="opacity" values="0.25;0.5;0.25" dur="3s" repeatCount="indefinite"/>
+</rect>
+<rect x="272" y="268" width="176" height="44" rx="22" fill="#131A2B" stroke="url(#accent)" stroke-width="1.25"/>
+<text x="360" y="287" text-anchor="middle" class="badgetitle">Bindings &amp; Events</text>
+<text x="360" y="303" text-anchor="middle" class="badgesub">auto-generated · in-memory</text>
+
+<!-- Native WebView -->
+<rect x="170" y="340" width="380" height="118" rx="12" fill="#1D2536" stroke="url(#osRing)" stroke-width="1.25" stroke-opacity="0.5"/>
+<text x="360" y="368" text-anchor="middle" class="boxtitle">Native WebView</text>
+<text x="360" y="386" text-anchor="middle" class="boxsub">provided by the operating system</text>
+<rect x="200" y="398" width="320" height="46" rx="10" fill="#232D42" stroke="url(#uiRing)" stroke-width="1.25"/>
+<text x="360" y="417" text-anchor="middle" class="chiptitle">Your UI</text>
+<text x="360" y="433" text-anchor="middle" class="badgesub">React · Vue · Svelte · Vanilla JS</text>
+
+<!-- OS layer -->
+<path d="M360 458 L360 508" stroke="#FFFFFF" stroke-opacity="0.18" stroke-dasharray="3 5"/>
+<rect x="70" y="508" width="580" height="48" rx="12" fill="#0D1220" stroke="#FFFFFF" stroke-opacity="0.08"/>
+<text x="94" y="537" class="ostitle">Operating System</text>
+<text x="626" y="537" text-anchor="end" class="tag">Windows · macOS · Linux</text>
+</svg>

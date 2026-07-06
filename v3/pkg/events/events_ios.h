@@ -28,13 +28,13 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWebViewDidFinishNavigation 1264
 #define EventWebViewDidFailNavigation 1265
 #define EventWebViewDecidePolicyForNavigationAction 1266
-#define EventBatteryChanged 1276
-#define EventNetworkChanged 1277
-#define EventThemeChanged 1278
-#define EventScreenLocked 1279
-#define EventScreenUnlocked 1280
+#define EventBatteryChanged 1277
+#define EventNetworkChanged 1278
+#define EventThemeChanged 1279
+#define EventScreenLocked 1280
+#define EventScreenUnlocked 1281
 
-#define MAX_EVENTS 1281
+#define MAX_EVENTS 1282
 
 
 #endif

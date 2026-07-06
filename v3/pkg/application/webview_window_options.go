@@ -364,6 +364,10 @@ type WindowsWindow struct {
 	// Menu is the menu to use for the window.
 	Menu *Menu
 
+	// DisableMenu will disable the menu for the window.
+	// Default: false
+	DisableMenu bool
+
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
 
@@ -561,6 +565,9 @@ type MacWindow struct {
 	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
 	CollectionBehavior MacWindowCollectionBehavior
 
+	// TabbingMode sets the window tabbing mode (macOS 10.12+)
+	TabbingMode MacWindowTabbingMode
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 
@@ -582,6 +589,22 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowTabbingMode controls window tabbing behavior (macOS 10.12+).
+// Values map to NSWindowTabbingMode (offset by 1 so the zero value is an "unset" sentinel).
+type MacWindowTabbingMode int
+
+const (
+	// MacWindowTabbingModeDefault is the zero-value sentinel meaning "not explicitly set".
+	// At runtime it resolves to Disallowed.
+	MacWindowTabbingModeDefault MacWindowTabbingMode = iota
+	// MacWindowTabbingModeAutomatic allows the system to determine tabbing behavior
+	MacWindowTabbingModeAutomatic
+	// MacWindowTabbingModePreferred indicates the window prefers to be in tabbing mode
+	MacWindowTabbingModePreferred
+	// MacWindowTabbingModeDisallowed prevents the window from being tabbed
+	MacWindowTabbingModeDisallowed
 )
 
 // MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.

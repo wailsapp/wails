@@ -1,0 +1,388 @@
+---
+title: Aplikasi Wails dengan Self-Update
+description: Bangun aplikasi Wails v3 yang memperbarui dirinya sendiri dari GitHub Releases — dari `wails3 init` hingga verifikasi rilis yang ditandatangani dan pertukaran biner mode helper.
+sidebar:
+  order: 4
+---
+
+import { Steps, Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import updateReady from "../../../../assets/updater/default-window-ready.png";
+import byoCustomShot from "../../../../assets/updater/byo-custom-window.png";
+
+Dalam tutorial ini Anda akan menambahkan updater dalam aplikasi ke aplikasi Wails v3 baru. Di akhir, aplikasi akan:
+
+- Mengecek GitHub Releases sesuai permintaan (dan opsional dengan timer).
+- Mengunduh asset yang tepat untuk OS + arsitektur yang sedang berjalan.
+- Memverifikasi digest SHA-256 (dan opsional tanda tangan Ed25519) terhadap byte yang diunduh.
+- Menampilkan release notes di jendela update default framework.
+- Menukar biner yang sedang berjalan dan meluncurkan ulang — semua tanpa mengirim executable helper terpisah.
+
+Kita akan menggunakan **GitHub Releases** sebagai sumber update karena gratis dan tidak memerlukan infrastruktur. Pola yang sama bekerja dengan [keygen.sh](/id/guides/updater#keygensh--updaterproviderskeygen) dan [Sparkle AppCast](/id/guides/updater#sparkle-appcast--updaterprovidersappcast) — lihat [panduan Updater](/id/guides/updater) setelah selesai.
+
+:::tip[Prasyarat]
+- Go 1.25 atau lebih baru
+- CLI `wails3` terinstal (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- Repositori GitHub tempat Anda dapat mendorong rilis
+- Familiar dengan [tutorial Layanan QR Code](/id/tutorials/01-creating-a-service) membantu tetapi tidak wajib
+:::
+
+<br/>
+
+<Steps>
+
+1. ## Mulai dengan aplikasi Wails baru
+
+   Buat proyek baru dengan template vanilla:
+
+   ```bash
+   wails3 init --template vanilla --name updater-tutorial
+   cd updater-tutorial
+   ```
+
+   Anda sekarang seharusnya memiliki direktori dengan `main.go`, `frontend/`, dan `Taskfile.yml`. Konfirmasi dapat di-build dan diluncurkan:
+
+   ```bash
+   wails3 task dev
+   ```
+
+   Jendela Wails kosong seharusnya terbuka. Keluar dan lanjutkan.
+
+2. ## Tambahkan import updater
+
+   Buka `main.go` dan tambahkan dua paket updater ke import Anda:
+
+   ```go title="main.go" ins={6-7}
+   package main
+
+   import (
+       _ "embed"
+
+       "github.com/wailsapp/wails/v3/pkg/application"
+       "github.com/wailsapp/wails/v3/pkg/updater"
+       "github.com/wailsapp/wails/v3/pkg/updater/providers/github"
+   )
+   ```
+
+   Ini menarik Updater itu sendiri dan provider GitHub Releases.
+
+3. ## Konfigurasi Updater
+
+   `app.Updater` sudah terhubung ke setiap `*application.App` — Anda hanya perlu memanggil `Init`:
+
+   ```go title="main.go"
+   const currentVersion = "1.0.0"
+
+   gh, err := github.New(github.Config{
+       Repository:    "yourorg/your-repo",   // ← change this
+       ChecksumAsset: "SHA256SUMS",          // sibling file with sha256 digests
+   })
+   if err != nil {
+       log.Fatalf("github.New: %v", err)
+   }
+
+   if err := app.Updater.Init(updater.Config{
+       CurrentVersion: currentVersion,
+       Providers:      []updater.Provider{gh},
+   }); err != nil {
+       log.Fatalf("Updater.Init: %v", err)
+   }
+   ```
+
+   Tempatkan ini setelah `application.New` dan sebelum `app.Run()`.
+
+   <Aside type="note" title="Format string versi">
+       Teruskan versi yang sama dengan yang Anda tag untuk rilis, **tanpa** awalan `v`. Provider menghapus `v` dari nama tag di sisinya. `1.0.0` di sini ↔ `v1.0.0` di GitHub.
+   </Aside>
+
+4. ## Tambahkan item menu yang memicu update
+
+   Di `main.go` yang sama, tambahkan entri menu "Check for Updates…":
+
+   ```go title="main.go"
+   menu := app.Menu.New()
+   app.Menu.SetApplicationMenu(menu)
+   appMenu := menu.AddSubmenu("App")
+   appMenu.Add("Check for Updates…").OnClick(func(*application.Context) {
+       go func() {
+           if err := app.Updater.CheckAndInstall(context.Background()); err != nil {
+               app.Logger.Error("update", "error", err)
+           }
+       }()
+   })
+   ```
+
+   `CheckAndInstall` membuka jendela update framework, menjalankan `Check`, dan jika rilis ditemukan, menjalankan `DownloadAndInstall` otomatis. Jendela tetap terbuka dalam state "Up to Date" saat tidak ada yang baru — pengguna menutupnya dengan tombol **Close**.
+
+   <Aside type="caution" title="Jalankan di goroutine">
+       `CheckAndInstall` memblokir sampai verify + install selesai. Memanggilnya langsung dari klik menu akan memblokir thread UI. Bungkus dengan `go func()`.
+   </Aside>
+
+5. ## Jalankan sekali tanpa rilis
+
+   ```bash
+   wails3 task dev
+   ```
+
+   Klik **App → Check for Updates…**. Anda seharusnya melihat jendela update terbuka sebentar, mengakses API GitHub, tidak menemukan rilis lebih baru dari `1.0.0`, dan menetap pada state **Up to Date** dengan ✓ hijau.
+
+   Jika Anda mendapat error di sini, biasanya salah satu dari:
+
+   | Gejala | Perbaikan |
+   |---|---|
+   | `404 Not Found` | Field `Repository` salah — harus `owner/repo` |
+   | `403 rate-limited` | Tambahkan `Token: "ghp_…"` ke github.Config (gunakan PAT dengan scope `public_repo`) |
+   | Network errors | Konfirmasi aplikasi yang berjalan dapat mengakses `api.github.com` |
+
+6. ## Terbitkan rilis uji
+
+   Naikkan `currentVersion` di `main.go` ke `1.0.0` (atau biarkan). Build untuk satu platform untuk mendapatkan biner yang dapat dilampirkan ke rilis:
+
+   <Tabs>
+       <TabItem label="macOS">
+           ```bash
+           wails3 task build:darwin
+           # produces bin/updater-tutorial.app
+           # zip it for the release asset:
+           cd bin && zip -r updater-tutorial-darwin-arm64.zip updater-tutorial.app && cd ..
+           ```
+       </TabItem>
+       <TabItem label="Linux">
+           ```bash
+           wails3 task build:linux
+           # produces bin/updater-tutorial
+           mv bin/updater-tutorial bin/updater-tutorial-linux-amd64
+           ```
+       </TabItem>
+       <TabItem label="Windows">
+           ```bash
+           wails3 task build:windows
+           # produces bin/updater-tutorial.exe
+           mv bin/updater-tutorial.exe bin/updater-tutorial-windows-amd64.exe
+           ```
+       </TabItem>
+   </Tabs>
+
+   Buat file `SHA256SUMS` di samping biner:
+
+   ```bash
+   cd bin
+   shasum -a 256 updater-tutorial-* > SHA256SUMS
+   cat SHA256SUMS
+   ```
+
+   Anda seharusnya melihat satu atau lebih baris seperti:
+
+   ```
+   abc123…  updater-tutorial-darwin-arm64.zip
+   ```
+
+   Sekarang terbitkan ini sebagai **v2.0.0** di repositori GitHub Anda:
+
+   ```bash
+   gh release create v2.0.0 \
+       --title "v2.0.0" \
+       --notes "First update for the self-update tutorial.
+
+   - **Bold** Markdown renders in the update window
+   - \`Code spans\` too
+   - Lists work
+   - GFM tables work" \
+       bin/SHA256SUMS bin/updater-tutorial-*
+   ```
+
+   <Aside type="note" title="Penamaan asset">
+       Matcher asset default memilih berdasarkan substring `GOOS` + `GOARCH` pada nama file. Selama nama asset Anda menyertakan `darwin` (atau `linux` / `windows`) dan `arm64` (atau `amd64` / `386`), matcher menemukannya. Lihat [panduan Updater](/id/guides/updater#github-releases--updaterprovidersgithub) untuk matcher kustom.
+   </Aside>
+
+7. ## Jalankan aplikasi dan verifikasi update
+
+   Dengan `currentVersion` masih `1.0.0`, jalankan aplikasi lagi:
+
+   ```bash
+   wails3 task dev
+   ```
+
+   Klik **App → Check for Updates…**. Kali ini Anda seharusnya melihat sesuatu seperti:
+
+   <Image src={updateReady} alt="Jendela updater default dalam state Update Ready, menampilkan pill versi, release notes yang dirender Markdown, dan tombol utama Restart & Apply." style="max-width: 480px; margin: 1rem auto; display: block; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));" />
+
+   - Ikon hero berubah dari biru ↓ ("Update Available") ke hijau ✓ ("Update Ready").
+   - Subtitle menampilkan `v1.0.0 → v2.0.0 · <size>`.
+   - Panel release notes merender Markdown Anda dengan bold, code span, dan tabel.
+   - Progress bar terisi selama unduhan (cepat — biner kecil).
+
+   Updater men-stage biner baru di direktori temp. Untuk menyelesaikan update:
+
+   - Klik **Restart & Apply**.
+   - Aplikasi Anda keluar, helper menukar biner, biner baru diluncurkan ulang.
+   - Aplikasi yang diluncurkan ulang melaporkan `currentVersion = "1.0.0"` (karena kita hardcode), tetapi byte di disk sesuai build v2.0.0.
+
+   Di aplikasi nyata, `currentVersion` akan diset saat build via `-ldflags` agar biner baru tahu sekarang v2.0.0 dan pengecekan berikutnya tidak menemukan update.
+
+8. ## Hubungkan `currentVersion` ke build
+
+   Ganti konstanta dengan variabel build-time:
+
+   ```go title="main.go" ins={2,4}
+   var (
+       currentVersion = "dev" // overridden by -ldflags at release time
+   )
+   ```
+
+   Lalu di perintah build Anda:
+
+   ```bash
+   wails3 task build:darwin -- -ldflags "-X main.currentVersion=2.0.0"
+   ```
+
+   Atau tambahkan `-ldflags` ke `Taskfile.yml` agar mengambil dari `git describe --tags`.
+
+9. ## Tambahkan penandatanganan kriptografis (disarankan untuk produksi)
+
+   Path SHA256SUMS memverifikasi *integritas* (byte sesuai yang disimpan GitHub) tetapi bukan *autentisitas* (byte tersebut diproduksi pipeline rilis Anda, bukan akun maintainer yang dikompromikan). Untuk ketahanan terhadap perubahan, tandatangani setiap rilis dengan kunci Ed25519:
+
+   ```bash
+   # One-time: generate the keypair
+   ssh-keygen -t ed25519 -f updater-key -N "" -C "wails-updater"
+   #   updater-key      — keep secret (build server, HSM, password manager)
+   #   updater-key.pub  — bundle in your app
+   ```
+
+   Untuk setiap rilis, tandatangani digest SHA-256 setiap asset dengan kunci privat Anda. Helper Go kecil:
+
+   ```go title="cmd/sign-release/main.go"
+   package main
+
+   import (
+       "crypto/ed25519"
+       "crypto/sha256"
+       "encoding/base64"
+       "fmt"
+       "io"
+       "os"
+   )
+
+   func main() {
+       priv, _ := os.ReadFile("updater-key")
+       key := ed25519.PrivateKey(priv) // raw 64-byte private key
+
+       f, _ := os.Open(os.Args[1])
+       defer f.Close()
+       h := sha256.New()
+       _, _ = io.Copy(h, f)
+       sig := ed25519.Sign(key, h.Sum(nil))
+       fmt.Println(base64.StdEncoding.EncodeToString(sig))
+   }
+   ```
+
+   Provider GitHub default saat ini tidak mengambil file tanda tangan terpisah — Anda dapat [menulis provider kustom](/id/guides/updater#writing-your-own-provider) yang melakukannya, atau beralih ke **keygen.sh** yang menandatangani setiap artifact di sisi server dan mengekspos digest dan tanda tangan via API-nya.
+
+   Embed kunci publik di aplikasi Anda:
+
+   ```go title="main.go" ins={1,6}
+   //go:embed updater-key.pub
+   var updaterPublicKey []byte
+
+   app.Updater.Init(updater.Config{
+       CurrentVersion: currentVersion,
+       PublicKey:      updaterPublicKey,
+       Providers:      []updater.Provider{gh},
+   })
+   ```
+
+   Dengan `PublicKey` diset, rilis apa pun yang mengirim `Signature` harus diverifikasi terhadap kunci ini. Sumber rilis tidak dapat mengganti kuncinya sendiri — itulah tujuan pinning out-of-band saat build time.
+
+10. ## Sesuaikan jendela
+
+    Jendela default mencakup kasus umum. Tiga jalan keluar jika Anda butuh kontrol lebih — pilih satu berdasarkan seberapa banyak yang ingin disesuaikan:
+
+    <Tabs>
+        <TabItem label="CSS only">
+            ```go
+            app.Updater.Init(updater.Config{
+                // …
+                Window: &updater.BuiltinWindow{
+                    CSS: `:root { --accent: #ff6f00; --radius: 16px; }`,
+                },
+            })
+            ```
+
+            Lihat bagian [Tema via variabel CSS](/id/guides/updater#theme-via-css-variables) untuk daftar variabel lengkap.
+        </TabItem>
+        <TabItem label="Custom HTML">
+            ```go
+            //go:embed updater-window.html
+            var updaterHTML string
+
+            app.Updater.Init(updater.Config{
+                // …
+                Window: &updater.BuiltinWindow{HTML: updaterHTML},
+            })
+            ```
+
+            HTML Anda harus subscribe ke event `updater:*` dan emit aksi `updater:user:*` via channel event Wails. Lihat [Ganti template](/id/guides/updater#replace-the-template) untuk shim JS.
+        </TabItem>
+        <TabItem label="Bring your own window">
+            ```go
+            myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
+                Title:                "My App Updater",
+                Width:                520, Height: 460,
+                HTML:                 updaterHTML,
+                AllowSimpleEventEmit: true,  // required — see security note
+            })
+            app.Updater.Init(updater.Config{
+                // …
+                Window: updater.BYOWindow(myWin.AsUpdaterWindow()),
+            })
+            ```
+
+            Berguna saat Anda sudah punya infrastruktur jendela sendiri dan ingin updater mengendalikannya alih-alih membuka jendela lain. Template HTML sepenuhnya kustom — didorong oleh event updater yang sama dengan default — terlihat seperti ini:
+
+            <Image src={byoCustomShot} alt="Jendela updater bring-your-own dengan latar belakang gradien pink-orange dan tata letak kartu bulat kustom, mendemonstrasikan UI default sepenuhnya dapat diganti." style="max-width: 380px; margin: 1rem auto; display: block; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));" />
+
+            <Aside type="caution" title="`AllowSimpleEventEmit` wajib">
+                Shim custom-HTML updater mengendalikan Install / Skip / Remind / Restart melalui shortcut postMessage `wails:event:emit:`, dan shortcut itu digated oleh field ini untuk keamanan. Melupakannya membuat tombol diam-diam no-op. Jangan aktifkan di jendela yang memuat HTML yang tidak Anda kontrol sepenuhnya — lihat bagian [Bring your own window](/id/guides/updater#bring-your-own-window) di panduan untuk threat model.
+            </Aside>
+        </TabItem>
+    </Tabs>
+
+11. ## Jalankan pengecekan otomatis di latar belakang
+
+    Untuk mengecek dengan timer alih-alih (atau selain) klik menu:
+
+    ```go ins={5}
+    app.Updater.Init(updater.Config{
+        CurrentVersion: currentVersion,
+        Providers:      []updater.Provider{gh},
+        PublicKey:      updaterPublicKey,
+        CheckInterval:  6 * time.Hour,
+    })
+    ```
+
+    Setiap tick menjalankan alur `CheckAndInstall` yang sama seperti klik manual. Set `Window: updater.WindowNone` jika Anda ingin pengecekan berkala diam sampai sesuatu benar-benar ditemukan — lalu subscribe ke `EventUpdateAvailable` sendiri untuk memutuskan UX apa yang ditampilkan.
+
+</Steps>
+
+## Selesai
+
+Anda sekarang memiliki aplikasi Wails yang:
+
+- Mengecek GitHub Releases untuk update sesuai permintaan dan dengan timer.
+- Merender release notes sebagai Markdown di jendela default yang rapi.
+- Memverifikasi unduhan terhadap digest SHA-256 yang Anda terbitkan.
+- Opsional memverifikasi tanda tangan Ed25519 terhadap kunci publik yang Anda embed saat build time.
+- Menukar biner yang sedang berjalan in-place dan meluncurkan ulang otomatis.
+
+## Langkah selanjutnya
+
+- [Panduan Updater](/id/guides/updater) memiliki referensi API lengkap, setiap event, setiap opsi konfigurasi, dan mekanisme swap mode helper.
+- Lihat [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater) untuk contoh lengkap yang dapat Anda clone.
+- Repo target uji [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) menunjukkan tata letak release-asset yang disarankan.
+
+## Hal yang perlu diperhatikan di produksi
+
+- **Code signing di macOS** — Gatekeeper memerlukan biner yang ditukar ditandatangani dan dinotarisasi. Tandatangani bundle `.app` Anda *sebelum* zip untuk rilis. Updater mempertahankan byte verbatim; tidak menandatangani ulang apa pun.
+- **Antivirus di Windows** — file `.exe` unsigned yang diunduh dari internet dapat memicu peringatan SmartScreen. Tandatangani biner dengan sertifikat Authenticode, atau terima bahwa pengguna di mesin terkunci mungkin perlu whitelist aplikasi Anda.
+- **Rilis atomik** — terbitkan `SHA256SUMS` (dan biner Anda) bersama, bukan di commit terpisah. Updater mengambil sidecar terpisah dari biner; jika keduanya drift, pemeriksaan digest gagal closed.
+- **Versi yang dilewati** — tombol "Skip This Version" jendela default mencatat skip secara lokal. Jika Anda mengirim update keamanan kritis, beri nomor versi baru agar tidak otomatis dilewati pengguna yang menolak rilis sebelumnya.

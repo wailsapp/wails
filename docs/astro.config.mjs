@@ -142,6 +142,7 @@ export default defineConfig({
         fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
         pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
         de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
+        id:      { label: "Bahasa Indonesia",      lang: "id",    dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
@@ -394,6 +395,7 @@ export default defineConfig({
             { label: "Dialogs", link: "/reference/dialogs" },
             { label: "Frontend Runtime", link: "/reference/frontend-runtime" },
             { label: "CLI", link: "/reference/cli" },
+            { label: "Update Manifest Protocol", link: "/reference/update-manifest" },
           ],
         },
 
@@ -421,7 +423,16 @@ export default defineConfig({
         {
           label: "Troubleshooting",
           collapsed: true,
-          autogenerate: { directory: "troubleshooting" },
+          items: [
+            { label: "Syso files on macOS", link: "/troubleshooting/mac-syso" },
+            {
+              label: "Windows",
+              collapsed: true,
+              items: [
+                { label: "RDP Issues", link: "/troubleshooting/windows/rdp" },
+              ],
+            },
+          ],
         },
 
         // Community & Resources

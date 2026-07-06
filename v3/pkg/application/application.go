@@ -74,6 +74,7 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = messageProc
 
 	// Initialize transport (default to HTTP if not specified)
 	transport := appOptions.Transport
@@ -430,6 +431,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// messageProcessor handles runtime messages
+	messageProcessor *MessageProcessor
 }
 
 func (a *App) Config() Options {
