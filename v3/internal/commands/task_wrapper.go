@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildwarnings"
@@ -21,7 +22,51 @@ var validPlatforms = map[string]bool{
 	"linux":   true,
 }
 
+// rootDispatchTasks are the verbs that this wrapper routes through the
+// top-level task in the generated root Taskfile, which dispatches to the
+// platform-specific task via the GOOS variable (e.g. `build` -> `{{.GOOS}}:build`).
+// For these we run the root task and pass GOOS as a variable, so user
+// customisations in the root Taskfile are honoured for both native and
+// cross-compilation builds. Only `build` and `package` go through this wrapper:
+// the root Taskfile also defines a `run` dispatch task, but `run` is invoked by
+// `wails3 dev` directly rather than through here. Verbs without a root task
+// (e.g. `sign`, which only exists per-platform) always target the
+// platform-specific task directly.
+var rootDispatchTasks = map[string]bool{
+	"build":   true,
+	"package": true,
+}
+
+const (
+	// mcpEnvVar enables the MCP service build tag when set to a truthy value.
+	mcpEnvVar = "WAILS_MCP"
+	// mcpBuildTag is the Go build tag that compiles in the MCP service.
+	mcpBuildTag = "mcp"
+)
+
+// envTags returns the build tags implied by environment variables.
+func envTags() []string {
+	var tags []string
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(mcpEnvVar))) {
+	case "1", "true", "on", "yes":
+		tags = append(tags, mcpBuildTag)
+	}
+	return tags
+}
+
+// mergeTags appends extra tags to a comma-separated tag list, skipping duplicates.
+func mergeTags(tags string, extra ...string) string {
+	existing := strings.Split(tags, ",")
+	for _, tag := range extra {
+		if !slices.Contains(existing, tag) {
+			existing = append(existing, tag)
+		}
+	}
+	return strings.Trim(strings.Join(existing, ","), ",")
+}
+
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
 	}
@@ -86,15 +131,28 @@ func wrapTask(action string, otherArgs []string) error {
 		}
 	}
 
-	taskName := action
+	// platformTaskName always targets the platform-specific task (e.g.
+	// "linux:build"). The experimental wake runner is built against this concrete
+	// name, so it keeps using it unconditionally.
+	platformTaskName := action
 	if validPlatforms[goos] {
-		taskName = goos + ":" + action
+		platformTaskName = goos + ":" + action
 	}
 
-	remainingArgs = append(remainingArgs, "ARCH="+goarch)
+	// Pass GOOS/ARCH through as Taskfile variables. The root build/package/run
+	// tasks dispatch on {{.GOOS}}, so running the root task (rather than the
+	// platform-prefixed one) means any customisations in the root Taskfile are
+	// honoured, for both native and cross-compilation builds. Verbs without a
+	// root task (e.g. `sign`) still target the platform task directly. See #5615.
+	remainingArgs = append(remainingArgs, "GOOS="+goos, "ARCH="+goarch)
+
+	taskName := platformTaskName
+	if rootDispatchTasks[action] {
+		taskName = action
+	}
 
 	if useWake() {
-		return runWakeTask(action, taskName, goos, goarch, remainingArgs)
+		return runWakeTask(action, platformTaskName, goos, goarch, remainingArgs)
 	}
 
 	newArgs := []string{"wails3", "task", taskName}

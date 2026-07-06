@@ -1,0 +1,615 @@
+---
+title: Cara Kerja Wails
+description: Memahami arsitektur Wails dan bagaimana ia mencapai performa native
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails adalah framework untuk membangun aplikasi desktop menggunakan **Go untuk backend** dan **teknologi web untuk frontend**. Namun berbeda dengan Electron, Wails tidak membundel browser—ia menggunakan **WebView native sistem operasi**.
+
+```d2
+direction: left
+
+Wails App: {
+  shape: sequence_diagram
+  label: "Wails App"
+
+  frontend: Frontend
+  backend: Go Backend
+  os: Operating System
+
+  Initialisation: {
+    shape: sequence_diagram
+    backend."Serves Static Web App"
+    backend -> frontend: HTML / JS / CSS
+    frontend."Render Site via WebKit"
+  }
+  Regular Communication: {
+    shape: sequence_diagram
+    frontend."Make API-style call"
+    frontend -> backend.a: JSON
+    backend.a."Service processes request"
+    backend.a -> os: Call System APIs
+    backend.a."Generate Response"
+    backend.a -> frontend: JSON
+    frontend."Process response"
+  }
+}
+```
+
+**Perbedaan utama dari Electron:**
+
+| Aspek | Wails | Electron |
+|--------|-------|----------|
+| **Browser** | WebView dari OS | Chromium terbundel (~100MB) |
+| **Backend** | Go (dikompilasi) | Node.js (diinterpretasi) |
+| **Komunikasi** | Bridge in-memory | IPC (antar-proses) |
+| **Ukuran Bundle** | ~15MB | ~150MB |
+| **Memori** | ~10MB | ~100MB+ |
+| **Startup** | &lt;0.5s | 2-3s |
+
+## Komponen Inti
+
+### 1. Native WebView
+
+Wails menggunakan mesin rendering web bawaan sistem operasi:
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **WebView2** (Microsoft Edge WebView2)
+    - Berbasis Chromium (sama dengan browser Edge)
+    - Pra-instal di Windows 10/11
+    - Pembaruan otomatis via Windows Update
+    - Dukungan standar web modern penuh
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **WebKit** (mesin rendering Safari)
+    - Terintegrasi di macOS
+    - Mesin yang sama dengan browser Safari
+    - Performa dan daya tahan baterai sangat baik
+    - Dukungan standar web modern penuh
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **WebKitGTK** (port GTK dari WebKit)
+    - Diinstal via package manager
+    - Mesin yang sama dengan GNOME Web (Epiphany)
+    - Dukungan standar yang baik
+    - Ringan dan performa tinggi
+  </TabItem>
+</Tabs>
+
+**Mengapa ini penting:**
+- **Tanpa browser terbundel** → Ukuran aplikasi lebih kecil
+- **Native OS** → Integrasi dan performa lebih baik
+- **Pembaruan otomatis** → Patch keamanan dari pembaruan OS
+- **Rendering familiar** → Sama dengan browser sistem
+
+### 2. Wails Bridge
+
+Bridge adalah jantung Wails—ia memungkinkan **komunikasi langsung** antara Go dan JavaScript.
+
+```d2
+direction: down
+
+Frontend: "Frontend (JavaScript)" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Registered Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+```
+
+**Cara kerjanya:**
+
+1. **Frontend memanggil metode Go** (via binding yang dihasilkan otomatis)
+2. **Bridge meng-encode panggilan** ke JSON (nama metode + argumen)
+3. **Router menemukan metode Go** di service yang terdaftar
+4. **Metode Go dieksekusi** dan mengembalikan nilai
+5. **Bridge mendekode hasil** dan mengirim kembali ke frontend
+6. **Promise resolve** di JavaScript dengan hasil
+
+**Karakteristik performa:**
+- **In-memory**: Tanpa overhead jaringan, tanpa HTTP
+- **Zero-copy** jika memungkinkan (untuk data besar)
+- **Async secara default**: Non-blocking di kedua sisi
+- **Type-safe**: Definisi TypeScript dihasilkan otomatis
+
+### 3. Sistem Service
+
+Service adalah cara yang direkomendasikan untuk mengekspos fungsionalitas Go ke frontend.
+
+```go
+// Define a service (just a regular Go struct)
+type GreetService struct {
+    prefix string
+}
+
+// Methods with exported names are automatically available
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) GetTime() time.Time {
+    return time.Now()
+}
+
+// Register the service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Service discovery:**
+- Wails **memindai struct Anda** saat startup
+- **Metode yang diekspor** menjadi dapat dipanggil dari frontend
+- **Informasi tipe** diekstrak untuk binding TypeScript
+- **Penanganan error** otomatis (error Go → exception JS)
+
+**Binding TypeScript yang dihasilkan:**
+```typescript
+// Auto-generated in frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function GetTime(): Promise<Date>
+```
+
+**Mengapa service?**
+- **Type-safe**: Dukungan TypeScript penuh
+- **Auto-discovery**: Tanpa registrasi manual metode
+- **Terorganisir**: Kelompokkan fungsionalitas terkait
+- **Dapat diuji**: Service hanyalah struct Go
+
+[Pelajari selengkapnya tentang service →](/id/features/bindings/services)
+
+### 4. Sistem Event
+
+Event memungkinkan **komunikasi pub/sub** antar komponen.
+
+```d2
+direction: left
+
+Wails Event System: {
+  shape: sequence_diagram
+
+  window1: Window 1
+  window2: Window 2
+  backend: Go Backend
+
+  Event Driver: {
+    shape: sequence_diagram
+    window1."Subscribe to 'data-updated' events"
+    backend.a."App Emit('data-updated', data)"
+    backend.a -> window1.a:"JSON Event Bus"
+    backend.a -> window2:"JSON Event Bus"
+    window1.a."Subscriber processes On('data-updated', handler)"
+  }
+}
+```
+
+**Kasus penggunaan:**
+- **Komunikasi window**: Satu window memberi tahu yang lain
+- **Tugas background**: Service Go memberi tahu UI tentang progres
+- **Sinkronisasi state**: Menjaga beberapa window tetap sinkron
+- **Loose coupling**: Komponen tidak memerlukan referensi langsung
+
+**Contoh:**
+```go
+// Go: Emit an event
+app.Event.Emit("user-logged-in", user)
+```
+
+```javascript
+// JavaScript: Listen for event
+import { Events } from '@wailsio/runtime'
+
+Events.On('user-logged-in', (user) => {
+    console.log('User logged in:', user)
+})
+```
+
+[Pelajari selengkapnya tentang event →](/id/features/events/system)
+
+## Siklus Hidup Aplikasi
+
+Memahami siklus hidup membantu Anda mengetahui kapan menginisialisasi resource dan membersihkannya.
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Create: "Create Application" {
+    shape: rectangle
+  }
+  
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  
+  Setup: "Setup Windows/Menus" {
+    shape: rectangle
+  }
+}
+
+Run: "Event Loop" {
+  Events: "Process Events" {
+    shape: rectangle
+  }
+  
+  Messages: "Handle Messages" {
+    shape: rectangle
+  }
+  
+  Render: "Update UI" {
+    shape: rectangle
+  }
+}
+
+Shutdown: "Shutdown" {
+  Cleanup: "Cleanup Resources" {
+    shape: rectangle
+  }
+  
+  Save: "Save State" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Create
+Init.Create -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> Run.Events
+Run.Events -> Run.Messages
+Run.Messages -> Run.Render
+Run.Render -> Run.Events: "Loop"
+Run.Events -> Shutdown.Cleanup: "Quit signal"
+Shutdown.Cleanup -> Shutdown.Save
+Shutdown.Save -> End
+```
+
+**Lifecycle hooks:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
+})
+```
+
+Tidak ada field `OnStartup` pada `application.Options`. Pekerjaan startup termasuk dalam `ServiceStartup(ctx, options)` service, callback yang didaftarkan via `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`, atau cukup sebelum `app.Run()`.
+
+[Pelajari selengkapnya tentang siklus hidup →](/id/concepts/lifecycle)
+
+## Proses Build
+
+Memahami bagaimana Wails mem-build aplikasi Anda:
+
+```d2
+direction: down
+
+Source: "Source Code" {
+  Go: "Go Code\n(main.go, services)" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+}
+
+Build: "Build Process" {
+  AnalyseGo: "Analyse Go Code" {
+    shape: rectangle
+  }
+  
+  GenerateBindings: "Generate Bindings" {
+    shape: rectangle
+  }
+  
+  BuildFrontend: "Build Frontend" {
+    shape: rectangle
+  }
+  
+  CompileGo: "Compile Go" {
+    shape: rectangle
+  }
+  
+  Embed: "Embed Assets" {
+    shape: rectangle
+  }
+}
+
+Output: "Output" {
+  Binary: "Native Binary\n(myapp.exe/.app)" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Source.Go -> Build.AnalyseGo
+Build.AnalyseGo -> Build.GenerateBindings: "Extract types"
+Build.GenerateBindings -> Source.Frontend: "TypeScript bindings"
+Source.Frontend -> Build.BuildFrontend: "Compile (Vite/webpack)"
+Build.BuildFrontend -> Build.Embed: "Bundled assets"
+Source.Go -> Build.CompileGo
+Build.CompileGo -> Build.Embed
+Build.Embed -> Output.Binary
+```
+
+**Langkah build:**
+
+1. **Analisis kode Go**
+   - Pindai service untuk metode yang diekspor
+   - Ekstrak tipe parameter dan return
+   - Hasilkan signature metode
+
+2. **Hasilkan binding TypeScript**
+   - Buat file `.ts` untuk setiap service
+   - Sertakan definisi tipe lengkap
+   - Tambahkan komentar JSDoc
+
+3. **Build frontend**
+   - Jalankan bundler Anda (Vite, webpack, dll.)
+   - Minify dan optimasi
+   - Output ke `frontend/dist/`
+
+4. **Kompilasi Go**
+   - Kompilasi dengan optimasi (`-ldflags="-s -w"`)
+   - Sertakan metadata build
+   - Kompilasi spesifik platform
+
+5. **Embed aset**
+   - Embed file frontend ke binary Go
+   - Kompres aset
+   - Buat executable tunggal
+
+**Hasil:** Executable native tunggal dengan semuanya ter-embed.
+
+[Pelajari selengkapnya tentang build →](/id/guides/build/building)
+
+## Development vs Production
+
+Wails berperilaku berbeda dalam development dan production:
+
+<Tabs syncKey="mode">
+  <TabItem label="Development (wails3 dev)" icon="seti:config">
+    **Karakteristik:**
+    - **Hot reload**: Perubahan frontend reload instan
+    - **Source maps**: Debug dengan source asli
+    - **DevTools**: Browser DevTools tersedia
+    - **Logging**: Logging verbose diaktifkan
+    - **Frontend eksternal**: Disajikan dari dev server (Vite)
+
+    **Cara kerjanya:**
+    ```d2
+    direction: right
+    
+    WailsApp: "Wails App" {
+      shape: rectangle
+      style.fill: "#00ADD8"
+    }
+    
+    DevServer: "Vite Dev Server\n(localhost:5173)" {
+      shape: rectangle
+      style.fill: "#8B5CF6"
+    }
+    
+    WebView: "WebView" {
+      shape: rectangle
+      style.fill: "#6B7280"
+    }
+    
+    WailsApp -> DevServer: "Proxy requests"
+    DevServer -> WebView: "Serve with HMR"
+    WebView -> WailsApp: "Call Go methods"
+    ```
+
+    **Manfaat:**
+    - Umpan balik instan atas perubahan
+    - Kemampuan debugging penuh
+    - Iterasi lebih cepat
+  </TabItem>
+
+  <TabItem label="Production (wails3 build)" icon="rocket">
+    **Karakteristik:**
+    - **Aset ter-embed**: Frontend di-build ke binary
+    - **Dioptimasi**: Diminify, dikompres
+    - **Tanpa DevTools**: Dinonaktifkan secara default
+    - **Logging minimal**: Hanya error
+    - **File tunggal**: Semuanya dalam satu executable
+
+    **Cara kerjanya:**
+    ```d2
+    direction: right
+    
+    Binary: "Single Binary\n(myapp.exe)" {
+      GoCode: "Compiled Go" {
+        shape: rectangle
+        style.fill: "#00ADD8"
+      }
+      
+      Assets: "Embedded Assets\n(HTML/CSS/JS)" {
+        shape: rectangle
+        style.fill: "#8B5CF6"
+      }
+    }
+    
+    WebView: "WebView" {
+      shape: rectangle
+      style.fill: "#6B7280"
+    }
+    
+    Binary.Assets -> WebView: "Serve from memory"
+    WebView -> Binary.GoCode: "Call Go methods"
+    ```
+
+    **Manfaat:**
+    - Distribusi file tunggal
+    - Ukuran lebih kecil (diminify)
+    - Performa lebih baik
+    - Tanpa dependensi eksternal
+  </TabItem>
+</Tabs>
+
+## Model Memori
+
+Memahami penggunaan memori membantu Anda membangun aplikasi yang efisien.
+
+{/* VISUAL PLACEHOLDER: Memory Diagram
+Description: Memory layout diagram showing:
+1. Go Heap (services, application state)
+2. WebView Memory (DOM, JavaScript heap)
+3. Shared Memory (bridge communication)
+4. Arrows showing data flow between regions
+5. Annotations for zero-copy optimisations
+Style: Technical diagram with memory regions as boxes, clear labels, size indicators
+*/}
+
+**Region memori:**
+
+1. **Go Heap**
+   - Service dan state aplikasi Anda
+   - Dikelola oleh garbage collector Go
+   - Biasanya 5-10MB untuk aplikasi sederhana
+
+2. **Memori WebView**
+   - DOM, JavaScript heap, CSS
+   - Dikelola oleh mesin WebView
+   - Biasanya 10-20MB untuk aplikasi sederhana
+
+3. **Memori Bridge**
+   - Buffer pesan untuk komunikasi
+   - Overhead minimal (\<1MB)
+   - Zero-copy untuk data besar jika memungkinkan
+
+**Tips optimasi:**
+- **Hindari transfer data besar**: Kirim ID, ambil detail on demand
+- **Gunakan event untuk pembaruan**: Jangan polling dari frontend
+- **Stream file besar**: Jangan muat seluruhnya ke memori
+- **Bersihkan listener**: Hapus event listener saat selesai
+
+[Pelajari selengkapnya tentang performa →](/id/guides/performance)
+
+## Model Keamanan
+
+Wails menyediakan arsitektur secure-by-default:
+
+```d2
+direction: down
+
+Frontend: "Frontend (Untrusted)" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Bridge: "Wails Bridge (Validation)" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+Backend: "Backend (Trusted)" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Frontend -> Bridge: "Call method"
+Bridge -> Bridge: "Validate:\n- Method exists?\n- Types correct?\n- Access allowed?"
+Bridge -> Backend: "Execute if valid"
+Backend -> Bridge: "Return result"
+Bridge -> Frontend: "Send response"
+```
+
+**Fitur keamanan:**
+
+1. **Whitelisting metode**
+   - Hanya metode yang diekspor yang dapat dipanggil
+   - Metode private tidak dapat diakses
+   - Registrasi service eksplisit diperlukan
+
+2. **Validasi tipe**
+   - Argumen dicek terhadap tipe Go
+   - Tipe tidak valid ditolak
+   - Mencegah serangan injeksi
+
+3. **Tanpa eval()**
+   - Frontend tidak dapat mengeksekusi kode Go sembarangan
+   - Hanya metode yang telah ditentukan yang dapat dipanggil
+   - Tanpa eksekusi kode dinamis
+
+4. **Isolasi context**
+   - Setiap window memiliki context sendiri
+   - Service dapat memeriksa context pemanggil
+   - Izin per window dimungkinkan
+
+**Praktik terbaik:**
+- **Validasi input pengguna** di Go (jangan percaya frontend)
+- **Gunakan context** untuk autentikasi/otorisasi
+- **Sanitasi path file** sebelum operasi file
+- **Rate limit** operasi yang mahal
+
+[Pelajari selengkapnya tentang keamanan →](/id/guides/security)
+
+## Langkah Selanjutnya
+
+**Siklus Hidup Aplikasi** - Pahami startup, shutdown, dan lifecycle hooks  
+[Pelajari Selengkapnya →](/id/concepts/lifecycle)
+
+**Jembatan Go-Frontend** - Pelajari mendalam cara kerja bridge  
+[Pelajari Selengkapnya →](/id/concepts/bridge)
+
+**Sistem Build** - Pahami bagaimana Wails mem-build aplikasi Anda  
+[Pelajari Selengkapnya →](/id/concepts/build-system)
+
+**Mulai Membangun** - Terapkan apa yang Anda pelajari dalam tutorial
+[Tutorial →](/id/tutorials/03-notes-vanilla)
+
+---
+
+**Pertanyaan tentang arsitektur?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [referensi API](/id/reference/overview).

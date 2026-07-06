@@ -275,6 +275,16 @@ void windowSetCollectionBehavior(void* nsWindow, int behavior) {
 	}
 }
 
+// Set NSWindow tabbing mode (macOS 10.12+)
+void windowSetTabbingMode(void* nsWindow, int mode) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
+	if (@available(macOS 10.12, *)) {
+		[window setTabbingMode:mode];
+	}
+#endif
+}
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -356,6 +366,18 @@ void windowZoomOut(void* nsWindow) {
 	} else {
 		[window.webView setMagnification:1.0];
 	}
+}
+
+// windowReload reloads the current page using the cached version.
+void windowReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reload];
+}
+
+// windowForceReload reloads the current page bypassing the cache.
+void windowForceReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reloadFromOrigin];
 }
 
 // createModalWindow presents a modal window as a sheet attached to the parent window
@@ -1151,13 +1173,17 @@ func (w *macosWebviewWindow) zoomReset() {
 }
 
 func (w *macosWebviewWindow) reload() {
-	//TODO: Implement
 	globalApplication.debug("reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) forceReload() {
-	//TODO: Implement
 	globalApplication.debug("force reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowForceReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) center() {
@@ -1330,6 +1356,19 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
 }
 
+func (w *macosWebviewWindow) setTabbingMode(mode MacWindowTabbingMode) {
+	if mode == MacWindowTabbingModeDefault {
+		mode = MacWindowTabbingModeDisallowed
+	}
+
+	// Our iota values are offset by 1 from NSWindowTabbingMode:
+	//   MacWindowTabbingModeAutomatic(1) -> NSWindowTabbingModeAutomatic(0)
+	//   MacWindowTabbingModePreferred(2) -> NSWindowTabbingModePreferred(1)
+	//   MacWindowTabbingModeDisallowed(3) -> NSWindowTabbingModeDisallowed(2)
+	// https://developer.apple.com/documentation/appkit/nswindow/tabbingmode-swift.enum
+	C.windowSetTabbingMode(w.nsWindow, C.int(mode-1))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1455,6 +1494,13 @@ func (w *macosWebviewWindow) run() {
 
 		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
 		w.setCollectionBehavior(macOptions.CollectionBehavior)
+
+		// Set tabbing mode (macOS 10.12+)
+		// Default to disallowed unless explicitly configured.
+		if macOptions.TabbingMode == MacWindowTabbingModeDefault {
+			macOptions.TabbingMode = MacWindowTabbingModeDisallowed
+		}
+		w.setTabbingMode(macOptions.TabbingMode)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)

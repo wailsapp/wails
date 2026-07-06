@@ -1,0 +1,141 @@
+---
+title: Android
+description: Build dan jalankan aplikasi Wails di Android — setup toolchain, emulator, penandatanganan APK, packaging Play Store, dan referensi API
+sidebar:
+  order: 4
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Dukungan Android bersifat eksperimental dan dapat berubah di rilis mendatang.
+</Aside>
+
+<Aside type="tip">
+Baru dengan mobile di Wails? Mulai dengan [Aplikasi Mobile Pertama Anda →](/id/guides/mobile/first-mobile-app) untuk panduan langkah demi langkah, lalu kembali ke sini untuk referensi lengkap.
+</Aside>
+
+Aplikasi Wails v3 berjalan di Android sebagai aplikasi native: `WebView` Android
+merender frontend, aset disajikan **in-process** melalui
+`WebViewAssetLoader` yang didukung server aset Go (tanpa server localhost, tanpa
+port terbuka), dan `@wailsio/runtime` standar bekerja tanpa perubahan — service
+bindings, events, dialog, dan clipboard melewati message
+processor Go.
+
+`main.go` yang sama di-build untuk desktop dan Android. Kode Go dikompilasi sebagai
+shared library C (`libwails.so`, `GOOS=android` + toolchain NDK) dan
+dimuat oleh host Java kecil. Perilaku spesifik Android ada di file Go per-platform
+yang dilindungi `//go:build android`.
+
+## Persyaratan
+
+- **Android SDK** dengan platform-tools, SDK platform (API 34),
+  build-tools, dan **NDK** (26.3.x) — `wails3 doctor` menampilkan yang ditemukan
+- **JDK** (mis. OpenJDK 21) untuk Gradle; atur `JAVA_HOME` jika `java` tidak ada di
+  `PATH`
+- Go 1.25+ dan npm
+- `ANDROID_HOME` (atau `ANDROID_SDK_ROOT`) menunjuk ke SDK
+
+Instal komponen SDK dengan command-line tools:
+
+```bash
+sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" \
+           "ndk;26.3.11579264" "emulator" \
+           "system-images;android-34;google_apis;arm64-v8a"
+avdmanager create avd --name wails \
+           --package "system-images;android-34;google_apis;arm64-v8a" \
+           --device pixel_7
+```
+
+## Menjalankan di Emulator
+
+Dari direktori proyek Anda:
+
+```bash
+wails3 task android:run
+```
+
+Perintah ini boot emulator jika belum berjalan, generate bindings, build
+frontend, kompilasi kode Go ke `libwails.so` untuk ABI emulator,
+rakit debug APK dengan Gradle, lalu instal dan luncurkan.
+
+Teman yang berguna:
+
+```bash
+wails3 task android:logs    # stream output logcat aplikasi
+```
+
+Di build debug, WebView dapat diinspeksi dari Chrome di `chrome://inspect`.
+
+## Packaging
+
+```bash
+wails3 task android:package             # production release APK
+wails3 task android:deploy-emulator     # install + launch
+```
+
+Build produksi menggunakan `-tags production,android`, di-strip, dan mengompilasi
+keluar diagnostik internal framework. `wails3 task android:package:fat`
+membangun `arm64-v8a` dan `x86_64` ke dalam satu APK.
+
+## Penandatanganan & build release
+
+Tanpa keystore, build release ditandatangani dengan keystore debug Android
+sehingga dapat diinstal untuk testing. Untuk menandatangani dengan keystore sendiri, atur:
+
+```bash
+ANDROID_KEYSTORE_FILE=/path/to/release.jks \
+ANDROID_KEYSTORE_PASSWORD=... \
+ANDROID_KEY_ALIAS=... \
+ANDROID_KEY_PASSWORD=... \
+  wails3 task android:package
+```
+
+<Aside type="tip">
+Untuk upload Play Store, tandatangani artefak release dengan keystore sendiri — atur
+variabel `ANDROID_KEYSTORE_*`, atau buka `build/android/` di Android
+Studio dan gunakan *Build → Generate Signed Bundle / APK* untuk menghasilkan `.aab`.
+</Aside>
+
+## Konfigurasi
+
+Frontend mengendalikan fitur Android saat runtime melalui objek runtime `Android`:
+`Android.Haptics.Vibrate(durationMs)`, `Android.Device.Info()`,
+`Android.Toast.Show(message)`. Package name dikontrol oleh `APP_ID` di
+build tasks.
+
+## Yang bekerja, yang tidak
+
+| Area | Status |
+|---|---|
+| WebView + aset in-process (`WebViewAssetLoader`) | ✅ |
+| Service bindings, events (kedua arah) | ✅ |
+| Dialog pesan | ✅ AlertDialog dengan callback tombol |
+| Dialog buka file / files | ✅ Storage Access Framework (file diimpor sebagai salinan cache) |
+| Dialog buka direktori / simpan file | ❌ Mengembalikan error — tulis di dalam sandbox aplikasi |
+| Clipboard | ✅ ClipboardManager |
+| Screens API | ✅ WindowMetrics incl. work area system-bar |
+| Lifecycle events (`events.Android.*`) | ✅ |
+| Haptics, info perangkat, toast | ✅ API runtime `Android.*` |
+| Geometri window, menu, system tray | No-op disengaja |
+| Beberapa window | Hanya window pertama yang ditampilkan |
+
+## Catatan porting
+
+- Kode desktop dikompilasi tanpa perubahan di bawah `GOOS=android`;
+  panggilan geometry/menu/tray menjadi no-op karena aplikasi Android fullscreen.
+- `android` **mengimplikasikan build tag `linux`** (Android adalah kernel Linux):
+  file khusus desktop-Linux membutuhkan `//go:build linux && !android`, dan saat
+  runtime `runtime.GOOS` adalah `"android"`.
+- Ganti dialog save-file dan choose-directory dengan tulis ke sandbox aplikasi
+  plus intent share flow. Dialog open-file bekerja dan mengimpor
+  dokumen yang dipilih sebagai salinan direktori cache, sehingga Anda mendapat path filesystem
+  nyata.
+- Aplikasi nyata selalu di-build dengan `CGO_ENABLED=1` dan NDK; path non-cgo
+  ada hanya agar tooling seperti `wails3 generate bindings` dapat memuat
+  paket.
+- Desain frontend secara responsif; work area `Screens` mengecualikan
+  status bar dan navigation bar.

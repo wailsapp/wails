@@ -17,13 +17,17 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add experimental Wake documentation with sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5613) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix crash on Windows when `WM_ERASEBKGND` paints a solid background during a minimise/restore transition where `GetClientRect` returns nil (guard reported by @sinspired in #5636)
+- Fix frontend bindings error always parses as text by @mbaklor in #5690
+- Fix Windows build failure when using the `server` build tag, caused by Windows GUI files missing the `!server` build constraint that the macOS and Linux equivalents already have (#5680)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

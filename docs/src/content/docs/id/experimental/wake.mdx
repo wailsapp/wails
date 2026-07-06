@@ -1,0 +1,171 @@
+---
+title: Wake
+description: Build runner alternatif yang mengenal Wails secara eksperimental yang menjalankan Taskfile Anda yang sudah ada dengan build inkremental lebih cepat, output terstruktur, dan eksekusi paralel secara default.
+sidebar:
+    order: 1
+    badge:
+        text: Eksperimental
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Fitur Eksperimental">
+Wake bersifat opt-in di balik `WAILS_USE_WAKE=true` dan **bukan** runner default.
+Tanpa variabel tersebut, `wails3 build / package / sign / task` berperilaku persis
+seperti sebelumnya. Cakupan fitur dan perilaku mungkin berubah antar rilis.
+</Aside>
+
+Wake adalah **build runner alternatif eksperimental** untuk `wails3`. Ia membaca
+`Taskfile.yml` yang sudah dimiliki proyek Anda — sintaks task, dep, var,
+template, include, dan platform-namespace yang sama — dan menjalankannya melalui
+executor yang mengenal Wails, bukan runtime [Task](https://taskfile.dev) serba guna.
+
+Tujuannya bukan menggantikan Task. Ini adalah untuk menyediakan runner yang dibangun khusus
+untuk cara proyek Wails sebenarnya di-build, dengan semantik, output, dan default yang cocok
+dengan `wails3` CLI lainnya. **Jika Anda hanya menggunakan Wake, Taskfile Anda tidak berubah.**
+
+## Mengapa ada
+
+Baik Wake maupun runtime Task dikompilasi ke dalam `wails3` — tidak ada yang memerlukan
+instalasi binary terpisah. Perbedaannya adalah Wake **memahami domain**.
+Runner serba guna mengeksekusi langkah-langkah apa pun yang tercantum dalam Taskfile, dalam urutan
+yang diberikan. Wake mengetahui apa sebenarnya build Wails itu — bundle frontend
+disematkan ke dalam binary, binary dikemas ke dalam artefak platform-spesifik,
+ikon dan binding dibuat secara bersamaan — dan menggunakan pengetahuan itu untuk
+mengoptimalkan build dengan cara yang tidak bisa dilakukan runner generik.
+
+- **Hanya melakukan pekerjaan yang benar-benar dibutuhkan build.** Wake melacak input
+  dan output nyata dari setiap langkah sendiri. Untuk build Go, itu adalah grafik modul ditambah
+  output dari langkah-langkah yang bergantung padanya, sehingga saat tidak ada yang relevan berubah,
+  ia melewati compiler dan linker sepenuhnya alih-alih menjalankannya ulang. Runner serba guna
+  hanya dapat melewati langkah saat Taskfile telah menentukan, di muka, file mana yang harus dipantau;
+  Wake mengetahuinya dari apa yang sudah diketahuinya tentang build. Pada rebuild no-op hasilnya
+  kira-kira **~20 ms (Wake) vs ~316 ms (Task)**. Build pertama membutuhkan waktu yang sama —
+  didominasi oleh `npm install`, Vite, dan compiler Go.
+
+- **Mengetahui apa yang bisa berjalan bersamaan.** Karena Wake memahami langkah mana yang independen,
+  ia menjalankannya secara paralel secara default dan baris verdict melaporkan speedup yang diperoleh.
+  Nonaktifkan dengan `WAKE_SERIAL=true` saat output yang saling silang dari langkah sibling
+  akan mengacaukan investigasi.
+
+- **Output terstruktur dikontrol oleh wails3.** Wake merender melalui reporter `wails3` sendiri:
+  satu baris per langkah yang direncanakan, status live, rincian fase berwarna di akhir, dan
+  tautan `file:line` yang dapat diklik di dalam panel kegagalan. `NO_COLOR` dan lingkungan
+  non-TTY (log CI) terdegradasi dengan bersih.
+
+- **Bawaan, sehingga dapat berkembang bersama Wails.** Karena Wake adalah bagian dari `wails3`
+  bukan alat pihak ketiga, kemampuan build baru dapat ditambahkan langsung — tidak perlu menunggu
+  proyek terpisah untuk mengimplementasikannya. Hal itu juga membuka kemungkinan menjalankan skrip
+  dan tooling lintas platform secara native di mana Taskfile saat ini melakukan shell out ke binary
+  `wails3` (menelurkan proses per panggilan). Melipat pekerjaan itu in-process memangkas overhead
+  dan berarti lebih banyak speedup yang akan datang.
+
+## Mengaktifkan Wake
+
+Wake sepenuhnya dibatasi oleh variabel lingkungan `WAILS_USE_WAKE=true`.
+Tanpa variabel tersebut (atau diatur ke selain `true`), setiap perintah `wails3`
+menggunakan runtime Task yang disematkan persis seperti sebelumnya.
+
+```bash
+# Default: runtime Task, tanpa keterlibatan Wake
+wails3 build
+
+# Opt in: Wake menjalankan build / package / sign / task <name>
+WAILS_USE_WAKE=true wails3 build
+WAILS_USE_WAKE=true wails3 package
+WAILS_USE_WAKE=true wails3 task <some-task-name>
+```
+
+Flag ini mencakup `wails3 build`, `wails3 package`, `wails3 sign`, dan
+`wails3 task <name>`. `wails3 dev` **belum** terpengaruh — dev watcher
+masih menggunakan pipeline-nya sendiri.
+
+<Aside type="tip" title="Mengaktifkan Wake aman">
+Jika Wake menemukan fitur Taskfile yang tidak diimplementasikannya, ia menyerahkan seluruh
+proses ke runtime Task yang disematkan di dalam proses — tidak ada binary `task` eksternal
+yang perlu diinstal. Dalam kasus terburuk, Anda mendapatkan persis perilaku yang Anda miliki tanpa flag.
+</Aside>
+
+## Override lokal berlapis
+
+Wake mendukung **Taskfile dasar ditambah override lokal**. Letakkan file di samping
+`Taskfile.yml` Anda dan definisinya akan diutamakan:
+
+| File                                | Tujuan                         | Prioritas |
+| ----------------------------------- | ------------------------------ | --------- |
+| `Taskfile.yml`                      | dasar, di-commit               | terendah  |
+| `Taskfile.override.yml` / `.yaml`   | override tim yang di-commit    | menengah  |
+| `Taskfile.local.yml` / `.yaml`      | personal, biasanya diabaikan git | tertinggi |
+
+**Semantik merge (lokal menang):**
+
+- Task dengan **nama yang sama** menggantikan task dasar. Field daftar (`cmds`,
+  `deps`, `sources`, `generates`, `platforms`, `status`, `preconditions`,
+  `aliases`) **menggantikan** dasar saat override menyediakannya; field yang tidak
+  disediakan override dipertahankan dari dasar.
+- `env` dan `vars` **merge per kunci**, dengan override menang saat terjadi tabrakan.
+- Task yang **hanya** ada di file override **ditambahkan**.
+
+Misalnya, jika `Taskfile.yml` yang di-commit di-build dengan flag dev tetapi mesin Anda
+seharusnya selalu build produksi:
+
+```yaml
+# Taskfile.local.yml (diabaikan git, milik Anda)
+tasks:
+  build:
+    cmds:
+      - go build -tags production -o bin/app .
+  smoke:
+    cmds:
+      - ./bin/app --selftest
+```
+
+Sekarang `build` menjalankan perintah produksi Anda dan `smoke` tersedia, tanpa
+perubahan pada Taskfile yang di-commit.
+
+<Aside type="note" title="Model kepercayaan">
+File override ditemukan secara otomatis dan diterapkan tanpa prompt. Ini tidak memberikan
+kemampuan baru — Taskfile sudah menjalankan perintah shell arbitrer, jadi override
+tidak dapat melakukan apa pun yang tidak bisa dilakukan dengan mengedit `Taskfile.yml`.
+`Taskfile.override.*` yang di-commit muncul dalam diff PR; `Taskfile.local.*` dibuat
+di mesin Anda sendiri. Override yang salah bentuk membatalkan proses daripada
+dilewati secara diam-diam. Atur `WAILS_NO_OVERRIDES=true` untuk melewati penemuan
+override sepenuhnya untuk build CI yang deterministik.
+</Aside>
+
+## Fallback otomatis
+
+Jika Wake menemukan fitur Taskfile yang tidak diimplementasikannya, ia menyerahkan seluruh proses
+ke runtime Task yang disematkan. Berikut yang saat ini memicu fallback tersebut:
+
+- `dotenv` di level taskfile
+- mode `output` selain `interleaved`
+- blok `requires`
+- `interval` (level taskfile atau task)
+- mode `run` selain `always`
+- `short` dalam task
+- `defer` dalam task
+
+## Variabel lingkungan
+
+| Variabel             | Efek                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `WAILS_USE_WAKE`     | `true` mengaktifkan Wake untuk verb `wails3` yang dapat dirutekan; selain itu menggunakan runtime Task |
+| `WAILS_NO_OVERRIDES` | `true` melewati penemuan `Taskfile.local.*` / `.override.*` (build deterministik)       |
+| `WAKE_VERBOSE`       | Stream stdout/stderr subprocess secara live alih-alih menangkapnya untuk tampilan hanya saat gagal |
+| `WAKE_SILENT`        | Sembunyikan output task sepenuhnya                                                       |
+| `WAKE_SERIAL`        | `true` menonaktifkan fanout `deps:` paralel (paralel adalah default)                    |
+| `WAKE_FORCE`         | `true` melewati setiap cache untuk rebuild bersih yang sesungguhnya                     |
+| `WAKE_DEBUG`         | Catat internal resolver (DAG, deps, referensi var, perutean exec)                       |
+| `WAKE_NOTICE`        | `off` untuk menonaktifkan pemberitahuan "wake (experimental)" per-run                  |
+
+Cache build berada di `.wake/cache.json` (Task menggunakan `.task/`).
+
+## Umpan balik
+
+Wake adalah eksperimen, dan umpan balik Anda menentukan arahnya. Jika Anda mencobanya,
+kami ingin mendengar apakah lebih cepat, lebih jelas, dan apakah ada yang rusak —
+laporan yang paling berguna mengatakan apa yang Anda jalankan, apa yang Anda harapkan, dan apa yang
+sebenarnya terjadi. Ceritakan kepada kami di
+[diskusi umpan balik Wake](https://github.com/wailsapp/wails/discussions/5679).

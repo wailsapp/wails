@@ -241,6 +241,7 @@ ios:WebViewDidStartNavigation
 ios:WebViewDidFinishNavigation
 ios:WebViewDidFailNavigation
 ios:WebViewDecidePolicyForNavigationAction!
+mac:WebViewWebContentProcessDidTerminate!
 android:ActivityCreated
 android:ActivityStarted
 android:ActivityResumed

@@ -5,10 +5,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as time$0 from "../../../../../../../../time/models.js";
-
 /**
  * AllTypes holds a field for every fundamental Go-to-TS type mapping.
  */
@@ -52,7 +48,7 @@ export class AllTypes {
     /**
      * maps to any
      */
-    "Time": time$0.Time;
+    "Time": string;
     "Err": any;
 
     /** Creates a new AllTypes instance. */
@@ -139,7 +135,7 @@ export class AllTypes {
             this["GenericType"] = (new GenericType());
         }
         if (!("Time" in $$source)) {
-            this["Time"] = null;
+            this["Time"] = "0001-01-01T00:00:00.000Z";
         }
         if (!("Err" in $$source)) {
             this["Err"] = null;

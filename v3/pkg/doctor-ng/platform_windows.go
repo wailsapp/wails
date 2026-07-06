@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/lo"
-	"github.com/wailsapp/wails/webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 )
 
 type windowsPackageManager int
