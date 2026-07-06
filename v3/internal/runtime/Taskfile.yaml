@@ -28,12 +28,12 @@ tasks:
   build:debug:
     internal: true
     cmds:
-      - npx esbuild@0.28.1 desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
+      - desktop/@wailsio/runtime/node_modules/.bin/esbuild desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
 
   build:production:
     internal: true
     cmds:
-      - npx esbuild@0.28.1 desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
+      - desktop/@wailsio/runtime/node_modules/.bin/esbuild desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
 
   build:docs:
     internal: true
