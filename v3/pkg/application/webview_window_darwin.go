@@ -50,31 +50,23 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[window setDelegate:delegate];
 	delegate.windowId = id;
 
-	// Add NSView to window
-	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	// Add NSView to window. Frameless windows use WailsFramelessContentView,
+	// which adopts the macOS 27 container-concentric corner configuration so
+	// the corners track the system window radius on 27+.
+	NSView* view;
+	if( frameless ) {
+		view = [[WailsFramelessContentView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	} else {
+		view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	}
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	if( frameless ) {
 		[view setWantsLayer:YES];
-		// macOS 27 tightened the default window corner radius and added
-		// NSViewCornerConfiguration; containerConcentric keeps the content
-		// corners matched to whatever the system uses. The classes/selectors
-		// are absent on macOS <= 26, where we keep the historic 8.0 radius.
-		BOOL cornerConfigApplied = NO;
-		Class cornerConfigClass = NSClassFromString(@"NSViewCornerConfiguration");
-		if (cornerConfigClass
-			&& [view respondsToSelector:@selector(setCornerConfiguration:)]
-			&& [cornerConfigClass respondsToSelector:@selector(containerConcentricConfiguration)]) {
-			NSObject* cornerConfig = [cornerConfigClass performSelector:@selector(containerConcentricConfiguration)];
-			if (cornerConfig) {
-				[view setValue:cornerConfig forKey:@"cornerConfiguration"];
-				cornerConfigApplied = YES;
-			}
-		}
-		if (!cornerConfigApplied) {
-			view.layer.cornerRadius = 8.0;
-		}
+		// The pre-27 look, and the starting value on 27 until the system
+		// pushes the resolved concentric radii.
+		view.layer.cornerRadius = 8.0;
 	}
 	[window setContentView:view];
 

@@ -42,6 +42,15 @@
 @interface WailsWindowMouseGestureObserver : NSGestureRecognizer
 @end
 
+// Content view for frameless windows. On macOS 27 the system resolves corner
+// radii through the view's cornerConfiguration; this view returns a
+// container-concentric configuration so its corners track the window's system
+// radius, and applies the resolved radii to its backing layer. On macOS <= 26
+// none of the corner-configuration machinery is invoked and windowNew's
+// hardcoded radius stands.
+@interface WailsFramelessContentView : NSView
+@end
+
 void windowSetScreen(void* window, void* screen, int yOffset);
 
 // Liquid Glass support functions

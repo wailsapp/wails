@@ -250,6 +250,57 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 @end
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 270000
+// Compiled against a pre-27 SDK: declare the macOS 27 corner-configuration
+// selectors so the overrides below compile. They are only invoked on 27+.
+@interface NSView (WailsCornerConfigurationCompat)
+- (id)effectiveCornerRadii;
+- (void)viewDidChangeEffectiveCornerRadii;
+@end
+#endif
+
+@implementation WailsFramelessContentView
+// Called by AppKit on macOS 27+ to obtain the view's corner style. Built
+// dynamically so this file still compiles against older SDKs.
+- (id)cornerConfiguration {
+    Class configClass = NSClassFromString(@"NSViewCornerConfiguration");
+    Class radiusClass = NSClassFromString(@"NSViewCornerRadius");
+    if (configClass && radiusClass
+        && [radiusClass respondsToSelector:@selector(containerConcentricRadius)]
+        && [configClass respondsToSelector:@selector(configurationWithRadius:)]) {
+        id radius = [radiusClass performSelector:@selector(containerConcentricRadius)];
+        if (radius) {
+            return [configClass performSelector:@selector(configurationWithRadius:) withObject:radius];
+        }
+    }
+    return nil;
+}
+- (void)viewDidChangeEffectiveCornerRadii {
+    if ([NSView instancesRespondToSelector:@selector(viewDidChangeEffectiveCornerRadii)]) {
+        [super viewDidChangeEffectiveCornerRadii];
+    }
+    // Apply the system-resolved radius to the backing layer, falling back to
+    // the historic pre-27 look if the concentric radius resolves to nothing
+    // (a borderless window may give the container no shape to match).
+    CGFloat radius = 8.0;
+    if ([self respondsToSelector:@selector(effectiveCornerRadii)]) {
+        id radii = [self effectiveCornerRadii];
+        if (radii) {
+            CGFloat topLeft = [[radii valueForKey:@"topLeft"] doubleValue];
+            CGFloat topRight = [[radii valueForKey:@"topRight"] doubleValue];
+            CGFloat bottomLeft = [[radii valueForKey:@"bottomLeft"] doubleValue];
+            CGFloat bottomRight = [[radii valueForKey:@"bottomRight"] doubleValue];
+            CGFloat resolved = MAX(MAX(topLeft, topRight), MAX(bottomLeft, bottomRight));
+            if (resolved > 0) {
+                radius = resolved;
+            }
+        }
+    }
+    [self setWantsLayer:YES];
+    self.layer.cornerRadius = radius;
+}
+@end
+
 @implementation WailsWindowMouseGestureObserver
 - (void)mouseDown:(NSEvent *)event {
     [super mouseDown:event];
