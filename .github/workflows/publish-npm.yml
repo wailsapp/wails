@@ -3,6 +3,9 @@ on:
     branches: ['master']
     paths:
       - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      # Self-heal: if bundle bytes ever change on master without a matching
+      # source change, this rebuild overwrites them with source-derived output.
+      - 'v3/internal/assetserver/bundledassets/**'
       - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
@@ -43,6 +46,7 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/compiled/main.js
             v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
             v3/internal/runtime/desktop/@wailsio/runtime/src/**
+            v3/internal/assetserver/bundledassets/**
             v3/pkg/events/events.txt
             v3/tasks/events/**
 
