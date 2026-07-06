@@ -6,7 +6,7 @@
 **Status**: Implemented  
 **Author**: Lea Anthony  
 **Created**: 2024-05-20  
-**Discussion**: [#3508](https://github.com/wailsapp/wails/pull/3508)  
+**Proposal**: [#3508](https://github.com/wailsapp/wails/pull/3508)  
 **Implementor**: Lea Anthony
 
 ## Summary

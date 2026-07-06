@@ -18,13 +18,13 @@ Not every change needs a proposal. As a rule of thumb:
 - **WEP required**: new public API, changes to existing API behaviour, breaking changes, new cross-platform functionality, or anything involving significant platform-specific work.
 - **No WEP needed**: bug fixes, documentation, small additive options, internal refactoring. Use the standard PR process.
 
-If you are unsure, start a discussion in the [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) category and ask.
+If you are unsure, ask in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) category on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf).
 
 ## Submission of Proposal
 
 ### 1. Idea Initiation
 
-- **Discuss Your Idea**: Before writing a proposal, start a discussion in the [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) category on GitHub Discussions. This is the official place to discuss proposals. It helps gauge interest, catch overlap with existing plans, and shape the idea before you invest time in writing it up.
+- **Gauge Interest (optional)**: Before writing a proposal, consider floating the idea in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) category on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf). It can catch overlap with existing plans before you invest time in a write-up.
 - **Document Your Idea**: 
   - Create a new directory: `v3/wep/proposals/<name of proposal>` with the name of your proposal. 
   - Copy the WEP template located in `v3/wep/WEP_TEMPLATE.md` into `v3/wep/proposals/<name of proposal>/proposal.md`. 
@@ -40,9 +40,9 @@ If you are unsure, start a discussion in the [Enhancement Proposals](https://git
 
 ### 3. Community Discussion
 
-- **Share Your Proposal**: Link the PR from your discussion in the [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) category (or start one if you haven't yet). Try to get support for the proposal to increase the chances of acceptance. If you are on the discord server, you are also welcome to share it in the [`#enhancement-proposals`](https://discord.gg/TA8kbQds95) channel, but GitHub Discussions is the official venue.
-- **Gather Feedback**: Refine your proposal based on community input. Feedback on the proposal text itself should be added as comments on the PR so it stays with the document; broader discussion belongs in the discussion thread.
-- **Show Support**: Agreement with the proposal should be indicated by upvoting the discussion in the Enhancement Proposals category. The more support a proposal has, the more likely it is to be accepted.
+- **Share Your Proposal**: The PR is the official place to discuss the proposal. Present it to the Wails community and try to get support for it to increase the chances of acceptance. If you are on the discord server, share it in the [`#enhancement-proposals`](https://discord.gg/TA8kbQds95) channel.
+- **Gather Feedback**: Refine your proposal based on community input. All feedback should be added as comments on the PR so the discussion stays with the document.
+- **Show Support**: Agreement with the proposal should be indicated by adding a thumbs-up reaction to the PR. The more support a proposal has, the more likely it is to be accepted.
 - **Iterate**: Make changes to the proposal based on feedback.
 - **Agree on an Implementor**: To avoid stagnant proposals, we require someone agree to implement it. This could be the proposer.
 - **Ready for Review**: Once the proposal is ready for review, change the PR status to `Ready for Review`.
@@ -91,8 +91,8 @@ Once a proposal has been accepted and an implementation plan has been decided, t
 
 ## WEP Index
 
-| WEP | Title | Status | Discussion | Implementation |
-|-----|-------|--------|------------|----------------|
+| WEP | Title | Status | Proposal | Implementation |
+|-----|-------|--------|----------|----------------|
 | [0001](proposals/0001-titlebar-buttons/proposal.md) | Customising Window Controls | Implemented | [#3508](https://github.com/wailsapp/wails/pull/3508) | [#3508](https://github.com/wailsapp/wails/pull/3508) |
 
 **Statuses**: `Draft` (under discussion), `Accepted` (approved, awaiting implementation), `Implemented` (shipped), `Rejected` (declined), `Withdrawn` (closed by the author or for inactivity).

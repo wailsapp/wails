@@ -6,7 +6,7 @@
 **Status**: Draft  
 **Author**: [Your Name]  
 **Created**: [YYYY-MM-DD]  
-**Discussion**: [link to your discussion in the Enhancement Proposals category]  
+**Discussion**: [optional link to any prior discussion of the idea]  
 **Implementor**: [who has agreed to implement this, may be the author]
 
 ## Summary

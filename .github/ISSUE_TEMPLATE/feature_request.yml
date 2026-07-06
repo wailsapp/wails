@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Before opening a feature request, please check the [Roadmap](https://github.com/wailsapp/wails/discussions/1484) to see if it has already been requested.
-        ***Please note: Enhancements should be discussed in [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) on GitHub Discussions (or on [Discord](https://discord.gg/JDdSxwjhGf)) before opening a feature request. Substantial new functionality should be submitted as a [Wails Enhancement Proposal (WEP)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md). See the [feedback guide](https://v3.wails.io/feedback/) for details.***
+        ***Please note: Enhancements should be discussed in [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf) before opening a feature request. Substantial new functionality should be submitted as a [Wails Enhancement Proposal (WEP)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md). See the [feedback guide](https://v3.wails.io/feedback/) for details.***
 
   - type: textarea
     attributes:
