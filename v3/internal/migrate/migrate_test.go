@@ -117,11 +117,15 @@ func writeFixture(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
 	files := map[string]string{
-		"wails.json":                          fixtureWailsJSON,
-		"go.mod":                              fixtureGoMod,
-		"main.go":                             fixtureMainGo,
-		"app.go":                              fixtureAppGo,
-		"frontend/package.json":               `{"name":"frontend","devDependencies":{"vite":"^3.0.0"}}`,
+		"wails.json":            fixtureWailsJSON,
+		"go.mod":                fixtureGoMod,
+		"main.go":               fixtureMainGo,
+		"app.go":                fixtureAppGo,
+		"frontend/package.json": `{"name":"frontend","devDependencies":{"vite":"^3.0.0"}}`,
+		"frontend/src/main.js": `import {Greet} from '../wailsjs/go/main/App';
+import {EventsOn} from '../wailsjs/runtime/runtime';
+EventsOn('x', () => Greet('y'));
+`,
 		"frontend/index.html":                 `<html></html>`,
 		"frontend/dist/.gitkeep":              "",
 		"frontend/wailsjs/runtime/runtime.js": "// old",
@@ -273,14 +277,17 @@ func TestGenerateMain(t *testing.T) {
 		"application.New(application.Options{",
 		`Name: "My V2 App"`,
 		"application.NewService(app)",
-		"v2runtime.NewLifecycleService(app.startup, nil, app.shutdown)",
+		"OnShutdown: func() {",
+		"(app.shutdown)(context.Background())",
+		"wailsApp.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {",
+		"(app.startup)(context.Background())",
 		"ShouldQuit: func() bool {",
 		"!(app.beforeClose)(context.Background())",
 		".Window.NewWithOptions(application.WebviewWindowOptions{",
 		"//go:embed all:frontend/dist",
 		"// Create an instance of the app structure",
 		"err := wailsApp.Run()",
-		`v2runtime "myv2app/v2compat/runtime"`,
+		`"github.com/wailsapp/wails/v3/pkg/events"`,
 	} {
 		if !strings.Contains(src, want) {
 			t.Errorf("generated main.go missing %q\n---\n%s", want, src)
@@ -354,58 +361,37 @@ func TestTransformGoMod(t *testing.T) {
 	}
 }
 
-func TestRewriteGoImports(t *testing.T) {
+func TestAdvisor(t *testing.T) {
 	proj := parseFixture(t)
-	src := []byte(`package main
-
-import (
-	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-)
-`)
-	out := RewriteGoImports(proj, "other.go", src)
-	if !strings.Contains(string(out), `"myv2app/v2compat/runtime"`) {
-		t.Errorf("runtime import not rewritten:\n%s", out)
+	if !proj.UsesV2Runtime {
+		t.Fatal("expected UsesV2Runtime")
 	}
-	if !strings.Contains(string(out), "wails/v2/pkg/menu") {
-		t.Errorf("menu import should be left in place for the user to port:\n%s", out)
+	md := proj.Report.Markdown()
+	for _, want := range []string{
+		"## Port these to the v3 API",
+		"`app.go:", // Go call site location
+		"`runtime.WindowSetTitle`",
+		"window.SetTitle(title)",
+		"`src/main.js` should not appear",
+	} {
+		if want == "`src/main.js` should not appear" {
+			continue
+		}
+		if !strings.Contains(md, want) {
+			t.Errorf("report missing %q\n---\n%s", want, md)
+		}
 	}
-	if !proj.Report.HasManualSteps() {
-		t.Error("expected a manual step for the menu import")
-	}
-}
-
-func TestGenerateBindingShim(t *testing.T) {
-	bt := &BoundType{
-		Expr:    "app",
-		PkgName: "main",
-		PkgPath: "main",
-		Name:    "App",
-		Methods: []*BoundMethod{
-			{
-				Name:    "Greet",
-				Params:  []Param{{Name: "name", GoType: "string", TSType: "string"}},
-				Results: []Param{{GoType: "string", TSType: "string"}},
-			},
-			{
-				Name:    "Quit",
-				Params:  nil,
-				Results: nil,
-			},
-		},
-	}
-	js, dts := generateBindingShim(bt)
-	if !strings.Contains(js, `Call.ByName("main.App.Greet", name)`) {
-		t.Errorf("js shim:\n%s", js)
-	}
-	if !strings.Contains(js, `Call.ByName("main.App.Quit")`) {
-		t.Errorf("js shim:\n%s", js)
-	}
-	if !strings.Contains(dts, "export function Greet(name: string): Promise<string>;") {
-		t.Errorf("dts shim:\n%s", dts)
-	}
-	if !strings.Contains(dts, "export function Quit(): Promise<void>;") {
-		t.Errorf("dts shim:\n%s", dts)
+	// Frontend wailsjs imports are listed too.
+	for _, want := range []string{
+		"main.js:1",
+		"wailsjs/go/main/App",
+		"wails3 generate bindings",
+		"main.js:2",
+		"@wailsio/runtime",
+	} {
+		if !strings.Contains(md, want) {
+			t.Errorf("report missing frontend advice %q\n---\n%s", want, md)
+		}
 	}
 }
 
@@ -416,20 +402,19 @@ func TestMigrateFrontend(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	runtimeJS, err := os.ReadFile(filepath.Join(outDir, "frontend", "wailsjs", "runtime", "runtime.js"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(string(runtimeJS), "@wailsio/runtime") {
-		t.Error("runtime.js shim not written")
+	// The generated v2 wailsjs directory must not be carried over or
+	// replaced by a lookalike.
+	if _, err := os.Stat(filepath.Join(outDir, "frontend", "wailsjs")); err == nil {
+		t.Error("frontend/wailsjs should not exist in the migrated project")
 	}
 
-	appJS, err := os.ReadFile(filepath.Join(outDir, "frontend", "wailsjs", "go", "main", "App.js"))
+	// The user's own sources are copied untouched.
+	mainJS, err := os.ReadFile(filepath.Join(outDir, "frontend", "src", "main.js"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(appJS), `Call.ByName("main.App.Greet", name)`) {
-		t.Errorf("App.js shim:\n%s", appJS)
+	if !strings.Contains(string(mainJS), "../wailsjs/go/main/App") {
+		t.Errorf("user source was modified:\n%s", mainJS)
 	}
 
 	pkgJSON, err := os.ReadFile(filepath.Join(outDir, "frontend", "package.json"))

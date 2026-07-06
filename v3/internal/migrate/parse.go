@@ -127,6 +127,12 @@ func ParseV2Project(dir string) (*V2Project, error) {
 		}
 	}
 
+	// Enumerate every v2 API call site with its v3 replacement.
+	adviseGoRuntimeCalls(fset, files, proj)
+	if err := adviseFrontendImports(proj); err != nil {
+		return nil, err
+	}
+
 	return proj, nil
 }
 

@@ -11,10 +11,9 @@ import (
 	"go/token"
 )
 
-// V2RuntimeImport is the Wails v2 runtime package rewritten by the migrator.
-// It is replaced with the project-local compatibility bridge (see
-// CompatRuntimeImport and WriteCompatBridge); the generated package is also
-// named "runtime", so call sites compile unchanged.
+// V2RuntimeImport is the Wails v2 runtime package. Call sites into it are
+// not rewritten: they are enumerated in the migration report with their v3
+// replacements, and the compiler flags them until the user ports them.
 const V2RuntimeImport = "github.com/wailsapp/wails/v2/pkg/runtime"
 
 // V2Project is everything the migrator learned about the source project.
@@ -36,7 +35,8 @@ type V2Project struct {
 	GoFiles []string
 
 	// UsesV2Runtime is true when any project file imports the v2 runtime
-	// package (the migrated project then needs the compatibility bridge).
+	// package (the migrated project will not compile until those call sites
+	// are ported; see the report's call-site list).
 	UsesV2Runtime bool
 
 	// Report accumulates human-readable notes about everything that needs

@@ -9,9 +9,10 @@ import (
 // Report collects everything the migrator did (or could not do) so the user
 // gets a single MIGRATION.md summarising the state of the new project.
 type Report struct {
-	mapped []string          // options that were migrated automatically
-	manual map[string]string // v2 option/feature -> what the user must do
-	notes  []string          // informational notes
+	mapped    []string          // options that were migrated automatically
+	manual    map[string]string // v2 option/feature -> what the user must do
+	notes     []string          // informational notes
+	callSites []string          // v2 API call sites the user must port
 }
 
 func NewReport() *Report {
@@ -29,6 +30,12 @@ func (r *Report) Manual(what, instructions string) {
 	r.manual[what] = instructions
 }
 
+// CallSite records a v2 API call site that must be ported to v3, with its
+// replacement.
+func (r *Report) CallSite(location, v2Call, advice string) {
+	r.callSites = append(r.callSites, fmt.Sprintf("| `%s` | %s | %s |", location, v2Call, advice))
+}
+
 // Note records an informational message.
 func (r *Report) Note(note string) {
 	r.notes = append(r.notes, note)
@@ -36,7 +43,7 @@ func (r *Report) Note(note string) {
 
 // HasManualSteps reports whether any manual step was recorded.
 func (r *Report) HasManualSteps() bool {
-	return len(r.manual) > 0
+	return len(r.manual) > 0 || len(r.callSites) > 0
 }
 
 // Markdown renders the report as the MIGRATION.md contents.
@@ -52,12 +59,28 @@ func (r *Report) Markdown() string {
 	sb.WriteString("> details. Pull requests are very welcome.\n\n")
 	sb.WriteString("## Next steps\n\n")
 	sb.WriteString("1. Run `wails3 doctor` to check your environment.\n")
-	sb.WriteString("2. Run `wails3 dev` to build and run the migrated app.\n")
-	sb.WriteString("3. Work through the *Manual steps* below, if any.\n")
-	sb.WriteString("4. Migrate incrementally from the generated `v2compat/runtime` bridge in this\n")
-	sb.WriteString("   project to the v3 API. Every bridge function documents its v3 replacement;\n")
-	sb.WriteString("   delete functions as you go and remove the package when nothing imports it.\n")
+	sb.WriteString("2. Port the call sites listed below to the v3 API. The compiler will point at\n")
+	sb.WriteString("   them: the project intentionally does not build until they are ported.\n")
+	sb.WriteString("   Do not run `go mod tidy` before this is done - it would re-add the v2\n")
+	sb.WriteString("   dependency and make the old calls compile, but they cannot work inside a\n")
+	sb.WriteString("   v3 application and will fail at runtime.\n")
+	sb.WriteString("3. Run `go mod tidy`, then `wails3 generate bindings` for the frontend bindings.\n")
+	sb.WriteString("4. Run `wails3 dev` to build and run the migrated app.\n")
+	sb.WriteString("5. Work through the *Manual steps* below, if any.\n")
 	sb.WriteString("   See https://v3.wails.io/migration/v2-to-v3/ for the full guide.\n\n")
+
+	if len(r.callSites) > 0 {
+		sb.WriteString("## Port these to the v3 API\n\n")
+		sb.WriteString("In v3 there is no context-based runtime package: you call methods on the\n")
+		sb.WriteString("application (`application.Get()` from anywhere) and on window objects.\n")
+		sb.WriteString("The migrator does not rewrite these call sites for you - a half-migrated\n")
+		sb.WriteString("file is worse than a clear list - so each one is enumerated here:\n\n")
+		sb.WriteString("| Location | v2 API | v3 replacement |\n|---|---|---|\n")
+		for _, cs := range r.callSites {
+			sb.WriteString(cs + "\n")
+		}
+		sb.WriteString("\n")
+	}
 
 	if len(r.manual) > 0 {
 		sb.WriteString("## Manual steps\n\n")
