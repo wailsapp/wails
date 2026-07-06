@@ -1,0 +1,95 @@
+# Manual Builds
+
+The Wails CLI does a lot of heavy lifting for the project, but sometimes it's desirable to manually build your project. This document will discuss the different operations the CLI does and how this may be achieved in different ways.
+
+## Build Process
+
+When either `wails build` or `wails dev` are used, the Wails CLI performs a common build process:
+
+    - Install frontend dependencies
+    - Build frontend project
+    - Generate build assets
+    - Compile application
+    - [optional] Compress application
+
+### Install frontend dependencies
+
+#### CLI Steps
+
+- If the `-s` flag is given, this step is skipped
+- Checks `wails.json` to see if there is an install command in the key `frontend:install`
+- If there isn't, it skips this step
+- If there is, it checks if `package.json` exists in the frontend directory. If it doesn't exist, it skips this step
+- An MD5 sum is generated from the `package.json` file contents
+- It checks for the existence of `package.json.md5` and if it exists, will compare the contents of it (an MD5 sum) with the one generated to see if the contents have changed. If they are the same, this step is skipped
+- If `package.json.md5` does not exist, it creates it using the generated MD5 sum
+- If a build is now required, or `node_modules` does not exist, or the `-f` flag is given, the install command is executed in the frontend directory
+
+#### Manual Steps
+
+This step could be done from the command line or a script with `npm install`.
+
+### Build frontend project
+
+#### Wails CLI
+
+- If the `-s` flag is given, this step is skipped
+- Checks `wails.json` to see if there is a build command in the key `frontend:build`
+- If there isn't, it skips this step
+- If there is, it is executed in the frontend directory
+
+#### Manual Steps
+
+This step could be done from the command line or a script with `npm run build` or whatever the frontend build script is.
+
+### Generate assets
+
+#### Wails CLI
+
+- If `-nopackage` flag is set, this stage is skipped
+- If the `build/appicon.png` file does not exist, a default one is created
+- For Windows, see [Bundling for Windows](#windows)
+- If `build/windows/icon.ico` does not exist, it will create it from the `build/appicon.png` image.
+
+##### Windows
+
+- If `build/windows/icon.ico` does not exist, it will create it from `build/appicon.png` using icon sizes of 256, 128, 64, 48, 32 and 16. This is done using [winicon](https://github.com/leaanthony/winicon).
+- If the `build/windows/<projectname>.manifest` file does not exist, it creates it from a default version.
+- Compiles the application as a production build (above)
+- Uses [winres](https://github.com/tc-hib/winres) to bundle the icon and manifest into a `.syso` file ready for linking.
+
+#### Manual Steps
+
+- Create `icon.ico` using the [winicon](https://github.com/leaanthony/winicon) CLI tool (or any other tool).
+- Create / Update a `.manifest` file for your application
+- Use the [winres CLI](https://github.com/tc-hib/go-winres) to generate a `.syso` file.
+
+### Compile application
+
+#### Wails CLI
+
+- If the `-clean` flag is provided, the `build` directory is deleted and recreated
+- For `wails dev`, the following default Go flags are used: `-tags dev -gcflags "all=-N -l"`
+- For `wails build`, the following default Go flags are used: `-tags desktop,production -ldflags "-w -s"`
+  - On Windows, `-ldflags "-w -h -H windowsgui"`
+- Additional tags passed to the CLI using `-tags` are added to the defaults
+- Additional ldflags passed to the CLI using `-ldflags` are added to the defaults
+- The `-o` flag is passed through
+- The Go compiler specified by `-compiler` will be used for compilation
+
+#### Manual steps
+
+- For dev build, the minimum command would be: `go build -tags dev -gcflags "all=-N -l"`
+- For production build, the minimum command would be: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
+- Ensure that you compile in the same directory as the `.syso` file
+
+### Compress application
+
+#### Wails CLI
+
+- If the `-upx` flag has been given, the `upx` program will be run to compress the application with the default settings
+- If `-upxflags` is also passed, these flags are used instead of the default ones
+
+#### Manual steps
+
+- Run `upx [flags]` manually to compress the application.
