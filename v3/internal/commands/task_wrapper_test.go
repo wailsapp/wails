@@ -14,6 +14,13 @@ func TestWrapTask(t *testing.T) {
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH
 
+	// foreignOS is a GOOS guaranteed to differ from the host, so cross-compile
+	// cases are exercised regardless of which platform the test runs on.
+	foreignOS := "windows"
+	if currentOS == "windows" {
+		foreignOS = "linux"
+	}
+
 	tests := []struct {
 		name             string
 		command          string
@@ -25,70 +32,88 @@ func TestWrapTask(t *testing.T) {
 		expectedOsArgs   []string
 	}{
 		{
-			name:             "Build with parameters uses current platform",
+			// Host-OS build runs the root Taskfile's `build` task (not the
+			// platform-prefixed one) so root customisations are honoured. The
+			// root task dispatches via the GOOS variable we pass through (#5615).
+			name:             "Host build runs root build task",
 			command:          "build",
 			otherArgs:        []string{"CONFIG=debug"},
-			expectedTaskName: currentOS + ":build",
-			expectedArgs:     []string{"CONFIG=debug", "ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", currentOS + ":build", "CONFIG=debug", "ARCH=" + currentArch},
+			expectedTaskName: "build",
+			expectedArgs:     []string{"CONFIG=debug", "GOOS=" + currentOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "build", "CONFIG=debug", "GOOS=" + currentOS, "ARCH=" + currentArch},
 		},
 		{
-			name:             "Package with parameters uses current platform",
+			name:             "Host package runs root package task",
 			command:          "package",
 			otherArgs:        []string{"VERSION=1.0.0", "OUTPUT=app.pkg"},
-			expectedTaskName: currentOS + ":package",
-			expectedArgs:     []string{"VERSION=1.0.0", "OUTPUT=app.pkg", "ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", currentOS + ":package", "VERSION=1.0.0", "OUTPUT=app.pkg", "ARCH=" + currentArch},
+			expectedTaskName: "package",
+			expectedArgs:     []string{"VERSION=1.0.0", "OUTPUT=app.pkg", "GOOS=" + currentOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "package", "VERSION=1.0.0", "OUTPUT=app.pkg", "GOOS=" + currentOS, "ARCH=" + currentArch},
 		},
 		{
-			name:             "Build without parameters",
+			name:             "Host build without parameters runs root build task",
 			command:          "build",
 			otherArgs:        []string{},
-			expectedTaskName: currentOS + ":build",
-			expectedArgs:     []string{"ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", currentOS + ":build", "ARCH=" + currentArch},
+			expectedTaskName: "build",
+			expectedArgs:     []string{"GOOS=" + currentOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "build", "GOOS=" + currentOS, "ARCH=" + currentArch},
 		},
 		{
-			name:             "GOOS override changes task prefix",
+			// sign has no root dispatch task, so it always targets the platform.
+			name:             "Sign always targets platform task",
+			command:          "sign",
+			otherArgs:        []string{"IDENTITY=Developer ID"},
+			expectedTaskName: currentOS + ":sign",
+			expectedArgs:     []string{"IDENTITY=Developer ID", "GOOS=" + currentOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", currentOS + ":sign", "IDENTITY=Developer ID", "GOOS=" + currentOS, "ARCH=" + currentArch},
+		},
+		{
+			// Cross-OS build still runs the root `build` task; the GOOS variable
+			// carries the target so the root Taskfile dispatches to it.
+			name:             "Cross-OS GOOS override runs root build task with GOOS var",
 			command:          "build",
-			otherArgs:        []string{"GOOS=darwin", "CONFIG=release"},
-			expectedTaskName: "darwin:build",
-			expectedArgs:     []string{"CONFIG=release", "ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", "darwin:build", "CONFIG=release", "ARCH=" + currentArch},
+			otherArgs:        []string{"GOOS=" + foreignOS, "CONFIG=release"},
+			expectedTaskName: "build",
+			expectedArgs:     []string{"CONFIG=release", "GOOS=" + foreignOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "build", "CONFIG=release", "GOOS=" + foreignOS, "ARCH=" + currentArch},
 		},
 		{
-			name:             "GOARCH override changes ARCH arg",
+			// GOARCH alone (cross-arch, same OS) runs the root task; the root
+			// dispatch passes GOOS/ARCH through to the platform build.
+			name:             "GOARCH-only override runs root build task",
 			command:          "build",
 			otherArgs:        []string{"GOARCH=arm64"},
-			expectedTaskName: currentOS + ":build",
-			expectedArgs:     []string{"ARCH=arm64"},
-			expectedOsArgs:   []string{"wails3", "task", currentOS + ":build", "ARCH=arm64"},
+			expectedTaskName: "build",
+			expectedArgs:     []string{"GOOS=" + currentOS, "ARCH=arm64"},
+			expectedOsArgs:   []string{"wails3", "task", "build", "GOOS=" + currentOS, "ARCH=arm64"},
 		},
 		{
-			name:             "Both GOOS and GOARCH override",
+			name:             "Cross-OS GOOS and GOARCH override",
 			command:          "package",
-			otherArgs:        []string{"GOOS=windows", "GOARCH=386", "VERSION=2.0"},
-			expectedTaskName: "windows:package",
-			expectedArgs:     []string{"VERSION=2.0", "ARCH=386"},
-			expectedOsArgs:   []string{"wails3", "task", "windows:package", "VERSION=2.0", "ARCH=386"},
+			otherArgs:        []string{"GOOS=" + foreignOS, "GOARCH=386", "VERSION=2.0"},
+			expectedTaskName: "package",
+			expectedArgs:     []string{"VERSION=2.0", "GOOS=" + foreignOS, "ARCH=386"},
+			expectedOsArgs:   []string{"wails3", "task", "package", "VERSION=2.0", "GOOS=" + foreignOS, "ARCH=386"},
 		},
 		{
-			name:             "Environment GOOS is used when no arg override",
+			name:             "Environment GOOS (cross) is used when no arg override",
 			command:          "build",
 			otherArgs:        []string{"CONFIG=debug"},
-			envGOOS:          "darwin",
-			expectedTaskName: "darwin:build",
-			expectedArgs:     []string{"CONFIG=debug", "ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", "darwin:build", "CONFIG=debug", "ARCH=" + currentArch},
+			envGOOS:          foreignOS,
+			expectedTaskName: "build",
+			expectedArgs:     []string{"CONFIG=debug", "GOOS=" + foreignOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "build", "CONFIG=debug", "GOOS=" + foreignOS, "ARCH=" + currentArch},
 		},
 		{
+			// Arg GOOS takes precedence over the GOOS environment variable; the
+			// passed-through GOOS var reflects the arg value.
 			name:             "Arg GOOS overrides environment GOOS",
 			command:          "build",
-			otherArgs:        []string{"GOOS=linux"},
+			otherArgs:        []string{"GOOS=" + foreignOS},
 			envGOOS:          "darwin",
-			expectedTaskName: "linux:build",
-			expectedArgs:     []string{"ARCH=" + currentArch},
-			expectedOsArgs:   []string{"wails3", "task", "linux:build", "ARCH=" + currentArch},
+			expectedTaskName: "build",
+			expectedArgs:     []string{"GOOS=" + foreignOS, "ARCH=" + currentArch},
+			expectedOsArgs:   []string{"wails3", "task", "build", "GOOS=" + foreignOS, "ARCH=" + currentArch},
 		},
 	}
 
@@ -195,8 +220,8 @@ func TestBuildCommand(t *testing.T) {
 
 	err := Build(buildFlags, otherArgs)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"CONFIG=release", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"CONFIG=release", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestBuildCommandWithTags(t *testing.T) {
@@ -244,8 +269,8 @@ func TestBuildCommandWithTags(t *testing.T) {
 
 	err := Build(buildFlags, otherArgs)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"CONFIG=release", "EXTRA_TAGS=gtk4", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"CONFIG=release", "EXTRA_TAGS=gtk4", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestBuildCommandWithMultipleTags(t *testing.T) {
@@ -292,8 +317,8 @@ func TestBuildCommandWithMultipleTags(t *testing.T) {
 
 	err := Build(buildFlags, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,server", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,server", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestBuildCommandWithObfuscation(t *testing.T) {
@@ -342,8 +367,8 @@ func TestBuildCommandWithObfuscation(t *testing.T) {
 
 	err := Build(buildFlags, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"EXTRA_TAGS=gtk4", "OBFUSCATED=true", "GARBLE_ARGS=-literals -tiny", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"EXTRA_TAGS=gtk4", "OBFUSCATED=true", "GARBLE_ARGS=-literals -tiny", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestBuildCommandWithoutTags(t *testing.T) {
@@ -389,8 +414,8 @@ func TestBuildCommandWithoutTags(t *testing.T) {
 
 	err := Build(buildFlags, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestPackageCommand(t *testing.T) {
@@ -437,8 +462,8 @@ func TestPackageCommand(t *testing.T) {
 
 	err := Package(packageFlags, otherArgs)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":package", capturedOptions.Name)
-	assert.Equal(t, []string{"VERSION=2.0.0", "OUTPUT=myapp.dmg", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "package", capturedOptions.Name)
+	assert.Equal(t, []string{"VERSION=2.0.0", "OUTPUT=myapp.dmg", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestSignWrapperCommand(t *testing.T) {
@@ -486,5 +511,5 @@ func TestSignWrapperCommand(t *testing.T) {
 	err := SignWrapper(signFlags, otherArgs)
 	assert.NoError(t, err)
 	assert.Equal(t, currentOS+":sign", capturedOptions.Name)
-	assert.Equal(t, []string{"IDENTITY=Developer ID", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, []string{"IDENTITY=Developer ID", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }

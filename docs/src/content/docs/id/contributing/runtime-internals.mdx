@@ -1,0 +1,293 @@
+---
+title: Internal Runtime
+description: Deep-dive ke cara Wails v3 boot, berjalan, dan berkomunikasi dengan OS
+sidebar:
+  order: 3
+---
+
+**Runtime** adalah lapisan yang mengubah fungsi Go biasa menjadi
+aplikasi desktop lintas platform.  
+Dokumen ini menjelaskan bagian-bagian yang akan Anda temui saat melacak
+kode sumber.
+
+---
+
+## 1. Siklus Hidup Aplikasi
+
+| Fase | Jalur Kode | Apa yang Terjadi |
+|-------|-----------|--------------|
+| **Bootstrap** | `pkg/application/application.go:init()` | Mendaftarkan data build-time, membuat singleton `application` global. |
+| **New()** | `application.New(...)` | Memvalidasi `Options`, memutar **AssetServer**, menginisialisasi logging. |
+| **Run()** | `application.(*App).Run()` | 1. Memanggil `mainthread.X()` platform untuk memasuki UI thread OS.<br />2. Boot **runtime** (`internal/runtime`).<br />3. Blok hingga window terakhir ditutup atau `Quit()` dipanggil. |
+| **Shutdown** | `application.(*App).Quit()` | Menyiarkan event `application:shutdown`, flush log, men-tear-down window & service. |
+
+Siklus hidup secara ketat **single-entry**: Anda dapat membuat banyak window, tetapi
+objek aplikasi sendiri diinisialisasi sekali.
+
+---
+
+## 2. Manajemen Window
+
+### API Publik
+
+```go
+win := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Dashboard",
+    Width:  1280,
+    Height: 720,
+})
+win.Show()
+```
+
+> `app.Window.New()` **tidak menerima argumen**; gunakan `NewWithOptions(...)` saat Anda
+> perlu meneruskan struct `application.WebviewWindowOptions` (by value).
+
+`app.Window.New[WithOptions]()` mendelegasikan ke `pkg/application/webview_window_*.go` tempat
+implementasi spesifik platform berada:
+
+```
+pkg/application/
+├── webview_window_darwin.go    // WKWebView
+├── webview_window_linux.go     // GTK + WebKitGTK (plus linux_cgo*.go)
+└── webview_window_windows.go   // WebView2
+```
+
+Setiap file:
+
+1. Membuat webview native (WKWebView, WebKitGTK, WebView2).
+2. Mendaftarkan callback **Message Processor** (`pkg/application/messageprocessor*.go`).
+3. Memetakan event Wails (`WindowDidResize`, `WindowFocus`, `WindowFilesDropped`, …)
+   ke konstanta di `pkg/events`.
+
+`internal/runtime/` dicadangkan untuk glue build-tag kecil
+(`runtime{,_darwin,_linux,_windows,_android,_dev,_prod}.go`) dan runtime
+JS embedded di bawah `internal/runtime/desktop/`.
+
+Window aktif dilacak oleh `pkg/application/window_manager.go` /
+`webview_window.go`. `pkg/application/screenmanager.go` untuk **metadata display**
+(resolusi, skala, work area) — tidak mengelola window.
+
+---
+
+## 3. Pipeline Pemrosesan Pesan
+
+Bridge antara JavaScript dan Go diimplementasikan oleh keluarga **Message
+Processor** di `pkg/application/messageprocessor_*.go`.
+
+Alur:
+
+1. **JavaScript** memanggil `Call.ByID(<fnv-id>, ...args)` dari `/wails/runtime.js`
+   (diimplementasikan di `internal/runtime/desktop/@wailsio/runtime/src/calls.ts`)
+   — atau `Call.ByName("pkg.Struct.Method", ...args)` untuk build mode name.
+2. Helper runtime mengemas panggilan dan mendelegasikannya melalui
+   bridge native per-platform ke Go.
+3. **Go** menerima pesan di `pkg/application/messageprocessor_call.go`.
+4. Processor mencari method terikat di `pkg/application/bindings.go`
+   (hand-written, berbasis `reflect`) dan memanggilnya.
+5. Hasil atau error di-marshal kembali ke JS tempat `Promise` resolve
+   atau reject.
+
+> Envelope JSON yang tepat didefinisikan oleh helper runtime di sisi JS dan
+> oleh `messageprocessor_call.go` di sisi Go — draft lama halaman ini
+> mengutip bentuk `{"t":"c","id":"123","m":"Greet","p":[…]}`, tetapi itu tidak
+> cocok dengan implementasi saat ini. Baca kedua file bersama saat mengejar bug
+> wire-format.
+
+Processor khusus:
+
+| File | Tujuan |
+|------|---------|
+| `messageprocessor_window.go` | Aksi window (hide, maximize, …) |
+| `messageprocessor_dialog.go` | Dialog native (`OpenFile`, `MessageBox`, …) |
+| `messageprocessor_clipboard.go` | Baca/tulis clipboard |
+| `messageprocessor_events.go` | Subscribe / emit event |
+| `messageprocessor_browser.go` | Navigasi browser, devtools |
+
+Processor **stateless** – mereka menarik semua yang dibutuhkan dari
+`ApplicationContext` yang diteruskan dengan setiap pesan.
+
+---
+
+## 4. Sistem Event
+
+Event adalah string dengan namespace yang didispatch di tiga lapisan:
+
+1. **Event aplikasi**: lifecycle global (`application:ready`,
+   `application:shutdown`).
+2. **Event window**: per-window (`window:focus`, `window:resize`).
+3. **Event kustom**: didefinisikan pengguna (`chat:new-message`).
+
+Detail implementasi:
+
+* Konstanta event ada di `pkg/events/` (`defaults.go`, `known_events.go`,
+  `events.txt`). Dihasilkan oleh `v3/tasks/events/generate.go` dan diekspos
+  sebagai `events.Common.*`, `events.Mac.*`, `events.Windows.*`, `events.Linux.*`.
+  Anda dapat membangun ulang dengan `wails3 generate constants`.
+* Sisi Go (event aplikasi):
+  ```go
+  app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {})
+  ```
+* Sisi Go (event window):
+  ```go
+  window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {})
+  ```
+* Sisi Go (event kustom):
+  ```go
+  app.Event.On("chat:new-message", func(e *application.CustomEvent) {})
+  ```
+* Sisi JS:
+  ```js
+  import { Events } from "/wails/runtime.js";
+  Events.On("chat:new-message", (e) => { /* … */ });
+  ```
+
+Event aplikasi/window/kustom semua mengalir melalui
+`pkg/application/event_manager.go`. Langganan event window dibatasi ke
+window mereka, sehingga menutup window secara otomatis unregister handler-nya.
+
+---
+
+## 5. Implementasi Spesifik Platform
+
+Kompilasi kondisional menjaga API publik identik sambil menyembunyikan kerumitan OS.
+
+| Concern | Darwin | Linux | Windows |
+|---------|--------|-------|---------|
+| Main Thread | `mainthread_darwin.go` (Cgo ke Foundation) | `mainthread_linux.go` (GTK) | `mainthread_windows.go` (Win32 `AttachThreadInput`) |
+| Dialogs | `dialogs_darwin.*` (NSAlert) | `dialogs_linux.go` (GtkFileChooser) | `dialogs_windows.go` (IFileOpenDialog) |
+| Clipboard | `clipboard_darwin.go` | `clipboard_linux.go` | `clipboard_windows.go` |
+| Tray Icons | `systemtray_darwin.*` | `systemtray_linux.go` (DBus) | `systemtray_windows.go` (Shell_NotifyIcon) |
+
+Prinsip kunci:
+
+* **macOS dan Windows** menggunakan Cgo secara sparing (kebanyakan melalui `pkg/mac/` dan
+  wrapper Win32 `w32` di `pkg/w32`).
+* **Linux sangat Cgo** karena kebutuhan — `pkg/application/linux_cgo.go`
+  (~69 KB) plus `linux_cgo_gtk4.{c,go,h}` (~50 KB+) menggerakkan GTK/WebKitGTK
+  secara langsung.
+* Gunakan **build tags** (`//go:build darwin`, `//go:build linux`, …) untuk menjaga
+  file per-OS tetap mudah dibaca.
+* `internal/capabilities/` ada untuk flag kemampuan per-platform, tetapi
+  framework **tidak** mengekspor sentinel `ErrCapability` — feature gating
+  dilakukan melalui return stub spesifik platform.
+
+---
+
+## 6. Panduan File
+
+| File | Mengapa Anda Akan Menyentuhnya |
+|------|--------------------|
+| `internal/runtime/runtime_*.go` | Mengubah lapisan stub build-tag kecil (dev vs prod, glue spesifik OS). |
+| `pkg/application/webview_window_*.go` | Mengimplementasikan hint atau perilaku window baru. |
+| `pkg/application/messageprocessor*.go` | Menambahkan perintah bridge baru yang dapat dipanggil dari JS. |
+| `pkg/events/*.go` | Memperluas definisi event bawaan (lalu jalankan ulang `wails3 generate constants`). |
+| `internal/assetserver/*` | Menyesuaikan penanganan asset dev/production. |
+| `internal/runtime/desktop/@wailsio/runtime/src/*` | Mengedit runtime JS embedded (dispatch call/event, dialog, drag, …). |
+
+---
+
+## 7. Tips Debugging
+
+* Konfigurasi `Options.LogLevel` (mis. `slog.LevelDebug`) dan periksa output `Options.Logger`
+  — tidak ada variabel lingkungan `WAILS_LOG_LEVEL`.
+* Flag `wails3 dev` adalah `--config`, `--port`, `-s` (aktifkan HTTPS) dan
+  global `--no-colour`. Tidak ada flag `-verbose`.
+* Di macOS jalankan di bawah `lldb --` untuk menangkap exception Objective-C lebih awal.
+* Untuk masalah Chromium Windows, aktifkan log debug WebView2:  
+  `set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+
+---
+
+## 8. Memperluas Runtime
+
+1. Opsional: deklarasikan flag kemampuan baru di `internal/capabilities/`.
+2. Implementasikan fitur di setiap varian `pkg/application/*_{darwin,linux,windows}.go`
+   menggunakan build tags. Sediakan stub di platform yang tidak mendukungnya.
+3. Tambahkan API publik di `pkg/application` (interface + method `WebviewWindow`
+   konkret, struct options, dll.).
+4. Daftarkan method message-processor baru (`pkg/application/messageprocessor*.go`)
+   dan helper yang cocok di runtime JS jika JS perlu memanggilnya.
+5. Jika Anda menambahkan event, deklarasikan konstantanya di `pkg/events/` dan jalankan
+   `wails3 generate constants` untuk me-refresh file yang dihasilkan.
+
+Ikuti checklist ini dan Anda akan menjaga kontrak lintas platform tetap utuh.
+
+---
+
+## 9. Drag-and-Drop
+
+Drag-and-drop file menggunakan **pendekatan JavaScript-first** di semua platform. Lapisan native mencegat event drag OS, tetapi penanganan drop aktual dan interaksi DOM terjadi di JavaScript.
+
+### Alur
+
+1. Pengguna men-drag file dari OS ke window Wails
+2. Lapisan native mendeteksi drag dan memberi tahu JavaScript untuk efek hover
+3. Pengguna me-drop file
+4. Lapisan native mengirim path file + koordinat ke JavaScript
+5. JavaScript menemukan elemen target drop (`data-file-drop-target`)
+6. JavaScript mengirim path file + detail elemen ke backend Go
+7. Go memancarkan event `WindowFilesDropped` dengan konteks lengkap
+
+### Implementasi Platform
+
+| Platform | Lapisan Native | Tantangan Kunci |
+|----------|--------------|---------------|
+| **Windows** | Dukungan drag bawaan WebView2 | Koordinat dalam CSS pixel, tidak perlu konversi |
+| **macOS** | Delegate drag NSWindow | Konversi koordinat window-relative ke webview-relative |
+| **Linux** | Sinyal drag GTK3 | Harus membedakan drag file dari drag HTML5 internal |
+
+### Linux: Membedakan Jenis Drag
+
+GTK dan WebKit keduanya ingin menangani event drag. Kuncinya adalah memeriksa tipe target drag:
+
+```c
+static gboolean is_file_drag(GdkDragContext *context) {
+    GList *targets = gdk_drag_context_list_targets(context);
+    for (GList *l = targets; l != NULL; l = l->next) {
+        GdkAtom atom = GDK_POINTER_TO_ATOM(l->data);
+        gchar *name = gdk_atom_name(atom);
+        if (name && g_strcmp0(name, "text/uri-list") == 0) {
+            g_free(name);
+            return TRUE;  // External file drag
+        }
+        g_free(name);
+    }
+    return FALSE;  // Internal HTML5 drag
+}
+```
+
+Signal handler mengembalikan `FALSE` untuk drag internal (membiarkan WebKit menanganinya) dan `TRUE` untuk drag file (menanganinya sendiri).
+
+### Memblokir File Drop
+
+Ketika `EnableFileDrop` adalah `false`, kita tetap perlu mencegah browser navigasi ke file yang di-drop. Setiap platform menanganinya berbeda:
+
+- **Windows**: JavaScript memanggil `preventDefault()` pada event drag
+- **macOS**: JavaScript memanggil `preventDefault()` pada event drag  
+- **Linux**: Signal handler GTK mencegat dan menolak drag file di level native
+
+### File Kunci
+
+| File | Tujuan |
+|------|---------|
+| `pkg/application/linux_cgo.go` | Signal handler drag GTK (kode C di preamble cgo) |
+| `pkg/application/webview_window_darwin.go` | Delegate drag macOS |
+| `pkg/application/webview_window_windows.go` | Penanganan pesan WebView2 |
+| `internal/runtime/desktop/@wailsio/runtime/src/window.ts` | Penanganan drop JavaScript |
+
+### Debugging
+
+- **Linux**: Tambahkan `printf` di kode C (ingat `fflush(stdout)`)
+- **Windows**: Gunakan `globalApplication.debug()`
+- **JavaScript**: Periksa konsol browser, aktifkan mode debug
+
+Masalah umum:
+1. **Drag HTML5 internal tidak berfungsi**: Handler native mencegatnya (kembalikan `FALSE` untuk drag non-file)
+2. **Efek hover tidak muncul**: Handler JavaScript tidak dipanggil
+3. **Koordinat salah**: Periksa konversi ruang koordinat
+
+---
+
+Anda sekarang memiliki tur terpandu internal runtime. Gabungkan pengetahuan ini dengan
+peta **Tata Letak Codebase** dan docs **Asset Server** untuk menavigasi dengan percaya diri
+dan membuat kontribusi yang berdampak. Happy coding!

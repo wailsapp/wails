@@ -77,8 +77,12 @@ var (
 )
 
 var (
-	gtkSignalToMenuItem map[uint]*MenuItem
-	mainThreadId        *C.GThread
+	// gtkSignalToMenuItem is written by attachMenuHandler from whichever
+	// goroutine builds the menu and read by menuActionActivated on the GTK
+	// main thread, so it must be lock-protected.
+	gtkSignalToMenuItem     map[uint]*MenuItem
+	gtkSignalToMenuItemLock sync.RWMutex
+	mainThreadId            *C.GThread
 )
 
 var (
@@ -127,8 +131,12 @@ func isOnMainThread() bool {
 
 // implementation below
 func appName() string {
+	// The returned string is owned by GLib (it must not be modified or freed)
+	// and may be NULL if no application name has been set.
 	name := C.g_get_application_name()
-	defer C.free(unsafe.Pointer(name))
+	if name == nil {
+		return ""
+	}
 	return C.GoString(name)
 }
 
@@ -155,6 +163,11 @@ func appRun(app pointer) error {
 	defer C.free(unsafe.Pointer(signal))
 	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
+	// The GTK main loop has stopped. Tell the asset-server webview layer to stop
+	// marshalling WebKit calls onto it, so any request still being completed on a
+	// worker goroutine runs inline instead of blocking on a loop that is gone.
+	// See #5631.
+	webview.DisableMainThreadDispatch()
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
 
@@ -201,14 +214,12 @@ func (a *linuxApp) getCurrentWindowID() uint {
 
 func (a *linuxApp) getWindows() []pointer {
 	result := []pointer{}
+	// gtk_application_get_windows returns NULL when there are no windows.
 	windows := C.gtk_application_get_windows((*C.GtkApplication)(a.application))
-	for {
+	for ; windows != nil; windows = windows.next {
 		result = append(result, pointer(windows.data))
-		windows = windows.next
-		if windows == nil {
-			return result
-		}
 	}
+	return result
 }
 
 func (a *linuxApp) hideAllWindows() {
@@ -249,21 +260,36 @@ func clipboardSet(text string) {
 
 // Menu - GTK4 uses GMenu/GAction instead of GtkMenu
 
+// menuItemActions is written during menu construction (any goroutine) and read
+// from API goroutines (setChecked/setDisabled/accelerators), so it shares a
+// lock with its counter.
 var menuItemActionCounter uint32 = 0
 var menuItemActions = make(map[uint]string)
+var menuItemActionsLock sync.RWMutex
 var menuItemIds = make(map[pointer]uint)
 var menuItemIdsMutex sync.RWMutex
 
 func generateActionName(itemId uint) string {
+	menuItemActionsLock.Lock()
+	defer menuItemActionsLock.Unlock()
 	menuItemActionCounter++
 	name := fmt.Sprintf("action_%d", menuItemActionCounter)
 	menuItemActions[itemId] = name
 	return name
 }
 
+func lookupActionName(itemId uint) (string, bool) {
+	menuItemActionsLock.RLock()
+	defer menuItemActionsLock.RUnlock()
+	name, ok := menuItemActions[itemId]
+	return name, ok
+}
+
 //export menuActionActivated
 func menuActionActivated(id C.guint) {
+	gtkSignalToMenuItemLock.RLock()
 	item, ok := gtkSignalToMenuItem[uint(id)]
+	gtkSignalToMenuItemLock.RUnlock()
 	if !ok {
 		return
 	}
@@ -398,7 +424,9 @@ func handleClick(idPtr unsafe.Pointer) {
 }
 
 func attachMenuHandler(item *MenuItem) uint {
+	gtkSignalToMenuItemLock.Lock()
 	gtkSignalToMenuItem[item.id] = item
+	gtkSignalToMenuItemLock.Unlock()
 	return item.id
 }
 
@@ -412,7 +440,7 @@ func menuItemChecked(widget pointer) bool {
 	if !exists {
 		return false
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return false
 	}
@@ -498,7 +526,7 @@ func menuItemSetChecked(widget pointer, checked bool) {
 	if !exists {
 		return
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -521,7 +549,7 @@ func menuItemSetDisabled(widget pointer, disabled bool) {
 	if !exists {
 		return
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -709,7 +737,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	}
 
 	// Look up the action name for this menu item
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -1777,15 +1805,26 @@ func fileDialogCallback(requestID C.uint, files **C.char, count C.int, cancelled
 		return
 	}
 
+	// Copy the C strings before this callback returns: the caller frees them.
+	var paths []string
 	if count > 0 && files != nil {
 		slice := unsafe.Slice(files, int(count))
 		for _, cstr := range slice {
 			if cstr != nil {
-				ch <- C.GoString(cstr)
+				paths = append(paths, C.GoString(cstr))
 			}
 		}
 	}
-	close(ch)
+
+	// Deliver from a goroutine: this callback runs on the GTK main thread and
+	// the result channel has a fixed buffer, so sending inline would block the
+	// main loop (deadlocking the app) once a selection exceeds the buffer.
+	go func() {
+		for _, path := range paths {
+			ch <- path
+		}
+		close(ch)
+	}()
 }
 
 //export alertDialogCallback

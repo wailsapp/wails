@@ -20,11 +20,11 @@ import (
 	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
-	"github.com/wailsapp/wails/webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/webview2/pkg/edge"
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -55,6 +55,13 @@ type windowsWebviewWindow struct {
 	// Webview
 	chromium                   *edge.Chromium
 	webviewNavigationCompleted bool
+	// monitorScaleDetectionOn records that ShouldDetectMonitorScaleChanges
+	// was successfully re-enabled on the controller, making WebView2 the
+	// sole owner of the rasterization scale. While set, the host-side
+	// resyncWebviewRasterizationScale is a no-op — two writers racing on
+	// the scale during a mixed-DPI monitor cross is exactly the transient
+	// the re-enable exists to avoid. Main-thread only.
+	monitorScaleDetectionOn bool
 
 	// Window visibility management - robust fallback for issue #2861
 	showRequested     bool        // Track if show() was called before navigation completed
@@ -101,6 +108,9 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	menu.Update()
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
@@ -414,7 +424,7 @@ func (w *windowsWebviewWindow) run() {
 	var appMenu w32.HMENU
 
 	// Process Menu
-	if !options.Frameless {
+	if !options.Frameless && !options.Windows.DisableMenu {
 		userMenu := w.parent.options.Windows.Menu
 		if userMenu != nil {
 			// Explicit window menu takes priority
@@ -678,12 +688,30 @@ func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, window
 	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Calculated offset", "offsetX", offsetX, "offsetY", offsetY)
 
 	// Convert window-relative coordinates to webview-relative coordinates
-	webviewX := windowX - offsetX
-	webviewY := windowY - offsetY
+	webviewPhysicalX := windowX - offsetX
+	webviewPhysicalY := windowY - offsetY
 
-	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Webview coordinates before DPI Scaling", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
 
-	return webviewX, webviewY
+	// Get DPI for this window
+	dpi := w32.GetDpiForWindow(w.hwnd)
+	if dpi == 0 {
+		globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get dpi, returning physical coordinates", "webviewPhysicalX", webviewPhysicalX, "webviewPhysicalY", webviewPhysicalY)
+		return webviewPhysicalX, webviewPhysicalY
+	}
+
+	// Convert to scale factor: 96 DPI == 1.0 (100%)
+	scaleFactor := float64(dpi) / 96.0
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: DPI info", "dpi", dpi, "scaleFactor", scaleFactor)
+
+	// Convert physical pixels -> logical/CSS pixels by dividing by the scale factor
+	// Use rounding to avoid truncation artefacts
+	webviewLogicalX := int(math.Round(float64(webviewPhysicalX) / scaleFactor))
+	webviewLogicalY := int(math.Round(float64(webviewPhysicalY) / scaleFactor))
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates (logical/CSS pixels)",
+		"webviewLogicalX", webviewLogicalX, "webviewLogicalY", webviewLogicalY)
+
+	return webviewLogicalX, webviewLogicalY
 }
 
 func (w *windowsWebviewWindow) physicalBounds() Rect {
@@ -1256,6 +1284,17 @@ func (w *windowsWebviewWindow) hide() {
 	w.windowShown = false
 	w.showRequested = false
 
+	// Symmetric with show()'s chromium.Show(): under UseVisualHosting a bare
+	// SW_HIDE leaves the DirectComposition input surface hit-testing where the
+	// window was (a desktop right-click "dead zone"). Restore is always
+	// programmatic via Show() -> show() -> chromium.Show().
+	// The controller can still be nil while WebView2 creation is in flight
+	// (a background-goroutine Hide() is dispatched inside Embed's nested
+	// message pump), so guard like the other controller call sites do.
+	if w.chromium != nil && w.chromium.GetController() != nil {
+		_ = w.chromium.Hide()
+	}
+
 	// Cancel any pending visibility timeout
 	if w.visibilityTimeout != nil {
 		w.visibilityTimeout.Stop()
@@ -1676,6 +1715,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// here (not at SIZE_RESTORED), and needs the same DPI
 				// resync as the restore path below (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1698,6 +1746,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				// rasterization scale on restore, so window.devicePixelRatio
 				// keeps the wrong monitor's value until a manual resize (#5544).
 				w.resyncWebviewDPIAfterUnminimiseIfDPIChanged()
+				// Undo the SIZE_MINIMIZED chromium.Hide() so the
+				// (visual-hosted) window does not restore blank. Skip it for
+				// logically hidden windows (Hide() called while minimised):
+				// re-showing their controller would resurrect the invisible
+				// input surface ("dead zone") that hiding it avoids.
+				if (w.windowShown || w.showRequested) && w.webviewNavigationCompleted &&
+					w.chromium != nil && w.chromium.GetController() != nil {
+					_ = w.chromium.Show()
+				}
 				w.parent.emit(events.Windows.WindowUnMinimise)
 			}
 			w.isMinimizing = false
@@ -1713,6 +1770,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MINIMIZED:
 			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
+			// Under UseVisualHosting (WINDOW_TO_VISUAL) the WebView2 content is a
+			// DirectComposition visual whose input surface keeps hit-testing at the
+			// window's last on-screen rectangle after a bare SW_MINIMIZE — leaving a
+			// desktop right-click "dead zone". Tell the controller to become
+			// invisible (also the WebView2-recommended action on minimize); the
+			// SIZE_RESTORED/SIZE_MAXIMIZED un-minimize branches re-assert it.
+			// The controller can be nil while creation is in flight; guard like
+			// the other controller call sites.
+			if w.chromium != nil && w.chromium.GetController() != nil {
+				_ = w.chromium.Hide()
+			}
 		}
 		w.lastSizeWParam = wparam
 
@@ -1788,21 +1856,38 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// correct rect arrives if the DPI really differs on restore.
 		if !w.ignoreDPIChangeResizing && !w.isMinimizing {
 			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
+			flags := w32.SWP_NOZORDER | w32.SWP_NOACTIVATE
+			// For frameless windows, include SWP_FRAMECHANGED to trigger WM_NCCALCSIZE
+			// and recalculate hit-test regions for proper mouse interaction after DPI change.
+			// See: https://github.com/wailsapp/wails/issues/4691
+			if w.parent.options.Frameless {
+				flags |= w32.SWP_FRAMECHANGED
+			}
 			w32.SetWindowPos(w.hwnd,
 				uintptr(0),
 				int(newWindowRect.Left),
 				int(newWindowRect.Top),
 				int(newWindowRect.Right-newWindowRect.Left),
 				int(newWindowRect.Bottom-newWindowRect.Top),
-				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+				uint(flags))
+			// For frameless windows with decorations, re-extend the frame into client area
+			// to ensure proper window frame styling after DPI change.
+			if w.framelessWithDecorations() {
+				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+					globalApplication.handleFatalError(err)
+				}
+			}
 			// Refresh the layered hit-test region after DPI resize, same as setPhysicalBounds.
 			if exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE); exStyle&w32.WS_EX_LAYERED != 0 {
 				w32.SetLayeredWindowAttributes(w.hwnd, 0, 255, w32.LWA_ALPHA)
 			}
 		}
-		// ShouldDetectMonitorScaleChanges is disabled (raw-pixels bounds mode),
-		// so the rasterization scale must follow DPI changes manually — but only
-		// while non-minimised. While minimised the window sits off its restore
+		// When ShouldDetectMonitorScaleChanges is disabled (the webview2
+		// module's raw-pixels default), the rasterization scale must follow
+		// DPI changes manually — but only while non-minimised. When detection
+		// was re-enabled in setupChromium, the resync below is a no-op (Edge
+		// owns the scale) and only lastKnownDPI tracking runs.
+		// While minimised the window sits off its restore
 		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
 		// would push a wrong scale
 		// onto the controller (one the restore-time DPI gate then won't correct,
@@ -1810,7 +1895,20 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
-			w.resyncWebviewRasterizationScale()
+			if w.resyncWebviewRasterizationScale() {
+				// A scale re-put alone does not make WebView2 re-lay out content
+				// whose bounds are unchanged — the page keeps reporting sizes
+				// computed with the stale scale until the bounds are re-asserted.
+				// Dragging across a mixed-DPI boundary (e.g. 150%→100%) hits this:
+				// content renders shrunk, then disappears, until restart (#5677).
+				// Mirror the un-minimise path (resyncWebviewDPIAfterMinimise, #5544)
+				// and re-assert the bounds. Gating on the resync return value keeps
+				// this off an unavailable controller (#5605): a true return is proof
+				// PutRasterizationScale just succeeded, so the controller is live.
+				// chromium.Resize() reads w32.GetClientRect, the real pixel
+				// dimensions, not the stale options size.
+				w.chromium.Resize()
+			}
 			// Track the new DPI so the un-minimise comparison stays accurate.
 			if dpi, _ := w.DPI(); dpi != 0 {
 				w.lastKnownDPI = dpi
@@ -1947,6 +2045,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 // is the application's responsibility. It is a no-op when the controller is
 // unavailable or already in sync.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
+	// With monitor-scale detection re-enabled (setupChromium), WebView2 owns
+	// the rasterization scale and updates it on monitor crossings itself. A
+	// concurrent host write here would race Edge's own update mid-transition
+	// — the mixed-DPI degenerate-transform window this hardening targets —
+	// so the host resync stands down entirely. Callers treat false as
+	// "nothing to re-lay-out", which is correct: Edge re-lays out after its
+	// own scale update.
+	if w.monitorScaleDetectionOn {
+		return false
+	}
 	// The #5605 restore crash is prevented by the DPI-change gate in
 	// resyncWebviewDPIAfterUnminimiseIfDPIChanged, which keeps us off the
 	// controller entirely when the DPI is unchanged. The GetController nil
@@ -2270,6 +2378,33 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.Embed(w.hwnd)
 
+	// Ensure automatic monitor-scale detection is on. Published webview2
+	// module versions up to v1.0.27 disable ShouldDetectMonitorScaleChanges
+	// at controller creation (the in-repo module no longer does), leaving
+	// rasterization-scale updates entirely to the host's WM_DPICHANGED
+	// handling. In that
+	// host-managed mode, dragging the window across a mixed-DPI monitor
+	// boundary can make the embedded browser compute a degenerate
+	// scale(0,0) transform (ui/gfx/geometry/transform.cc NOTREACHED
+	// "is not invertible"); the resulting compositor frame is rejected by
+	// the viz process as a malformed Mojo message, which kills the GPU
+	// process, and after enough repeat kills the browser process gives up
+	// ("GPU process isn't usable. Goodbye.") taking the controller with
+	// it. Detection-on is the WebView2 default and keeps monitor-cross
+	// scale updates inside Edge, where that path is actually exercised;
+	// bounds stay raw-pixels. While detection is on, the host-side
+	// WM_DPICHANGED / un-minimise scale resyncs stand down (see
+	// monitorScaleDetectionOn) so the scale has exactly one writer.
+	if controller := chromium.GetController(); controller != nil {
+		if c3 := controller.GetICoreWebView2Controller3(); c3 != nil {
+			if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
+				globalApplication.error("webview2: enable monitor scale detection: %v", err)
+			} else {
+				w.monitorScaleDetectionOn = true
+			}
+		}
+	}
+
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
 	// See: https://github.com/MicrosoftEdge/WebView2Feedback/discussions/4021
@@ -2476,6 +2611,20 @@ func (w *windowsWebviewWindow) navigationCompleted(
 		}
 		w.update()
 	}
+
+	// The first-paint nudge above ends with the controller IsVisible=true. For
+	// any window that is not logically visible at this point — one created
+	// Hidden and never shown (e.g. a pre-created tray popup), or one the app
+	// hid before this first NavigationCompleted arrived — that leaves a live
+	// WINDOW_TO_VISUAL DirectComposition input surface hit-testing at the
+	// window's location: an invisible desktop right-click "dead zone".
+	// Re-hide the controller so a hidden window has no live surface; show()
+	// re-asserts IsVisible(true) when the window is actually shown.
+	// showRequested is initialised to !options.Hidden and only show()/hide()
+	// flip it, so these two flags alone identify both cases.
+	if !w.windowShown && !w.showRequested {
+		_ = w.chromium.Hide()
+	}
 }
 
 func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
@@ -2615,6 +2764,9 @@ func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) toggleMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		if w32.GetMenu(w.hwnd) == 0 {
 			w32.SetMenu(w.hwnd, w.menu.menu)
@@ -2722,6 +2874,9 @@ func (w *windowsWebviewWindow) setPadding(padding edge.Rect) {
 }
 
 func (w *windowsWebviewWindow) showMenuBar() {
+	if w.parent.options.Windows.DisableMenu {
+		return
+	}
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, w.menu.menu)
 	}

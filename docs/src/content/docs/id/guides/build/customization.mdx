@@ -1,0 +1,245 @@
+---
+title: Kustomisasi Build
+description: Sesuaikan proses build menggunakan Task dan Taskfile.yml
+sidebar:
+  order: 7
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## Ikhtisar
+
+Sistem build Wails adalah alat fleksibel dan powerful yang dirancang untuk menyederhanakan proses build aplikasi Wails Anda. Sistem ini memanfaatkan [Task](https://taskfile.dev), task runner yang memungkinkan Anda mendefinisikan dan menjalankan task dengan mudah. Meskipun sistem build v3 adalah default, Wails mendorong pendekatan "bring your own tooling", memungkinkan developer menyesuaikan proses build sesuai kebutuhan.
+
+Pelajari lebih lanjut tentang Task di [dokumentasi resmi](https://taskfile.dev/usage/).
+
+## Task: Jantung Sistem Build
+
+[Task](https://taskfile.dev) adalah alternatif modern Make, ditulis dalam Go. Task menggunakan file YAML untuk mendefinisikan task dan dependensinya. Dalam sistem build Wails, [Task](https://taskfile.dev) memainkan peran sentral dalam mengorkestrasi proses build.
+
+`Taskfile.yml` utama berada di root proyek, sementara task spesifik platform didefinisikan di file `build/<platform>/Taskfile.yml`. File `Taskfile.yml` umum di direktori `build` berisi task bersama yang digunakan di semua platform.
+
+<FileTree>
+
+- Project Root
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+File `Taskfile.yml` di root proyek adalah entry point utama sistem build. File ini mendefinisikan task dan dependensinya. Berikut file `Taskfile.yml` default:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## Taskfile Spesifik Platform
+
+Setiap platform memiliki Taskfile sendiri, berada di direktori platform di bawah `build`. File ini mendefinisikan task inti untuk platform tersebut. Setiap taskfile menyertakan task umum dari file `build/Taskfile.yml`.
+
+### Windows
+
+Lokasi: `build/windows/Taskfile.yml`
+
+Taskfile spesifik Windows mencakup task untuk build, packaging, dan menjalankan aplikasi di Windows. Fitur utama:
+
+- Build dengan flag production opsional
+- Menghasilkan file ikon `.ico`
+- Menghasilkan file `.syso` Windows
+- Membuat installer NSIS untuk packaging
+
+### Linux
+
+Lokasi: `build/linux/Taskfile.yml`
+
+Taskfile spesifik Linux mencakup task untuk build, packaging, dan menjalankan aplikasi di Linux. Fitur utama:
+
+- Build dengan flag production opsional
+- Membuat AppImage, deb, rpm, dan paket Arch Linux
+- Menghasilkan file `.desktop` untuk aplikasi Linux
+
+### macOS
+
+Lokasi: `build/darwin/Taskfile.yml`
+
+Taskfile spesifik macOS mencakup task untuk build, packaging, dan menjalankan aplikasi di macOS. Fitur utama:
+
+- Build binary untuk arsitektur amd64, arm64, dan universal (keduanya)
+- Menghasilkan file ikon `.icns`
+- Membuat bundle `.app` untuk distribusi
+- Ad-hoc signing bundle `.app`
+- Menyetel flag dan variabel environment build spesifik macOS
+
+## Eksekusi Task dan Alias Perintah
+
+Perintah `wails3 task` adalah versi embedded [Taskfile](https://taskfile.dev), yang mengeksekusi task yang didefinisikan di `Taskfile.yml` Anda.
+
+Perintah `wails3 build` dan `wails3 package` adalah alias untuk `wails3 task build` dan `wails3 task package`. Saat menjalankan perintah ini, Wails menerjemahkannya ke eksekusi task yang sesuai:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### Meneruskan Parameter ke Task
+
+Anda dapat meneruskan variabel CLI ke task menggunakan format `KEY=VALUE`. Variabel ini diteruskan melalui perintah alias:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+Di `Taskfile.yml`, Anda dapat mengakses variabel ini menggunakan sintaks template Go:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+## Proses Build Umum
+
+Di semua platform, proses build biasanya mencakup langkah berikut:
+
+1. Tidying modul Go
+2. Build frontend
+3. Menghasilkan ikon
+4. Kompilasi kode Go dengan flag spesifik platform
+5. Packaging aplikasi (spesifik platform)
+
+## Menyesuaikan Proses Build
+
+Meskipun sistem build v3 menyediakan konfigurasi default yang solid, Anda dapat dengan mudah menyesuaikannya untuk kebutuhan proyek. Dengan memodifikasi `Taskfile.yml` dan Taskfile spesifik platform, Anda dapat:
+
+- Menambah task baru
+- Memodifikasi task yang ada
+- Mengubah urutan eksekusi task
+- Integrasi dengan alat dan skrip lain
+
+Fleksibilitas ini memungkinkan Anda menyesuaikan proses build ke kebutuhan spesifik sambil tetap memanfaatkan struktur yang disediakan sistem build Wails.
+
+:::tip[Belajar Taskfile]
+Kami sangat merekomendasikan membaca dokumentasi [Taskfile](https://taskfile.dev) untuk memahami penggunaan Taskfile secara efektif.
+Anda dapat mengetahui versi Taskfile yang di-embed di CLI Wails dengan menjalankan `wails3 task --version`.
+:::
+
+## Mode Development
+
+Sistem build Wails menyertakan mode development yang powerful untuk meningkatkan pengalaman developer dengan live reloading dan hot module replacement. Mode ini diaktifkan menggunakan perintah `wails3 dev`.
+
+### Cara Kerjanya
+
+Saat menjalankan `wails3 dev`, proses berikut terjadi:
+
+1. Perintah memeriksa port yang tersedia, default ke 9245 jika tidak ditentukan.
+2. Menyetel variabel environment untuk frontend dev server (Vite).
+3. Memulai file watcher menggunakan library [refresh](https://github.com/atterpac/refresh).
+
+Library [refresh](https://github.com/atterpac/refresh) bertanggung jawab memantau perubahan file dan memicu rebuild. Library ini menggunakan konfigurasi yang didefinisikan di bawah kunci `dev_mode` di file `./build/config.yml`.
+Library ini dapat dikonfigurasi untuk mengabaikan direktori dan file tertentu, menentukan file mana yang dipantau dan aksi apa yang diambil saat perubahan terdeteksi.
+Konfigurasi default bekerja cukup baik, tetapi silakan sesuaikan sesuai kebutuhan.
+
+### Konfigurasi
+
+Berikut contoh strukturnya:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+File konfigurasi ini memungkinkan Anda:
+
+- Menyetel root path untuk file watching
+- Mengonfigurasi level logging
+- Menyetel waktu debounce untuk event perubahan file
+- Mengabaikan direktori, file, atau ekstensi file tertentu
+- Mendefinisikan perintah yang dieksekusi saat file berubah
+
+### Menyesuaikan Mode Development
+
+Anda dapat menyesuaikan pengalaman mode development dengan memodifikasi nilai-nilai ini di file `config.yml`.
+
+Beberapa cara kustomisasi:
+
+1. Mengubah direktori atau file yang dipantau
+2. Menyesuaikan waktu debounce untuk mengontrol seberapa cepat sistem merespons perubahan
+3. Menambah atau memodifikasi perintah execute sesuai kebutuhan proyek
+
+### Menggunakan browser untuk development
+
+Meskipun Wails v2 sepenuhnya mendukung browser untuk development, hal ini menimbulkan banyak kebingungan. Aplikasi yang bekerja di browser belum tentu bekerja di aplikasi desktop, karena tidak semua API browser tersedia di webview.
+
+Untuk pekerjaan development fokus UI, Anda tetap fleksibel menggunakan browser di v3, dengan mengakses URL Vite di `http://localhost:9245` dalam mode dev. Ini memberi akses ke dev tools browser yang powerful saat mengerjakan styling dan layout. Perhatikan bahwa Go bindings *tidak akan bekerja* dalam mode ini.
+Saat siap menguji fungsionalitas seperti bindings dan event, beralih ke tampilan desktop untuk memastikan semuanya bekerja sempurna di environment produksi.

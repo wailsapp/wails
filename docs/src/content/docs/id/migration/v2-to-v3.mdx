@@ -1,0 +1,727 @@
+---
+title: Migrasi dari v2 ke v3
+description: Panduan lengkap migrasi aplikasi Wails v2 Anda ke v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 adalah **rewrite lengkap** dengan peningkatan signifikan dalam arsitektur, performa, dan developer experience. Panduan ini membantu Anda memigrasikan aplikasi v2 ke v3.
+
+**Perubahan utama:**
+- Struktur aplikasi baru
+- Sistem bindings yang ditingkatkan
+- Manajemen window yang lebih baik
+- Sistem event yang lebih baik
+- Konfigurasi yang disederhanakan
+
+**Waktu migrasi:** 1-4 jam untuk aplikasi tipikal
+
+## Breaking Changes
+
+### Inisialisasi Aplikasi
+
+Di v2, setup aplikasi, konfigurasi window, dan eksekusi digabung dalam satu panggilan `wails.Run()`. Pendekatan monolitik ini menyulitkan pembuatan banyak window, penanganan error di tahap berbeda, atau pengujian komponen individual aplikasi.
+
+v3 memisahkan concern ini ke fase berbeda: pembuatan aplikasi, pembuatan window, dan eksekusi. Pemisahan ini memberi kontrol eksplisit atas setiap tahap lifecycle aplikasi dan membuat kode lebih modular serta dapat diuji.
+
+**v2:**
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    Bind: []interface{}{
+        &GreetService{},
+    },
+})
+```
+
+**v3:**
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+})
+
+app.Run()
+```
+
+**Mengapa ini lebih baik:**
+
+- **Dukungan multi-window**: Anda dapat membuat window secara dinamis kapan saja, tidak hanya saat startup
+- **Error handling lebih baik**: Setiap fase dapat divalidasi terpisah dengan penanganan error yang tepat
+- **Kode lebih jelas**: Pemisahan membuat jelas apa yang terjadi di setiap tahap
+- **Lebih dapat diuji**: Anda dapat menguji setup aplikasi tanpa menjalankan event loop
+- **Lebih fleksibel**: Window dapat dibuat, dihancurkan, dan dibuat ulang sepanjang lifecycle aplikasi
+
+### Bindings
+
+Di v2, setiap struct yang di-bind memerlukan field context dan method `startup(ctx)` untuk menerima runtime context. Ini menciptakan coupling ketat antara business logic dan runtime Wails, sehingga kode lebih sulit diuji dan dipahami.
+
+v3 memperkenalkan pola service, di mana struct Anda sepenuhnya standalone dan tidak perlu menyimpan runtime context. Jika service memerlukan akses ke instance aplikasi, service secara eksplisit menerimanya melalui dependency injection alih-alih threading context implisit.
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Daftarkan sebagai service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+})
+```
+
+**Mengapa ini lebih baik:**
+
+- **Tanpa dependensi implisit**: Service adalah struct Go biasa tanpa dependensi runtime tersembunyi
+- **Lebih mudah diuji**: Anda dapat menguji method service tanpa mock context Wails
+- **Kode lebih jelas**: Dependensi eksplisit (diteruskan sebagai argumen constructor) alih-alih tersembunyi di field context
+- **Organisasi lebih baik**: Service dapat dikelompokkan per domain alih-alih semua hidup di satu struct `App`
+- **Inisialisasi yang tepat**: Gunakan method `ServiceStartup()` saat Anda perlu inisialisasi, sehingga eksplisit
+
+### Runtime
+
+Di v2, semua operasi runtime memerlukan meneruskan context ke fungsi global dari paket `runtime`. Ini menciptakan coupling ketat ke objek context di seluruh codebase dan membuat API terasa prosedural alih-alih object-oriented.
+
+v3 menggantikan runtime berbasis context dengan pemanggilan method langsung pada objek aplikasi dan window. Operasi dipanggil langsung pada objek yang terpengaruh, sehingga kode lebih intuitif dan object-oriented.
+
+**v2:**
+
+```go
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+runtime.WindowSetTitle(a.ctx, "New Title")
+runtime.EventsEmit(a.ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+// Simpan referensi app
+type MyService struct {
+    app *application.App
+}
+
+func (s *MyService) UpdateTitle() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+}
+
+func (s *MyService) EmitEvent() {
+    s.app.Event.Emit("event-name", data)
+}
+```
+
+**Mengapa ini lebih baik:**
+
+- **Desain object-oriented**: Method dipanggil pada objek yang terpengaruh (window, app, menu, dll.)
+- **Intent lebih jelas**: `window.SetTitle()` lebih jelas daripada `runtime.WindowSetTitle(ctx, ...)`
+- **Dukungan IDE lebih baik**: Autocomplete berfungsi dengan benar saat method ada di objek
+- **Kejelasan multi-window**: Dengan banyak window, Anda secara eksplisit memilih window mana yang dioperasikan
+- **Tanpa threading context**: Anda tidak perlu meneruskan context melalui setiap fungsi
+
+### Frontend Bindings
+
+Di v2, bindings diorganisir berdasarkan paket Go dan nama struct, biasanya menghasilkan path seperti `wailsjs/go/main/App`. Struktur ini tidak mencerminkan pengelompokan logis dan menyulitkan pencarian fungsionalitas terkait.
+
+v3 mengorganisir bindings berdasarkan nama service dan modul aplikasi, menciptakan struktur logis yang lebih jelas. Bindings di-generate ke direktori `bindings` yang diorganisir berdasarkan nama aplikasi dan nama service, sehingga lebih mudah memahami fungsionalitas yang tersedia.
+
+**v2:**
+
+```javascript
+import { Greet } from '../wailsjs/go/main/App'
+
+const result = await Greet("World")
+```
+
+**v3:**
+
+```javascript
+import { Greet } from './bindings/changeme/greetservice'
+
+const result = await Greet("World")
+```
+
+**Mengapa ini lebih baik:**
+
+- **Organisasi logis**: Bindings dikelompokkan berdasarkan nama service alih-alih struktur paket Go
+- **Import lebih jelas**: Path mencerminkan logika domain (greetservice) bukan struktur file (main/App)
+- **Discoverability lebih baik**: Anda dapat menavigasi bindings berdasarkan fitur alih-alih struktur teknis
+- **Penamaan konsisten**: Organisasi berbasis service cocok dengan arsitektur backend Anda
+- **Path lebih sederhana**: Tidak ada lagi prefix `../wailsjs/go` — cukup `./bindings`
+
+### Events
+
+Di v2, events menggunakan parameter variadic `interface{}` dan memerlukan meneruskan context ke setiap fungsi event. Event handler menerima data untyped yang perlu type assertion manual, sehingga sistem event rentan error dan sulit di-debug.
+
+v3 memperkenalkan objek event bertipe dan menghapus persyaratan context. Event handler menerima objek event yang proper dengan data bertipe, sehingga sistem event lebih andal dan mudah digunakan.
+
+**v2:**
+
+```go
+runtime.EventsOn(ctx, "event-name", func(data ...interface{}) {
+    // Tangani event
+})
+
+runtime.EventsEmit(ctx, "event-name", data)
+```
+
+**v3:**
+
+```go
+app.Event.On("event-name", func(e *application.CustomEvent) {
+    data := e.Data
+    // Tangani event
+})
+
+app.Event.Emit("event-name", data)
+```
+
+**Mengapa ini lebih baik:**
+
+- **Type safety**: Events menggunakan objek event yang proper alih-alih `...interface{}`
+- **Debugging lebih baik**: Objek event berisi metadata seperti nama event, sehingga debugging lebih mudah
+- **API lebih jelas**: `app.Event.On()` dan `app.Event.Emit()` lebih intuitif daripada fungsi runtime
+- **Tanpa context**: Events bekerja langsung pada objek app tanpa threading context
+- **Handler lebih sederhana**: Event handler punya signature yang jelas alih-alih parameter variadic
+
+### Windows
+
+v2 hanya mendukung satu window per aplikasi. Window dibuat saat startup dan semua operasi window dilakukan melalui fungsi runtime yang secara implisit menargetkan window tunggal itu.
+
+v3 memperkenalkan dukungan multi-window native sebagai fitur inti. Setiap window adalah objek first-class dengan method dan lifecycle sendiri. Anda dapat membuat, mengelola, dan menghancurkan banyak window secara dinamis sepanjang lifetime aplikasi.
+
+**v2:**
+
+```go
+// Hanya single window
+runtime.WindowSetSize(ctx, 800, 600)
+```
+
+**v3:**
+
+```go
+// Multi-window didukung
+window1 := app.Window.New()
+window1.SetSize(800, 600)
+
+window2 := app.Window.New()
+window2.SetSize(1024, 768)
+```
+
+**Mengapa ini lebih baik:**
+
+- **Aplikasi multi-window**: Bangun app dengan banyak window independen (dashboard, preferences, tools, dll.)
+- **Referensi window eksplisit**: Setiap window adalah objek yang dapat Anda simpan dan manipulasi langsung
+- **Pembuatan window dinamis**: Buat dan hancurkan window kapan saja saat runtime
+- **State window independen**: Setiap window punya events, properti, dan lifecycle sendiri
+- **Arsitektur lebih baik**: Manajemen window object-oriented alih-alih berbasis context
+
+## Langkah Migrasi
+
+### Langkah 1: Perbarui Dependensi
+
+**go.mod:**
+
+```go
+module myapp
+
+go 1.21
+
+require (
+    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+)
+```
+
+**Perbarui:**
+
+```bash
+go get github.com/wailsapp/wails/v3@latest
+go mod tidy
+```
+
+### Langkah 2: Perbarui main.go
+
+**v2:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err.Error())
+    }
+}
+```
+
+**v3:**
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+        Services: []application.Service{
+            application.NewService(&MyService{}),
+        },
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title:  "My App",
+        Width:  1024,
+        Height: 768,
+    })
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+### Langkah 3: Konversi App Struct ke Service
+
+**v2:**
+
+```go
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    // Inisialisasi
+}
+
+func (a *App) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+**v3:**
+
+```go
+type MyService struct {
+    app *application.App
+}
+
+func NewMyService(app *application.App) *MyService {
+    return &MyService{app: app}
+}
+
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Inisialisasi
+    return nil
+}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello " + name
+}
+
+// Daftarkan setelah app dibuat
+app := application.New(application.Options{})
+app.RegisterService(application.NewService(NewMyService(app)))
+```
+
+### Langkah 4: Perbarui Panggilan Runtime
+
+**v2:**
+
+```go
+func (a *App) DoSomething() {
+    runtime.WindowSetTitle(a.ctx, "New Title")
+    runtime.EventsEmit(a.ctx, "update", data)
+    runtime.LogInfo(a.ctx, "Message")
+}
+```
+
+**v3:**
+
+```go
+func (s *MyService) DoSomething() {
+    window := s.app.Window.Current()
+    window.SetTitle("New Title")
+    
+    s.app.Event.Emit("update", data)
+    
+    s.app.Logger.Info("Message")
+}
+```
+
+### Langkah 5: Perbarui Frontend
+
+**Generate bindings baru:**
+
+```bash
+wails3 generate bindings
+```
+
+**Perbarui import:**
+
+```javascript
+// v2
+import { Greet } from '../wailsjs/go/main/App'
+
+// v3
+import { Greet } from './bindings/changeme/myservice'
+```
+
+**Perbarui penanganan event:**
+
+```javascript
+// v2
+import { EventsOn, EventsEmit } from '../wailsjs/runtime/runtime'
+
+EventsOn("update", (data) => {
+    console.log(data)
+})
+
+EventsEmit("action", data)
+
+// v3
+import { Events } from '@wailsio/runtime'
+
+Events.On("update", (data) => {
+    console.log(data)
+})
+
+Events.Emit("action", data)
+```
+
+### Langkah 6: Perbarui Konfigurasi
+
+**v2 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "outputfilename": "myapp",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto"
+}
+```
+
+**v3 (wails.json):**
+
+```json
+{
+  "name": "myapp",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev",
+    "devServerUrl": "http://localhost:5173"
+  }
+}
+```
+
+## Pemetaan Fitur
+
+### dialogs
+
+**v2:**
+
+```go
+selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
+    Title: "Select File",
+})
+```
+
+**v3:**
+
+```go
+selection, err := app.Dialog.OpenFileWithOptions(&application.OpenFileDialogOptions{
+    Title: "Select File",
+}).PromptForSingleSelection()
+```
+
+### Menus
+
+**v2:**
+
+```go
+menu := menu.NewMenu()
+menu.Append(menu.Text("File", nil, []*menu.MenuItem{
+    menu.Text("Quit", nil, func(_ *menu.CallbackData) {
+        runtime.Quit(ctx)
+    }),
+}))
+```
+
+**v3:**
+
+```go
+menu := app.NewMenu()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### System Tray
+
+**v2:**
+
+```go
+// Tidak tersedia di v2
+```
+
+**v3:**
+
+```go
+systray := app.SystemTray.New()
+systray.SetIcon(iconBytes)
+systray.SetLabel("My App")
+
+menu := app.NewMenu()
+menu.Add("Show").OnClick(showWindow)
+menu.Add("Quit").OnClick(app.Quit)
+systray.SetMenu(menu)
+```
+
+## Masalah Umum
+
+### Masalah: Bindings tidak ditemukan
+
+**Problem:** Error import setelah migrasi
+
+**Solusi:**
+
+```bash
+# Regenerate bindings
+wails3 generate bindings
+
+# Periksa direktori output
+ls frontend/bindings
+```
+
+### Masalah: Error context
+
+**Problem:** `ctx` tidak tersedia
+
+**Solusi:**
+
+Simpan referensi app sebagai gantinya:
+
+```go
+type MyService struct {
+    app *application.App
+}
+
+func NewMyService(app *application.App) *MyService {
+    return &MyService{app: app}
+}
+```
+
+### Masalah: Method window tidak berfungsi
+
+**Problem:** `runtime.WindowSetTitle()` tidak ada
+
+**Solusi:**
+
+Gunakan method window langsung:
+
+```go
+window := s.app.Window.Current()
+window.SetTitle("New Title")
+```
+
+### Masalah: Events tidak fire
+
+**Problem:** Events terdaftar tapi tidak diterima
+
+**Solusi:**
+
+Pastikan nama event cocok persis:
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Harus cocok persis
+```
+
+## Menguji Migrasi
+
+### Checklist
+
+- [ ] Aplikasi start tanpa error
+- [ ] Semua bindings berfungsi
+- [ ] Events dikirim dan diterima
+- [ ] Window terbuka dan tertutup dengan benar
+- [ ] Menu berfungsi (jika applicable)
+- [ ] Dialog berfungsi (jika applicable)
+- [ ] System tray berfungsi (jika applicable)
+- [ ] Proses build berfungsi
+- [ ] Production build berfungsi
+
+### Perintah Test
+
+```bash
+# Development
+wails3 dev
+
+# Build
+wails3 build
+
+# Generate bindings
+wails3 generate bindings
+```
+
+## Manfaat v3
+
+### Performa
+
+- **Startup lebih cepat** - Inisialisasi yang dioptimasi
+- **Memori lebih rendah** - Penggunaan resource efisien
+- **Bridge lebih baik** - Overhead panggilan &lt;1ms
+
+### Fitur
+
+- **Multi-window** - Dukungan native
+- **System tray** - Built-in
+- **Events lebih baik** - API bertipe, lebih sederhana
+- **Services** - Organisasi kode lebih baik
+
+### Developer Experience
+
+- **Type safety** - Dukungan TypeScript penuh
+- **Error lebih baik** - Pesan error yang jelas
+- **Hot reload** - Development lebih cepat
+- **Dokumentasi lebih baik** - Panduan komprehensif
+
+## Mendapatkan Bantuan
+
+### Sumber Daya
+
+- [Dokumentasi](/id/quick-start/why-wails)
+- [Komunitas Discord](https://discord.gg/JDdSxwjhGf)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples)
+
+### Pertanyaan Umum
+
+**T: Bisakah saya menjalankan v2 dan v3 berdampingan?**  
+J: Ya, keduanya menggunakan import path berbeda.
+
+**T: Apakah v3 production-ready?**  
+J: v3 masih alpha/beta. Uji secara menyeluruh sebelum production.
+
+**T: Apakah v2 akan dirawat?**  
+J: Ya, v2 akan menerima update kritis.
+
+**T: Berapa lama migrasi?**  
+J: 1-4 jam untuk aplikasi tipikal.
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Quick Start" icon="rocket">
+    Mulai dengan Wails v3.
+    
+    [Pelajari Selengkapnya →](/id/quick-start/installation)
+  </Card>
+
+  <Card title="Konsep Inti" icon="star">
+    Pahami arsitektur v3.
+    
+    [Pelajari Selengkapnya →](/id/concepts/architecture)
+  </Card>
+
+  <Card title="Bindings" icon="puzzle">
+    Pelajari sistem bindings baru.
+    
+    [Pelajari Selengkapnya →](/id/features/bindings/methods)
+  </Card>
+
+  <Card title="Contoh" icon="open-book">
+    Lihat contoh v3 lengkap.
+    
+    [Lihat Contoh →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+  </Card>
+</CardGrid>
+
+---
+
+**Pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau [buka issue](https://github.com/wailsapp/wails/issues).
