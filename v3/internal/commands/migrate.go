@@ -90,6 +90,15 @@ func Migrate(options *flags.Migrate) error {
 		return err
 	}
 
+	// The compatibility bridge is generated into the project (not shipped as
+	// part of the v3 module) so that only migrated projects carry it, and its
+	// owners can delete it as they finish porting to the v3 API.
+	if proj.UsesV2Runtime || v3opts.NeedsLifecycleService() {
+		if err := migrate.WriteCompatBridge(proj, outDir); err != nil {
+			return err
+		}
+	}
+
 	// go.mod: swap wails/v2 for wails/v3, keep everything else.
 	// LatestStable is the released tag even in dev builds, so the generated
 	// require is always resolvable.

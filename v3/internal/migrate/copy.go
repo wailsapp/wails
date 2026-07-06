@@ -119,8 +119,8 @@ func CopyProjectFiles(proj *V2Project, outDir string) error {
 func RewriteGoImports(proj *V2Project, rel string, src []byte) []byte {
 	content := string(src)
 	if strings.Contains(content, strconv.Quote(V2RuntimeImport)) {
-		content = strings.ReplaceAll(content, strconv.Quote(V2RuntimeImport), strconv.Quote(V2CompatRuntimeImport))
-		proj.Report.Mapped(rel+": "+V2RuntimeImport, V2CompatRuntimeImport)
+		content = strings.ReplaceAll(content, strconv.Quote(V2RuntimeImport), strconv.Quote(proj.CompatRuntimeImport()))
+		proj.Report.Mapped(rel+": "+V2RuntimeImport, proj.CompatRuntimeImport()+" (generated bridge)")
 	}
 
 	// Report any other v2 imports that remain.

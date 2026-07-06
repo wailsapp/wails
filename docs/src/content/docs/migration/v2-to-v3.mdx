@@ -34,7 +34,7 @@ This parses your v2 project (wails.json and the `options.App` literal passed to 
 
 - `main.go` is rewritten around `application.New()` + `app.Window.NewWithOptions()`, keeping your own code and comments intact. Options are mapped to their v3 equivalents, including platform-specific window options.
 - Structs listed in `Bind` become v3 services; the `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` callbacks are bridged automatically.
-- Go files calling the v2 `runtime` package are pointed at `github.com/wailsapp/wails/v3/pkg/v2compat/runtime`, a compatibility bridge with the v2 API (context-first functions) implemented on v3. Each bridge function documents its v3 replacement so you can migrate incrementally.
+- Go files calling the v2 `runtime` package are pointed at a `v2compat/runtime` package generated *into your project*: a temporary bridge with the v2 API (context-first functions) implemented on the v3 API. Each bridge function documents its v3 replacement, so you can port call sites incrementally, delete bridge functions as you go, and remove the package when nothing imports it any more.
 - The frontend is copied over and `wailsjs/` is regenerated as a thin layer over `@wailsio/runtime`, so existing imports like `../wailsjs/go/main/App` and `../wailsjs/runtime/runtime` keep working.
 - `wails.json` is replaced by the v3 project files: a Taskfile-based build system and `build/config.yml` populated from your v2 metadata (product info, file associations, protocols).
 - `go.mod` swaps `wails/v2` for `wails/v3`; everything else is preserved.

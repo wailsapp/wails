@@ -280,7 +280,7 @@ func TestGenerateMain(t *testing.T) {
 		"//go:embed all:frontend/dist",
 		"// Create an instance of the app structure",
 		"err := wailsApp.Run()",
-		`v2runtime "github.com/wailsapp/wails/v3/pkg/v2compat/runtime"`,
+		`v2runtime "myv2app/v2compat/runtime"`,
 	} {
 		if !strings.Contains(src, want) {
 			t.Errorf("generated main.go missing %q\n---\n%s", want, src)
@@ -364,7 +364,7 @@ import (
 )
 `)
 	out := RewriteGoImports(proj, "other.go", src)
-	if !strings.Contains(string(out), V2CompatRuntimeImport) {
+	if !strings.Contains(string(out), `"myv2app/v2compat/runtime"`) {
 		t.Errorf("runtime import not rewritten:\n%s", out)
 	}
 	if !strings.Contains(string(out), "wails/v2/pkg/menu") {

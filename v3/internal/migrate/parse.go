@@ -80,6 +80,11 @@ func ParseV2Project(dir string) (*V2Project, error) {
 		if perr != nil {
 			return fmt.Errorf("could not parse %s: %w", path, perr)
 		}
+		for _, imp := range file.Imports {
+			if imp.Path.Value == strconv.Quote(V2RuntimeImport) {
+				proj.UsesV2Runtime = true
+			}
+		}
 		files[path] = file
 		return nil
 	})
