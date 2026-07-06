@@ -416,6 +416,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: "From v2 to v3", link: "/migration/v2-to-v3" },
+            { label: "v2 vs v3 Comparison", link: "/migration/comparison" },
             { label: "From Electron", link: "/migration/from-electron" },
           ],
         },

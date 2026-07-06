@@ -1,0 +1,156 @@
+---
+title: v2 vs v3 Comparison
+description: A side-by-side reference of Wails v2 and v3 concepts, APIs and configuration, plus the wails3 migrate command
+sidebar:
+  order: 2
+---
+
+This page is a quick reference for how Wails v2 concepts map onto v3. For a
+step-by-step walkthrough with detailed explanations, see the
+[migration guide](/migration/v2-to-v3).
+
+## Concepts at a glance
+
+| Concept | v2 | v3 |
+|---|---|---|
+| Application setup | Single `wails.Run(&options.App{...})` call | `application.New(application.Options{...})`, then explicit window creation and `app.Run()` |
+| Application options | `options.App` (app + window combined) | `application.Options` (app) and `application.WebviewWindowOptions` (window) |
+| Exposing Go to JS | `Bind: []interface{}{...}` | `Services: []application.Service{application.NewService(&X{})}` |
+| Runtime access | `runtime.*(ctx, ...)` package functions | Methods on `app` and `window` objects |
+| Runtime context | `ctx` stored from `OnStartup` | Not needed; inject `*application.App` where required |
+| Windows | One window per application | First-class multi-window support via `app.Window.NewWithOptions(...)` |
+| Events (Go) | `runtime.EventsEmit(ctx, ...)` / `runtime.EventsOn(ctx, ...)` | `app.Event.Emit(...)` / `app.Event.On(...)` |
+| Events (JS) | `EventsOn` / `EventsEmit` from `wailsjs/runtime` | `Events.On` / `Events.Emit` from `@wailsio/runtime` |
+| Generated bindings | `wailsjs/go/<package>/<Struct>` | `frontend/bindings/<module>/<service>` |
+| Dialogs | `runtime.OpenFileDialog(ctx, ...)` | `app.Dialog.OpenFileWithOptions(...)`, `app.Dialog.Info()`, ... |
+| Menus | `menu.NewMenu()` passed to `options.App` | `app.NewMenu()` with fluent `AddSubmenu` / `OnClick` API |
+| System tray | Not available | Built in via `app.SystemTray.New()` |
+| Configuration | `wails.json` | `Taskfile.yml` and `build/config.yml` |
+| Build system | Fixed pipeline inside the `wails` CLI | Transparent [Task](https://taskfile.dev) based build, fully customisable |
+| Dev mode | `wails dev` driven by `wails.json` | `wails3 dev` driven by `build/config.yml` (`dev_mode` section) |
+| Lifecycle hooks | `OnStartup` / `OnDomReady` / `OnShutdown` on `options.App` | Service lifecycle (`ServiceStartup` / `ServiceShutdown`), application events and `OnShutdown` in `application.Options` |
+
+## Application bootstrap
+
+**v2** combines the application and its single window in one declarative call:
+
+```go
+err := wails.Run(&options.App{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    AssetServer: &assetserver.Options{
+        Assets: assets,
+    },
+    Bind: []interface{}{
+        app,
+    },
+})
+```
+
+**v3** separates application creation, window creation and execution, giving
+you explicit control over each stage:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assets),
+    },
+})
+
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "My App",
+    Width:  1024,
+    Height: 768,
+    URL:    "/",
+})
+
+err := app.Run()
+```
+
+## Bindings become services
+
+v2 bound structs stored a context to reach the runtime. v3 services are plain
+Go structs:
+
+| | v2 | v3 |
+|---|---|---|
+| Registration | `Bind: []interface{}{app}` | `application.NewService(app)` in `Services` |
+| Initialisation | `startup(ctx)` wired to `OnStartup` | `ServiceStartup(ctx context.Context, options application.ServiceOptions) error` |
+| Cleanup | `OnShutdown` | `ServiceShutdown() error` |
+| Runtime access | Stored `ctx` + `runtime` package | Inject `*application.App` via the constructor |
+
+## Runtime API mapping
+
+Get a window with `app.Window.Current()` or `app.Window.Get(name)`, then call
+methods on it directly:
+
+| v2 | v3 |
+|---|---|
+| `runtime.EventsEmit(ctx, name, data)` | `app.Event.Emit(name, data)` |
+| `runtime.EventsOn(ctx, name, cb)` | `app.Event.On(name, cb)` |
+| `runtime.WindowSetTitle(ctx, title)` | `window.SetTitle(title)` |
+| `runtime.WindowSetSize(ctx, w, h)` | `window.SetSize(w, h)` |
+| `runtime.WindowMaximise(ctx)` | `window.Maximise()` |
+| `runtime.WindowShow(ctx)` / `WindowHide` | `window.Show()` / `window.Hide()` |
+| `runtime.BrowserOpenURL(ctx, url)` | `app.Browser.OpenURL(url)` |
+| `runtime.ClipboardSetText(ctx, text)` | `app.Clipboard.SetText(text)` |
+| `runtime.MessageDialog(ctx, opts)` | `app.Dialog.Info()`, `.Question()`, `.Warning()`, `.Error()` |
+| `runtime.OpenFileDialog(ctx, opts)` | `app.Dialog.OpenFileWithOptions(...)` |
+| `runtime.LogInfo(ctx, msg)` | `app.Logger.Info(msg)` |
+| `runtime.Quit(ctx)` | `app.Quit()` |
+
+## Configuration and project layout
+
+v2 projects are configured through `wails.json`. v3 projects use a
+transparent, task-based layout created by `wails3 init`:
+
+| v2 (`wails.json`) | v3 |
+|---|---|
+| `name`, `outputfilename` | `APP_NAME` variable in `Taskfile.yml` |
+| `frontend:install` | `install:frontend:deps` task in `build/Taskfile.yml` |
+| `frontend:build` | `build:frontend` task in `build/Taskfile.yml` |
+| `frontend:dev:watcher` | `dev` task, managed by `wails3 dev` |
+| `info` (product details) | `info` section in `build/config.yml` |
+| `debounceMS`, watcher settings | `dev_mode` section in `build/config.yml` |
+| Build hooks | Edit the platform Taskfiles in `build/<platform>/` |
+
+The v3 build assets (Info.plist, NSIS installer, Linux packaging, icons) are
+regenerated from `build/config.yml` with `wails3 task common:update:build-assets`.
+
+## Automating the first pass: `wails3 migrate`
+
+The v3 CLI includes a migration assistant that performs the mechanical parts
+of a migration for you:
+
+```shell
+wails3 migrate -d path/to/your/v2/project
+```
+
+It is non-destructive: it never modifies or deletes your v2 files. It
+generates:
+
+- `Taskfile.yml` and the `build/` directory, giving the project the v3 build
+  system. Existing files (icons, `Info.plist`, installer assets) are preserved.
+- `build/config.yml` pre-filled with the product information from your
+  `wails.json`.
+- `main_v3.go.example`, the v3 bootstrap generated from your `main.go`:
+  `wails.Run(&options.App{...})` becomes `application.New` plus a window, and
+  every `Bind` entry becomes an `application.NewService(...)` registration.
+- `MIGRATION_REPORT.md` describing what was migrated automatically, the items
+  that need manual work (with file and line references, including every v2
+  `runtime.*` call found in your code), and the next steps.
+
+Review the report, adapt your bound structs to services, adopt the generated
+bootstrap as your `main.go`, and finish with the
+[migration guide](/migration/v2-to-v3).
+
+## Next steps
+
+- Follow the [step-by-step migration guide](/migration/v2-to-v3)
+- Explore [v3 examples](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- Ask questions in the [Discord community](https://discord.gg/JDdSxwjhGf)
