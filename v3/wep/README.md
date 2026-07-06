@@ -15,6 +15,7 @@ Following this structured approach ensures transparency, community involvement, 
 
 ### 1. Idea Initiation
 
+- **Discuss Your Idea**: Before writing a proposal, start a discussion in the [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) category on GitHub Discussions. This is the official place to discuss proposals. It helps gauge interest, catch overlap with existing plans, and shape the idea before you invest time in writing it up.
 - **Document Your Idea**: 
   - Create a new directory: `v3/wep/proposals/<name of proposal>` with the name of your proposal. 
   - Copy the WEP template located in `v3/wep/WEP_TEMPLATE.md` into `v3/wep/proposals/<name of proposal>/proposal.md`. 
@@ -30,8 +31,8 @@ Following this structured approach ensures transparency, community involvement, 
 
 ### 3. Community Discussion
 
-- **Share Your Proposal**: Present your proposal to the Wails community. Try to get support for the proposal to increase the chances of acceptance. If you are on the discord server, create a post in the [`#enhancement-proposals`](https://discord.gg/TA8kbQds95) channel.
-- **Gather Feedback**: Refine your proposal based on community input. All feedback should be added as comments in the PR.
+- **Share Your Proposal**: Link the PR from your discussion in the [Enhancement Proposals](https://github.com/wailsapp/wails/discussions/categories/enhancement-proposals) category (or start one if you haven't yet). Try to get support for the proposal to increase the chances of acceptance. If you are on the discord server, you are also welcome to share it in the [`#enhancement-proposals`](https://discord.gg/TA8kbQds95) channel, but GitHub Discussions is the official venue.
+- **Gather Feedback**: Refine your proposal based on community input. Feedback on the proposal text itself should be added as comments on the PR so it stays with the document; broader discussion belongs in the discussion thread.
 - **Show Support**: Agreement with the proposal should be indicated by adding a thumbs-up emoji to the PR. The more thumbs-up emojis, the more likely the proposal will be accepted.
 - **Iterate**: Make changes to the proposal based on feedback.
 - **Agree on an Implementor**: To avoid stagnant proposals, we require someone agree to implement it. This could be the proposer.
