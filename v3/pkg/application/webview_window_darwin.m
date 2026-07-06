@@ -1097,26 +1097,29 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     NSView* contentView = [window contentView];
     // Check if this is a real NSGlassEffectView with contentView property
     BOOL hasContentView = [glassView respondsToSelector:@selector(contentView)];
-    // The view that is added to the window's content view. Grouped glass
-    // surfaces are hosted in an NSGlassEffectContainerView so the system can
-    // merge them and animate them together; macOS 27 warns against managing
-    // grouped glass views as loose siblings.
+    // The view that is added to the window's content view. On macOS 27+
+    // grouped glass surfaces are hosted in an NSGlassEffectContainerView so
+    // the system can merge them and animate them together; 27 warns against
+    // managing grouped glass views as loose siblings. On <= 26 the historic
+    // behaviour (bare glass view) is kept.
     NSView* glassRoot = glassView;
-    if (hasContentView && groupID && strlen(groupID) > 0) {
-        Class glassContainerViewClass = NSClassFromString(@"NSGlassEffectContainerView");
-        if (glassContainerViewClass && [glassContainerViewClass instancesRespondToSelector:@selector(setContentView:)]) {
-            NSView* container = [[[glassContainerViewClass alloc] init] autorelease];
-            if (groupSpacing > 0 && [container respondsToSelector:@selector(setSpacing:)]) {
-                [container setValue:@(groupSpacing) forKey:@"spacing"];
+    if (@available(macOS 27.0, *)) {
+        if (hasContentView && groupID && strlen(groupID) > 0) {
+            Class glassContainerViewClass = NSClassFromString(@"NSGlassEffectContainerView");
+            if (glassContainerViewClass && [glassContainerViewClass instancesRespondToSelector:@selector(setContentView:)]) {
+                NSView* container = [[[glassContainerViewClass alloc] init] autorelease];
+                if (groupSpacing > 0 && [container respondsToSelector:@selector(setSpacing:)]) {
+                    [container setValue:@(groupSpacing) forKey:@"spacing"];
+                }
+                // The container's contentView hosts the glass surfaces to merge
+                NSView* host = [[[NSView alloc] initWithFrame:contentView.bounds] autorelease];
+                [host setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+                [glassView setFrame:host.bounds];
+                [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+                [host addSubview:glassView];
+                [container performSelector:@selector(setContentView:) withObject:host];
+                glassRoot = container;
             }
-            // The container's contentView hosts the glass surfaces to merge
-            NSView* host = [[[NSView alloc] initWithFrame:contentView.bounds] autorelease];
-            [host setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-            [glassView setFrame:host.bounds];
-            [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-            [host addSubview:glassView];
-            [container performSelector:@selector(setContentView:) withObject:host];
-            glassRoot = container;
         }
     }
     // Set up the glass view

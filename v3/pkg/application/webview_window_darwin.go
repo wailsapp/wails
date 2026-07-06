@@ -70,11 +70,15 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	}
 	[window setContentView:view];
 
-	// Forward primary-button events to the delegate via the gesture-recognizer
-	// system; NSEvent monitors miss Sidecar/touch input on macOS 27 (TN3212).
-	WailsWindowMouseGestureObserver* mouseObserver = [[[WailsWindowMouseGestureObserver alloc] initWithTarget:nil action:NULL] autorelease];
-	mouseObserver.delaysPrimaryMouseButtonEvents = NO;
-	[view addGestureRecognizer:mouseObserver];
+	if (@available(macOS 27.0, *)) {
+		// macOS 27: forward primary-button events to the delegate via the
+		// gesture-recognizer system; NSEvent monitors miss Sidecar/touch
+		// input there (TN3212). On <= 26 the app-global NSEvent monitors
+		// installed at init handle this and behaviour is unchanged.
+		WailsWindowMouseGestureObserver* mouseObserver = [[[WailsWindowMouseGestureObserver alloc] initWithTarget:nil action:NULL] autorelease];
+		mouseObserver.delaysPrimaryMouseButtonEvents = NO;
+		[view addGestureRecognizer:mouseObserver];
+	}
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);

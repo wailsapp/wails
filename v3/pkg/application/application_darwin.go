@@ -24,10 +24,41 @@ static void init(void) {
     appDelegate = [[AppDelegate alloc] init];
     [NSApp setDelegate:appDelegate];
 
-	// Primary-button mouse input is observed per-window by the
-	// WailsWindowMouseGestureObserver attached in windowNew. The NSEvent
-	// local monitors that used to live here miss Sidecar/touch-synthesised
-	// input on macOS 27 (TN3212).
+	if (@available(macOS 27.0, *)) {
+		// macOS 27: primary-button mouse input is observed per-window by the
+		// WailsWindowMouseGestureObserver attached in windowNew. NSEvent
+		// local monitors miss Sidecar/touch-synthesised input there (TN3212).
+	} else {
+		[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+			NSWindow* eventWindow = [event window];
+			if (eventWindow == nil ) {
+				return event;
+			}
+			WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+			if (windowDelegate == nil) {
+				return event;
+			}
+			if ([windowDelegate respondsToSelector:@selector(handleLeftMouseDown:)]) {
+				[windowDelegate handleLeftMouseDown:event];
+			}
+			return event;
+		}];
+
+		[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+			NSWindow* eventWindow = [event window];
+			if (eventWindow == nil ) {
+				return event;
+			}
+			WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+			if (windowDelegate == nil) {
+				return event;
+			}
+			if ([windowDelegate respondsToSelector:@selector(handleLeftMouseUp:)]) {
+				[windowDelegate handleLeftMouseUp:eventWindow];
+			}
+			return event;
+		}];
+	}
 
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];

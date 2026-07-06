@@ -6,6 +6,10 @@
 @property long id;
 @property (assign) NSStatusItem *statusItem;
 @property (assign) NSMenu *cachedMenu;
+// Pre-click hook: an NSEvent local monitor on macOS <= 26 (the historic
+// behaviour), a gesture observer on macOS 27+ (monitors miss Sidecar/touch
+// input there). Exactly one of these is set.
+@property (strong) id eventMonitor;
 @property (strong) NSGestureRecognizer *gestureObserver;
 - (void)statusItemClicked:(id)sender;
 @end
