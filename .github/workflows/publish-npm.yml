@@ -13,7 +13,7 @@ concurrency:
 jobs:
   detect:
     name: Detect committed changes
-    if: github.event_name != 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails' && github.event_name != 'workflow_dispatch'
     outputs:
       changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
     runs-on: ubuntu-latest
@@ -50,7 +50,8 @@ jobs:
     name: Rebuild and publish
     needs: [detect]
     if: >-
-      !failure() && !cancelled()
+      github.repository == 'wailsapp/wails'
+      && !failure() && !cancelled()
       && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
     runs-on: ubuntu-latest
     permissions:
