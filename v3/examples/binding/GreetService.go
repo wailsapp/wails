@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/wailsapp/wails/v3/examples/binding/data"
 )
@@ -30,10 +31,14 @@ func (*GreetService) Greet(name string, counts ...int) string {
 
 // GreetPerson greets a person
 func (srv *GreetService) GreetPerson(person data.Person) string {
-	return srv.Greet(person.Name, person.Counts...)
+	greeting := srv.Greet(person.Name, person.Counts...)
+	if !person.Birthday.IsZero() {
+		greeting += ", born on " + person.Birthday.Local().Format("2 Jan 2006")
+	}
+	return greeting
 }
 
 // GetPerson returns a person with the given name.
-func (srv *GreetService) GetPerson(name string) data.Person {
-	return data.Person{Name: name}
+func (srv *GreetService) GetPerson(name string, birthday time.Time) data.Person {
+	return data.Person{Name: name, Birthday: birthday}
 }

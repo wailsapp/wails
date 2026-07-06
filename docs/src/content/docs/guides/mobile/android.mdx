@@ -32,7 +32,7 @@ Go files guarded by `//go:build android`.
 
 ## Requirements
 
-- The **Android SDK** with platform-tools, an SDK platform (API 34),
+- The **Android SDK** with platform-tools, an SDK platform (API 35),
   build-tools and the **NDK** (26.3.x) — `wails3 doctor` shows what it finds
 - A **JDK** (e.g. OpenJDK 21) for Gradle; set `JAVA_HOME` if `java` is not on
   your `PATH`
@@ -42,11 +42,11 @@ Go files guarded by `//go:build android`.
 Install the SDK pieces with the command-line tools:
 
 ```bash
-sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" \
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" \
            "ndk;26.3.11579264" "emulator" \
-           "system-images;android-34;google_apis;arm64-v8a"
+           "system-images;android-35;google_apis;arm64-v8a"
 avdmanager create avd --name wails \
-           --package "system-images;android-34;google_apis;arm64-v8a" \
+           --package "system-images;android-35;google_apis;arm64-v8a" \
            --device pixel_7
 ```
 
@@ -75,11 +75,33 @@ In debug builds the WebView is inspectable from Chrome at `chrome://inspect`.
 ```bash
 wails3 task android:package             # production release APK
 wails3 task android:deploy-emulator     # install + launch it
+wails3 task android:bundle              # production release AAB (Android App Bundle)
+wails3 task android:bundle:fat          # release AAB containing all ABIs
+wails3 task android:run:device          # debug install + launch on a physical device
+wails3 task android:deploy-device       # install + launch on a physical device
+DEVICE_ID=<serial> wails3 task android:run:device
+DEVICE_ID=<serial> wails3 task android:deploy-device
 ```
 
 Production builds use `-tags production,android`, are stripped, and compile
 out the framework's internal diagnostics. `wails3 task android:package:fat`
 builds both `arm64-v8a` and `x86_64` into a single APK.
+
+Google Play requires the Android App Bundle (`.aab`) format for new app
+submissions, and new submissions must target Android 15 (API 35) or higher;
+the project template sets `compileSdk` and `targetSdk` to 35 in
+`build/android/app/build.gradle`. `wails3 task android:bundle:fat` produces
+`bin/<AppName>.aab` with both ABIs included; Google Play generates
+optimised per-device APKs from it, so the fat bundle is the right artifact
+for store uploads. APKs remain the quickest route for local and emulator
+testing, because an `.aab` cannot be installed directly with `adb`.
+
+`android:run` and `android:deploy-emulator` are emulator-oriented tasks. For a
+physical Android device, use `android:run:device` for a debug APK or
+`android:deploy-device` for a release APK. Both build for `arm64`, select the
+first connected non-emulator entry from `adb devices`, install it, and launch
+`com.wails.app.MainActivity`. Pass `DEVICE_ID=<serial>` to target a specific
+device.
 
 ## Signing & release builds
 
@@ -94,10 +116,17 @@ ANDROID_KEY_PASSWORD=... \
   wails3 task android:package
 ```
 
+The same variables sign App Bundles: run `wails3 task android:bundle:fat`
+with them set to produce a Play-ready `.aab`. Without them the bundle is
+signed with the debug keystore and Google Play will reject it, so the task
+prints a warning.
+
 <Aside type="tip">
-For Play Store uploads, sign a release artifact with your own keystore — set
-the `ANDROID_KEYSTORE_*` variables, or open `build/android/` in Android
-Studio and use *Build → Generate Signed Bundle / APK* to produce an `.aab`.
+With [Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756),
+the keystore you sign with locally is your **upload key**: Google verifies
+your upload with it, then re-signs the app with the app signing key it
+manages. Also note that Google Play requires a higher `versionCode` for
+every upload; bump it in `build/android/app/build.gradle`.
 </Aside>
 
 ## Configuration
@@ -120,6 +149,7 @@ the build tasks.
 | Screens API | ✅ WindowMetrics incl. system-bar work area |
 | Lifecycle events (`events.Android.*`) | ✅ |
 | Haptics, device info, toast | ✅ `Android.*` runtime API |
+| Emulator + physical device builds | ✅ `android:run`, `android:run:device`, `android:deploy-emulator`, `android:deploy-device` |
 | Window geometry, menus, system tray | Intentional no-ops |
 | Multiple windows | Only the first window is displayed |
 

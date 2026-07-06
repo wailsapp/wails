@@ -31,6 +31,119 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.114 - 2026-07-05
+
+## Added
+- Implement Update Manifest protocol and endpoint provider in [PR](https://github.com/wailsapp/wails/pull/5720) by @taliesin-ai
+
+## Changed
+- Fold the `webview2` binding into the v3 module as `v3/internal/webview2`, removing the standalone module, its nightly release/sync workflows, and the go.mod version dance (v3 is its only consumer) in [PR](https://github.com/wailsapp/wails/pull/5711) by @taliesin-ai
+
+## Fixed
+- Move WebView2 monitor-scale detection and DPI-change host resync fix to Unreleased section in [PR](https://github.com/wailsapp/wails/pull/5750) by @taliesin-ai
+- Update WebView2 COM marshaling for float64 and BOOL parameters in [PR](https://github.com/wailsapp/wails/pull/5741) by @wayneforrest
+- Prevent panic and nil dereference in Windows system tray icon updates and destruction in [PR](https://github.com/wailsapp/wails/pull/5703) by @wayneforrest
+- Fixes hidden windows not re-hiding correctly on Windows in [PR](https://github.com/wailsapp/wails/pull/5743) by @wayneforrest
+- Synchronize WebView2 controller visibility with window minimize/maximize/restore in [PR](https://github.com/wailsapp/wails/pull/5742) by @wayneforrest
+
+
+### Fixed
+
+- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai, based on the fix validated by @randalmurphal, with root-cause verification by @eleclin and hardware testing by @qq540491950
+## v3.0.0-alpha2.113 - 2026-07-04
+
+## Added
+- Add a warning when building a release AAB without `ANDROID_KEYSTORE_FILE` set (Google Play rejects debug-signed bundles) and document App Bundle packaging and signing in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing in [PR](https://github.com/wailsapp/wails/pull/5728) by @mortenolsrud (fixes [#5726](https://github.com/wailsapp/wails/issues/5726))
+- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
+
+## Changed
+- Bump `webview2` to v1.0.28 ([release notes](https://github.com/wailsapp/wails/releases/tag/webview2%2Fv1.0.28)).
+- Bump the Android template `compileSdk`/`targetSdk` from 34 to 35, which Google Play requires for new app submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+
+## Fixed
+- Fix baked avatar masks in sponsorkit in [PR](https://github.com/wailsapp/wails/pull/5745) by @leaanthony
+- Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Fix the setup wizard suggesting an outdated Android NDK version (now 26.3.11579264, matching the documented requirement) in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Update French documentation for SvelteKit and options in [PR](https://github.com/wailsapp/wails/pull/5744) by @leaanthony
+- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
+
+## v3.0.0-alpha2.112 - 2026-07-03
+
+## Added
+- Add Go-based contributors SVG generator and update docs/website credits pages in [PR](https://github.com/wailsapp/wails/pull/5724) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+
+## Changed
+- Replace Node-based sponsor image pipeline with Go generator in [PR](https://github.com/wailsapp/wails/pull/5719) by @taliesin-ai
+
+## Fixed
+- Fix Android build asset dependency installation script in [PR](https://github.com/wailsapp/wails/pull/5729) by @taliesin-ai
+- Reject the U+0085 (NEXT LINE) control character in `ValidateAndSanitizeURL`, completing the whitespace coverage of the URL validator
+- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+- Add explicit Objective-C memory management for Cocoa objects across Darwin dialogs, menus, tray, and notifications in [PR](https://github.com/wailsapp/wails/pull/5714) by @taliesin-ai
+- Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
+
+## v3.0.0-alpha2.111 - 2026-07-01
+
+## Added
+- Add HappyTools to community showcase in [PR](https://github.com/wailsapp/wails/pull/5061) by @Aliuyanfeng
+- Add Indonesian locale support and comprehensive documentation in [PR](https://github.com/wailsapp/wails/pull/5643) by @triadmoko
+- Add DisableMenu option to WindowsWindow in [PR](https://github.com/wailsapp/wails/pull/4813) by @leaanthony
+
+## Changed
+- Update Taskfile template and CLI to dispatch build/package tasks with GOOS and ARCH in [PR](https://github.com/wailsapp/wails/pull/5617) by @leaanthony
+
+## Fixed
+- Fixes issue with mac window tabbing in [PR](https://github.com/wailsapp/wails/pull/5708) by @taliesin-ai
+
+## Removed
+- Remove German translated MDX files from contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5702) by @taliesin-ai
+
+## v3.0.0-alpha2.110 - 2026-06-30
+
+## Added
+- Implement macOS WebView reload and force reload, and add recovery for WebContent process termination in [PR](https://github.com/wailsapp/wails/pull/5129) by @wayneforrest
+- Add comprehensive German documentation for contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5396) by @leaanthony
+- Enhance notifications with sound, attachments, scheduling, and update API in [PR](https://github.com/wailsapp/wails/pull/5333) by @popaprozac
+
+## Fixed
+- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+
+## v3.0.0-alpha2.109 - 2026-06-29
+
+## Added
+- Add code samples to EventsEmit documentation in [PR](https://github.com/wailsapp/wails/pull/5026) by @iamhabbeboy
+- Add Windows WebView2 visual hosting option in [PR](https://github.com/wailsapp/wails/pull/5380) by @MerIijn
+- Add Klustr to community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5536) by @SametKUM
+- Add Kira to community showcase with new pages and changelog entry in [PR](https://github.com/wailsapp/wails/pull/5685) by @thiennguyen93
+- Add feedback section to MCP service guide in [PR](https://github.com/wailsapp/wails/pull/5694) by @taliesin-ai
+
+## Changed
+- Server mode now has a first-class production build, consistent with the desktop build tasks (#5693). `task build:server` builds a production binary by default (`-tags server,production`, `-trimpath`, stripped), and accepts `DEV=true` (development server), `OBFUSCATED=true` (garble) and `EXTRA_TAGS`. `task run:server` runs a development server. `Dockerfile.server` / `task build:docker` build the production server (`-tags server,production`) and the production frontend first; the image defaults to a pure-Go static build on distroless/static, with `CGO_ENABLED`, `GO_IMAGE` and `RUNTIME_IMAGE` exposed as overridable build args for CGO apps.
+
+## Fixed
+- Prevent crash when closing window with pending async calls in [PR](https://github.com/wailsapp/wails/pull/4435) by @leaanthony
+- Prevent window activation when opening hidden apps on Windows in [PR](https://github.com/wailsapp/wails/pull/5249) by @leaanthony
+- Ensure WebKit request metadata, response completion, and body stream handling run on the GTK main thread in [PR](https://github.com/wailsapp/wails/pull/5668) by @taliesin-ai
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix WebView2 content shrinking then disappearing after dragging a window across mixed-DPI monitors on Windows by re-asserting the controller bounds in the `WM_DPICHANGED` handler, mirroring the un-minimise DPI resync (#5677)
+
+## v3.0.0-alpha2.108 - 2026-06-28
+
+## Added
+- Add global (system-wide) keyboard shortcuts via `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Shortcuts fire even when the application is not focused. Implemented natively per platform with no third party dependencies: Carbon hot keys on macOS, `RegisterHotKey` on Windows, `XGrabKey` on X11, and the XDG Desktop Portal global shortcuts interface on Wayland.
+- Add built-in MCP server: a Model Context Protocol server that starts automatically when the application is built with the `mcp` tag, letting LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. No user code required: the `mcp` tag is added automatically by `wails3 build`/`wails3 dev` when `WAILS_MCP=1` is set. Configured entirely via environment variables (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+
+## Fixed
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+
 ## v3.0.0-alpha2.107 - 2026-06-27
 
 ## Added

@@ -1,0 +1,181 @@
+---
+title: Update Manifest Protocol
+description: The open JSON protocol Wails apps use to discover and verify self-updates, servable from any static file host or dynamic update server.
+---
+
+The Wails Update Manifest protocol is a small, open JSON contract between a Wails application and an update source. Anything that can serve a JSON file over HTTPS can serve Wails updates: an S3 bucket, GitHub Pages, a CDN, or a dynamic update server that gates releases on a license.
+
+The client side ships in the framework as the `endpoint` provider (`github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint`). This page is the wire format reference for anyone implementing the server side.
+
+## Design goals
+
+1. **Static-host friendly.** A single manifest file per channel, listing every platform's artifact, is a complete implementation. No server code required.
+2. **Dynamic-server friendly.** The client sends `platform`, `arch`, `version` and `channel` with every check, so a server can respond with exactly one artifact, apply licensing rules, or return `204 No Content` when the caller is current.
+3. **Verification first.** The manifest carries checksums and signatures per artifact, and the Wails updater verifies them against a public key pinned in the application binary at build time. The update source never chooses its own trust root.
+
+## The request
+
+The client issues a `GET` to the configured manifest URL with `Accept: application/json` plus any headers the application configured (for example `Authorization: License <key>`).
+
+The URL may embed placeholders, which the client substitutes on every check:
+
+| Placeholder | Substituted with |
+|---|---|
+| `{{platform}}` | The running OS as a Go `GOOS` value (`darwin`, `windows`, `linux`) |
+| `{{arch}}` | The running architecture as a Go `GOARCH` value (`amd64`, `arm64`, ...) |
+| `{{version}}` | The currently installed version |
+| `{{channel}}` | The configured release channel, when set |
+
+Any of the four values not consumed by a placeholder is appended as a query parameter of the same name (`channel` only when configured). Both of these are therefore valid, equivalent configurations:
+
+```text
+# Dynamic server: reads query parameters
+https://updates.example.com/check
+  -> GET /check?platform=darwin&arch=arm64&version=1.0.0&channel=stable
+
+# Static host: one manifest per platform/arch/channel path
+https://cdn.example.com/updates/{{platform}}/{{arch}}/{{channel}}.json
+  -> GET /updates/darwin/arm64/stable.json?version=1.0.0
+```
+
+Static hosts simply ignore the query parameters they receive.
+
+## The response
+
+| Status | Meaning |
+|---|---|
+| `200 OK` | A manifest follows. The client decides whether it is an upgrade. |
+| `204 No Content` | The server compared versions and the caller is up to date. |
+| `404 Not Found` | Nothing published (treated the same as up to date). |
+| Anything else | An error. The updater falls through to the next configured provider. |
+
+A `200` body is a manifest document:
+
+```json
+{
+  "schemaVersion": 1,
+  "version": "2.1.0",
+  "channel": "stable",
+  "name": "Summer Release",
+  "notes": "## What's new\n\n- Faster startup\n- New themes",
+  "publishedAt": "2026-07-03T10:00:00Z",
+  "artifacts": [
+    {
+      "url": "MyApp-2.1.0-darwin-arm64.zip",
+      "platform": "darwin",
+      "arch": "arm64",
+      "filetype": "zip",
+      "size": 8388608,
+      "digestAlgo": "sha512",
+      "digest": "base64-encoded digest bytes",
+      "signatureAlgo": "ed25519ph",
+      "signature": "base64-encoded signature bytes"
+    },
+    {
+      "url": "MyApp-2.1.0-windows-amd64.zip",
+      "platform": "windows",
+      "arch": "amd64",
+      "filetype": "zip",
+      "size": 9437184,
+      "digestAlgo": "sha512",
+      "digest": "...",
+      "signatureAlgo": "ed25519ph",
+      "signature": "..."
+    }
+  ]
+}
+```
+
+### Top-level fields
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `schemaVersion` | int | no | Protocol version. Omitted means `1`. Clients reject values newer than they understand. |
+| `version` | string | **yes** | SemVer 2.0.0, with or without a leading `v`. |
+| `channel` | string | no | Informational. A client configured for a different channel treats the manifest as no update. |
+| `name` | string | no | Human-readable release title, shown in the update window. |
+| `notes` | string | no | Release notes in Markdown, rendered in the update window. |
+| `publishedAt` | string | no | RFC 3339 timestamp. |
+| `artifacts` | array | **yes** | One entry per downloadable artifact. Order expresses publisher preference. |
+| `metadata` | object | no | Free-form key/value data, passed through to the application. |
+
+Clients ignore unknown fields, so servers may add their own without breaking anyone. Server-specific additions belong in `metadata`.
+
+### Artifact fields
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `url` | string | **yes** | Absolute, or relative to the manifest URL. `http(s)` only. |
+| `platform` | string | no | Go `GOOS` value. Common aliases (`macos`, `win`, ...) are accepted. Empty matches every platform. |
+| `arch` | string | no | Go `GOARCH` value. Common aliases (`x86_64`, `aarch64`, ...) are accepted. Empty matches every architecture. |
+| `filename` | string | no | Defaults to the last path segment of `url`. |
+| `filetype` | string | no | Defaults to the filename extension. |
+| `size` | int | no | Bytes, used for download progress. |
+| `digestAlgo` / `digest` | string / base64 | no | `sha256` or `sha512`. |
+| `signatureAlgo` / `signature` | string / base64 | no | `ed25519`, `ed25519ph`, or `ecdsa-p256`. `signatureAlgo` is required whenever `signature` is present. See the [updater guide](/guides/updater#cryptographic-verification) for what each algorithm signs. |
+
+The client selects the **first** artifact whose `platform` and `arch` match the running system. Base64 values are accepted with or without padding.
+
+### Version comparison
+
+Whether the manifest is an upgrade is always decided client-side under SemVer 2.0.0 precedence: the manifest `version` must be strictly newer than the installed version. This makes static hosting trivially correct (the manifest always describes the latest release, and up-to-date clients simply do nothing) while `204` remains available to dynamic servers as a bandwidth saving.
+
+## Verification and trust
+
+Checksums and signatures ride in the manifest, but the trust root does not: signatures are verified against the public key the application pinned via `updater.Config.PublicKey` at build time. A compromised or substituted update source cannot supply its own key. An artifact that carries a signature when the application has no pinned key fails closed, as does a signature without a declared `signatureAlgo` or one that does not decode: clients never silently fall back to digest-only verification.
+
+Digest-only artifacts install after the digest check, which protects against corruption but relies on TLS plus the host's own integrity for tamper resistance. Ship signatures for anything security-sensitive.
+
+Signing an artifact with the framework's `ed25519ph` scheme is a few lines of Go:
+
+```go
+digest := sha512.Sum512(artifactBytes)
+sig, _ := privateKey.Sign(nil, digest[:], &ed25519.Options{Hash: crypto.SHA512})
+manifest.Artifacts[i].DigestAlgo = "sha512"
+manifest.Artifacts[i].Digest = base64.StdEncoding.EncodeToString(digest[:])
+manifest.Artifacts[i].SignatureAlgo = "ed25519ph"
+manifest.Artifacts[i].Signature = base64.StdEncoding.EncodeToString(sig)
+```
+
+In practice you rarely write that code: the CLI does it for you.
+
+## Publishing with the wails3 CLI
+
+The `wails3 updater` command group covers the whole publishing pipeline. A release is three commands:
+
+```bash
+# Once per application: create the signing keypair.
+wails3 updater genkey
+# updater.key      keep secret (CI secret store), signs every release
+# updater.key.pub  embed in the app and pass as updater.Config.PublicKey
+
+# Per release: digest, sign and describe every artifact in one manifest.
+wails3 updater manifest -version 2.1.0 -channel stable \
+    -key updater.key -notes-file notes.md \
+    -url-prefix "https://cdn.example.com/myapp/2.1.0" \
+    bin/updates/
+
+# Before uploading: re-verify the files exactly as a shipped app would.
+wails3 updater verify -manifest manifest.json -publickey updater.key.pub
+```
+
+`manifest` accepts files or directories (key material, `.json`, checksum and notes sidecars are skipped automatically), streams each artifact through SHA-512, signs the digest with Ed25519ph when `-key` is given, and infers `platform` and `arch` from conventional filenames such as `MyApp-2.1.0-darwin-arm64.zip` (common aliases like `macOS`, `win64`, `x86_64` and `aarch64` are understood; a warning is printed for anything it cannot infer, which then matches every platform). Omit `-url-prefix` to emit relative URLs and upload the manifest next to the artifacts.
+
+`verify` exits non-zero on any mismatch, making it a natural CI gate between building and publishing. For servers that assemble manifests themselves, `wails3 updater sign -key updater.key <files...>` prints each file's `digest`/`signature` fields as JSON ready to merge into your own document.
+
+## Authentication
+
+Authentication is the server's business; the protocol just carries headers. The client resends its configured headers on every manifest request. For artifact downloads the `Authorization` header is sent only when the artifact URL is on the same host as the manifest and does not downgrade from `https` to `http`, and it is stripped on any cross-origin or downgrading redirect, so credentials never leak to a CDN or object store and never travel in cleartext.
+
+License-gated example, pairing naturally with hosted licensing services:
+
+```go
+ep, _ := endpoint.New(endpoint.Config{
+    URL:     "https://updates.example.com/check",
+    Headers: map[string]string{"Authorization": "License " + licenseKey},
+})
+```
+
+## Client configuration
+
+See the [updater guide](/guides/updater#providers) for the full `endpoint.Config` reference and how the provider slots into fallback chains alongside the GitHub, keygen.sh and AppCast providers.

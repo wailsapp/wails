@@ -1,0 +1,525 @@
+---
+title: Build Lintas Platform
+description: Build untuk beberapa platform dari satu mesin
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+## Memulai Cepat
+
+Wails v3 mendukung build untuk Windows, macOS, dan Linux dari sistem operasi host mana pun. Sistem build secara otomatis mendeteksi lingkungan Anda dan memilih metode kompilasi yang tepat.
+
+**Ingin cross-compile ke macOS dan Linux?** Jalankan ini sekali untuk menyiapkan image Docker (~800MB unduhan):
+
+```bash
+wails3 task setup:docker
+```
+
+Kemudian build untuk platform apa pun:
+
+```bash
+# Build for current platform (production by default)
+wails3 build
+
+# Build for specific platforms
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# Build for ARM64 architecture
+wails3 build GOOS=windows GOARCH=arm64
+wails3 build GOOS=darwin GOARCH=arm64
+wails3 build GOOS=linux GOARCH=arm64
+
+# Environment variable style also works
+GOOS=darwin GOARCH=arm64 wails3 build
+```
+
+### Windows
+
+Windows adalah target cross-compilation paling sederhana karena tidak memerlukan CGO secara default.
+
+```bash
+wails3 build GOOS=windows
+```
+
+Ini berfungsi dari OS host mana pun tanpa setup tambahan. Cross-compilation bawaan Go menangani semuanya.
+
+**Jika aplikasi Anda memerlukan CGO** (misalnya, Anda menggunakan library C atau paket yang bergantung pada CGO), Anda memerlukan Docker saat build dari macOS atau Linux:
+
+```bash
+# One-time setup
+wails3 task setup:docker
+
+# Build with CGO enabled
+wails3 task windows:build CGO_ENABLED=1
+```
+
+Taskfile mendeteksi `CGO_ENABLED=1` pada host non-Windows dan secara otomatis menggunakan image Docker.
+
+### macOS
+
+Build macOS memerlukan CGO untuk integrasi WebView, yang berarti cross-compilation memerlukan tooling khusus.
+
+```bash
+# Build for Apple Silicon (arm64) - default
+wails3 build GOOS=darwin
+
+# Build for Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+
+# Build universal binary (both architectures)
+wails3 task darwin:build:universal
+```
+
+**Dari Linux atau Windows**, Anda perlu menyiapkan Docker terlebih dahulu:
+
+```bash
+wails3 task setup:docker
+```
+
+Setelah image dibangun, sistem build mendeteksi bahwa Anda tidak di macOS dan menggunakan Docker secara otomatis. Anda tidak perlu mengubah perintah build.
+
+Perhatikan bahwa binary macOS yang di-cross-compile tidak ditandatangani kode. Anda perlu menandatanganinya di macOS atau di CI sebelum distribusi.
+
+### Linux
+
+Build Linux memerlukan CGO untuk integrasi WebView.
+
+```bash
+wails3 build GOOS=linux
+
+# Build for specific architecture
+wails3 build GOOS=linux GOARCH=amd64
+wails3 build GOOS=linux GOARCH=arm64
+```
+
+**Dari macOS atau Windows**, Anda perlu menyiapkan Docker terlebih dahulu:
+
+```bash
+wails3 task setup:docker
+```
+
+Sistem build mendeteksi bahwa Anda tidak di Linux dan menggunakan Docker secara otomatis.
+
+**Di Linux tanpa C compiler**, sistem build memeriksa `gcc` atau `clang`. Jika keduanya tidak ditemukan, fallback ke Docker. Ini berguna untuk container minimal atau sistem tanpa alat build terinstal. Anda dapat:
+
+1. Instal C compiler: `sudo apt install build-essential` (Debian/Ubuntu) atau `sudo pacman -S base-devel` (Arch)
+2. Build image Docker dan biarkan digunakan secara otomatis
+
+### Arsitektur ARM
+
+Semua platform mendukung cross-compilation ARM64 menggunakan `GOARCH`:
+
+```bash
+# Windows ARM64 (Surface Pro X, Windows on ARM)
+wails3 build GOOS=windows GOARCH=arm64
+
+# Linux ARM64 (Raspberry Pi 4/5, AWS Graviton)
+wails3 build GOOS=linux GOARCH=arm64
+
+# macOS ARM64 (Apple Silicon - this is the default on macOS)
+wails3 build GOOS=darwin GOARCH=arm64
+
+# macOS Intel (amd64)
+wails3 build GOOS=darwin GOARCH=amd64
+```
+
+Image Docker menyertakan target cross-compiler Zig untuk amd64 dan arm64 di semua platform, sehingga build ARM berfungsi dari host mana pun:
+
+| Build ARM64 untuk | Dari Windows | Dari macOS | Dari Linux |
+|-----------------|--------------|------------|------------|
+| **Windows ARM64** | Native Go | Native Go | Native Go |
+| **macOS ARM64** | Docker | Native | Docker |
+| **Linux ARM64** | Docker | Docker | Docker* |
+
+*Linux ARM64 dari Linux x86_64 menggunakan Docker karena cross-compilation CGO memerlukan toolchain berbeda.
+
+## Cara Kerjanya
+
+### Matriks Cross-Compilation
+
+| Host → Target | Windows | macOS | Linux |
+|---------------|---------|-------|-------|
+| **Windows**   | Native  | Docker | Docker |
+| **macOS**     | Native Go | Native | Docker |
+| **Linux**     | Native Go | Docker | Native |
+
+- **Native** = Toolchain native platform, tanpa setup tambahan
+- **Native Go** = Cross-compilation bawaan Go (`CGO_ENABLED=0`)
+- **Docker** = Image Docker dengan cross-compiler Zig
+
+### Persyaratan CGO
+
+| Target | CGO Diperlukan | Metode Cross-Compilation |
+|--------|--------------|--------------------------|
+| Windows | Tidak (default) | Native Go. Docker hanya jika `CGO_ENABLED=1` |
+| macOS | Ya | Docker dengan macOS SDK |
+| Linux | Ya | Docker, atau native jika C compiler tersedia |
+
+### Deteksi Otomatis
+
+Taskfile secara otomatis memilih metode build yang tepat berdasarkan lingkungan Anda:
+
+- **Target Windows:** Menggunakan cross-compilation native Go secara default. Jika Anda secara eksplisit mengatur `CGO_ENABLED=1` pada host non-Windows, beralih ke Docker.
+- **Target macOS:** Menggunakan Docker secara otomatis saat tidak di macOS. Tidak perlu intervensi manual.
+- **Target Linux:** Memeriksa `gcc` atau `clang`. Menggunakan kompilasi native jika ditemukan, jika tidak fallback ke Docker.
+
+### Image Docker
+
+Wails menggunakan satu image Docker (`wails-cross`) yang dapat build untuk semua platform. Menggunakan [Zig](https://ziglang.org/) sebagai cross-compiler, yang dapat menargetkan platform apa pun dari host mana pun. macOS SDK disertakan untuk target darwin.
+
+```bash
+wails3 task setup:docker
+```
+
+Anda dapat memeriksa apakah image sudah siap dengan menjalankan `wails3 doctor`.
+
+### macOS SDK
+
+Image Docker mengunduh macOS SDK dari [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) selama proses build image. Ini diperlukan karena header macOS dibutuhkan untuk kompilasi CGO.
+
+**Penting:** Wails tidak mendistribusikan macOS SDK. Pengguna bertanggung jawab meninjau ketentuan lisensi SDK Apple sebelum menggunakan fitur ini.
+
+## Build Image Anda Sendiri
+
+Jika Anda perlu menyesuaikan image Docker (misalnya, menggunakan versi macOS SDK berbeda, menambahkan alat tambahan, atau menggunakan SDK sendiri), Anda dapat build image sendiri.
+
+### Dockerfile
+
+Buat `Dockerfile` dengan konten berikut:
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM golang:1.24-alpine
+
+ARG ZIG_VERSION=0.14.0
+ARG MACOS_SDK_VERSION=14.5
+ARG IMAGE_VERSION=1.0.0
+
+LABEL org.opencontainers.image.title="Wails Cross-Compiler"
+LABEL org.opencontainers.image.description="Cross-compile Wails v3 apps to macOS, Linux, and Windows"
+LABEL org.opencontainers.image.source="https://github.com/wailsapp/wails"
+LABEL org.opencontainers.image.vendor="Wails"
+LABEL org.opencontainers.image.version="${IMAGE_VERSION}"
+LABEL io.wails.sdk.version="${MACOS_SDK_VERSION}"
+LABEL io.wails.zig.version="${ZIG_VERSION}"
+
+RUN apk add --no-cache curl xz nodejs npm gcompat
+
+RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+    | tar -xJ -C /opt \
+    && ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
+
+RUN curl -fL --retry 3 --retry-delay 5 -o /tmp/sdk.tar.xz \
+    "https://github.com/wailsapp/macosx-sdks/releases/download/${MACOS_SDK_VERSION}/MacOSX${MACOS_SDK_VERSION}.sdk.tar.xz" \
+    && tar -xJf /tmp/sdk.tar.xz -C /opt \
+    && mv /opt/MacOSX${MACOS_SDK_VERSION}.sdk /opt/macos-sdk \
+    && rm /tmp/sdk.tar.xz
+
+ENV MACOS_SDK_PATH=/opt/macos-sdk
+
+# Create zig cc wrappers for each target
+# Darwin arm64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-arm64
+
+# Darwin amd64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-darwin-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -mmacosx-version-min=*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-macos-none -isysroot /opt/macos-sdk -I/opt/macos-sdk/usr/include -L/opt/macos-sdk/usr/lib -F/opt/macos-sdk/System/Library/Frameworks -w $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-darwin-amd64
+
+# Linux amd64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-linux-musl $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-linux-amd64
+
+# Linux arm64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-linux-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-linux-musl $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-linux-arm64
+
+# Windows amd64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-amd64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -Wl,*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target x86_64-windows-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-windows-amd64
+
+# Windows arm64
+COPY <<'ZIGWRAP' /usr/local/bin/zcc-windows-arm64
+#!/bin/sh
+ARGS=""
+SKIP_NEXT=0
+for arg in "$@"; do
+    if [ $SKIP_NEXT -eq 1 ]; then
+        SKIP_NEXT=0
+        continue
+    fi
+    case "$arg" in
+        -target) SKIP_NEXT=1 ;;
+        -Wl,*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+exec zig cc -target aarch64-windows-gnu $ARGS
+ZIGWRAP
+RUN chmod +x /usr/local/bin/zcc-windows-arm64
+
+# Build script
+COPY <<'SCRIPT' /usr/local/bin/build.sh
+#!/bin/sh
+set -e
+
+OS=${1:-darwin}
+ARCH=${2:-arm64}
+
+case "${OS}-${ARCH}" in
+    darwin-arm64|darwin-aarch64) export CC=zcc-darwin-arm64; export GOARCH=arm64; export GOOS=darwin ;;
+    darwin-amd64|darwin-x86_64)  export CC=zcc-darwin-amd64; export GOARCH=amd64; export GOOS=darwin ;;
+    linux-arm64|linux-aarch64)   export CC=zcc-linux-arm64;  export GOARCH=arm64; export GOOS=linux ;;
+    linux-amd64|linux-x86_64)    export CC=zcc-linux-amd64;  export GOARCH=amd64; export GOOS=linux ;;
+    windows-arm64|windows-aarch64) export CC=zcc-windows-arm64; export GOARCH=arm64; export GOOS=windows ;;
+    windows-amd64|windows-x86_64)  export CC=zcc-windows-amd64; export GOARCH=amd64; export GOOS=windows ;;
+    *) echo "Usage: <os> <arch>"; echo "  os: darwin, linux, windows"; echo "  arch: amd64, arm64"; exit 1 ;;
+esac
+
+export CGO_ENABLED=1
+export CGO_CFLAGS="-w"
+
+# Build frontend if exists and not already built (host may have built it)
+if [ -d "frontend" ] && [ -f "frontend/package.json" ] && [ ! -d "frontend/dist" ]; then
+    (cd frontend && npm install --silent && npm run build --silent)
+fi
+
+# Build
+APP=${APP_NAME:-$(basename $(pwd))}
+mkdir -p bin
+
+EXT=""
+LDFLAGS="-s -w"
+if [ "$GOOS" = "windows" ]; then
+    EXT=".exe"
+    LDFLAGS="-s -w -H windowsgui"
+fi
+
+go build -ldflags="$LDFLAGS" -o bin/${APP}-${GOOS}-${GOARCH}${EXT} .
+echo "Built: bin/${APP}-${GOOS}-${GOARCH}${EXT}"
+SCRIPT
+RUN chmod +x /usr/local/bin/build.sh
+
+WORKDIR /app
+ENTRYPOINT ["/usr/local/bin/build.sh"]
+CMD ["darwin", "arm64"]
+```
+
+### Membangun Image
+
+Simpan Dockerfile dan build image:
+
+```bash
+docker build -t wails-cross .
+```
+
+### Menggunakan Versi SDK Berbeda
+
+Ubah argumen build `MACOS_SDK_VERSION`:
+
+```bash
+docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
+```
+
+Lihat [versi SDK yang tersedia](https://github.com/wailsapp/macosx-sdks/releases) untuk opsi.
+
+### Menggunakan SDK Anda Sendiri
+
+Jika Anda memiliki macOS SDK sendiri (misalnya, diekstrak dari Xcode), Anda dapat memodifikasi Dockerfile untuk menggunakan file lokal alih-alih mengunduh:
+
+```dockerfile
+# Replace the curl/tar SDK download section with:
+# (Replace 14.5 with your SDK version in both the COPY and mv commands)
+COPY MacOSX14.5.sdk.tar.xz /tmp/sdk.tar.xz
+RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
+    && mv /opt/MacOSX14.5.sdk /opt/macos-sdk \
+    && rm /tmp/sdk.tar.xz
+```
+
+Letakkan tarball SDK Anda di direktori yang sama dengan Dockerfile dan build.
+
+## Integrasi CI/CD
+
+Untuk rilis produksi, kami merekomendasikan menggunakan CI/CD dengan runner native untuk setiap platform. Ini sepenuhnya menghindari cross-compilation dan memastikan Anda mendapatkan binary yang ditandatangani dengan benar.
+
+```yaml
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+          - os: macos-latest
+            goos: darwin
+          - os: windows-latest
+            goos: windows
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Build
+        run: wails3 build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.goos }}
+          path: bin/
+```
+
+## Pemecahan Masalah
+
+### Image Docker tidak ditemukan
+
+```
+Docker image 'wails-cross' not found.
+```
+
+Jalankan `wails3 task setup:docker` untuk build image Docker. Anda hanya perlu melakukan ini sekali.
+
+### Docker daemon tidak berjalan
+
+```
+Docker is required for cross-compilation. Please install Docker.
+```
+
+Jalankan Docker Desktop atau Docker daemon. Di Linux, Anda mungkin perlu menjalankan `sudo systemctl start docker`.
+
+### Tidak ada C compiler di Linux
+
+Jika Anda melihat error terkait CGO saat build di Linux, Anda memiliki dua opsi:
+
+1. **Instal C compiler:**
+   - Debian/Ubuntu: `sudo apt install build-essential`
+   - Arch Linux: `sudo pacman -S base-devel`
+   - Fedora: `sudo dnf install gcc`
+
+2. **Gunakan Docker sebagai gantinya:** Jalankan `wails3 task setup:docker` dan Taskfile akan menggunakannya secara otomatis saat tidak ada compiler terdeteksi.
+
+### Binary macOS tidak ditandatangani
+
+Binary macOS yang di-cross-compile tidak ditandatangani kode. Apple mewajibkan code signing untuk distribusi, jadi Anda perlu:
+
+1. Menandatangani binary di mesin macOS, atau
+2. Menandatangani di CI menggunakan runner macOS
+
+Lihat [Menandatangani Aplikasi](/id/guides/build/signing) untuk detail.
+
+### Pembuatan universal binary
+
+Universal binary (arm64 + amd64 digabung) dapat dibangun di platform apa pun:
+
+```bash
+wails3 task darwin:build:universal
+```
+
+Di Linux dan Windows, Wails menggunakan perintah bawaan `wails3 tool lipo` (didukung oleh [konoui/lipo](https://github.com/konoui/lipo)) untuk menggabungkan binary. Ini membuat satu binary yang berjalan secara native di Apple Silicon dan Mac Intel.
+
+## Langkah Selanjutnya
+
+- [Membangun Aplikasi](/id/guides/build/building) - Perintah dan opsi build dasar
+- [Menandatangani Aplikasi](/id/guides/build/signing) - Code signing untuk distribusi
