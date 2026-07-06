@@ -121,6 +121,8 @@ func TestMigrateEndToEnd(t *testing.T) {
 		"frontend/wailsjs/runtime/runtime.js",
 		"frontend/wailsjs/go/main/App.js",
 		"frontend/dist/.gitkeep",
+		"v2compat/runtime/window.go",
+		"v2compat/runtime/lifecycle.go",
 	}
 	for _, rel := range mustExist {
 		if _, err := os.Stat(filepath.Join(outDir, rel)); err != nil {

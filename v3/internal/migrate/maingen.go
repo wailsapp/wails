@@ -210,7 +210,7 @@ func buildImports(proj *V2Project, opts *V3Options) string {
 	}
 	add("", "github.com/wailsapp/wails/v3/pkg/application")
 	if opts.NeedsLifecycleService() {
-		add(v2compatAlias, V2CompatRuntimeImport)
+		add(v2compatAlias, proj.CompatRuntimeImport())
 	}
 	if opts.OnBeforeClose != "" {
 		add("", "context")

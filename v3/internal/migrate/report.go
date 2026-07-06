@@ -54,8 +54,9 @@ func (r *Report) Markdown() string {
 	sb.WriteString("1. Run `wails3 doctor` to check your environment.\n")
 	sb.WriteString("2. Run `wails3 dev` to build and run the migrated app.\n")
 	sb.WriteString("3. Work through the *Manual steps* below, if any.\n")
-	sb.WriteString("4. Migrate incrementally from the `v2compat/runtime` bridge to the v3 API.\n")
-	sb.WriteString("   Every function in `github.com/wailsapp/wails/v3/pkg/v2compat/runtime` documents its v3 replacement.\n")
+	sb.WriteString("4. Migrate incrementally from the generated `v2compat/runtime` bridge in this\n")
+	sb.WriteString("   project to the v3 API. Every bridge function documents its v3 replacement;\n")
+	sb.WriteString("   delete functions as you go and remove the package when nothing imports it.\n")
 	sb.WriteString("   See https://v3.wails.io/migration/v2-to-v3/ for the full guide.\n\n")
 
 	if len(r.manual) > 0 {
