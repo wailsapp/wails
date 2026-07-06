@@ -48,21 +48,10 @@ export type CallOptions = {
     args: any[];
 };
 
-/**
- * Exception class that will be thrown in case the bound method returns an error.
- * The value of the {@link RuntimeError#name} property is "RuntimeError".
- */
-export class RuntimeError extends Error {
-    /**
-     * Constructs a new RuntimeError instance.
-     * @param message - The error message.
-     * @param options - Options to be forwarded to the Error constructor.
-     */
-    constructor(message?: string, options?: ErrorOptions) {
-        super(message, options);
-        this.name = "RuntimeError";
-    }
-}
+// runtime.js needs to use RuntimeError internally to properly parse and return
+// errors for binding calls, so it had to move there. Exporting here again to
+// keep from breaking the public Call interface.
+export { RuntimeError } from "./runtime.js";
 
 /**
  * Generates a unique ID using the nanoid library.
