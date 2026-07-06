@@ -28,12 +28,12 @@ tasks:
   build:debug:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
+      - npx esbuild@0.28.1 desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
 
   build:production:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
+      - npx esbuild@0.28.1 desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=safari11 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
 
   build:docs:
     internal: true
@@ -50,6 +50,12 @@ tasks:
       - install-deps
     cmds:
       - npm run build:docs:md
+
+  build:assets:
+    desc: Rebuild only the embedded runtime bundles (bundledassets). Run `npm ci` in desktop/@wailsio/runtime first; CI verifies PR bundles against this exact output.
+    deps:
+      - build:debug
+      - build:production
 
   build:runtime:
     internal: true
