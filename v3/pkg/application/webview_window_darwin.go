@@ -57,9 +57,32 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	if( frameless ) {
 		[view setWantsLayer:YES];
-		view.layer.cornerRadius = 8.0;
+		// macOS 27 tightened the default window corner radius and added
+		// NSViewCornerConfiguration; containerConcentric keeps the content
+		// corners matched to whatever the system uses. The classes/selectors
+		// are absent on macOS <= 26, where we keep the historic 8.0 radius.
+		BOOL cornerConfigApplied = NO;
+		Class cornerConfigClass = NSClassFromString(@"NSViewCornerConfiguration");
+		if (cornerConfigClass
+			&& [view respondsToSelector:@selector(setCornerConfiguration:)]
+			&& [cornerConfigClass respondsToSelector:@selector(containerConcentricConfiguration)]) {
+			NSObject* cornerConfig = [cornerConfigClass performSelector:@selector(containerConcentricConfiguration)];
+			if (cornerConfig) {
+				[view setValue:cornerConfig forKey:@"cornerConfiguration"];
+				cornerConfigApplied = YES;
+			}
+		}
+		if (!cornerConfigApplied) {
+			view.layer.cornerRadius = 8.0;
+		}
 	}
 	[window setContentView:view];
+
+	// Forward primary-button events to the delegate via the gesture-recognizer
+	// system; NSEvent monitors miss Sidecar/touch input on macOS 27 (TN3212).
+	WailsWindowMouseGestureObserver* mouseObserver = [[[WailsWindowMouseGestureObserver alloc] initWithTarget:nil action:NULL] autorelease];
+	mouseObserver.delaysPrimaryMouseButtonEvents = NO;
+	[view addGestureRecognizer:mouseObserver];
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);

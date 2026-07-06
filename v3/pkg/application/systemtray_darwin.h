@@ -6,8 +6,17 @@
 @property long id;
 @property (assign) NSStatusItem *statusItem;
 @property (assign) NSMenu *cachedMenu;
-@property (strong) id eventMonitor;
+@property (strong) NSGestureRecognizer *gestureObserver;
 - (void)statusItemClicked:(id)sender;
+@end
+
+// Observes mouse-down on the status-item button through the gesture-recognizer
+// system so the pre-click callback can attach a menu before the button starts
+// native tracking. Replaces an NSEvent local monitor, an input path that
+// misses Sidecar/touch-synthesised events on macOS 27 (TN3212). Never claims
+// the gesture, so the button's own click handling is unaffected.
+@interface WailsStatusItemGestureObserver : NSGestureRecognizer
+@property (assign) StatusItemController *controller;
 @end
 
 void* systemTrayNew(long id);

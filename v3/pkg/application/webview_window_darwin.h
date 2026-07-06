@@ -33,6 +33,15 @@
 
 @end
 
+// Observes primary-button mouse input through the gesture-recognizer system
+// and forwards it to the window's WebviewWindowDelegate. macOS 27 deprecates
+// NSEvent monitors and NSResponder mouse overrides for this (TN3212), and
+// gesture recognizers are the only input path that receives Sidecar/touch
+// synthesised events. The observer never claims the gesture, so event
+// delivery to the webview is unaffected.
+@interface WailsWindowMouseGestureObserver : NSGestureRecognizer
+@end
+
 void windowSetScreen(void* window, void* screen, int yOffset);
 
 // Liquid Glass support functions
