@@ -395,6 +395,7 @@ export default defineConfig({
             { label: "Dialogs", link: "/reference/dialogs" },
             { label: "Frontend Runtime", link: "/reference/frontend-runtime" },
             { label: "CLI", link: "/reference/cli" },
+            { label: "Update Manifest Protocol", link: "/reference/update-manifest" },
           ],
         },
 

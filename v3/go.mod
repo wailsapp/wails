@@ -30,7 +30,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
-	github.com/wailsapp/wails/webview2 v1.0.27
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/sys v0.43.0
 	golang.org/x/term v0.42.0
@@ -109,7 +108,7 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jaypipes/pcidb v1.1.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
-	github.com/jchv/go-winloader v0.0.0-20250406163304-c1995be93bd1 // indirect
+	github.com/jchv/go-winloader v0.0.0-20250406163304-c1995be93bd1
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect

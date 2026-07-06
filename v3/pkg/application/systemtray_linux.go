@@ -6,7 +6,6 @@ Portions of this code are derived from the project:
 */
 package application
 
-import "C"
 import (
 	"fmt"
 	"os"
