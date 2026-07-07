@@ -1,0 +1,38 @@
+---
+sidebar_position: 9
+---
+
+# Écran
+
+Ces méthodes fournissent des informations sur les écrans actuellement connectés.
+
+### ScreenGetAll
+
+Retourne une liste des écrans actuellement connectés.
+
+Go: `ScreenGetAll(ctx context.Context) []screen`<br/>
+JS: `ScreenGetAll()`
+
+#### Écran
+
+Go struct:
+
+```go
+type Screen struct {
+	IsCurrent bool
+	IsPrimary bool
+	Width     int
+	Height    int
+}
+```
+
+Interface Typescript :
+
+```ts
+interface Screen {
+    isCurrent: boolean;
+    isPrimary: boolean;
+    width : number
+    height : number
+}
+```

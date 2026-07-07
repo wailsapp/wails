@@ -1,0 +1,36 @@
+name: Auto Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request_target:
+
+jobs:
+  issue-labeler:
+    name: Label issues
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: github/issue-labeler@v3.4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/issue-labeler.yml
+          enable-versioned-regex: 0
+          include-title: 1
+
+  pr-labeler:
+    name: Label pull requests
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/file-labeler.yml
+          sync-labels: false
