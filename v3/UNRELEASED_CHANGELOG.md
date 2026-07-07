@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Configure WebView2 monitor-scale detection based on UseVisualHosting in [PR](https://github.com/wailsapp/wails/pull/5761) by @wayneforrest
 
 ## Fixed
 <!-- Bug fixes -->
