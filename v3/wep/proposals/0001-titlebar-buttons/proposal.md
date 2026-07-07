@@ -2,8 +2,12 @@
 
 ## Customising Window Controls in Wails
 
-**Author**: Lea Anthony
-**Created**: 2024-05-20
+**WEP Number**: 0001  
+**Status**: Implemented  
+**Author**: Lea Anthony  
+**Created**: 2024-05-20  
+**Proposal**: [#3508](https://github.com/wailsapp/wails/pull/3508)  
+**Implementor**: Lea Anthony
 
 ## Summary
 
