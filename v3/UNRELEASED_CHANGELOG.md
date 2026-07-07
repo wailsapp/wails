@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Implement custom hit-test logic for non-client regions on Windows in [PR](https://github.com/wailsapp/wails/pull/5462) by @savely-krasovsky
 
 ## Changed
 <!-- Changes in existing functionality -->
