@@ -31,6 +31,7 @@
   ],
   "sideEffects": [
     "./dist/index.js",
+    "./dist/appregion.js",
     "./dist/contextmenu.js",
     "./dist/drag.js"
   ],

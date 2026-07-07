@@ -52,9 +52,13 @@ var (
 	procScreenToClient                = moduser32.NewProc("ScreenToClient")
 	procCallWindowProc                = moduser32.NewProc("CallWindowProcW")
 	procSetWindowLong                 = moduser32.NewProc("SetWindowLongW")
-	procSetWindowLongPtr              = moduser32.NewProc("SetWindowLongW")
+	// Wails v3 does not support 32-bit Windows. On 32-bit Windows these Ptr
+	// APIs are C macros over SetWindowLongW/GetWindowLongW and are not exported
+	// from user32.dll, so keep the real 64-bit exports here instead of adding a
+	// 386 fallback.
+	procSetWindowLongPtr              = moduser32.NewProc("SetWindowLongPtrW")
 	procGetWindowLong                 = moduser32.NewProc("GetWindowLongW")
-	procGetWindowLongPtr              = moduser32.NewProc("GetWindowLongW")
+	procGetWindowLongPtr              = moduser32.NewProc("GetWindowLongPtrW")
 	procEnableWindow                  = moduser32.NewProc("EnableWindow")
 	procIsWindowEnabled               = moduser32.NewProc("IsWindowEnabled")
 	procIsWindowVisible               = moduser32.NewProc("IsWindowVisible")
@@ -67,12 +71,14 @@ var (
 	procGetClientRect                 = moduser32.NewProc("GetClientRect")
 	procGetDC                         = moduser32.NewProc("GetDC")
 	procReleaseDC                     = moduser32.NewProc("ReleaseDC")
+	procGetCapture                    = moduser32.NewProc("GetCapture")
 	procSetCapture                    = moduser32.NewProc("SetCapture")
 	procReleaseCapture                = moduser32.NewProc("ReleaseCapture")
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
 	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
+	procGetSystemMetricsForDpi        = moduser32.NewProc("GetSystemMetricsForDpi")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterHotKey                = moduser32.NewProc("RegisterHotKey")
 	procUnregisterHotKey              = moduser32.NewProc("UnregisterHotKey")
@@ -785,6 +791,11 @@ func SetCapture(hwnd HWND) HWND {
 	return HWND(ret)
 }
 
+func GetCapture() HWND {
+	ret, _, _ := procGetCapture.Call()
+	return HWND(ret)
+}
+
 func ReleaseCapture() bool {
 	ret, _, _ := procReleaseCapture.Call()
 
@@ -821,6 +832,18 @@ func MessageBox(hwnd HWND, title, caption string, flags uint) int {
 func GetSystemMetrics(index int) int {
 	ret, _, _ := procGetSystemMetrics.Call(
 		uintptr(index))
+
+	return int(ret)
+}
+
+func HasGetSystemMetricsForDpiFunc() bool {
+	return procGetSystemMetricsForDpi.Find() == nil
+}
+
+func GetSystemMetricsForDpi(index int, dpi UINT) int {
+	ret, _, _ := procGetSystemMetricsForDpi.Call(
+		uintptr(index),
+		uintptr(dpi))
 
 	return int(ret)
 }
@@ -1548,6 +1571,18 @@ func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd 
 		uintptr(hwnd),
 		uintptr(unsafe.Pointer(prcRect)))
 	return ret != 0
+}
+
+func TrackPopupMenuCommand(hmenu HMENU, flags uint32, x, y int32, hwnd HWND, prcRect *RECT) uintptr {
+	ret, _, _ := procTrackPopupMenu.Call(
+		uintptr(hmenu),
+		uintptr(flags|TPM_RETURNCMD),
+		uintptr(x),
+		uintptr(y),
+		0,
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(prcRect)))
+	return ret
 }
 
 // KeybdEvent synthesizes a keystroke. The system can use such a synthesized keystroke to generate a WM_KEYUP or WM_KEYDOWN message.
