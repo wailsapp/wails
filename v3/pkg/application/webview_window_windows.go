@@ -2413,17 +2413,29 @@ func (w *windowsWebviewWindow) setupChromium() {
 	// module leaves detection at its platform default (enabled), so visual
 	// hosting must disable it *explicitly* — merely skipping the enable would
 	// leave detection on AND the host resync running, i.e. two writers racing,
-	// which is the scale(0,0) crash above. Keeping monitorScaleDetectionOn
-	// false lets resyncWebviewRasterizationScale run its real body.
+	// which is the scale(0,0) crash above. With detection off the host owns the
+	// scale via resyncWebviewRasterizationScale.
+	//
+	// Whichever mode: monitorScaleDetectionOn is set from the controller's
+	// *actual* ShouldDetectMonitorScaleChanges after the Put, never from the
+	// value we asked for. A failed Put can leave detection at its platform
+	// default (enabled) while we intended off; keying the flag off intent would
+	// then run the host resync against a detecting Edge — the exact two-writer
+	// race this guards against. The host stands down whenever detection is on so
+	// the rasterization scale keeps exactly one writer.
 	if controller := chromium.GetController(); controller != nil {
 		if c3 := controller.GetICoreWebView2Controller3(); c3 != nil {
-			if globalApplication.options.Windows.UseVisualHosting {
-				if err := c3.PutShouldDetectMonitorScaleChanges(false); err != nil {
-					globalApplication.error("webview2: disable monitor scale detection (visual hosting): %v", err)
-				}
-			} else if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
-				globalApplication.error("webview2: enable monitor scale detection: %v", err)
+			wantDetection := !globalApplication.options.Windows.UseVisualHosting
+			if err := c3.PutShouldDetectMonitorScaleChanges(wantDetection); err != nil {
+				globalApplication.error("webview2: set monitor scale detection to %v: %v", wantDetection, err)
+			}
+			if on, err := c3.GetShouldDetectMonitorScaleChanges(); err == nil {
+				w.monitorScaleDetectionOn = on
 			} else {
+				// Can't confirm the state: assume detection may be on and stand
+				// the host resync down. A cosmetic stale scale beats risking the
+				// two-writer GPU-process crash.
+				globalApplication.error("webview2: query monitor scale detection: %v", err)
 				w.monitorScaleDetectionOn = true
 			}
 		}
