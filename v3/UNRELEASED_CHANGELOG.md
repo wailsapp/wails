@@ -17,7 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Update FAQ documentation to focus on Wails v3 features and guidance in [PR](https://github.com/wailsapp/wails/pull/5763) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
