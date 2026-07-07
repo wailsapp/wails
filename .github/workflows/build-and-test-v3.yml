@@ -108,16 +108,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache apt archives (linux dependencies (GTK4 default))
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v4
+        with:
+          path: ~/.apt-archives
+          key: apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
+          restore-keys: |
+            apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-
+
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
+          sudo mkdir -p $HOME/.apt-archives/partial
+          sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
+          sudo chown -R $(id -u):$(id -g) $HOME/.apt-archives
 
       - name: Install linux dependencies (GTK3 legacy)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo mkdir -p $HOME/.apt-archives/partial
+          sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo chown -R $(id -u):$(id -g) $HOME/.apt-archives
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -219,16 +232,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache apt archives (linux dependencies (GTK4 default))
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v4
+        with:
+          path: ~/.apt-archives
+          key: apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
+          restore-keys: |
+            apt-install-linux-dependencies-gtk4-default--${{ github.job }}-${{ runner.arch }}-
+
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
+          sudo mkdir -p $HOME/.apt-archives/partial
+          sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
+          sudo chown -R $(id -u):$(id -g) $HOME/.apt-archives
 
       - name: Install linux dependencies (GTK3 legacy)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo mkdir -p $HOME/.apt-archives/partial
+          sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo chown -R $(id -u):$(id -g) $HOME/.apt-archives
 
       - name: Setup Go
         uses: actions/setup-go@v5

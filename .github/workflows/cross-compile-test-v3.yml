@@ -91,10 +91,20 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cache apt archives (cross-compile deps)
+        uses: actions/cache@v4
+        with:
+          path: ~/.apt-archives
+          key: apt-cross-compile-${{ github.job }}-${{ runner.arch }}-${{ github.run_id }}
+          restore-keys: |
+            apt-cross-compile-${{ github.job }}-${{ runner.arch }}-
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
+          sudo mkdir -p $HOME/.apt-archives/partial
+          sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
+          sudo chown -R $(id -u):$(id -g) $HOME/.apt-archives
 
       - name: Install Wails3 CLI
         working-directory: v3

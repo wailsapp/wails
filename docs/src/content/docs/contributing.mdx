@@ -84,9 +84,9 @@ go test -cover ./...
 ### Create a Branch
 
 ```bash
-# Update main
-git checkout main
-git pull upstream main
+# Update master
+git checkout master
+git pull upstream master
 
 # Create feature branch
 git checkout -b feature/my-feature
@@ -99,6 +99,10 @@ git checkout -b feature/my-feature
 3. **Update documentation** if needed
 4. **Run tests** to ensure nothing breaks
 5. **Commit changes** with clear messages
+
+v3 changelog entries are generated automatically when your PR merges. To
+control the wording, add your own entry to `v3/UNRELEASED_CHANGELOG.md`
+and the automation will use it instead.
 
 ### Commit Guidelines
 
