@@ -81,7 +81,13 @@ func runVerification(computedDigest []byte, v *Verification, configKey []byte) e
 		}
 	}
 
-	if v.SignatureAlgo == "" || len(v.Signature) == 0 {
+	if len(v.Signature) > 0 && v.SignatureAlgo == "" {
+		// Fail closed: silently downgrading to digest-only mode would let a
+		// manifest that omits (or garbles) signatureAlgo bypass signature
+		// verification the publisher intended.
+		return errors.New("updater: signature present but signatureAlgo missing")
+	}
+	if len(v.Signature) == 0 {
 		return nil // digest-only mode
 	}
 
