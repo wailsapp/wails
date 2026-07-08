@@ -72,8 +72,14 @@ jobs:
         working-directory: v3
         shell: bash
         run: |
+          # Compile-check the whole webview2 tree (generated bindings, legacy
+          # pkg/edge, loader, combridge).
           go build ./internal/webview2/...
-          go test ./internal/webview2/...
+          # Test only the generated bindings. pkg/edge's real-WebView2
+          # integration tests (e.g. TestCookieManager) need an interactive
+          # environment and are owned by the main v3 CI (build-and-test-v3.yml);
+          # re-running them here is redundant and flaky.
+          go test ./internal/webview2/pkg/webview2/
 
       # Live smoke test: create a real CoreWebView2 environment and call a
       # generated binding (GetBrowserVersionString) through the live vtable.
