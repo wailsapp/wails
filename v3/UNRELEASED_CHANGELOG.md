@@ -17,13 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Implement custom hit-test logic for non-client regions on Windows in [PR](https://github.com/wailsapp/wails/pull/5462) by @savely-krasovsky
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Configure WebView2 monitor-scale detection based on UseVisualHosting in [PR](https://github.com/wailsapp/wails/pull/5761) by @wayneforrest
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Windows build failure when using the `server` build tag, caused by Windows GUI files missing the `!server` build constraint that the macOS and Linux equivalents already have (#5680)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

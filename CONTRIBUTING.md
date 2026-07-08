@@ -15,7 +15,7 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Docs: [v3.wails.io](https://v3.wails.io/).
 - Detailed contributor guide: [v3.wails.io/contributing](https://v3.wails.io/contributing/).
 - Changelog: v3 entries are added automatically from your PR on merge. To control the wording, add your own entry to `v3/UNRELEASED_CHANGELOG.md` and the automation will use it instead.
-- **Enhancements require prior discussion** on [Discord](https://discord.gg/JDdSxwjhGf) — see the [feedback guide](https://v3.wails.io/getting-started/feedback/).
+- **Enhancements require prior discussion** in [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) on GitHub Discussions (see the [feedback guide](https://v3.wails.io/feedback/)). Substantial new functionality goes through the [Wails Enhancement Proposal (WEP) process](v3/wep/README.md).
 
 ## Pull request checklist
 

@@ -403,7 +403,7 @@ mainWindow.AttachModal(childWindow)
     There is no per-window `SetIcon` — the application icon is set on the app via `app.SetIcon([]byte)` (or for a Linux-specific window icon, the `application.LinuxWindow.Icon` field at window creation).
     
     **Snap Assist:**
-    Shows Windows 11 snap layout options for the window.
+    Shows Windows 11 snap layout options through the system shortcut path. For a custom HTML maximize button with native hover Snap Layouts, use [Native Non-Client Regions on Windows](/features/windows/frameless#native-non-client-regions-on-windows) instead.
     
     **Taskbar flashing:**
     Useful for notifications when window is minimised.

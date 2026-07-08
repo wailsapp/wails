@@ -209,6 +209,19 @@ func (i *ICoreWebView2) AddContainsFullScreenElementChanged(eventHandler *ICoreW
 	return nil
 }
 
+func (i *ICoreWebView2) AddNavigationStarting(eventHandler *ICoreWebView2NavigationStartingEventHandler, token *_EventRegistrationToken) error {
+	hr, _, _ := i.vtbl.AddNavigationStarting.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(token)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+
+	return nil
+}
+
 func (i *ICoreWebView2) AddNavigationCompleted(eventHandler *ICoreWebView2NavigationCompletedEventHandler, token *_EventRegistrationToken) error {
 	hr, _, _ := i.vtbl.AddNavigationCompleted.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -432,6 +445,18 @@ type iCoreWebView2EnvironmentVtbl struct {
 
 type ICoreWebView2Environment struct {
 	vtbl *iCoreWebView2EnvironmentVtbl
+}
+
+func (e *ICoreWebView2Environment) AddRef() uintptr {
+	ret, _, _ := e.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
+}
+
+func (e *ICoreWebView2Environment) Release() uintptr {
+	ret, _, _ := e.vtbl.Release.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
 }
 
 // CreateCoreWebView2Controller asynchronously creates a new WebView.

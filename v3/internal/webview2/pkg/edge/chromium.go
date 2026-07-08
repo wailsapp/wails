@@ -56,26 +56,34 @@ type Chromium struct {
 	}
 
 	controller                       *ICoreWebView2Controller
+	compositionController            *ICoreWebView2CompositionController
+	compositionController4           *ICoreWebView2CompositionController4
 	webview                          *ICoreWebView2
 	inited                           uintptr
 	envCompleted                     *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler
 	controllerCompleted              *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler
+	compositionControllerCompleted   *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler
 	webMessageReceived               *iCoreWebView2WebMessageReceivedEventHandler
 	containsFullScreenElementChanged *ICoreWebView2ContainsFullScreenElementChangedEventHandler
 	permissionRequested              *iCoreWebView2PermissionRequestedEventHandler
 	webResourceRequested             *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
+	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
+	navigationStarting               *ICoreWebView2NavigationStartingEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
 
 	environment            *ICoreWebView2Environment
 	webview2RuntimeVersion string
+	compositionHost        *compositionHost
 
 	// Settings
-	Debug                 bool
-	DataPath              string
-	BrowserPath           string
-	AdditionalBrowserArgs []string
+	Debug                         bool
+	DataPath                      string
+	BrowserPath                   string
+	AdditionalBrowserArgs         []string
+	NonClientRegionSupportEnabled bool
+	CompositionControllerEnabled  bool
 
 	// permissions
 	permissions      map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -85,10 +93,12 @@ type Chromium struct {
 	MessageCallback                          func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	MessageWithAdditionalObjectsCallback     func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	WebResourceRequestedCallback             func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
+	NavigationStartingCallback               func(sender *ICoreWebView2)
 	NavigationCompletedCallback              func(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs)
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
 	AcceleratorKeyCallback                   func(uint) bool
+	CursorChangedCallback                    func(cursor HCURSOR, systemCursorID uint32)
 
 	// Error handling
 	globalErrorCallback func(error)
@@ -115,10 +125,13 @@ func NewChromium() *Chromium {
 	*/
 	e.envCompleted = newICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler(e)
 	e.controllerCompleted = newICoreWebView2CreateCoreWebView2ControllerCompletedHandler(e)
+	e.compositionControllerCompleted = newICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler(e)
 	e.webMessageReceived = newICoreWebView2WebMessageReceivedEventHandler(e)
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
+	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
+	e.navigationStarting = newICoreWebView2NavigationStartingEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
 	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.containsFullScreenElementChanged = newICoreWebView2ContainsFullScreenElementChangedEventHandler(e)
@@ -155,6 +168,12 @@ func (e *Chromium) errorCallback(err error) {
 func (e *Chromium) SetErrorCallback(callback func(error)) {
 	if callback != nil {
 		e.globalErrorCallback = callback
+	}
+}
+
+func (e *Chromium) SetCursorChangedCallback(callback func(cursor HCURSOR, systemCursorID uint32)) {
+	if callback != nil {
+		e.CursorChangedCallback = callback
 	}
 }
 
@@ -328,10 +347,18 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 
 	log.Printf("[WebView2] Environment created successfully\n")
 
-	env.vtbl.AddRef.Call(uintptr(unsafe.Pointer(env)))
+	env.AddRef()
 	e.environment = env
 
-	err := env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+	var err error
+	if !e.CompositionControllerEnabled {
+		err = env.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted)
+	} else {
+		err = e.createCoreWebView2CompositionController(env)
+		if err != nil {
+			err = e.fallbackToCoreWebView2Controller(fmt.Errorf("composition controller setup failed: %w", err))
+		}
+	}
 	if err != nil {
 		e.errorCallback(err)
 	}
@@ -343,29 +370,130 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		e.errorCallback(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
 	}
 
-	var err error
+	return e.initializeController(controller)
+}
 
-	controller.vtbl.AddRef.Call(uintptr(unsafe.Pointer(controller)))
-	e.controller = controller
+func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Environment) error {
+	env3 := env.GetICoreWebView2Environment3()
+	if env3 == nil {
+		return UnsupportedCapabilityError
+	}
+	defer env3.Release()
 
-	// Try to get ICoreWebView2Controller3 interface for better performance
-	if controller3 := e.controller.GetICoreWebView2Controller3(); controller3 != nil {
-		// Use raw pixels mode for better performance during resize
-		if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
+	host, err := newCompositionHost(e.hwnd)
+	if err != nil {
+		return err
+	}
+	e.compositionHost = host
+
+	return env3.CreateCoreWebView2CompositionController(e.hwnd, e.compositionControllerCompleted)
+}
+
+func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
+	if int32(res) < 0 {
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error creating composition controller with %08x: %s", res, syscall.Errno(res))); err != nil {
 			e.errorCallback(err)
 		}
+		return 0
+	}
 
-		// ShouldDetectMonitorScaleChanges is deliberately left at its default
-		// (enabled): WebView2 tracks monitor DPI changes and updates its own
-		// rasterization scale. This module previously disabled it and left the
-		// scale to the host's WM_DPICHANGED handling, but an externally
-		// written scale races the browser process's internal display
-		// bookkeeping during a mixed-DPI monitor cross — the browser can land
-		// on a degenerate scale(0,0) compositor transform, which kills the
-		// GPU process on every frame until the browser process itself exits
-		// (wailsapp/wails#5732). Detection stays on so the scale has exactly
-		// one writer, on the code path every mainstream embedder exercises;
-		// bounds remain raw pixels, which is orthogonal.
+	if compositionController == nil {
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("composition controller completed without a controller")); err != nil {
+			e.errorCallback(err)
+		}
+		return 0
+	}
+
+	compositionController.AddRef()
+	e.compositionController = compositionController
+	e.compositionController4 = compositionController.GetICoreWebView2CompositionController4()
+
+	if err := e.compositionHost.attachController(e.compositionController); err != nil {
+		if fallbackErr := e.fallbackToCoreWebView2Controller(fmt.Errorf("attaching composition controller failed: %w", err)); fallbackErr != nil {
+			e.errorCallback(fallbackErr)
+		}
+		return 0
+	}
+
+	controller := compositionController.GetICoreWebView2Controller()
+	if controller == nil {
+		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error getting controller from composition controller")); err != nil {
+			e.errorCallback(err)
+		}
+		return 0
+	}
+
+	return e.initializeController(controller)
+}
+
+func (e *Chromium) fallbackToCoreWebView2Controller(reason error) error {
+	log.Printf("[WebView2] Composition hosting unavailable, falling back to HWND controller: %v\n", reason)
+
+	e.releaseCompositionController()
+	e.releaseCompositionHost()
+	e.CompositionControllerEnabled = false
+
+	if e.environment == nil {
+		return fmt.Errorf("cannot fall back to WebView2 HWND controller without an environment: %w", reason)
+	}
+	if err := e.environment.CreateCoreWebView2Controller(e.hwnd, e.controllerCompleted); err != nil {
+		return fmt.Errorf("composition hosting failed (%v), and HWND controller fallback failed: %w", reason, err)
+	}
+	return nil
+}
+
+func (e *Chromium) releaseCompositionController() {
+	if e.compositionController4 != nil {
+		e.compositionController4.Release()
+		e.compositionController4 = nil
+	}
+	if e.compositionController != nil {
+		if controller := e.compositionController.GetICoreWebView2Controller(); controller != nil {
+			_ = controller.Close()
+			controller.Release()
+		}
+		e.compositionController.Release()
+		e.compositionController = nil
+	}
+}
+
+func (e *Chromium) releaseCompositionHost() {
+	if e.compositionHost != nil {
+		e.compositionHost.release()
+		e.compositionHost = nil
+	}
+}
+
+func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uintptr {
+	var err error
+
+	controller.AddRef()
+	e.controller = controller
+
+	// Try to get ICoreWebView2Controller3 interface for better performance.
+	// Keep composition-hosted WebViews on WebView2-managed scale detection:
+	// the DirectComposition surface is owned by WebView2, and manually
+	// reasserting RasterizationScale during monitor transitions can leave that
+	// surface black after DPI increases.
+	if controller3 := e.controller.GetICoreWebView2Controller3(); controller3 != nil {
+		if !e.CompositionControllerEnabled {
+			// Use raw pixels mode for better performance during resize.
+			if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
+				e.errorCallback(err)
+			}
+
+			// ShouldDetectMonitorScaleChanges is deliberately left at its default
+			// (enabled): WebView2 tracks monitor DPI changes and updates its own
+			// rasterization scale. This module previously disabled it and left the
+			// scale to the host's WM_DPICHANGED handling, but an externally
+			// written scale races the browser process's internal display
+			// bookkeeping during a mixed-DPI monitor cross — the browser can land
+			// on a degenerate scale(0,0) compositor transform, which kills the
+			// GPU process on every frame until the browser process itself exits
+			// (wailsapp/wails#5732). Detection stays on so the scale has exactly
+			// one writer, on the code path every mainstream embedder exercises;
+			// bounds remain raw pixels, which is orthogonal.
+		}
 	}
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
@@ -373,7 +501,14 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		e.errorCallback(err)
 	}
 
-	e.webview.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e.webview)))
+	e.webview.AddRef()
+	if e.NonClientRegionSupportEnabled {
+		if err := e.PutIsNonClientRegionSupportEnabled(true); err != nil {
+			if !errors.Is(err, UnsupportedCapabilityError) {
+				e.errorCallback(err)
+			}
+		}
+	}
 	err = e.webview.AddWebMessageReceived(e.webMessageReceived, &token)
 	if err != nil {
 		e.errorCallback(err)
@@ -383,6 +518,10 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		e.errorCallback(err)
 	}
 	err = e.webview.AddWebResourceRequested(e.webResourceRequested, &token)
+	if err != nil {
+		e.errorCallback(err)
+	}
+	err = e.webview.AddNavigationStarting(e.navigationStarting, &token)
 	if err != nil {
 		e.errorCallback(err)
 	}
@@ -398,10 +537,15 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 	if err != nil {
 		e.errorCallback(err)
 	}
-
 	err = e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 	if err != nil {
 		e.errorCallback(err)
+	}
+	if e.compositionController != nil {
+		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
+		if err != nil {
+			e.errorCallback(err)
+		}
 	}
 
 	atomic.StoreUintptr(&e.inited, 1)
@@ -413,6 +557,27 @@ func (e *Chromium) ContainsFullScreenElementChanged(sender *ICoreWebView2, args 
 	if e.ContainsFullScreenElementChangedCallback != nil {
 		e.ContainsFullScreenElementChangedCallback(sender, args)
 	}
+	return 0
+}
+
+func (e *Chromium) CursorChanged(sender *ICoreWebView2CompositionController, _ *IUnknown) uintptr {
+	if e.CursorChangedCallback == nil {
+		return 0
+	}
+
+	cursor, err := sender.GetCursor()
+	if err != nil {
+		e.errorCallback(err)
+		return 0
+	}
+
+	systemCursorID, err := sender.GetSystemCursorId()
+	if err != nil {
+		e.errorCallback(err)
+		return 0
+	}
+
+	e.CursorChangedCallback(cursor, systemCursorID)
 	return 0
 }
 
@@ -581,6 +746,13 @@ func boolToInt(input bool) int {
 	return 0
 }
 
+func (e *Chromium) NavigationStarting(sender *ICoreWebView2, _ *IUnknown) uintptr {
+	if e.NavigationStartingCallback != nil {
+		e.NavigationStartingCallback(sender)
+	}
+	return 0
+}
+
 func (e *Chromium) NavigationCompleted(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs) uintptr {
 	if e.NavigationCompletedCallback != nil {
 		e.NavigationCompletedCallback(sender, args)
@@ -593,6 +765,19 @@ func (e *Chromium) ProcessFailed(sender *ICoreWebView2, args *ICoreWebView2Proce
 		e.ProcessFailedCallback(sender, args)
 	}
 	return 0
+}
+
+func (e *Chromium) Bounds() *Rect {
+	if e == nil || e.controller == nil {
+		return nil
+	}
+
+	rect, err := e.controller.GetBounds()
+	if err != nil {
+		e.errorCallback(err)
+		return nil
+	}
+	return rect
 }
 
 func (e *Chromium) NotifyParentWindowPositionChanged() error {
@@ -641,6 +826,16 @@ func (e *Chromium) OpenDevToolsWindow() {
 
 func (e *Chromium) HasCapability(c Capability) bool {
 	return HasCapability(e.webview2RuntimeVersion, c)
+}
+
+func (e *Chromium) CompositionControllerReady() bool {
+	return e != nil && e.compositionController != nil
+}
+
+func (e *Chromium) NonClientRegionHitTestReady() bool {
+	return e != nil &&
+		e.compositionController4 != nil &&
+		HasCapability(e.webview2RuntimeVersion, NonClientRegion)
 }
 
 func (e *Chromium) GetIsSwipeNavigationEnabled() (bool, error) {
@@ -709,6 +904,46 @@ func (e *Chromium) PutIsSwipeNavigationEnabled(enabled bool) error {
 		return err
 	}
 	return nil
+}
+
+func (e *Chromium) PutIsNonClientRegionSupportEnabled(enabled bool) error {
+	if !HasCapability(e.webview2RuntimeVersion, NonClientRegion) {
+		return UnsupportedCapabilityError
+	}
+	webview2Settings, err := e.webview.GetSettings()
+	if err != nil {
+		return err
+	}
+	webview2Settings9 := webview2Settings.GetICoreWebView2Settings9()
+	if webview2Settings9 == nil {
+		return UnsupportedCapabilityError
+	}
+	return webview2Settings9.PutIsNonClientRegionSupportEnabled(enabled)
+}
+
+func (e *Chromium) GetNonClientRegionAtPoint(x, y int32) (COREWEBVIEW2_NON_CLIENT_REGION_KIND, bool, error) {
+	if !e.NonClientRegionHitTestReady() {
+		return COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE, false, nil
+	}
+
+	region, err := e.compositionController4.GetNonClientRegionAtPoint(POINT{X: x, Y: y})
+	if err != nil {
+		return COREWEBVIEW2_NON_CLIENT_REGION_KIND_NOWHERE, false, err
+	}
+	return region, true, nil
+}
+
+func (e *Chromium) SendMouseInput(
+	eventKind COREWEBVIEW2_MOUSE_EVENT_KIND,
+	virtualKeys COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS,
+	mouseData uint32,
+	x, y int,
+) error {
+	if !e.CompositionControllerReady() {
+		return errors.New("webview2 composition controller is not initialized")
+	}
+
+	return e.compositionController.SendMouseInput(eventKind, virtualKeys, mouseData, POINT{X: int32(x), Y: int32(y)})
 }
 
 func (e *Chromium) AllowExternalDrag(allow bool) error {
