@@ -1,6 +1,6 @@
 ---
 title: NetBird
-description: "A desktop application built with Wails"
+description: "NetBird's cross-platform desktop app, rebuilt from scratch with Wails"
 ---
 
 ![NetBird Peers View](../../../../assets/showcase-images/netbird-peers-view.webp)
@@ -14,9 +14,9 @@ peer-to-peer private network with a centralized access control system, making it
 easy to build secure private networks for your organization or home.
 
 Its desktop app was rebuilt from scratch with Wails, offering a compact Default
-view for the essentials and an expandable Advanced mode to
-browse peers and resources, manage multiple profiles, and configure the client,
-all natively across macOS, Windows, and Linux.
+view for the essentials and an expandable Advanced mode to browse peers and
+resources. A separate settings window lets you manage multiple profiles and
+configure the client, all natively across macOS, Windows, and Linux.
 
 Read more about the GUI in the
 [blog post](https://netbird.io/knowledge-hub/new-desktop-app-release-candidate)
