@@ -13,6 +13,7 @@ var (
 	procDwmSetWindowAttribute        = moddwmapi.NewProc("DwmSetWindowAttribute")
 	procDwmGetWindowAttribute        = moddwmapi.NewProc("DwmGetWindowAttribute")
 	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
+	procDwmDefWindowProc             = moddwmapi.NewProc("DwmDefWindowProc")
 )
 
 func DwmSetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) HRESULT {
@@ -31,6 +32,18 @@ func DwmGetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribut
 		uintptr(pvAttribute),
 		cbAttribute)
 	return HRESULT(ret)
+}
+
+func DwmDefWindowProc(hwnd HWND, msg uint32, wparam, lparam uintptr) (uintptr, bool) {
+	var result uintptr
+	ret, _, _ := procDwmDefWindowProc.Call(
+		hwnd,
+		uintptr(msg),
+		wparam,
+		lparam,
+		uintptr(unsafe.Pointer(&result)),
+	)
+	return result, ret != 0
 }
 
 func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {

@@ -31,6 +31,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-alpha2.117 - 2026-07-08
+
+## Added
+- Implement custom hit-test logic for non-client regions on Windows in [PR](https://github.com/wailsapp/wails/pull/5462) by @savely-krasovsky
+
+## Changed
+- Configure WebView2 monitor-scale detection based on UseVisualHosting in [PR](https://github.com/wailsapp/wails/pull/5761) by @wayneforrest
+
+## v3.0.0-alpha2.116 - 2026-07-07
+
+## Added
+- Update FAQ documentation to focus on Wails v3 features and guidance in [PR](https://github.com/wailsapp/wails/pull/5763) by @taliesin-ai
+
+## v3.0.0-alpha2.115 - 2026-07-06
+
+## Fixed
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix crash on Windows when `WM_ERASEBKGND` paints a solid background during a minimise/restore transition where `GetClientRect` returns nil (guard reported by @sinspired in #5636)
+- Fix frontend bindings error always parses as text by @mbaklor in #5690
+- Fix Windows build failure when using the `server` build tag, caused by Windows GUI files missing the `!server` build constraint that the macOS and Linux equivalents already have (#5680)
+
 ## v3.0.0-alpha2.114 - 2026-07-05
 
 ## Added
