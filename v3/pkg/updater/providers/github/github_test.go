@@ -298,6 +298,7 @@ func TestDefaultAssetMatcher(t *testing.T) {
 		{Name: "app-darwin-aarch64.zip"},  // alt arm64 name
 		{Name: "checksums.txt"},
 		{Name: "app-darwin-arm64.dmg.sig"},
+		{Name: "app-windows-amd64-installer.exe"},
 	}
 	cases := []struct {
 		plat, arch string
@@ -308,6 +309,7 @@ func TestDefaultAssetMatcher(t *testing.T) {
 		{"linux", "386", -1},     // x86 alias must not match the linux-x86_64 asset
 		{"freebsd", "amd64", -1}, // no freebsd asset
 		{"", "amd64", 1},         // empty plat picks first matching arch (skipping sidecars)
+		{"windows", "amd64", -1}, // windows installer skipped by matcher
 	}
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("%s/%s", c.plat, c.arch), func(t *testing.T) {
