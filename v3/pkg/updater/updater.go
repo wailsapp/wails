@@ -409,22 +409,32 @@ func (u *Updater) Restart(_ context.Context) error {
 	// Include PID so concurrent helpers (e.g. test runs, multiple installed
 	// Wails apps updating at the same time) don't truncate each other's logs.
 	logPath := filepath.Join(os.TempDir(), fmt.Sprintf("wails-update-%d.log", os.Getpid()))
+	readyPath := filepath.Join(os.TempDir(), fmt.Sprintf("wails-update-%d-%d.ready", os.Getpid(), time.Now().UnixNano()))
+	_ = os.Remove(readyPath)
+	defer os.Remove(readyPath)
 	env := append(os.Environ(),
 		envHelperMode+"=1",
 		envHelperTarget+"="+target,
 		envHelperNew+"="+staged,
 		envHelperPID+"="+itoa(os.Getpid()),
 		envHelperLog+"="+logPath,
+		envHelperReady+"="+readyPath,
 	)
 
 	cmd := newDetachedCommand(self)
 	cmd.Env = env
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("updater: spawn helper: %w", err)
+		return wrapHelperSpawnError(err)
 	}
-	// Helper is detached and now blocking on waitForPID(os.Getpid()). Hand
-	// off to the host's shutdown sequence so the wait completes and the
-	// swap proceeds.
+	if err := waitForHelperReady(readyPath, helperReadyTimeout); err != nil {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		return err
+	}
+	_ = cmd.Process.Release()
+	// The helper has acknowledged helper mode and is now blocking on
+	// waitForPID(os.Getpid()). Hand off to the host's shutdown sequence so the
+	// wait completes and the swap proceeds.
 	u.host.Quit()
 	return nil
 }
@@ -441,22 +451,22 @@ func (u *Updater) DownloadedPath() string {
 
 // Window-sizing constants for the built-in template:
 //
-//  * upToDateWidth/Height — the small "compact" card used for Checking,
-//    Up-to-Date, and Error states. The default window opens at this size,
-//    so the most common flow (Check → Up-to-Date) involves zero visible
-//    resize: the window is already its target size the moment it appears.
+//   - upToDateWidth/Height — the small "compact" card used for Checking,
+//     Up-to-Date, and Error states. The default window opens at this size,
+//     so the most common flow (Check → Up-to-Date) involves zero visible
+//     resize: the window is already its target size the moment it appears.
 //
-//  * availableWidth/Height — the larger "full-flow" card with room for
-//    Markdown-rendered release notes, the progress bar, and the Restart
-//    & Apply primary action. The Updater grows the window into this size
-//    via WindowSizer when state transitions to Available / Downloading /
-//    Verifying / Installing / Ready, then shrinks back if a fresh check
-//    later returns Up-to-Date.
+//   - availableWidth/Height — the larger "full-flow" card with room for
+//     Markdown-rendered release notes, the progress bar, and the Restart
+//     & Apply primary action. The Updater grows the window into this size
+//     via WindowSizer when state transitions to Available / Downloading /
+//     Verifying / Installing / Ready, then shrinks back if a fresh check
+//     later returns Up-to-Date.
 const (
-	upToDateWidth     = 348
-	upToDateHeight    = 161
-	availableWidth    = 520
-	availableHeight   = 540
+	upToDateWidth   = 348
+	upToDateHeight  = 161
+	availableWidth  = 520
+	availableHeight = 540
 )
 
 // statesNeedingFullSize lists the states whose layout requires the larger
