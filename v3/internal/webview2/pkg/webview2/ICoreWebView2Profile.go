@@ -1,40 +1,46 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ProfileVtbl struct {
 	IUnknownVtbl
-	GetProfileName               ComProc
-	GetIsInPrivateModeEnabled    ComProc
-	GetProfilePath               ComProc
+	GetProfileName ComProc
+	GetIsInPrivateModeEnabled ComProc
+	GetProfilePath ComProc
 	GetDefaultDownloadFolderPath ComProc
 	PutDefaultDownloadFolderPath ComProc
-	GetPreferredColorScheme      ComProc
-	PutPreferredColorScheme      ComProc
+	GetPreferredColorScheme ComProc
+	PutPreferredColorScheme ComProc
 }
 
 type ICoreWebView2Profile struct {
 	Vtbl *ICoreWebView2ProfileVtbl
 }
 
-func (i *ICoreWebView2Profile) AddRef() uintptr {
+func (i *ICoreWebView2Profile) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Profile) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Profile) GetProfileName() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetProfileName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -57,7 +63,7 @@ func (i *ICoreWebView2Profile) GetIsInPrivateModeEnabled() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -65,9 +71,10 @@ func (i *ICoreWebView2Profile) GetProfilePath() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetProfilePath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -82,9 +89,10 @@ func (i *ICoreWebView2Profile) GetDefaultDownloadFolderPath() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetDefaultDownloadFolderPath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -128,6 +136,7 @@ func (i *ICoreWebView2Profile) GetPreferredColorScheme() (COREWEBVIEW2_PREFERRED
 }
 
 func (i *ICoreWebView2Profile) PutPreferredColorScheme(value COREWEBVIEW2_PREFERRED_COLOR_SCHEME) error {
+
 
 	hr, _, _ := i.Vtbl.PutPreferredColorScheme.Call(
 		uintptr(unsafe.Pointer(i)),

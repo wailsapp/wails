@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2GetProcessExtendedInfosCompletedHandler struct {
 	impl ICoreWebView2GetProcessExtendedInfosCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2GetProcessExtendedInfosCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2GetProcessExtendedInfosCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2GetProcessExtendedInfosCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2GetProcessExtendedInfosCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownQueryInterface(
 }
 
 func ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownAddRef(this *ICoreWebView2GetProcessExtendedInfosCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownRelease(this *ICoreWebView2GetProcessExtendedInfosCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2GetProcessExtendedInfosCompletedHandlerInvoke(this *ICoreWebView2GetProcessExtendedInfosCompletedHandler, errorCode uintptr, result *ICoreWebView2ProcessExtendedInfoCollection) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2GetProcessExtendedInfosCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2GetProcessExtendedInfosCompletedHandlerFn = ICoreWebView2GetProcessExtendedInfosCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2GetProcessExtendedInfosCompletedHandlerIUnknownRelease),

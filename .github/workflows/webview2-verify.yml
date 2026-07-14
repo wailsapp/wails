@@ -1,0 +1,106 @@
+name: Verify webview2 generator
+
+on:
+  pull_request:
+    paths:
+      - 'v3/internal/webview2/**'
+      - '.github/workflows/webview2-verify.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'v3/internal/webview2/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Generator tests
+        working-directory: v3/internal/webview2/scripts
+        run: go test -race ./...
+
+      - name: Verify generated bindings are up to date
+        working-directory: v3/internal/webview2/scripts
+        run: |
+          go run ./cmd/webview2gen verify
+          # capabilities.go is also generator-output; regenerate it from the
+          # cached release-notes snapshot and fail if it changes.
+          go run ./cmd/webview2gen capabilities --source test.md
+          if ! git diff --exit-code -- ../pkg/webview2/capabilities.go; then
+            echo "::error::pkg/webview2/capabilities.go is out of date — run 'webview2gen capabilities'"
+            exit 1
+          fi
+
+      - name: Cross-compile generated bindings + tests for Windows
+        working-directory: v3
+        run: |
+          GOOS=windows GOARCH=amd64 go vet ./internal/webview2/pkg/webview2/
+          GOOS=windows GOARCH=arm64 go vet ./internal/webview2/pkg/webview2/
+          GOOS=windows GOARCH=386 go vet ./internal/webview2/pkg/webview2/
+
+  test-windows:
+    runs-on: windows-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: |
+            v3/internal/webview2/scripts/go.sum
+            v3/go.sum
+
+      - name: Generator tests
+        working-directory: v3/internal/webview2/scripts
+        shell: bash
+        run: go test -race ./...
+
+      - name: Binding + generated binding tests (amd64)
+        working-directory: v3
+        shell: bash
+        run: |
+          # Compile-check the whole webview2 tree (generated bindings, legacy
+          # pkg/edge, loader, combridge).
+          go build ./internal/webview2/...
+          # Test only the generated bindings. pkg/edge's real-WebView2
+          # integration tests (e.g. TestCookieManager) need an interactive
+          # environment and are owned by the main v3 CI (build-and-test-v3.yml);
+          # re-running them here is redundant and flaky.
+          go test ./internal/webview2/pkg/webview2/
+
+      # Live smoke test: create a real CoreWebView2 environment and call a
+      # generated binding (GetBrowserVersionString) through the live vtable.
+      # This is the only layer that proves the generator's ABI model matches
+      # Microsoft's actual DLL; it is opt-in (WEBVIEW2_LIVE=1) because it spawns
+      # a browser process and pumps a message loop. windows-latest ships the
+      # Evergreen runtime preinstalled, so the environment can be created.
+      - name: Live WebView2 environment smoke test (amd64)
+        working-directory: v3
+        shell: bash
+        timeout-minutes: 3
+        env:
+          WEBVIEW2_LIVE: "1"
+        run: go test -v -run TestLiveEnvironmentCreation ./internal/webview2/pkg/webview2/
+
+      # Windows runs 32-bit binaries natively, so the 386 marshalling
+      # branches (two-word doubles/tokens, four-word RECTs) are executed
+      # for real here, not just compiled.
+      - name: Generated binding tests (386)
+        working-directory: v3
+        shell: bash
+        env:
+          GOARCH: "386"
+        run: go test ./internal/webview2/pkg/webview2/

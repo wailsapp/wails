@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ClientCertificateRequestedEventHandler struct {
 	impl ICoreWebView2ClientCertificateRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ClientCertificateRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ClientCertificateRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ClientCertificateRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ClientCertificateRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownQueryInterface(t
 }
 
 func ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2ClientCertificateRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownRelease(this *ICoreWebView2ClientCertificateRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ClientCertificateRequestedEventHandlerInvoke(this *ICoreWebView2ClientCertificateRequestedEventHandler, sender *ICoreWebView2, args *ICoreWebView2ClientCertificateRequestedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ClientCertificateRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ClientCertificateRequestedEventHandlerFn = ICoreWebView2ClientCertificateRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ClientCertificateRequestedEventHandlerIUnknownRelease),

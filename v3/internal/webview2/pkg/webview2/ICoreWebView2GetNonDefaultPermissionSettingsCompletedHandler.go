@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler struct {
 	impl ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownQueryIn
 }
 
 func ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownAddRef(this *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownRelease(this *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerInvoke(this *ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandler, errorCode uintptr, result *ICoreWebView2PermissionSettingCollectionView) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerImpl interface 
 }
 
 var ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerFn = ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2GetNonDefaultPermissionSettingsCompletedHandlerIUnknownRelease),

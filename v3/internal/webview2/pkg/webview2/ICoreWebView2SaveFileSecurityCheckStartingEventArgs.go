@@ -1,33 +1,38 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2SaveFileSecurityCheckStartingEventArgsVtbl struct {
 	IUnknownVtbl
-	GetCancelSave            ComProc
-	PutCancelSave            ComProc
-	GetDocumentOriginUri     ComProc
-	GetFileExtension         ComProc
-	GetFilePath              ComProc
+	GetCancelSave ComProc
+	PutCancelSave ComProc
+	GetDocumentOriginUri ComProc
+	GetFileExtension ComProc
+	GetFilePath ComProc
 	GetSuppressDefaultPolicy ComProc
 	PutSuppressDefaultPolicy ComProc
-	GetDeferral              ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2SaveFileSecurityCheckStartingEventArgs struct {
 	Vtbl *ICoreWebView2SaveFileSecurityCheckStartingEventArgsVtbl
 }
 
-func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetCancelSave() (bool, error) {
 	// Create int32 to hold bool result
@@ -41,21 +46,21 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetCancelSave() (b
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutCancelSave(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutCancelSave.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -67,9 +72,10 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetDocumentOriginU
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetDocumentOriginUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -84,9 +90,10 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFileExtension()
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetFileExtension.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -101,9 +108,10 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetFilePath() (str
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -126,21 +134,21 @@ func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) GetSuppressDefault
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) PutSuppressDefaultPolicy(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutSuppressDefaultPolicy.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

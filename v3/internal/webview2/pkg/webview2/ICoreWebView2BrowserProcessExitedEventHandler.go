@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2BrowserProcessExitedEventHandler struct {
 	impl ICoreWebView2BrowserProcessExitedEventHandlerImpl
 }
 
-func (i *ICoreWebView2BrowserProcessExitedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2BrowserProcessExitedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2BrowserProcessExitedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2BrowserProcessExitedEventHandlerIUnknownQueryInterface(this *ICoreWebView2BrowserProcessExitedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2BrowserProcessExitedEventHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2BrowserProcessExitedEventHandlerIUnknownAddRef(this *ICoreWebView2BrowserProcessExitedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2BrowserProcessExitedEventHandlerIUnknownRelease(this *ICoreWebView2BrowserProcessExitedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2BrowserProcessExitedEventHandlerInvoke(this *ICoreWebView2BrowserProcessExitedEventHandler, sender *ICoreWebView2Environment, args *ICoreWebView2BrowserProcessExitedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2BrowserProcessExitedEventHandlerImpl interface {
 }
 
 var ICoreWebView2BrowserProcessExitedEventHandlerFn = ICoreWebView2BrowserProcessExitedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2BrowserProcessExitedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2BrowserProcessExitedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2BrowserProcessExitedEventHandlerIUnknownRelease),

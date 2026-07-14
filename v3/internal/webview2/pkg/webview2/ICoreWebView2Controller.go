@@ -1,49 +1,54 @@
 //go:build windows
 
 package webview2
-
 import (
-	"syscall"
 	"unsafe"
-
+	"math"
+	"syscall"
 	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ControllerVtbl struct {
 	IUnknownVtbl
-	GetIsVisible                      ComProc
-	PutIsVisible                      ComProc
-	GetBounds                         ComProc
-	PutBounds                         ComProc
-	GetZoomFactor                     ComProc
-	PutZoomFactor                     ComProc
-	AddZoomFactorChanged              ComProc
-	RemoveZoomFactorChanged           ComProc
-	SetBoundsAndZoomFactor            ComProc
-	MoveFocus                         ComProc
-	AddMoveFocusRequested             ComProc
-	RemoveMoveFocusRequested          ComProc
-	AddGotFocus                       ComProc
-	RemoveGotFocus                    ComProc
-	AddLostFocus                      ComProc
-	RemoveLostFocus                   ComProc
-	AddAcceleratorKeyPressed          ComProc
-	RemoveAcceleratorKeyPressed       ComProc
-	GetParentWindow                   ComProc
-	PutParentWindow                   ComProc
+	GetIsVisible ComProc
+	PutIsVisible ComProc
+	GetBounds ComProc
+	PutBounds ComProc
+	GetZoomFactor ComProc
+	PutZoomFactor ComProc
+	AddZoomFactorChanged ComProc
+	RemoveZoomFactorChanged ComProc
+	SetBoundsAndZoomFactor ComProc
+	MoveFocus ComProc
+	AddMoveFocusRequested ComProc
+	RemoveMoveFocusRequested ComProc
+	AddGotFocus ComProc
+	RemoveGotFocus ComProc
+	AddLostFocus ComProc
+	RemoveLostFocus ComProc
+	AddAcceleratorKeyPressed ComProc
+	RemoveAcceleratorKeyPressed ComProc
+	GetParentWindow ComProc
+	PutParentWindow ComProc
 	NotifyParentWindowPositionChanged ComProc
-	Close                             ComProc
-	GetCoreWebView2                   ComProc
+	Close ComProc
+	GetCoreWebView2 ComProc
 }
 
 type ICoreWebView2Controller struct {
 	Vtbl *ICoreWebView2ControllerVtbl
 }
 
-func (i *ICoreWebView2Controller) AddRef() uintptr {
+func (i *ICoreWebView2Controller) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Controller) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Controller) GetIsVisible() (bool, error) {
 	// Create int32 to hold bool result
@@ -57,21 +62,21 @@ func (i *ICoreWebView2Controller) GetIsVisible() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isVisible := _isVisible != 0
+    isVisible := _isVisible != 0
 	return isVisible, nil
 }
 
 func (i *ICoreWebView2Controller) PutIsVisible(isVisible bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _isVisibleInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _isVisible int32
 	if isVisible {
-		_isVisibleInt = 1
+		_isVisible = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsVisible.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_isVisibleInt),
+		uintptr(_isVisible),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -95,10 +100,30 @@ func (i *ICoreWebView2Controller) GetBounds() (RECT, error) {
 
 func (i *ICoreWebView2Controller) PutBounds(bounds RECT) error {
 
-	hr, _, _ := i.Vtbl.PutBounds.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&bounds)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutBounds.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[3]),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.PutBounds.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[1],
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutBounds.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&bounds)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -120,15 +145,23 @@ func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-	// The double parameter is passed BY VALUE: a pointer here reaches the
-	// callee as a near 0.0 double value. The per-arch appendDoubleArg helpers
-	// pass it correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
+
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutZoomFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(zoomFactor))),
+			uintptr(uint32(math.Float64bits(zoomFactor)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutZoomFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(zoomFactor)),
+		)
 	}
-	hr, _, _ := i.Vtbl.PutZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -152,10 +185,22 @@ func (i *ICoreWebView2Controller) AddZoomFactorChanged(eventHandler *ICoreWebVie
 
 func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveZoomFactorChanged.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveZoomFactorChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveZoomFactorChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -163,19 +208,35 @@ func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistratio
 }
 
 func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor float64) error {
-	// Both parameters are passed BY VALUE: the 16-byte RECT per the target
-	// ABI's aggregate rules (appendRectArg) and the double per its
-	// floating-point rules (appendDoubleArg).
-	args, ok := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
-	if !ok {
-		return ErrDoubleArgUnsupported
+
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.SetBoundsAndZoomFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[0]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[1]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[2]),
+			uintptr((*(*[4]uint32)(unsafe.Pointer(&bounds)))[3]),
+			uintptr(uint32(math.Float64bits(zoomFactor))),
+			uintptr(uint32(math.Float64bits(zoomFactor)>>32)),
+		)
+	case archIsARM64:
+		hr, _, _ = i.Vtbl.SetBoundsAndZoomFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[0],
+			(*(*[2]uintptr)(unsafe.Pointer(&bounds)))[1],
+			uintptr(math.Float64bits(zoomFactor)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.SetBoundsAndZoomFactor.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(unsafe.Pointer(&bounds)),
+			uintptr(math.Float64bits(zoomFactor)),
+		)
 	}
-	args, ok = appendDoubleArg(args, zoomFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -183,6 +244,7 @@ func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor
 }
 
 func (i *ICoreWebView2Controller) MoveFocus(reason COREWEBVIEW2_MOVE_FOCUS_REASON) error {
+
 
 	hr, _, _ := i.Vtbl.MoveFocus.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -211,10 +273,22 @@ func (i *ICoreWebView2Controller) AddMoveFocusRequested(eventHandler *ICoreWebVi
 
 func (i *ICoreWebView2Controller) RemoveMoveFocusRequested(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveMoveFocusRequested.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveMoveFocusRequested.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveMoveFocusRequested.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -238,10 +312,22 @@ func (i *ICoreWebView2Controller) AddGotFocus(eventHandler *ICoreWebView2FocusCh
 
 func (i *ICoreWebView2Controller) RemoveGotFocus(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveGotFocus.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveGotFocus.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveGotFocus.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -265,10 +351,22 @@ func (i *ICoreWebView2Controller) AddLostFocus(eventHandler *ICoreWebView2FocusC
 
 func (i *ICoreWebView2Controller) RemoveLostFocus(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveLostFocus.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveLostFocus.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveLostFocus.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -292,10 +390,22 @@ func (i *ICoreWebView2Controller) AddAcceleratorKeyPressed(eventHandler *ICoreWe
 
 func (i *ICoreWebView2Controller) RemoveAcceleratorKeyPressed(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveAcceleratorKeyPressed.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveAcceleratorKeyPressed.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveAcceleratorKeyPressed.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -318,9 +428,10 @@ func (i *ICoreWebView2Controller) GetParentWindow() (HWND, error) {
 
 func (i *ICoreWebView2Controller) PutParentWindow(parentWindow HWND) error {
 
+
 	hr, _, _ := i.Vtbl.PutParentWindow.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&parentWindow)),
+		uintptr(parentWindow),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -329,6 +440,7 @@ func (i *ICoreWebView2Controller) PutParentWindow(parentWindow HWND) error {
 }
 
 func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
+
 
 	hr, _, _ := i.Vtbl.NotifyParentWindowPositionChanged.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -340,6 +452,7 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 }
 
 func (i *ICoreWebView2Controller) Close() error {
+
 
 	hr, _, _ := i.Vtbl.Close.Call(
 		uintptr(unsafe.Pointer(i)),
