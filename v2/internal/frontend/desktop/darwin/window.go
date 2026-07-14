@@ -62,7 +62,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
 	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
-	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
+	var fullSizeContent, hideTitleBar, notZoomable, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent, contentProtection C.int
 	var disableEscapeExitsFullscreen C.int
 	var appearance, title *C.char
@@ -118,7 +118,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			}
 		}
 
-		zoomable = bool2Cint(!frontendOptions.Mac.DisableZoom)
+		notZoomable = bool2Cint(frontendOptions.Mac.DisableZoom)
 
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
@@ -127,7 +127,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 
 		appearance = c.String(string(mac.Appearance))
 	}
-	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,
+	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, notZoomable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, contentProtection, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
