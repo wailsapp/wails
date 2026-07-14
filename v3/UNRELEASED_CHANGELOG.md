@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `wails3 migrate` command to assist migrating v2 projects to v3: maps wails.json onto the v3 project layout (Taskfile.yml + build assets), generates a programmatic `main_v3.go.example` with `Bind` entries converted to Services, and writes a `MIGRATION_REPORT.md` covering the manual steps
 
 ## Changed
 <!-- Changes in existing functionality -->

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "myapp",
+  "outputfilename": "myapp-bin",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "wailsjsdir": "./frontend",
+  "debounceMS": 200,
+  "author": {
+    "name": "Test Author",
+    "email": "test@example.com"
+  },
+  "info": {
+    "companyName": "Test Company",
+    "productName": "My Test App",
+    "productVersion": "2.3.4",
+    "copyright": "Copyright 2024 Test Company",
+    "comments": "A test application"
+  }
+}
