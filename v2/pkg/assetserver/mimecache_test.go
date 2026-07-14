@@ -36,6 +36,8 @@ func TestGetMimetype(t *testing.T) {
 		{"svg-w-comment", args{"test_comment.svg", svgWithComment}, "image/svg+xml"},
 		{"svg-w-control-comment", args{"test_control_comment.svg", svgWithCommentAndControlChars}, "image/svg+xml"},
 		{"svg-w-bom-control-comment", args{"test_bom_control_comment.svg", svgWithBomCommentAndControlChars}, "image/svg+xml"},
+		{"wasm nil data", args{"app_bg.wasm", nil}, "application/wasm"},
+		{"wasm binary data", args{"pkg/app_bg.wasm", []byte("\x00asm\x01\x00\x00\x00")}, "application/wasm"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
