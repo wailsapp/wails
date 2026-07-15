@@ -164,7 +164,15 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.Namespace = packageName
 		w.WithBackupDir("")
 
-		for enumName, enum := range enumsToGenerate {
+		// Sort the enum names first to make the output deterministic
+		sortedEnumNames := make([]string, 0, len(enumsToGenerate))
+		for enumName := range enumsToGenerate {
+			sortedEnumNames = append(sortedEnumNames, enumName)
+		}
+		sort.Strings(sortedEnumNames)
+
+		for _, enumName := range sortedEnumNames {
+			enum := enumsToGenerate[enumName]
 			fqemumname := packageName + "." + enumName
 			if seen.Contains(fqemumname) {
 				continue
