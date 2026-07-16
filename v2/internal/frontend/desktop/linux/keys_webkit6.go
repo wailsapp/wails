@@ -1,13 +1,10 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
-
+#cgo pkg-config: gtk4 webkitgtk-6.0
 
 #include "gtk/gtk.h"
 
@@ -103,7 +100,7 @@ func parseModifiers(modifiers []keys.Modifier) C.GdkModifierType {
 		case keys.ControlKey, keys.CmdOrCtrlKey:
 			result |= C.GDK_CONTROL_MASK
 		case keys.OptionOrAltKey:
-			result |= C.GDK_MOD1_MASK
+			result |= C.GDK_ALT_MASK
 		}
 	}
 	return result
