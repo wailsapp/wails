@@ -120,6 +120,42 @@ var EnumOrderingTest = BindingTest{
 `,
 }
 
+// OutstandingEnumOrderingTest tests that enums in a package without generated
+// structs are also output in alphabetical order by enum name.
+var OutstandingEnumOrderingTest = BindingTest{
+	name:    "OutstandingEnumOrderingTest",
+	structs: nil,
+	enums: []interface{}{
+		// Intentionally add enums in non-alphabetical order
+		AllZFirstEnumValues,
+		AllASecondEnumValues,
+		AllMMiddleEnumValues,
+	},
+	exemptions:  nil,
+	shouldError: false,
+	TsGenerationOptionsTest: TsGenerationOptionsTest{
+		TsPrefix: "",
+		TsSuffix: "",
+	},
+	want: `export namespace binding_test {
+
+	export enum ASecondEnum {
+	    AValue1 = 0,
+	    AValue2 = 1,
+	}
+	export enum MMiddleEnum {
+	    MValue1 = 0,
+	    MValue2 = 1,
+	}
+	export enum ZFirstEnum {
+	    ZValue1 = 0,
+	    ZValue2 = 1,
+	}
+
+}
+`,
+}
+
 // EnumElementOrderingEnum tests sorting of enum elements by TSName
 type EnumElementOrderingEnum string
 

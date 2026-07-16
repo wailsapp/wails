@@ -57,6 +57,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		DeepElementsTest,
 		// PR #4664: Enum ordering tests
 		EnumOrderingTest,
+		OutstandingEnumOrderingTest,
 		EnumElementOrderingTest,
 		TSNameEnumElementOrderingTest,
 	}

@@ -87,6 +87,24 @@ func (b *Bindings) ToJSON() (string, error) {
 	return b.db.ToJSON()
 }
 
+// addEnumsToGenerator adds unseen enums in name order for deterministic output.
+func addEnumsToGenerator(w *typescriptify.TypeScriptify, packageName string, enums map[string]interface{}, seen *slicer.StringSlicer) {
+	sortedEnumNames := make([]string, 0, len(enums))
+	for enumName := range enums {
+		sortedEnumNames = append(sortedEnumNames, enumName)
+	}
+	sort.Strings(sortedEnumNames)
+
+	for _, enumName := range sortedEnumNames {
+		enum := enums[enumName]
+		fqemumname := packageName + "." + enumName
+		if seen.Contains(fqemumname) {
+			continue
+		}
+		w.AddEnum(enum)
+	}
+}
+
 func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
@@ -123,21 +141,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		// if we have enums for this package, add them as well
 		var enums, enumsExist = b.enumsToGenerateTS[packageName]
 		if enumsExist {
-			// Sort the enum names first to make the output deterministic
-			sortedEnumNames := make([]string, 0, len(enums))
-			for enumName := range enums {
-				sortedEnumNames = append(sortedEnumNames, enumName)
-			}
-			sort.Strings(sortedEnumNames)
-
-			for _, enumName := range sortedEnumNames {
-				enum := enums[enumName]
-				fqemumname := packageName + "." + enumName
-				if seen.Contains(fqemumname) {
-					continue
-				}
-				w.AddEnum(enum)
-			}
+			addEnumsToGenerator(w, packageName, enums, &seen)
 			seenEnumsPackages.Add(packageName)
 		}
 
@@ -164,13 +168,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.Namespace = packageName
 		w.WithBackupDir("")
 
-		for enumName, enum := range enumsToGenerate {
-			fqemumname := packageName + "." + enumName
-			if seen.Contains(fqemumname) {
-				continue
-			}
-			w.AddEnum(enum)
-		}
+		addEnumsToGenerator(w, packageName, enumsToGenerate, &seen)
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
