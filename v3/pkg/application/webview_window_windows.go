@@ -563,7 +563,10 @@ func (w *windowsWebviewWindow) run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		isDark := w32.IsCurrentlyDarkMode()
-		if isDark {
+		// AllowDarkModeForWindow is only loaded on Windows builds that expose the
+		// dark-mode uxtheme APIs; it is nil on older builds (e.g. Windows Server
+		// 2019 / build 17763). Guard the call as done elsewhere in w32.
+		if isDark && w32.AllowDarkModeForWindow != nil {
 			w32.AllowDarkModeForWindow(w.hwnd, true)
 		}
 		w.updateTheme(isDark)
@@ -577,7 +580,11 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
-		w32.AllowDarkModeForWindow(w.hwnd, true)
+		// Nil on Windows builds without the dark-mode uxtheme APIs (e.g. Server
+		// 2019 / build 17763); calling it there panics. Guard as done elsewhere.
+		if w32.AllowDarkModeForWindow != nil {
+			w32.AllowDarkModeForWindow(w.hwnd, true)
+		}
 		w.updateTheme(true)
 		// Don't initialize default dark theme here if custom theme might be set
 		// The updateTheme call above will handle custom themes

@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix nil pointer panic on startup when a window uses a Dark (or system-dark) title bar on Windows builds without the dark-mode uxtheme APIs, such as Windows Server 2019 (build 17763). The unguarded `AllowDarkModeForWindow` calls in the window's theme setup now match the nil guard used elsewhere in `w32`.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
