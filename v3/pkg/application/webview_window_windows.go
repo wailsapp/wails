@@ -564,7 +564,7 @@ func (w *windowsWebviewWindow) run() {
 	case SystemDefault:
 		isDark := w32.IsCurrentlyDarkMode()
 		if isDark {
-			w32.AllowDarkModeForWindow(w.hwnd, true)
+			w.applyDarkMode()
 		}
 		w.updateTheme(isDark)
 		// Don't initialize default dark theme here if custom theme might be set
@@ -577,7 +577,7 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
-		w32.AllowDarkModeForWindow(w.hwnd, true)
+		w.applyDarkMode()
 		w.updateTheme(true)
 		// Don't initialize default dark theme here if custom theme might be set
 		// The updateTheme call above will handle custom themes
@@ -1445,6 +1445,17 @@ func (w *windowsWebviewWindow) disableIcon() {
 				w32.SWP_NOSIZE|
 				w32.SWP_NOZORDER),
 	)
+}
+
+// applyDarkMode opts the window into dark mode via the uxtheme
+// AllowDarkModeForWindow export. That export is only loaded on Windows builds
+// that provide it (>= 18334); on older builds such as Windows 10 1809 / build
+// 17763 it is nil, so this guards the call to avoid a nil-pointer panic on
+// startup.
+func (w *windowsWebviewWindow) applyDarkMode() {
+	if w32.AllowDarkModeForWindow != nil {
+		w32.AllowDarkModeForWindow(w.hwnd, true)
+	}
 }
 
 func (w *windowsWebviewWindow) processThemeColour(fn func(w32.HWND, uint32), value *uint32) {
