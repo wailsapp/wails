@@ -1,0 +1,135 @@
+v: 2
+scenes:
+- id: architecture-context
+  title: Wails v3 is one application with two runtimes
+  for: 3600ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: eyebrow, kind: text, x: 640, y: 92, text: WAILS v3 INTERNALS · 01, font_size: 18, color: "#67E8F9FF"}
+  - {id: title, kind: text, x: 640, y: 160, text: One app. Two runtimes., font_size: 52, color: "#F8FAFCFF"}
+  - {id: subtitle, kind: text, x: 640, y: 218, text: Web technology inside a native application process, font_size: 22, color: "#94A3B8FF"}
+  - {id: frontend-card, kind: rect, x: 370, y: 410, width: 390, height: 250, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 3, corner_radius: 26}
+  - {id: frontend-label, kind: text, x: 370, y: 370, text: FRONTEND, font_size: 18, color: "#67E8F9FF"}
+  - {id: frontend-main, kind: text, x: 370, y: 420, text: HTML · CSS · JS, font_size: 30, color: "#F8FAFCFF"}
+  - {id: frontend-note, kind: text, x: 370, y: 468, text: rendered by the platform WebView, font_size: 17, color: "#BAE6FDFF"}
+  - {id: go-card, kind: rect, x: 910, y: 410, width: 390, height: 250, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 3, corner_radius: 26}
+  - {id: go-label, kind: text, x: 910, y: 370, text: BACKEND, font_size: 18, color: "#C4B5FDFF"}
+  - {id: go-main, kind: text, x: 910, y: 420, text: Go application, font_size: 30, color: "#F8FAFCFF"}
+  - {id: go-note, kind: text, x: 910, y: 468, text: services · windows · native APIs, font_size: 17, color: "#DDD6FEFF"}
+  - id: bridge
+    kind: path
+    x: 640
+    y: 410
+    stroke: "#F8FAFCFF"
+    stroke_width: 4
+    line_cap: round
+    line_join: round
+    path:
+      fill_rule: nonzero
+      segments:
+      - {op: move_to, p1: {x: -62, y: 0}}
+      - {op: line_to, p1: {x: 62, y: 0}}
+      - {op: line_to, p1: {x: 46, y: -12}}
+      - {op: move_to, p1: {x: 62, y: 0}}
+      - {op: line_to, p1: {x: 46, y: 12}}
+      - {op: move_to, p1: {x: -62, y: 0}}
+      - {op: line_to, p1: {x: -46, y: -12}}
+      - {op: move_to, p1: {x: -62, y: 0}}
+      - {op: line_to, p1: {x: -46, y: 12}}
+  - {id: bridge-label, kind: text, x: 640, y: 372, text: Wails runtime, font_size: 16, color: "#CBD5E1FF"}
+
+- id: architecture-cast
+  title: The application composes four core layers
+  for: 4200ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 82, text: The runtime stack, font_size: 42, color: "#F8FAFCFF"}
+  - {id: caption, kind: text, x: 640, y: 125, text: Each layer owns a different boundary, font_size: 18, color: "#94A3B8FF"}
+  - {id: ui-card, kind: rect, x: 640, y: 205, width: 1030, height: 92, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: ui-name, kind: text, x: 285, y: 205, text: WebView UI, font_size: 24, color: "#F8FAFCFF"}
+  - {id: ui-detail, kind: text, x: 775, y: 205, text: frontend assets + @wailsio/runtime, font_size: 19, color: "#BAE6FDFF"}
+  - {id: transport-card, kind: rect, x: 640, y: 325, width: 1030, height: 92, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 20}
+  - {id: transport-name, kind: text, x: 285, y: 325, text: Transport, font_size: 24, color: "#F8FAFCFF"}
+  - {id: transport-detail, kind: text, x: 775, y: 325, text: HTTP fetch by default · replaceable interface, font_size: 19, color: "#99F6E4FF"}
+  - {id: app-card, kind: rect, x: 640, y: 445, width: 1030, height: 92, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 20}
+  - {id: app-name, kind: text, x: 285, y: 445, text: Application core, font_size: 24, color: "#F8FAFCFF"}
+  - {id: app-detail, kind: text, x: 775, y: 445, text: MessageProcessor · bindings · events · managers, font_size: 19, color: "#DDD6FEFF"}
+  - {id: native-card, kind: rect, x: 640, y: 565, width: 1030, height: 92, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 20}
+  - {id: native-name, kind: text, x: 285, y: 565, text: Native platform, font_size: 24, color: "#F8FAFCFF"}
+  - {id: native-detail, kind: text, x: 775, y: 565, text: windows · menus · dialogs · OS WebView, font_size: 19, color: "#FED7AAFF"}
+
+- id: architecture-boot
+  title: Startup wires the runtime before entering the native loop
+  for: 4400ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 82, text: App startup, font_size: 42, color: "#F8FAFCFF"}
+  - {id: step1, kind: rect, x: 180, y: 300, width: 210, height: 150, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: step1n, kind: text, x: 180, y: 270, text: "1", font_size: 18, color: "#C4B5FDFF"}
+  - {id: step1t, kind: text, x: 180, y: 316, text: application.New, font_size: 20, color: "#F8FAFCFF"}
+  - {id: step1d, kind: text, x: 180, y: 352, text: defaults + managers, font_size: 15, color: "#DDD6FEFF"}
+  - {id: step2, kind: rect, x: 485, y: 300, width: 250, height: 150, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 22}
+  - {id: step2n, kind: text, x: 485, y: 270, text: "2", font_size: 18, color: "#5EEAD4FF"}
+  - {id: step2t, kind: text, x: 485, y: 316, text: Transport.Start, font_size: 20, color: "#F8FAFCFF"}
+  - {id: step2d, kind: text, x: 485, y: 352, text: MessageProcessor attached, font_size: 15, color: "#99F6E4FF"}
+  - {id: step3, kind: rect, x: 805, y: 300, width: 250, height: 150, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 22}
+  - {id: step3n, kind: text, x: 805, y: 270, text: "3", font_size: 18, color: "#67E8F9FF"}
+  - {id: step3t, kind: text, x: 805, y: 316, text: AssetServer, font_size: 20, color: "#F8FAFCFF"}
+  - {id: step3d, kind: text, x: 805, y: 352, text: app + runtime + IPC routes, font_size: 15, color: "#BAE6FDFF"}
+  - {id: step4, kind: rect, x: 1110, y: 300, width: 210, height: 150, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 22}
+  - {id: step4n, kind: text, x: 1110, y: 270, text: "4", font_size: 18, color: "#FDBA74FF"}
+  - {id: step4t, kind: text, x: 1110, y: 316, text: App.Run, font_size: 20, color: "#F8FAFCFF"}
+  - {id: step4d, kind: text, x: 1110, y: 352, text: services → native loop, font_size: 15, color: "#FED7AAFF"}
+  - {id: connector1, kind: rect, x: 332, y: 300, width: 90, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: connector2, kind: rect, x: 645, y: 300, width: 70, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: connector3, kind: rect, x: 958, y: 300, width: 70, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: invariant-card, kind: rect, x: 640, y: 515, width: 780, height: 100, fill: "#0B1B2BFF", stroke: "#334155FF", stroke_width: 2, corner_radius: 18}
+  - {id: invariant-title, kind: text, x: 640, y: 493, text: STARTUP INVARIANT, font_size: 15, color: "#94A3B8FF"}
+  - {id: invariant-text, kind: text, x: 640, y: 535, text: Services start before event readers and pending windows run, font_size: 20, color: "#E2E8F0FF"}
+
+- id: architecture-platforms
+  title: One core targets native platform adapters
+  for: 4000ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 82, text: "Shared core, native edges", font_size: 42, color: "#F8FAFCFF"}
+  - {id: core, kind: rect, x: 640, y: 265, width: 520, height: 155, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 3, corner_radius: 26}
+  - {id: core-label, kind: text, x: 640, y: 245, text: Go application core, font_size: 28, color: "#F8FAFCFF"}
+  - {id: core-detail, kind: text, x: 640, y: 292, text: services · bindings · events · windows, font_size: 18, color: "#DDD6FEFF"}
+  - {id: win, kind: rect, x: 205, y: 520, width: 245, height: 125, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: win-t, kind: text, x: 205, y: 500, text: Windows, font_size: 22, color: "#F8FAFCFF"}
+  - {id: win-d, kind: text, x: 205, y: 540, text: WebView2, font_size: 17, color: "#BAE6FDFF"}
+  - {id: mac, kind: rect, x: 495, y: 520, width: 245, height: 125, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: mac-t, kind: text, x: 495, y: 500, text: macOS, font_size: 22, color: "#F8FAFCFF"}
+  - {id: mac-d, kind: text, x: 495, y: 540, text: WKWebView, font_size: 17, color: "#BAE6FDFF"}
+  - {id: linux, kind: rect, x: 785, y: 520, width: 245, height: 125, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: linux-t, kind: text, x: 785, y: 500, text: Linux, font_size: 22, color: "#F8FAFCFF"}
+  - {id: linux-d, kind: text, x: 785, y: 540, text: GTK4 · WebKitGTK 6, font_size: 17, color: "#BAE6FDFF"}
+  - {id: mobile, kind: rect, x: 1075, y: 520, width: 245, height: 125, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: mobile-t, kind: text, x: 1075, y: 500, text: iOS · Android, font_size: 22, color: "#F8FAFCFF"}
+  - {id: mobile-d, kind: text, x: 1075, y: 540, text: native WebViews, font_size: 17, color: "#BAE6FDFF"}
+  - {id: stem, kind: rect, x: 640, y: 397, width: 4, height: 85, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: rail, kind: rect, x: 640, y: 438, width: 870, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: leg1, kind: rect, x: 205, y: 459, width: 4, height: 45, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: leg2, kind: rect, x: 495, y: 459, width: 4, height: 45, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: leg3, kind: rect, x: 785, y: 459, width: 4, height: 45, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: leg4, kind: rect, x: 1075, y: 459, width: 4, height: 45, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+
+- id: architecture-outcome
+  title: The boundary is the product
+  for: 3600ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: eyebrow, kind: text, x: 640, y: 112, text: THE WAILS v3 CONTRACT, font_size: 18, color: "#67E8F9FF"}
+  - {id: title, kind: text, x: 640, y: 190, text: Web UX. Go capabilities. Native shell., font_size: 43, color: "#F8FAFCFF"}
+  - {id: line, kind: rect, x: 640, y: 244, width: 700, height: 3, fill: "#334155FF", stroke: "#334155FF", stroke_width: 0, corner_radius: 2}
+  - {id: one, kind: rect, x: 270, y: 405, width: 280, height: 180, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 24}
+  - {id: one-t, kind: text, x: 270, y: 380, text: Frontend, font_size: 25, color: "#F8FAFCFF"}
+  - {id: one-d, kind: text, x: 270, y: 430, text: stays web-native, font_size: 17, color: "#BAE6FDFF"}
+  - {id: two, kind: rect, x: 640, y: 405, width: 280, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 24}
+  - {id: two-t, kind: text, x: 640, y: 380, text: Backend, font_size: 25, color: "#F8FAFCFF"}
+  - {id: two-d, kind: text, x: 640, y: 430, text: stays idiomatic Go, font_size: 17, color: "#DDD6FEFF"}
+  - {id: three, kind: rect, x: 1010, y: 405, width: 280, height: 180, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 24}
+  - {id: three-t, kind: text, x: 1010, y: 380, text: Desktop, font_size: 25, color: "#F8FAFCFF"}
+  - {id: three-d, kind: text, x: 1010, y: 430, text: stays native, font_size: 17, color: "#FED7AAFF"}
+  - {id: footer, kind: text, x: 640, y: 615, text: The runtime connects these worlds without merging their responsibilities., font_size: 20, color: "#CBD5E1FF"}

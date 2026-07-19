@@ -1,0 +1,112 @@
+v: 2
+scenes:
+- id: event-context
+  title: Events connect Go and every frontend window
+  for: 3500ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: eyebrow, kind: text, x: 640, y: 92, text: WAILS v3 INTERNALS · 03, font_size: 18, color: "#67E8F9FF"}
+  - {id: title, kind: text, x: 640, y: 165, text: "One event bus, two directions", font_size: 48, color: "#F8FAFCFF"}
+  - {id: go, kind: rect, x: 330, y: 390, width: 360, height: 230, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 3, corner_radius: 26}
+  - {id: go-t, kind: text, x: 330, y: 360, text: Go EventManager, font_size: 27, color: "#F8FAFCFF"}
+  - {id: go-d, kind: text, x: 330, y: 415, text: Emit · On · hooks, font_size: 18, color: "#DDD6FEFF"}
+  - {id: js, kind: rect, x: 950, y: 390, width: 360, height: 230, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 3, corner_radius: 26}
+  - {id: js-t, kind: text, x: 950, y: 360, text: JS Events runtime, font_size: 27, color: "#F8FAFCFF"}
+  - {id: js-d, kind: text, x: 950, y: 415, text: Emit · On · Once · Off, font_size: 18, color: "#BAE6FDFF"}
+  - {id: bridge, kind: rect, x: 640, y: 390, width: 180, height: 5, fill: "#F8FAFCFF", stroke: "#F8FAFCFF", stroke_width: 0, corner_radius: 3}
+  - {id: bridge-t, kind: text, x: 640, y: 350, text: transport, font_size: 16, color: "#CBD5E1FF"}
+  - {id: footer, kind: text, x: 640, y: 590, text: "Custom events carry a name, data, and optional sender.", font_size: 20, color: "#CBD5E1FF"}
+
+- id: event-go-emit
+  title: Go emission fans out after validation and hooks
+  for: 4400ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 78, text: Go → frontend, font_size: 40, color: "#F8FAFCFF"}
+  - {id: emit, kind: rect, x: 145, y: 315, width: 200, height: 150, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 20}
+  - {id: emit-t, kind: text, x: 145, y: 295, text: Event.Emit, font_size: 21, color: "#F8FAFCFF"}
+  - {id: emit-d, kind: text, x: 145, y: 340, text: name + data, font_size: 16, color: "#DDD6FEFF"}
+  - {id: validate, kind: rect, x: 410, y: 315, width: 220, height: 150, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 20}
+  - {id: validate-t, kind: text, x: 410, y: 295, text: Validate + hooks, font_size: 20, color: "#F8FAFCFF"}
+  - {id: validate-d, kind: text, x: 410, y: 340, text: may cancel, font_size: 16, color: "#99F6E4FF"}
+  - {id: processor, kind: rect, x: 690, y: 315, width: 230, height: 150, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 20}
+  - {id: processor-t, kind: text, x: 690, y: 295, text: EventProcessor, font_size: 20, color: "#F8FAFCFF"}
+  - {id: processor-d, kind: text, x: 690, y: 340, text: asynchronous fan-out, font_size: 16, color: "#DDD6FEFF"}
+  - {id: go-listeners, kind: rect, x: 1030, y: 230, width: 300, height: 125, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 20}
+  - {id: go-listeners-t, kind: text, x: 1030, y: 210, text: Go listeners, font_size: 20, color: "#F8FAFCFF"}
+  - {id: go-listeners-d, kind: text, x: 1030, y: 255, text: callbacks in goroutines, font_size: 15, color: "#DDD6FEFF"}
+  - {id: windows, kind: rect, x: 1030, y: 410, width: 300, height: 125, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 20}
+  - {id: windows-t, kind: text, x: 1030, y: 390, text: Every frontend window, font_size: 20, color: "#F8FAFCFF"}
+  - {id: windows-d, kind: text, x: 1030, y: 435, text: transport or ExecJS fallback, font_size: 15, color: "#BAE6FDFF"}
+  - {id: c1, kind: rect, x: 277, y: 315, width: 65, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: c2, kind: rect, x: 550, y: 315, width: 60, height: 4, fill: "#2DD4BFFF", stroke: "#2DD4BFFF", stroke_width: 0, corner_radius: 2}
+  - {id: trunk, kind: rect, x: 827, y: 315, width: 44, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: branch, kind: rect, x: 850, y: 320, width: 4, height: 180, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: branch-top, kind: rect, x: 865, y: 230, width: 30, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+  - {id: branch-bottom, kind: rect, x: 865, y: 410, width: 30, height: 4, fill: "#64748BFF", stroke: "#64748BFF", stroke_width: 0, corner_radius: 2}
+
+- id: event-window-fanout
+  title: IPC snapshots windows before dispatch
+  for: 4100ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 78, text: Safe fan-out to windows, font_size: 40, color: "#F8FAFCFF"}
+  - {id: event, kind: rect, x: 210, y: 320, width: 270, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: event-t, kind: text, x: 210, y: 295, text: CustomEvent, font_size: 23, color: "#F8FAFCFF"}
+  - {id: event-d, kind: text, x: 210, y: 345, text: serialized to JSON, font_size: 16, color: "#DDD6FEFF"}
+  - {id: snapshot, kind: rect, x: 570, y: 320, width: 300, height: 220, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 3, corner_radius: 24}
+  - {id: snapshot-t, kind: text, x: 570, y: 275, text: Snapshot window list, font_size: 23, color: "#F8FAFCFF"}
+  - {id: lock1, kind: text, x: 570, y: 330, text: lock → copy → unlock, font_size: 18, color: "#99F6E4FF"}
+  - {id: lock2, kind: text, x: 570, y: 375, text: then dispatch per window, font_size: 17, color: "#CCFBF1FF"}
+  - {id: w1, kind: rect, x: 1000, y: 205, width: 300, height: 105, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 18}
+  - {id: w1t, kind: text, x: 1000, y: 205, text: Window A · ExecJS, font_size: 18, color: "#BAE6FDFF"}
+  - {id: w2, kind: rect, x: 1000, y: 335, width: 300, height: 105, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 18}
+  - {id: w2t, kind: text, x: 1000, y: 335, text: Window B · ExecJS, font_size: 18, color: "#BAE6FDFF"}
+  - {id: w3, kind: rect, x: 1000, y: 465, width: 300, height: 105, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 18}
+  - {id: w3t, kind: text, x: 1000, y: 465, text: Window C · ExecJS, font_size: 18, color: "#BAE6FDFF"}
+  - {id: c1, kind: rect, x: 390, y: 320, width: 60, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: c2, kind: rect, x: 770, y: 320, width: 80, height: 4, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+  - {id: rail, kind: rect, x: 850, y: 335, width: 4, height: 260, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+  - {id: invariant, kind: text, x: 640, y: 615, text: The window lock is not held while synchronous JS runs., font_size: 19, color: "#CBD5E1FF"}
+
+- id: event-js-emit
+  title: Frontend emission returns through the normal runtime call path
+  for: 4200ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 78, text: Frontend → Go → all listeners, font_size: 40, color: "#F8FAFCFF"}
+  - {id: js, kind: rect, x: 170, y: 320, width: 240, height: 180, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 22}
+  - {id: js-t, kind: text, x: 170, y: 295, text: Events.Emit, font_size: 22, color: "#F8FAFCFF"}
+  - {id: js-d, kind: text, x: 170, y: 345, text: WailsEvent payload, font_size: 16, color: "#BAE6FDFF"}
+  - {id: runtime, kind: rect, x: 460, y: 320, width: 240, height: 180, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 22}
+  - {id: runtime-t, kind: text, x: 460, y: 295, text: Runtime call, font_size: 22, color: "#F8FAFCFF"}
+  - {id: runtime-d, kind: text, x: 460, y: 345, text: object 3 · method 0, font_size: 16, color: "#99F6E4FF"}
+  - {id: go, kind: rect, x: 750, y: 320, width: 240, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: go-t, kind: text, x: 750, y: 295, text: processEventsMethod, font_size: 18, color: "#F8FAFCFF"}
+  - {id: go-d, kind: text, x: 750, y: 345, text: sender = window name, font_size: 16, color: "#DDD6FEFF"}
+  - {id: fanout, kind: rect, x: 1070, y: 320, width: 280, height: 180, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 22}
+  - {id: fanout-t, kind: text, x: 1070, y: 295, text: EventProcessor.Emit, font_size: 20, color: "#F8FAFCFF"}
+  - {id: fanout-d, kind: text, x: 1070, y: 345, text: Go + frontend fan-out, font_size: 16, color: "#FED7AAFF"}
+  - {id: c1, kind: rect, x: 315, y: 320, width: 50, height: 4, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+  - {id: c2, kind: rect, x: 605, y: 320, width: 50, height: 4, fill: "#2DD4BFFF", stroke: "#2DD4BFFF", stroke_width: 0, corner_radius: 2}
+  - {id: c3, kind: rect, x: 895, y: 320, width: 55, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: response, kind: rect, x: 640, y: 540, width: 700, height: 82, fill: "#0B1B2BFF", stroke: "#334155FF", stroke_width: 2, corner_radius: 18}
+  - {id: response-t, kind: text, x: 640, y: 540, text: Promise resolves to whether a hook cancelled the event, font_size: 18, color: "#CBD5E1FF"}
+
+- id: event-outcome
+  title: The same event model spans backend and frontend
+  for: 3600ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: eyebrow, kind: text, x: 640, y: 105, text: EVENT SYSTEM CONTRACT, font_size: 18, color: "#67E8F9FF"}
+  - {id: title, kind: text, x: 640, y: 175, text: Validate once. Observe anywhere., font_size: 46, color: "#F8FAFCFF"}
+  - {id: validate, kind: rect, x: 270, y: 390, width: 300, height: 190, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 24}
+  - {id: validate-t, kind: text, x: 270, y: 365, text: Hooks first, font_size: 25, color: "#F8FAFCFF"}
+  - {id: validate-d, kind: text, x: 270, y: 415, text: validation + cancellation, font_size: 16, color: "#99F6E4FF"}
+  - {id: dispatch, kind: rect, x: 640, y: 390, width: 300, height: 190, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 24}
+  - {id: dispatch-t, kind: text, x: 640, y: 365, text: Fan-out second, font_size: 25, color: "#F8FAFCFF"}
+  - {id: dispatch-d, kind: text, x: 640, y: 415, text: Go listeners + windows, font_size: 16, color: "#DDD6FEFF"}
+  - {id: mutate, kind: rect, x: 1010, y: 390, width: 300, height: 190, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 24}
+  - {id: mutate-t, kind: text, x: 1010, y: 365, text: Snapshot safely, font_size: 25, color: "#F8FAFCFF"}
+  - {id: mutate-d, kind: text, x: 1010, y: 415, text: subscriptions can change, font_size: 16, color: "#BAE6FDFF"}
+  - {id: footer, kind: text, x: 640, y: 600, text: A small contract supports application-wide coordination., font_size: 20, color: "#CBD5E1FF"}

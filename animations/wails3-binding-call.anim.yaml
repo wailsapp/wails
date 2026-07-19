@@ -1,0 +1,100 @@
+v: 2
+scenes:
+- id: call-context
+  title: A generated binding feels like a local function
+  for: 3400ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: eyebrow, kind: text, x: 640, y: 92, text: WAILS v3 INTERNALS · 02, font_size: 18, color: "#67E8F9FF"}
+  - {id: title, kind: text, x: 640, y: 165, text: One call across the WebView boundary, font_size: 44, color: "#F8FAFCFF"}
+  - {id: code-card, kind: rect, x: 640, y: 375, width: 850, height: 270, fill: "#0B1B2BFF", stroke: "#334155FF", stroke_width: 2, corner_radius: 24}
+  - {id: file, kind: text, x: 330, y: 290, text: frontend.ts, font_size: 16, color: "#94A3B8FF"}
+  - {id: code1, kind: text, x: 640, y: 360, text: const greeting = await GreetService.Greet(name), font_size: 24, color: "#E2E8F0FF"}
+  - {id: promise, kind: rect, x: 640, y: 430, width: 390, height: 52, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 14}
+  - {id: promise-t, kind: text, x: 640, y: 430, text: cancellable Promise, font_size: 18, color: "#99F6E4FF"}
+  - {id: note, kind: text, x: 640, y: 585, text: "Underneath, Wails creates a structured runtime request.", font_size: 20, color: "#CBD5E1FF"}
+
+- id: call-envelope
+  title: The JS runtime creates a typed request envelope
+  for: 4000ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 80, text: Step 1 · Build the request, font_size: 40, color: "#F8FAFCFF"}
+  - {id: caller, kind: rect, x: 260, y: 330, width: 330, height: 310, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 24}
+  - {id: caller-label, kind: text, x: 260, y: 235, text: "@wailsio/runtime", font_size: 24, color: "#F8FAFCFF"}
+  - {id: caller-detail1, kind: text, x: 260, y: 305, text: generates call-id, font_size: 18, color: "#BAE6FDFF"}
+  - {id: caller-detail2, kind: text, x: 260, y: 350, text: selects Call object, font_size: 18, color: "#BAE6FDFF"}
+  - {id: caller-detail3, kind: text, x: 260, y: 395, text: stores Promise resolvers, font_size: 18, color: "#BAE6FDFF"}
+  - {id: envelope, kind: rect, x: 835, y: 330, width: 520, height: 310, fill: "#0B1B2BFF", stroke: "#64748BFF", stroke_width: 2, corner_radius: 24}
+  - {id: envelope-label, kind: text, x: 835, y: 230, text: RuntimeRequest, font_size: 24, color: "#F8FAFCFF"}
+  - {id: row1, kind: text, x: 835, y: 292, text: "object: 0     method: 0", font_size: 20, color: "#67E8F9FF"}
+  - {id: row2, kind: text, x: 835, y: 340, text: "call-id: nanoid…", font_size: 20, color: "#99F6E4FF"}
+  - {id: row3, kind: text, x: 835, y: 388, text: methodID or methodName, font_size: 20, color: "#C4B5FDFF"}
+  - {id: row4, kind: text, x: 835, y: 436, text: "args: [ JSON values ]", font_size: 20, color: "#FDBA74FF"}
+  - {id: arrow, kind: rect, x: 540, y: 330, width: 80, height: 4, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+
+- id: call-transport
+  title: The transport crosses the boundary
+  for: 4200ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 80, text: Step 2 · Cross the boundary, font_size: 40, color: "#F8FAFCFF"}
+  - {id: js, kind: rect, x: 190, y: 325, width: 260, height: 190, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 22}
+  - {id: js-t, kind: text, x: 190, y: 300, text: JS runtime, font_size: 23, color: "#F8FAFCFF"}
+  - {id: js-d, kind: text, x: 190, y: 352, text: JSON request, font_size: 17, color: "#BAE6FDFF"}
+  - {id: transport, kind: rect, x: 640, y: 325, width: 350, height: 260, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 3, corner_radius: 24}
+  - {id: transport-t, kind: text, x: 640, y: 265, text: Transport seam, font_size: 25, color: "#F8FAFCFF"}
+  - {id: default, kind: rect, x: 640, y: 330, width: 270, height: 60, fill: "#163A43FF", stroke: "#5EEAD4FF", stroke_width: 2, corner_radius: 14}
+  - {id: default-t, kind: text, x: 640, y: 330, text: POST /wails/runtime, font_size: 17, color: "#CCFBF1FF"}
+  - {id: custom-t, kind: text, x: 640, y: 390, text: or custom RuntimeTransport, font_size: 16, color: "#99F6E4FF"}
+  - {id: go, kind: rect, x: 1090, y: 325, width: 260, height: 190, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: go-t, kind: text, x: 1090, y: 300, text: HTTPTransport, font_size: 23, color: "#F8FAFCFF"}
+  - {id: go-d, kind: text, x: 1090, y: 352, text: parse + add window context, font_size: 15, color: "#DDD6FEFF"}
+  - {id: line1, kind: rect, x: 400, y: 325, width: 160, height: 4, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+  - {id: line2, kind: rect, x: 880, y: 325, width: 160, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: chunk, kind: rect, x: 640, y: 535, width: 710, height: 80, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 18}
+  - {id: chunk-t, kind: text, x: 640, y: 535, text: Large requests are chunked and reassembled before processing, font_size: 18, color: "#FED7AAFF"}
+
+- id: call-dispatch
+  title: MessageProcessor resolves and invokes the Go method
+  for: 4500ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 78, text: Step 3 · Dispatch in Go, font_size: 40, color: "#F8FAFCFF"}
+  - {id: mp, kind: rect, x: 210, y: 315, width: 260, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: mp-t, kind: text, x: 210, y: 290, text: MessageProcessor, font_size: 21, color: "#F8FAFCFF"}
+  - {id: mp-d, kind: text, x: 210, y: 340, text: routes object 0 → Call, font_size: 16, color: "#DDD6FEFF"}
+  - {id: binding, kind: rect, x: 520, y: 315, width: 260, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: binding-t, kind: text, x: 520, y: 290, text: Bindings registry, font_size: 21, color: "#F8FAFCFF"}
+  - {id: binding-d, kind: text, x: 520, y: 340, text: ID / alias / FQN lookup, font_size: 16, color: "#DDD6FEFF"}
+  - {id: method, kind: rect, x: 830, y: 315, width: 260, height: 180, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 22}
+  - {id: method-t, kind: text, x: 830, y: 290, text: BoundMethod.Call, font_size: 21, color: "#F8FAFCFF"}
+  - {id: method-d, kind: text, x: 830, y: 340, text: decode args + invoke, font_size: 16, color: "#DDD6FEFF"}
+  - {id: service, kind: rect, x: 1120, y: 315, width: 220, height: 180, fill: "#38230FFF", stroke: "#FB923CFF", stroke_width: 2, corner_radius: 22}
+  - {id: service-t, kind: text, x: 1120, y: 290, text: Your service, font_size: 21, color: "#F8FAFCFF"}
+  - {id: service-d, kind: text, x: 1120, y: 340, text: idiomatic Go method, font_size: 15, color: "#FED7AAFF"}
+  - {id: c1, kind: rect, x: 365, y: 315, width: 50, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: c2, kind: rect, x: 675, y: 315, width: 50, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: c3, kind: rect, x: 985, y: 315, width: 50, height: 4, fill: "#FB923CFF", stroke: "#FB923CFF", stroke_width: 0, corner_radius: 2}
+  - {id: cancel, kind: rect, x: 640, y: 530, width: 780, height: 105, fill: "#3A1820FF", stroke: "#FB7185FF", stroke_width: 2, corner_radius: 18}
+  - {id: cancel-label, kind: text, x: 640, y: 510, text: IMPORTANT BRANCH, font_size: 14, color: "#FDA4AFFF"}
+  - {id: cancel-text, kind: text, x: 640, y: 550, text: Cancellation finds call-id and cancels the Go context, font_size: 19, color: "#FFE4E6FF"}
+
+- id: call-outcome
+  title: The response settles the original promise
+  for: 3700ms
+  objects:
+  - {id: bg, kind: rect, x: 640, y: 360, width: 1280, height: 720, fill: "#07111FFF", stroke: "#07111FFF", stroke_width: 0, corner_radius: 0}
+  - {id: title, kind: text, x: 640, y: 82, text: Step 4 · Return to the frontend, font_size: 40, color: "#F8FAFCFF"}
+  - {id: go, kind: rect, x: 240, y: 335, width: 300, height: 210, fill: "#21163BFF", stroke: "#A78BFAFF", stroke_width: 2, corner_radius: 24}
+  - {id: go-t, kind: text, x: 240, y: 305, text: Go result, font_size: 24, color: "#F8FAFCFF"}
+  - {id: go-d, kind: text, x: 240, y: 355, text: value or typed error, font_size: 17, color: "#DDD6FEFF"}
+  - {id: response, kind: rect, x: 640, y: 335, width: 300, height: 210, fill: "#112A35FF", stroke: "#2DD4BFFF", stroke_width: 2, corner_radius: 24}
+  - {id: response-t, kind: text, x: 640, y: 305, text: Transport response, font_size: 24, color: "#F8FAFCFF"}
+  - {id: response-d, kind: text, x: 640, y: 355, text: JSON or text, font_size: 17, color: "#99F6E4FF"}
+  - {id: promise, kind: rect, x: 1040, y: 335, width: 300, height: 210, fill: "#0E2940FF", stroke: "#22D3EEFF", stroke_width: 2, corner_radius: 24}
+  - {id: promise-t, kind: text, x: 1040, y: 305, text: Promise settled, font_size: 24, color: "#F8FAFCFF"}
+  - {id: promise-d, kind: text, x: 1040, y: 355, text: resolve or reject, font_size: 17, color: "#BAE6FDFF"}
+  - {id: c1, kind: rect, x: 440, y: 335, width: 100, height: 4, fill: "#A78BFAFF", stroke: "#A78BFAFF", stroke_width: 0, corner_radius: 2}
+  - {id: c2, kind: rect, x: 840, y: 335, width: 100, height: 4, fill: "#22D3EEFF", stroke: "#22D3EEFF", stroke_width: 0, corner_radius: 2}
+  - {id: footer, kind: text, x: 640, y: 585, text: The generated API hides transport mechanics—not the async boundary., font_size: 20, color: "#CBD5E1FF"}
