@@ -4,8 +4,10 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-// We will override WKWebView, so we can detect file drop in obj-c
-//  and grab their file path, to then inject into JS
+@interface WKWebView (DeviceScaleFactorSPI)
+- (void)_setOverrideDeviceScaleFactor:(CGFloat)scaleFactor;
+@end
+
 @interface WailsWebView : WKWebView
 @property bool disableWebViewDragAndDrop;
 @property bool enableDragAndDrop;
