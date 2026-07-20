@@ -57,10 +57,10 @@ tasks:
       - cmd: rm -f *.syso
         platforms: [linux, darwin]
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}-tags dev{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_WINDOWS}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags="{{$.APP_LDFLAGS}}"{{end}}{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_WINDOWS}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui{{with .APP_LDFLAGS}} {{.}}{{end}}"{{end}}'
     env:
       GOOS: windows
-      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+      CGO_ENABLED: '{{if .APP_CGO_ENABLED}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:
