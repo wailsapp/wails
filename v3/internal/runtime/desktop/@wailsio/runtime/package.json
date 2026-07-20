@@ -33,7 +33,11 @@
     "./dist/index.js",
     "./dist/appregion.js",
     "./dist/contextmenu.js",
-    "./dist/drag.js"
+    "./dist/drag.js",
+    "./src/index.ts",
+    "./src/appregion.ts",
+    "./src/contextmenu.ts",
+    "./src/drag.ts"
   ],
   "scripts": {
     "check": "npx tsc --noEmit",
