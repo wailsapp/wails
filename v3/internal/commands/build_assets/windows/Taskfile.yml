@@ -18,17 +18,22 @@ tasks:
   build:
     summary: Builds the application for Windows
     cmds:
-      # Auto-detect CGO: if CGO_ENABLED=1, use Docker; otherwise use native Go cross-compile
-      - task: '{{if and (ne OS "windows") (eq .CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}'
+      # Auto-detect CGO: if the effective CGO is enabled, cross-compile via Docker;
+      # otherwise use native Go. APP_CGO_ENABLED must be resolved before this
+      # dispatch so the native/docker choice matches the build environment.
+      - task: '{{if and (ne OS "windows") (eq .EFFECTIVE_CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}'
         vars:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
           EXTRA_TAGS: '{{.EXTRA_TAGS}}'
           OBFUSCATED: '{{.OBFUSCATED}}'
           GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          CGO_ENABLED: '{{.EFFECTIVE_CGO_ENABLED}}'
     vars:
-      # Default to CGO_ENABLED=0 if not explicitly set
-      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+      # APP_CGO_ENABLED (root Taskfile) overrides the ad-hoc/default CGO_ENABLED.
+      # Resolve the effective value here so both the native/docker dispatch above
+      # and the build environment use the same setting.
+      EFFECTIVE_CGO_ENABLED: '{{if .APP_CGO_ENABLED}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
 
   build:native:
     summary: Builds the application using native Go cross-compilation
@@ -57,10 +62,10 @@ tasks:
       - cmd: rm -f *.syso
         platforms: [linux, darwin]
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}-tags dev{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_WINDOWS}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags="{{$.APP_LDFLAGS}}"{{end}}{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_WINDOWS}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui{{with .APP_LDFLAGS}} {{.}}{{end}}"{{end}}'
     env:
       GOOS: windows
-      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+      CGO_ENABLED: '{{if .APP_CGO_ENABLED}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:

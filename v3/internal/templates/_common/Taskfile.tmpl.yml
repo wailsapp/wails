@@ -10,6 +10,25 @@ vars:
   # tasks below dispatch to the matching platform Taskfile via this variable.
   GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'
 
+  ## ─── Build Customization ──────────────────────────────────────────────
+  ## These variables are NOT overwritten by `wails3 update build-assets`.
+  ## All values are additive — empty means no change from platform defaults.
+  ## Override via environment: APP_TAGS="extra" task build
+
+  # Tags included in EVERY build (all platforms, all modes)
+  APP_TAGS: ''
+  # Platform-specific tags (only applied on that platform's builds)
+  APP_TAGS_LINUX: ''
+  APP_TAGS_DARWIN: ''
+  APP_TAGS_WINDOWS: ''
+  APP_TAGS_ANDROID: ''
+  APP_TAGS_IOS: ''
+  APP_TAGS_SERVER: ''
+  # Linker flags appended to all builds (e.g. -X main.Version=1.0.0)
+  APP_LDFLAGS: ''
+  # Override CGO_ENABLED (leave empty to use platform defaults: linux/darwin=1, windows=0)
+  APP_CGO_ENABLED: ''
+
 includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
