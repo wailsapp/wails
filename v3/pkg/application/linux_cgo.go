@@ -1370,7 +1370,7 @@ func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 			css := C.CString("." + framelessWindowClass + " { border-radius: 0; }")
 			defer C.free(unsafe.Pointer(css))
 
-			C.gtk_css_provider_load_from_data(provider, css, -1)
+			C.gtk_css_provider_load_from_string(provider, css)
 			C.gtk_style_context_add_provider_for_display(
 				display,
 				(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
