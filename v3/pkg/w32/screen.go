@@ -72,16 +72,28 @@ func GetRotationForMonitor(displayName [32]uint16) (float32, error) {
 	return -1, nil
 }
 
+// cursorPosForScreens reports the current cursor position and whether the
+// query succeeded. GetCursorPos returns FALSE (ERROR_ACCESS_DENIED) when the
+// calling process is not attached to the interactive input desktop - e.g. the
+// workstation is locked or on the secure/UAC desktop, or mid session switch
+// (logon, RDP, fast-user-switch). Exposed as a package variable so tests can
+// simulate that failure. Defaults to the real GetCursorPos syscall.
+var cursorPosForScreens = func() (cursor POINT, ok bool) {
+	ret, _, _ := procGetCursorPos.Call(uintptr(unsafe.Pointer(&cursor)))
+	return cursor, ret != 0
+}
+
 func GetAllScreens() ([]*Screen, error) {
 	var result []*Screen
 	var errMessage string
 
-	// Get cursor position to determine the current monitor
-	var cursor POINT
-	ret, _, _ := procGetCursorPos.Call(uintptr(unsafe.Pointer(&cursor)))
-	if ret == 0 {
-		return nil, fmt.Errorf("GetCursorPos failed")
-	}
+	// The cursor position is used only to set the cosmetic IsCurrent flag
+	// (which monitor the pointer is on). A failed query must NOT abort
+	// enumeration: processAndCacheScreens() treats any error here as fatal at
+	// startup (os.Exit), so a locked/secure desktop at launch would crash the
+	// app before it ever shows. Degrade gracefully - no screen is marked
+	// current, and the flag self-corrects on the next display-change re-cache.
+	cursor, cursorOK := cursorPosForScreens()
 
 	// Enumerate the monitors
 	enumFunc := func(hMonitor uintptr, hdc uintptr, lprcMonitor *RECT, lParam uintptr) uintptr {
@@ -101,7 +113,7 @@ func GetAllScreens() ([]*Screen, error) {
 			MONITORINFOEX: monitor,
 			HMonitor:      hMonitor,
 			IsPrimary:     monitor.DwFlags == MONITORINFOF_PRIMARY,
-			IsCurrent:     rectContainsPoint(monitor.RcMonitor, cursor),
+			IsCurrent:     cursorOK && rectContainsPoint(monitor.RcMonitor, cursor),
 		}
 
 		// Get monitor name
@@ -130,7 +142,7 @@ func GetAllScreens() ([]*Screen, error) {
 		return 1 // Continue enumeration
 	}
 
-	ret, _, _ = procEnumDisplayMonitors.Call(0, 0, syscall.NewCallback(enumFunc), 0)
+	ret, _, _ := procEnumDisplayMonitors.Call(0, 0, syscall.NewCallback(enumFunc), 0)
 	if ret == 0 {
 		return nil, fmt.Errorf("EnumDisplayMonitors failed: %s", errMessage)
 	}
