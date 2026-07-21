@@ -86,9 +86,12 @@ var (
 )
 
 var (
-	registerURIScheme sync.Once
-	fixSignalHandlers sync.Once
+	registerURIScheme  sync.Once
+	fixSignalHandlers  sync.Once
+	framelessWindowCSS sync.Once
 )
+
+const framelessWindowClass = "wails-frameless"
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -1352,6 +1355,33 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
+
+	className := C.CString(framelessWindowClass)
+	defer C.free(unsafe.Pointer(className))
+
+	if frameless {
+		display := C.gdk_display_get_default()
+		if display != nil {
+			framelessWindowCSS.Do(func() {
+				provider := C.gtk_css_provider_new()
+				css := C.CString("." + framelessWindowClass + " { border-radius: 0; }")
+				defer C.free(unsafe.Pointer(css))
+
+				C.gtk_css_provider_load_from_string(provider, css)
+				C.gtk_style_context_add_provider_for_display(
+					display,
+					(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
+					C.GTK_STYLE_PROVIDER_PRIORITY_APPLICATION,
+				)
+				C.g_object_unref(C.gpointer(provider))
+			})
+
+			C.gtk_widget_add_css_class(w.gtkWidget(), className)
+		}
+	} else {
+		C.gtk_widget_remove_css_class(w.gtkWidget(), className)
+	}
+
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
