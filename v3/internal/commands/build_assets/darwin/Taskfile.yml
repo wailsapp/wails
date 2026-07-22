@@ -43,12 +43,12 @@ tasks:
     cmds:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}-tags dev{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_DARWIN}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags="{{$.APP_LDFLAGS}}"{{end}}{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{with .APP_TAGS}},{{.}}{{end}}{{with .APP_TAGS_DARWIN}},{{.}}{{end}}{{with .EXTRA_TAGS}},{{.}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s{{with .APP_LDFLAGS}} {{.}}{{end}}"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: darwin
-      CGO_ENABLED: 1
+      CGO_ENABLED: '{{if .APP_CGO_ENABLED}}{{.APP_CGO_ENABLED}}{{else}}1{{end}}'
       GOARCH: '{{.ARCH | default ARCH}}'
       CGO_CFLAGS: "-mmacosx-version-min=12.0"
       CGO_LDFLAGS: "-mmacosx-version-min=12.0"
