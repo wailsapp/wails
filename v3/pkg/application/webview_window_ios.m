@@ -266,9 +266,14 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
         tabH = size.height;
         self.tabBar.frame = CGRectMake(0, height - safe.bottom - tabH, width, tabH);
     }
-    CGFloat webTop = safe.top;
-    CGFloat webBottom = safe.bottom + tabH;
-    self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
+    if (ios_is_safe_area_insets_disabled()) {
+        CGFloat webHeight = (self.tabBar && !self.tabBar.isHidden) ? (height - safe.bottom - tabH) : height;
+        self.webView.frame = CGRectMake(0, 0, width, webHeight);
+    } else {
+        CGFloat webTop = safe.top;
+        CGFloat webBottom = safe.bottom + tabH;
+        self.webView.frame = UIEdgeInsetsInsetRect(self.view.bounds, UIEdgeInsetsMake(webTop, safe.left, webBottom, safe.right));
+    }
 }
 // Orientation lock and status-bar appearance are driven by global state set
 // from Go (see mobile_features_ios.m). These overrides feed UIKit the current
