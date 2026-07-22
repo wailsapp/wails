@@ -116,9 +116,10 @@ type TypeScriptify struct {
 	// throwaway, used when converting
 	alreadyConverted map[string]bool
 
-	Namespace    string
-	KnownStructs *slicer.StringSlicer
-	KnownEnums   *slicer.StringSlicer
+	Namespace         string
+	KnownStructs      *slicer.StringSlicer
+	KnownEnums        *slicer.StringSlicer
+	UseNullableSlices bool
 }
 
 func New() *TypeScriptify {
@@ -250,6 +251,11 @@ func (t *TypeScriptify) WithPrefix(p string) *TypeScriptify {
 
 func (t *TypeScriptify) WithSuffix(s string) *TypeScriptify {
 	t.Suffix = s
+	return t
+}
+
+func (t *TypeScriptify) WithUseNullableSlices(v bool) *TypeScriptify {
+	t.UseNullableSlices = v
 	return t
 }
 
@@ -658,11 +664,12 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		result = "export " + result
 	}
 	builder := typeScriptClassBuilder{
-		types:     t.kinds,
-		indent:    t.Indent,
-		prefix:    t.Prefix,
-		suffix:    t.Suffix,
-		namespace: t.Namespace,
+		types:             t.kinds,
+		indent:            t.Indent,
+		prefix:            t.Prefix,
+		suffix:            t.Suffix,
+		namespace:         t.Namespace,
+		useNullableSlices: t.UseNullableSlices,
 	}
 
 	for _, field := range fields {
@@ -846,6 +853,7 @@ type typeScriptClassBuilder struct {
 	constructorBody      []string
 	prefix, suffix       string
 	namespace            string
+	useNullableSlices    bool
 }
 
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
@@ -863,7 +871,11 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
-			t.addField(fieldName, fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth)), false)
+			nullableSuffix := ""
+			if t.useNullableSlices {
+				nullableSuffix = " | null"
+			}
+			t.addField(fieldName, fmt.Sprint(typeScriptType, strings.Repeat("[]", arrayDepth), nullableSuffix), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		}
@@ -936,7 +948,11 @@ func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field 
 		fieldType = field.Type.Elem().String()
 	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
-	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth)), false)
+	nullableSuffix := ""
+	if t.useNullableSlices {
+		nullableSuffix = " | null"
+	}
+	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth), nullableSuffix), false)
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, t.prefix+fieldType+t.suffix))
 }
 
