@@ -507,3 +507,41 @@ var GeneratedJsEntityWithNestedStructInterfacesTest = BindingTest{
         }
 `,
 }
+
+type NullableCollectionsEntity struct {
+	Names    []string       `json:"names"`
+	Values   map[string]int `json:"values"`
+	Children []ChildEntity  `json:"children"`
+	Fixed    [2]string      `json:"fixed"`
+}
+
+func (e NullableCollectionsEntity) Get() NullableCollectionsEntity {
+	return e
+}
+
+var NullableCollectionsInterfacesTest = BindingTest{
+	name: "NullableCollectionsInterfacesTest",
+	structs: []interface{}{
+		&NullableCollectionsEntity{},
+	},
+	exemptions:  nil,
+	shouldError: false,
+	TsGenerationOptionsTest: TsGenerationOptionsTest{
+		TsOutputType: "interfaces",
+	},
+	want: `export namespace binding_test {
+
+	export interface ChildEntity {
+		name: string;
+		childProp: number;
+	}
+	export interface NullableCollectionsEntity {
+		names: string[] | null;
+		values: Record<string, number> | null;
+		children: ChildEntity[] | null;
+		fixed: string[];
+	}
+
+}
+`,
+}
