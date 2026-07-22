@@ -50,16 +50,35 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[window setDelegate:delegate];
 	delegate.windowId = id;
 
-	// Add NSView to window
-	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	// Add NSView to window. Frameless windows use WailsFramelessContentView,
+	// which adopts the macOS 27 container-concentric corner configuration so
+	// the corners track the system window radius on 27+.
+	NSView* view;
+	if( frameless ) {
+		view = [[WailsFramelessContentView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	} else {
+		view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	}
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	if( frameless ) {
 		[view setWantsLayer:YES];
+		// The pre-27 look, and the starting value on 27 until the system
+		// pushes the resolved concentric radii.
 		view.layer.cornerRadius = 8.0;
 	}
 	[window setContentView:view];
+
+	if (@available(macOS 27.0, *)) {
+		// macOS 27: forward primary-button events to the delegate via the
+		// gesture-recognizer system; NSEvent monitors miss Sidecar/touch
+		// input there (TN3212). On <= 26 the app-global NSEvent monitors
+		// installed at init handle this and behaviour is unchanged.
+		WailsWindowMouseGestureObserver* mouseObserver = [[[WailsWindowMouseGestureObserver alloc] initWithTarget:nil action:NULL] autorelease];
+		mouseObserver.delaysPrimaryMouseButtonEvents = NO;
+		[view addGestureRecognizer:mouseObserver];
+	}
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);

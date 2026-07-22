@@ -250,6 +250,78 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 @end
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 270000
+// Compiled against a pre-27 SDK: declare the macOS 27 corner-configuration
+// selectors so the overrides below compile. They are only invoked on 27+.
+@interface NSView (WailsCornerConfigurationCompat)
+- (id)effectiveCornerRadii;
+- (void)viewDidChangeEffectiveCornerRadii;
+@end
+#endif
+
+@implementation WailsFramelessContentView
+// Called by AppKit on macOS 27+ to obtain the view's corner style. Built
+// dynamically so this file still compiles against older SDKs.
+- (id)cornerConfiguration {
+    Class configClass = NSClassFromString(@"NSViewCornerConfiguration");
+    Class radiusClass = NSClassFromString(@"NSViewCornerRadius");
+    if (configClass && radiusClass
+        && [radiusClass respondsToSelector:@selector(containerConcentricRadius)]
+        && [configClass respondsToSelector:@selector(configurationWithRadius:)]) {
+        id radius = [radiusClass performSelector:@selector(containerConcentricRadius)];
+        if (radius) {
+            return [configClass performSelector:@selector(configurationWithRadius:) withObject:radius];
+        }
+    }
+    return nil;
+}
+- (void)viewDidChangeEffectiveCornerRadii {
+    if ([NSView instancesRespondToSelector:@selector(viewDidChangeEffectiveCornerRadii)]) {
+        [super viewDidChangeEffectiveCornerRadii];
+    }
+    // Apply the system-resolved radius to the backing layer, falling back to
+    // the historic pre-27 look if the concentric radius resolves to nothing
+    // (a borderless window may give the container no shape to match).
+    CGFloat radius = 8.0;
+    if ([self respondsToSelector:@selector(effectiveCornerRadii)]) {
+        id radii = [self effectiveCornerRadii];
+        if (radii) {
+            CGFloat topLeft = [[radii valueForKey:@"topLeft"] doubleValue];
+            CGFloat topRight = [[radii valueForKey:@"topRight"] doubleValue];
+            CGFloat bottomLeft = [[radii valueForKey:@"bottomLeft"] doubleValue];
+            CGFloat bottomRight = [[radii valueForKey:@"bottomRight"] doubleValue];
+            CGFloat resolved = MAX(MAX(topLeft, topRight), MAX(bottomLeft, bottomRight));
+            if (resolved > 0) {
+                radius = resolved;
+            }
+        }
+    }
+    [self setWantsLayer:YES];
+    self.layer.cornerRadius = radius;
+}
+@end
+
+@implementation WailsWindowMouseGestureObserver
+- (void)mouseDown:(NSEvent *)event {
+    [super mouseDown:event];
+    // Stay in the "possible" state here so mouseUp: is still delivered to
+    // us; never transitioning to "began" leaves the event stream untouched.
+    NSWindow* window = self.view.window;
+    id delegate = [window delegate];
+    if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
+        [(WebviewWindowDelegate*)delegate handleLeftMouseDown:event];
+    }
+}
+- (void)mouseUp:(NSEvent *)event {
+    [super mouseUp:event];
+    NSWindow* window = self.view.window;
+    id delegate = [window delegate];
+    if ([delegate isKindOfClass:[WebviewWindowDelegate class]]) {
+        [(WebviewWindowDelegate*)delegate handleLeftMouseUp:window];
+    }
+    self.state = NSGestureRecognizerStateFailed;
+}
+@end
 @implementation WebviewWindowDelegate
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
     NSPasteboard *pasteboard = [sender draggingPasteboard];
@@ -854,19 +926,36 @@ bool isLiquidGlassSupported() {
 void windowRemoveVisualEffects(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     NSView* contentView = [window contentView];
-    // Get NSGlassEffectView class if available (avoid hard reference)
+    // Get the glass classes if available (avoid hard references)
     Class glassEffectViewClass = nil;
+    Class glassContainerViewClass = nil;
     if (@available(macOS 26.0, *)) {
         glassEffectViewClass = NSClassFromString(@"NSGlassEffectView");
+        glassContainerViewClass = NSClassFromString(@"NSGlassEffectContainerView");
     }
-    // Remove all NSVisualEffectView and NSGlassEffectView subviews
-    NSArray* subviews = [contentView subviews];
+    // The webview may live inside a glass view about to be removed; the
+    // window's webView property is a weak (assign) reference and the view
+    // hierarchy holds the only retain, so move it back to the content view
+    // first or removing the glass view would deallocate it.
+    WKWebView* webView = window.webView;
+    if (webView && webView.superview != contentView) {
+        [[webView retain] autorelease];
+        [webView removeFromSuperview];
+        [contentView addSubview:webView positioned:NSWindowBelow relativeTo:nil];
+        [webView setFrame:contentView.bounds];
+        [webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    }
+    // Remove all effect-view subviews (NSVisualEffectView, NSGlassEffectView
+    // and any NSGlassEffectContainerView used for grouping)
+    NSArray* subviews = [[contentView subviews] copy];
     for (NSView* subview in subviews) {
         if ([subview isKindOfClass:[NSVisualEffectView class]] ||
-            (glassEffectViewClass && [subview isKindOfClass:glassEffectViewClass])) {
+            (glassEffectViewClass && [subview isKindOfClass:glassEffectViewClass]) ||
+            (glassContainerViewClass && [subview isKindOfClass:glassContainerViewClass])) {
             [subview removeFromSuperview];
         }
     }
+    [subviews release];
 }
 // Configure WebView for liquid glass effect
 void configureWebViewForLiquidGlass(void* nsWindow) {
@@ -1006,19 +1095,47 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
     }
     // Get the content view
     NSView* contentView = [window contentView];
-    // Set up the glass view
-    [glassView setFrame:contentView.bounds];
-    [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     // Check if this is a real NSGlassEffectView with contentView property
     BOOL hasContentView = [glassView respondsToSelector:@selector(contentView)];
+    // The view that is added to the window's content view. On macOS 27+
+    // grouped glass surfaces are hosted in an NSGlassEffectContainerView so
+    // the system can merge them and animate them together; 27 warns against
+    // managing grouped glass views as loose siblings. On <= 26 the historic
+    // behaviour (bare glass view) is kept.
+    NSView* glassRoot = glassView;
+    if (@available(macOS 27.0, *)) {
+        if (hasContentView && groupID && strlen(groupID) > 0) {
+            Class glassContainerViewClass = NSClassFromString(@"NSGlassEffectContainerView");
+            if (glassContainerViewClass && [glassContainerViewClass instancesRespondToSelector:@selector(setContentView:)]) {
+                NSView* container = [[[glassContainerViewClass alloc] init] autorelease];
+                if (groupSpacing > 0 && [container respondsToSelector:@selector(setSpacing:)]) {
+                    [container setValue:@(groupSpacing) forKey:@"spacing"];
+                }
+                // The container's contentView hosts the glass surfaces to merge
+                NSView* host = [[[NSView alloc] initWithFrame:contentView.bounds] autorelease];
+                [host setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+                [glassView setFrame:host.bounds];
+                [glassView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+                [host addSubview:glassView];
+                [container performSelector:@selector(setContentView:) withObject:host];
+                glassRoot = container;
+            }
+        }
+    }
+    // Set up the glass view
+    [glassRoot setFrame:contentView.bounds];
+    [glassRoot setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     if (hasContentView) {
         // NSGlassEffectView: Add it to window and webView goes in its contentView
-        [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
+        [contentView addSubview:glassRoot positioned:NSWindowBelow relativeTo:nil];
         // Safely reparent the webView to the glass view's contentView
         WKWebView* webView = window.webView;
         NSView* glassContentView = [glassView valueForKey:@"contentView"];
         // Only proceed if both webView and glassContentView are non-nil
         if (webView && glassContentView) {
+            // The view hierarchy holds the only retain on the webview; keep
+            // it alive across the reparenting
+            [[webView retain] autorelease];
             // Always remove from current superview to avoid exceptions
             [webView removeFromSuperview];
             // Add to the glass view's contentView
@@ -1028,11 +1145,12 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
         }
     } else {
         // NSVisualEffectView: Add glass as bottom layer, webView on top
-        [contentView addSubview:glassView positioned:NSWindowBelow relativeTo:nil];
+        [contentView addSubview:glassRoot positioned:NSWindowBelow relativeTo:nil];
         WKWebView* webView = window.webView;
         if (webView) {
+            [[webView retain] autorelease];
             [webView removeFromSuperview];
-            [contentView addSubview:webView positioned:NSWindowAbove relativeTo:glassView];
+            [contentView addSubview:webView positioned:NSWindowAbove relativeTo:glassRoot];
         }
     }
     // Configure WebView for liquid glass
