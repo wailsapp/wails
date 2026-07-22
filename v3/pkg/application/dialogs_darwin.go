@@ -180,11 +180,23 @@ static void showOpenFileDialog(unsigned int dialogID,
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 		if (@available(macOS 11, *)) {
 			NSMutableArray *filterTypes = [NSMutableArray array];
-			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
+			NSMutableArray *legacyTypes = [NSMutableArray array];
+
 			for (NSString *filterType in delegate.allowedExtensions) {
-				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
+				UTType *utType = [UTType typeWithFilenameExtension:filterType];
+				if (utType != nil) {
+					[filterTypes addObject:utType];
+				} else {
+					[legacyTypes addObject:filterType];
+				}
 			}
-			[panel setAllowedContentTypes:filterTypes];
+
+			if ([filterTypes count] > 0) {
+				[panel setAllowedContentTypes:filterTypes];
+			}
+			if ([legacyTypes count] > 0) {
+				[panel setAllowedFileTypes:legacyTypes];
+			}
 		}
 #else
 		[panel setAllowedFileTypes:delegate.allowedExtensions];
