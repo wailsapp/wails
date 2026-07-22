@@ -571,12 +571,6 @@ func (a *App) Run() error {
 	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
-	// Call post-create hooks
-	err := a.preRun()
-	if err != nil {
-		return err
-	}
-
 	a.impl = newPlatformApp(a)
 
 	// Ensure services are shut down in case of failures.
@@ -602,13 +596,12 @@ func (a *App) Run() error {
 			a.options.Services = services[:i+1]
 		}
 
-
-	// Start the MCP server when the application is built with -tags mcp.
-	// All configuration is read from environment variables (WAILS_MCP_HOST,
-	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
-	if err := startMCPServer(a); err != nil {
-		return fmt.Errorf("mcp: %w", err)
-	}
+		// Start the MCP server when the application is built with -tags mcp.
+		// All configuration is read from environment variables (WAILS_MCP_HOST,
+		// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+		if err := startMCPServer(a); err != nil {
+			return fmt.Errorf("mcp: %w", err)
+		}
 
 		go func() {
 			for {
