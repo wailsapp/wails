@@ -2,6 +2,7 @@ package application_test
 
 import (
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -10,14 +11,21 @@ import (
 )
 
 type mockNotifier struct {
+	mu     sync.Mutex
 	Events []*application.CustomEvent
 }
 
+// mu: dispatch now runs on a persistent worker (see runWindowDispatch), so it
+// can race with a test's Reset() right after Emit(). Mutex makes that safe.
 func (m *mockNotifier) dispatchEventToWindows(event *application.CustomEvent) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.Events = append(m.Events, event)
 }
 
 func (m *mockNotifier) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.Events = []*application.CustomEvent{}
 }
 
@@ -99,12 +107,13 @@ func Test_EventsOnMultiple(t *testing.T) {
 
 	// Test OnApplicationEvent
 	eventName := "test"
-	counter := 0
+	// atomic: 2 of the 3 Emit()s below can invoke this callback concurrently.
+	var counter atomic.Int32
 	var wg sync.WaitGroup
 	wg.Add(2)
 	unregisterFn := eventProcessor.OnMultiple(eventName, func(event *application.CustomEvent) {
 		// This is called in a goroutine
-		counter++
+		counter.Add(1)
 		wg.Done()
 	}, 2)
 	_ = eventProcessor.Emit(&application.CustomEvent{
@@ -120,16 +129,16 @@ func Test_EventsOnMultiple(t *testing.T) {
 		Data: "test payload",
 	})
 	wg.Wait()
-	i.Equal(2, counter)
+	i.Equal(int32(2), counter.Load())
 
 	// Unregister
 	notifier.Reset()
 	unregisterFn()
-	counter = 0
+	counter.Store(0)
 	_ = eventProcessor.Emit(&application.CustomEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	i.Equal(0, counter)
+	i.Equal(int32(0), counter.Load())
 
 }
