@@ -17,8 +17,8 @@ import (
 // caps give comfortable headroom while keeping malformed / hostile archives
 // from exhausting disk or file descriptors.
 const (
-	maxArchiveEntries   = 50_000
-	maxArchiveTotalSize = 2 << 30 // 2 GiB total uncompressed
+	maxArchiveEntries         = 50_000
+	maxArchiveTotalSize int64 = 2 << 30 // 2 GiB total uncompressed
 )
 
 // archiveKind is the set of archive formats the framework can unpack inline
