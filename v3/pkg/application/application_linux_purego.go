@@ -1,18 +1,12 @@
-//go:build linux && cgo && !gtk3 && !android && !server && !purego
+//go:build linux && purego && !gtk3 && !android && !server
 
 package application
 
-/*
-#include <gtk/gtk.h>
-#include <webkit/webkit.h>
-static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
-static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
-static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
-static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
-static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
-static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
-*/
-import "C"
+// CGO-free port of application_linux.go. The only structural difference:
+// a purego build has no compile-time GTK/WebKit headers, so the
+// "compiled with" version constants don't exist — the runtime versions
+// (gtk_get_*_version / webkit_get_*_version) are reported instead.
+
 import (
 	"fmt"
 	"os"
@@ -128,27 +122,29 @@ func (a *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
+func gtkRuntimeVersion() string {
+	return fmt.Sprintf("%d.%d.%d",
+		gtk_get_major_version(),
+		gtk_get_minor_version(),
+		gtk_get_micro_version())
+}
+
+func webkitRuntimeVersion() string {
+	return fmt.Sprintf("%d.%d.%d",
+		webkit_get_major_version(),
+		webkit_get_minor_version(),
+		webkit_get_micro_version())
+}
+
 func (a *linuxApp) appendGTKVersion(result map[string]string) {
-	result["GTK"] = fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version())
-	result["WebKit"] = fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version())
+	result["GTK"] = gtkRuntimeVersion()
+	result["WebKit"] = webkitRuntimeVersion()
 }
 
 func (a *linuxApp) init(_ *App, options Options) {
 	osInfo, _ := operatingsystem.Info()
-	a.parent.info("Compiled with GTK %d.%d.%d",
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version())
-	a.parent.info("Compiled with WebKitGTK %d.%d.%d",
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version())
+	a.parent.info("Running GTK %s (loaded at runtime via purego)", gtkRuntimeVersion())
+	a.parent.info("Running WebKitGTK %s (loaded at runtime via purego)", webkitRuntimeVersion())
 	a.parent.info("Using %s", osInfo.Name)
 
 	if options.Icon != nil {
@@ -187,7 +183,7 @@ func listenForSystemThemeChanges(a *linuxApp) {
 		if !ok || key != "color-scheme" {
 			continue
 		}
-		processApplicationEvent(C.uint(events.Linux.SystemThemeChanged), nil)
+		processApplicationEvent(uint(events.Linux.SystemThemeChanged), nilPointer)
 	}
 }
 
@@ -315,7 +311,7 @@ func (a *linuxApp) getAccentColor() string {
 func (a *linuxApp) isVisible() bool {
 	windows := a.getWindows()
 	for _, window := range windows {
-		if C.gtk_widget_is_visible((*C.GtkWidget)(window)) != 0 {
+		if gtk_widget_is_visible(uintptr(window)) != 0 {
 			return true
 		}
 	}
@@ -335,45 +331,20 @@ func (a *App) logPlatformInfo() {
 	}
 
 	platformInfo := info.AsLogSlice()
-	platformInfo = append(platformInfo, "GTK", fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version()))
-	platformInfo = append(platformInfo, "WebKitGTK", fmt.Sprintf("%d.%d.%d",
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version()))
+	platformInfo = append(platformInfo, "GTK", gtkRuntimeVersion())
+	platformInfo = append(platformInfo, "WebKitGTK", webkitRuntimeVersion())
 
 	a.info("Platform Info:", platformInfo...)
 }
 
-func buildVersionString(major, minor, micro C.guint) string {
-	return fmt.Sprintf("%d.%d.%d", uint(major), uint(minor), uint(micro))
-}
-
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	result["gtk4-compiled"] = buildVersionString(
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version(),
-	)
-	result["gtk4-runtime"] = buildVersionString(
-		C.gtk_get_major_version(),
-		C.gtk_get_minor_version(),
-		C.gtk_get_micro_version(),
-	)
-
-	result["webkitgtk6-compiled"] = buildVersionString(
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version(),
-	)
-	result["webkitgtk6-runtime"] = buildVersionString(
-		C.webkit_get_major_version(),
-		C.webkit_get_minor_version(),
-		C.webkit_get_micro_version(),
-	)
+	// No compile-time versions exist in a purego build; the libraries are
+	// resolved at runtime.
+	result["gtk4-compiled"] = "n/a (purego runtime binding)"
+	result["gtk4-runtime"] = gtkRuntimeVersion()
+	result["webkitgtk6-compiled"] = "n/a (purego runtime binding)"
+	result["webkitgtk6-runtime"] = webkitRuntimeVersion()
 
 	result["compositor"] = detectCompositor()
 	result["wayland"] = isWayland()

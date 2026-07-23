@@ -256,7 +256,7 @@ func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 	if menu == nil {
-		w.gtkmenu = nil
+		w.gtkmenu = nilPointer
 		return
 	}
 	w.parent.options.Linux.Menu = menu
