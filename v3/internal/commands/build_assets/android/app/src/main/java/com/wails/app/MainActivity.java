@@ -94,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Load the application
         loadApplication();
+
+        // If a deep link (App Link / custom scheme) cold-started the app, deliver
+        // it now. onNewIntent handles the warm-start case while already running.
+        handleDeepLinkIntent(getIntent());
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -442,6 +446,33 @@ public class MainActivity extends AppCompatActivity {
             pendingFilePickerCallbackID = -1;
             bridge.filePickerDone(callbackID);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Keep getIntent() in sync so later reads see the latest intent.
+        setIntent(intent);
+        handleDeepLinkIntent(intent);
+    }
+
+    /**
+     * Extract a deep link URL from an ACTION_VIEW intent and forward it to Go as
+     * the cross-platform common:ApplicationLaunchedWithUrl event. No-op for
+     * intents that carry no data URI (e.g. the normal launcher intent).
+     */
+    private void handleDeepLinkIntent(@Nullable Intent intent) {
+        if (intent == null || bridge == null) {
+            return;
+        }
+        if (!Intent.ACTION_VIEW.equals(intent.getAction())) {
+            return;
+        }
+        Uri data = intent.getData();
+        if (data == null) {
+            return;
+        }
+        bridge.onDeepLink(data.toString());
     }
 
     @Override

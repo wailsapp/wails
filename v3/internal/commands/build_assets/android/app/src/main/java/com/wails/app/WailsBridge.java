@@ -119,6 +119,7 @@ public class WailsBridge {
     private static native void nativeMainThreadCallback(int callbackID);
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
+    private static native void nativeOnDeepLink(String url);
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
@@ -192,6 +193,15 @@ public class WailsBridge {
      */
     public void onPageFinished(String url) {
         if (initialized) nativeOnPageFinished(url);
+    }
+
+    /**
+     * Deliver a deep link (App Link or custom-scheme URL) to Go. Surfaces as the
+     * cross-platform common:ApplicationLaunchedWithUrl application event.
+     * Called by MainActivity from onCreate (cold start) and onNewIntent (warm).
+     */
+    public void onDeepLink(String url) {
+        if (initialized && url != null && !url.isEmpty()) nativeOnDeepLink(url);
     }
 
     /**
