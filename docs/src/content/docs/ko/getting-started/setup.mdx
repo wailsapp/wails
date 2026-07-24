@@ -16,10 +16,10 @@ import { Aside, Steps } from "@astrojs/starlight/components";
 ## 빠른 시작
 
 ```bash
-# 1. Wails CLI 설치
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# 2. 설정 마법사 실행
+# 2. Run the setup wizard
 wails3 setup
 ```
 
@@ -39,13 +39,13 @@ cd myapp && wails3 dev
 - **크로스 플랫폼 빌드** - 어느 호스트에서나 빌드할 수 있도록 Docker 환경을 선택적으로 설정합니다
 - **코드 서명** - macOS, Windows 및 Linux용 코드 서명을 선택적으로 설정합니다
 
-설정 내용은 `~/.config/wails/config.yaml`에 저장되며 `wails3 init`에서 사용됩니다.
+설정 내용은 `~/.config/wails/defaults.yaml`에 저장되며 `wails3 init`에서 사용됩니다.
 
 ## 하위 명령
 
 ```bash
-wails3 setup signing      # 코드 서명 설정
-wails3 setup entitlements # macOS 엔타이틀먼트 설정
+wails3 setup signing      # Configure code signing
+wails3 setup entitlements # Configure macOS entitlements
 ```
 
 ## 문제가 있나요?
