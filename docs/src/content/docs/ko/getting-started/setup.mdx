@@ -1,0 +1,55 @@
+---
+title: 설정 마법사
+sidebar:
+  order: 15
+  badge:
+    text: 실험적 기능
+    variant: caution
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+<Aside type="caution" title="실험적 기능">
+  설정 마법사는 새 기능이며 주로 Linux 환경에서 테스트되었습니다. 문제가 발생하면 [이슈로 알려주시고](https://github.com/wailsapp/wails/issues/4904), 대신 [수동 설치 절차](/ko/getting-started/installation#플랫폼별-의존성)를 따라주세요.
+</Aside>
+
+## 빠른 시작
+
+```bash
+# 1. Wails CLI 설치
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 2. 설정 마법사 실행
+wails3 setup
+```
+
+설정 마법사는 브라우저에서 열립니다. 마법사의 안내에 따라 의존성 확인, 프로젝트 기본값 지정, 선택 사항인 크로스 플랫폼 빌드 환경 설정을 진행할 수 있습니다.
+
+설정이 끝나면 첫 프로젝트를 만들 수 있습니다:
+
+```bash
+wails3 init -n myapp -t vanilla
+cd myapp && wails3 dev
+```
+
+## 주요 기능
+
+- **의존성 확인** - Go, npm 및 플랫폼별 도구가 준비되어 있는지 확인합니다
+- **기본값 설정** - 작성자 정보, 번들 ID 접두사, 선호하는 템플릿을 설정합니다
+- **크로스 플랫폼 빌드** - 어느 호스트에서나 빌드할 수 있도록 Docker 환경을 선택적으로 설정합니다
+- **코드 서명** - macOS, Windows 및 Linux용 코드 서명을 선택적으로 설정합니다
+
+설정 내용은 `~/.config/wails/config.yaml`에 저장되며 `wails3 init`에서 사용됩니다.
+
+## 하위 명령
+
+```bash
+wails3 setup signing      # 코드 서명 설정
+wails3 setup entitlements # macOS 엔타이틀먼트 설정
+```
+
+## 문제가 있나요?
+
+1. `wails3 doctor`를 실행하여 문제의 원인을 진단하세요
+2. [수동 설치 절차](/ko/getting-started/installation#플랫폼별-의존성)를 따라주세요
+3. `wails3 doctor` 출력과 함께 [이슈로 알려주세요](https://github.com/wailsapp/wails/issues/4904)
