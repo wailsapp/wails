@@ -52,6 +52,29 @@ func TestAndroidTaskfileRunDevice(t *testing.T) {
 	assert.NotContains(t, runDeviceTask, "ensure-emulator")
 }
 
+func TestAndroidTaskfileBuildUsesAndroidBindingContext(t *testing.T) {
+	// Given
+	buildTask := androidTaskYAML(t, "build")
+
+	// Then
+	assert.Contains(t, buildTask, "task: common:build:frontend")
+	assert.Contains(t, buildTask, "GOOS: android")
+	assert.Contains(t, buildTask, "CGO_ENABLED: 0")
+}
+
+func TestCommonTaskfileForwardsBindingContext(t *testing.T) {
+	// Given
+	data, err := buildAssets.ReadFile("build_assets/Taskfile.tmpl.yml")
+	require.NoError(t, err)
+	taskfile := string(data)
+
+	// Then
+	assert.Contains(t, taskfile, "ref: .GOOS")
+	assert.Contains(t, taskfile, "ref: .CGO_ENABLED")
+	assert.Contains(t, taskfile, `GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'`)
+	assert.Contains(t, taskfile, `CGO_ENABLED: '{{.Opn}}.CGO_ENABLED | default ""{{.Cls}}'`)
+}
+
 func androidTaskYAML(t *testing.T, name string) string {
 	t.Helper()
 

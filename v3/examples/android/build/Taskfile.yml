@@ -36,6 +36,10 @@ tasks:
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
+          GOOS:
+            ref: .GOOS
+          CGO_ENABLED:
+            ref: .CGO_ENABLED
     cmds:
       - npm run {{.BUILD_COMMAND}} -q
     env:
@@ -87,6 +91,9 @@ tasks:
       - frontend/bindings/**/*
     cmds:
       - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+    env:
+      GOOS: '{{.GOOS | default OS}}'
+      CGO_ENABLED: '{{.CGO_ENABLED | default ""}}'
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
