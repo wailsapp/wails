@@ -43,7 +43,7 @@ tasks:
           PRODUCTION:
             ref: .PRODUCTION
           GOOS: android
-          CGO_ENABLED: 0
+          CGO_ENABLED: "0"
     cmds:
       - echo "Building Android app {{.APP_NAME}}..."
       - task: compile:go:shared

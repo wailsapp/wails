@@ -70,7 +70,7 @@ tasks:
       - yarn install
 
   build:frontend:
-    label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}})
+    label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}} GOOS={{.Opn}}.GOOS | default OS{{.Cls}} CGO_ENABLED={{.Opn}}.CGO_ENABLED | default ""{{.Cls}})
     summary: Build the frontend project
     # darwin:build:universal runs its per-arch builds as parallel deps, each of
     # which depends on this task. Without run:once the two executions race:
@@ -178,6 +178,7 @@ tasks:
 
 
   generate:bindings:
+    label: generate:bindings (GOOS={{.Opn}}.GOOS | default OS{{.Cls}} CGO_ENABLED={{.Opn}}.CGO_ENABLED | default ""{{.Cls}})
     summary: Generates bindings for the frontend
     run: once
     deps:

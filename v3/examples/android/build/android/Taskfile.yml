@@ -32,10 +32,6 @@ tasks:
     summary: Creates a debug build of the application for Android
     deps:
       - task: common:go:mod:tidy
-      - task: generate:android:bindings
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
       - task: common:build:frontend
         vars:
           BUILD_FLAGS:
@@ -43,7 +39,7 @@ tasks:
           PRODUCTION:
             ref: .PRODUCTION
           GOOS: android
-          CGO_ENABLED: 0
+          CGO_ENABLED: "0"
       - task: common:generate:icons
     cmds:
       - echo "Building Android app {{.APP_NAME}}..."
