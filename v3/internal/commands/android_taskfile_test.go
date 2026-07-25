@@ -101,11 +101,32 @@ func TestAndroidExamplesUseCommonBindingContext(t *testing.T) {
 	} {
 		data, err := os.ReadFile(path)
 		require.NoError(t, err)
-		taskfile := string(data)
 
-		assert.NotContains(t, taskfile, "generate:android:bindings", path)
-		assert.Contains(t, taskfile, "task: common:build:frontend", path)
-		assert.Contains(t, taskfile, `CGO_ENABLED: "0"`, path)
+		var taskfile struct {
+			Tasks map[string]yaml.Node `yaml:"tasks"`
+		}
+		require.NoError(t, yaml.Unmarshal(data, &taskfile), path)
+		buildNode, ok := taskfile.Tasks["build"]
+		require.True(t, ok, "%s should include a build task", path)
+		var buildTask struct {
+			Deps []struct {
+				Task string         `yaml:"task"`
+				Vars map[string]any `yaml:"vars"`
+			} `yaml:"deps"`
+		}
+		require.NoError(t, buildNode.Decode(&buildTask), path)
+		assert.NotContains(t, string(data), "generate:android:bindings", path)
+
+		foundFrontendBuild := false
+		for _, dependency := range buildTask.Deps {
+			if dependency.Task != "common:build:frontend" {
+				continue
+			}
+			foundFrontendBuild = true
+			assert.Equal(t, "android", dependency.Vars["GOOS"], path)
+			assert.Equal(t, "0", dependency.Vars["CGO_ENABLED"], path)
+		}
+		assert.True(t, foundFrontendBuild, "%s build task should depend on common:build:frontend", path)
 	}
 
 	for _, path := range []string{
