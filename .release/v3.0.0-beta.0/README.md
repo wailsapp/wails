@@ -41,3 +41,43 @@ Against this branch: 17 checks passing, 0 warnings, 2 blockers.
    tag in the `alpha2.` series before using it for real.
 3. This branch drifts behind master quickly. Re-sync and re-audit immediately
    before tagging; `relman audit` now blocks on it.
+
+## Findings worth acting on after the beta
+
+Noticed while preparing this release. None are release-blocking; all of them
+cost something later if forgotten.
+
+**v3 CI compiles the GTK4 backend against exactly one GTK version.** The v3 test
+matrix is `[windows-latest, ubuntu-latest, macos-latest]`, so `linux_cgo.go` is
+only ever built against whatever GTK ubuntu-latest carries. The single
+`ubuntu-22.04` job in the repository lives in `build-and-test.yml`, which is the
+v2 workflow and never compiles that file. A contributor can therefore use a GTK
+symbol newer than the project's real floor and CI will pass.
+
+In practice the floor is set by `#cgo linux pkg-config: gtk4 webkitgtk-6.0`:
+requiring WebKitGTK 6.0 already excludes the older distributions, which is why
+this has not bitten yet. The cheap mitigation is to state a minimum GTK4 version
+in the installation docs so contributors know what they may use, rather than
+adding a matrix entry for distributions that cannot satisfy the WebKitGTK
+requirement anyway.
+
+**Fork pull requests cannot converge while the changelog bot is active.** Master
+requires branches to be up to date, the changelog bot pushes a commit after a
+merge, and a fork PR brought up to date needs its workflow runs approved by hand
+before any required check reports. Each fork PR therefore needs a roughly
+twenty-minute cycle that anything else merging invalidates. There were 500 runs
+sitting in `action_required` while this release was being prepared. Merging in a
+quiet window works and is what was done here, but it does not scale; the durable
+fixes are settings changes.
+
+**`go build ./...` from `v3/` fails on several `examples/` packages**, equally on
+master and on this branch, so it is not a regression. CI stays green because it
+builds examples through `task test:examples`. It does mean the most obvious
+command a new contributor runs does not work.
+
+**Six diagram placeholders render in the documentation.**
+`contributing/index.mdx`, `contributing/architecture.mdx` and
+`concepts/build-system.mdx` contain literal `**[... Diagram Placeholder]**` text
+where D2 diagrams were removed after MDX parse failures. Contributor-facing
+rather than user-facing, so the diagrams were left alone rather than
+reconstructed speculatively.
