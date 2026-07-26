@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Provide default paths for icon generation inputs and outputs in [PR](https://github.com/wailsapp/wails/pull/5825) by @taliesin-ai
 - Add source entry modules to runtime package.json sideEffects in [PR](https://github.com/wailsapp/wails/pull/5797) by @savely-krasovsky
 - Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
 
