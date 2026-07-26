@@ -1,0 +1,204 @@
+# Custom Protocol Scheme association
+
+Custom Protocols feature allows you to associate specific custom protocol with your app so that when users open links with this protocol,
+your app is launched to handle them. This can be particularly useful to connect your desktop app with your web app.
+In this guide, we'll walk through the steps to implement custom protocols in Wails app.
+
+## Set Up Custom Protocol Schemes Association:
+
+To set up custom protocol, you need to modify your application's wails.json file.
+In "info" section add a "protocols" section specifying the protocols your app should be associated with.
+
+For example:
+
+```json
+{
+  "info": {
+    "protocols": [
+      {
+        "scheme": "myapp",
+        "description": "My App Protocol",
+        "role": "Editor"
+      }
+    ]
+  }
+}
+```
+
+| Property    | Description                                                                           |
+| :---------- | :------------------------------------------------------------------------------------ |
+| scheme      | Custom Protocol scheme. e.g. myapp                                                    |
+| description | Windows-only. The description.                                                        |
+| role        | macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole. |
+
+## Platform Specifics:
+
+### macOS
+
+When you open custom protocol with your app, the system will launch your app and call the `OnUrlOpen` function in your Wails app. Example:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		Mac: &mac.Options{
+			OnUrlOpen: func(url string) { println(url) },
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```
+
+### Windows
+
+On Windows Custom Protocol Schemes is supported only with NSIS installer. During installation, the installer will create a
+registry entry for your schemes. When you open url with your app, new instance of app is launched and url is passed
+as argument to your app. To handle this you should parse command line arguments in your app. Example:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+You also can enable single instance lock for your app. In this case, when you open url with your app, new instance of app is not launched
+and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```
+
+### Linux
+
+Currently, Wails doesn't support bundling for Linux. So, you need to create file associations manually.
+For example if you distribute your app as a .deb package, you can create file associations by adding required files in you bundle.
+You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your app.
+
+1. Create a .desktop file for your app and specify file associations there (note that `%u` is important in Exec). Example:
+
+```ini
+[Desktop Entry]
+Categories=Office
+Exec=/usr/bin/wails-open-file %u
+Icon=wails-open-file.png
+Name=wails-open-file
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/myapp;
+```
+
+2. Prepare postInstall/postRemove scripts for your package. Example:
+
+```sh
+# reload desktop database to load app in list of available
+update-desktop-database /usr/share/applications
+```
+
+3. Configure nfpm to use your scripts and files. Example:
+
+```yaml
+name: "wails-open-file"
+arch: "arm64"
+platform: "linux"
+version: "1.0.0"
+section: "default"
+priority: "extra"
+maintainer: "FooBarCorp <FooBarCorp@gmail.com>"
+description: "Sample Package"
+vendor: "FooBarCorp"
+homepage: "http://example.com"
+license: "MIT"
+contents:
+- src: ../bin/wails-open-file
+  dst: /usr/bin/wails-open-file
+- src: ./main.desktop
+  dst: /usr/share/applications/wails-open-file.desktop
+- src: ../appicon.svg
+  dst: /usr/share/icons/hicolor/scalable/apps/wails-open-file.svg
+# copy icons to Yaru theme as well. For some reason Ubuntu didn't pick up fileicons from hicolor theme
+- src: ../appicon.svg
+  dst: /usr/share/icons/Yaru/scalable/apps/wails-open-file.svg
+scripts:
+  postinstall: ./postInstall.sh
+  postremove: ./postRemove.sh
+```
+
+6. Build your .deb package using nfpm:
+
+```sh
+nfpm pkg --packager deb --target .
+```
+
+7. Now when your package is installed, your app will be associated with custom protocol scheme. When you open url with your app,
+   new instance of app is launched and file path is passed as argument to your app.
+   To handle this you should parse command line arguments in your app. Example:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+You also can enable single instance lock for your app. In this case, when you open url with your app, new instance of app is not launched
+and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```

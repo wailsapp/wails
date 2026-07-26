@@ -152,7 +152,20 @@ jobs:
           echo "Files committed back to master:"
           git status --short
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
-          git push
+          # master moves while this job runs (nightly release, auto-changelog
+          # commits), so a bare push races and gets rejected — which aborts the
+          # job before `npm publish` and leaves npm stale. Rebase and retry;
+          # a real conflict still fails loudly without publishing.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "push rejected (attempt ${attempt}); rebasing onto current master"
+            git pull --rebase origin master
+            sleep $(( attempt * 5 ))
+          done
+          echo "::error::could not push the version bump after 5 attempts"
+          exit 1
 
       - name: Publish npm package (Trusted Publishing / OIDC)
         # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a

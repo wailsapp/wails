@@ -1,44 +1,63 @@
-# File path specific labels
+# File path specific labels (actions/labeler v5 configuration format)
 v2-only:
-  - 'v2/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'v2/**/*'
 
 v3-alpha:
-  - 'v3/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'v3/**/*'
 
 windows:
-  - '**/*_windows.go'
-  - 'v2/internal/frontend/desktop/windows/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*_windows.go'
+          - 'v2/internal/frontend/desktop/windows/**/*'
 
 macos:
-  - '**/*_darwin.go'
-  - 'v2/internal/frontend/desktop/darwin/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*_darwin.go'
+          - 'v2/internal/frontend/desktop/darwin/**/*'
 
 linux:
-  - '**/*_linux.go'
-  - 'v2/internal/frontend/desktop/linux/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*_linux.go'
+          - 'v2/internal/frontend/desktop/linux/**/*'
 
 cli:
-  - 'v2/cmd/**/*'
-  - 'v3/cmd/**/*'
-  - '**/cli/**/*'
-  - '**/commands/**/*'
-  
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'v2/cmd/**/*'
+          - 'v3/cmd/**/*'
+          - '**/cli/**/*'
+          - '**/commands/**/*'
+
 documentation:
-  - '**/*.md'
-  - 'docs/**/*'
-  - 'website/**/*'
-  - 'mkdocs-website/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**/*'
+          - 'website/**/*'
+          - 'mkdocs-website/**/*'
 
 templates:
-  - '**/templates/**/*'
-  - '**/template/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/templates/**/*'
+          - '**/template/**/*'
 
 runtime:
-  - '**/runtime/**/*'
-  - 'v2/internal/runtime/**/*'
-  - 'v3/internal/runtime/**/*'
-  
-bindings:
-  - 'v2/internal/binding/**/*'
-  - 'v3/internal/generator/**/*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/runtime/**/*'
+          - 'v2/internal/runtime/**/*'
+          - 'v3/internal/runtime/**/*'
 
+bindings:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'v2/internal/binding/**/*'
+          - 'v3/internal/generator/**/*'
