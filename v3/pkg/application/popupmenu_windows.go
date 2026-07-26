@@ -339,8 +339,13 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 
 func (p *Win32Menu) ShowAtCursor() {
 	x, y, ok := w32.GetCursorPos()
-	if ok == false {
-		globalApplication.fatal("GetCursorPos failed")
+	if !ok {
+		// GetCursorPos fails when the process is not on the interactive input
+		// desktop (locked / secure desktop). A context menu simply cannot be
+		// shown then - skip it, do NOT kill the app. Matches the graceful
+		// handling in windowsMenu.ShowAtCursor.
+		globalApplication.debug("GetCursorPos failed - cannot show context menu at cursor")
+		return
 	}
 
 	p.ShowAt(x, y)
