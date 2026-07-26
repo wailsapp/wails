@@ -1,0 +1,513 @@
+{
+  "project": "Wails",
+  "version": "v3.0.0-beta.0",
+  "prevVersion": "v3.0.0-alpha2.117",
+  "tier": "T1",
+  "channel": "beta",
+  "releaseDate": "2026-09-15",
+  "branch": "releases/v3-beta",
+  "repoSlug": "wailsapp/wails",
+  "repoPath": "",
+  "owners": {
+    "release-lead": "",
+    "engineering": "",
+    "docs": "",
+    "comms": "",
+    "support": ""
+  },
+  "positioning": {
+    "oneLiner": "",
+    "problem": "",
+    "proof": "",
+    "cta": "",
+    "audience": ""
+  },
+  "milestones": [
+    {
+      "id": "kickoff",
+      "title": "Kickoff: scope locked, owners named, tier agreed",
+      "phase": "plan",
+      "offset": -42,
+      "date": "2026-08-04"
+    },
+    {
+      "id": "feature-freeze",
+      "title": "Feature freeze: nothing new merges to the release branch",
+      "phase": "stabilise",
+      "offset": -35,
+      "date": "2026-08-11"
+    },
+    {
+      "id": "narrative-lock",
+      "title": "Positioning locked; docs plan and migration guide outlined",
+      "phase": "plan",
+      "offset": -28,
+      "date": "2026-08-18"
+    },
+    {
+      "id": "api-freeze",
+      "title": "API/string freeze; translation and docs handoff",
+      "phase": "stabilise",
+      "offset": -21,
+      "date": "2026-08-25"
+    },
+    {
+      "id": "beta",
+      "title": "Public beta / RC1 cut and announced to early adopters",
+      "phase": "stabilise",
+      "offset": -21,
+      "date": "2026-08-25"
+    },
+    {
+      "id": "code-freeze",
+      "title": "Code freeze: release-blocking fixes only, each with a written justification",
+      "phase": "stabilise",
+      "offset": -14,
+      "date": "2026-09-01"
+    },
+    {
+      "id": "assets-draft",
+      "title": "Release notes, announcement post and social kit drafted",
+      "phase": "comms",
+      "offset": -14,
+      "date": "2026-09-01"
+    },
+    {
+      "id": "legal-security",
+      "title": "Licence/IP review and security review complete; embargoed advisories staged",
+      "phase": "assure",
+      "offset": -10,
+      "date": "2026-09-05"
+    },
+    {
+      "id": "docs-complete",
+      "title": "Docs complete: migration guide, upgrade path, reference regenerated",
+      "phase": "docs",
+      "offset": -7,
+      "date": "2026-09-08"
+    },
+    {
+      "id": "rc-final",
+      "title": "Final RC; support runbook and triage rota published",
+      "phase": "assure",
+      "offset": -7,
+      "date": "2026-09-08"
+    },
+    {
+      "id": "briefings",
+      "title": "Embargoed briefings to press, sponsors, downstream maintainers",
+      "phase": "comms",
+      "offset": -7,
+      "date": "2026-09-08"
+    },
+    {
+      "id": "dry-run",
+      "title": "Full release dry run: build, sign, publish to a staging channel, install from it",
+      "phase": "assure",
+      "offset": -3,
+      "date": "2026-09-12"
+    },
+    {
+      "id": "gono-1",
+      "title": "Go/no-go #1: every blocking gate green or explicitly waived",
+      "phase": "assure",
+      "offset": -3,
+      "date": "2026-09-12"
+    },
+    {
+      "id": "gono-final",
+      "title": "Final go/no-go; artifacts staged, posts queued, rollback rehearsed",
+      "phase": "assure",
+      "offset": -1,
+      "date": "2026-09-14"
+    },
+    {
+      "id": "launch",
+      "title": "Launch day: publish, announce, staff the thread",
+      "phase": "launch",
+      "offset": 0,
+      "date": "2026-09-15"
+    },
+    {
+      "id": "watch",
+      "title": "First 72 hours: triage rota live, hotfix branch ready",
+      "phase": "post",
+      "offset": 1,
+      "date": "2026-09-16"
+    },
+    {
+      "id": "patch",
+      "title": "First patch release window",
+      "phase": "post",
+      "offset": 7,
+      "date": "2026-09-22"
+    },
+    {
+      "id": "retro",
+      "title": "Retro: what broke, what to automate, adoption numbers",
+      "phase": "post",
+      "offset": 14,
+      "date": "2026-09-29"
+    },
+    {
+      "id": "adoption",
+      "title": "Adoption review against the pre-agreed success metrics",
+      "phase": "post",
+      "offset": 30,
+      "date": "2026-10-15"
+    }
+  ],
+  "gates": [
+    {
+      "id": "sw-scope",
+      "title": "Scope locked: shipped feature list matches the plan",
+      "phase": "plan",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-version",
+      "title": "Version number matches the change set (major iff breaking)",
+      "phase": "stabilise",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-compat",
+      "title": "Compatibility promise stated: supported platforms, runtimes, minimum versions",
+      "phase": "stabilise",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-deprecations",
+      "title": "Deprecations announced with a removal version; scheduled removals actually removed",
+      "phase": "stabilise",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-upgrade",
+      "title": "Upgrade path tested from the last two releases on real projects",
+      "phase": "assure",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-rollback",
+      "title": "Rollback/downgrade path documented and rehearsed",
+      "phase": "assure",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-artifacts",
+      "title": "Artifacts build reproducibly for every published platform",
+      "phase": "assure",
+      "track": "software",
+      "blocking": true,
+      "owner": "lea",
+      "status": "open",
+      "note": "release-v3.yml added 2026-06-29 (#5318) has never run; alphas ship via nightly-release-v3.yml. Needs a workflow_dispatch dry run on a throwaway tag.",
+      "updated": "2026-07-26T16:17:23+10:00"
+    },
+    {
+      "id": "sw-signing",
+      "title": "Artifacts signed; checksums and provenance published",
+      "phase": "assure",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-install",
+      "title": "Install verified from the published channel, not the build dir",
+      "phase": "assure",
+      "track": "software",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sw-perf",
+      "title": "Performance and binary size compared against the previous release",
+      "phase": "assure",
+      "track": "software",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "sw-telemetry",
+      "title": "Error reporting/telemetry can distinguish the new version",
+      "phase": "assure",
+      "track": "software",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "sw-a11y-i18n",
+      "title": "Accessibility and localisation checks on new UI surfaces",
+      "phase": "assure",
+      "track": "software",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "doc-notes",
+      "title": "Release notes written for users, not for git",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "doc-changelog",
+      "title": "Changelog entry landed in the standard format",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "doc-migration",
+      "title": "Migration guide covers every breaking change with before/after code",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "doc-getting-started",
+      "title": "Getting started path works end to end on a clean machine",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "doc-reference",
+      "title": "API reference regenerated and deployed",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open",
+      "note": "v3 go test ./... passes locally; bundled runtime matches source",
+      "updated": "2026-07-26T16:17:23+10:00"
+    },
+    {
+      "id": "doc-site",
+      "title": "Docs site builds and deploys, including translated locales",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": true,
+      "status": "open",
+      "note": "v3 docs (docs/, Astro+LLM pipeline) build clean: 1711 pages, 9 locales, Node 22. The failing 'Sync Translations' job is v2-only (website/, crowdin) and is excluded from ci-green.",
+      "updated": "2026-07-26T18:26:04+10:00"
+    },
+    {
+      "id": "doc-versioned",
+      "title": "Old version docs still reachable and labelled",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "doc-examples",
+      "title": "Examples, templates and starter projects updated to the new version",
+      "phase": "docs",
+      "track": "docs",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "legal-licence",
+      "title": "Licence unchanged or change announced; LICENSE and headers correct",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "legal-deps",
+      "title": "Dependency licences reviewed; third-party notices file current",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "legal-provenance",
+      "title": "Contributions covered by CLA/DCO; no unattributed third-party code",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": true,
+      "status": "open",
+      "note": "CONTRIBUTING.md does not state licence/DCO/CLA terms",
+      "updated": "2026-07-26T16:17:23+10:00"
+    },
+    {
+      "id": "legal-export",
+      "title": "Trademark and export-control use in name, binaries and site checked",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "sec-review",
+      "title": "Security review of new attack surface complete",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "sec-advisories",
+      "title": "Embargoed advisories drafted; CVE/GHSA IDs reserved; disclosure timed to release",
+      "phase": "assure",
+      "track": "legal",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "com-positioning",
+      "title": "One-liner, problem, proof and CTA agreed",
+      "phase": "plan",
+      "track": "comms",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "com-announcement",
+      "title": "Announcement post written and reviewed",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "com-channels",
+      "title": "Channel plan: who posts what, where, when",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "com-assets",
+      "title": "Screenshots, demo video or GIF produced",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "com-site",
+      "title": "Website updated: version, download links, comparison and pricing pages",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "com-community",
+      "title": "Community briefed: maintainers, sponsors, plugin authors, downstream packagers",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "com-faq",
+      "title": "FAQ and objection responses prepared for the launch thread",
+      "phase": "comms",
+      "track": "comms",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "ops-runbook",
+      "title": "Launch-day runbook written: sequence, owners, abort criteria",
+      "phase": "assure",
+      "track": "ops",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "ops-support",
+      "title": "Support rota staffed for the first 72 hours",
+      "phase": "assure",
+      "track": "ops",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "ops-hotfix",
+      "title": "Hotfix path rehearsed: branch, build, publish within one working day",
+      "phase": "assure",
+      "track": "ops",
+      "blocking": true,
+      "status": "open"
+    },
+    {
+      "id": "ops-monitoring",
+      "title": "Dashboards and alerts cover the new release's failure modes",
+      "phase": "assure",
+      "track": "ops",
+      "blocking": false,
+      "status": "open"
+    },
+    {
+      "id": "ops-metrics",
+      "title": "Success metrics agreed before launch, with a review date",
+      "phase": "plan",
+      "track": "ops",
+      "blocking": false,
+      "status": "open"
+    }
+  ],
+  "audit": {
+    "versionFiles": [
+      "v3/internal/version/version.txt"
+    ],
+    "changelogPath": "CHANGELOG.md",
+    "migrationGuide": "docs/src/content/docs/migration",
+    "generated": [
+      {
+        "name": "bundled runtime",
+        "dir": "v3",
+        "command": "(cd internal/runtime/desktop/@wailsio/runtime && npm ci --silent) && task runtime:build:assets",
+        "paths": [
+          "v3/internal/assetserver/bundledassets"
+        ]
+      }
+    ],
+    "docsBuild": {
+      "dir": "docs",
+      "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH npm ci --silent && PATH=/opt/homebrew/opt/node@22/bin:$PATH npm run build"
+    },
+    "testCommand": {
+      "dir": "v3",
+      "command": "go test ./..."
+    },
+    "workflows": [
+      "release-v3.yml",
+      "nightly-release-v3.yml",
+      "publish-npm.yml",
+      "verify-runtime-assets.yml"
+    ],
+    "ignoreWorkflows": [
+      "Sync Translations",
+      "Upload Source Documents"
+    ],
+    "baseBranch": "master"
+  },
+  "headlines": [],
+  "breaking": []
+}
