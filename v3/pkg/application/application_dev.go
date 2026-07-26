@@ -3,6 +3,8 @@
 package application
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,30 +13,55 @@ import (
 
 var devMode = false
 
+const (
+	frontendDevServerRetryInterval = 500 * time.Millisecond
+	frontendDevServerProbeTimeout  = 2 * time.Second
+)
+
+func waitForFrontendDevServer(ctx context.Context, client *http.Client, frontendURL string, retry func()) error {
+	request, err := http.NewRequest(http.MethodGet, frontendURL, nil)
+	if err != nil {
+		return fmt.Errorf("invalid frontend dev server URL: %w", err)
+	}
+
+	for {
+		response, err := client.Do(request.Clone(ctx))
+		if err == nil {
+			response.Body.Close()
+			return nil
+		}
+
+		timer := time.NewTimer(frontendDevServerRetryInterval)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+			if retry != nil {
+				retry()
+			}
+		}
+	}
+}
+
 func (a *App) preRun() error {
 	// Check for frontend server url
 	frontendURL := assetserver.GetDevServerURL()
 	if frontendURL != "" {
 		devMode = true
-		// We want to check if the frontend server is running by trying to http get the url
-		// and if it is not, we wait 500ms and try again for a maximum of 10 times. If it is
-		// still not available, we return an error.
-		// This is to allow the frontend server to start up before the backend server.
-		client := http.Client{}
+		client := &http.Client{Timeout: frontendDevServerProbeTimeout}
 		a.Logger.Info("Waiting for frontend dev server to start...", "url", frontendURL)
-		for i := 0; i < 10; i++ {
-			_, err := client.Get(frontendURL)
-			if err == nil {
-				a.Logger.Info("Connected to frontend dev server!")
-				return nil
-			}
-			// Wait 500ms
-			time.Sleep(500 * time.Millisecond)
-			if i%2 == 0 {
+		retries := 0
+		err := waitForFrontendDevServer(a.Context(), client, frontendURL, func() {
+			retries++
+			if retries%2 == 1 {
 				a.Logger.Info("Retrying...")
 			}
+		})
+		if err != nil {
+			return fmt.Errorf("unable to connect to frontend server at FRONTEND_DEVSERVER_URL=%q: %w", frontendURL, err)
 		}
-		a.fatal("unable to connect to frontend server. Please check it is running - FRONTEND_DEVSERVER_URL='%s'", frontendURL)
+		a.Logger.Info("Connected to frontend dev server!")
 	}
 	return nil
 }
