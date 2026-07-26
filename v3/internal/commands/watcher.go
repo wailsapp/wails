@@ -4,12 +4,9 @@ import (
 	"os"
 
 	"github.com/atterpac/refresh/engine"
-	"github.com/atterpac/refresh/process"
 	"github.com/wailsapp/wails/v3/internal/signal"
 	"gopkg.in/yaml.v3"
 )
-
-const frontendDevServerReadyCommand = "wails3 tool waitport --timeout 60"
 
 func ensureIgnored(list *[]string, pattern string) {
 	for _, item := range *list {
@@ -22,30 +19,6 @@ func ensureIgnored(list *[]string, pattern string) {
 
 type WatcherOptions struct {
 	Config string `description:"The config file including path" default:"."`
-}
-
-func ensureFrontendDevServerReadyTask(config *engine.Config) {
-	if os.Getenv("FRONTEND_DEVSERVER_URL") == "" {
-		return
-	}
-
-	for _, execute := range config.ExecStruct {
-		if execute.Cmd == frontendDevServerReadyCommand {
-			return
-		}
-	}
-
-	for index, execute := range config.ExecStruct {
-		if execute.Type != process.Primary {
-			continue
-		}
-
-		ready := process.Execute{Cmd: frontendDevServerReadyCommand, Type: process.Once}
-		config.ExecStruct = append(config.ExecStruct, process.Execute{})
-		copy(config.ExecStruct[index+1:], config.ExecStruct[index:])
-		config.ExecStruct[index] = ready
-		return
-	}
 }
 
 func Watcher(options *WatcherOptions) error {
@@ -69,7 +42,6 @@ func Watcher(options *WatcherOptions) error {
 	}
 
 	ensureIgnored(&devconfig.Config.Ignore.File, "*_test.go")
-	ensureFrontendDevServerReadyTask(&devconfig.Config)
 
 	watcherEngine, err := engine.NewEngineFromConfig(devconfig.Config)
 	if err != nil {
