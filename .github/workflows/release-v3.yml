@@ -15,6 +15,16 @@ on:
         required: false
         default: true
         type: boolean
+      allow_unsigned_macos:
+        description: 'Publish unsigned, un-notarized macOS binaries (only if the Apple secrets are not configured yet)'
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: 'Create the release as a draft (use this to rehearse the release without publishing anything)'
+        required: false
+        default: false
+        type: boolean
 
 env:
   GO_VERSION: '1.25'
@@ -25,9 +35,90 @@ permissions:
   contents: read
 
 jobs:
+  # ── Preflight: fail in seconds, not ten minutes into a build ─────────────────
+  #
+  # Everything here is a condition that would otherwise surface late and
+  # confusingly: a missing Apple secret shows up as an opaque `security import`
+  # error after three platforms have already built, and a version.txt that
+  # disagrees with the tag ships a binary that misreports itself with no error
+  # at all.
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      pre_release: ${{ steps.meta.outputs.pre_release }}
+      sign_macos: ${{ steps.signing.outputs.sign_macos }}
+    steps:
+      - name: Resolve tag and pre-release flag
+        id: meta
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ inputs.tag }}"
+            PRE="${{ inputs.pre_release }}"
+          else
+            TAG="${{ github.ref_name }}"
+            # Tags with a hyphen suffix (v3.0.0-beta.1) are pre-releases.
+            if [[ "$TAG" == *"-"* ]]; then PRE=true; else PRE=false; fi
+          fi
+          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
+          echo "pre_release=$PRE" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG (pre-release: $PRE)"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.tag }}
+
+      - name: Version file agrees with the tag
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          FILE_VERSION="$(tr -d '[:space:]' < v3/internal/version/version.txt)"
+          # version.txt is embedded into the binary, so it is what `wails3
+          # version` reports. If it disagrees with the tag, the release ships a
+          # binary that lies about which version it is, silently.
+          if [[ "$FILE_VERSION" != "$TAG" ]]; then
+            echo "::error::v3/internal/version/version.txt says '$FILE_VERSION' but the tag is '$TAG'."
+            echo "::error::The tagged commit must carry the matching version. Re-tag after bumping it."
+            exit 1
+          fi
+          echo "version.txt matches the tag: $FILE_VERSION"
+
+      - name: Apple signing credentials present
+        id: signing
+        env:
+          APPLE_SIGNING_CERT: ${{ secrets.APPLE_SIGNING_CERT }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_NOTARIZE_USER: ${{ secrets.APPLE_NOTARIZE_USER }}
+          APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          MISSING=()
+          for name in APPLE_SIGNING_CERT APPLE_CERT_PASSWORD APPLE_SIGNING_IDENTITY \
+                      APPLE_NOTARIZE_USER APPLE_NOTARIZE_PASSWORD APPLE_TEAM_ID; do
+            [[ -z "${!name}" ]] && MISSING+=("$name")
+          done
+
+          if [[ ${#MISSING[@]} -eq 0 ]]; then
+            echo "sign_macos=true" >> "$GITHUB_OUTPUT"
+            echo "All Apple signing secrets are configured."
+            exit 0
+          fi
+
+          if [[ "${{ inputs.allow_unsigned_macos }}" == "true" ]]; then
+            echo "sign_macos=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Missing Apple secrets (${MISSING[*]}). Publishing UNSIGNED macOS binaries because allow_unsigned_macos was set."
+            exit 0
+          fi
+
+          echo "::error::Missing repository secrets: ${MISSING[*]}"
+          echo "::error::macOS binaries cannot be signed or notarized without them. Configure them,"
+          echo "::error::or re-run with allow_unsigned_macos=true to publish unsigned macOS binaries."
+          exit 1
   # ── Linux binaries (native runners, CGO_ENABLED=0 for static binaries) ──────
   build-linux:
     name: Build Linux / ${{ matrix.arch }}
+    needs: preflight
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -40,10 +131,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # On workflow_dispatch build the requested tag; on tag push inputs.tag
-          # is empty so github.ref (the tag) is used. Prevents building from the
-          # branch tip and publishing it under an unrelated tag.
-          ref: ${{ inputs.tag || github.ref }}
+          # Preflight resolved the tag for both trigger paths and proved it
+          # exists, so every job builds the same, verified source.
+          ref: ${{ needs.preflight.outputs.tag }}
 
       - uses: actions/setup-go@v5
         with:
@@ -73,14 +163,14 @@ jobs:
   # ── Windows binary ────────────────────────────────────────────────────────────
   build-windows:
     name: Build Windows / amd64
+    needs: preflight
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          # On workflow_dispatch build the requested tag; on tag push inputs.tag
-          # is empty so github.ref (the tag) is used. Prevents building from the
-          # branch tip and publishing it under an unrelated tag.
-          ref: ${{ inputs.tag || github.ref }}
+          # Preflight resolved the tag for both trigger paths and proved it
+          # exists, so every job builds the same, verified source.
+          ref: ${{ needs.preflight.outputs.tag }}
 
       - uses: actions/setup-go@v5
         with:
@@ -105,14 +195,14 @@ jobs:
   # ── macOS: build amd64 + arm64, create universal binary, sign, notarize ──────
   build-sign-macos:
     name: Build, Sign & Notarize macOS
+    needs: preflight
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          # On workflow_dispatch build the requested tag; on tag push inputs.tag
-          # is empty so github.ref (the tag) is used. Prevents building from the
-          # branch tip and publishing it under an unrelated tag.
-          ref: ${{ inputs.tag || github.ref }}
+          # Preflight resolved the tag for both trigger paths and proved it
+          # exists, so every job builds the same, verified source.
+          ref: ${{ needs.preflight.outputs.tag }}
 
       - uses: actions/setup-go@v5
         with:
@@ -141,6 +231,7 @@ jobs:
         run: lipo -create -output wails3-darwin-universal wails3-darwin-amd64 wails3-darwin-arm64
 
       - name: Import signing certificate
+        if: needs.preflight.outputs.sign_macos == 'true'
         env:
           APPLE_SIGNING_CERT: ${{ secrets.APPLE_SIGNING_CERT }}
           APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
@@ -166,6 +257,7 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
       - name: Sign binaries
+        if: needs.preflight.outputs.sign_macos == 'true'
         env:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
@@ -179,6 +271,7 @@ jobs:
           done
 
       - name: Notarize macOS binaries
+        if: needs.preflight.outputs.sign_macos == 'true'
         env:
           APPLE_NOTARIZE_USER: ${{ secrets.APPLE_NOTARIZE_USER }}
           APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
@@ -206,29 +299,13 @@ jobs:
   # ── Create GitHub Release and attach all binaries ────────────────────────────
   release:
     name: Publish Release
-    needs: [build-linux, build-windows, build-sign-macos]
+    needs: [preflight, build-linux, build-windows, build-sign-macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write      # OIDC identity for the provenance attestation
+      attestations: write
     steps:
-      - name: Determine release tag and pre-release flag
-        id: meta
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG="${{ github.event.inputs.tag }}"
-            PRE="${{ github.event.inputs.pre_release }}"
-          else
-            TAG="${{ github.ref_name }}"
-            # Treat tags with a hyphen suffix (e.g. v3.0.0-beta.1) as pre-releases
-            if [[ "$TAG" == *"-"* ]]; then
-              PRE=true
-            else
-              PRE=false
-            fi
-          fi
-          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
-          echo "pre_release=$PRE" >> "$GITHUB_OUTPUT"
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -238,11 +315,29 @@ jobs:
       - name: List artifacts
         run: ls -lh dist/
 
+      - name: Generate checksums
+        working-directory: dist
+        run: |
+          # Users have no way to verify a download without these, and generating
+          # them anywhere other than the job that publishes the binaries defeats
+          # the point.
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          # Signed statement of which source, builder and workflow produced each
+          # binary. The npm package already ships provenance; the binaries
+          # lagging behind it is an inconsistency users can see.
+          subject-path: 'dist/wails3-*'
+
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.meta.outputs.tag }}
-          PRE: ${{ steps.meta.outputs.pre_release }}
+          TAG: ${{ needs.preflight.outputs.tag }}
+          PRE: ${{ needs.preflight.outputs.pre_release }}
+          DRAFT: ${{ inputs.draft }}
         run: |
           FLAGS=(
             --repo "${{ github.repository }}"
@@ -250,6 +345,10 @@ jobs:
             --generate-notes
           )
           [[ "$PRE" == "true" ]] && FLAGS+=(--prerelease)
+          # A draft release is visible only to maintainers and can be deleted,
+          # which is what makes rehearsing the whole path possible without
+          # publishing anything.
+          [[ "$DRAFT" == "true" ]] && FLAGS+=(--draft)
 
           # Fail fast if the tag does not exist. Otherwise `gh release create`
           # would create the tag at an arbitrary commit and publish a release
