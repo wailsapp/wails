@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Apply scoped GTK4 frameless CSS to remove border radius in [PR](https://github.com/wailsapp/wails/pull/5800) by @savely-krasovsky
 - Handle cursor position failures gracefully on Windows for popup menus and screen enumeration in [PR](https://github.com/wailsapp/wails/pull/5789) by @wayneforrest
 - macOS open-file dialog filters extensions correctly and validates allowed files by suffix in [PR](https://github.com/wailsapp/wails/pull/5678) by @phergul
 - Guard Windows dark-mode initialization against nil API calls in [PR](https://github.com/wailsapp/wails/pull/5793) by @roachadam
