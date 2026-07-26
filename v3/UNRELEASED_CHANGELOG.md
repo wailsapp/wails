@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix 32-bit build failure in the updater: the `maxArchiveTotalSize` constant (2 GiB) overflowed the platform `int` when passed to `fmt.Errorf` on `GOARCH=386`. It is now explicitly typed `int64`.
+- Fix a nil-pointer panic on startup when a window uses a Dark (or system-dark) title bar on Windows builds that do not load the dark-mode uxtheme APIs, such as Windows 10 1809 / Windows Server 2019 (build 17763). The `AllowDarkModeForWindow` calls in the window theme setup are now nil-guarded, matching the guard already used in `w32.SetMenuTheme`.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
