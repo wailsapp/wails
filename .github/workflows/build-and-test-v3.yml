@@ -7,7 +7,6 @@ on:
       - master
     paths:
       - 'v3/**'
-      - 'webview2/**'
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
@@ -124,7 +123,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -234,7 +232,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
