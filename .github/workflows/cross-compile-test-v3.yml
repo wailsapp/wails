@@ -8,8 +8,6 @@ on:
     paths:
       - 'v3/**'
       - 'webview2/**'
-      - 'go.work'
-      - 'go.work.sum'
       - '.github/workflows/cross-compile-test-v3.yml'
   workflow_dispatch:
     inputs:
@@ -83,7 +81,6 @@ jobs:
           cache-dependency-path: |
             v3/go.sum
             webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
