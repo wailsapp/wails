@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
