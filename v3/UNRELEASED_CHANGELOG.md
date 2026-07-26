@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- `wails3 migrate` converts the deterministic parts of a Wails v2 project to v3 (module path, `wails.json` to `build/config.yml`, frontend wiring, a generated `main.go`) and writes a report advising, per file and line, on the call sites it will not touch. It never rewrites application logic. Documented in the [migration guide](https://v3.wails.io/migration/v2-to-v3/) with a [v2 vs v3 comparison](https://v3.wails.io/migration/comparison/).
 
 ## Changed
 <!-- Changes in existing functionality -->
