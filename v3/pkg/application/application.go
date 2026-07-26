@@ -650,12 +650,6 @@ func (a *App) Run() error {
 	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
-	// Call post-create hooks
-	err := a.preRun()
-	if err != nil {
-		return err
-	}
-
 	a.impl = newPlatformApp(a)
 
 	// Ensure services are shut down in case of failures.
