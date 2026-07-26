@@ -402,7 +402,8 @@ func DefaultAssetMatcher(req updater.CheckRequest, assets []ReleaseAsset) int {
 		if strings.HasSuffix(name, ".sig") || strings.HasSuffix(name, ".asc") {
 			continue
 		}
-		if strings.Contains(name, "installer") {
+		if strings.Contains(name, "-installer.") || strings.Contains(name, "_installer.") ||
+			strings.HasSuffix(name, "installer.exe") {
 			continue
 		}
 		if isChecksumName(name) {
