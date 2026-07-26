@@ -32,10 +32,10 @@ func (e *macAssetNotSupportedError) Error() string {
 
 type IconsOptions struct {
 	Example           bool   `description:"Generate example icon file (appicon.png) in the current directory"`
-	Input             string `description:"The input image file"`
+	Input             string `description:"The input image file" default:"build/appicon.png"`
 	Sizes             string `description:"The sizes to generate in .ico file (comma separated)" default:"256,128,64,48,32,16"`
-	WindowsFilename   string `description:"The output filename for the Windows icon"`
-	MacFilename       string `description:"The output filename for the Mac icon bundle"`
+	WindowsFilename   string `description:"The output filename for the Windows icon" default:"build/windows/icon.ico"`
+	MacFilename       string `description:"The output filename for the Mac icon bundle" default:"build/darwin/icon.icns"`
 	IconComposerInput string `description:"The input Icon Composer file (.icon)"`
 	MacAssetDir       string `description:"The output directory for the Mac assets (Assets.car and icons.icns)"`
 }
