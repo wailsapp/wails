@@ -1,7 +1,7 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Discord Chat
-    url: https://discord.gg/BrRSWTaxVK
+    url: https://discord.gg/JDdSxwjhGf
     about: Ask questions and discuss with other Wails users in real time.
 
   - name: GitHub Community Discussions

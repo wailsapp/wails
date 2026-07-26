@@ -3,6 +3,9 @@ on:
     branches: ['master']
     paths:
       - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      # Self-heal: if bundle bytes ever change on master without a matching
+      # source change, this rebuild overwrites them with source-derived output.
+      - 'v3/internal/assetserver/bundledassets/**'
       - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
@@ -13,7 +16,7 @@ concurrency:
 jobs:
   detect:
     name: Detect committed changes
-    if: github.event_name != 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails' && github.event_name != 'workflow_dispatch'
     outputs:
       changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
     runs-on: ubuntu-latest
@@ -43,6 +46,7 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/compiled/main.js
             v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
             v3/internal/runtime/desktop/@wailsio/runtime/src/**
+            v3/internal/assetserver/bundledassets/**
             v3/pkg/events/events.txt
             v3/tasks/events/**
 
@@ -50,7 +54,8 @@ jobs:
     name: Rebuild and publish
     needs: [detect]
     if: >-
-      !failure() && !cancelled()
+      github.repository == 'wailsapp/wails'
+      && !failure() && !cancelled()
       && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
     runs-on: ubuntu-latest
     permissions:
@@ -147,7 +152,20 @@ jobs:
           echo "Files committed back to master:"
           git status --short
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
-          git push
+          # master moves while this job runs (nightly release, auto-changelog
+          # commits), so a bare push races and gets rejected — which aborts the
+          # job before `npm publish` and leaves npm stale. Rebase and retry;
+          # a real conflict still fails loudly without publishing.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "push rejected (attempt ${attempt}); rebasing onto current master"
+            git pull --rebase origin master
+            sleep $(( attempt * 5 ))
+          done
+          echo "::error::could not push the version bump after 5 attempts"
+          exit 1
 
       - name: Publish npm package (Trusted Publishing / OIDC)
         # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a

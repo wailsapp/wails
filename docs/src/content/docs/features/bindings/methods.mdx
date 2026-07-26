@@ -400,6 +400,8 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### JavaScript Side
 
+When a bound method fails, the returned promise rejects with a JavaScript `Error` object:
+
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
 
@@ -407,15 +409,104 @@ try {
     const user = await GetUser(123)
     console.log("User:", user)
 } catch (error) {
-    console.error("Error:", error)
-    // Error: "user 123 not found"
+    console.error(error.message)
+    // "user 123 not found"
 }
 ```
 
-**Error types:**
-- Go `error` → JavaScript exception
-- Error message preserved
-- Stack trace available
+The runtime throws a different error type depending on what went wrong:
+
+| Error type     | Thrown when                                                                                    |
+|----------------|------------------------------------------------------------------------------------------------|
+| `TypeError`    | The call has the wrong number of arguments, or an argument cannot be converted to the Go type |
+| `RuntimeError` | The method returned an error, or panicked while running                                       |
+| `Error`        | Any other failure, for example a call to a method that does not exist                         |
+
+Every error provides:
+- `name`: the error type from the table above
+- `message`: the message of the Go error
+- `cause`: the Go error serialised as JSON, where available. If the method returned multiple errors, `cause` is an array with one entry per error.
+
+The `RuntimeError` class is exported by the `@wailsio/runtime` package, so you can distinguish errors returned by your Go code from other failures:
+
+```javascript
+import { Call } from '@wailsio/runtime'
+import { GetUser } from './bindings/changeme/databaseservice'
+
+try {
+    const user = await GetUser(123)
+} catch (error) {
+    if (error instanceof Call.RuntimeError) {
+        // GetUser returned an error
+    } else {
+        // The call itself failed
+    }
+}
+```
+
+:::note
+In earlier versions of the runtime, every failed call rejected with a plain `Error` whose message contained the raw JSON of the underlying error.
+:::
+
+### Structured Error Data
+
+Returning a custom error type from Go makes its JSON form available on the `cause` property of the thrown error:
+
+```go
+type ValidationError struct {
+    Field  string `json:"field"`
+    Reason string `json:"reason"`
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("%s: %s", e.Field, e.Reason)
+}
+
+func (s *UserService) UpdateEmail(id int, email string) error {
+    if !strings.Contains(email, "@") {
+        return &ValidationError{Field: "email", Reason: "invalid email address"}
+    }
+    // ...
+    return nil
+}
+```
+
+```javascript
+import { UpdateEmail } from './bindings/changeme/userservice'
+
+try {
+    await UpdateEmail(1, "not-an-email")
+} catch (error) {
+    console.log(error.message)  // "email: invalid email address"
+    console.log(error.cause)    // { field: "email", reason: "invalid email address" }
+}
+```
+
+Errors are serialised with the standard `encoding/json` package, so only exported fields are included. Errors created with `errors.New` or `fmt.Errorf` have no exported fields and serialise as an empty object.
+
+For full control over how errors are serialised, provide a `MarshalError` function in the service options:
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&UserService{}, application.ServiceOptions{
+            MarshalError: func(err error) []byte {
+                var validationErr *ValidationError
+                if errors.As(err, &validationErr) {
+                    data, _ := json.Marshal(map[string]string{
+                        "type":  "validation",
+                        "field": validationErr.Field,
+                    })
+                    return data
+                }
+                return nil // fall back to the default serialisation
+            },
+        }),
+    },
+})
+```
+
+`MarshalError` must return valid JSON, or `nil` to fall back to the default serialisation.
 
 ## Performance
 
