@@ -1,0 +1,326 @@
+---
+title: Streaming Events
+description: Stream data from Go to Svelte without overwhelming frontend rendering
+sidebar:
+  order: 5
+---
+
+Long-running streams often deliver many small updates. Sending every update
+directly to a reactive component can cause a render for every chunk. Instead,
+emit chunks from Go as they arrive and batch the frontend state updates with
+`requestAnimationFrame`.
+
+This pattern works well for server-sent events (SSE), incremental text, live
+logs, and other incremental results.
+
+## Backend service
+
+The following service reads the `data` fields from an SSE response. It runs the
+request in a goroutine so `StartStream` returns immediately, and it cancels the
+previous request when a new stream starts.
+
+```go title="stream_service.go"
+package main
+
+import (
+    "bufio"
+    "context"
+    "fmt"
+    "net/http"
+    "strings"
+    "sync"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+type StreamEvent struct {
+    StreamID uint64 `json:"streamId"`
+    Content  string `json:"content,omitempty"`
+    Done     bool   `json:"done,omitempty"`
+    Error    string `json:"error,omitempty"`
+}
+
+type StreamService struct {
+    app *application.App
+
+    mu         sync.Mutex
+    cancel     context.CancelFunc
+    generation uint64
+}
+
+func NewStreamService(app *application.App) *StreamService {
+    return &StreamService{app: app}
+}
+
+func (s *StreamService) StartStream(url string, streamID uint64) {
+    s.mu.Lock()
+    if s.cancel != nil {
+        s.cancel()
+    }
+
+    ctx, cancel := context.WithCancel(s.app.Context())
+    s.cancel = cancel
+    s.generation++
+    generation := s.generation
+    s.mu.Unlock()
+
+    go s.readStream(ctx, cancel, generation, streamID, url)
+}
+
+func (s *StreamService) StopStream() {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    if s.cancel != nil {
+        s.cancel()
+        s.cancel = nil
+    }
+}
+
+func (s *StreamService) readStream(
+    ctx context.Context,
+    cancel context.CancelFunc,
+    generation uint64,
+    streamID uint64,
+    url string,
+) {
+    defer s.clearStream(cancel, generation)
+
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+    if err != nil {
+        s.emitError(ctx, streamID, err)
+        return
+    }
+    req.Header.Set("Accept", "text/event-stream")
+
+    response, err := http.DefaultClient.Do(req)
+    if err != nil {
+        s.emitError(ctx, streamID, err)
+        return
+    }
+    defer response.Body.Close()
+
+    if response.StatusCode < http.StatusOK ||
+        response.StatusCode >= http.StatusMultipleChoices {
+        s.emitError(ctx, streamID, fmt.Errorf("stream returned %s", response.Status))
+        return
+    }
+
+    scanner := bufio.NewScanner(response.Body)
+    scanner.Buffer(make([]byte, 64*1024), 1024*1024)
+
+    var dataLines []string
+    emitData := func() {
+        if len(dataLines) == 0 || ctx.Err() != nil {
+            dataLines = dataLines[:0]
+            return
+        }
+
+        s.app.Event.Emit("stream:chunk", StreamEvent{
+            StreamID: streamID,
+            Content:  strings.Join(dataLines, "\n"),
+        })
+        dataLines = dataLines[:0]
+    }
+
+    for scanner.Scan() {
+        line := scanner.Text()
+        if line == "" {
+            emitData()
+            continue
+        }
+
+        field, value, found := strings.Cut(line, ":")
+        if !found {
+            field = line
+            value = ""
+        }
+        if field == "data" {
+            dataLines = append(dataLines, strings.TrimPrefix(value, " "))
+        }
+    }
+    emitData()
+
+    if err := scanner.Err(); err != nil {
+        s.emitError(ctx, streamID, err)
+        return
+    }
+    if ctx.Err() == nil {
+        s.app.Event.Emit("stream:chunk", StreamEvent{
+            StreamID: streamID,
+            Done:     true,
+        })
+    }
+}
+
+func (s *StreamService) emitError(
+    ctx context.Context,
+    streamID uint64,
+    err error,
+) {
+    // Cancellation is expected when a stream is stopped or replaced.
+    if ctx.Err() == nil {
+        s.app.Event.Emit("stream:chunk", StreamEvent{
+            StreamID: streamID,
+            Error:    err.Error(),
+        })
+    }
+}
+
+func (s *StreamService) clearStream(
+    cancel context.CancelFunc,
+    generation uint64,
+) {
+    cancel()
+
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    // Do not clear the cancel function belonging to a newer stream.
+    if s.generation == generation {
+        s.cancel = nil
+    }
+}
+```
+
+Register the service after creating the application:
+
+```go title="main.go"
+app := application.New(application.Options{
+    Name: "Streaming Example",
+})
+
+app.RegisterService(application.NewService(NewStreamService(app)))
+```
+
+Deriving the request context from `app.Context()` ensures that application
+shutdown also stops the request. `StopStream` handles user-initiated
+cancellation. The frontend supplies a stream ID so events already in transit
+from a replaced or stopped request can be ignored safely.
+
+## Svelte component
+
+Keep incoming chunks in a plain array. Schedule at most one animation frame,
+then join the queued chunks and update Svelte state once in that frame.
+
+```svelte title="StreamOutput.svelte"
+<script lang="ts">
+    import { onMount } from 'svelte'
+    import { Events } from '@wailsio/runtime'
+    import {
+        StartStream,
+        StopStream,
+    } from '../bindings/changeme/streamservice'
+
+    type StreamEvent = {
+        streamId: number
+        content?: string
+        done?: boolean
+        error?: string
+    }
+
+    let output = $state('')
+    let status = $state('idle')
+    let pendingChunks: string[] = []
+    let frame: number | null = null
+    let streamId = 0
+
+    function flush() {
+        frame = null
+        if (pendingChunks.length === 0) {
+            return
+        }
+
+        output += pendingChunks.join('')
+        pendingChunks = []
+    }
+
+    function scheduleFlush() {
+        if (frame === null) {
+            frame = requestAnimationFrame(flush)
+        }
+    }
+
+    async function start() {
+        streamId += 1
+        const currentStreamId = streamId
+
+        if (frame !== null) {
+            cancelAnimationFrame(frame)
+            frame = null
+        }
+        pendingChunks = []
+        output = ''
+        status = 'streaming'
+        await StartStream('https://example.com/events', currentStreamId)
+    }
+
+    async function stop() {
+        streamId += 1
+        await StopStream()
+
+        if (frame !== null) {
+            cancelAnimationFrame(frame)
+            flush()
+        }
+        status = 'stopped'
+    }
+
+    onMount(() => {
+        const unsubscribe = Events.On('stream:chunk', (event) => {
+            const update = event.data as StreamEvent
+
+            if (update.streamId !== streamId) {
+                return
+            }
+            if (update.content) {
+                pendingChunks.push(update.content)
+                scheduleFlush()
+            }
+            if (update.error) {
+                status = `error: ${update.error}`
+            } else if (update.done) {
+                status = 'complete'
+            }
+        })
+
+        return () => {
+            unsubscribe()
+            void StopStream()
+
+            if (frame !== null) {
+                cancelAnimationFrame(frame)
+            }
+        }
+    })
+</script>
+
+<button onclick={start} disabled={status === 'streaming'}>
+    Start stream
+</button>
+<button onclick={stop} disabled={status !== 'streaming'}>
+    Stop stream
+</button>
+
+<p>{status}</p>
+<pre>{output}</pre>
+```
+
+Replace `changeme` with your application's Go module name. The exact generated
+binding path depends on the package containing `StreamService`.
+
+The event listener receives a `WailsEvent`, so the Go payload is available on
+`event.data`. Keep the unsubscribe function returned by `Events.On` and call it
+when the component is destroyed to prevent duplicate listeners after remounts.
+
+## Why frame batching helps
+
+The Go service still emits each SSE message immediately, preserving low
+latency. The Svelte component, however, performs no more than one `output`
+assignment per display frame. At 60 Hz, dozens of chunks received close
+together become a single reactive update.
+
+This batches rendering, not transport. If the source produces data faster than
+the event bridge can carry it, also buffer or rate-limit events in Go. For very
+large streams, render only a recent window of the output or periodically move
+completed content out of reactive state.

@@ -233,6 +233,7 @@ export default defineConfig({
                 { label: "Application Events", link: "/features/events/application" },
                 { label: "Window Events", link: "/features/events/window" },
                 { label: "Custom Events", link: "/features/events/custom" },
+                { label: "Streaming Events", link: "/features/events/streaming" },
               ],
             },
             {
