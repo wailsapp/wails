@@ -1,33 +1,68 @@
 ---
 title: Roadmap
-description: Wails v3 project status, planned features, and how to contribute
+description: Wails v3 project status, what beta means for your project, and how to contribute
 ---
 
-## Current Status: Beta
+## Current status: beta
 
-Check out the [Changelog](/changelog) for the latest status.
+Wails v3 is in beta. The API is stable, applications are running in production
+with it, and the work now is the final polish before the 3.0 release.
 
-Our goal is to reach a stable v3.0 release. This roadmap outlines the key features
-and improvements we need to implement before the final release. Please note that
-this is a living document and may be updated as priorities shift or new insights
-emerge.
+Wails v2 remains the current stable release and continues to receive fixes.
 
-## How You Can Contribute
+## What beta means for your project
 
-- Test the latest beta release and report any issues
-- Contribute to documentation and examples
-- Participate in discussions and provide feedback on proposed features
-- Submit pull requests for bug fixes or new features
+Beta is a commitment, so it is worth being precise about what is being promised
+and what is not.
 
-We welcome contributions from the community. If you'd like to help with any of
-these objectives or have suggestions for the roadmap, please open an issue or
-join our community discussions.
+**What is settled**
 
-## Feedback and Updates
+- The public API is stable. Changes from here to 3.0 are additive or fixes.
+  If something does have to change, it will be deprecated first, with the
+  removal version named in the deprecation.
+- Beta releases receive security fixes. See the
+  [security policy](https://github.com/wailsapp/wails/blob/master/SECURITY.md)
+  for the supported-version table. Alpha releases no longer receive them, so if
+  you are on an alpha, upgrading is the fix.
+- The documentation on this site describes the beta. Where a page still
+  describes older behaviour, that is a documentation bug worth reporting.
 
-This roadmap is subject to change based on community feedback and project
-priorities. We'll update it regularly to reflect our progress and any changes in
-direction. Your input is valuable in shaping the future of Wails! The roadmap is
-a living document and is subject to change. If you have any suggestions, please
-open an issue. Each milestone will have a set of goals that we are aiming to
-achieve. These are subject to change.
+**What is still moving**
+
+- Pin an exact version rather than tracking the latest release. Prereleases move
+  faster than your release schedule does.
+- Platform coverage is not uniform. Desktop support on macOS, Windows and Linux
+  is the mature part. Mobile targets are newer, and some pieces ship as examples
+  rather than as project templates.
+- Some rough edges are known and tracked rather than hidden. The lists below are
+  generated from the issue tracker rather than hand-maintained here, so they do
+  not go stale.
+
+## What is left before 3.0
+
+These are live queries against the issue tracker, not a snapshot:
+
+- [Open bugs affecting v3](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [Highest priority items (P1)](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3AP1+label%3Av3)
+- [Everything on the beta milestone](https://github.com/wailsapp/wails/milestones)
+
+If you are deciding whether v3 fits your project, those three links are a more
+honest picture than any summary that has to be kept up to date by hand.
+
+## How you can contribute
+
+- Run the beta on a real project and report what breaks. Reports from real
+  applications are worth more than any amount of internal testing.
+- Improve the documentation and examples. If a page confused you, it will
+  confuse the next person.
+- Take part in discussions and give feedback on proposed features before they
+  are built.
+- Send pull requests for fixes. See
+  [CONTRIBUTING.md](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)
+  for how contributions are accepted.
+
+## Feedback
+
+This page changes as the project does. If something here is out of date, or a
+commitment above does not match what you experienced, please open an issue: a
+status page that quietly drifts from reality is worse than no status page.

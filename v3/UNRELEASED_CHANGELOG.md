@@ -21,7 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 
-- Promote v3 from alpha to beta
+- Promote v3 from alpha to beta. The public API is now stable: changes before 3.0 are additive or fixes, and anything that has to change is deprecated first with its removal version named. Beta releases receive security fixes; alpha releases no longer do, so upgrading from an alpha is the fix. Pin an exact version rather than tracking latest, and see the [project status page](https://v3.wails.io/status/) for what is settled and what is still moving.
 
 ## Fixed
 <!-- Bug fixes -->
