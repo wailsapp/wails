@@ -6,6 +6,9 @@ on:
       # Self-heal: if bundle bytes ever change on master without a matching
       # source change, this rebuild overwrites them with source-derived output.
       - 'v3/internal/assetserver/bundledassets/**'
+      # The runtime version is derived from this file, so a release that moves
+      # it must trigger a publish.
+      - 'v3/internal/version/version.txt'
       - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
@@ -47,6 +50,7 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
             v3/internal/runtime/desktop/@wailsio/runtime/src/**
             v3/internal/assetserver/bundledassets/**
+            v3/internal/version/version.txt
             v3/pkg/events/events.txt
             v3/tasks/events/**
 
@@ -135,11 +139,46 @@ jobs:
           done
           echo "All expected runtime artifacts were generated."
 
-      - name: Bump version
+      - name: Set version from the CLI version file
         id: bump-version
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        # The npm package version is taken from v3/internal/version/version.txt,
+        # the same file go:embed puts into the CLI, so the runtime and the CLI
+        # always report the same version.
+        #
+        # This replaces `npm version prerelease`, which incremented the trailing
+        # numeric identifier with no knowledge of the release channel. That is
+        # how the two version series drifted apart: the CLI moved alpha ->
+        # alpha2 -> beta while npm kept counting alpha.N, so a beta CLI shipped
+        # next to an "alpha" runtime and every upgrading user had to be told
+        # that the mismatch was expected.
         run: |
-          echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < v3/internal/version/version.txt)"
+          VERSION="${VERSION#v}"
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::v3/internal/version/version.txt is empty"
+            exit 1
+          fi
+          cd v3/internal/runtime/desktop/@wailsio/runtime
+          npm --no-git-tag-version --allow-same-version version "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Runtime version set to $VERSION (from version.txt)"
+
+      - name: Skip publish if this version is already on npm
+        id: already-published
+        # Lockstep means the version only moves when version.txt moves, so a run
+        # triggered by a runtime source change between releases would otherwise
+        # try to republish an existing version and fail. Regenerated assets are
+        # still committed below; only the publish is skipped.
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.bump-version.outputs.version }}"
+          if npm view "@wailsio/runtime@${VERSION}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@wailsio/runtime@${VERSION} is already on npm; skipping publish. It will publish when version.txt next moves."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Commit regenerated runtime + version bump
         # Commit ALL regenerated tracked files back to master, not just the
@@ -172,8 +211,9 @@ jobs:
         # short-lived publish credential. Provenance is attached automatically.
         # Requires a Trusted Publisher to be configured for @wailsio/runtime on
         # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
+        if: steps.already-published.outputs.published != 'true'
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        # --tag latest: v3 ships prerelease (alpha.N) as the default dist-tag,
-        # matching the templates' "@wailsio/runtime": "latest" pin. npm >= 11
-        # requires an explicit --tag to publish a prerelease as latest.
+        # --tag latest: v3 ships prereleases as the default dist-tag, matching
+        # the templates' "@wailsio/runtime": "latest" pin. npm >= 11 requires an
+        # explicit --tag to publish a prerelease as latest.
         run: npm publish --access public --tag latest

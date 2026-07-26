@@ -23,3 +23,18 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Update the relevant changelog file (see above).
 - Follow the existing coding style in the area you're touching.
 - Add tests where it makes sense.
+
+## Licence and provenance
+
+Wails is released under the [MIT Licence](LICENSE), and contributions come in
+under the same terms. By opening a pull request you confirm that:
+
+- You wrote the contribution yourself, or you have the right to submit it.
+- You are licensing it to the project under the MIT Licence.
+- Any third-party code included in it is compatibly licensed, and its origin
+  and licence are stated in the pull request.
+
+There is no CLA to sign and no sign-off trailer to add. If you are unsure
+whether something you want to include is safe to contribute, ask in the pull
+request before merging rather than after: sorting out the provenance of code
+that has already shipped is considerably harder than sorting it out up front.
