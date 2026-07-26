@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/matryer/is"
@@ -51,6 +52,33 @@ func TestInstall(t *testing.T) {
 	_, _, err = Install(options)
 	is2.NoErr(err)
 
+}
+
+func TestVueTSTemplateAppScriptBlock(t *testing.T) {
+	paths := []string{
+		"templates/vue-ts/frontend/src/App.vue",
+		"generate/assets/vue-ts/frontend/src/App.vue",
+	}
+	const scriptBlock = `<script lang="ts" setup>
+import HelloWorld from './components/HelloWorld.vue'
+</script>`
+
+	var canonical string
+	for _, path := range paths {
+		contents, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		if !strings.Contains(string(contents), scriptBlock) {
+			t.Errorf("%s does not contain a valid App script block", path)
+		}
+		if canonical == "" {
+			canonical = string(contents)
+		} else if string(contents) != canonical {
+			t.Errorf("%s has drifted from %s", path, paths[0])
+		}
+	}
 }
 
 func TestInstallFailsInNonEmptyDirectory(t *testing.T) {
