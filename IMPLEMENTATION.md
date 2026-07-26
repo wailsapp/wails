@@ -441,6 +441,9 @@ v3/internal/assetserver/webview/
 - Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.
 - Added GTK4 `GdkSurface` resize and toplevel-state notifications, including common maximise, minimise, and fullscreen events.
 - Added regression coverage for Linux state-event transitions.
+- Files: `v3/pkg/application/linux_cgo.c`, `v3/pkg/application/linux_cgo.h`,
+  `v3/pkg/application/linux_cgo.go`, `v3/pkg/application/webview_window_linux.go`,
+  and `v3/pkg/application/webview_window_linux_test.go`.
 
 ### 2026-01-07 (Session 11)
 - Fixed GTK4 dialog system bugs
