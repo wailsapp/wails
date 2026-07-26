@@ -52,7 +52,8 @@ typedef struct AlertDialogData {
 extern void dispatchOnMainThreadCallback(unsigned int);
 extern void emit(WindowEvent* data);
 extern gboolean handleCloseRequest(GtkWindow*, uintptr_t);
-extern void handleNotifyState(GObject*, GParamSpec*, uintptr_t);
+extern void handleSurfaceSizeChanged(GObject*, GParamSpec*, uintptr_t);
+extern void handleSurfaceStateChanged(GObject*, GParamSpec*, uintptr_t);
 extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
 extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);

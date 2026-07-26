@@ -134,9 +134,11 @@ GTK4 replaces direct signal handlers with `GtkEventController` objects:
 - `GtkEventControllerFocus` for focus in/out events
 - `GtkGestureClick` for button press/release events
 - `GtkEventControllerKey` for keyboard events
-- Window signals: `close-request`, `notify::maximized`, `notify::fullscreened`
+- Window signal: `close-request`
+- `GdkSurface` notifications for configured width, height, and toplevel state
 
 New C function `setupWindowEventControllers()` sets up all event controllers.
+The realised window surface now emits the common resize, minimise, maximise, and fullscreen events used by the other desktop backends.
 
 #### 3.2 Window Drag and Resize
 GTK4 uses `GdkToplevel` API instead of GTK3's `gtk_window_begin_move_drag`:
@@ -367,6 +369,8 @@ TODO:
 | Menu Bar | `GtkMenuBar` | `GtkPopoverMenuBar` |
 | Window Move | `gtk_window_move()` | NO-OP on Wayland |
 | Window Position | `gtk_window_get_position()` | Not available on Wayland |
+| Window Size | Configure event dimensions | Live `GdkSurface` width/height properties |
+| Window State Events | Configure/window-state events | `GdkToplevel:state` notifications |
 | Destroy | `gtk_widget_destroy()` | `gtk_window_destroy()` |
 | Drag Start | `gtk_window_begin_move_drag()` | `gtk_native_get_surface()` + surface drag |
 
@@ -432,6 +436,11 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-07-26
+- Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.
+- Added GTK4 `GdkSurface` resize and toplevel-state notifications, including common maximise, minimise, and fullscreen events.
+- Added regression coverage for Linux state-event transitions.
 
 ### 2026-01-07 (Session 11)
 - Fixed GTK4 dialog system bugs

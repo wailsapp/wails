@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

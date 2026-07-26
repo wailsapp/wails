@@ -1114,13 +1114,15 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
-	var width, height C.int
-	C.gtk_window_get_default_size(w.gtkWindow(), &width, &height)
-	if width <= 0 || height <= 0 {
-		width = C.int(C.gtk_widget_get_width(w.gtkWidget()))
-		height = C.int(C.gtk_widget_get_height(w.gtkWidget()))
+	width := int(C.gtk_widget_get_width(w.gtkWidget()))
+	height := int(C.gtk_widget_get_height(w.gtkWidget()))
+	if width > 0 && height > 0 {
+		return width, height
 	}
-	return int(width), int(height)
+
+	var defaultWidth, defaultHeight C.int
+	C.gtk_window_get_default_size(w.gtkWindow(), &defaultWidth, &defaultHeight)
+	return int(defaultWidth), int(defaultHeight)
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
@@ -1547,8 +1549,8 @@ func handleCloseRequest(window *C.GtkWindow, data C.uintptr_t) C.gboolean {
 	return C.gboolean(1)
 }
 
-//export handleNotifyState
-func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t) {
+//export handleSurfaceSizeChanged
+func handleSurfaceSizeChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
 	windowId := uint(data)
 	window, ok := globalApplication.Window.GetByID(windowId)
 	if !ok || window == nil {
@@ -1560,11 +1562,45 @@ func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t)
 		return
 	}
 
-	if lw.isMaximised() {
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	width := int(C.gdk_surface_get_width(surface))
+	height := int(C.gdk_surface_get_height(surface))
+	if lw.lastWidth == width && lw.lastHeight == height {
+		return
 	}
-	if lw.isFullscreen() {
+	lw.lastWidth = width
+	lw.lastHeight = height
+	lw.resizeDebouncer(func() {
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	})
+}
+
+//export handleSurfaceStateChanged
+func handleSurfaceStateChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
+	windowID := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowID)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	state := C.gdk_toplevel_get_state((*C.GdkToplevel)(unsafe.Pointer(surface)))
+	current := linuxWindowState{
+		minimised:  state&C.GDK_TOPLEVEL_STATE_MINIMIZED != 0,
+		maximised:  state&C.GDK_TOPLEVEL_STATE_MAXIMIZED != 0,
+		fullscreen: state&C.GDK_TOPLEVEL_STATE_FULLSCREEN != 0,
+	}
+	stateEvents := changedLinuxWindowStateEvents(lw.windowState, current, lw.stateObserved)
+	lw.windowState = current
+	lw.stateObserved = true
+
+	for _, eventType := range stateEvents {
+		processWindowEvent(C.uint(data), C.uint(eventType))
 	}
 }
 
