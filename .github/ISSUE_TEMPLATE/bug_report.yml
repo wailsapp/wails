@@ -7,25 +7,46 @@ body:
   - type: markdown
     attributes:
       value: |
-        ***Please note: No bug reports are currently being accepted for Wails v3***
-        ***Please note: No bug reports are currently being accepted for Wails v3***
-        ***Please note: No bug reports are currently being accepted for Wails v3***
         Before submitting this issue, please do the following:
         - Do a web search for your error. This usually leads to a much better understanding of the issue.
-        - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce. 
+        - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce.
         - Search the issue tracker using [this link](https://github.com/wailsapp/wails/issues?q=is%3Aissue+).
         - Search the [discussion forums](https://github.com/wailsapp/wails/discussions?discussions_q=type+your+issue+here).
-        - Read the [Troubleshooting Guide](https://wails.io/docs/next/guides/troubleshooting).
+        - For v3, check the [FAQ](https://v3.wails.io/faq/) and the [feedback guide](https://v3.wails.io/feedback/). For v2, read the [Troubleshooting Guide](https://wails.io/docs/guides/troubleshooting).
         - Create a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example) and link to it in the issue.
-        - If your issue is related to TypeScript generation, please open a ticket and create a PR with a failing test case.
-        TS tests can be found [here](https://github.com/wailsapp/wails/tree/master/v2/internal/binding/binding_test). Remember to add
-        your test to the `binding_test.go` file.
-        - Try to fix it yourself. Keep a list of things you have done to fix the problem.   
+        - If your issue is related to the bindings or TypeScript generation, please open a ticket and create a PR with a failing test case.
+          For v3, the binding generator tests live [here](https://github.com/wailsapp/wails/tree/master/v3/internal/generator).
+          For v2 only, TS tests can be found [here](https://github.com/wailsapp/wails/tree/master/v2/internal/binding/binding_test). Remember to add your test to the `binding_test.go` file.
+        - Try to fix it yourself. Keep a list of things you have done to fix the problem.
 
         If after doing all the above, the problem remains, please continue with this ticket providing *all* the information requested.
 
         Bug reports that do not follow these steps will likely be closed, so please help us to help you.
 
+  - type: dropdown
+    id: version_family
+    attributes:
+      label: Wails version family
+      description: Which major version of Wails are you using?
+      options:
+        - v3
+        - v2
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: Which operating system does the bug occur on?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - iOS (experimental)
+        - Android (experimental)
+        - Multiple / Other
+    validations:
+      required: true
   - type: textarea
     id: description
     attributes:
@@ -75,7 +96,7 @@ body:
     id: systemdetails
     attributes:
       label: System Details
-      description: Please add the output of `wails doctor`.
+      description: Please add the output of `wails3 doctor` (for v2 projects, use `wails doctor`).
       render: shell
     validations:
       required: true

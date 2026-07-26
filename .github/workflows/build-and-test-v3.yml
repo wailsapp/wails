@@ -7,9 +7,6 @@ on:
       - master
     paths:
       - 'v3/**'
-      - 'webview2/**'
-      - 'go.work'
-      - 'go.work.sum'
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
@@ -126,8 +123,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -237,8 +232,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -274,9 +267,6 @@ jobs:
           # Replace @wailsio/runtime version with local tarball
           npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
           cd ..
-          # Register the generated project in the workspace so Go 1.25 workspace
-          # mode does not reject packages in a module not listed in go.work.
-          go work use .
           wails3 build
 
       # GTK3 legacy template builds are covered by the Go example compilation tests above.

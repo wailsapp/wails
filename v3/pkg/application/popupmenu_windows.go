@@ -1,3 +1,5 @@
+//go:build windows && !server
+
 package application
 
 import (
