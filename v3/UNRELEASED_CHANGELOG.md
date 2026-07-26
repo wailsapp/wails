@@ -17,6 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Provide default paths for icon generation inputs and outputs in [PR](https://github.com/wailsapp/wails/pull/5825) by @taliesin-ai
+- Add source entry modules to runtime package.json sideEffects in [PR](https://github.com/wailsapp/wails/pull/5797) by @savely-krasovsky
 - Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
 
 ## Changed
@@ -26,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Apply scoped GTK4 frameless CSS to remove border radius in [PR](https://github.com/wailsapp/wails/pull/5800) by @savely-krasovsky
 - Handle cursor position failures gracefully on Windows for popup menus and screen enumeration in [PR](https://github.com/wailsapp/wails/pull/5789) by @wayneforrest
 - macOS open-file dialog filters extensions correctly and validates allowed files by suffix in [PR](https://github.com/wailsapp/wails/pull/5678) by @phergul
 - Guard Windows dark-mode initialization against nil API calls in [PR](https://github.com/wailsapp/wails/pull/5793) by @roachadam
