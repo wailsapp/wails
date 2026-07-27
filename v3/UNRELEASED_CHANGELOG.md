@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Update documentation for multiple languages to include architecture diagrams in [PR](https://github.com/wailsapp/wails/pull/5833) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
