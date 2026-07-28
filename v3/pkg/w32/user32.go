@@ -10,6 +10,7 @@ package w32
 import (
 	"fmt"
 	"runtime"
+	"strconv"
 	"syscall"
 	"unsafe"
 
@@ -52,10 +53,6 @@ var (
 	procScreenToClient                = moduser32.NewProc("ScreenToClient")
 	procCallWindowProc                = moduser32.NewProc("CallWindowProcW")
 	procSetWindowLong                 = moduser32.NewProc("SetWindowLongW")
-	// Wails v3 does not support 32-bit Windows. On 32-bit Windows these Ptr
-	// APIs are C macros over SetWindowLongW/GetWindowLongW and are not exported
-	// from user32.dll, so keep the real 64-bit exports here instead of adding a
-	// 386 fallback.
 	procSetWindowLongPtr              = moduser32.NewProc("SetWindowLongPtrW")
 	procGetWindowLong                 = moduser32.NewProc("GetWindowLongW")
 	procGetWindowLongPtr              = moduser32.NewProc("GetWindowLongPtrW")
@@ -671,7 +668,12 @@ func SetWindowLong(hwnd HWND, index int, value uint32) uint32 {
 }
 
 func SetWindowLongPtr(hwnd HWND, index int, value uintptr) uintptr {
-	ret, _, _ := procSetWindowLongPtr.Call(
+	proc := procSetWindowLongPtr
+	if strconv.IntSize == 32 {
+		proc = procSetWindowLong
+	}
+
+	ret, _, _ := proc.Call(
 		uintptr(hwnd),
 		uintptr(index),
 		value)
@@ -688,7 +690,12 @@ func GetWindowLong(hwnd HWND, index int) int32 {
 }
 
 func GetWindowLongPtr(hwnd HWND, index int) uintptr {
-	ret, _, _ := procGetWindowLongPtr.Call(
+	proc := procGetWindowLongPtr
+	if strconv.IntSize == 32 {
+		proc = procGetWindowLong
+	}
+
+	ret, _, _ := proc.Call(
 		uintptr(hwnd),
 		uintptr(index))
 

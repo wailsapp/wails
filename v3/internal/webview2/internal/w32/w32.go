@@ -37,8 +37,6 @@ var (
 	User32PostQuitMessage    = user32.NewProc("PostQuitMessage")
 	User32SetWindowTextW     = user32.NewProc("SetWindowTextW")
 	User32PostThreadMessageW = user32.NewProc("PostThreadMessageW")
-	User32GetWindowLongPtrW  = user32.NewProc("GetWindowLongPtrW")
-	User32SetWindowLongPtrW  = user32.NewProc("SetWindowLongPtrW")
 	User32AdjustWindowRect   = user32.NewProc("AdjustWindowRect")
 	User32SetWindowPos       = user32.NewProc("SetWindowPos")
 )
