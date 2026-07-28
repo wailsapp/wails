@@ -340,6 +340,13 @@ void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
 	MenuItem *menuItem = (MenuItem *)nsMenuItem;
 	NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:bitmap length:length]];
 	[menuItem setImage:image];
+	// macOS 27 hides menu-item images by default. An image set through this
+	// API is always deliberate, so opt back in explicitly. The selector does
+	// not exist on macOS <= 26, where images are always shown.
+	if ([menuItem respondsToSelector:@selector(setPreferredImageVisibility:)]) {
+		// NSMenuItemImageVisibilityVisible (macOS 27 SDK)
+		[menuItem setValue:@(1) forKey:@"preferredImageVisibility"];
+	}
 	// The menu item retains its image
 	[image release];
 }
