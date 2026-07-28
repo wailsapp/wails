@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix a panic on startup on 32-bit Windows. The `IDropTarget` callbacks took a `POINT` by value, which is wider than a `uintptr` on `GOARCH=386`, so `syscall.NewCallback` rejected them while `pkg/w32` was still initialising - crashing every app before `main`, whether or not it used drag-and-drop.
+- Fix a panic when styling a window on 32-bit Windows. `SetWindowLongPtr`/`GetWindowLongPtr` resolved `SetWindowLongPtrW`/`GetWindowLongPtrW`, which are compiler macros rather than exported symbols in 32-bit `user32.dll`. They now select the non-`Ptr` procedures on 32-bit, matching the existing `setClassLongPtr` behaviour.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
