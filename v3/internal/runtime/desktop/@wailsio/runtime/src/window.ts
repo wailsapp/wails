@@ -10,6 +10,7 @@ The electron alternative for Go
 
 import {newRuntimeCaller, objectNames} from "./runtime.js";
 import type { Screen } from "./screens.js";
+import { IsWindows } from "./system.js";
 
 // Drop target constants
 const DROP_TARGET_ATTRIBUTE = 'data-file-drop-target';
@@ -783,6 +784,20 @@ function setupDropTargetListeners() {
         // On Linux/WebKitGTK and macOS, dragleave fires immediately with relatedTarget=null when native
         // drag handling is involved. Ignore these spurious events - we'll clean up on drop instead.
         if (event.relatedTarget === null) {
+            // On Windows the DOM listeners are the only drag tracking, and Chromium fires
+            // dragleave with relatedTarget=null exactly when an external drag leaves the window or 
+            // is cancelled - clean up here, otherwise an abandoned drag leaves the hover state stuck.
+            if (IsWindows()) {
+                dragEnterCounter = 0;
+                if (currentDropTarget) {
+                    currentDropTarget.classList.remove(DROP_TARGET_ACTIVE_CLASS);
+                    currentDropTarget = null;
+                }
+            }
+
+            // On Linux/WebKitGTK and macOS, dragleave fires immediately with relatedTarget=null
+            // while native drag handling is involved. Ignore these spurious events - hover state
+            // there is driven natively via handleDragEnter/handleDragOver/handleDragLeave.
             return;
         }
         
