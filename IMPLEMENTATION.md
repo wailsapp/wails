@@ -346,13 +346,15 @@ GTK accelerator strings use format like:
 
 ### Phase 10: Testing 📋 PENDING
 
-TODO:
-- [ ] Test on Ubuntu 24.04 (native GTK4)
-- [ ] Test on Ubuntu 22.04 (backported WebKitGTK 6.0)
-- [ ] Test legacy build on older systems
-- [ ] Performance benchmarks
-- [ ] Verify file dialogs work correctly
-- [ ] Verify message dialogs work correctly
+GitHub issue [#5843](https://github.com/wailsapp/wails/issues/5843) is the
+authoritative tracker for the default/legacy build matrix, native X11 and
+Wayland coverage, functional smoke tests, leak checks, and benchmarks.
+
+Current evidence (2026-07-29): focused GTK4 surface-state, live-size, and
+systray smart-default tests pass with Go 1.25 against GTK4/WebKitGTK 6.0 in a
+disposable container. Native compositor confirmation, the GTK3 matrix, full
+examples, resource checks, and performance comparisons remain pending in
+#5843, so this phase must not be marked complete.
 
 ## API Differences: GTK3 vs GTK4
 
@@ -432,6 +434,19 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-07-29
+- Retired the local beads tracker and consolidated its remaining GTK4/WebKitGTK
+  test strategy into Phase 10.
+- Preserved unresolved systray and v2 WebKitGTK follow-up work as GitHub issues
+  #5838, #5839, #5840, and #5841.
+- Ported the deterministic GTK4 surface state transition and live-size logic
+  from PR #5831, with unit coverage. Native compositor confirmation remains a
+  manual Phase 10 gate.
+- Files: `v3/pkg/application/linux_cgo.c`,
+  `v3/pkg/application/linux_cgo.h`, `v3/pkg/application/linux_cgo.go`,
+  `v3/pkg/application/webview_window_linux.go`, and
+  `v3/pkg/application/webview_window_linux_test.go`.
 
 ### 2026-01-07 (Session 11)
 - Fixed GTK4 dialog system bugs

@@ -1,6 +1,33 @@
 package application
 
-import "testing"
+import (
+	"slices"
+	"testing"
+
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+func TestChangedLinuxWindowStateEvents(t *testing.T) {
+	tests := []struct {
+		name              string
+		previous, current linuxWindowState
+		observed          bool
+		want              []events.WindowEventType
+	}{
+		{name: "initial normal state is silent"},
+		{name: "initial maximised state is announced", current: linuxWindowState{maximised: true}, want: []events.WindowEventType{events.Common.WindowMaximise}},
+		{name: "restore from maximised", previous: linuxWindowState{maximised: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMaximise}},
+		{name: "restore from minimised", previous: linuxWindowState{minimised: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMinimise}},
+		{name: "fullscreen transition", previous: linuxWindowState{maximised: true}, current: linuxWindowState{fullscreen: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMaximise, events.Common.WindowFullscreen}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := changedLinuxWindowStateEvents(test.previous, test.current, test.observed); !slices.Equal(got, test.want) {
+				t.Fatalf("events = %#v, want %#v", got, test.want)
+			}
+		})
+	}
+}
 
 func TestDisableSizeConstraintsDoesNotUsePositionAsDimension(t *testing.T) {
 	tests := []struct {

@@ -182,16 +182,30 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Quick Access",
-    Width:  300,
-    Height: 400,
-    Frameless: true,  // No title bar
-    AlwaysOnTop: true,  // Stay on top
+    Title:           "Quick Access",
+    Width:           300,
+    Height:          400,
+    Frameless:       true, // No title bar
+    AlwaysOnTop:     true, // Stay on top
+    HideOnFocusLost: true, // Dismiss when another window receives focus
+    HideOnEscape:    true, // Dismiss when the user presses Escape
 })
 
 systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
+
+`HideOnFocusLost` is useful for tray popups on Windows, macOS, and
+click-to-focus Linux desktops. Wails disables that behaviour on Linux
+focus-follows-mouse environments (including common Hyprland, Sway, and i3
+setups), where leaving the popup could otherwise hide it before it can be used.
+`HideOnEscape` remains available in those environments.
+
+The left- and right-click behaviours above are smart defaults. An explicit
+`OnClick` or `OnRightClick` handler replaces the corresponding default. For
+platform checks and edge cases, see the
+[manual systray suite](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)
+and the [systray stress example](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
 
 ## Click Handlers
 

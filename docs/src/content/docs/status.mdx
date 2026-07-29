@@ -12,6 +12,21 @@ and improvements we need to implement before the final release. Please note that
 this is a living document and may be updated as priorities shift or new insights
 emerge.
 
+## Beta Compatibility Promise
+
+The v3 Beta contract covers desktop applications:
+
+| Platform | Supported targets | Requirements and notes |
+|---|---|---|
+| Windows | Windows 10 and 11 on amd64 and arm64 | WebView2 runtime |
+| macOS | Intel and Apple Silicon | The macOS and WebKit versions documented in the installation guide |
+| Linux | amd64 and arm64 | GTK4 + WebKitGTK 6.0 by default; GTK3 + WebKit2GTK 4.1 remains a `-tags gtk3` legacy option through v3.0.x and is removed in v3.1 |
+
+All targets require Go 1.25 or later for development. Android and iOS support
+is experimental and does not block the desktop Beta. Beta APIs aim for
+stability, but prerelease defects and explicitly announced changes may still be
+corrected before v3.0.0.
+
 ## How You Can Contribute
 
 - Test the latest beta release and report any issues

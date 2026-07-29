@@ -4,6 +4,18 @@ Working files for the beta. **Nothing here is published.** The comms drafts are
 drafts: they carry structure, constraints and the facts that are already
 settled, and they leave every claim that needs a human decision blank.
 
+## GitHub release train
+
+Issue [#5844](https://github.com/wailsapp/wails/issues/5844) is the authoritative
+coordination issue. Repository milestones mirror this record:
+
+- [Beta 0 staging](https://github.com/wailsapp/wails/milestone/23) — 11 August 2026
+- [Beta 1 public beta](https://github.com/wailsapp/wails/milestone/17) — 25 August 2026
+- [Beta 2 code freeze](https://github.com/wailsapp/wails/milestone/20) — 1 September 2026
+- [Beta 3 final stabilisation](https://github.com/wailsapp/wails/milestone/21) — 8 September 2026
+- [RC1 dry run](https://github.com/wailsapp/wails/milestone/18) — 12 September 2026
+- [v3.0.0 GA](https://github.com/wailsapp/wails/milestone/10) — 15 September 2026
+
 | File | What it is |
 |---|---|
 | `plan.json` | The release plan: schedule, gates, and the audit configuration for this repository. Read and written by `relman`. |

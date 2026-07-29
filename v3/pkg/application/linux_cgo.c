@@ -399,13 +399,33 @@ void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y) {
 // Window event controllers (GTK4 style)
 // ============================================================================
 
+static void connect_window_surface_signals(GtkWidget *widget, gpointer data) {
+    GdkSurface *surface = gtk_native_get_surface(GTK_NATIVE(widget));
+    if (surface == NULL || !GDK_IS_TOPLEVEL(surface)) {
+        return;
+    }
+
+    g_signal_connect(surface, "notify::width", G_CALLBACK(handleSurfaceSizeChanged), data);
+    g_signal_connect(surface, "notify::height", G_CALLBACK(handleSurfaceSizeChanged), data);
+    g_signal_connect(surface, "notify::state", G_CALLBACK(handleSurfaceStateChanged), data);
+
+    handleSurfaceSizeChanged(G_OBJECT(surface), NULL, (uintptr_t)data);
+    handleSurfaceStateChanged(G_OBJECT(surface), NULL, (uintptr_t)data);
+}
+
+static void handle_window_realize(GtkWidget *widget, gpointer data) {
+    connect_window_surface_signals(widget, data);
+}
+
 void setupWindowEventControllers(GtkWindow *window, GtkWidget *webview, uintptr_t winID) {
     // Close request (replaces delete-event)
     g_signal_connect(window, "close-request", G_CALLBACK(handleCloseRequest), (gpointer)winID);
 
-    // Window state changes (maximize, fullscreen, etc)
-    g_signal_connect(window, "notify::maximized", G_CALLBACK(handleNotifyState), (gpointer)winID);
-    g_signal_connect(window, "notify::fullscreened", G_CALLBACK(handleNotifyState), (gpointer)winID);
+    // GdkSurface exposes actual configured size and all toplevel state changes.
+    g_signal_connect(window, "realize", G_CALLBACK(handle_window_realize), (gpointer)winID);
+    if (gtk_widget_get_realized(GTK_WIDGET(window))) {
+        connect_window_surface_signals(GTK_WIDGET(window), (gpointer)winID);
+    }
 
     // Focus controller for window
     GtkEventController *focus_controller = gtk_event_controller_focus_new();

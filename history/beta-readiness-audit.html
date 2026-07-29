@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wails v3 Beta Readiness Audit — 29 July 2026</title>
+  <style>
+    :root { --ink:#17202a; --muted:#5f6b76; --paper:#f5f1e8; --card:#fffdf8; --line:#d8d1c4; --red:#a5362b; --amber:#a96500; --green:#28734c; --blue:#245b78; --shadow:0 12px 36px #2d29231a; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:var(--blue); text-underline-offset:3px; }
+    header { color:white; background:linear-gradient(125deg,#111b24,#193b4b 62%,#8d4b17); padding:64px 24px 54px; }
+    .wrap { width:min(1120px,calc(100% - 36px)); margin:auto; }
+    .eyebrow { margin:0 0 10px; color:#f4bd74; font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { max-width:900px; margin:0; font:700 clamp(36px,6vw,70px)/1.02 Georgia,serif; letter-spacing:-.035em; }
+    .lede { max-width:820px; margin:22px 0 0; color:#e4e9ea; font-size:18px; }
+    main { padding:32px 0 72px; }
+    nav { position:sticky; top:0; z-index:5; overflow:auto; border-bottom:1px solid var(--line); background:#f5f1e8ed; backdrop-filter:blur(12px); }
+    nav .wrap { display:flex; gap:20px; padding:10px 0; white-space:nowrap; }
+    nav a { color:var(--ink); font-size:13px; font-weight:700; text-decoration:none; }
+    section { scroll-margin-top:60px; margin:28px 0; }
+    h2 { margin:0 0 14px; font:700 30px/1.2 Georgia,serif; }
+    h3 { margin:0 0 8px; font-size:17px; }
+    p { margin:8px 0 14px; }
+    .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:16px; }
+    .card { grid-column:span 4; padding:22px; border:1px solid var(--line); border-radius:14px; background:var(--card); box-shadow:var(--shadow); }
+    .wide { grid-column:span 8; }
+    .full { grid-column:1/-1; }
+    .verdict { border-top:5px solid var(--red); }
+    .metric { font:700 34px/1 Georgia,serif; }
+    .label { margin-top:7px; color:var(--muted); font-size:13px; }
+    .pill { display:inline-block; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+    .no { color:#7e241d; background:#f5d9d5; }
+    .warn { color:#744600; background:#f5e2bc; }
+    .yes { color:#175737; background:#d9eddf; }
+    .info { color:#174b68; background:#d9eaf1; }
+    table { width:100%; border-collapse:collapse; background:var(--card); }
+    th,td { padding:12px 14px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { color:var(--muted); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+    tr:last-child td { border-bottom:0; }
+    .tablebox { overflow:auto; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); }
+    .phase { position:relative; margin:14px 0; padding:20px 22px 20px 74px; border:1px solid var(--line); border-radius:14px; background:var(--card); box-shadow:var(--shadow); }
+    .phase::before { content:attr(data-step); position:absolute; left:20px; top:20px; width:36px; height:36px; display:grid; place-items:center; border-radius:50%; color:white; background:var(--blue); font-weight:800; }
+    .phase ul,.compact { margin:8px 0 0; padding-left:20px; }
+    .check { display:grid; grid-template-columns:24px 1fr auto; gap:10px; align-items:start; padding:11px 0; border-top:1px solid #e8e1d6; }
+    .check:first-of-type { border-top:0; }
+    input[type=checkbox] { width:18px; height:18px; margin-top:3px; accent-color:var(--green); }
+    input:checked + label { color:var(--muted); text-decoration:line-through; }
+    .owner { color:var(--muted); font-size:12px; white-space:nowrap; }
+    details { margin:10px 0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+    summary { cursor:pointer; font-weight:750; }
+    code { padding:2px 5px; border-radius:4px; background:#ece7dc; }
+    .callout { padding:16px 18px; border-left:4px solid var(--amber); background:#fff8e9; }
+    footer { padding:28px 0 50px; color:var(--muted); font-size:13px; }
+    @media (max-width:800px) { .card,.wide { grid-column:1/-1; } .owner { display:none; } th,td { min-width:150px; } }
+    @media print { nav { display:none; } body { background:white; } .card,.phase,.tablebox { box-shadow:none; break-inside:avoid; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Release decision brief · releases/v3-beta · snapshot 29 July 2026 AEST</p>
+      <h1>Wails v3 Beta readiness audit</h1>
+      <p class="lede">A repository, issue, pull request, CI/release, and <code>./docs</code> audit updated against the active <code>releases/v3-beta</code> branch. The branch contains a credible release kit and most channel cutover work, but it is not ready to tag today.</p>
+    </div>
+  </header>
+  <nav><div class="wrap"><a href="#verdict">Verdict</a><a href="#evidence">Evidence</a><a href="#execution">Execution</a><a href="#risks">Release gates</a><a href="#order">Order of work</a><a href="#checklist">Checklist</a><a href="#backlog">Issues &amp; PRs</a><a href="#method">Method</a></div></nav>
+  <main class="wrap">
+    <section id="verdict">
+      <div class="grid">
+        <article class="card wide verdict">
+          <span class="pill no">No-go today</span>
+          <h2>Finish and prove the release kit before tagging Beta 1</h2>
+          <p>The active branch is substantially more prepared than master: it stages <code>v3.0.0-beta.0</code> so the release tool produces <code>beta.1</code>, imports Alpha 118/119, fixes the updater installer selection and GTK4 state/size regressions, and adds systray regression coverage. Its 38 human release gates remain open pending evidence or approval.</p>
+          <p><strong>Recommended release rule:</strong> complete the candidate matrix and audit, close or explicitly waive every blocking gate in <code>.release/v3.0.0-beta.0/plan.json</code>, rehearse the never-run release workflow, and obtain platform/security/docs/release sign-off on the exact candidate commit.</p>
+        </article>
+        <article class="card"><div class="metric">42</div><div class="label">Open PRs returned by GitHub; 25 are drafts and many are stale or v2-only.</div></article>
+        <article class="card"><div class="metric">≥100</div><div class="label">Open issues returned (connector result cap). GitHub’s repository UI showed 151 open issues overall.</div></article>
+        <article class="card"><div class="metric">161</div><div class="label"><code>*_test.go</code> files under v3; strong breadth, but counts do not prove platform behavior.</div></article>
+        <article class="card"><div class="metric">38</div><div class="label">Release-plan gates on the Beta branch; every gate is currently marked open.</div></article>
+        <article class="card"><div class="metric">17 / 2</div><div class="label">Automated release audit checks passing / blocking, as recorded by the branch.</div></article>
+        <article class="card"><div class="metric">46</div><div class="label">Docs source files still mentioning “alpha”; 14 contain a literal v3 alpha version (many are historical changelog/blog entries).</div></article>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <h2>What is ready, and what is not</h2>
+      <div class="tablebox"><table>
+        <thead><tr><th>Area</th><th>Assessment</th><th>Evidence</th><th>Beta implication</th></tr></thead>
+        <tbody>
+          <tr><td>Release engineering</td><td><span class="pill warn">Staged, unproven</span></td><td>The branch stages <code>beta.0</code>, tests the first increment to <code>beta.1</code>, makes release notes channel-aware, broadens nightly discovery to alpha2/beta/rc, and includes a launch runbook. Its release record says <code>release-v3.yml</code> has never run.</td><td>Rehearse a draft on a throwaway tag, resolve signing policy/secrets, then repeat from the exact candidate commit.</td></tr>
+          <tr><td>Core CI</td><td><span class="pill warn">Good coverage with gaps</span></td><td>Go tests on Windows/macOS/Linux, GTK4 default plus GTK3 legacy, JS runtime, templates, examples, generator checks, and cross-compiles. Cross-compile runs only after approval/manual dispatch; Linux GTK4 skips service tests.</td><td>Add a required Beta candidate workflow and close the skipped/runtime-test gaps.</td></tr>
+          <tr><td>Linux default</td><td><span class="pill warn">Fix staged; runtime gate open</span></td><td>The deterministic transition logic, live surface size query, and focused tests from PR #5831 pass under Go 1.25 with GTK4/WebKitGTK 6.0.</td><td>Confirm the staged fix on physical Wayland and X11 compositors before closing #5830.</td></tr>
+          <tr><td>Desktop platforms</td><td><span class="pill warn">Triage required</span></td><td>Recent open reports cover Windows updater/dialog/WebView2 resilience, GTK4 behavior, macOS tray behavior, DPI and mixed-GPU scenarios.</td><td>Define severity and supported behavior; fix P0/P1 regressions, defer edge features explicitly.</td></tr>
+          <tr><td>Mobile</td><td><span class="pill info">Experimental</span></td><td>Android and iOS are explicitly outside the desktop Beta contract.</td><td>Track mobile defects without blocking the desktop Beta.</td></tr>
+          <tr><td>Docs</td><td><span class="pill warn">Primary cutover done</span></td><td>English index/status/install/reference/FAQ/migration and root/v3 README pages now say Beta. The previously recorded 1,711-page Astro build still needs rerunning on this candidate.</td><td>Fix remaining live translated Alpha wording, validate getting-started, and distinguish historical Alpha content from stale product wording.</td></tr>
+          <tr><td>Release governance</td><td><span class="pill warn">Plan exists; gates open</span></td><td><code>.release/v3.0.0-beta.0/plan.json</code> defines 38 software/docs/legal/security/comms/ops gates, a launch sequence and abort criteria. Every gate is still <code>open</code>; positioning/headlines and dates are deliberately blank.</td><td>Assign owners, capture evidence, and close/waive gates. Link live issue/PR triage into the release record.</td></tr>
+          <tr><td>Security &amp; support</td><td><span class="pill warn">Needs sign-off</span></td><td><code>SECURITY.md</code> exists and security automation is present, but an open conflicting PR <a href="https://github.com/wailsapp/wails/pull/4895">#4895</a> is titled “address multiple security vulnerabilities.”</td><td>Privately determine relevance/severity; Beta requires explicit security sign-off and dependency scanning.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="execution">
+      <h2>Execution dashboard</h2>
+      <div class="grid">
+        <article class="card"><span class="pill info">Autonomous local</span><h3>Implemented and reproducible</h3><p>Master sync resolved; Beta staging version preserved; Alpha 118/119 changelog reconciled; updater installer filtering, GTK4 state/size logic, systray smart-default tests, and popup option docs added. Focused Go tests pass in disposable Go 1.25 containers.</p></article>
+        <article class="card"><span class="pill warn">CI-verifiable</span><h3>Requires full matrix evidence</h3><p>Full GTK4 and GTK3 suites, runtime assets, all generated starters, examples, cross-compiles, Astro build/link validation, and the non-publishing Beta candidate workflow must be green on the exact candidate commit.</p></article>
+        <article class="card"><span class="pill no">Manual/platform/signing</span><h3>Cannot be closed locally</h3><p>Native Windows/macOS behavior, physical Wayland/X11 checks, Apple signing, published-channel installation, workflow rehearsal, security approval, support rota, final messaging, tagging, dispatch, and launch remain open. Mobile is experimental and outside the desktop Beta contract.</p></article>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2>Release gates</h2>
+      <div class="grid">
+        <article class="card"><span class="pill no">P0 · blocker</span><h3>Complete the promise</h3><p>The branch now claims a stable API and Beta security support. Finish the explicit OS/architecture and desktop/mobile support envelope, minimum versions, known limitations, and deprecation policy before publishing that claim.</p></article>
+        <article class="card"><span class="pill no">P0 · blocker</span><h3>Platform correctness</h3><p>Resolve or formally defer updater corruption, broken default templates, core dialogs/window state, process-death resilience, and any confirmed security defects.</p></article>
+        <article class="card"><span class="pill no">P0 · blocker</span><h3>Green candidate evidence</h3><p>Run the complete native matrix, not only compilation. Require two green candidate runs from the exact commit/tag and retain artifacts/results.</p></article>
+        <article class="card"><span class="pill warn">P1 · before tag</span><h3>Docs truthfulness</h3><p>Update status, installation, API stability, migration, support matrix, known issues, examples and translated banners; eliminate stale literal versions.</p></article>
+        <article class="card"><span class="pill no">P0 · blocker</span><h3>Release rehearsal &amp; signing</h3><p><code>release-v3.yml</code> has never run and six <code>APPLE_*</code> signing secrets are absent. Decide signed versus explicitly unsigned macOS policy, then dry-run assets, checksums/provenance, npm/CLI lockstep, install and rollback.</p></article>
+        <article class="card"><span class="pill info">P2 · can defer</span><h3>Feature backlog</h3><p>New APIs, uncommon packaging formats, 32-bit Windows, advanced overlays, and other non-regressions need not block Beta if scope and limitations are explicit.</p></article>
+      </div>
+    </section>
+
+    <section id="order">
+      <h2>Recommended order of work</h2>
+      <article class="phase" data-step="1"><h3>Keep the release record authoritative</h3><p>The Beta-to-GA milestones and <a href="https://github.com/wailsapp/wails/issues/5844">release tracker #5844</a> now mirror this record. Continue recording evidence or an explicit waiver for every blocking gate.</p></article>
+      <article class="phase" data-step="2"><h3>Triage the live defect and PR set against the Beta promise</h3><p>Reproduce the high-signal issues below on the re-synced candidate. Mark each blocker, Beta follow-up, unsupported, duplicate, or unable-to-reproduce. Close/retarget stale PRs so only intentional Beta changes remain.</p></article>
+      <article class="phase" data-step="3"><h3>Fix P0/P1 correctness and security</h3><p>Prioritise data/executable corruption and broken starter experiences, then core window/dialog events, process resilience, and default GTK4 behavior. Add regression tests with each fix.</p></article>
+      <article class="phase" data-step="4"><h3>Close the test-matrix gaps</h3><p>Finish GTK4 Phase 10, test Wayland and X11, run native Windows amd64/arm64 and macOS Intel/Apple Silicon smoke tests, exercise packaging/updater flows, and decide mobile coverage. Make candidate checks required on master/tag.</p></article>
+      <article class="phase" data-step="5"><h3>Finish documentation and support-policy cutover</h3><p>Review the new stable-API claim against actual exceptions. Fix <code>v3/README.md</code>, live feedback/label wording and placeholders; validate samples/links and clean-machine getting started. Complete English before regenerating translations.</p></article>
+      <article class="phase" data-step="6"><h3>Rehearse Beta 1 end to end</h3><p>First exercise <code>release-v3.yml</code> as a draft on a throwaway alpha2 tag, as the branch record requires. Then cut a draft <code>v3.0.0-beta.1</code> from the intended commit, verify signing policy, CLI/npm lockstep and assets on clean machines, test rollback, and collect sign-offs.</p></article>
+      <article class="phase" data-step="7"><h3>Publish, observe, and protect the channel</h3><p>Merge status communications, disable/rename Alpha nightly automation, publish Beta as a prerelease, verify install paths, monitor crash/issue intake for 48–72 hours, and keep a rapid <code>beta.2</code> path ready.</p></article>
+    </section>
+
+    <section id="checklist">
+      <h2>Executable Beta checklist</h2>
+      <p>Checkbox state is saved only in this browser. Priority reflects release ordering, not estimated effort.</p>
+      <div class="grid">
+        <article class="card full">
+          <h3>1 — Governance and scope</h3>
+          <div class="check"><input id="c1" type="checkbox"><label for="c1">Re-sync <code>releases/v3-beta</code> with the six commits now on master and re-run <code>relman audit</code>.</label><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><input id="c23" type="checkbox"><label for="c23">Maintain the linked Beta milestones and GitHub release tracker for the 38-gate release plan.</label><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><input id="c2" type="checkbox"><label for="c2">Approve the supported OS/architecture matrix and state whether Android/iOS are experimental.</label><span class="owner">P0 · Maintainers</span></div>
+          <div class="check"><input id="c3" type="checkbox"><label for="c3">Approve API compatibility/deprecation rules for the Beta series.</label><span class="owner">P0 · Maintainers</span></div>
+          <div class="check"><input id="c4" type="checkbox"><label for="c4">Assign every blocking <code>plan.json</code> gate; require evidence or an explicit signed waiver before closing it.</label><span class="owner">P0 · Release lead</span></div>
+        </article>
+        <article class="card full">
+          <h3>2 — Defect and PR disposition</h3>
+          <div class="check"><input id="c5" type="checkbox"><label for="c5">Reproduce and disposition the candidate blocker issues listed in this report.</label><span class="owner">P0 · Platform owners</span></div>
+          <div class="check"><input id="c6" type="checkbox"><label for="c6">Audit PR #4895 privately and complete a security/dependency sign-off.</label><span class="owner">P0 · Security</span></div>
+          <div class="check"><input id="c7" type="checkbox"><label for="c7">Review all 42 open PRs; merge, retarget, supersede, or close each before freeze.</label><span class="owner">P1 · Maintainers</span></div>
+          <div class="check"><input id="c8" type="checkbox"><label for="c8">Add regression tests for every Beta-blocking bug fixed.</label><span class="owner">P0 · Authors</span></div>
+        </article>
+        <article class="card full">
+          <h3>3 — Quality gates</h3>
+          <div class="check"><input id="c9" type="checkbox"><label for="c9">Complete and update IMPLEMENTATION.md Phase 10 for GTK4; cover X11 and Wayland.</label><span class="owner">P0 · Linux</span></div>
+          <div class="check"><input id="c10" type="checkbox"><label for="c10">Remove or cover the GTK4 <code>TestService</code> CI skip; document any justified exclusions.</label><span class="owner">P0 · Linux/CI</span></div>
+          <div class="check"><input id="c11" type="checkbox"><label for="c11">Run native smoke/E2E tests for windows, menus, dialogs, tray, bindings, dev/build/package, updater, and crash recovery on the support matrix.</label><span class="owner">P0 · QA</span></div>
+          <div class="check"><input id="c12" type="checkbox"><label for="c12">Test all starter templates from clean machines; specifically guard Vue TypeScript.</label><span class="owner">P0 · CLI</span></div>
+          <div class="check"><input id="c13" type="checkbox"><label for="c13">Make the release-candidate matrix required and run it from the exact tag commit twice.</label><span class="owner">P0 · CI</span></div>
+        </article>
+        <article class="card full">
+          <h3>4 — Documentation and communication</h3>
+          <div class="check"><input id="c14" type="checkbox"><label for="c14">Expand the Beta status page with the support matrix, known limitations, gate status, and route to tracked work.</label><span class="owner">P1 · Docs</span></div>
+          <div class="check"><input id="c15" type="checkbox"><label for="c15">Fix remaining live Alpha wording in <code>v3/README.md</code>, feedback, labels/templates and stale branch links; preserve historical release content.</label><span class="owner">P1 · Docs</span></div>
+          <div class="check"><input id="c16" type="checkbox"><label for="c16">Write an Alpha→Beta migration guide and review all breaking changes/deprecations against the changelog.</label><span class="owner">P1 · API/Docs</span></div>
+          <div class="check"><input id="c17" type="checkbox"><label for="c17">Build docs with Astro, run link validation, and execute or compile documented starter/tutorial snippets.</label><span class="owner">P0 · Docs/CI</span></div>
+          <div class="check"><input id="c18" type="checkbox"><label for="c18">Regenerate translations from corrected English sources; allow an explicit fallback if translations lag.</label><span class="owner">P1 · i18n</span></div>
+        </article>
+        <article class="card full">
+          <h3>5 — Release and launch</h3>
+          <div class="check"><input id="c19" type="checkbox"><label for="c19">Choose macOS signing policy: provision the six missing <code>APPLE_*</code> secrets or deliberately approve an unsigned Beta.</label><span class="owner">P0 · Release/Security</span></div>
+          <div class="check"><input id="c24" type="checkbox"><label for="c24">Rehearse the never-run <code>release-v3.yml</code> with <code>draft: true</code> on a throwaway alpha2 tag.</label><span class="owner">P0 · Release</span></div>
+          <div class="check"><input id="c20" type="checkbox"><label for="c20">Dry-run <code>v3.0.0-beta.1</code>; verify CLI/npm lockstep, source tag, checksums, assets, provenance, install and rollback.</label><span class="owner">P0 · Release</span></div>
+          <div class="check"><input id="c21" type="checkbox"><label for="c21">Obtain platform, docs, security, and release sign-offs on one immutable candidate commit.</label><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><input id="c22" type="checkbox"><label for="c22">Publish Beta 1, verify public metadata/install commands, and monitor a 48–72 hour launch window.</label><span class="owner">P0 · Maintainers</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="backlog">
+      <h2>Candidate issue and PR triage</h2>
+      <div class="callout"><strong>Do not treat every open item as a blocker.</strong> Beta is a stability milestone, not feature completeness. These items are candidates based on title/body and current product scope; reproduce and classify them on current master.</div>
+      <div class="tablebox" style="margin-top:16px"><table>
+        <thead><tr><th>Candidate</th><th>Why it matters</th><th>Recommended disposition</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5773">#5773 Windows updater selects installer</a></td><td>Can replace the application with the wrong artifact; update integrity/usability risk.</td><td><strong>Fix staged:</strong> installer artifacts are excluded with positive and negative matcher fixtures.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5802">#5802 Vue TS template parse failure</a></td><td>The report is explicitly v2 and does not describe a v3 starter.</td><td><strong>Outside desktop v3 Beta scope:</strong> leave on the v2 tracker; independently test all v3 starters in CI.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5830">#5830 GTK4 state events/live size</a></td><td>Core API parity regression on the new default Linux backend.</td><td><strong>Fix staged:</strong> unit tests pass; physical Wayland/X11 confirmation remains manual.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5794">#5794 Windows question-dialog buttons</a></td><td>Core UI API reportedly nonfunctional on a supported OS.</td><td><strong>P0/P1:</strong> reproduce across Windows 10/11; fix with regression coverage.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5733">#5733 WebView2 ProcessFailed unhandled</a> and <a href="https://github.com/wailsapp/wails/issues/5580">#5580 COM errors terminate process</a></td><td>Runtime failures can leave blank windows or exit the app.</td><td><strong>P1:</strong> define recovery/error policy and test browser-process failure.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5752">#5752 macOS tray menu fails</a></td><td>Core tray behavior regression on a supported platform.</td><td><strong>P1:</strong> reproduce on supported/current macOS; fix or constrain matrix.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5810">#5810 Android mixed binding context</a>, <a href="https://github.com/wailsapp/wails/issues/5781">#5781 file picker</a>, <a href="https://github.com/wailsapp/wails/issues/5725">#5725 launch mode</a></td><td>Material mobile correctness gaps.</td><td><strong>P0 only if mobile is in Beta scope;</strong> otherwise label mobile experimental and schedule post-Beta.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/issues/5835">#5835 Windows 386 support</a></td><td>Patch-ready request, but expands support and packaging matrix.</td><td><strong>P2:</strong> decide unsupported versus supported; do not silently imply 386 support.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/pull/4895">PR #4895 security vulnerabilities</a></td><td>Security-titled, conflicting open PR cannot be ignored.</td><td><strong>P0:</strong> confidential review; cherry-pick/reimplement relevant fixes and close/supersede.</td></tr>
+          <tr><td><a href="https://github.com/wailsapp/wails/pull/4810">PR #4810 dialog result</a>, <a href="https://github.com/wailsapp/wails/pull/4707">PR #4707 WebView2 init</a>, <a href="https://github.com/wailsapp/wails/pull/4782">PR #4782 Linux media</a></td><td>Potential fixes/features touch core desktop behavior but are old/conflicting.</td><td>Rebase only if tied to accepted blockers; otherwise defer and close or retarget after Beta.</td></tr>
+          <tr><td>Five translation PRs #5390–#5395</td><td>Currently conflicting and predate final Beta English content.</td><td>Do not hand-merge now; regenerate translations after English freeze.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="method">
+      <h2>Method, sources, and limitations</h2>
+      <details open><summary>Repository snapshot</summary><p>Updated against <code>releases/v3-beta</code> with <code>origin/master</code> at <code>8a181b041</code> merged but intentionally uncommitted pending quality review. The candidate preserves <code>v3.0.0-beta.0</code> and the branch-only release record while importing Alpha 118/119.</p></details>
+      <details open><summary>GitHub snapshot</summary><p>Used the repository-connected GitHub API for the 100 most recently updated open issues and all 42 returned open PRs. The public <a href="https://github.com/wailsapp/wails/releases">release page</a> confirms <code>alpha2.119</code> is a prerelease, has three assets, and still carries an Alpha warning. GitHub’s public repository navigation showed 151 open issues. Links in this report point to the live source items.</p></details>
+      <details><summary>Validation limitations</summary><p>The host contains no Go toolchain. Disposable Go 1.25 containers independently passed updater-provider, release-script, changelog, GTK state, and systray tests; the GTK tests compiled against GTK4/WebKitGTK 6.0. CodeRabbit reviewed all local changes; its substantive updater and GTK lifecycle findings were fixed and retested. Full suites, GTK3, Node/runtime/templates, Astro, native platforms, and compositor behavior have not yet been independently rerun in this candidate session.</p></details>
+      <details><summary>Decision standard</summary><p>“Beta ready” here means suitable for broader production-adjacent testing with a substantially stable API and an explicit support envelope. It does not mean feature-complete or bug-free. A defect blocks Beta when it threatens update integrity/security, breaks a default starter or core API on a supported platform, or makes the release/support promise materially misleading.</p></details>
+    </section>
+  </main>
+  <footer class="wrap">Generated from repository and live GitHub evidence on 29 July 2026. Re-run the issue/PR/CI portions immediately before the release decision.</footer>
+  <script>
+    const key='wails-beta-audit-checks-v1';
+    const boxes=[...document.querySelectorAll('input[type=checkbox]')];
+    try { const state=JSON.parse(localStorage.getItem(key)||'{}'); boxes.forEach(b=>b.checked=!!state[b.id]); } catch (_) {}
+    boxes.forEach(b=>b.addEventListener('change',()=>{ try { const state={}; boxes.forEach(x=>state[x.id]=x.checked); localStorage.setItem(key,JSON.stringify(state)); } catch (_) {} }));
+  </script>
+</body>
+</html>

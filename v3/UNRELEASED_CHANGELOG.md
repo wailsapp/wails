@@ -17,23 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Provide default paths for icon generation inputs and outputs in [PR](https://github.com/wailsapp/wails/pull/5825) by @taliesin-ai
-- Add source entry modules to runtime package.json sideEffects in [PR](https://github.com/wailsapp/wails/pull/5797) by @savely-krasovsky
-- Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 - Promote v3 from alpha to beta
+- Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
 
 ## Fixed
 <!-- Bug fixes -->
-- Apply scoped GTK4 frameless CSS to remove border radius in [PR](https://github.com/wailsapp/wails/pull/5800) by @savely-krasovsky
-- Handle cursor position failures gracefully on Windows for popup menus and screen enumeration in [PR](https://github.com/wailsapp/wails/pull/5789) by @wayneforrest
-- macOS open-file dialog filters extensions correctly and validates allowed files by suffix in [PR](https://github.com/wailsapp/wails/pull/5678) by @phergul
-- Guard Windows dark-mode initialization against nil API calls in [PR](https://github.com/wailsapp/wails/pull/5793) by @roachadam
-- Fix 32-bit build failure in the updater: the `maxArchiveTotalSize` constant (2 GiB) overflowed the platform `int` when passed to `fmt.Errorf` on `GOARCH=386`. It is now explicitly typed `int64`.
-- Fix a nil-pointer panic on startup when a window uses a Dark (or system-dark) title bar on Windows builds that do not load the dark-mode uxtheme APIs, such as Windows 10 1809 / Windows Server 2019 (build 17763). The `AllowDarkModeForWindow` calls in the window theme setup are now nil-guarded, matching the guard already used in `w32.SetMenuTheme`.
+
+- Ignore Windows installer executables in the GitHub updater's default asset matcher while preserving legitimate product names (#5773).
+- Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

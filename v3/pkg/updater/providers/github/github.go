@@ -402,6 +402,9 @@ func DefaultAssetMatcher(req updater.CheckRequest, assets []ReleaseAsset) int {
 		if strings.HasSuffix(name, ".sig") || strings.HasSuffix(name, ".asc") {
 			continue
 		}
+		if isInstallerAsset(name) {
+			continue
+		}
 		if isChecksumName(name) {
 			continue
 		}
@@ -414,6 +417,16 @@ func DefaultAssetMatcher(req updater.CheckRequest, assets []ReleaseAsset) int {
 		return i
 	}
 	return -1
+}
+
+// isInstallerAsset reports whether name follows the packaging convention for
+// an installer executable. Keep the separators and extension anchored so an
+// application whose product name happens to contain "installer" remains a
+// legitimate update candidate.
+func isInstallerAsset(name string) bool {
+	return strings.Contains(name, "-installer.") ||
+		strings.Contains(name, "_installer.") ||
+		name == "installer.exe"
 }
 
 func containsArch(name, arch string) bool {

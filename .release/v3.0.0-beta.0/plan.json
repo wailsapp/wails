@@ -159,12 +159,14 @@
   ],
   "gates": [
     {
-      "id": "sw-scope",
+    "id": "sw-scope",
       "title": "Scope locked: shipped feature list matches the plan",
       "phase": "plan",
-      "track": "software",
-      "blocking": true,
-      "status": "open"
+    "track": "software",
+    "blocking": true,
+    "status": "open",
+    "note": "GitHub release tracker #5844 links Beta 0, Beta 1, Beta 2, Beta 3, RC1, and GA milestones aligned to this record. Final scope approval remains open.",
+    "updated": "2026-07-30T00:00:00+10:00"
     },
     {
       "id": "sw-version",
@@ -175,12 +177,14 @@
       "status": "open"
     },
     {
-      "id": "sw-compat",
+    "id": "sw-compat",
       "title": "Compatibility promise stated: supported platforms, runtimes, minimum versions",
       "phase": "stabilise",
       "track": "software",
       "blocking": true,
-      "status": "open"
+    "status": "open",
+    "note": "Desktop compatibility promise is now stated in docs/src/content/docs/status.mdx: Windows 10/11 amd64/arm64, macOS Intel/Apple Silicon, Linux amd64/arm64 with GTK4 default and GTK3 legacy through v3.0.x, Go 1.25+, and experimental mobile. Maintainer approval remains required.",
+    "updated": "2026-07-29T00:00:00+10:00"
     },
     {
       "id": "sw-deprecations",
@@ -266,12 +270,14 @@
       "status": "open"
     },
     {
-      "id": "doc-changelog",
+    "id": "doc-changelog",
       "title": "Changelog entry landed in the standard format",
       "phase": "docs",
       "track": "docs",
       "blocking": true,
-      "status": "open"
+    "status": "open",
+    "note": "Master sync imported Alpha 118/119 into docs/src/content/docs/changelog.mdx and removed those released entries from UNRELEASED_CHANGELOG.md. Candidate entries remain unreleased until the release tool folds them into the published changelog.",
+    "updated": "2026-07-29T00:00:00+10:00"
     },
     {
       "id": "doc-migration",
@@ -326,12 +332,14 @@
       "status": "open"
     },
     {
-      "id": "legal-licence",
+    "id": "legal-licence",
       "title": "Licence unchanged or change announced; LICENSE and headers correct",
       "phase": "assure",
       "track": "legal",
       "blocking": true,
-      "status": "open"
+    "status": "open",
+    "note": "Repository licence/provenance text exists, but dependency-licence and human legal approval remain separate open gates.",
+    "updated": "2026-07-29T00:00:00+10:00"
     },
     {
       "id": "legal-deps",
@@ -342,14 +350,14 @@
       "status": "open"
     },
     {
-      "id": "legal-provenance",
+    "id": "legal-provenance",
       "title": "Contributions covered by CLA/DCO; no unattributed third-party code",
       "phase": "assure",
       "track": "legal",
       "blocking": true,
       "status": "open",
-      "note": "CONTRIBUTING.md does not state licence/DCO/CLA terms",
-      "updated": "2026-07-26T16:17:23+10:00"
+    "note": "CONTRIBUTING.md now states contribution licence and provenance requirements (landed in Alpha 118). Human provenance review remains required.",
+    "updated": "2026-07-29T00:00:00+10:00"
     },
     {
       "id": "legal-export",

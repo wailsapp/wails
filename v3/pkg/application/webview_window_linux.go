@@ -8,9 +8,9 @@ import (
 
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -37,6 +37,8 @@ type linuxWebviewWindow struct {
 	accels        pointer
 	lastWidth     int
 	lastHeight    int
+	windowState   linuxWindowState
+	stateObserved bool
 	drag          dragInfo
 	lastX, lastY  int
 	gtkmenu       pointer
@@ -45,6 +47,50 @@ type linuxWebviewWindow struct {
 	moveDebouncer     func(func())
 	resizeDebouncer   func(func())
 	ignoreMouseEvents bool
+}
+
+type linuxWindowState struct {
+	minimised  bool
+	maximised  bool
+	fullscreen bool
+}
+
+func changedLinuxWindowStateEvents(previous, current linuxWindowState, observed bool) []events.WindowEventType {
+	var result []events.WindowEventType
+	if !observed {
+		if current.maximised {
+			result = append(result, events.Common.WindowMaximise)
+		}
+		if current.minimised {
+			result = append(result, events.Common.WindowMinimise)
+		}
+		if current.fullscreen {
+			result = append(result, events.Common.WindowFullscreen)
+		}
+		return result
+	}
+	if previous.maximised != current.maximised {
+		if current.maximised {
+			result = append(result, events.Common.WindowMaximise)
+		} else {
+			result = append(result, events.Common.WindowUnMaximise)
+		}
+	}
+	if previous.minimised != current.minimised {
+		if current.minimised {
+			result = append(result, events.Common.WindowMinimise)
+		} else {
+			result = append(result, events.Common.WindowUnMinimise)
+		}
+	}
+	if previous.fullscreen != current.fullscreen {
+		if current.fullscreen {
+			result = append(result, events.Common.WindowFullscreen)
+		} else {
+			result = append(result, events.Common.WindowUnFullscreen)
+		}
+	}
+	return result
 }
 
 var (
