@@ -141,19 +141,27 @@ func (em *EventManager) dispatch(event *CustomEvent) {
 
 // HandleApplicationEvent handles application events (internal use)
 func (em *EventManager) handleApplicationEvent(event *ApplicationEvent) {
+	em.handleApplicationEventWithMode(event, true)
+}
+
+// handleApplicationEventSync dispatches hooks and listeners synchronously. It
+// is reserved for framework lifecycle boundaries whose ordering is part of the
+// startup contract.
+func (em *EventManager) handleApplicationEventSync(event *ApplicationEvent) {
+	em.handleApplicationEventWithMode(event, false)
+}
+
+func (em *EventManager) handleApplicationEventWithMode(event *ApplicationEvent, async bool) {
 	defer handlePanic()
 	em.app.applicationEventListenersLock.RLock()
-	listeners, ok := em.app.applicationEventListeners[event.Id]
+	listeners := slices.Clone(em.app.applicationEventListeners[event.Id])
 	em.app.applicationEventListenersLock.RUnlock()
-	if !ok {
-		return
-	}
 
 	// Process Hooks
 	em.app.applicationEventHooksLock.RLock()
-	hooks, ok := em.app.applicationEventHooks[event.Id]
+	hooks := slices.Clone(em.app.applicationEventHooks[event.Id])
 	em.app.applicationEventHooksLock.RUnlock()
-	if ok {
+	if len(hooks) > 0 {
 		for _, thisHook := range hooks {
 			thisHook.callback(event)
 			if event.IsCancelled() {
@@ -161,14 +169,22 @@ func (em *EventManager) handleApplicationEvent(event *ApplicationEvent) {
 			}
 		}
 	}
+	if len(listeners) == 0 {
+		return
+	}
 
 	for _, listener := range listeners {
-		go func() {
+		invoke := func() {
 			if event.IsCancelled() {
 				return
 			}
 			defer handlePanic()
 			listener.callback(event)
-		}()
+		}
+		if async {
+			go invoke()
+		} else {
+			invoke()
+		}
 	}
 }

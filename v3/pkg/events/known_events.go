@@ -8,6 +8,8 @@ func IsKnownEvent(name string) bool {
 var knownEvents = map[string]struct{}{
 	"common:ApplicationOpenedWithFile":                            {},
 	"common:ApplicationStarted":                                   {},
+	"common:ApplicationStarting":                                  {},
+	"common:ApplicationInitialized":                               {},
 	"common:ApplicationLaunchedWithUrl":                           {},
 	"common:ThemeChanged":                                         {},
 	"common:SystemDidWake":                                        {},

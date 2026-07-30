@@ -14,10 +14,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
@@ -25,6 +27,8 @@ import (
 var alphaAssets embed.FS
 
 var globalApplication *App
+var startEventLoopsOnce sync.Once
+var activeEventLoopApp atomic.Pointer[App]
 
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
@@ -664,106 +668,170 @@ func (a *App) Run() error {
 	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 
-	// startup performs the remaining startup sequence: start services, spawn the
-	// event-handling reader goroutines, run any pending windows, and apply the
-	// menu/icon. On desktop this runs inline on the main goroutine. On iOS it is
-	// deferred to a background goroutine (see below).
-	startup := func() error {
-		// Startup services before dispatching any events.
-		// No need to hold the lock here because a.options.Services may only change when a.running is false.
-		services := a.options.Services
-		a.options.Services = nil
-		for i, service := range services {
-			if err := a.startupService(service); err != nil {
-				return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
-			}
-			// Schedule started services for shutdown.
-			a.options.Services = services[:i+1]
-		}
+	// Start event handling before entering the native event loop. The remaining
+	// initialisation is triggered by the platform's ApplicationStarted event, so
+	// native window operations are available while services start in the
+	// background.
+	a.startEventLoops()
+	activeEventLoopApp.Store(a)
+	defer activeEventLoopApp.CompareAndSwap(a, nil)
 
-		// Start the MCP server when the application is built with -tags mcp.
-		// All configuration is read from environment variables (WAILS_MCP_HOST,
-		// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
-		if err := startMCPServer(a); err != nil {
-			return fmt.Errorf("mcp: %w", err)
-		}
-
-		go func() {
-			for {
-				event := <-applicationEvents
-				go a.Event.handleApplicationEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				event := <-windowEvents
-				go a.handleWindowEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				request := <-webviewRequests
-				go a.handleWebViewRequest(request)
-			}
-		}()
-		go func() {
-			for {
-				event := <-windowMessageBuffer
-				go a.handleWindowMessage(event)
-			}
-		}()
-		go func() {
-			for {
-				event := <-windowKeyEvents
-				go a.handleWindowKeyEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				dragAndDropMessage := <-windowDragAndDropBuffer
-				go a.handleDragAndDropMessage(dragAndDropMessage)
-			}
-		}()
-
-		go func() {
-			for {
-				menuItemID := <-menuItemClicked
-				go a.Menu.handleMenuItemClicked(menuItemID)
-			}
-		}()
-
-		a.runLock.Lock()
-		a.running = true
-		a.runLock.Unlock()
-
-		// Bind any global shortcuts that were registered before the app started.
-		a.GlobalShortcut.flushPending()
-
-		// No need to hold the lock here because
-		//   - a.pendingRun may only change while a.running is false.
-		//   - runnables are scheduled asynchronously anyway.
-		for _, pending := range a.pendingRun {
+	var startupOnce sync.Once
+	var startupErr error
+	var startupErrLock sync.Mutex
+	startupStarted := make(chan struct{})
+	startupDone := make(chan struct{})
+	a.Event.RegisterApplicationEventHook(events.Common.ApplicationStarted, func(*ApplicationEvent) {
+		startupOnce.Do(func() {
+			close(startupStarted)
 			go func() {
-				defer handlePanic()
-				pending.Run()
+				defer close(startupDone)
+				if err := a.finishStartup(); err != nil {
+					startupErrLock.Lock()
+					startupErr = err
+					startupErrLock.Unlock()
+					// Startup now happens asynchronously after the platform loop
+					// begins, so report the fatal failure immediately as well as
+					// returning it once the platform loop exits.
+					a.handleError(&FatalError{err: err})
+					a.Quit()
+				}
 			}()
-		}
-		a.pendingRun = nil
+		})
+	})
 
-		// set the application menu
-		if runtime.GOOS == "darwin" {
-			a.impl.setApplicationMenu(a.applicationMenu)
-		}
-		if a.options.Icon != nil {
-			a.impl.setIcon(a.options.Icon)
-		}
-		return nil
+	a.runLock.Lock()
+	a.running = true
+	a.runLock.Unlock()
+
+	// Bind any global shortcuts that were registered before the app started.
+	a.GlobalShortcut.flushPending()
+
+	// The menu and icon must be configured before the platform loop starts on
+	// platforms that consume them during native activation.
+	if runtime.GOOS == "darwin" {
+		a.impl.setApplicationMenu(a.applicationMenu)
+	}
+	if a.options.Icon != nil {
+		a.impl.setIcon(a.options.Icon)
 	}
 
-	if err := startup(); err != nil {
-		return err
+	runErr := a.impl.run()
+	// Prevent a late native ready event from starting services after the
+	// platform loop has already begun shutting down.
+	startupOnce.Do(func() {})
+	select {
+	case <-startupStarted:
+		<-startupDone
+	default:
 	}
-	return a.impl.run()
+	startupErrLock.Lock()
+	defer startupErrLock.Unlock()
+	if startupErr != nil {
+		return startupErr
+	}
+	return runErr
+}
+
+func (a *App) finishStartup() error {
+	// Dispatch framework lifecycle events directly so their listeners are
+	// scheduled before the next startup phase begins. Native application events
+	// continue to arrive through applicationEvents.
+	a.Event.handleApplicationEventSync(newApplicationEvent(events.Common.ApplicationStarting))
+
+	// No need to hold the lock here because a.options.Services may only change
+	// before Run is called. Services remain sequential even though the startup
+	// sequence itself runs away from the native UI thread.
+	a.serviceShutdownLock.Lock()
+	services := a.options.Services
+	a.options.Services = nil
+	for i, service := range services {
+		if err := a.startupService(service); err != nil {
+			a.serviceShutdownLock.Unlock()
+			return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+		}
+		// Schedule started services for shutdown.
+		a.options.Services = services[:i+1]
+	}
+	a.serviceShutdownLock.Unlock()
+
+	// Start the MCP server when the application is built with -tags mcp.
+	// All configuration is read from environment variables (WAILS_MCP_HOST,
+	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+	if err := startMCPServer(a); err != nil {
+		return fmt.Errorf("mcp: %w", err)
+	}
+
+	a.Event.handleApplicationEventSync(newApplicationEvent(events.Common.ApplicationInitialized))
+
+	// Normal windows remain pending until all subsystems and services have
+	// initialised. A listener for ApplicationStarting may explicitly Show a
+	// pending window (for example a splash screen) while this work is running.
+	a.runLock.Lock()
+	pendingRun := a.pendingRun
+	a.pendingRun = nil
+	a.runLock.Unlock()
+	for _, pending := range pendingRun {
+		go func() {
+			defer handlePanic()
+			pending.Run()
+		}()
+	}
+	return nil
+}
+
+func (a *App) startEventLoops() {
+	startEventLoopsOnce.Do(func() {
+		go func() {
+			for event := range applicationEvents {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.Event.handleApplicationEvent(event)
+				}
+			}
+		}()
+		go func() {
+			for event := range windowEvents {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.handleWindowEvent(event)
+				}
+			}
+		}()
+		go func() {
+			for request := range webviewRequests {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.handleWebViewRequest(request)
+				}
+			}
+		}()
+		go func() {
+			for event := range windowMessageBuffer {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.handleWindowMessage(event)
+				}
+			}
+		}()
+		go func() {
+			for event := range windowKeyEvents {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.handleWindowKeyEvent(event)
+				}
+			}
+		}()
+		go func() {
+			for message := range windowDragAndDropBuffer {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.handleDragAndDropMessage(message)
+				}
+			}
+		}()
+		go func() {
+			for menuItemID := range menuItemClicked {
+				if app := activeEventLoopApp.Load(); app != nil {
+					go app.Menu.handleMenuItemClicked(menuItemID)
+				}
+			}
+		}()
+	})
 }
 
 func (a *App) startupService(service Service) error {
@@ -798,12 +866,13 @@ func (a *App) startupService(service Service) error {
 }
 
 func (a *App) shutdownServices() {
+	// Cancel first so an in-progress ServiceStartup can stop before shutdown
+	// waits for the startup goroutine to release serviceShutdownLock.
+	a.cancel()
+
 	// Acquire lock to prevent double calls (defer in Run() + OnShutdown)
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
-
-	// Ensure app context is cancelled first (duplicate calls don't hurt).
-	a.cancel()
 
 	for len(a.options.Services) > 0 {
 		last := len(a.options.Services) - 1

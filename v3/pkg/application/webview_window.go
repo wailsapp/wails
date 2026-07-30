@@ -171,6 +171,7 @@ type WebviewWindow struct {
 	options WebviewWindowOptions
 	impl    webviewWindowImpl
 	id      uint
+	runLock sync.Mutex
 
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
@@ -478,6 +479,8 @@ func (w *WebviewWindow) SetSize(width, height int) Window {
 }
 
 func (w *WebviewWindow) Run() {
+	w.runLock.Lock()
+	defer w.runLock.Unlock()
 	if w.impl != nil {
 		return
 	}
@@ -507,6 +510,9 @@ func (w *WebviewWindow) SetAlwaysOnTop(b bool) Window {
 
 // Show shows the window.
 func (w *WebviewWindow) Show() Window {
+	w.runLock.Lock()
+	w.options.Hidden = false
+	w.runLock.Unlock()
 	if globalApplication.impl == nil {
 		return w
 	}
@@ -514,7 +520,6 @@ func (w *WebviewWindow) Show() Window {
 		InvokeSync(w.Run)
 		return w
 	}
-	w.options.Hidden = false
 	InvokeSync(w.impl.show)
 	return w
 }

@@ -8,6 +8,8 @@ var Common = newCommonEvents()
 type commonEvents struct {
 	ApplicationOpenedWithFile  ApplicationEventType
 	ApplicationStarted         ApplicationEventType
+	ApplicationStarting        ApplicationEventType
+	ApplicationInitialized     ApplicationEventType
 	ApplicationLaunchedWithUrl ApplicationEventType
 	ThemeChanged               ApplicationEventType
 	SystemDidWake              ApplicationEventType
@@ -45,6 +47,8 @@ func newCommonEvents() commonEvents {
 	return commonEvents{
 		ApplicationOpenedWithFile:  1024,
 		ApplicationStarted:         1025,
+		ApplicationStarting:        1292,
+		ApplicationInitialized:     1293,
 		ApplicationLaunchedWithUrl: 1026,
 		ThemeChanged:               1027,
 		SystemDidWake:              1028,
@@ -872,4 +876,6 @@ var eventToJS = map[uint]string{
 	1289: "common:ScreenLocked",
 	1290: "common:ScreenUnlocked",
 	1291: "common:LowMemory",
+	1292: "common:ApplicationStarting",
+	1293: "common:ApplicationInitialized",
 }

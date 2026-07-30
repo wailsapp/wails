@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -28,10 +29,13 @@ func New(t *testing.T, options application.Options) *application.App {
 	}
 
 	errorHandler := options.ErrorHandler
+	var fatalErr error
+	var fatalErrLock sync.Mutex
 	options.ErrorHandler = func(err error) {
 		if fatal := (*application.FatalError)(nil); errors.As(err, &fatal) {
-			endChan <- err
-			select {} // Block forever
+			fatalErrLock.Lock()
+			fatalErr = err
+			fatalErrLock.Unlock()
 		} else if errorHandler != nil {
 			errorHandler(err)
 		} else {
@@ -44,7 +48,10 @@ func New(t *testing.T, options application.Options) *application.App {
 		if postShutdown != nil {
 			postShutdown()
 		}
-		endChan <- nil
+		fatalErrLock.Lock()
+		shutdownErr := fatalErr
+		fatalErrLock.Unlock()
+		endChan <- shutdownErr
 		select {} // Block forever
 	}
 
@@ -57,9 +64,6 @@ func Run(t *testing.T, app *application.App) error {
 	case err := <-errChan:
 		return err
 	case fatal := <-endChan:
-		if fatal != nil {
-			t.Fatal(fatal)
-		}
 		return fatal
 	}
 }

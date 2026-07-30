@@ -4,6 +4,19 @@ import (
 	"testing"
 )
 
+func TestShowClearsHiddenBeforeWindowRuns(t *testing.T) {
+	previousApp := globalApplication
+	globalApplication = &App{}
+	defer func() { globalApplication = previousApp }()
+
+	window := &WebviewWindow{options: WebviewWindowOptions{Hidden: true}}
+	window.Show()
+
+	if window.options.Hidden {
+		t.Fatal("Show left a not-yet-created window hidden")
+	}
+}
+
 func TestNewRGBA(t *testing.T) {
 	rgba := NewRGBA(100, 150, 200, 255)
 

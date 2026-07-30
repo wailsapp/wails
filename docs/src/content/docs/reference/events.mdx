@@ -219,7 +219,9 @@ func (em *EventManager) OnApplicationEvent(
 Event constants live in the `events` package — `events.Common.*` for cross-platform events, `events.Mac.*` / `events.Windows.*` / `events.Linux.*` for platform-specific ones.
 
 **Common application events:**
-- `events.Common.ApplicationStarted` - Application has finished launching.
+- `events.Common.ApplicationStarted` - The platform has reached its ready boundary.
+- `events.Common.ApplicationStarting` - Background service initialisation is about to begin.
+- `events.Common.ApplicationInitialized` - All services have initialised successfully.
 - `events.Common.ThemeChanged` - System theme switched between light and dark.
 - `events.Common.ApplicationOpenedWithFile` - Launched via a file association.
 - `events.Common.ApplicationLaunchedWithUrl` - Launched via a URL scheme.
@@ -711,7 +713,9 @@ This mapping happens automatically in the background, so when you listen for `ev
 | Event | Description | When Emitted | Cancellable |
 |-------|-------------|--------------|-------------|
 | `ApplicationOpenedWithFile` | Application opened with a file | When app is launched with a file (e.g., from file association) | No |
-| `ApplicationStarted` | Application has finished launching | After app initialization is complete and app is ready | No |
+| `ApplicationStarted` | Native platform application launched | When the platform reports its ready boundary | No |
+| `ApplicationStarting` | Background initialisation is beginning | Before service startup | No |
+| `ApplicationInitialized` | Application services are ready | After all services start successfully | No |
 | `ApplicationLaunchedWithUrl` | Application launched with a URL | When app is launched via URL scheme | No |
 | `ThemeChanged` | System theme changed | When OS theme switches between light/dark mode | No |
 | `SystemWillSleep` | System is about to suspend | Just before the OS suspends (macOS / Windows / Linux-with-logind) | No |

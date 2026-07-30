@@ -43,6 +43,16 @@ ServiceStartup: "Service Startup" {
   style.fill: "#8B5CF6"
 }
 
+ApplicationStarting: "ApplicationStarting" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+ApplicationInitialized: "ApplicationInitialized" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
 EventLoop: "Event Loop" {
   Process: "Process Events" {
     shape: rectangle
@@ -93,9 +103,11 @@ Start -> Init.Parse
 Init.Parse -> Init.Register
 Init.Register -> Init.Setup
 Init.Setup -> AppRun
-AppRun -> ServiceStartup
-ServiceStartup -> EventLoop.Process
-EventLoop.Process -> EventLoop.Handle
+AppRun -> EventLoop.Process
+EventLoop.Process -> ApplicationStarting
+ApplicationStarting -> ServiceStartup
+ServiceStartup -> ApplicationInitialized
+ApplicationInitialized -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
 EventLoop.Update -> EventLoop.Process: "Loop"
 EventLoop.Process -> QuitSignal: "User quits"
@@ -143,10 +155,28 @@ if err != nil {
 ```
 
 **What happens:**
-1. Services are started in registration order
-2. Event listeners are activated
-3. Windows can be created
-4. Event loop begins
+1. Event listeners and the native UI event loop are activated
+2. `ApplicationStarting` is emitted when window operations become available
+3. Services are started in registration order on a background goroutine
+4. `ApplicationInitialized` is emitted after all services start successfully
+5. Pending application windows are started
+
+The UI event loop remains responsive while services initialise. This allows an
+application to show and update a splash window during a long-running startup:
+
+```go
+app.Event.OnApplicationEvent(events.Common.ApplicationStarting, func(*application.ApplicationEvent) {
+    splash.Show()
+})
+
+app.Event.OnApplicationEvent(events.Common.ApplicationInitialized, func(*application.ApplicationEvent) {
+    splash.Close()
+    mainWindow.Show()
+})
+```
+
+Create windows that should not appear during initialisation with `Hidden: true`.
+If a service fails to start, `ApplicationInitialized` is not emitted.
 
 ### 3. Event Loop
 
@@ -704,7 +734,9 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 
 | Hook/Interface | When Called | Can Cancel? | Use For |
 |----------------|-------------|-------------|---------|
-| `ServiceStartup` | During `app.Run()`, before event loop | No (return error to abort) | Initialisation |
+| `ApplicationStarting` | After the native event loop starts, before services initialise | No | Show startup UI |
+| `ServiceStartup` | During `app.Run()`, on the background startup goroutine | No (return error to abort) | Initialisation |
+| `ApplicationInitialized` | After every service starts successfully | No | Dismiss startup UI and show the application |
 | `ServiceShutdown` | During shutdown, after `OnShutdown` | No | Cleanup |
 | `OnShutdown` | When quit confirmed | No | Application cleanup |
 | `ShouldQuit` | When quit requested | Yes (return false) | Confirm quit |

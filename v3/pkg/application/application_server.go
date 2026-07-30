@@ -14,6 +14,8 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 // serverApp implements platformApp for server mode.
@@ -135,6 +137,11 @@ func (h *serverApp) run() error {
 			errCh <- h.server.Serve(h.listener)
 		}
 	}()
+
+	// Server mode has no native application event to map to
+	// Common.ApplicationStarted. Treat a listening HTTP server as its ready
+	// boundary so the shared startup coordinator can initialise services.
+	applicationEvents <- newApplicationEvent(events.Common.ApplicationStarted)
 
 	// Wait for shutdown signal or error
 	quit := make(chan os.Signal, 1)
