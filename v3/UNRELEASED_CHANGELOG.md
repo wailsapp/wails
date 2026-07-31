@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep WKWebView responsive during macOS zoom in [PR](https://github.com/wailsapp/wails/pull/5856) by @leaanthony
 - Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
 
 ## Deprecated
