@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Implement macOS title-bar double-click actions for maximize or minimize in [PR](https://github.com/wailsapp/wails/pull/5853) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
