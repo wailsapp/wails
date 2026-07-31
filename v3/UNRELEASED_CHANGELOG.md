@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
