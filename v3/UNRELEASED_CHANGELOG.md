@@ -17,15 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
