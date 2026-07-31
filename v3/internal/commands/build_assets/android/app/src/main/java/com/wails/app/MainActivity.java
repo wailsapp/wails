@@ -23,6 +23,7 @@ import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.FileChooserParams;
@@ -77,6 +78,13 @@ public class MainActivity extends AppCompatActivity {
     // WebView's WebChromeClient (null when idle).
     private static final int WEBVIEW_FILE_CHOOSER_REQUEST = 7004;
     private ValueCallback<Uri[]> webViewFileChooserCallback;
+
+    // In-flight WebView permission request (e.g. getUserMedia for camera/mic).
+    // Held until the Android runtime permission result arrives in
+    // onRequestPermissionsResult, which then grants or denies it.
+    private static final int WEBVIEW_PERMISSION_REQUEST = 7011;
+    private PermissionRequest pendingWebViewPermissionRequest;
+
     private File pendingCaptureFile;
     private boolean pendingCaptureIsVideo;
 
@@ -209,11 +217,9 @@ public class MainActivity extends AppCompatActivity {
 
         // A WebChromeClient is required for HTML <input type="file"> elements to
         // work; without onShowFileChooser the WebView silently ignores clicks on
-        // file inputs. It also forwards JS console messages to logcat for
-        // debugging. Note: in-page permission prompts (geolocation, getUserMedia)
-        // require an onPermissionRequest override which is not provided here;
-        // those requests will be denied by the default implementation until a
-        // scoped permissions handler is added.
+        // file inputs. It also forwards JS console messages to logcat and
+        // handles in-page permission prompts (getUserMedia for camera/mic) by
+        // mapping them to Android runtime permissions with origin validation.
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage msg) {
@@ -222,6 +228,63 @@ public class MainActivity extends AppCompatActivity {
                             + " (" + msg.sourceId() + ":" + msg.lineNumber() + ")");
                 }
                 return true;
+            }
+
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                // Only grant permissions for the local Wails origin. Requests
+                // from any other origin (if the WebView were navigated away)
+                // are unconditionally denied.
+                if (request.getOrigin() == null
+                        || !WAILS_HOST.equals(request.getOrigin().getHost())) {
+                    request.deny();
+                    return;
+                }
+
+                // Build a whitelist of only the resources we explicitly handle.
+                // Never pass request.getResources() directly to grant() — future
+                // WebView versions may add new resource types, and blindly
+                // granting all requested resources could grant unknown permissions.
+                java.util.List<String> granted = new java.util.ArrayList<>();
+                java.util.List<String> needed = new java.util.ArrayList<>();
+                for (String resource : request.getResources()) {
+                    if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) {
+                        granted.add(resource);
+                        if (checkSelfPermission("android.permission.CAMERA")
+                                != PackageManager.PERMISSION_GRANTED) {
+                            needed.add("android.permission.CAMERA");
+                        }
+                    } else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                        granted.add(resource);
+                        if (checkSelfPermission("android.permission.RECORD_AUDIO")
+                                != PackageManager.PERMISSION_GRANTED) {
+                            needed.add("android.permission.RECORD_AUDIO");
+                        }
+                    }
+                    // All other resources (MIDI SysEx, Protected Media, and any
+                    // future additions) are denied by omission — absence of a
+                    // runtime permission does not imply authorization.
+                }
+
+                if (granted.isEmpty()) {
+                    request.deny();
+                    return;
+                }
+
+                if (needed.isEmpty()) {
+                    // All required runtime permissions already granted.
+                    request.grant(granted.toArray(new String[0]));
+                } else {
+                    // Deny any previous pending request that was never resolved
+                    // (e.g. a second getUserMedia call while the first permission
+                    // dialog is still showing). Android requires every
+                    // PermissionRequest to receive grant() or deny().
+                    if (pendingWebViewPermissionRequest != null) {
+                        pendingWebViewPermissionRequest.deny();
+                    }
+                    pendingWebViewPermissionRequest = request;
+                    requestPermissions(needed.toArray(new String[0]), WEBVIEW_PERMISSION_REQUEST);
+                }
             }
 
             @Override
@@ -293,6 +356,38 @@ public class MainActivity extends AppCompatActivity {
                 launchCameraCapture(pendingCaptureIsVideo);
             } else {
                 bridge.emitEvent("common:capture", "{\"error\":\"camera permission denied\"}");
+            }
+            return;
+        }
+        if (requestCode == WEBVIEW_PERMISSION_REQUEST) {
+            PermissionRequest req = pendingWebViewPermissionRequest;
+            pendingWebViewPermissionRequest = null;
+            if (req == null) return;
+            // Check if ALL requested permissions were granted.
+            boolean allGranted = grantResults.length > 0;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted) {
+                // Grant only the whitelisted resources, not req.getResources()
+                // (see onPermissionRequest for the reasoning).
+                java.util.List<String> safe = new java.util.ArrayList<>();
+                for (String r2 : req.getResources()) {
+                    if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r2)
+                            || PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(r2)) {
+                        safe.add(r2);
+                    }
+                }
+                if (!safe.isEmpty()) {
+                    req.grant(safe.toArray(new String[0]));
+                } else {
+                    req.deny();
+                }
+            } else {
+                req.deny();
             }
             return;
         }
