@@ -18,10 +18,6 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleDark = 2,
     LiquidGlassStyleVibrant = 3
 };
-
-static const double MacZoomAnimationDurationScale = 0.64;
-static const NSTimeInterval MacZoomAnimationMinimumDuration = 0.08;
-
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -202,68 +198,6 @@ static const NSTimeInterval MacZoomAnimationMinimumDuration = 0.08;
     }
     [super cancelOperation:sender];
 }
-- (NSTimeInterval)animationResizeTime:(NSRect)newFrame {
-    NSTimeInterval duration = [super animationResizeTime:newFrame];
-    if (self.performZoomWithoutAnimation) {
-        // Capture AppKit's preferred duration while asking the native zoom
-        // operation to apply its target frame immediately.
-        self.zoomAnimationDuration = duration;
-        return 0;
-    }
-    return duration;
-}
-- (void)zoom:(id)sender {
-    // NSWindow's built-in animation resizes the WKWebView's native frame while
-    // its web-content viewport remains at the old size until the animation
-    // completes. Applying the same transition on run-loop ticks gives WebKit's
-    // rendering process an opportunity to lay out each intermediate viewport.
-    [self.zoomAnimationTimer invalidate];
-    self.zoomAnimationTimer = nil;
-
-    NSRect startFrame = self.frame;
-    self.zoomAnimationDuration = 0;
-    self.performZoomWithoutAnimation = YES;
-    [super zoom:sender];
-    self.performZoomWithoutAnimation = NO;
-
-    NSRect targetFrame = self.frame;
-    if (NSEqualRects(startFrame, targetFrame)) {
-        return;
-    }
-
-    self.zoomAnimationStartFrame = startFrame;
-    self.zoomAnimationTargetFrame = targetFrame;
-    self.zoomAnimationStartTime = CACurrentMediaTime();
-    self.zoomAnimationDuration = MAX(
-        MacZoomAnimationMinimumDuration,
-        self.zoomAnimationDuration * MacZoomAnimationDurationScale
-    );
-    [self setFrame:startFrame display:YES animate:NO];
-
-    __block WebviewWindow *window = self;
-    self.zoomAnimationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0 / 60.0)
-        repeats:YES
-        block:^(NSTimer *timer) {
-            double progress = (CACurrentMediaTime() - window.zoomAnimationStartTime) / window.zoomAnimationDuration;
-            progress = MIN(1.0, MAX(0.0, progress));
-            double easedProgress = progress * progress * (3.0 - (2.0 * progress));
-
-            NSRect start = window.zoomAnimationStartFrame;
-            NSRect target = window.zoomAnimationTargetFrame;
-            NSRect frame = NSMakeRect(
-                start.origin.x + ((target.origin.x - start.origin.x) * easedProgress),
-                start.origin.y + ((target.origin.y - start.origin.y) * easedProgress),
-                start.size.width + ((target.size.width - start.size.width) * easedProgress),
-                start.size.height + ((target.size.height - start.size.height) * easedProgress)
-            );
-            [window setFrame:frame display:YES animate:NO];
-
-            if (progress >= 1.0) {
-                [timer invalidate];
-                window.zoomAnimationTimer = nil;
-            }
-        }];
-}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
@@ -273,8 +207,6 @@ static const NSTimeInterval MacZoomAnimationMinimumDuration = 0.08;
     }
 }
 - (void) dealloc {
-    [self.zoomAnimationTimer invalidate];
-    self.zoomAnimationTimer = nil;
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
