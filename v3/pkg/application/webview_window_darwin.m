@@ -18,6 +18,22 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleDark = 2,
     LiquidGlassStyleVibrant = 3
 };
+
+static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
+
+@interface WebviewWindow ()
+
+@property (retain) NSTimer* zoomAnimationTimer;
+@property NSRect zoomAnimationStartFrame;
+@property NSRect zoomAnimationTargetFrame;
+@property CFTimeInterval zoomAnimationStartTime;
+@property NSTimeInterval zoomAnimationDuration;
+@property BOOL zoomAnimationTargetIsZoomed;
+@property BOOL preparingZoomAnimationTarget;
+@property BOOL applyingZoomAnimationFrame;
+
+@end
+
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -198,6 +214,135 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
     [super cancelOperation:sender];
 }
+- (void)cancelZoomAnimation {
+    [self.zoomAnimationTimer invalidate];
+    self.zoomAnimationTimer = nil;
+}
+- (BOOL)shouldReduceZoomMotion {
+    return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+}
+- (BOOL)isZoomed {
+    if (self.zoomAnimationTimer) {
+        return self.zoomAnimationTargetIsZoomed;
+    }
+    return [super isZoomed];
+}
+- (NSTimeInterval)animationResizeTime:(NSRect)newFrame {
+    if (self.preparingZoomAnimationTarget) {
+        return 0;
+    }
+    return [super animationResizeTime:newFrame];
+}
+- (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag {
+    if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
+        [self cancelZoomAnimation];
+    }
+    [super setFrame:frameRect display:displayFlag];
+}
+- (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag animate:(BOOL)animateFlag {
+    if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
+        [self cancelZoomAnimation];
+    }
+    [super setFrame:frameRect display:displayFlag animate:animateFlag];
+}
+- (void)stepZoomAnimation:(NSTimer*)timer {
+    if (timer != self.zoomAnimationTimer) {
+        [timer invalidate];
+        return;
+    }
+
+    if ([self shouldReduceZoomMotion]) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:self.zoomAnimationTargetFrame display:YES animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+        [self cancelZoomAnimation];
+        return;
+    }
+
+    double progress = (CACurrentMediaTime() - self.zoomAnimationStartTime) / self.zoomAnimationDuration;
+    progress = MIN(1.0, MAX(0.0, progress));
+    double easedProgress = progress * progress * (3.0 - (2.0 * progress));
+
+    NSRect start = self.zoomAnimationStartFrame;
+    NSRect target = self.zoomAnimationTargetFrame;
+    NSRect frame = NSMakeRect(
+        start.origin.x + ((target.origin.x - start.origin.x) * easedProgress),
+        start.origin.y + ((target.origin.y - start.origin.y) * easedProgress),
+        start.size.width + ((target.size.width - start.size.width) * easedProgress),
+        start.size.height + ((target.size.height - start.size.height) * easedProgress)
+    );
+
+    self.applyingZoomAnimationFrame = YES;
+    [super setFrame:frame display:YES animate:NO];
+    self.applyingZoomAnimationFrame = NO;
+
+    if (progress >= 1.0) {
+        [self cancelZoomAnimation];
+    }
+}
+- (void)zoom:(id)sender {
+    NSRect startFrame = self.frame;
+    BOOL interruptedAnimation = self.zoomAnimationTimer != nil;
+    NSRect previousTargetFrame = self.zoomAnimationTargetFrame;
+    [self cancelZoomAnimation];
+
+    // AppKit determines whether zoom() enters the standard frame or restores
+    // the user's frame from the window's current zoom state. During an
+    // interrupted animation, first move to the previous intended target
+    // without displaying it so AppKit toggles from the correct native state.
+    if (interruptedAnimation) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:previousTargetFrame display:NO animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+    }
+
+    // Ask AppKit to calculate and apply the native target immediately. This
+    // preserves delegate hooks, constraints, and the standard/user frame pair.
+    self.preparingZoomAnimationTarget = YES;
+    [super zoom:sender];
+    self.preparingZoomAnimationTarget = NO;
+
+    NSRect targetFrame = self.frame;
+    BOOL targetIsZoomed = [super isZoomed];
+    if (NSEqualRects(startFrame, targetFrame)) {
+        return;
+    }
+
+    // Reduced-motion users should not receive a replacement animation. AppKit
+    // has already applied the correct target and updated its zoom state.
+    if ([self shouldReduceZoomMotion]) {
+        return;
+    }
+
+    // Restore the actual visible frame before starting our incremental resize.
+    // Every tick is non-animated so WKWebView receives each intermediate
+    // viewport instead of deferring layout until AppKit's animation completes.
+    self.applyingZoomAnimationFrame = YES;
+    [super setFrame:startFrame display:YES animate:NO];
+    self.applyingZoomAnimationFrame = NO;
+
+    NSTimeInterval duration = [super animationResizeTime:targetFrame];
+    if (duration <= 0) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:targetFrame display:YES animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+        return;
+    }
+
+    self.zoomAnimationStartFrame = startFrame;
+    self.zoomAnimationTargetFrame = targetFrame;
+    self.zoomAnimationStartTime = CACurrentMediaTime();
+    self.zoomAnimationDuration = duration;
+    self.zoomAnimationTargetIsZoomed = targetIsZoomed;
+
+    NSTimer *timer = [NSTimer timerWithTimeInterval:MacZoomAnimationFrameInterval
+        target:self
+        selector:@selector(stepZoomAnimation:)
+        userInfo:nil
+        repeats:YES];
+    self.zoomAnimationTimer = timer;
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
@@ -206,7 +351,12 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         [self registerForDraggedTypes:@[NSFilenamesPboardType]]; // 'self' is the WebviewWindow instance
     }
 }
+- (void)close {
+    [self cancelZoomAnimation];
+    [super close];
+}
 - (void) dealloc {
+    [self cancelZoomAnimation];
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
@@ -229,14 +379,14 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 - (void)performZoomIn:(id)sender {
-    [super zoom:sender];
+    [self zoom:sender];
     if (hasListeners(EventWindowZoomIn)) {
         WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
         processWindowEvent(delegate.windowId, EventWindowZoomIn);
     }
 }
 - (void)performZoomOut:(id)sender {
-    [super zoom:sender];
+    [self zoom:sender];
     if (hasListeners(EventWindowZoomOut)) {
         WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
         processWindowEvent(delegate.windowId, EventWindowZoomOut);
