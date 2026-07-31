@@ -1,14 +1,14 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"slices"
 	"sync"
 	"sync/atomic"
 
-	"encoding/json"
-
+	"github.com/wailsapp/wails/v3/internal/mailbox"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -99,18 +99,21 @@ type eventListener struct {
 // EventProcessor handles custom events
 type EventProcessor struct {
 	// Go event listeners
-	listeners              map[string][]*eventListener
-	notifyLock             sync.RWMutex
-	dispatchEventToWindows func(*CustomEvent)
-	hooks                  map[string][]*hook
-	hookLock               sync.RWMutex
+	listeners    map[string][]*eventListener
+	notifyLock   sync.RWMutex
+	windowEvents *mailbox.Mailbox[*CustomEvent]
+	hooks        map[string][]*hook
+	hookLock     sync.RWMutex
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
 	return &EventProcessor{
-		listeners:              make(map[string][]*eventListener),
-		dispatchEventToWindows: dispatchEventToWindows,
-		hooks:                  make(map[string][]*hook),
+		listeners: make(map[string][]*eventListener),
+		windowEvents: mailbox.New(func(event *CustomEvent) {
+			defer handlePanic()
+			dispatchEventToWindows(event)
+		}),
+		hooks: make(map[string][]*hook),
 	}
 }
 
@@ -161,10 +164,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		defer handlePanic()
 		e.dispatchEventToListeners(thisEvent)
 	}()
-	go func() {
-		defer handlePanic()
-		e.dispatchEventToWindows(thisEvent)
-	}()
+	e.windowEvents.Send(thisEvent)
 
 	return nil
 }
