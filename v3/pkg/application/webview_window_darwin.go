@@ -28,6 +28,12 @@ struct WebviewPreferences {
 
 extern void registerListener(unsigned int event);
 
+const char* windowTitlebarDoubleClickPreference(void) {
+	NSString *action = [[NSUserDefaults standardUserDefaults]
+		stringForKey:@"AppleActionOnDoubleClick"];
+	return action == nil ? "" : [action UTF8String];
+}
+
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
@@ -1137,6 +1143,10 @@ func (w *macosWebviewWindow) maximise() {
 
 func (w *macosWebviewWindow) minimise() {
 	C.windowMinimise(w.nsWindow)
+}
+
+func platformTitlebarDoubleClickPreference() string {
+	return C.GoString(C.windowTitlebarDoubleClickPreference())
 }
 
 func (w *macosWebviewWindow) on(eventID uint) {
