@@ -108,12 +108,20 @@ See [Signing Applications](/guides/build/signing) for details.
 
 ## DMG Installer
 
-There is no `wails3 task darwin:create:dmg` task in the shipped Wails 3 templates. To produce a DMG, drive a tool like `create-dmg` or `hdiutil` from your own Taskfile after running `wails3 task darwin:package` (or `darwin:package:universal`) — the `.app` bundle ends up under `bin/`.
+The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first and then builds a styled DMG with the local DMG library. By default, the DMG uses the v3 “digital Wails” branding: the neon mountain backdrop, red dragon mark, and WAILS wordmark. The lower-level `darwin:create:dmg` task can be configured directly from the Taskfile:
 
-```bash
-# After packaging the .app:
-hdiutil create -volname "MyApp" -srcfolder bin/MyApp.app -ov -format UDZO MyApp.dmg
+```yaml
+vars:
+  # These are the template defaults; override them when needed.
+  DMG_BACKGROUND: build/darwin/dmg-background.png
+  DMG_VOLUME_ICON: build/darwin/icons.icns
+  DMG_FILE_ICON: build/darwin/icons.icns
+  DMG_WINDOW_WIDTH: 540
+  DMG_WINDOW_HEIGHT: 380
+  DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
 ```
+
+Run `wails3 task darwin:package:dmg`. The default background is 540×380 pixels and should match the configured DMG window dimensions. The default DMG contains only the app and the Applications link; `DMG_FILES` is an optional comma-separated list of `name=path` pairs for installer scripts or other resources.
 
 ## Troubleshooting
 

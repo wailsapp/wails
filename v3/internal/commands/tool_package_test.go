@@ -6,8 +6,31 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/leaanthony/dmg/dmg"
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
+
+func TestAddDMGFiles(t *testing.T) {
+	dir := t.TempDir()
+	resource := filepath.Join(dir, "install.command")
+	if err := os.WriteFile(resource, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	opts := &dmg.Options{Files: map[string]string{}}
+	if err := addDMGFiles(opts, "Install.command="+resource); err != nil {
+		t.Fatalf("addDMGFiles() error = %v", err)
+	}
+	if got := opts.Files["Install.command"]; got != resource {
+		t.Fatalf("resource path = %q, want %q", got, resource)
+	}
+}
+
+func TestAddDMGFilesRejectsMalformedPair(t *testing.T) {
+	if err := addDMGFiles(&dmg.Options{Files: map[string]string{}}, "install.command"); err == nil {
+		t.Fatal("addDMGFiles() accepted malformed pair")
+	}
+}
 
 func TestToolPackage(t *testing.T) {
 	tests := []struct {
@@ -58,12 +81,12 @@ func TestToolPackage(t *testing.T) {
 				}
 
 				return &flags.ToolPackage{
-					Format:         "DEB",
-					ConfigPath:     configPath,
-					ExecutableName: "myapp",
-				}, func() {
-					os.RemoveAll(filepath.Join(dir, "bin"))
-				}
+						Format:         "DEB",
+						ConfigPath:     configPath,
+						ExecutableName: "myapp",
+					}, func() {
+						os.RemoveAll(filepath.Join(dir, "bin"))
+					}
 			},
 			wantErr: false,
 		},
@@ -85,12 +108,12 @@ func TestToolPackage(t *testing.T) {
 				}
 
 				return &flags.ToolPackage{
-					Format:         "RPM",
-					ConfigPath:     configPath,
-					ExecutableName: "myapp",
-				}, func() {
-					os.RemoveAll(filepath.Join(dir, "bin"))
-				}
+						Format:         "RPM",
+						ConfigPath:     configPath,
+						ExecutableName: "myapp",
+					}, func() {
+						os.RemoveAll(filepath.Join(dir, "bin"))
+					}
 			},
 			wantErr: false,
 		},
@@ -112,12 +135,12 @@ func TestToolPackage(t *testing.T) {
 				}
 
 				return &flags.ToolPackage{
-					Format:         "ARCHLINUX",
-					ConfigPath:     configPath,
-					ExecutableName: "myapp",
-				}, func() {
-					os.RemoveAll(filepath.Join(dir, "bin"))
-				}
+						Format:         "ARCHLINUX",
+						ConfigPath:     configPath,
+						ExecutableName: "myapp",
+					}, func() {
+						os.RemoveAll(filepath.Join(dir, "bin"))
+					}
 			},
 			wantErr: false,
 		},
