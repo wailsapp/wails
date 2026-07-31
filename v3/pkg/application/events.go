@@ -77,7 +77,9 @@ func (e *CustomEvent) ToJSON() string {
 }
 
 // WailsEventListener is an interface for receiving all emitted Wails events.
-// Used by transport layers (IPC, WebSocket) to broadcast events.
+// Used by transport layers (IPC, WebSocket) to broadcast events. Calls are made
+// serially in emit order. Implementations that forward events asynchronously
+// must preserve that order.
 type WailsEventListener interface {
 	DispatchWailsEvent(event *CustomEvent)
 }
@@ -99,17 +101,19 @@ type eventListener struct {
 // EventProcessor handles custom events
 type EventProcessor struct {
 	// Go event listeners
-	listeners    map[string][]*eventListener
-	notifyLock   sync.RWMutex
-	windowEvents *mailbox.Mailbox[*CustomEvent]
-	hooks        map[string][]*hook
-	hookLock     sync.RWMutex
+	listeners  map[string][]*eventListener
+	notifyLock sync.RWMutex
+	// frontendEvents serializes delivery to all WailsEventListener transports:
+	// native IPC, server WebSocket, and custom transports.
+	frontendEvents *mailbox.Mailbox[*CustomEvent]
+	hooks          map[string][]*hook
+	hookLock       sync.RWMutex
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
 	return &EventProcessor{
 		listeners: make(map[string][]*eventListener),
-		windowEvents: mailbox.New(func(event *CustomEvent) {
+		frontendEvents: mailbox.New(func(event *CustomEvent) {
 			defer handlePanic()
 			dispatchEventToWindows(event)
 		}),
@@ -164,7 +168,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		defer handlePanic()
 		e.dispatchEventToListeners(thisEvent)
 	}()
-	e.windowEvents.Send(thisEvent)
+	e.frontendEvents.Send(thisEvent)
 
 	return nil
 }
