@@ -155,6 +155,9 @@ func addDMGFiles(opts *dmg.Options, value string) error {
 		if _, err := os.Stat(path); err != nil {
 			return fmt.Errorf("DMG file %q: %w", name, err)
 		}
+		if _, exists := opts.Files[name]; exists {
+			return fmt.Errorf("DMG file %q conflicts with an existing entry", name)
+		}
 		opts.Files[name] = path
 	}
 	return nil
