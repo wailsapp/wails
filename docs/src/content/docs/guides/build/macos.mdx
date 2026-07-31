@@ -108,14 +108,14 @@ See [Signing Applications](/guides/build/signing) for details.
 
 ## DMG Installer
 
-The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first and then builds a styled DMG with the local DMG library. By default, the DMG uses the v3 “digital Wails” branding: the neon mountain backdrop, red dragon mark, and WAILS wordmark. The lower-level `darwin:create:dmg` task can be configured directly from the Taskfile:
+The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first and then builds a styled DMG with the DMG library. By default, the DMG uses a Wails-branded gradient backdrop with the red dragon mark and WAILS wordmark. The lower-level `darwin:create:dmg` task can be configured directly from the Taskfile:
 
 ```yaml
 vars:
   # These are the template defaults; override them when needed.
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
-  DMG_FILE_ICON: build/darwin/icons.icns
+  DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
   DMG_WINDOW_WIDTH: 540
   DMG_WINDOW_HEIGHT: 380
   DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"

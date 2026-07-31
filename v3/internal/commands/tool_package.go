@@ -43,38 +43,8 @@ func ToolPackage(options *flags.ToolPackage) error {
 		// Create output path for DMG.
 		dmgPath := filepath.Join(options.Out, fmt.Sprintf("%s.dmg", options.ExecutableName))
 
-		opts := dmg.DefaultOptions(appPath, dmgPath)
-		opts.VolumeName = options.ExecutableName
-		windowWidth, windowHeight := options.DmgWindowWidth, options.DmgWindowHeight
-		if windowWidth <= 0 {
-			windowWidth = 540
-		}
-		if windowHeight <= 0 {
-			windowHeight = 380
-		}
-		opts.Window = dmg.WindowConfig{X: 100, Y: 100, Width: windowWidth, Height: windowHeight}
-		opts.Icon = dmg.IconConfig{Size: 96, TextSize: 12, GridSpace: 100}
-		opts.Files[filepath.Base(appPath)] = appPath
-		// Finder renders the stored Y from the top of its content area, below a
-		// small title-bar offset. Subtract it so the default row is visibly centred.
-		iconY := windowHeight/2 - 26
-		if iconY < 0 {
-			iconY = windowHeight / 2
-		}
-		opts.IconPositions = map[string]dmg.IconPosition{
-			filepath.Base(appPath): {X: windowWidth * 28 / 100, Y: iconY},
-			"Applications":         {X: windowWidth * 72 / 100, Y: iconY},
-		}
-		if options.BackgroundImage != "" {
-			opts.Background = &dmg.BackgroundConfig{File: options.BackgroundImage}
-		}
-		if options.DmgVolumeIcon != "" {
-			opts.VolumeIcon = options.DmgVolumeIcon
-		}
-		if options.DmgFileIcon != "" {
-			opts.FileIcon = options.DmgFileIcon
-		}
-		if err := addDMGFiles(&opts, options.DmgFiles); err != nil {
+		opts, err := buildDMGOptions(options, appPath, dmgPath)
+		if err != nil {
 			return err
 		}
 		if err := dmg.Build(opts); err != nil {
@@ -123,6 +93,48 @@ func ToolPackage(options *flags.ToolPackage) error {
 	}
 
 	return nil
+}
+
+// buildDMGOptions converts package flags into a tested DMG configuration without
+// invoking macOS tooling. The application bundle is always added to the image;
+// extra files, if any, are configured with the same name=path syntax exposed by
+// the Taskfile.
+func buildDMGOptions(options *flags.ToolPackage, appPath, dmgPath string) (dmg.Options, error) {
+	opts := dmg.DefaultOptions(appPath, dmgPath)
+	opts.VolumeName = options.ExecutableName
+	windowWidth, windowHeight := options.DmgWindowWidth, options.DmgWindowHeight
+	if windowWidth <= 0 {
+		windowWidth = 540
+	}
+	if windowHeight <= 0 {
+		windowHeight = 380
+	}
+	opts.Window = dmg.WindowConfig{X: 100, Y: 100, Width: windowWidth, Height: windowHeight}
+	opts.Icon = dmg.IconConfig{Size: 96, TextSize: 12, GridSpace: 100}
+	opts.Files[filepath.Base(appPath)] = appPath
+	// Finder renders the stored Y from the top of its content area, below a
+	// small title-bar offset. Subtract it so the default row is visibly centred.
+	iconY := windowHeight/2 - 26
+	if iconY < 0 {
+		iconY = windowHeight / 2
+	}
+	opts.IconPositions = map[string]dmg.IconPosition{
+		filepath.Base(appPath): {X: windowWidth * 28 / 100, Y: iconY},
+		"Applications":         {X: windowWidth * 72 / 100, Y: iconY},
+	}
+	if options.BackgroundImage != "" {
+		opts.Background = &dmg.BackgroundConfig{File: options.BackgroundImage}
+	}
+	if options.DmgVolumeIcon != "" {
+		opts.VolumeIcon = options.DmgVolumeIcon
+	}
+	if options.DmgFileIcon != "" {
+		opts.FileIcon = options.DmgFileIcon
+	}
+	if err := addDMGFiles(&opts, options.DmgFiles); err != nil {
+		return dmg.Options{}, err
+	}
+	return opts, nil
 }
 
 // addDMGFiles adds optional installer resources configured in a Taskfile. The

@@ -32,6 +32,66 @@ func TestAddDMGFilesRejectsMalformedPair(t *testing.T) {
 	}
 }
 
+func TestBuildDMGOptions(t *testing.T) {
+	dir := t.TempDir()
+	appPath := filepath.Join(dir, "Example.app")
+	resource := filepath.Join(dir, "install.command")
+	if err := os.WriteFile(resource, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	opts, err := buildDMGOptions(&flags.ToolPackage{
+		ExecutableName:  "Example",
+		BackgroundImage: "background.png",
+		DmgVolumeIcon:   "volume.icns",
+		DmgFileIcon:     "file.icns",
+		DmgFiles:        "install.command=" + resource,
+		DmgWindowWidth:  700,
+		DmgWindowHeight: 500,
+	}, appPath, filepath.Join(dir, "Example.dmg"))
+	if err != nil {
+		t.Fatalf("buildDMGOptions() error = %v", err)
+	}
+
+	if opts.VolumeName != "Example" {
+		t.Errorf("VolumeName = %q, want Example", opts.VolumeName)
+	}
+	if opts.Window.Width != 700 || opts.Window.Height != 500 {
+		t.Errorf("Window = %#v, want 700x500", opts.Window)
+	}
+	if opts.Background == nil || opts.Background.File != "background.png" {
+		t.Errorf("Background = %#v, want background.png", opts.Background)
+	}
+	if opts.VolumeIcon != "volume.icns" || opts.FileIcon != "file.icns" {
+		t.Errorf("icons = (%q, %q), want (volume.icns, file.icns)", opts.VolumeIcon, opts.FileIcon)
+	}
+	if opts.Files["Example.app"] != appPath || opts.Files["install.command"] != resource {
+		t.Errorf("Files = %#v, want app and installer resource", opts.Files)
+	}
+	if got := opts.IconPositions["Example.app"]; got != (dmg.IconPosition{X: 196, Y: 224}) {
+		t.Errorf("app icon position = %#v, want {196 224}", got)
+	}
+	if got := opts.IconPositions["Applications"]; got != (dmg.IconPosition{X: 504, Y: 224}) {
+		t.Errorf("Applications icon position = %#v, want {504 224}", got)
+	}
+}
+
+func TestBuildDMGOptionsDefaults(t *testing.T) {
+	opts, err := buildDMGOptions(&flags.ToolPackage{ExecutableName: "Example"}, "Example.app", "Example.dmg")
+	if err != nil {
+		t.Fatalf("buildDMGOptions() error = %v", err)
+	}
+	if opts.Window.Width != 540 || opts.Window.Height != 380 {
+		t.Errorf("Window = %#v, want 540x380", opts.Window)
+	}
+	if got := opts.IconPositions["Example.app"]; got != (dmg.IconPosition{X: 151, Y: 164}) {
+		t.Errorf("app icon position = %#v, want {151 164}", got)
+	}
+	if got := opts.IconPositions["Applications"]; got != (dmg.IconPosition{X: 388, Y: 164}) {
+		t.Errorf("Applications icon position = %#v, want {388 164}", got)
+	}
+}
+
 func TestToolPackage(t *testing.T) {
 	tests := []struct {
 		name    string
