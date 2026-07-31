@@ -17,18 +17,18 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-
 - Promote v3 from alpha to beta
 - Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-
-- Ignore Windows installer executables in the GitHub updater's default asset matcher while preserving legitimate product names (#5773).
 - Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

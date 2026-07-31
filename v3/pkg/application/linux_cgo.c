@@ -422,9 +422,11 @@ void setupWindowEventControllers(GtkWindow *window, GtkWidget *webview, uintptr_
     g_signal_connect(window, "close-request", G_CALLBACK(handleCloseRequest), (gpointer)winID);
 
     // GdkSurface exposes actual configured size and all toplevel state changes.
-    g_signal_connect(window, "realize", G_CALLBACK(handle_window_realize), (gpointer)winID);
+    // The surface is normally created when the GtkWindow is realised.
     if (gtk_widget_get_realized(GTK_WIDGET(window))) {
         connect_window_surface_signals(GTK_WIDGET(window), (gpointer)winID);
+    } else {
+        g_signal_connect(window, "realize", G_CALLBACK(handle_window_realize), (gpointer)winID);
     }
 
     // Focus controller for window

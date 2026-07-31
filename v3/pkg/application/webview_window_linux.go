@@ -69,6 +69,7 @@ func changedLinuxWindowStateEvents(previous, current linuxWindowState, observed 
 		}
 		return result
 	}
+
 	if previous.maximised != current.maximised {
 		if current.maximised {
 			result = append(result, events.Common.WindowMaximise)

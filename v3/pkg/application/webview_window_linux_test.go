@@ -9,20 +9,51 @@ import (
 
 func TestChangedLinuxWindowStateEvents(t *testing.T) {
 	tests := []struct {
-		name              string
-		previous, current linuxWindowState
-		observed          bool
-		want              []events.WindowEventType
+		name     string
+		previous linuxWindowState
+		current  linuxWindowState
+		observed bool
+		want     []events.WindowEventType
 	}{
-		{name: "initial normal state is silent"},
-		{name: "initial maximised state is announced", current: linuxWindowState{maximised: true}, want: []events.WindowEventType{events.Common.WindowMaximise}},
-		{name: "restore from maximised", previous: linuxWindowState{maximised: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMaximise}},
-		{name: "restore from minimised", previous: linuxWindowState{minimised: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMinimise}},
-		{name: "fullscreen transition", previous: linuxWindowState{maximised: true}, current: linuxWindowState{fullscreen: true}, observed: true, want: []events.WindowEventType{events.Common.WindowUnMaximise, events.Common.WindowFullscreen}},
+		{
+			name:    "initial normal state is silent",
+			current: linuxWindowState{},
+		},
+		{
+			name:    "initial maximised state is announced",
+			current: linuxWindowState{maximised: true},
+			want:    []events.WindowEventType{events.Common.WindowMaximise},
+		},
+		{
+			name:     "restore from maximised",
+			previous: linuxWindowState{maximised: true},
+			current:  linuxWindowState{},
+			observed: true,
+			want:     []events.WindowEventType{events.Common.WindowUnMaximise},
+		},
+		{
+			name:     "minimise and restore",
+			previous: linuxWindowState{minimised: true},
+			current:  linuxWindowState{},
+			observed: true,
+			want:     []events.WindowEventType{events.Common.WindowUnMinimise},
+		},
+		{
+			name:     "fullscreen transition preserves distinct maximised event",
+			previous: linuxWindowState{maximised: true},
+			current:  linuxWindowState{fullscreen: true},
+			observed: true,
+			want: []events.WindowEventType{
+				events.Common.WindowUnMaximise,
+				events.Common.WindowFullscreen,
+			},
+		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := changedLinuxWindowStateEvents(test.previous, test.current, test.observed); !slices.Equal(got, test.want) {
+			got := changedLinuxWindowStateEvents(test.previous, test.current, test.observed)
+			if !slices.Equal(got, test.want) {
 				t.Fatalf("events = %#v, want %#v", got, test.want)
 			}
 		})

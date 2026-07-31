@@ -299,9 +299,7 @@ func TestDefaultAssetMatcher(t *testing.T) {
 		{Name: "checksums.txt"},
 		{Name: "app-darwin-arm64.dmg.sig"},
 		{Name: "app-windows-amd64-installer.exe"},
-		{Name: "product-uninstaller-windows-amd64.exe"},
-		{Name: "myinstaller-windows-amd64.exe"},
-		{Name: "installerpro-windows-amd64.exe"},
+		{Name: "app-windows-amd64.exe"},
 	}
 	cases := []struct {
 		plat, arch string
@@ -312,13 +310,42 @@ func TestDefaultAssetMatcher(t *testing.T) {
 		{"linux", "386", -1},     // x86 alias must not match the linux-x86_64 asset
 		{"freebsd", "amd64", -1}, // no freebsd asset
 		{"", "amd64", 1},         // empty plat picks first matching arch (skipping sidecars)
-		{"windows", "amd64", 7},  // skip installer artifact without rejecting legitimate names containing "installer"
+		{"windows", "amd64", 7},  // windows installer skipped; application selected
 	}
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("%s/%s", c.plat, c.arch), func(t *testing.T) {
 			got := github.DefaultAssetMatcher(updater.CheckRequest{Platform: c.plat, Arch: c.arch}, assets)
 			if got != c.wantIndex {
 				t.Errorf("got %d, want %d", got, c.wantIndex)
+			}
+		})
+	}
+}
+
+func TestDefaultAssetMatcher_InstallerNames(t *testing.T) {
+	tests := []struct {
+		name      string
+		assetName string
+		platform  string
+		arch      string
+		wantIndex int
+	}{
+		{name: "hyphenated NSIS installer", assetName: "app-windows-amd64-installer.exe", platform: "windows", arch: "amd64", wantIndex: -1},
+		{name: "underscored installer package", assetName: "app_windows_amd64_installer.msix", platform: "windows", arch: "amd64", wantIndex: -1},
+		{name: "case insensitive installer", assetName: "APP-WINDOWS-AMD64-INSTALLER.EXE", platform: "windows", arch: "amd64", wantIndex: -1},
+		{name: "bare installer executable", assetName: "installer.exe", wantIndex: -1},
+		{name: "application named myinstaller", assetName: "myinstaller.exe", wantIndex: 0},
+		{name: "application with installer in name", assetName: "myinstaller-windows-amd64.zip", platform: "windows", arch: "amd64", wantIndex: 0},
+		{name: "installer tool application", assetName: "installer-tool-windows-amd64.exe", platform: "windows", arch: "amd64", wantIndex: 0},
+		{name: "application MSIX package", assetName: "app-windows-amd64.msix", platform: "windows", arch: "amd64", wantIndex: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assets := []github.ReleaseAsset{{Name: tt.assetName}}
+			got := github.DefaultAssetMatcher(updater.CheckRequest{Platform: tt.platform, Arch: tt.arch}, assets)
+			if got != tt.wantIndex {
+				t.Errorf("got %d, want %d", got, tt.wantIndex)
 			}
 		})
 	}
