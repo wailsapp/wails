@@ -785,6 +785,8 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				}
 			})
 		}
+	case message == "wails:drag:doubleclick":
+		w.handleTitlebarDoubleClick()
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
