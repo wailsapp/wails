@@ -108,7 +108,13 @@ See [Signing Applications](/guides/build/signing) for details.
 
 ## DMG Installer
 
-The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first and then builds a styled DMG with the DMG library. By default, the DMG uses a Wails-branded gradient backdrop with the red dragon mark and WAILS wordmark. The lower-level `darwin:create:dmg` task can be configured directly from the Taskfile:
+The shipped Wails 3 template provides `wails3 task darwin:package:dmg`. It creates the `.app` first and then builds a styled DMG with the DMG library. By default, the DMG uses a Wails-branded gradient backdrop with the red dragon mark and WAILS wordmark.
+
+```bash
+wails3 task darwin:package:dmg
+```
+
+The lower-level `darwin:create:dmg` task creates a DMG from an existing `.app` bundle and can be configured directly from the Taskfile:
 
 ```yaml
 vars:
@@ -121,7 +127,44 @@ vars:
   DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
 ```
 
-Run `wails3 task darwin:package:dmg`. The default background is 540×380 pixels and should match the configured DMG window dimensions. The default DMG contains only the app and the Applications link; `DMG_FILES` is an optional comma-separated list of `name=path` pairs for installer scripts or other resources.
+### Default Layout
+
+The generated DMG contains:
+
+- The application bundle on the left
+- An `Applications` link on the right
+- A Finder window sized to 540×380 pixels
+- A 96-point icon size with labels beneath each icon
+- The Wails-branded background from `build/darwin/dmg-background.png`
+
+The application and `Applications` icons are positioned relative to the configured window dimensions, so changing `DMG_WINDOW_WIDTH` or `DMG_WINDOW_HEIGHT` keeps the default two-icon layout proportionally spaced. For the best result, use a background image with the same pixel dimensions as the Finder window.
+
+### Replacing the DMG Assets
+
+The generated files under `build/darwin/` are normal project assets and may be replaced:
+
+- `DMG_BACKGROUND` controls the image displayed behind the Finder window contents.
+- `DMG_VOLUME_ICON` controls the icon shown for the mounted volume.
+- `DMG_FILE_ICON` controls the icon shown for the resulting `.dmg` file in Finder.
+
+The volume icon and DMG file icon are separate resources. Replacing the application icon does not automatically replace either of them.
+
+### Adding Extra Files
+
+Use `DMG_FILES` to include installer scripts, release notes, licences, or other resources alongside the application. The value is a comma-separated list of `name=path` pairs:
+
+```yaml
+vars:
+  DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
+```
+
+The name before `=` is the filename shown inside the DMG. The path after `=` is the source file in the project. Leading and trailing whitespace is ignored.
+
+Each displayed name must be unique. Extra files cannot replace entries already created by the packager, including the application bundle or the `Applications` entry. A conflicting name causes packaging to fail with an error rather than producing a broken DMG.
+
+<Aside type="note">
+DMG creation is supported only on macOS because it uses macOS disk-image and Finder tooling. Cross-compiled `.app` bundles can be created elsewhere, but the final DMG must be produced on a Mac.
+</Aside>
 
 ## Troubleshooting
 
