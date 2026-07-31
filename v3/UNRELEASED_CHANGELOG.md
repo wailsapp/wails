@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent Blob and FormData `fetch()` request bodies from crashing the Linux GTK4 and GTK3 asset-server backends (#5845).
 - Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
 
 ## Deprecated

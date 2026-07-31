@@ -437,6 +437,12 @@ v3/internal/assetserver/webview/
 
 ## Changelog
 
+### 2026-07-31
+- Prevented `Blob` and `FormData` fetch bodies from crashing both Linux backends in `webkit_uri_scheme_request_get_http_body` (#5845).
+- Added a document-start WebKit user script that converts only `wails:` Blob/FormData bodies to byte buffers, preserving Blob content types and generated multipart boundaries while leaving other schemes and body types unchanged.
+- Verified the original `addr=0x28` SIGSEGV on Fedora 44 with GTK 4.22.4/WebKitGTK 6.0 2.52.5 and GTK 3.24.52/WebKit2GTK 4.1 2.52.5 before the fix.
+- Files: `v3/pkg/application/linux_blob_body_fetch_shim.{go,js}`, both Linux CGO webview constructors, regression tests, and the unreleased changelog.
+
 ### 2026-07-26
 - Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.
 - Added GTK4 `GdkSurface` resize and toplevel-state notifications, including common maximise, minimise, and fullscreen events.
