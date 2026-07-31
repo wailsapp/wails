@@ -16,6 +16,12 @@
 
 @property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
 @property BOOL disableEscapeExitsFullscreen;
+@property (retain) NSTimer* zoomAnimationTimer;
+@property NSRect zoomAnimationStartFrame;
+@property NSRect zoomAnimationTargetFrame;
+@property CFTimeInterval zoomAnimationStartTime;
+@property NSTimeInterval zoomAnimationDuration;
+@property BOOL performZoomWithoutAnimation;
 
 @end
 
