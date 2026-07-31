@@ -23,21 +23,23 @@
 
         var request = input instanceof Request ? input : null;
         var hasInitBody = init && ("body" in init);
+        var hasInitHeaders = init && Object.prototype.hasOwnProperty.call(init, "headers");
         var body = hasInitBody ? init.body : null;
         var headers;
         var bytes;
 
         if (body instanceof Blob) {
-            headers = new Headers(init.headers);
+            headers = new Headers(hasInitHeaders ? init.headers : request && request.headers);
             if (body.type && !headers.has("Content-Type")) {
                 headers.set("Content-Type", body.type);
             }
             bytes = await body.arrayBuffer();
         } else if (body instanceof FormData) {
             var encoded = new Response(body);
-            headers = new Headers(init.headers);
-            if (!headers.has("Content-Type")) {
-                headers.set("Content-Type", encoded.headers.get("Content-Type"));
+            headers = new Headers(hasInitHeaders ? init.headers : request && request.headers);
+            var contentType = encoded.headers.get("Content-Type");
+            if (contentType && !headers.has("Content-Type")) {
+                headers.set("Content-Type", contentType);
             }
             bytes = await encoded.arrayBuffer();
         } else if (request && !hasInitBody && request.body) {
