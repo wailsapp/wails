@@ -101,8 +101,10 @@ function isDraggableEvent(event: MouseEvent): boolean {
     const style = window.getComputedStyle(target);
     return (
         style.getPropertyValue("--wails-draggable").trim() === "drag"
-        && event.offsetX - parseFloat(style.paddingLeft) < target.clientWidth
-        && event.offsetY - parseFloat(style.paddingTop) < target.clientHeight
+        && event.offsetX >= 0
+        && event.offsetX < target.clientWidth
+        && event.offsetY >= 0
+        && event.offsetY < target.clientHeight
     );
 }
 
