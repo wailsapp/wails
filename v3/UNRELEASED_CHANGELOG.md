@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
 
 ## Fixed
 <!-- Bug fixes -->
