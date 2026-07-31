@@ -17,15 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Prevent Blob and FormData `fetch()` request bodies from crashing the Linux GTK4 and GTK3 asset-server backends (#5845).
-- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
