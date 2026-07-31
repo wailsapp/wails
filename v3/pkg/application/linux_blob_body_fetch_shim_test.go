@@ -80,13 +80,31 @@ assert.equal(calls[3][1].body, "unchanged");
 
 const request = new Request("wails://wails/request", {
   method: "POST",
+  headers: {Authorization: "Bearer secret", "X-Original": "preserved"},
   body: new Blob(["request bytes"], {type: "text/plain"})
 });
 await wrappedFetch(request);
 assert(calls[4][0] instanceof Request);
 assert.notStrictEqual(calls[4][0], request);
 assert.equal(await calls[4][0].text(), "request bytes");
+assert.equal(calls[4][0].headers.get("Authorization"), "Bearer secret");
 assert.equal(request.bodyUsed, false);
+
+await wrappedFetch(request, {
+  body: new Blob(["replacement"], {type: "application/octet-stream"})
+});
+assert.equal(calls[5][1].headers.get("Authorization"), "Bearer secret");
+assert.equal(calls[5][1].headers.get("X-Original"), "preserved");
+assert.equal(calls[5][1].headers.get("Content-Type"), "text/plain");
+
+await wrappedFetch(request, {
+  body: new Blob(["replacement"], {type: "application/octet-stream"}),
+  headers: {"X-Override": "authoritative"}
+});
+assert.equal(calls[6][1].headers.get("Authorization"), null);
+assert.equal(calls[6][1].headers.get("X-Original"), null);
+assert.equal(calls[6][1].headers.get("X-Override"), "authoritative");
+assert.equal(calls[6][1].headers.get("Content-Type"), "application/octet-stream");
 
 install();
 assert.strictEqual(globalThis.fetch, wrappedFetch);
