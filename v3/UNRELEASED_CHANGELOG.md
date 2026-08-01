@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Promote v3 from alpha to beta
 - Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
 - GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
