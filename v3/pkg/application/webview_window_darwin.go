@@ -35,10 +35,12 @@ const char* windowTitlebarDoubleClickPreference(void) {
 }
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool squareCorners, double cornerRadius, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
-	if (frameless) {
+	if (frameless && (squareCorners || cornerRadius > 0)) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
+	} else if (frameless) {
+		styleMask |= NSWindowStyleMaskFullSizeContentView;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
@@ -61,11 +63,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if( frameless ) {
+	if (frameless && !squareCorners && cornerRadius > 0) {
 		[view setWantsLayer:YES];
-		view.layer.cornerRadius = 8.0;
+		view.layer.cornerRadius = cornerRadius;
+		view.layer.masksToBounds = YES;
 	}
 	[window setContentView:view];
+	if (frameless && !squareCorners && cornerRadius == 0) {
+		[window setTitlebarAppearsTransparent:YES];
+		[window setTitleVisibility:NSWindowTitleHidden];
+	}
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
@@ -898,13 +905,29 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 }
 
 // Make the given window frameless
-static void windowSetFrameless(void *window, bool frameless) {
+static void windowSetFrameless(void *window, bool frameless, bool squareCorners, double cornerRadius) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	// set the window style to be frameless
-	if (frameless) {
-		[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
+	if (frameless && (squareCorners || cornerRadius > 0)) {
+		[nsWindow setStyleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable];
+		NSView* view = [nsWindow contentView];
+		if (!squareCorners) {
+			[view setWantsLayer:YES];
+			view.layer.cornerRadius = cornerRadius;
+			view.layer.masksToBounds = YES;
+		} else {
+			view.layer.cornerRadius = 0;
+			view.layer.masksToBounds = NO;
+		}
+	} else if (frameless) {
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable | NSWindowStyleMaskFullSizeContentView];
+		[nsWindow setTitlebarAppearsTransparent:YES];
+		[nsWindow setTitleVisibility:NSWindowTitleHidden];
 	} else {
-		[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+		NSView* view = [nsWindow contentView];
+		view.layer.cornerRadius = 0;
+		view.layer.masksToBounds = NO;
 	}
 }
 
@@ -1081,7 +1104,7 @@ func (w *macosWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *macosWebviewWindow) setFrameless(frameless bool) {
-	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
+	C.windowSetFrameless(w.nsWindow, C.bool(frameless), C.bool(w.parent.options.Mac.CornerType == MacWindowCornerTypeSquare), C.double(w.parent.options.Mac.CornerRadius))
 	if frameless {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(true))
 		C.windowSetHideTitle(w.nsWindow, C.bool(true))
@@ -1462,6 +1485,8 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
+			C.bool(macOptions.CornerType == MacWindowCornerTypeSquare),
+			C.double(macOptions.CornerRadius),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 			appName,
@@ -1522,6 +1547,11 @@ func (w *macosWebviewWindow) run() {
 			zoomState = options.FullscreenButtonState
 		}
 		w.setMaximiseButtonState(zoomState)
+		if options.Frameless && macOptions.CornerType == MacWindowCornerTypeRounded && macOptions.CornerRadius == 0 {
+			w.setMinimiseButtonState(ButtonHidden)
+			w.setCloseButtonState(ButtonHidden)
+			w.setMaximiseButtonState(ButtonHidden)
+		}
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)

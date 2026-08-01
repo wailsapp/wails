@@ -552,12 +552,31 @@ type MacLiquidGlass struct {
 	GroupSpacing float64
 }
 
+// MacWindowCornerType controls the corner shape of a frameless macOS window.
+type MacWindowCornerType int
+
+const (
+	// MacWindowCornerTypeRounded preserves the standard AppKit window corners by
+	// default. Set CornerRadius to use a custom rounded radius.
+	MacWindowCornerTypeRounded MacWindowCornerType = iota
+	// MacWindowCornerTypeSquare creates a true borderless window with square
+	// corners. CornerRadius is ignored.
+	MacWindowCornerTypeSquare
+)
+
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
 	// Backdrop is the backdrop type for the window
 	Backdrop MacBackdrop
 	// DisableShadow will disable the window shadow
 	DisableShadow bool
+	// CornerType controls the corner shape of a frameless window.
+	// Default: MacWindowCornerTypeRounded.
+	CornerType MacWindowCornerType
+	// CornerRadius controls the custom corner radius, in points, of a rounded
+	// frameless window. A value of 0 (the default) preserves AppKit's standard
+	// rounded corners. Ignored when CornerType is MacWindowCornerTypeSquare.
+	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
 	// Appearance is the appearance type for the window
