@@ -41,13 +41,15 @@ func TestBuildDMGOptions(t *testing.T) {
 	}
 
 	opts, err := buildDMGOptions(&flags.ToolPackage{
-		ExecutableName:  "Example",
-		BackgroundImage: "background.png",
-		DmgVolumeIcon:   "volume.icns",
-		DmgFileIcon:     "file.icns",
-		DmgFiles:        "install.command=" + resource,
-		DmgWindowWidth:  700,
-		DmgWindowHeight: 500,
+		ExecutableName:   "Example",
+		BackgroundImage:  "background.png",
+		DmgVolumeIcon:    "volume.icns",
+		DmgFileIcon:      "file.icns",
+		DmgFiles:         "install.command=" + resource,
+		DmgIconLayout:    "manual",
+		DmgIconPositions: "Example.app=196,224;Applications=504,224;install.command=350,300",
+		DmgWindowWidth:   700,
+		DmgWindowHeight:  500,
 	}, appPath, filepath.Join(dir, "Example.dmg"))
 	if err != nil {
 		t.Fatalf("buildDMGOptions() error = %v", err)
@@ -74,6 +76,9 @@ func TestBuildDMGOptions(t *testing.T) {
 	if got := opts.IconPositions["Applications"]; got != (dmg.IconPosition{X: 504, Y: 224}) {
 		t.Errorf("Applications icon position = %#v, want {504 224}", got)
 	}
+	if got := opts.IconPositions["install.command"]; got != (dmg.IconPosition{X: 350, Y: 300}) {
+		t.Errorf("installer icon position = %#v, want {350 300}", got)
+	}
 }
 
 func TestBuildDMGOptionsDefaults(t *testing.T) {
@@ -84,11 +89,37 @@ func TestBuildDMGOptionsDefaults(t *testing.T) {
 	if opts.Window.Width != 540 || opts.Window.Height != 380 {
 		t.Errorf("Window = %#v, want 540x380", opts.Window)
 	}
-	if got := opts.IconPositions["Example.app"]; got != (dmg.IconPosition{X: 151, Y: 164}) {
-		t.Errorf("app icon position = %#v, want {151 164}", got)
+	if opts.IconPositions != nil {
+		t.Errorf("IconPositions = %#v, want nil for auto layout", opts.IconPositions)
 	}
-	if got := opts.IconPositions["Applications"]; got != (dmg.IconPosition{X: 388, Y: 164}) {
-		t.Errorf("Applications icon position = %#v, want {388 164}", got)
+}
+
+func TestBuildDMGOptionsRejectsInvalidIconLayout(t *testing.T) {
+	tests := []struct {
+		name      string
+		layout    string
+		positions string
+		errMsg    string
+	}{
+		{name: "unknown layout", layout: "grid", errMsg: "expected auto or manual"},
+		{name: "positions without manual layout", layout: "auto", positions: "Example.app=150,180", errMsg: "require manual"},
+		{name: "manual without positions", layout: "manual", errMsg: "requires icon positions"},
+		{name: "manual missing Applications", layout: "manual", positions: "Example.app=150,180", errMsg: "Applications"},
+		{name: "manual unknown item", layout: "manual", positions: "Example.app=150,180;Applications=390,180;README.txt=270,300", errMsg: "unknown item"},
+		{name: "malformed coordinates", layout: "manual", positions: "Example.app=invalid", errMsg: "expected name=x,y"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := buildDMGOptions(&flags.ToolPackage{
+				ExecutableName:   "Example",
+				DmgIconLayout:    tt.layout,
+				DmgIconPositions: tt.positions,
+			}, "Example.app", "Example.dmg")
+			if err == nil || !strings.Contains(err.Error(), tt.errMsg) {
+				t.Errorf("buildDMGOptions() error = %v, want error containing %q", err, tt.errMsg)
+			}
+		})
 	}
 }
 
