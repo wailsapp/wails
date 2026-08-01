@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	// "github.com/wailsapp/wails/v3/internal/commands/dmg" // TODO: Missing package
+	"github.com/leaanthony/dmg/dmg"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/packager"
 )
@@ -40,37 +40,17 @@ func ToolPackage(options *flags.ToolPackage) error {
 			return fmt.Errorf("application bundle not found: %s", appPath)
 		}
 
-		// Create output path for DMG
+		// Create output path for DMG.
 		dmgPath := filepath.Join(options.Out, fmt.Sprintf("%s.dmg", options.ExecutableName))
 
-		// DMG creation temporarily disabled - missing dmg package
-		_ = dmgPath // avoid unused variable warning
-		return fmt.Errorf("DMG creation is temporarily disabled due to missing dmg package")
-		
-		// // Create DMG creator
-		// dmgCreator, err := dmg.New(appPath, dmgPath, options.ExecutableName)
-		// if err != nil {
-		// 	return fmt.Errorf("error creating DMG: %w", err)
-		// }
-
-		// // Set background image if provided
-		// if options.BackgroundImage != "" {
-		// 	if err := dmgCreator.SetBackgroundImage(options.BackgroundImage); err != nil {
-		// 		return fmt.Errorf("error setting background image: %w", err)
-		// 	}
-		// }
-
-		// // Set default icon positions
-		// dmgCreator.AddIconPosition(filepath.Base(appPath), 150, 175)
-		// dmgCreator.AddIconPosition("Applications", 450, 175)
-
-		// // Create the DMG
-		// if err := dmgCreator.Create(); err != nil {
-		// 	return fmt.Errorf("error creating DMG: %w", err)
-		// }
-
-		// fmt.Printf("DMG created successfully: %s\n", dmgPath)
-		// return nil
+		opts, err := buildDMGOptions(options, appPath, dmgPath)
+		if err != nil {
+			return err
+		}
+		if err := dmg.Build(opts); err != nil {
+			return fmt.Errorf("error creating DMG: %w", err)
+		}
+		return nil
 	}
 
 	// For Linux packages, continue with existing logic
@@ -112,5 +92,73 @@ func ToolPackage(options *flags.ToolPackage) error {
 		return fmt.Errorf("error creating package: %w", err)
 	}
 
+	return nil
+}
+
+// buildDMGOptions converts package flags into a tested DMG configuration without
+// invoking macOS tooling. The application bundle is always added to the image;
+// extra files, if any, are configured with the same name=path syntax exposed by
+// the Taskfile.
+func buildDMGOptions(options *flags.ToolPackage, appPath, dmgPath string) (dmg.Options, error) {
+	opts := dmg.DefaultOptions(appPath, dmgPath)
+	opts.VolumeName = options.ExecutableName
+	windowWidth, windowHeight := options.DmgWindowWidth, options.DmgWindowHeight
+	if windowWidth <= 0 {
+		windowWidth = 540
+	}
+	if windowHeight <= 0 {
+		windowHeight = 380
+	}
+	opts.Window = dmg.WindowConfig{X: 100, Y: 100, Width: windowWidth, Height: windowHeight}
+	opts.Icon = dmg.IconConfig{Size: 96, TextSize: 12, GridSpace: 100}
+	opts.Files[filepath.Base(appPath)] = appPath
+	// Finder renders the stored Y from the top of its content area, below a
+	// small title-bar offset. Subtract it so the default row is visibly centred.
+	iconY := windowHeight/2 - 26
+	if iconY < 0 {
+		iconY = windowHeight / 2
+	}
+	opts.IconPositions = map[string]dmg.IconPosition{
+		filepath.Base(appPath): {X: windowWidth * 28 / 100, Y: iconY},
+		"Applications":         {X: windowWidth * 72 / 100, Y: iconY},
+	}
+	if options.BackgroundImage != "" {
+		opts.Background = &dmg.BackgroundConfig{File: options.BackgroundImage}
+	}
+	if options.DmgVolumeIcon != "" {
+		opts.VolumeIcon = options.DmgVolumeIcon
+	}
+	if options.DmgFileIcon != "" {
+		opts.FileIcon = options.DmgFileIcon
+	}
+	if err := addDMGFiles(&opts, options.DmgFiles); err != nil {
+		return dmg.Options{}, err
+	}
+	return opts, nil
+}
+
+// addDMGFiles adds optional installer resources configured in a Taskfile. The
+// deliberately small name=path syntax keeps this low-level packaging command
+// useful without introducing another project configuration format.
+func addDMGFiles(opts *dmg.Options, value string) error {
+	for _, item := range strings.Split(value, ",") {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		name, path, ok := strings.Cut(item, "=")
+		if !ok || strings.TrimSpace(name) == "" || strings.TrimSpace(path) == "" {
+			return fmt.Errorf("invalid DMG file %q: expected name=path", item)
+		}
+		name = strings.TrimSpace(name)
+		path = strings.TrimSpace(path)
+		if _, err := os.Stat(path); err != nil {
+			return fmt.Errorf("DMG file %q: %w", name, err)
+		}
+		if _, exists := opts.Files[name]; exists {
+			return fmt.Errorf("DMG file %q conflicts with an existing entry", name)
+		}
+		opts.Files[name] = path
+	}
 	return nil
 }

@@ -17,16 +17,13 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Implement macOS title-bar double-click actions for maximize or minimize in [PR](https://github.com/wailsapp/wails/pull/5853) by @taliesin-ai
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
 
 ## Fixed
 <!-- Bug fixes -->
-- Keep WKWebView responsive during macOS zoom in [PR](https://github.com/wailsapp/wails/pull/5856) by @leaanthony
-- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
