@@ -327,6 +327,12 @@ func TestMacWindow_Defaults(t *testing.T) {
 	if opts.DisableShadow != false {
 		t.Error("DisableShadow should default to false")
 	}
+	if opts.CornerType != MacWindowCornerTypeRounded {
+		t.Error("CornerType should default to MacWindowCornerTypeRounded")
+	}
+	if opts.CornerRadius != 0 {
+		t.Error("CornerRadius should default to 0 (system default)")
+	}
 }
 
 func TestLinuxWindow_Defaults(t *testing.T) {

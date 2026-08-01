@@ -17,13 +17,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
