@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
