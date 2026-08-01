@@ -99,7 +99,7 @@ module.exports = async function configCreatorAsync() {
         announcementBar: {
           id: "wails-v3-beta",
           content:
-            'Wails v3 is now in beta. <a target="_blank" rel="noopener noreferrer" href="https://wails-v3-beta.pages.dev/">Explore the v3 documentation →</a>',
+            'Wails v3 is now in beta. <a target="_blank" rel="noopener noreferrer" href="https://v3.wails.io/">Explore the v3 documentation →</a>',
           backgroundColor: "#c62828",
           textColor: "#fff",
           isCloseable: true,
