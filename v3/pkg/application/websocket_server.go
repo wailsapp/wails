@@ -9,6 +9,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
+	"github.com/wailsapp/wails/v3/internal/mailbox"
 )
 
 // globalBroadcaster holds a reference to the WebSocket broadcaster for server mode.
@@ -28,16 +29,17 @@ func GetBrowserWindow(clientId string) *BrowserWindow {
 type clientInfo struct {
 	conn   *websocket.Conn
 	window *BrowserWindow
+	events *mailbox.Mailbox[*CustomEvent]
 }
 
 // WebSocketBroadcaster manages WebSocket connections and broadcasts events to all connected clients.
 // It implements WailsEventListener to receive events from the application.
 type WebSocketBroadcaster struct {
-	clients  map[*websocket.Conn]*clientInfo
-	windows  map[string]*BrowserWindow // maps runtime clientId (nanoid) to BrowserWindow
-	mu       sync.RWMutex
-	app      *App
-	nextID   atomic.Uint64
+	clients map[*websocket.Conn]*clientInfo
+	windows map[string]*BrowserWindow // maps runtime clientId (nanoid) to BrowserWindow
+	mu      sync.RWMutex
+	app     *App
+	nextID  atomic.Uint64
 }
 
 // NewWebSocketBroadcaster creates a new WebSocket broadcaster.
@@ -64,7 +66,7 @@ func (b *WebSocketBroadcaster) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		InsecureSkipVerify: true,
 	})
 	if err != nil {
-		b.app.error("WebSocket accept error", "error", err)
+		b.app.error("WebSocket accept error: %v", err)
 		return
 	}
 
@@ -100,25 +102,39 @@ func (b *WebSocketBroadcaster) register(conn *websocket.Conn, window *BrowserWin
 		conn:   conn,
 		window: window,
 	}
+	client.events = mailbox.New(func(event *CustomEvent) {
+		if err := wsjson.Write(b.app.ctx, client.conn, event); err != nil {
+			b.app.debug("WebSocket write error", "error", err, "client", client.window.Name())
+		}
+	})
+
 	b.mu.Lock()
 	b.clients[conn] = client
+	clientCount := len(b.clients)
 	b.mu.Unlock()
-	b.app.info("WebSocket client connected", "id", window.Name(), "clients", len(b.clients))
+	b.app.info("WebSocket client connected", "id", window.Name(), "clients", clientCount)
 }
 
 // unregister removes a client connection and its BrowserWindow.
 func (b *WebSocketBroadcaster) unregister(conn *websocket.Conn, runtimeClientID string) {
-	b.mu.Lock()
-	client := b.clients[conn]
-	delete(b.clients, conn)
-	if runtimeClientID != "" {
-		delete(b.windows, runtimeClientID)
-	}
-	b.mu.Unlock()
+	client, clientCount := b.removeClient(conn, runtimeClientID)
 	conn.Close(websocket.StatusNormalClosure, "")
 	if client != nil {
-		b.app.info("WebSocket client disconnected", "id", client.window.Name(), "clients", len(b.clients))
+		b.app.info("WebSocket client disconnected", "id", client.window.Name(), "clients", clientCount)
 	}
+}
+
+func (b *WebSocketBroadcaster) removeClient(conn *websocket.Conn, runtimeClientID string) (*clientInfo, int) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	client := b.clients[conn]
+	delete(b.clients, conn)
+	if runtimeClientID != "" && client != nil && b.windows[runtimeClientID] == client.window {
+		delete(b.windows, runtimeClientID)
+	}
+
+	return client, len(b.clients)
 }
 
 // DispatchWailsEvent implements WailsEventListener interface.
@@ -128,10 +144,6 @@ func (b *WebSocketBroadcaster) DispatchWailsEvent(event *CustomEvent) {
 	defer b.mu.RUnlock()
 
 	for _, client := range b.clients {
-		go func(c *clientInfo) {
-			if err := wsjson.Write(b.app.ctx, c.conn, event); err != nil {
-				b.app.debug("WebSocket write error", "error", err, "client", c.window.Name())
-			}
-		}(client)
+		client.events.Send(event)
 	}
 }
