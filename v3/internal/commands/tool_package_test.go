@@ -94,6 +94,32 @@ func TestBuildDMGOptionsDefaults(t *testing.T) {
 	}
 }
 
+func TestBuildDMGOptionsSupportsNamesWithSpaces(t *testing.T) {
+	dir := t.TempDir()
+	appPath := filepath.Join(dir, "My App.app")
+	readmePath := filepath.Join(dir, "Read Me.txt")
+	if err := os.WriteFile(readmePath, []byte("hello\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	opts, err := buildDMGOptions(&flags.ToolPackage{
+		ExecutableName:   "My App",
+		DmgFiles:         "Read Me.txt=" + readmePath,
+		DmgIconLayout:    "manual",
+		DmgIconPositions: "My App.app=150,180;Applications=390,180;Read Me.txt=270,300",
+	}, appPath, filepath.Join(dir, "My App.dmg"))
+	if err != nil {
+		t.Fatalf("buildDMGOptions() error = %v", err)
+	}
+
+	if got := opts.IconPositions["My App.app"]; got != (dmg.IconPosition{X: 150, Y: 180}) {
+		t.Errorf("app icon position = %#v, want {150 180}", got)
+	}
+	if got := opts.IconPositions["Read Me.txt"]; got != (dmg.IconPosition{X: 270, Y: 300}) {
+		t.Errorf("extra file icon position = %#v, want {270 300}", got)
+	}
+}
+
 func TestBuildDMGOptionsRejectsInvalidIconLayout(t *testing.T) {
 	tests := []struct {
 		name      string
