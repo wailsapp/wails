@@ -29,14 +29,14 @@
         var bytes;
 
         if (body instanceof Blob) {
-            headers = new Headers(hasInitHeaders ? init.headers : request && request.headers);
+            headers = new Headers(hasInitHeaders ? init.headers : request ? request.headers : undefined);
             if (body.type && !headers.has("Content-Type")) {
                 headers.set("Content-Type", body.type);
             }
             bytes = await body.arrayBuffer();
         } else if (body instanceof FormData) {
             var encoded = new Response(body);
-            headers = new Headers(hasInitHeaders ? init.headers : request && request.headers);
+            headers = new Headers(hasInitHeaders ? init.headers : request ? request.headers : undefined);
             var contentType = encoded.headers.get("Content-Type");
             if (contentType && !headers.has("Content-Type")) {
                 headers.set("Content-Type", contentType);
