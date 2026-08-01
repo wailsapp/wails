@@ -96,6 +96,11 @@ type eventListener struct {
 	delete   bool               // Flag to indicate that this listener should be deleted
 }
 
+// dispatchQueueSize buffers EventProcessor's dispatch queues (see Emit) well
+// above realistic emit bursts, so Emit() stays non-blocking in practice. Also
+// bounds in-flight dispatch, unlike the old unbounded goroutine-per-Emit.
+const dispatchQueueSize = 4096
+
 // EventProcessor handles custom events
 type EventProcessor struct {
 	// Go event listeners
@@ -104,13 +109,48 @@ type EventProcessor struct {
 	dispatchEventToWindows func(*CustomEvent)
 	hooks                  map[string][]*hook
 	hookLock               sync.RWMutex
+
+	// Feed the two single-consumer dispatch workers below. Emit() used to hand
+	// each dispatch to its own bare goroutine, and Go gives no ordering
+	// guarantee between them — two events emitted back-to-back could reach
+	// ExecJS in either order. A single ordered worker per queue fixes that,
+	// while keeping listeners and windows independent of each other.
+	listenerQueue chan *CustomEvent
+	windowQueue   chan *CustomEvent
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
-	return &EventProcessor{
+	e := &EventProcessor{
 		listeners:              make(map[string][]*eventListener),
 		dispatchEventToWindows: dispatchEventToWindows,
 		hooks:                  make(map[string][]*hook),
+		listenerQueue:          make(chan *CustomEvent, dispatchQueueSize),
+		windowQueue:            make(chan *CustomEvent, dispatchQueueSize),
+	}
+	go e.runListenerDispatch()
+	go e.runWindowDispatch()
+	return e
+}
+
+// runListenerDispatch drains listenerQueue in order for the process lifetime.
+// Each event gets its own recover so one panic can't kill the worker and
+// stop delivery to everything emitted after it.
+func (e *EventProcessor) runListenerDispatch() {
+	for event := range e.listenerQueue {
+		func() {
+			defer handlePanic()
+			e.dispatchEventToListeners(event)
+		}()
+	}
+}
+
+// runWindowDispatch: same as runListenerDispatch, for the window/IPC side.
+func (e *EventProcessor) runWindowDispatch() {
+	for event := range e.windowQueue {
+		func() {
+			defer handlePanic()
+			e.dispatchEventToWindows(event)
+		}()
 	}
 }
 
@@ -157,14 +197,8 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		}
 	}
 
-	go func() {
-		defer handlePanic()
-		e.dispatchEventToListeners(thisEvent)
-	}()
-	go func() {
-		defer handlePanic()
-		e.dispatchEventToWindows(thisEvent)
-	}()
+	e.listenerQueue <- thisEvent
+	e.windowQueue <- thisEvent
 
 	return nil
 }
