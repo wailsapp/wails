@@ -1,14 +1,17 @@
 <!-- FAQ and objection responses | Wails v3.0.0-beta.0 | tier T1 | GA 2026-09-15
-     Pre-write answers to the five questions you know are coming, including the
+     Pre-write answers to the ten questions you know are coming, including the
      hostile ones. Copy-paste-ready so whoever is on the thread at 3am sounds
      like the project, not like a tired person. -->
 
 # Launch FAQ
 
+> **Internal draft — do not publish.** Every `TODO` requires an approved answer
+> before this file becomes release copy.
+
 Write the answer once, agree it with the team, paste it everywhere. Consistency
 under pressure is what makes a project look like it knows what it is doing.
 
-**Do I have to upgrade? What happens if I stay on v3.0.0-alpha2.117?**
+**Do I have to upgrade? What happens if I stay on v3.0.0-alpha2.121?**
 
 TODO
 

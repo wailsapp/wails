@@ -16,7 +16,8 @@
 
 - Do not duplicate existing GitHub issues.
 - Keep issue descriptions current when scope or reproduction steps change.
-- Store AI-generated planning documents in `history/`, not the repository root.
+- Store AI-generated planning documents in `history/`, not the repository root;
+  the persistent root `IMPLEMENTATION.md` tracker described below is the exception.
 - **ALWAYS run `coderabbit --plain` before committing** to catch issues early.
 - All commits must use the `taliesin-ai` identity.
 - Never push until the user gives explicit manual confirmation.
@@ -32,7 +33,8 @@ AI assistants often create planning and design documents during development:
 
 **Recommended approach:**
 - Create a `history/` directory in the project root
-- Store ALL AI-generated planning/design docs in `history/`
+- Store all ephemeral AI-generated planning/design docs in `history/`;
+  keep the persistent root `IMPLEMENTATION.md` tracker in place
 - Keep the repository root clean and focused on permanent project files
 - Only access `history/` when explicitly asked to review past planning
 
