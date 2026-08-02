@@ -6,11 +6,19 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
 func TestAllowDarkModeForWindowPassesHWNDAndAllowFlag(t *testing.T) {
-	file, err := parser.ParseFile(token.NewFileSet(), "theme.go", nil, 0)
+	_, testFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("locate theme_test.go")
+	}
+
+	themeFile := filepath.Join(filepath.Dir(testFile), "theme.go")
+	file, err := parser.ParseFile(token.NewFileSet(), themeFile, nil, 0)
 	if err != nil {
 		t.Fatalf("parse theme.go: %v", err)
 	}
