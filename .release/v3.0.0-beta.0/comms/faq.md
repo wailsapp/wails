@@ -11,7 +11,7 @@
 Write the answer once, agree it with the team, paste it everywhere. Consistency
 under pressure is what makes a project look like it knows what it is doing.
 
-**Do I have to upgrade? What happens if I stay on v3.0.0-alpha2.121?**
+**Do I have to upgrade? What happens if I stay on v3.0.0-alpha2.122?**
 
 TODO
 
