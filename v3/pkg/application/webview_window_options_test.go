@@ -479,3 +479,61 @@ func TestUseDarkNativeWindowsMenu(t *testing.T) {
 		})
 	}
 }
+
+func TestEffectiveMacWindowButtonStates(t *testing.T) {
+	configured := WebviewWindowOptions{
+		MinimiseButtonState:   ButtonDisabled,
+		CloseButtonState:      ButtonHidden,
+		MaximiseButtonState:   ButtonEnabled,
+		FullscreenButtonState: ButtonDisabled,
+	}
+	wantConfigured := macWindowButtonStates{
+		minimise: ButtonDisabled,
+		close:    ButtonHidden,
+		zoom:     ButtonDisabled,
+	}
+
+	tests := []struct {
+		name      string
+		frameless bool
+		mac       MacWindow
+		want      macWindowButtonStates
+	}{
+		{
+			name: "normal window restores configured states",
+			want: wantConfigured,
+		},
+		{
+			name:      "native-default frameless hides all controls",
+			frameless: true,
+			want: macWindowButtonStates{
+				minimise: ButtonHidden,
+				close:    ButtonHidden,
+				zoom:     ButtonHidden,
+			},
+		},
+		{
+			name:      "square frameless preserves configured states",
+			frameless: true,
+			mac:       MacWindow{CornerType: MacWindowCornerTypeSquare},
+			want:      wantConfigured,
+		},
+		{
+			name:      "custom-radius frameless preserves configured states",
+			frameless: true,
+			mac:       MacWindow{CornerRadius: 12},
+			want:      wantConfigured,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			options := configured
+			options.Frameless = tt.frameless
+			options.Mac = tt.mac
+			if got := effectiveMacWindowButtonStates(options); got != tt.want {
+				t.Fatalf("effectiveMacWindowButtonStates() = %+v, want %+v", got, tt.want)
+			}
+		})
+	}
+}
