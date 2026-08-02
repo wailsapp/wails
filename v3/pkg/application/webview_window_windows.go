@@ -1449,9 +1449,8 @@ func (w *windowsWebviewWindow) disableIcon() {
 
 // applyDarkMode opts the window into dark mode via the uxtheme
 // AllowDarkModeForWindow export. That export is only loaded on Windows builds
-// that provide it (>= 18334); on older builds such as Windows 10 1809 / build
-// 17763 it is nil, so this guards the call to avoid a nil-pointer panic on
-// startup.
+// that provide it (>= 17763); on older builds it is nil, so this guards the
+// call to avoid a nil-pointer panic on startup.
 func (w *windowsWebviewWindow) applyDarkMode() {
 	if w32.AllowDarkModeForWindow != nil {
 		w32.AllowDarkModeForWindow(w.hwnd, true)
