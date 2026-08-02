@@ -39,13 +39,13 @@ jobs:
         days-before-pr-close: -1  # Disable PR closing
         
         # Exemptions
-        exempt-issue-labels: 'pinned,security,onhold,inprogress,Selected For Development,bug,enhancement,v3-alpha,high-priority'
+        exempt-issue-labels: 'pinned,security,onhold,inprogress,Selected For Development,bug,high-priority'
         exempt-all-issue-milestones: true
         exempt-all-issue-assignees: true
         
-        # Protection for existing issues
-        exempt-issue-created-before: '2024-01-01T00:00:00Z'
-        start-date: '2025-06-01T00:00:00Z'  # Don't start checking until June 1, 2025
+        # Protection for existing issues. `start-date` is the supported
+        # actions/stale cutoff for issues that predate this policy.
+        start-date: '2025-06-01T00:00:00Z'
         
         # Only process issues, not PRs
         only-labels: ''

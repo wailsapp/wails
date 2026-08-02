@@ -17,6 +17,7 @@ body:
         If you followed the documentation but things don't work, take some time to consider if it's the documentation or the code that's wrong. In the latter, prefer using the "[Bug Report](https://github.com/wailsapp/wails/issues/new?assignees=&labels=bug&template=bug_report.yml)" template.
 
   - type: checkboxes
+    id: guidelines
     attributes:
       label: Have you read the Documentation Contribution Guidelines?
       options:
@@ -24,6 +25,7 @@ body:
           required: true
 
   - type: textarea
+    id: description
     attributes:
       label: Description
       description: A clear and concise description of what the issue is.
@@ -31,6 +33,7 @@ body:
       required: true
 
   - type: checkboxes
+    id: self-service
     attributes:
       label: Self-service
       description: |
