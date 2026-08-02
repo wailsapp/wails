@@ -280,7 +280,7 @@ func GetObject(hgdiobj HGDIOBJ, cbBuffer uintptr, lpvObject unsafe.Pointer) int 
 }
 
 func GetStockObject(fnObject int) HGDIOBJ {
-	ret, _, _ := procGetDeviceCaps.Call(
+	ret, _, _ := procGetStockObject.Call(
 		uintptr(fnObject))
 
 	return HGDIOBJ(ret)
