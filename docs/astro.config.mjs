@@ -48,6 +48,7 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
         { icon: 'discord', label: 'Discord', href: 'https://discord.gg/JDdSxwjhGf' },
+        { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/wails/' },
         { icon: 'x.com', label: 'X', href: 'https://x.com/wailsapp' },
       ],
       head: [
@@ -111,6 +112,7 @@ export default defineConfig({
               'https://github.com/wailsapp/wails',
               'https://x.com/wailsapp',
               'https://discord.gg/JDdSxwjhGf',
+              'https://www.reddit.com/r/wails/',
             ],
           }),
         },
