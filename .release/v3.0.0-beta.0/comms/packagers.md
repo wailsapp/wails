@@ -10,8 +10,10 @@ documentation translators, and anyone whose work breaks when ours changes.
 ## What is changing
 
 **Version scheme.** The CLI moves from the `v3.0.0-alpha2.N` series to
-`v3.0.0-beta.N`. A beta sorts above every alpha under semantic versioning, so
-`@latest` resolves to it.
+`v3.0.0-beta.N`. A beta sorts above every alpha under semantic versioning. The
+npm publish workflow assigns the `latest` dist-tag explicitly; after publishing,
+verify that `npm view @wailsio/runtime dist-tags` points `latest` to the new
+`3.0.0-beta.N` version rather than a `3.0.0-alpha2.*` version.
 
 **`@wailsio/runtime` now matches the CLI version.** Until now the npm package
 counted its own `alpha.N` series independently, so a CLI and its runtime

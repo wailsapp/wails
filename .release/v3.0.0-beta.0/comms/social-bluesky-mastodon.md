@@ -1,5 +1,5 @@
 <!-- Bluesky (300) / Mastodon (500) | Wails v3.0.0-beta.0 | tier T1 | GA 2026-09-15
-     Post limit: 300 characters
+     Cross-posted copy must fit Bluesky's 300-character limit; Mastodon defaults to 500.
      Developer-dense, allergic to growth-hack phrasing. Alt-text on every image;
      this audience notices when it is missing. -->
 

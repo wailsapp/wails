@@ -43,10 +43,8 @@
     .phase { position:relative; margin:14px 0; padding:20px 22px 20px 74px; border:1px solid var(--line); border-radius:14px; background:var(--card); box-shadow:var(--shadow); }
     .phase::before { content:attr(data-step); position:absolute; left:20px; top:20px; width:36px; height:36px; display:grid; place-items:center; border-radius:50%; color:white; background:var(--blue); font-weight:800; }
     .phase ul,.compact { margin:8px 0 0; padding-left:20px; }
-    .check { display:grid; grid-template-columns:24px 1fr auto; gap:10px; align-items:start; padding:11px 0; border-top:1px solid #e8e1d6; }
+    .check { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:start; padding:11px 0; border-top:1px solid #e8e1d6; }
     .check:first-of-type { border-top:0; }
-    input[type=checkbox] { width:18px; height:18px; margin-top:3px; accent-color:var(--green); }
-    input:checked + label { color:var(--muted); text-decoration:line-through; }
     .owner { color:var(--muted); font-size:12px; white-space:nowrap; }
     details { margin:10px 0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; }
     summary { cursor:pointer; font-weight:750; }
@@ -65,7 +63,7 @@
       <p class="lede">A repository, issue, pull request, CI/release, and <code>./docs</code> audit updated against the active <code>releases/v3-beta</code> branch. The branch contains a credible release kit and most channel cutover work, but it is not ready to tag today.</p>
     </div>
   </header>
-  <nav><div class="wrap"><a href="#verdict">Verdict</a><a href="#evidence">Evidence</a><a href="#execution">Execution</a><a href="#risks">Release gates</a><a href="#order">Order of work</a><a href="#checklist">Checklist</a><a href="#backlog">Issues &amp; PRs</a><a href="#method">Method</a></div></nav>
+  <nav><div class="wrap"><a href="#verdict">Verdict</a><a href="#evidence">Evidence</a><a href="#execution">Execution</a><a href="#risks">Release gates</a><a href="#order">Order of work</a><a href="#checklist">Gate summary</a><a href="#backlog">Issues &amp; PRs</a><a href="#method">Method</a></div></nav>
   <main class="wrap">
     <section id="verdict">
       <div class="grid">
@@ -134,47 +132,47 @@
     </section>
 
     <section id="checklist">
-      <h2>Executable Beta checklist</h2>
-      <p>Checkbox state is saved only in this browser. Priority reflects release ordering, not estimated effort.</p>
+      <h2>Static Beta gate summary</h2>
+      <p>This historical summary is not a tracker. Current status and evidence live in <a href="https://github.com/wailsapp/wails/issues/5844">release tracker #5844</a>, its linked Project 16 items, and the release evidence ledger. Priority here reflects the release ordering captured when this audit was generated.</p>
       <div class="grid">
         <article class="card full">
           <h3>1 — Governance and scope</h3>
-          <div class="check"><input id="c1" type="checkbox"><label for="c1">Re-sync <code>releases/v3-beta</code> with the six commits now on master and re-run <code>relman audit</code>.</label><span class="owner">P0 · Release lead</span></div>
-          <div class="check"><input id="c23" type="checkbox"><label for="c23">Maintain the linked Beta milestones and GitHub release tracker for the 38-gate release plan.</label><span class="owner">P0 · Release lead</span></div>
-          <div class="check"><input id="c2" type="checkbox"><label for="c2">Approve the supported OS/architecture matrix and state whether Android/iOS are experimental.</label><span class="owner">P0 · Maintainers</span></div>
-          <div class="check"><input id="c3" type="checkbox"><label for="c3">Approve API compatibility/deprecation rules for the Beta series.</label><span class="owner">P0 · Maintainers</span></div>
-          <div class="check"><input id="c4" type="checkbox"><label for="c4">Assign every blocking <code>plan.json</code> gate; require evidence or an explicit signed waiver before closing it.</label><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><span>Re-sync <code>releases/v3-beta</code> with the six commits now on master and re-run <code>relman audit</code>.</span><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><span>Maintain the linked Beta milestones and GitHub release tracker for the 38-gate release plan.</span><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><span>Approve the supported OS/architecture matrix and state whether Android/iOS are experimental.</span><span class="owner">P0 · Maintainers</span></div>
+          <div class="check"><span>Approve API compatibility/deprecation rules for the Beta series.</span><span class="owner">P0 · Maintainers</span></div>
+          <div class="check"><span>Assign every blocking <code>plan.json</code> gate; require evidence or an explicit signed waiver before closing it.</span><span class="owner">P0 · Release lead</span></div>
         </article>
         <article class="card full">
           <h3>2 — Defect and PR disposition</h3>
-          <div class="check"><input id="c5" type="checkbox"><label for="c5">Reproduce and disposition the candidate blocker issues listed in this report.</label><span class="owner">P0 · Platform owners</span></div>
-          <div class="check"><input id="c6" type="checkbox"><label for="c6">Audit PR #4895 privately and complete a security/dependency sign-off.</label><span class="owner">P0 · Security</span></div>
-          <div class="check"><input id="c7" type="checkbox"><label for="c7">Review all 42 open PRs; merge, retarget, supersede, or close each before freeze.</label><span class="owner">P1 · Maintainers</span></div>
-          <div class="check"><input id="c8" type="checkbox"><label for="c8">Add regression tests for every Beta-blocking bug fixed.</label><span class="owner">P0 · Authors</span></div>
+          <div class="check"><span>Reproduce and disposition the candidate blocker issues listed in this report.</span><span class="owner">P0 · Platform owners</span></div>
+          <div class="check"><span>Audit PR #4895 privately and complete a security/dependency sign-off.</span><span class="owner">P0 · Security</span></div>
+          <div class="check"><span>Review all 42 open PRs; merge, retarget, supersede, or close each before freeze.</span><span class="owner">P1 · Maintainers</span></div>
+          <div class="check"><span>Add regression tests for every Beta-blocking bug fixed.</span><span class="owner">P0 · Authors</span></div>
         </article>
         <article class="card full">
           <h3>3 — Quality gates</h3>
-          <div class="check"><input id="c9" type="checkbox"><label for="c9">Complete and update IMPLEMENTATION.md Phase 10 for GTK4; cover X11 and Wayland.</label><span class="owner">P0 · Linux</span></div>
-          <div class="check"><input id="c10" type="checkbox"><label for="c10">Remove or cover the GTK4 <code>TestService</code> CI skip; document any justified exclusions.</label><span class="owner">P0 · Linux/CI</span></div>
-          <div class="check"><input id="c11" type="checkbox"><label for="c11">Run native smoke/E2E tests for windows, menus, dialogs, tray, bindings, dev/build/package, updater, and crash recovery on the support matrix.</label><span class="owner">P0 · QA</span></div>
-          <div class="check"><input id="c12" type="checkbox"><label for="c12">Test all starter templates from clean machines; specifically guard Vue TypeScript.</label><span class="owner">P0 · CLI</span></div>
-          <div class="check"><input id="c13" type="checkbox"><label for="c13">Make the release-candidate matrix required and run it from the exact tag commit twice.</label><span class="owner">P0 · CI</span></div>
+          <div class="check"><span>Complete and update IMPLEMENTATION.md Phase 10 for GTK4; cover X11 and Wayland.</span><span class="owner">P0 · Linux</span></div>
+          <div class="check"><span>Remove or cover the GTK4 <code>TestService</code> CI skip; document any justified exclusions.</span><span class="owner">P0 · Linux/CI</span></div>
+          <div class="check"><span>Run native smoke/E2E tests for windows, menus, dialogs, tray, bindings, dev/build/package, updater, and crash recovery on the support matrix.</span><span class="owner">P0 · QA</span></div>
+          <div class="check"><span>Test all starter templates from clean machines; specifically guard Vue TypeScript.</span><span class="owner">P0 · CLI</span></div>
+          <div class="check"><span>Make the release-candidate matrix required and run it from the exact tag commit twice.</span><span class="owner">P0 · CI</span></div>
         </article>
         <article class="card full">
           <h3>4 — Documentation and communication</h3>
-          <div class="check"><input id="c14" type="checkbox"><label for="c14">Expand the Beta status page with the support matrix, known limitations, gate status, and route to tracked work.</label><span class="owner">P1 · Docs</span></div>
-          <div class="check"><input id="c15" type="checkbox"><label for="c15">Fix remaining live Alpha wording in <code>v3/README.md</code>, feedback, labels/templates and stale branch links; preserve historical release content.</label><span class="owner">P1 · Docs</span></div>
-          <div class="check"><input id="c16" type="checkbox"><label for="c16">Write an Alpha→Beta migration guide and review all breaking changes/deprecations against the changelog.</label><span class="owner">P1 · API/Docs</span></div>
-          <div class="check"><input id="c17" type="checkbox"><label for="c17">Build docs with Astro, run link validation, and execute or compile documented starter/tutorial snippets.</label><span class="owner">P0 · Docs/CI</span></div>
-          <div class="check"><input id="c18" type="checkbox"><label for="c18">Regenerate translations from corrected English sources; allow an explicit fallback if translations lag.</label><span class="owner">P1 · i18n</span></div>
+          <div class="check"><span>Expand the Beta status page with the support matrix, known limitations, gate status, and route to tracked work.</span><span class="owner">P1 · Docs</span></div>
+          <div class="check"><span>Fix remaining live Alpha wording in <code>v3/README.md</code>, feedback, labels/templates and stale branch links; preserve historical release content.</span><span class="owner">P1 · Docs</span></div>
+          <div class="check"><span>Write an Alpha→Beta migration guide and review all breaking changes/deprecations against the changelog.</span><span class="owner">P1 · API/Docs</span></div>
+          <div class="check"><span>Build docs with Astro, run link validation, and execute or compile documented starter/tutorial snippets.</span><span class="owner">P0 · Docs/CI</span></div>
+          <div class="check"><span>Regenerate translations from corrected English sources; allow an explicit fallback if translations lag.</span><span class="owner">P1 · i18n</span></div>
         </article>
         <article class="card full">
           <h3>5 — Release and launch</h3>
-          <div class="check"><input id="c19" type="checkbox"><label for="c19">Choose macOS signing policy: provision the six missing <code>APPLE_*</code> secrets or deliberately approve an unsigned Beta.</label><span class="owner">P0 · Release/Security</span></div>
-          <div class="check"><input id="c24" type="checkbox"><label for="c24">Rehearse the never-run <code>release-v3.yml</code> with <code>draft: true</code> on a throwaway alpha2 tag.</label><span class="owner">P0 · Release</span></div>
-          <div class="check"><input id="c20" type="checkbox"><label for="c20">Dry-run <code>v3.0.0-beta.1</code>; verify CLI/npm lockstep, source tag, checksums, assets, provenance, install and rollback.</label><span class="owner">P0 · Release</span></div>
-          <div class="check"><input id="c21" type="checkbox"><label for="c21">Obtain platform, docs, security, and release sign-offs on one immutable candidate commit.</label><span class="owner">P0 · Release lead</span></div>
-          <div class="check"><input id="c22" type="checkbox"><label for="c22">Publish Beta 1, verify public metadata/install commands, and monitor a 48–72 hour launch window.</label><span class="owner">P0 · Maintainers</span></div>
+          <div class="check"><span>Choose macOS signing policy: provision the six missing <code>APPLE_*</code> secrets or deliberately approve an unsigned Beta.</span><span class="owner">P0 · Release/Security</span></div>
+          <div class="check"><span>Rehearse the never-run <code>release-v3.yml</code> with <code>draft: true</code> on a throwaway alpha2 tag.</span><span class="owner">P0 · Release</span></div>
+          <div class="check"><span>Dry-run <code>v3.0.0-beta.1</code>; verify CLI/npm lockstep, source tag, checksums, assets, provenance, install and rollback.</span><span class="owner">P0 · Release</span></div>
+          <div class="check"><span>Obtain platform, docs, security, and release sign-offs on one immutable candidate commit.</span><span class="owner">P0 · Release lead</span></div>
+          <div class="check"><span>Publish Beta 1, verify public metadata/install commands, and monitor a 48–72 hour launch window.</span><span class="owner">P0 · Maintainers</span></div>
         </article>
       </div>
     </section>
@@ -209,11 +207,5 @@
     </section>
   </main>
   <footer class="wrap">Generated from repository and live GitHub evidence on 29 July 2026. Re-run the issue/PR/CI portions immediately before the release decision.</footer>
-  <script>
-    const key='wails-beta-audit-checks-v1';
-    const boxes=[...document.querySelectorAll('input[type=checkbox]')];
-    try { const state=JSON.parse(localStorage.getItem(key)||'{}'); boxes.forEach(b=>b.checked=!!state[b.id]); } catch (_) {}
-    boxes.forEach(b=>b.addEventListener('change',()=>{ try { const state={}; boxes.forEach(x=>state[x.id]=x.checked); localStorage.setItem(key,JSON.stringify(state)); } catch (_) {} }));
-  </script>
 </body>
 </html>
