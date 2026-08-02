@@ -17,7 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky
 
 ## Changed
 <!-- Changes in existing functionality -->

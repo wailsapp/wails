@@ -1,6 +1,6 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -8,32 +8,74 @@
 | 3.0.x-beta    | :white_check_mark: |
 | 3.0.x-alpha   | :x:                |
 
+## Scope
 
-## Reporting a Vulnerability
+We welcome reports affecting:
 
-If you believe you have found a security vulnerability in our project, we encourage you to let us know right away. 
-We will investigate all legitimate reports and do our best to quickly fix the problem. 
+- Wails v2 and v3 source code;
+- official Wails CLI binaries and downloads;
+- the official `@wailsio/runtime` npm package;
+- Wails documentation and websites; and
+- Wails-operated CI, release, and publishing infrastructure.
 
-Before reporting though, please review our security policy below.
+Reports about applications built with Wails, or third-party services that Wails
+does not operate, are outside this policy's scope. Please report those directly
+to the relevant application or service owner.
 
-### How to Report
+## Reporting a vulnerability
 
-To report a security vulnerability, please use GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) feature. If possible, please include as much information as possible. 
-This may include steps to reproduce, impact of the vulnerability, and anything else you believe would help us understand the problem.
-**Please do not include any sensitive or personal information in your report**.
+Use [GitHub Private Vulnerability Reporting](https://github.com/wailsapp/wails/security/advisories/new)
+to report a potential vulnerability. Do not open a public issue or disclose
+vulnerability details publicly before we have agreed on a disclosure plan.
 
-### What to Expect
+Please include, where possible:
 
-When you report a vulnerability, here's what you can expect:
+- a clear description of the issue and its potential impact;
+- affected versions, platforms, or configurations;
+- reproducible steps or a minimal proof of concept; and
+- any mitigation or fix ideas you have identified.
 
-- **Acknowledgement**: We will acknowledge your email within 48 hours, and you'll receive a more detailed response to your email within 72 hours indicating the next steps in handling your report.
+Do not include real credentials, tokens, private keys, personal data, or other
+sensitive production information. Redact such information from examples and
+proofs of concept.
 
-- **Updates**: After the initial reply to your report, our team will keep you informed of the progress being made towards a fix and full announcement. These updates will be sent at least once a week.
+## What to expect
 
-- **Confidentiality**: We will maintain strict confidentiality of your report until the security issue is resolved.
+These are best-effort targets, not guaranteed service-level commitments:
 
-- **Issue Resolution**: If the issue is confirmed, we will release a patch as soon as possible depending on complexity of the fix.
+- We aim to acknowledge a report within 48 hours.
+- We aim to provide an initial triage or status update within 7 calendar days.
+- For confirmed vulnerabilities, we aim to provide an update at least weekly
+  until resolution.
+- Critical reports may receive faster handling.
 
-- **Recognition**: We recognize and appreciate every individual who helps us identify and fix vulnerabilities in our project. While we do not currently have a bounty program, we would be happy to publicly acknowledge your responsible disclosure.
+If we confirm an issue, we will work on a fix and coordinate disclosure with
+the reporter. Where appropriate, we may publish a GitHub Security Advisory or
+request a CVE.
 
-We strive to make Wails safe for everyone, and we greatly appreciate the assistance of security researchers and users in helping us identify and fix vulnerabilities. Thank you for your contribution to the security of this project.
+## Good-faith research
+
+We will not pursue legal action against researchers who investigate and report
+in-scope vulnerabilities in good faith and follow this policy.
+
+Please avoid:
+
+- disrupting services or degrading availability;
+- accessing, modifying, or retaining data beyond what is necessary to
+  demonstrate the issue;
+- testing against other users or systems without their permission; and
+- social engineering, phishing, or other attacks against Wails contributors,
+  users, or infrastructure providers.
+
+If you are unsure whether planned testing is within scope, submit a private
+report first and describe the proposed approach.
+
+## Disclosure and recognition
+
+We ask reporters to give us a reasonable opportunity to investigate and fix an
+issue before public disclosure. We will coordinate publication with the
+reporter where possible.
+
+Wails does not operate a bug-bounty programme. With the reporter's explicit
+permission, we are happy to acknowledge responsible disclosures publicly after
+the issue is resolved.
