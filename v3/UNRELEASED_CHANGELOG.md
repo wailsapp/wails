@@ -20,16 +20,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Promote v3 from alpha to beta
-- Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
-- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
-- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
-- Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
-- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
-- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
