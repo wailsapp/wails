@@ -176,7 +176,7 @@
       "blocking": true,
       "status": "open",
       "note": "v3.0.0-beta.0, beta.1, and beta.2 were published from master on 2026-08-02. The current version file and newest tag are beta.2 while this evidence ledger remains beta.0; release-stage/version approval is not recorded, so this gate remains open.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
     "id": "sw-compat",
@@ -221,7 +221,7 @@
       "owner": "lea",
       "status": "open",
       "note": "Release v3 workflow runs 30747695287 (beta.0) and 30748402783 (beta.1) published Linux amd64/arm64, Windows amd64, macOS amd64/arm64/universal, and SHA256SUMS. The newest published beta.2 release has zero assets and no matching Release v3 run. Reproducibility and the missing current assets are tracked in #5876; this gate remains open.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "sw-signing",
@@ -231,7 +231,7 @@
       "blocking": true,
       "status": "open",
       "note": "The beta.1 tag-triggered run 30748399250 failed because Apple signing credentials were absent. Commit 6603cde8e then removed signing/notarization steps and run 30748402783 published unsigned macOS binaries. No explicit evidenced waiver is recorded; tracked in #5876.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "sw-install",
@@ -241,7 +241,7 @@
       "blocking": true,
       "status": "open",
       "note": "No published-channel installation evidence is recorded. The newest beta.2 release has no downloadable assets, so installation cannot be verified from that release until #5876 is resolved.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "sw-perf",
@@ -283,7 +283,7 @@
       "blocking": true,
     "status": "open",
     "note": "Commit d40990bc0 moved beta.2 entries into docs/src/content/docs/changelog.mdx and cleared the matching unreleased entries. Completeness/review evidence for all Beta changes is not recorded, so this gate remains open.",
-    "updated": "2026-08-03T08:30:00+10:00"
+    "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "doc-migration",
@@ -405,7 +405,7 @@
       "blocking": true,
       "status": "open",
       "note": "Commit 6fa6ddcc1 added the Beta announcement and blog; beta.0 was published with full release notes. The required review/approval evidence is not recorded, so this gate remains open.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "com-channels",
@@ -455,7 +455,7 @@
       "blocking": true,
       "status": "open",
       "note": "Three Beta releases were published on 2026-08-02, including an unsigned-macOS fallback and a beta.2 release with no assets. No approved runbook, abort criteria, or waiver evidence is recorded; #5876 tracks the release-health blocker.",
-      "updated": "2026-08-03T08:30:00+10:00"
+      "updated": "2026-08-03T08:19:00+10:00"
     },
     {
       "id": "ops-support",
