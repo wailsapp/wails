@@ -1,9 +1,13 @@
-<!-- Canonical beta-announcement draft. Replace the three bracketed release
-     details after the tag is published, then copy this to the public blog. -->
+---
+slug: blog/wails-v3-beta
+title: "Wails v3 Beta: a new foundation for Go desktop applications"
+description: Wails v3 Beta introduces a more direct application model, richer bindings, and a clearer foundation for Go desktop applications.
+authors: [leaanthony]
+tags: [wails, v3, beta]
+date: 2026-08-02
+---
 
-# Wails v3 Beta: a new foundation for Go desktop applications
-
-![Wails v3](https://raw.githubusercontent.com/wailsapp/wails/releases/v3-beta/docs/public/digital_wales_master.webp)
+![A native Wails v3 frameless window on macOS](../../../assets/screenshots/frameless-v3-native-corners-macos.png)
 
 Today we are releasing Wails v3 Beta.
 
@@ -66,8 +70,6 @@ can be created, managed, and closed at runtime. The result is a clearer route
 to the kind of desktop software that needs editors, inspectors, preferences,
 tool windows, or several independent pieces of UI.
 
-![A native Wails v3 frameless window on macOS](https://raw.githubusercontent.com/wailsapp/wails/releases/v3-beta/docs/src/assets/screenshots/frameless-v3-native-corners-macos.png)
-
 ### Services and generated bindings
 
 Go services replace the older binding model. They keep application logic as
@@ -100,10 +102,10 @@ debugged alongside the application.
 ### A stronger cross-platform desktop baseline
 
 The beta supports Windows on amd64 and arm64, macOS on Intel and Apple Silicon,
-and Linux on amd64 and arm64. GTK4 with WebKitGTK 6.0 is the
-default Linux stack; GTK3 remains available as a legacy option throughout the
-v3.0 series. Mobile support is exciting but remains experimental and is not
-part of the desktop beta compatibility promise.
+and Linux on amd64 and arm64. GTK4 with WebKitGTK 6.0 is the default Linux
+stack; GTK3 remains available as a legacy option throughout the v3.0 series.
+Mobile support is exciting but remains experimental and is not part of the
+desktop beta compatibility promise.
 
 This release also includes the work needed to make the day-to-day experience
 more dependable: improved platform behaviour, a more capable window model,
@@ -117,12 +119,12 @@ lifecycle, services instead of context-bound bindings, direct application and
 window APIs instead of the v2 runtime package, and regenerated frontend
 bindings.
 
-We have published a [v2-to-v3 migration guide](https://v3.wails.io/migration/v2-to-v3/)
-that walks through those changes and includes a feature mapping and testing
-checklist. That manual guide is the supported migration path for this beta.
-Please do not expect every v2 project to convert without review: test the
-result, port your runtime calls deliberately, and keep v2 in place until the
-new application is ready.
+We have published a [v2-to-v3 migration guide](/migration/v2-to-v3/) that walks
+through those changes and includes a feature mapping and testing checklist.
+That manual guide is the supported migration path for this beta. Please do not
+expect every v2 project to convert without review: test the result, port your
+runtime calls deliberately, and keep v2 in place until the new application is
+ready.
 
 We are also evaluating an experimental migration assistant. It is not part of
 this beta release, and we will only recommend it once it has been validated
@@ -166,10 +168,17 @@ development environment and helps configure the dependencies Wails needs:
 
 ```sh
 wails3 setup
-wails3 init
 ```
 
-![A Wails application created from the v3 starter](https://raw.githubusercontent.com/wailsapp/wails/releases/v3-beta/docs/src/assets/notes-app.png)
+![The Wails v3 setup wizard in dark mode](../../../assets/screenshots/wails3-setup-wizard-dark.png)
+
+### Create a project
+
+Once you are all set, create a project with:
+
+```sh
+wails3 init
+```
 
 - Documentation: <https://v3.wails.io/>
 - Migration guide: <https://v3.wails.io/migration/v2-to-v3/>
@@ -191,8 +200,8 @@ And a very special, heartfelt thank you to the sponsors who have carried Wails
 through this long transition. Your support did more than keep the lights on: it
 gave us the opportunity to spend sustained time on the architecture, tooling,
 testing, and documentation that let the project accelerate toward v3. Every
-tester and contributor has helped shape this release, but the sponsors
-made it possible to give that work the attention it deserved.
+tester and contributor has helped shape this release, but the sponsors made it
+possible to give that work the attention it deserved.
 
 The beta is an invitation to help us finish v3 properly. Try it, build with it,
 tell us where it breaks, and help us make the road to 3.0 a short and careful

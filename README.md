@@ -86,8 +86,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 ### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-it before creating an enhancement request.
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). New functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](v3/wep/README.md), submitted as a draft pull request rather than a feature-request issue.
 
 ## Getting Started
 
