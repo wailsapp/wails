@@ -149,7 +149,7 @@ export default defineConfig({
       plugins: [
         starlightImageZoom(),
         starlightBlog({
-          title: "Wails Blog",
+          title: "Blog",
           authors: authors,
         }),
       ],
