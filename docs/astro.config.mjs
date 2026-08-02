@@ -139,6 +139,10 @@ export default defineConfig({
       },
       plugins: [
         starlightImageZoom(),
+        starlightLinksValidator({
+          errorOnLocalLinks: false,
+          errorOnRelativeLinks: false,
+        }),
         starlightBlog({
           title: "Blog",
           authors: authors,
