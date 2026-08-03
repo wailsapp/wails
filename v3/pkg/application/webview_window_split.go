@@ -236,6 +236,15 @@ func NewSplitWindow(options MacSplitWindowOptions) (*MacSplitWindow, error) {
 }
 
 func (sw *MacSplitWindow) Show() *MacSplitWindow {
+	// WebviewWindow.Show(), when the native window hasn't run yet (true here
+	// until app.Run() starts, since NewSplitWindow always constructs with
+	// Hidden:true to avoid flashing an unsplit window), triggers Run() but
+	// -- unlike its already-running branch -- never clears options.Hidden.
+	// Left alone, a Show() called before app.Run() (the normal call site,
+	// right after NewSplitWindow in main()) would construct the window and
+	// silently never display it. Same shape as the SetToolbar bug fixed
+	// earlier in this window's Run() path; clear it here explicitly.
+	sw.window.options.Hidden = false
 	sw.window.Show()
 	return sw
 }
