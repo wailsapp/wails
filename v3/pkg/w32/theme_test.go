@@ -5,7 +5,7 @@ package w32
 import (
 	"go/ast"
 	"go/parser"
-	"go/token"
+	gotoken "go/token"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -18,7 +18,7 @@ func TestAllowDarkModeForWindowPassesHWNDAndAllowFlag(t *testing.T) {
 	}
 
 	themeFile := filepath.Join(filepath.Dir(testFile), "theme.go")
-	file, err := parser.ParseFile(token.NewFileSet(), themeFile, nil, 0)
+	file, err := parser.ParseFile(gotoken.NewFileSet(), themeFile, nil, 0)
 	if err != nil {
 		t.Fatalf("parse theme.go: %v", err)
 	}
