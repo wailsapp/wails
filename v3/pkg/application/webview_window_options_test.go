@@ -457,3 +457,25 @@ func TestEffectiveZoomButtonState(t *testing.T) {
 		})
 	}
 }
+
+func TestUseDarkNativeWindowsMenu(t *testing.T) {
+	tests := []struct {
+		name       string
+		windowDark bool
+		systemDark func() bool
+		want       bool
+	}{
+		{"light window", false, nil, false},
+		{"dark window with unavailable policy", true, nil, true},
+		{"dark window with dark system policy", true, func() bool { return true }, true},
+		{"dark window with light system policy", true, func() bool { return false }, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := useDarkNativeWindowsMenu(tt.windowDark, tt.systemDark); got != tt.want {
+				t.Fatalf("useDarkNativeWindowsMenu() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}
