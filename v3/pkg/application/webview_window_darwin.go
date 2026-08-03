@@ -1714,6 +1714,19 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
+		// A SetToolbar call made before the native window existed (e.g. right
+		// after NewWithOptions, before app.Run()) is stashed on the parent;
+		// apply it now, overriding the placeholder toolbar UseToolbar may
+		// have just attached above.
+		w.parent.toolbarLock.RLock()
+		pendingToolbar := w.parent.toolbar
+		w.parent.toolbarLock.RUnlock()
+		if pendingToolbar != nil {
+			if err := w.setToolbar(pendingToolbar); err != nil {
+				w.parent.Error("SetToolbar: %s", err)
+			}
+		}
+
 		if macOptions.Appearance != "" {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
