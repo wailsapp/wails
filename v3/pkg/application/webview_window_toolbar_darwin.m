@@ -1,3 +1,5 @@
+//go:build darwin && !ios && !server
+
 #import "webview_window_toolbar_darwin.h"
 #import <objc/runtime.h>
 #import <string.h>
