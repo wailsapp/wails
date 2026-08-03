@@ -9,7 +9,7 @@
 // participates in the same windowId-keyed asset/IPC routing as the window's
 // main webview. Per-pane WebviewPreferences tuning isn't wired yet -- only
 // URL is honoured; every pane gets the same sane defaults.
-static WKWebView* buildPaneWebview(void* nsWindowPtr, const char* url) {
+static WKWebView* buildPaneWebview(void* nsWindowPtr) {
     WebviewWindow* nsWindow = (WebviewWindow*)nsWindowPtr;
     WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
 
@@ -30,15 +30,14 @@ static WKWebView* buildPaneWebview(void* nsWindowPtr, const char* url) {
     }
 #endif
 
-    WKWebView* webView = [[WKWebView alloc] initWithFrame:NSZeroRect configuration:config]; // +1
+    // A zero starting frame silently suspends WKWebView's loading -- it
+    // never even reaches the scheme handler (confirmed empirically). The
+    // split view resizes this once it's installed; the starting size just
+    // has to be non-degenerate, matching windowNew's own webview.
+    WKWebView* webView = [[WKWebView alloc] initWithFrame:NSMakeRect(0, 0, 200, 200) configuration:config]; // +1
     webView.navigationDelegate = delegate;
     webView.UIDelegate = delegate;
     webView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
-    if (url != NULL && strlen(url) > 0) {
-        NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
-        [webView loadRequest:[NSURLRequest requestWithURL:nsURL]];
-    }
 
     return webView; // +1, caller takes ownership
 }
@@ -92,7 +91,7 @@ void* splitWindowAddPane(void* splitViewController, void* nsWindow, bool reuseEx
         [webView retain];
         [webView removeFromSuperview];
     } else {
-        webView = buildPaneWebview(nsWindow, url); // +1
+        webView = buildPaneWebview(nsWindow); // +1
     }
 
     NSViewController* paneVC = [[[NSViewController alloc] init] autorelease];
@@ -107,6 +106,16 @@ void* splitWindowAddPane(void* splitViewController, void* nsWindow, bool reuseEx
     if (startCollapsed) item.collapsed = YES;
 
     [splitVC addSplitViewItem:item]; // splitVC.splitViewItems now owns item
+
+    if (!reuseExistingWebview && url != NULL && strlen(url) > 0) {
+        // Loading only after the webview is actually in the split view's
+        // hierarchy -- see the comment in buildPaneWebview. url must
+        // already be a fully-qualified wails://... URL (resolved Go-side
+        // via assetserver.GetStartURL); a bare path has no scheme for
+        // WKWebView to route to the custom scheme handler.
+        NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
+        [webView loadRequest:[NSURLRequest requestWithURL:nsURL]];
+    }
 
     [webView release]; // release our +1 (new pane) or the temporary retain (reused pane);
                         // paneVC.view now owns the only reference that matters.
