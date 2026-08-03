@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Status</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #1d1d1f;
+            padding: 3px 10px;
+        }
+        @media (prefers-color-scheme: dark) {
+            .pill { color: #f2f2f7; }
+        }
+        .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #8a8a8e;
+            transition: background 0.2s ease;
+        }
+        .dot.syncing { background: #ff9f0a; }
+        .dot.synced { background: #30d158; }
+    </style>
+</head>
+<body>
+    <div class="pill">
+        <span class="dot" id="dot"></span>
+        <span id="label">Idle</span>
+    </div>
+
+    <script type="module">
+        const dot = document.getElementById('dot');
+        const label = document.getElementById('label');
+
+        const STATES = {
+            idle: 'Idle',
+            syncing: 'Syncing…',
+            synced: 'Synced',
+        };
+
+        // Called from Go via MacTitlebarAccessory.ExecJS -- proves the
+        // accessory's own webview can be driven independently, with nothing
+        // in the main window's content involved.
+        window.setStatus = (state) => {
+            dot.className = 'dot' + (state === 'idle' ? '' : ' ' + state);
+            label.textContent = STATES[state] ?? state;
+        };
+    </script>
+</body>
+</html>

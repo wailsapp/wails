@@ -1654,6 +1654,7 @@ func (w *macosWebviewWindow) run() {
 		if pending := w.parent.macSplitPending; pending != nil {
 			w.installSplitPanes(pending)
 		}
+		w.installPendingTitlebarAccessories()
 
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
