@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titlebar Accessory</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+            padding: 0 60px;
+        }
+        h1 { font-size: 20px; margin: 0; font-weight: 600; }
+        p { font-size: 13px; line-height: 1.6; color: #6e6e73; margin: 0; max-width: 40ch; }
+        .hint {
+            margin-top: 18px;
+            font-size: 12px;
+            color: #8a8a8e;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background: #1e1e1e; color: #f2f2f7; }
+            p, .hint { color: #98989d; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Nothing to see here</h1>
+    <p>The interesting part of this window is above it, in the titlebar: a status pill on the right and a
+        Ping button on the left. Each is its own independent webview, not part of this page.</p>
+    <p class="hint">Click Ping a few times, and watch the status pill cycle on its own.</p>
+</body>
+</html>

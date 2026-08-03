@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ping</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+        }
+        button {
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #1d1d1f;
+            padding: 3px 10px;
+            border-radius: 6px;
+            cursor: default;
+        }
+        button:hover { background: rgba(0, 0, 0, 0.06); }
+        button:active { background: rgba(0, 0, 0, 0.12); }
+        @media (prefers-color-scheme: dark) {
+            button { color: #f2f2f7; }
+            button:hover { background: rgba(255, 255, 255, 0.1); }
+            button:active { background: rgba(255, 255, 255, 0.16); }
+        }
+        .dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: #0a84ff;
+        }
+    </style>
+</head>
+<body>
+    <button id="ping"><span class="dot"></span><span id="label">Ping</span></button>
+
+    <script type="module">
+        import { Events } from '/wails/runtime.js';
+
+        let count = 0;
+        const label = document.getElementById('label');
+
+        document.getElementById('ping').addEventListener('click', () => {
+            count++;
+            label.textContent = count === 0 ? 'Ping' : `Ping (${count})`;
+            Events.Emit('titlebar:ping', count);
+        });
+    </script>
+</body>
+</html>
