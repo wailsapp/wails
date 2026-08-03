@@ -219,6 +219,12 @@ type WebviewWindow struct {
 	// executes; darwin's run() consumes it via installSplitPanes. Always
 	// nil for windows created any other way.
 	macSplitPending *macSplitPendingConfig
+
+	// titlebarAccessoriesPending queues AddTitlebarAccessory calls made
+	// before the native window exists; darwin's run() consumes it via
+	// installPendingTitlebarAccessories.
+	titlebarAccessoriesPending []*macPendingTitlebarAccessory
+	titlebarAccessoriesLock    sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
