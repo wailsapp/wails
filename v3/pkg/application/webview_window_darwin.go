@@ -1651,6 +1651,10 @@ func (w *macosWebviewWindow) run() {
 			C.int(notchContentHeight),
 			cNotchScreenID,
 		)
+		if pending := w.parent.macSplitPending; pending != nil {
+			w.installSplitPanes(pending)
+		}
+
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
 		}

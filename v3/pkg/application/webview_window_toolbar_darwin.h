@@ -1,3 +1,5 @@
+//go:build darwin && !ios && !server
+
 #ifndef WebviewWindowToolbarDarwin_h
 #define WebviewWindowToolbarDarwin_h
 
