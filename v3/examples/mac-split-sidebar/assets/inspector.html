@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inspector</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: transparent; /* let the inspector's own NSVisualEffectView glass show through */
+            color: #1d1d1f;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body { padding: 16px 14px; }
+        h1 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6e6e73;
+            margin: 0 0 14px;
+        }
+        dl { margin: 0; }
+        dt {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #8a8a8e;
+            margin-top: 14px;
+        }
+        dt:first-child { margin-top: 0; }
+        dd { margin: 3px 0 0; font-size: 13px; }
+        .log {
+            margin-top: 28px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            font: 10px/1.6 ui-monospace, SFMono-Regular, monospace;
+            color: #8a8a8e;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Inspector · PaneBehaviorInspector</h1>
+    <dl>
+        <dt>Author</dt><dd id="author">&mdash;</dd>
+        <dt>Published</dt><dd id="date">&mdash;</dd>
+        <dt>Word count</dt><dd id="words">&mdash;</dd>
+    </dl>
+    <div class="log" id="log"></div>
+
+    <script type="module">
+        import { Events } from '/wails/runtime.js';
+
+        const ARTICLES = {
+            a1: { author: 'M. Reyes', date: '2026-07-18', words: 62 },
+            a2: { author: 'J. Okafor', date: '2026-07-21', words: 47 },
+            a3: { author: 'S. Kowalski', date: '2026-07-25', words: 51 },
+        };
+
+        const authorEl = document.getElementById('author');
+        const dateEl = document.getElementById('date');
+        const wordsEl = document.getElementById('words');
+        const log = document.getElementById('log');
+
+        function logLine(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            log.prepend(div);
+        }
+
+        Events.On('reader:select', (event) => {
+            const meta = ARTICLES[event.data];
+            if (!meta) return;
+            authorEl.textContent = meta.author;
+            dateEl.textContent = meta.date;
+            wordsEl.textContent = meta.words + ' words';
+            logLine('reader:select -> ' + event.data + ' (received in inspector pane)');
+        });
+
+        logLine('inspector pane loaded, own WKWebView + wails:// scheme handler');
+    </script>
+</body>
+</html>
