@@ -13,6 +13,8 @@ import "C"
 import (
 	"sync/atomic"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 var splitPaneIDCounter uint64
@@ -94,7 +96,24 @@ func (w *macosWebviewWindow) installSplitPanes(pending *macSplitPendingConfig) {
 		pane := pending.panes[i]
 		content := po.Content.(MacWebviewContent) // validated in NewSplitWindow
 
-		urlC := C.CString(content.URL)
+		// Pane 0 reuses the window's own webview, whose content is already
+		// loaded by the normal run() flow via a correctly-resolved
+		// assetserver.GetStartURL call; skip re-resolving/reloading it here.
+		// Panes 1..N need the same wails://-scheme resolution applied by
+		// hand, or a bare path like "/content.html" has no scheme for
+		// WKWebView to route to the custom scheme handler and silently
+		// fails to load (confirmed empirically -- no error, no scheme
+		// handler callback, nothing).
+		resolvedURL := content.URL
+		if i != 0 {
+			if resolved, err := assetserver.GetStartURL(content.URL); err == nil {
+				resolvedURL = resolved
+			} else {
+				globalApplication.error("MacSplitWindow pane %q: resolving URL %q: %s", pane.name, content.URL, err)
+			}
+		}
+
+		urlC := C.CString(resolvedURL)
 		item := C.splitWindowAddPane(splitVC, w.nsWindow, C.bool(i == 0),
 			urlC, C.int(po.Behavior),
 			C.double(po.MinThickness), C.double(po.MaxThickness),
@@ -118,7 +137,13 @@ func macSplitPaneSetCollapsed(item unsafe.Pointer, collapsed bool) {
 }
 
 func macSplitPaneWebviewSetURL(webview unsafe.Pointer, url string) {
-	urlC := C.CString(url)
+	resolvedURL := url
+	if resolved, err := assetserver.GetStartURL(url); err == nil {
+		resolvedURL = resolved
+	} else {
+		globalApplication.error("MacWebviewPane.SetURL: resolving URL %q: %s", url, err)
+	}
+	urlC := C.CString(resolvedURL)
 	defer C.free(unsafe.Pointer(urlC))
 	C.splitPaneWebviewSetURL(webview, urlC)
 }
