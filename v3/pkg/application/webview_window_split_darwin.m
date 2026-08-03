@@ -3,45 +3,6 @@
 #import "webview_window_split_darwin.h"
 #import "webview_window_darwin.h"
 
-// Builds a fresh WKWebView wired the same way windowNew wires the window's
-// own webview (wails:// scheme handler, "external" message handler, nav/UI
-// delegate), reusing nsWindow's existing WebviewWindowDelegate so the pane
-// participates in the same windowId-keyed asset/IPC routing as the window's
-// main webview. Per-pane WebviewPreferences tuning isn't wired yet -- only
-// URL is honoured; every pane gets the same sane defaults.
-static WKWebView* buildPaneWebview(void* nsWindowPtr) {
-    WebviewWindow* nsWindow = (WebviewWindow*)nsWindowPtr;
-    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-
-    WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
-    [config autorelease];
-    config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
-    [config setURLSchemeHandler:delegate forURLScheme:@"wails"];
-
-    WKUserContentController* userContentController = [WKUserContentController new];
-    [userContentController autorelease];
-    [userContentController addScriptMessageHandler:delegate name:@"external"];
-    config.userContentController = userContentController;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
-    if (@available(macOS 10.15, *)) {
-        config.preferences.fraudulentWebsiteWarningEnabled = true;
-    }
-#endif
-
-    // A zero starting frame silently suspends WKWebView's loading -- it
-    // never even reaches the scheme handler (confirmed empirically). The
-    // split view resizes this once it's installed; the starting size just
-    // has to be non-degenerate, matching windowNew's own webview.
-    WKWebView* webView = [[WKWebView alloc] initWithFrame:NSMakeRect(0, 0, 200, 200) configuration:config]; // +1
-    webView.navigationDelegate = delegate;
-    webView.UIDelegate = delegate;
-    webView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
-    return webView; // +1, caller takes ownership
-}
-
 void* splitWindowInstall(void* nsWindow, bool vertical) {
     NSSplitViewController* splitVC = [[[NSSplitViewController alloc] init] autorelease];
     splitVC.splitView.vertical = vertical;
@@ -91,7 +52,20 @@ void* splitWindowAddPane(void* splitViewController, void* nsWindow, bool reuseEx
         [webView retain];
         [webView removeFromSuperview];
     } else {
-        webView = buildPaneWebview(nsWindow); // +1
+        webView = buildAuxiliaryWebview(nsWindow, 200, 200); // +1
+    }
+
+    // Sidebar/ContentList/Inspector panes get a translucent NSVisualEffectView
+    // material behind them automatically from the factory methods below, but
+    // WKWebView paints its own opaque white backing by default -- setting the
+    // page's CSS background to transparent alone does nothing at the native
+    // layer, the material never shows through. This is the other half of
+    // "automatic glass with no extra code": it needs to be told to stop
+    // drawing its own background, not just asked nicely from CSS.
+    if (behavior == 1 || behavior == 2 || behavior == 3) {
+        if (@available(macOS 12.0, *)) {
+            webView.underPageBackgroundColor = NSColor.clearColor;
+        }
     }
 
     NSViewController* paneVC = [[[NSViewController alloc] init] autorelease];
@@ -109,7 +83,7 @@ void* splitWindowAddPane(void* splitViewController, void* nsWindow, bool reuseEx
 
     if (!reuseExistingWebview && url != NULL && strlen(url) > 0) {
         // Loading only after the webview is actually in the split view's
-        // hierarchy -- see the comment in buildPaneWebview. url must
+        // hierarchy -- see the comment on buildAuxiliaryWebview. url must
         // already be a fully-qualified wails://... URL (resolved Go-side
         // via assetserver.GetStartURL); a bare path has no scheme for
         // WKWebView to route to the custom scheme handler.
