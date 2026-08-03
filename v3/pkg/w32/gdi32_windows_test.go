@@ -9,7 +9,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
-// Regression test for GetStockObject in gdi32.go.
+// TestGetStockObjectReturnsValidHandle is a regression test for GetStockObject
+// in gdi32.go.
 //
 // GetStockObject called procGetDeviceCaps instead of procGetStockObject, even
 // though procGetStockObject was declared alongside it. GetDeviceCaps expects
@@ -19,7 +20,6 @@ import (
 //
 // This test fails on the pre-fix code, where every call returns 0. It runs on
 // Windows CI via the //go:build windows constraint.
-
 func TestGetStockObjectReturnsValidHandle(t *testing.T) {
 	i := is.New(t)
 
@@ -52,5 +52,6 @@ func TestGetStockObjectReturnsValidHandle(t *testing.T) {
 
 	previous := w32.SelectObject(hdc, font)
 	i.True(previous != 0)
-	w32.SelectObject(hdc, previous)
+	restored := w32.SelectObject(hdc, previous)
+	i.Equal(restored, font)
 }
