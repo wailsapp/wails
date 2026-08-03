@@ -114,7 +114,7 @@ func init() {
 					if allow {
 						allowInt = 1
 					}
-					ret, _, _ := syscall.SyscallN(procAllowDarkModeForWindow, uintptr(allowInt))
+					ret, _, _ := syscall.SyscallN(procAllowDarkModeForWindow, uintptr(hwnd), uintptr(allowInt))
 					return ret
 				}
 			}
