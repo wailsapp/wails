@@ -220,6 +220,13 @@ type WebviewWindow struct {
 	savedMaxWidth    int
 	savedMaxHeight   int
 	constraintsSaved bool
+
+	// toolbar holds the most recently requested toolbar (macOS only). It is
+	// stashed here so a SetToolbar call made before the native window exists
+	// (e.g. immediately after NewWithOptions, before app.Run()) is applied
+	// once run() creates the window, instead of being silently dropped.
+	toolbar     *MacToolbar
+	toolbarLock sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -811,7 +818,13 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 // is rejected: the whole call fails, logged via Window.Error, and the
 // previous toolbar (if any) is left in place.
 func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
+	w.toolbarLock.Lock()
+	w.toolbar = toolbar
+	w.toolbarLock.Unlock()
+
 	if w.impl == nil {
+		// Native window doesn't exist yet: run() will apply the stashed
+		// toolbar once it does.
 		return w
 	}
 	var err error
