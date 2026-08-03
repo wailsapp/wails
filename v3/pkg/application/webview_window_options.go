@@ -33,6 +33,15 @@ func effectiveZoomButtonState(a, b ButtonState) ButtonState {
 	return a
 }
 
+// useDarkNativeWindowsMenu reports whether Windows can draw a dark native menu
+// for a dark application window. A menu background can be selected per window,
+// but Windows selects native menu text from its process-level colour policy. If
+// the system policy is light, retaining a dark background makes the text
+// unreadable, so callers must fall back to the matching light menu instead.
+func useDarkNativeWindowsMenu(windowIsDark bool, systemAppsUseDarkMode func() bool) bool {
+	return windowIsDark && (systemAppsUseDarkMode == nil || systemAppsUseDarkMode())
+}
+
 type WindowStartPosition int
 
 const (

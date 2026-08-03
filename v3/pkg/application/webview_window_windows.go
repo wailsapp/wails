@@ -1480,9 +1480,13 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	}
 
 	w32.SetTheme(w.hwnd, isDarkMode)
+	// Native popup-menu text follows Windows' process-level colour policy, not
+	// the per-window DWM theme. Do not paint a dark menu background when that
+	// policy is light, otherwise Windows draws dark text on dark backgrounds.
+	menuIsDarkMode := useDarkNativeWindowsMenu(isDarkMode, w32.ShouldAppsUseDarkMode)
 
 	// Clear any existing theme first
-	if w.menubarTheme != nil && !isDarkMode {
+	if w.menubarTheme != nil && !menuIsDarkMode {
 		// Reset menu to default Windows theme when switching to light mode
 		w.menubarTheme = nil
 		if w.menu != nil {
@@ -1500,7 +1504,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	// Custom theme
 	if w32.SupportsCustomThemes() {
 		var userTheme *MenuBarTheme
-		if isDarkMode {
+		if menuIsDarkMode {
 			userTheme = customTheme.DarkModeMenuBar
 		} else {
 			userTheme = customTheme.LightModeMenuBar
@@ -1508,7 +1512,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 		if userTheme != nil {
 			modeStr := "light"
-			if isDarkMode {
+			if menuIsDarkMode {
 				modeStr = "dark"
 			}
 			globalApplication.debug("Setting custom "+modeStr+" menubar theme", "window", w.parent.id)
@@ -1529,7 +1533,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && isDarkMode {
+		} else if userTheme == nil && menuIsDarkMode {
 			// Use default dark theme if no custom theme provided
 			globalApplication.debug("Setting default dark menubar theme", "window", w.parent.id)
 			w.menubarTheme = &w32.MenuBarTheme{
@@ -1549,7 +1553,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && !isDarkMode && w.menu != nil {
+		} else if userTheme == nil && !menuIsDarkMode && w.menu != nil {
 			// No custom theme for light mode - ensure menu is reset to default
 			globalApplication.debug("Resetting menu to default light theme", "window", w.parent.id)
 			var mi w32.MENUINFO
