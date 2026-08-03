@@ -227,6 +227,12 @@ type WebviewWindow struct {
 	// once run() creates the window, instead of being silently dropped.
 	toolbar     *MacToolbar
 	toolbarLock sync.RWMutex
+
+	// macSplitPending holds a MacSplitWindow's pane configuration between
+	// NewSplitWindow and the point where this window's Run() actually
+	// executes; darwin's run() consumes it via installSplitPanes. Always
+	// nil for windows created any other way.
+	macSplitPending *macSplitPendingConfig
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
