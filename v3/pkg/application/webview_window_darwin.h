@@ -43,4 +43,8 @@ void windowSetLiquidGlass(void* window, int style, int material, double cornerRa
 void windowRemoveVisualEffects(void* window);
 void configureWebViewForLiquidGlass(void* window);
 
+// Shared by webview_window_split_darwin.m and
+// webview_window_titlebar_accessory_darwin.m; see the .m for details.
+WKWebView* buildAuxiliaryWebview(void* nsWindow, double width, double height);
+
 #endif /* WebviewWindowDelegate_h */
