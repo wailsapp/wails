@@ -375,3 +375,8 @@ func (w *androidWebviewWindow) showMenuBar() {
 func (w *androidWebviewWindow) snapAssist() {
 	// Android doesn't support window snap assist like Windows
 }
+
+func (w *androidWebviewWindow) setToolbar(toolbar *MacToolbar) error {
+	// NSToolbar is macOS only
+	return nil
+}

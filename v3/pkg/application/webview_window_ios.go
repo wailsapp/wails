@@ -435,6 +435,11 @@ func (w *iosWebviewWindow) snapAssist() {
 	// iOS doesn't support window snap assist like Windows
 }
 
+func (w *iosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
+	// NSToolbar is macOS only
+	return nil
+}
+
 func newWindowImpl(parent *WebviewWindow) *iosWebviewWindow {
 	// Create iOS WebView implementation but don't create native view yet
 	// It will be created when run() is called

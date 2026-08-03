@@ -2992,6 +2992,11 @@ func (w *windowsWebviewWindow) snapAssist() {
 	w32.KeybdEvent(byte(w32.VK_LWIN), 0, w32.KEYEVENTF_KEYUP, 0)
 }
 
+func (w *windowsWebviewWindow) setToolbar(toolbar *MacToolbar) error {
+	// NSToolbar is macOS only
+	return nil
+}
+
 func (w *windowsWebviewWindow) setContentProtection(enabled bool) {
 	// Ensure the option reflects the requested state for future show() calls
 	w.parent.options.ContentProtectionEnabled = enabled

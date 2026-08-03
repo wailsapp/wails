@@ -732,6 +732,19 @@ func (a *App) Run() error {
 			}
 		}()
 
+		go func() {
+			for {
+				itemID := <-toolbarItemClicked
+				go handleToolbarItemClicked(itemID)
+			}
+		}()
+		go func() {
+			for {
+				event := <-toolbarSearchTriggered
+				go handleToolbarSearch(event.itemID, event.query)
+			}
+		}()
+
 		a.runLock.Lock()
 		a.running = true
 		a.runLock.Unlock()
