@@ -191,6 +191,30 @@ jobs:
         fi
         go run release.go "${ARGS[@]}"
 
+    # Tags created with GITHUB_TOKEN do not emit a push event that can trigger
+    # Release v3. Dispatch it explicitly so each published nightly also gets
+    # the platform binaries, checksums, and provenance attached to its release.
+    - name: Build and attach desktop artifacts
+      id: desktop_artifacts
+      if: steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true'
+      env:
+        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        tag="${{ steps.release.outputs.release_tag }}"
+        pre_release=false
+        if [[ "$tag" == *-* ]]; then
+          pre_release=true
+        fi
+
+        gh workflow run release-v3.yml \
+          --repo "${{ github.repository }}" \
+          --ref master \
+          -f tag="$tag" \
+          -f pre_release="$pre_release" \
+          -f draft=false
+        echo "dispatched=true" >> "$GITHUB_OUTPUT"
+        echo "Dispatched Release v3 for $tag"
+
     - name: Summary
       if: always()
       run: |
@@ -208,6 +232,9 @@ jobs:
           echo "- **Mode:** ${{ steps.release.outputs.release_dry_run == 'true' && '🧪 Dry Run' || '🚀 Live release' }}" >> $GITHUB_STEP_SUMMARY
           if [ -n "${{ steps.release.outputs.release_url }}" ]; then
             echo "- **Release URL:** ${{ steps.release.outputs.release_url }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.desktop_artifacts.outputs.dispatched }}" == "true" ]; then
+            echo "- **Desktop artifacts:** Release v3 dispatched" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changelog" >> $GITHUB_STEP_SUMMARY
