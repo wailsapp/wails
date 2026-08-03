@@ -42,6 +42,34 @@ func useDarkNativeWindowsMenu(windowIsDark bool, systemAppsUseDarkMode func() bo
 	return windowIsDark && (systemAppsUseDarkMode == nil || systemAppsUseDarkMode())
 }
 
+type macWindowButtonStates struct {
+	minimise ButtonState
+	close    ButtonState
+	zoom     ButtonState
+}
+
+// usesNativeMacFramelessFrame reports whether frameless windows retain the
+// standard AppKit frame to preserve its native rounded corners.
+func usesNativeMacFramelessFrame(options MacWindow) bool {
+	return options.CornerType == MacWindowCornerTypeRounded && options.CornerRadius == 0
+}
+
+// effectiveMacWindowButtonStates returns the configured macOS title-bar button
+// states, hiding all controls while the native AppKit frame is used frameless.
+func effectiveMacWindowButtonStates(options WebviewWindowOptions) macWindowButtonStates {
+	result := macWindowButtonStates{
+		minimise: options.MinimiseButtonState,
+		close:    options.CloseButtonState,
+		zoom:     effectiveZoomButtonState(options.MaximiseButtonState, options.FullscreenButtonState),
+	}
+	if options.Frameless && usesNativeMacFramelessFrame(options.Mac) {
+		result.minimise = ButtonHidden
+		result.close = ButtonHidden
+		result.zoom = ButtonHidden
+	}
+	return result
+}
+
 type WindowStartPosition int
 
 const (
