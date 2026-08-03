@@ -512,6 +512,7 @@ func (w *linuxWebviewWindow) showMenuBar()                      {}
 func (w *linuxWebviewWindow) hideMenuBar()                      {}
 func (w *linuxWebviewWindow) toggleMenuBar()                    {}
 func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
+func (w *linuxWebviewWindow) setToolbar(toolbar *MacToolbar) error { return nil }    // macOS only
 func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}
 func (w *linuxWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
 }

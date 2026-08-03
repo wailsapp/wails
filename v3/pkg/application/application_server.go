@@ -565,6 +565,7 @@ func (w *serverWebviewWindow) hideMenuBar()                                     
 func (w *serverWebviewWindow) toggleMenuBar()                                      {}
 func (w *serverWebviewWindow) setMenu(menu *Menu)                                  {}
 func (w *serverWebviewWindow) snapAssist()                                         {}
+func (w *serverWebviewWindow) setToolbar(toolbar *MacToolbar) error                { return nil } // macOS only
 func (w *serverWebviewWindow) attachModal(modalWindow *WebviewWindow)              {}
 func (w *serverWebviewWindow) setContentProtection(enabled bool)                   {}
 func (w *serverWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {}

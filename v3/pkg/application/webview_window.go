@@ -116,6 +116,7 @@ type (
 		setContentProtection(enabled bool)
 		attachModal(modalWindow *WebviewWindow)
 		setNonClientHitTestRegions([]nonClientHitTestRegion)
+		setToolbar(toolbar *MacToolbar) error
 	}
 
 	nonClientHitTestKind string
@@ -769,6 +770,25 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 		InvokeSync(func() {
 			w.impl.setBackgroundColour(colour)
 		})
+	}
+	return w
+}
+
+// SetToolbar sets or replaces the window's toolbar (macOS only; a no-op on
+// other platforms). Passing nil removes the toolbar. An item that requires
+// a callback (a button with no OnClick, a search field with no OnSearch)
+// is rejected: the whole call fails, logged via Window.Error, and the
+// previous toolbar (if any) is left in place.
+func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
+	if w.impl == nil {
+		return w
+	}
+	var err error
+	InvokeSync(func() {
+		err = w.impl.setToolbar(toolbar)
+	})
+	if err != nil {
+		w.Error("SetToolbar: %s", err)
 	}
 	return w
 }
