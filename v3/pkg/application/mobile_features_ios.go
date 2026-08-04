@@ -191,6 +191,10 @@ func (iosManager) PowerJSON() string { return cStr(C.ios_power_json()) }
 // NetworkJSON returns {"connected":bool,"type":"wifi|cellular|none"}.
 func (iosManager) NetworkJSON() string { return cStr(C.ios_network_json()) }
 
+// SystemLocale returns the device's configured locale as a BCP-47 language tag
+// (e.g. "nb-NO", "en-US"). Uses NSLocale.currentLocale.
+func (iosManager) SystemLocale() string { return cStr(C.ios_system_locale()) }
+
 // SetKeyboardWatch starts/stops emitting "common:keyboard" {visible,height}
 // events as the software keyboard shows and hides.
 func (iosManager) SetKeyboardWatch(enabled bool) { C.ios_set_keyboard_watch(C.bool(enabled)) }
