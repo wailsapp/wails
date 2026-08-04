@@ -34,9 +34,9 @@ const (
 	maxMCPArgs   = 64
 )
 
-// MCPOptions configures the local project MCP server. Stdio is intentionally
-// the only transport exposed by this command: a caller that can launch the
-// process already owns the pipe, and no network listener is opened.
+// MCPOptions configures the local project MCP server. Transport is selected
+// automatically: stdio when launched by an agent (no terminal) and loopback
+// Streamable HTTP when run interactively. Both modes can be forced explicitly.
 type MCPOptions struct {
 	Token string `name:"token" description:"Bearer token for mutating and process-control tools"`
 	Root  string `name:"root" description:"Allowed project root (defaults to the current directory)"`
@@ -52,10 +52,11 @@ type mcpServer struct {
 	ctx   context.Context
 }
 
-// MCP starts a local, stdio MCP server. The token is returned in the MCP
-// initialize instructions so an agent can use it without contaminating the
-// JSON-RPC stdout stream. It is also written to stderr for humans debugging a
-// manually launched server.
+// MCP starts a local MCP server. Transport is selected automatically: stdio
+// when no terminal is attached and loopback Streamable HTTP when run
+// interactively. The token is returned in the MCP initialize instructions so
+// an agent can use it without contaminating the JSON-RPC stdout stream. It is
+// also written to stderr for humans debugging a manually launched server.
 func MCP(options *MCPOptions) error {
 	if options == nil {
 		options = &MCPOptions{}
@@ -254,7 +255,7 @@ func (s *mcpServer) registerTools(server *mcp.Server) {
 	mcp.AddTool(server, &mcp.Tool{Name: "wails_project_dev_start", Description: "Start Wails development mode inside the allowed root.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: boolPtr(false), DestructiveHint: boolPtr(false)}}, s.dev)
 	mcp.AddTool(server, &mcp.Tool{Name: "wails_project_generate_bindings", Description: "Start Wails Go-to-TypeScript binding generation inside the allowed root.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: boolPtr(false), DestructiveHint: boolPtr(false)}}, s.bindings)
 	mcp.AddTool(server, &mcp.Tool{Name: "wails_project_task_run", Description: "Start a named Taskfile task inside the allowed root. Arbitrary shell commands are not accepted as tool input.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: boolPtr(false), DestructiveHint: boolPtr(false)}}, s.task)
-	mcp.AddTool(server, &mcp.Tool{Name: "wails_job_status", Description: "Read status and bounded recent output for a Wails MCP job.", Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, OpenWorldHint: boolPtr(false)}}, s.status)
+	mcp.AddTool(server, &mcp.Tool{Name: "wails_job_status", Description: "Read status and bounded initial output for a Wails MCP job.", Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, OpenWorldHint: boolPtr(false)}}, s.status)
 	mcp.AddTool(server, &mcp.Tool{Name: "wails_job_stop", Description: "Stop a Wails MCP job started by this server.", Annotations: &mcp.ToolAnnotations{OpenWorldHint: boolPtr(false), DestructiveHint: boolPtr(false)}}, s.stop)
 }
 
@@ -280,13 +281,19 @@ func (s *mcpServer) projectPath(input string) (string, error) {
 	if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(filepath.Separator)) {
 		return "", fmt.Errorf("path %q is outside the allowed MCP root", input)
 	}
-	// Existing paths are checked after resolving symlinks to prevent a link in
-	// the workspace from escaping the policy boundary.
-	if _, err := os.Stat(cleanPath); err == nil {
-		realPath, err := filepath.EvalSymlinks(cleanPath)
-		if err != nil || (realPath != cleanRoot && !strings.HasPrefix(realPath, cleanRoot+string(filepath.Separator))) {
-			return "", fmt.Errorf("path %q resolves outside the allowed MCP root", input)
+	// Resolve symlinks on the longest existing prefix to catch cases where an
+	// intermediate directory component is a symlink that escapes the root even
+	// when the final path component does not yet exist.
+	check := cleanPath
+	for check != filepath.Dir(check) {
+		if _, err := os.Lstat(check); err == nil {
+			realPath, err := filepath.EvalSymlinks(check)
+			if err != nil || (realPath != cleanRoot && !strings.HasPrefix(realPath, cleanRoot+string(filepath.Separator))) {
+				return "", fmt.Errorf("path %q resolves outside the allowed MCP root", input)
+			}
+			break
 		}
+		check = filepath.Dir(check)
 	}
 	return cleanPath, nil
 }
@@ -373,7 +380,9 @@ func (s *mcpServer) init(ctx context.Context, _ *mcp.CallToolRequest, in mcpInit
 	if in.Git != "" {
 		args = append(args, "-git", in.Git)
 	}
-	result, err := s.runSync(ctx, dir, args...)
+	// Run with the allowed root as the working directory; the target project
+	// directory may not exist yet and exec would fail if used as cmd.Dir.
+	result, err := s.runSync(ctx, s.root, args...)
 	if err != nil {
 		return nil, mcpInspectOutput{}, fmt.Errorf("initialize project: %w: %s", err, result)
 	}
@@ -505,7 +514,11 @@ func (s *mcpServer) startJob(ctx context.Context, dir string, args []string) (*m
 		jobParent = context.Background()
 	}
 	jobCtx, cancel := context.WithCancel(jobParent)
-	job := newMCPJob(dir, cancel)
+	job, err := newMCPJob(dir, cancel)
+	if err != nil {
+		cancel()
+		return nil, mcpJobOutput{}, err
+	}
 	if !s.jobs.add(job) {
 		cancel()
 		return nil, mcpJobOutput{}, errors.New("too many active or retained MCP jobs")
@@ -543,9 +556,12 @@ type mcpJob struct {
 	cancel                  context.CancelFunc
 }
 
-func newMCPJob(path string, cancel context.CancelFunc) *mcpJob {
-	id, _ := newMCPToken()
-	return &mcpJob{id: id, path: path, state: "running", cancel: cancel}
+func newMCPJob(path string, cancel context.CancelFunc) (*mcpJob, error) {
+	id, err := newMCPToken()
+	if err != nil {
+		return nil, fmt.Errorf("generate MCP job ID: %w", err)
+	}
+	return &mcpJob{id: id, path: path, state: "running", cancel: cancel}, nil
 }
 func (j *mcpJob) Write(p []byte) (int, error) {
 	j.mu.Lock()
@@ -602,12 +618,30 @@ func validateMCPArgs(args []string) error {
 	if len(args) > maxMCPArgs {
 		return fmt.Errorf("too many command arguments: maximum is %d", maxMCPArgs)
 	}
-	for _, arg := range args {
+	// Flags that accept path arguments and could be used to write files outside
+	// the allowed root. Reject any use of these flags; the MCP tools already
+	// pin the working directory to a validated project path.
+	pathFlags := map[string]bool{
+		"-d": true, "--dir": true,
+		"-o": true, "--output": true,
+		"--config": true,
+	}
+	for i, arg := range args {
 		if strings.IndexByte(arg, 0) >= 0 {
 			return errors.New("command arguments may not contain NUL bytes")
 		}
 		if len(arg) > 4096 {
 			return errors.New("command arguments may not exceed 4096 bytes")
+		}
+		// Block path-valued flags that could redirect output outside the root.
+		if pathFlags[arg] {
+			return fmt.Errorf("flag %q is not permitted in MCP tool arguments; use the path parameter instead", arg)
+		}
+		// Also handle --flag=value forms.
+		for flag := range pathFlags {
+			if strings.HasPrefix(arg, flag+"=") {
+				return fmt.Errorf("flag %q is not permitted in MCP tool arguments; use the path parameter instead", arg[:len(flag)])
+			}
 		}
 	}
 	return nil
