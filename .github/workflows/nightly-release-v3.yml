@@ -210,8 +210,9 @@ jobs:
     - name: Build and publish release with desktop artifacts
       id: desktop_artifacts
       if: |
-        (steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true') ||
-        steps.publication_check.outputs.needs_recovery == 'true'
+        github.event.inputs.dry_run != 'true' &&
+        ((steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true') ||
+        steps.publication_check.outputs.needs_recovery == 'true')
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
         RELEASE_NOTES: ${{ steps.release.outputs.release_notes }}

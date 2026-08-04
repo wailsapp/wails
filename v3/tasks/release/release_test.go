@@ -302,6 +302,9 @@ func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
 	if !strings.Contains(contents, "steps.publication_check.outputs.needs_recovery == 'true'") {
 		t.Fatal("nightly release must recover a tagged commit whose publication failed")
 	}
+	if !strings.Contains(contents, "github.event.inputs.dry_run != 'true' &&") {
+		t.Fatal("manual dry runs must gate all artifact publication, including recovery")
+	}
 }
 
 func TestWriteGitHubMultilineOutput(t *testing.T) {
