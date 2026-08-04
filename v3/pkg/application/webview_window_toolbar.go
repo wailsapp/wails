@@ -42,8 +42,103 @@ const (
 	toolbarButton macToolbarItemKind = iota
 	toolbarGroup
 	toolbarSearchField
+	toolbarShare
 	toolbarFlexibleSpace
 )
+
+// MacShareContentType is a Uniform Type Identifier (UTI) advertised to
+// NSItemProvider. It tells receiving services how to interpret the bytes
+// returned by MacShareProvider.ShareData. Custom UTIs are allowed in addition
+// to the common values declared by this package.
+type MacShareContentType string
+
+const (
+	// MacShareTypePlainText is UTF-8 encoded plain text.
+	MacShareTypePlainText MacShareContentType = "public.utf8-plain-text"
+	// MacShareTypeHTML is a UTF-8 encoded HTML document or fragment.
+	MacShareTypeHTML MacShareContentType = "public.html"
+	// MacShareTypePDF is a complete PDF document.
+	MacShareTypePDF MacShareContentType = "com.adobe.pdf"
+	// MacShareTypePNG is PNG-encoded image data.
+	MacShareTypePNG MacShareContentType = "public.png"
+	// MacShareTypeJPEG is JPEG-encoded image data.
+	MacShareTypeJPEG MacShareContentType = "public.jpeg"
+)
+
+// MacShareRepresentation describes one format a provider can generate. The
+// ContentType must match the bytes returned when ShareData receives that type.
+type MacShareRepresentation struct {
+	// ContentType is a Uniform Type Identifier such as MacShareTypePDF.
+	ContentType MacShareContentType
+}
+
+// MacShareRequest identifies the representation AppKit requested at runtime.
+// Switch on ContentType to decide which encoder or renderer to invoke.
+type MacShareRequest struct {
+	// ContentType is one of the types returned by ShareRepresentations.
+	ContentType MacShareContentType
+	// SuggestedName is the logical item name configured with SetSuggestedName.
+	// It is shared by all representations and may be empty.
+	SuggestedName string
+}
+
+// MacShareProvider lazily supplies bytes to the macOS share sheet. AppKit
+// chooses among ShareRepresentations and Wails calls ShareData only when a
+// receiving service requests one. A service may request more than one format;
+// implementations may therefore be called concurrently and should be safe to
+// repeat. ShareData should render from application state that is already safe
+// to read rather than synchronously waiting for the WebView or AppKit thread.
+//
+// ShareRepresentations is called synchronously by MacToolbarShareItem.SetProvider.
+// Its result is snapshotted until SetProvider is called again. ShareData is
+// called lazily from a background callback and may return a rendering error;
+// Wails forwards that failure to the native sharing service.
+type MacShareProvider interface {
+	// ShareRepresentations returns every representation this provider can
+	// generate. Empty content types and duplicate types are ignored.
+	ShareRepresentations() []MacShareRepresentation
+	// ShareData returns complete bytes for the requested representation.
+	ShareData(MacShareRequest) ([]byte, error)
+}
+
+// MacShareProviderFunc adapts a function into a MacShareProvider. It is useful
+// for simple or stateless share items; stateful applications can implement
+// MacShareProvider directly.
+type MacShareProviderFunc struct {
+	// Available lists every content type Load supports. The slice is copied
+	// when the provider is installed.
+	Available []MacShareRepresentation
+	// Load generates the requested bytes. A nil Load returns an error to the
+	// native sharing service.
+	Load func(MacShareRequest) ([]byte, error)
+}
+
+func (p MacShareProviderFunc) ShareRepresentations() []MacShareRepresentation {
+	return append([]MacShareRepresentation(nil), p.Available...)
+}
+
+func (p MacShareProviderFunc) ShareData(request MacShareRequest) ([]byte, error) {
+	if p.Load == nil {
+		return nil, fmt.Errorf("macOS share provider has no Load function")
+	}
+	return p.Load(request)
+}
+
+func normaliseMacShareRepresentations(representations []MacShareRepresentation) []MacShareRepresentation {
+	result := make([]MacShareRepresentation, 0, len(representations))
+	seen := make(map[MacShareContentType]struct{}, len(representations))
+	for _, representation := range representations {
+		if representation.ContentType == "" {
+			continue
+		}
+		if _, exists := seen[representation.ContentType]; exists {
+			continue
+		}
+		seen[representation.ContentType] = struct{}{}
+		result = append(result, representation)
+	}
+	return result
+}
 
 // MacToolbarGroupSelectionMode controls how a native toolbar group behaves.
 type MacToolbarGroupSelectionMode int
@@ -81,16 +176,28 @@ type MacToolbarItem struct {
 	disabled   bool
 	hidden     bool
 
-	items         []*MacToolbarItem
-	selectionMode MacToolbarGroupSelectionMode
-	selectedIndex int
-	onClick       func(*Context)
-	onSearch      func(*Context, string)
+	items              []*MacToolbarItem
+	selectionMode      MacToolbarGroupSelectionMode
+	selectedIndex      int
+	shareProvider      MacShareProvider
+	shareFormats       []MacShareRepresentation
+	shareSubject       string
+	shareSuggestedName string
+	onClick            func(*Context)
+	onSearch           func(*Context, string)
+	onShared           func(*Context, string)
+	onShareError       func(*Context, string, error)
 }
 
 // MacToolbarGroup is a type-safe handle for a native segmented toolbar group.
 // Its embedded MacToolbarItem supports the common item setters.
 type MacToolbarGroup struct {
+	*MacToolbarItem
+}
+
+// MacToolbarShareItem is a native macOS sharing-service toolbar item. Its
+// embedded MacToolbarItem supports the common item setters.
+type MacToolbarShareItem struct {
 	*MacToolbarItem
 }
 
@@ -131,6 +238,16 @@ func (t *MacToolbar) AddButton(label string) *MacToolbarItem {
 // releases, preserving the same callback behavior.
 func (t *MacToolbar) AddSearch(label string) *MacToolbarItem {
 	return t.add(newMacToolbarItem(t, toolbarSearchField, label))
+}
+
+// AddShare adds the system sharing-service toolbar item. AppKit presents the
+// native share sheet when it is clicked. The item is disabled until SetProvider
+// advertises at least one representation. The returned handle owns callbacks
+// and metadata; callers do not need to supply an identifier.
+func (t *MacToolbar) AddShare(label string) *MacToolbarShareItem {
+	item := newMacToolbarItem(t, toolbarShare, label)
+	t.add(item)
+	return &MacToolbarShareItem{MacToolbarItem: item}
 }
 
 // AddGroup adds a native segmented toolbar group. Add its members through the
@@ -265,8 +382,9 @@ func (i *MacToolbarItem) SetEnabled(enabled bool) *MacToolbarItem {
 	}
 	i.lock.Lock()
 	i.disabled = !enabled
+	nativeEnabled := enabled && (i.kind != toolbarShare || len(i.shareFormats) > 0)
 	i.lock.Unlock()
-	i.update(func(native unsafe.Pointer) { macToolbarItemSetEnabled(native, i.identifier, enabled) })
+	i.update(func(native unsafe.Pointer) { macToolbarItemSetEnabled(native, i.identifier, nativeEnabled) })
 	return i
 }
 
@@ -324,6 +442,96 @@ func (g *MacToolbarGroup) SetSelectionMode(mode MacToolbarGroupSelectionMode) *M
 	g.lock.Unlock()
 	g.update(func(native unsafe.Pointer) { macToolbarGroupSetSelectionMode(native, g.identifier, mode) })
 	return g
+}
+
+// SetProvider installs the lazy data provider used by the native share item.
+// It calls ShareRepresentations immediately and copies the returned formats.
+// Passing nil, or a provider with no valid representations, disables the item.
+// Replacing a provider is safe while sharing is in progress: an in-flight
+// native request retains the provider snapshot with which it started.
+func (s *MacToolbarShareItem) SetProvider(provider MacShareProvider) *MacToolbarShareItem {
+	if s == nil || s.MacToolbarItem == nil {
+		return s
+	}
+	var formats []MacShareRepresentation
+	if provider != nil {
+		formats = normaliseMacShareRepresentations(provider.ShareRepresentations())
+	}
+	s.lock.Lock()
+	s.shareProvider = provider
+	s.shareFormats = formats
+	subject := s.shareSubject
+	suggestedName := s.shareSuggestedName
+	enabled := !s.disabled && len(formats) > 0
+	s.lock.Unlock()
+	s.update(func(native unsafe.Pointer) {
+		macToolbarShareItemSetProvider(native, s.identifier, provider, subject, suggestedName, formats)
+		macToolbarItemSetEnabled(native, s.identifier, enabled)
+	})
+	return s
+}
+
+// SetSubject sets the subject used by sharing services that support one, such
+// as Mail. It does not alter the bytes returned by the provider.
+func (s *MacToolbarShareItem) SetSubject(subject string) *MacToolbarShareItem {
+	if s == nil || s.MacToolbarItem == nil {
+		return s
+	}
+	s.lock.Lock()
+	s.shareSubject = subject
+	provider := s.shareProvider
+	formats := append([]MacShareRepresentation(nil), s.shareFormats...)
+	suggestedName := s.shareSuggestedName
+	s.lock.Unlock()
+	s.update(func(native unsafe.Pointer) {
+		macToolbarShareItemSetProvider(native, s.identifier, provider, subject, suggestedName, formats)
+	})
+	return s
+}
+
+// SetSuggestedName sets the human-readable name receiving services use for
+// the shared logical item. The name applies to every advertised representation;
+// AppKit derives the appropriate file type from the requested content type.
+// This maps to NSItemProvider.suggestedName on macOS 10.14 and newer.
+func (s *MacToolbarShareItem) SetSuggestedName(name string) *MacToolbarShareItem {
+	if s == nil || s.MacToolbarItem == nil {
+		return s
+	}
+	s.lock.Lock()
+	s.shareSuggestedName = name
+	provider := s.shareProvider
+	subject := s.shareSubject
+	formats := append([]MacShareRepresentation(nil), s.shareFormats...)
+	s.lock.Unlock()
+	s.update(func(native unsafe.Pointer) {
+		macToolbarShareItemSetProvider(native, s.identifier, provider, subject, name, formats)
+	})
+	return s
+}
+
+// OnShared sets the callback invoked after a sharing service successfully
+// shares the content. service is the localized AppKit service title. The
+// callback is asynchronous and may safely use live toolbar-item setters.
+func (s *MacToolbarShareItem) OnShared(callback func(*Context, string)) *MacToolbarShareItem {
+	if s != nil && s.MacToolbarItem != nil {
+		s.lock.Lock()
+		s.onShared = callback
+		s.lock.Unlock()
+	}
+	return s
+}
+
+// OnShareError sets the callback invoked when a selected sharing service or
+// provider fails. service is the localized AppKit service title and may be
+// empty when AppKit cannot associate the failure with a named service. The
+// callback is asynchronous.
+func (s *MacToolbarShareItem) OnShareError(callback func(*Context, string, error)) *MacToolbarShareItem {
+	if s != nil && s.MacToolbarItem != nil {
+		s.lock.Lock()
+		s.onShareError = callback
+		s.lock.Unlock()
+	}
+	return s
 }
 
 func (i *MacToolbarItem) update(update func(unsafe.Pointer)) {
@@ -424,7 +632,7 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 				if err := validate(members, label); err != nil {
 					return err
 				}
-			case toolbarFlexibleSpace:
+			case toolbarShare, toolbarFlexibleSpace:
 			default:
 				return fmt.Errorf("toolbar item %q has unknown kind %d", label, kind)
 			}
@@ -464,6 +672,52 @@ type toolbarSearchEvent struct {
 
 var toolbarSearchTriggered = make(chan toolbarSearchEvent, 32)
 
+type toolbarShareEvent struct {
+	itemID  uint
+	service string
+	err     string
+}
+
+var toolbarShareCompleted = make(chan toolbarShareEvent, 32)
+
+type macShareProviderRegistration struct {
+	provider      MacShareProvider
+	formats       []MacShareRepresentation
+	suggestedName string
+}
+
+var toolbarShareProviderID uint32
+var toolbarShareProviderMap = make(map[uint]macShareProviderRegistration)
+var toolbarShareProviderMapLock sync.RWMutex
+
+func registerToolbarShareProvider(provider MacShareProvider, formats []MacShareRepresentation, suggestedName string) uint {
+	if provider == nil || len(formats) == 0 {
+		return 0
+	}
+	id := uint(atomic.AddUint32(&toolbarShareProviderID, 1))
+	if id == 0 {
+		id = uint(atomic.AddUint32(&toolbarShareProviderID, 1))
+	}
+	registration := macShareProviderRegistration{
+		provider:      provider,
+		formats:       append([]MacShareRepresentation(nil), formats...),
+		suggestedName: suggestedName,
+	}
+	toolbarShareProviderMapLock.Lock()
+	toolbarShareProviderMap[id] = registration
+	toolbarShareProviderMapLock.Unlock()
+	return id
+}
+
+func releaseToolbarShareProvider(id uint) {
+	if id == 0 {
+		return
+	}
+	toolbarShareProviderMapLock.Lock()
+	delete(toolbarShareProviderMap, id)
+	toolbarShareProviderMapLock.Unlock()
+}
+
 func handleToolbarItemClicked(itemID uint) {
 	defer handlePanic()
 	item := getToolbarItemByID(itemID)
@@ -490,4 +744,47 @@ func handleToolbarSearch(itemID uint, query string) {
 	if callback != nil {
 		callback(newContext(), query)
 	}
+}
+
+func handleToolbarShareResult(event toolbarShareEvent) {
+	defer handlePanic()
+	item := getToolbarItemByID(event.itemID)
+	if item == nil {
+		return
+	}
+	item.lock.RLock()
+	onShared := item.onShared
+	onError := item.onShareError
+	item.lock.RUnlock()
+	if event.err == "" {
+		if onShared != nil {
+			onShared(newContext(), event.service)
+		}
+		return
+	}
+	if onError != nil {
+		onError(newContext(), event.service, fmt.Errorf("%s", event.err))
+	}
+}
+
+func handleToolbarShareData(providerID uint, contentType MacShareContentType) (data []byte, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			data = nil
+			err = fmt.Errorf("macOS share provider panicked: %v", recovered)
+		}
+	}()
+	toolbarShareProviderMapLock.RLock()
+	registration, exists := toolbarShareProviderMap[providerID]
+	toolbarShareProviderMapLock.RUnlock()
+	if !exists || registration.provider == nil {
+		return nil, fmt.Errorf("macOS share provider is no longer available")
+	}
+	request := MacShareRequest{ContentType: contentType, SuggestedName: registration.suggestedName}
+	for _, representation := range registration.formats {
+		if representation.ContentType == contentType {
+			return registration.provider.ShareData(request)
+		}
+	}
+	return nil, fmt.Errorf("macOS share provider does not offer %q", contentType)
 }

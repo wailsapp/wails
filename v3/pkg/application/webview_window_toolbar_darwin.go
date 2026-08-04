@@ -12,6 +12,8 @@ package application
 import "C"
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"unsafe"
 )
@@ -24,6 +26,40 @@ func processToolbarItemClick(itemID C.uint) {
 //export processToolbarSearch
 func processToolbarSearch(itemID C.uint, query *C.char) {
 	toolbarSearchTriggered <- toolbarSearchEvent{itemID: uint(itemID), query: C.GoString(query)}
+}
+
+//export processToolbarShareResult
+func processToolbarShareResult(itemID C.uint, service *C.char, errorMessage *C.char) {
+	toolbarShareCompleted <- toolbarShareEvent{
+		itemID:  uint(itemID),
+		service: C.GoString(service),
+		err:     C.GoString(errorMessage),
+	}
+}
+
+//export processToolbarShareData
+func processToolbarShareData(providerID C.uint, contentType *C.char) *C.char {
+	type response struct {
+		Data  string `json:"data"`
+		Error string `json:"error,omitempty"`
+	}
+	data, err := handleToolbarShareData(uint(providerID), MacShareContentType(C.GoString(contentType)))
+	payload := response{}
+	if err != nil {
+		payload.Error = err.Error()
+	} else {
+		payload.Data = base64.StdEncoding.EncodeToString(data)
+	}
+	encoded, marshalErr := json.Marshal(payload)
+	if marshalErr != nil {
+		return C.CString(`{"error":"failed to encode share data"}`)
+	}
+	return C.CString(string(encoded))
+}
+
+//export processToolbarShareProviderRelease
+func processToolbarShareProviderRelease(providerID C.uint) {
+	releaseToolbarShareProvider(uint(providerID))
 }
 
 func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
@@ -108,39 +144,47 @@ func (w *macosWebviewWindow) refreshToolbarAfterShow() {
 }
 
 type macToolbarItemSnapshot struct {
-	identifier    string
-	kind          macToolbarItemKind
-	label         string
-	symbolName    string
-	tooltip       string
-	bordered      bool
-	prominent     bool
-	tintColor     *RGBA
-	badgeCount    int
-	disabled      bool
-	hidden        bool
-	items         []*MacToolbarItem
-	selectionMode MacToolbarGroupSelectionMode
-	selectedIndex int
+	identifier         string
+	kind               macToolbarItemKind
+	label              string
+	symbolName         string
+	tooltip            string
+	bordered           bool
+	prominent          bool
+	tintColor          *RGBA
+	badgeCount         int
+	disabled           bool
+	hidden             bool
+	items              []*MacToolbarItem
+	selectionMode      MacToolbarGroupSelectionMode
+	selectedIndex      int
+	shareFormats       []MacShareRepresentation
+	shareProvider      MacShareProvider
+	shareSubject       string
+	shareSuggestedName string
 }
 
 func snapshotMacToolbarItem(item *MacToolbarItem) macToolbarItemSnapshot {
 	item.lock.RLock()
 	defer item.lock.RUnlock()
 	result := macToolbarItemSnapshot{
-		identifier:    item.identifier,
-		kind:          item.kind,
-		label:         item.label,
-		symbolName:    item.symbolName,
-		tooltip:       item.tooltip,
-		bordered:      item.bordered,
-		prominent:     item.prominent,
-		badgeCount:    item.badgeCount,
-		disabled:      item.disabled,
-		hidden:        item.hidden,
-		items:         append([]*MacToolbarItem(nil), item.items...),
-		selectionMode: item.selectionMode,
-		selectedIndex: item.selectedIndex,
+		identifier:         item.identifier,
+		kind:               item.kind,
+		label:              item.label,
+		symbolName:         item.symbolName,
+		tooltip:            item.tooltip,
+		bordered:           item.bordered,
+		prominent:          item.prominent,
+		badgeCount:         item.badgeCount,
+		disabled:           item.disabled,
+		hidden:             item.hidden,
+		items:              append([]*MacToolbarItem(nil), item.items...),
+		selectionMode:      item.selectionMode,
+		selectedIndex:      item.selectedIndex,
+		shareFormats:       append([]MacShareRepresentation(nil), item.shareFormats...),
+		shareProvider:      item.shareProvider,
+		shareSubject:       item.shareSubject,
+		shareSuggestedName: item.shareSuggestedName,
 	}
 	if item.tintColor != nil {
 		copyOfColor := *item.tintColor
@@ -205,6 +249,21 @@ func addToolbarItem(handle unsafe.Pointer, item *MacToolbarItem) []uint {
 		C.toolbarAddSearchItem(handle, idCStr, C.uint(id), labelCStr, tooltipCStr,
 			C.bool(snapshot.disabled), C.bool(snapshot.hidden))
 
+	case toolbarShare:
+		id := nextToolbarNativeID()
+		itemIDs = append(itemIDs, id)
+		addToToolbarItemMap(id, item)
+		symbolCStr := C.CString(snapshot.symbolName)
+		defer C.free(unsafe.Pointer(symbolCStr))
+		providerID := registerToolbarShareProvider(snapshot.shareProvider, snapshot.shareFormats, snapshot.shareSuggestedName)
+		providerJSON := macToolbarShareProviderJSON(providerID, snapshot.shareSubject,
+			snapshot.shareSuggestedName, snapshot.shareFormats)
+		providerCStr := C.CString(providerJSON)
+		defer C.free(unsafe.Pointer(providerCStr))
+		C.toolbarAddShareItem(handle, idCStr, C.uint(id), labelCStr, symbolCStr,
+			tooltipCStr, C.bool(snapshot.disabled || len(snapshot.shareFormats) == 0),
+			C.bool(snapshot.hidden), providerCStr)
+
 	case toolbarFlexibleSpace:
 		C.toolbarAddFlexibleSpaceIdentifier(handle)
 	}
@@ -236,7 +295,12 @@ func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem)
 	macToolbarItemSetBordered(native, snapshot.identifier, snapshot.bordered)
 	macToolbarItemSetProminent(native, snapshot.identifier, snapshot.prominent)
 	macToolbarItemSetTintColor(native, snapshot.identifier, snapshot.tintColor)
-	macToolbarItemSetEnabled(native, snapshot.identifier, !snapshot.disabled)
+	enabled := !snapshot.disabled && (snapshot.kind != toolbarShare || len(snapshot.shareFormats) > 0)
+	if snapshot.kind == toolbarShare {
+		macToolbarShareItemSetProvider(native, snapshot.identifier, snapshot.shareProvider, snapshot.shareSubject,
+			snapshot.shareSuggestedName, snapshot.shareFormats)
+	}
+	macToolbarItemSetEnabled(native, snapshot.identifier, enabled)
 	macToolbarItemSetHidden(native, snapshot.identifier, snapshot.hidden)
 	macToolbarItemSetBadgeCount(native, snapshot.identifier, snapshot.badgeCount)
 
@@ -258,6 +322,29 @@ func macToolbarTintComponents(color *RGBA) (bool, C.double, C.double, C.double, 
 		C.double(float64(color.Green) / 255.0),
 		C.double(float64(color.Blue) / 255.0),
 		C.double(float64(color.Alpha) / 255.0)
+}
+
+func macToolbarShareProviderJSON(providerID uint, subject, suggestedName string, formats []MacShareRepresentation) string {
+	type representationPayload struct {
+		ContentType MacShareContentType `json:"contentType"`
+	}
+	type providerPayload struct {
+		ProviderID      uint                    `json:"providerID,omitempty"`
+		Subject         string                  `json:"subject,omitempty"`
+		SuggestedName   string                  `json:"suggestedName,omitempty"`
+		Representations []representationPayload `json:"representations,omitempty"`
+	}
+	payload := providerPayload{ProviderID: providerID, Subject: subject, SuggestedName: suggestedName}
+	for _, format := range formats {
+		if format.ContentType != "" {
+			payload.Representations = append(payload.Representations, representationPayload(format))
+		}
+	}
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		return "{}"
+	}
+	return string(encoded)
 }
 
 func releaseMacToolbarResources(native unsafe.Pointer, itemIDs []uint) {
@@ -361,4 +448,14 @@ func macToolbarGroupSetSelectionMode(native unsafe.Pointer, id string, mode MacT
 	idC := C.CString(id)
 	defer C.free(unsafe.Pointer(idC))
 	C.toolbarGroupSetSelectionMode(native, idC, C.int(mode))
+}
+
+func macToolbarShareItemSetProvider(native unsafe.Pointer, id string, provider MacShareProvider,
+	subject, suggestedName string, formats []MacShareRepresentation) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	providerID := registerToolbarShareProvider(provider, formats, suggestedName)
+	providerC := C.CString(macToolbarShareProviderJSON(providerID, subject, suggestedName, formats))
+	defer C.free(unsafe.Pointer(providerC))
+	C.toolbarShareItemSetProvider(native, idC, providerC)
 }
