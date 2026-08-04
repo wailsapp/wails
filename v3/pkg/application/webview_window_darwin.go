@@ -1766,6 +1766,15 @@ func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
+	// Detach the Go callback registry and invalidate every live item handle
+	// before AppKit releases the window and its toolbar delegate.
+	if w.activeToolbar != nil {
+		clearMacToolbarState(w.activeToolbar, w.parent, true)
+		w.activeToolbar = nil
+	}
+	w.parent.toolbarLock.Lock()
+	w.parent.toolbar = nil
+	w.parent.toolbarLock.Unlock()
 	// Clear caches for this window
 	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)

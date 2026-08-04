@@ -27,35 +27,71 @@ func processToolbarSearch(itemID C.uint, query *C.char) {
 }
 
 func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
-	if w.activeToolbar != nil {
-		clearMacToolbarState(w.activeToolbar)
-		w.activeToolbar = nil
-	}
 	if toolbar == nil {
+		previous := w.activeToolbar
 		C.toolbarDetach(w.nsWindow)
+		w.activeToolbar = nil
+		if previous != nil {
+			clearMacToolbarState(previous, w.parent, true)
+		}
 		return nil
 	}
-	delegatePtr := C.toolbarNewAndAttach(w.nsWindow)
-	if delegatePtr == nil {
+
+	identifier := C.CString(toolbar.identifier)
+	handle := C.toolbarCreate(identifier)
+	C.free(unsafe.Pointer(identifier))
+	if handle == nil {
 		return fmt.Errorf("failed to create native toolbar")
 	}
+
 	var itemIDs []uint
-	for _, item := range toolbar.items {
-		itemIDs = append(itemIDs, addToolbarItem(delegatePtr, item)...)
+	committed := false
+	defer func() {
+		if !committed {
+			releaseMacToolbarResources(handle, itemIDs)
+		}
+	}()
+
+	for _, item := range toolbar.itemSnapshot() {
+		itemIDs = append(itemIDs, addToolbarItem(handle, item)...)
 	}
+
 	titleBar := w.parent.options.Mac.TitleBar
-	C.toolbarReload(w.nsWindow, delegatePtr, C.int(titleBar.ToolbarStyle))
 	toolbar.stateLock.Lock()
-	toolbar.state.native = delegatePtr
+	if toolbar.state == nil || toolbar.state.window != w.parent {
+		toolbar.stateLock.Unlock()
+		return fmt.Errorf("toolbar ownership changed while attaching")
+	}
+	previousNative := toolbar.state.native
+	previousItemIDs := toolbar.state.itemIDs
+	// Commit and attach while ownership is locked. Candidate construction is
+	// already complete, so every failure path above leaves the previous native
+	// toolbar untouched.
+	C.toolbarAttach(w.nsWindow, handle, C.int(titleBar.ToolbarStyle))
+	toolbar.state.native = handle
 	toolbar.state.itemIDs = itemIDs
 	toolbar.stateLock.Unlock()
-	// The toolbar may be attached after the window's titlebar options were
-	// applied (especially when SetToolbar was called before app.Run()). Apply
-	// the presentation settings again now that AppKit has a real toolbar.
+
+	previousToolbar := w.activeToolbar
+	w.activeToolbar = toolbar
+	committed = true
+
+	if previousToolbar == toolbar {
+		releaseMacToolbarResources(previousNative, previousItemIDs)
+	} else if previousToolbar != nil {
+		clearMacToolbarState(previousToolbar, w.parent, true)
+	}
+
+	// An item may be changed concurrently while the detached candidate is
+	// being built. Reapply the latest snapshots after committing the native
+	// handle so a setter that ran just before installation cannot be lost.
+	applyMacToolbarLatestState(toolbar)
+
+	// Apply each presentation preference explicitly after the real toolbar is
+	// attached; no titlebar UseToolbar preference is required.
 	C.windowSetToolbarStyle(w.nsWindow, C.int(titleBar.ToolbarStyle))
 	C.windowSetShowToolbarWhenFullscreen(w.nsWindow, C.bool(titleBar.ShowToolbarWhenFullscreen))
 	C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBar.HideToolbarSeparator))
-	w.activeToolbar = toolbar
 	return nil
 }
 
@@ -71,92 +107,187 @@ func (w *macosWebviewWindow) refreshToolbarAfterShow() {
 	}
 }
 
-func addToolbarItem(delegatePtr unsafe.Pointer, item *MacToolbarItem) []uint {
-	idCStr := C.CString(item.identifier)
+type macToolbarItemSnapshot struct {
+	identifier    string
+	kind          macToolbarItemKind
+	label         string
+	symbolName    string
+	tooltip       string
+	bordered      bool
+	prominent     bool
+	tintColor     *RGBA
+	badgeCount    int
+	disabled      bool
+	hidden        bool
+	items         []*MacToolbarItem
+	selectionMode MacToolbarGroupSelectionMode
+	selectedIndex int
+}
+
+func snapshotMacToolbarItem(item *MacToolbarItem) macToolbarItemSnapshot {
+	item.lock.RLock()
+	defer item.lock.RUnlock()
+	result := macToolbarItemSnapshot{
+		identifier:    item.identifier,
+		kind:          item.kind,
+		label:         item.label,
+		symbolName:    item.symbolName,
+		tooltip:       item.tooltip,
+		bordered:      item.bordered,
+		prominent:     item.prominent,
+		badgeCount:    item.badgeCount,
+		disabled:      item.disabled,
+		hidden:        item.hidden,
+		items:         append([]*MacToolbarItem(nil), item.items...),
+		selectionMode: item.selectionMode,
+		selectedIndex: item.selectedIndex,
+	}
+	if item.tintColor != nil {
+		copyOfColor := *item.tintColor
+		result.tintColor = &copyOfColor
+	}
+	return result
+}
+
+func addToolbarItem(handle unsafe.Pointer, item *MacToolbarItem) []uint {
+	snapshot := snapshotMacToolbarItem(item)
+	idCStr := C.CString(snapshot.identifier)
 	defer C.free(unsafe.Pointer(idCStr))
-	labelCStr := C.CString(item.label)
+	labelCStr := C.CString(snapshot.label)
 	defer C.free(unsafe.Pointer(labelCStr))
-	tooltipCStr := C.CString(item.tooltip)
+	tooltipCStr := C.CString(snapshot.tooltip)
 	defer C.free(unsafe.Pointer(tooltipCStr))
 	var itemIDs []uint
 
-	switch item.kind {
-	case ToolbarButton:
+	switch snapshot.kind {
+	case toolbarButton:
 		id := nextToolbarNativeID()
 		itemIDs = append(itemIDs, id)
 		addToToolbarItemMap(id, item)
 
-		symbolCStr := C.CString(item.symbolName)
+		symbolCStr := C.CString(snapshot.symbolName)
 		defer C.free(unsafe.Pointer(symbolCStr))
 
-		var tintR, tintG, tintB, tintA C.double
-		hasTint := item.tintColor != nil
-		if hasTint {
-			tintR = C.double(float64(item.tintColor.Red) / 255.0)
-			tintG = C.double(float64(item.tintColor.Green) / 255.0)
-			tintB = C.double(float64(item.tintColor.Blue) / 255.0)
-			tintA = C.double(float64(item.tintColor.Alpha) / 255.0)
-		}
-		C.toolbarAddButtonItem(delegatePtr, idCStr, C.uint(id), labelCStr, symbolCStr,
-			tooltipCStr, C.bool(item.bordered), C.bool(item.prominent),
-			C.bool(item.disabled), C.bool(item.hidden), C.bool(hasTint),
-			tintR, tintG, tintB, tintA, C.int(item.badgeCount))
+		hasTint, tintR, tintG, tintB, tintA := macToolbarTintComponents(snapshot.tintColor)
+		C.toolbarAddButtonItem(handle, idCStr, C.uint(id), labelCStr, symbolCStr,
+			tooltipCStr, C.bool(snapshot.bordered), C.bool(snapshot.prominent),
+			C.bool(snapshot.disabled), C.bool(snapshot.hidden), C.bool(hasTint),
+			tintR, tintG, tintB, tintA, C.int(snapshot.badgeCount))
 
-	case ToolbarGroup:
-		memberPtrs := make([]unsafe.Pointer, len(item.items))
-		for i, member := range item.items {
+	case toolbarGroup:
+		memberPtrs := make([]unsafe.Pointer, len(snapshot.items))
+		for index, member := range snapshot.items {
+			memberSnapshot := snapshotMacToolbarItem(member)
 			memberID := nextToolbarNativeID()
 			itemIDs = append(itemIDs, memberID)
 			addToToolbarItemMap(memberID, member)
 
-			memberIDStr := C.CString(member.identifier)
-			memberLabelStr := C.CString(member.label)
-			memberSymbolStr := C.CString(member.symbolName)
-			memberTooltipStr := C.CString(member.tooltip)
-			memberPtrs[i] = C.toolbarBuildButtonItemStandalone(memberIDStr, C.uint(memberID),
+			memberIDStr := C.CString(memberSnapshot.identifier)
+			memberLabelStr := C.CString(memberSnapshot.label)
+			memberSymbolStr := C.CString(memberSnapshot.symbolName)
+			memberTooltipStr := C.CString(memberSnapshot.tooltip)
+			memberPtrs[index] = C.toolbarBuildButtonItemStandalone(memberIDStr, C.uint(memberID),
 				memberLabelStr, memberSymbolStr, memberTooltipStr,
-				C.bool(member.bordered), C.bool(member.disabled), C.bool(member.hidden))
+				C.bool(memberSnapshot.bordered), C.bool(memberSnapshot.disabled), C.bool(memberSnapshot.hidden))
 			C.free(unsafe.Pointer(memberIDStr))
 			C.free(unsafe.Pointer(memberLabelStr))
 			C.free(unsafe.Pointer(memberSymbolStr))
 			C.free(unsafe.Pointer(memberTooltipStr))
 		}
-		C.toolbarAddGroupItem(delegatePtr, idCStr, labelCStr,
-			(*unsafe.Pointer)(unsafe.Pointer(&memberPtrs[0])), C.int(len(item.items)),
-			C.int(item.selectionMode), C.int(item.selectedIndex))
+		C.toolbarAddGroupItem(handle, idCStr, labelCStr,
+			(*unsafe.Pointer)(unsafe.Pointer(&memberPtrs[0])), C.int(len(snapshot.items)),
+			C.int(snapshot.selectionMode), C.int(snapshot.selectedIndex))
 
-	case ToolbarSearchField:
+	case toolbarSearchField:
 		id := nextToolbarNativeID()
 		itemIDs = append(itemIDs, id)
 		addToToolbarItemMap(id, item)
-		C.toolbarAddSearchItem(delegatePtr, idCStr, C.uint(id), labelCStr, tooltipCStr, C.bool(item.disabled), C.bool(item.hidden))
+		C.toolbarAddSearchItem(handle, idCStr, C.uint(id), labelCStr, tooltipCStr,
+			C.bool(snapshot.disabled), C.bool(snapshot.hidden))
 
-	case ToolbarFlexibleSpace:
-		C.toolbarAddFlexibleSpaceIdentifier(delegatePtr)
-
-	case ToolbarSidebarToggle:
-		C.toolbarAddSidebarToggleIdentifier(delegatePtr, idCStr)
-	case ToolbarInspectorToggle:
-		C.toolbarAddInspectorToggleIdentifier(delegatePtr, idCStr)
+	case toolbarFlexibleSpace:
+		C.toolbarAddFlexibleSpaceIdentifier(handle)
 	}
 	return itemIDs
 }
 
-func clearMacToolbarState(toolbar *MacToolbar) {
+func applyMacToolbarLatestState(toolbar *MacToolbar) {
 	toolbar.stateLock.RLock()
-	state := toolbar.state
-	toolbar.stateLock.RUnlock()
-	if state == nil {
+	defer toolbar.stateLock.RUnlock()
+	if toolbar.state == nil || toolbar.state.native == nil {
 		return
 	}
-	state.lock.Lock()
-	ids := state.itemIDs
-	state.native = nil
-	state.itemIDs = nil
-	state.lock.Unlock()
-	for _, id := range ids {
+	for _, item := range toolbar.itemSnapshot() {
+		applyMacToolbarItemLatestState(toolbar.state.native, item)
+	}
+}
+
+func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem) {
+	snapshot := snapshotMacToolbarItem(item)
+	if snapshot.kind == toolbarFlexibleSpace {
+		return
+	}
+
+	macToolbarItemSetLabel(native, snapshot.identifier, snapshot.label)
+	if snapshot.symbolName != "" {
+		macToolbarItemSetSymbol(native, snapshot.identifier, snapshot.symbolName)
+	}
+	macToolbarItemSetTooltip(native, snapshot.identifier, snapshot.tooltip)
+	macToolbarItemSetBordered(native, snapshot.identifier, snapshot.bordered)
+	macToolbarItemSetProminent(native, snapshot.identifier, snapshot.prominent)
+	macToolbarItemSetTintColor(native, snapshot.identifier, snapshot.tintColor)
+	macToolbarItemSetEnabled(native, snapshot.identifier, !snapshot.disabled)
+	macToolbarItemSetHidden(native, snapshot.identifier, snapshot.hidden)
+	macToolbarItemSetBadgeCount(native, snapshot.identifier, snapshot.badgeCount)
+
+	if snapshot.kind == toolbarGroup {
+		macToolbarGroupSetSelectionMode(native, snapshot.identifier, snapshot.selectionMode)
+		macToolbarGroupSetSelectedIndex(native, snapshot.identifier, snapshot.selectedIndex)
+		for _, member := range snapshot.items {
+			applyMacToolbarItemLatestState(native, member)
+		}
+	}
+}
+
+func macToolbarTintComponents(color *RGBA) (bool, C.double, C.double, C.double, C.double) {
+	if color == nil {
+		return false, 0, 0, 0, 0
+	}
+	return true,
+		C.double(float64(color.Red) / 255.0),
+		C.double(float64(color.Green) / 255.0),
+		C.double(float64(color.Blue) / 255.0),
+		C.double(float64(color.Alpha) / 255.0)
+}
+
+func releaseMacToolbarResources(native unsafe.Pointer, itemIDs []uint) {
+	for _, id := range itemIDs {
 		removeFromToolbarItemMap(id)
 	}
+	if native != nil {
+		C.toolbarRelease(native)
+	}
+}
+
+func clearMacToolbarState(toolbar *MacToolbar, window *WebviewWindow, releaseOwnership bool) {
+	if toolbar == nil {
+		return
+	}
+	toolbar.stateLock.Lock()
+	state := toolbar.state
+	if state == nil || (window != nil && state.window != window) {
+		toolbar.stateLock.Unlock()
+		return
+	}
+	native := state.native
+	itemIDs := state.itemIDs
+	state.native = nil
+	state.itemIDs = nil
+	if releaseOwnership {
+		state.window = nil
+	}
+	toolbar.stateLock.Unlock()
+	releaseMacToolbarResources(native, itemIDs)
 }
 
 func macToolbarItemSetLabel(native unsafe.Pointer, id, label string) {
@@ -165,6 +296,41 @@ func macToolbarItemSetLabel(native unsafe.Pointer, id, label string) {
 	labelC := C.CString(label)
 	defer C.free(unsafe.Pointer(labelC))
 	C.toolbarItemSetLabel(native, idC, labelC)
+}
+
+func macToolbarItemSetSymbol(native unsafe.Pointer, id, symbol string) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	symbolC := C.CString(symbol)
+	defer C.free(unsafe.Pointer(symbolC))
+	C.toolbarItemSetSymbol(native, idC, symbolC)
+}
+
+func macToolbarItemSetTooltip(native unsafe.Pointer, id, tooltip string) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	tooltipC := C.CString(tooltip)
+	defer C.free(unsafe.Pointer(tooltipC))
+	C.toolbarItemSetTooltip(native, idC, tooltipC)
+}
+
+func macToolbarItemSetBordered(native unsafe.Pointer, id string, bordered bool) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	C.toolbarItemSetBordered(native, idC, C.bool(bordered))
+}
+
+func macToolbarItemSetProminent(native unsafe.Pointer, id string, prominent bool) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	C.toolbarItemSetProminent(native, idC, C.bool(prominent))
+}
+
+func macToolbarItemSetTintColor(native unsafe.Pointer, id string, color *RGBA) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	hasTint, tintR, tintG, tintB, tintA := macToolbarTintComponents(color)
+	C.toolbarItemSetTintColor(native, idC, C.bool(hasTint), tintR, tintG, tintB, tintA)
 }
 
 func macToolbarItemSetEnabled(native unsafe.Pointer, id string, enabled bool) {
@@ -189,4 +355,10 @@ func macToolbarGroupSetSelectedIndex(native unsafe.Pointer, id string, index int
 	idC := C.CString(id)
 	defer C.free(unsafe.Pointer(idC))
 	C.toolbarGroupSetSelectedIndex(native, idC, C.int(index))
+}
+
+func macToolbarGroupSetSelectionMode(native unsafe.Pointer, id string, mode MacToolbarGroupSelectionMode) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	C.toolbarGroupSetSelectionMode(native, idC, C.int(mode))
 }

@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"runtime"
+	"sync"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -13,7 +14,7 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Name:        "mac-toolbar",
+		Name:        "Daymark",
 		Description: "A native macOS toolbar editor",
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
@@ -36,73 +37,92 @@ func main() {
 	})
 
 	toolbar := application.NewMacToolbar()
-	newNote := toolbar.AddButton("New", "square.and.pencil").SetBordered(true)
+	newNote := toolbar.AddButton("New").SetSymbol("square.and.pencil").SetBordered(true)
 	mode := toolbar.AddGroup("Mode", application.ToolbarGroupSelectOne)
-	mode.AddButton("Write", "pencil").OnClick(func(*application.Context) {
+	mode.AddButton("Write").SetSymbol("pencil").OnClick(func(*application.Context) {
 		mode.SetSelectedIndex(0)
 		app.Event.Emit("toolbar:mode", "write")
 	})
-	mode.AddButton("Preview", "doc.richtext").OnClick(func(*application.Context) {
+	mode.AddButton("Preview").SetSymbol("doc.richtext").OnClick(func(*application.Context) {
 		mode.SetSelectedIndex(1)
 		app.Event.Emit("toolbar:mode", "preview")
 	})
 	toolbar.AddFlexibleSpace()
 	search := toolbar.AddSearch("Search notes").SetTooltip("Search your notes")
-	share := toolbar.AddButton("Share", "square.and.arrow.up").SetBordered(true)
-	details := toolbar.AddButton("Details", "info.circle").SetBordered(true)
-	save := toolbar.AddButton("Save", "checkmark.circle").SetProminent(true).SetBadgeCount(0)
-	focus := toolbar.AddButton("Focus", "arrow.up.left.and.arrow.down.right").SetBordered(true)
+	share := toolbar.AddButton("Share").SetSymbol("square.and.arrow.up").SetBordered(true)
+	details := toolbar.AddButton("Details").SetSymbol("info.circle").SetBordered(true)
+	save := toolbar.AddButton("Save").SetSymbol("checkmark.circle").SetProminent(true).SetBadgeCount(0)
+	focus := toolbar.AddButton("Focus").SetSymbol("arrow.up.left.and.arrow.down.right").SetBordered(true)
 
+	var stateLock sync.Mutex
 	focused := false
 	dirty := false
+	setSaved := func() {
+		stateLock.Lock()
+		dirty = false
+		stateLock.Unlock()
+		save.SetBadgeCount(0).SetLabel("Saved")
+		app.Event.Emit("toolbar:save")
+	}
+	toggleFocus := func() {
+		stateLock.Lock()
+		focused = !focused
+		isFocused := focused
+		stateLock.Unlock()
+		details.SetHidden(isFocused)
+		if isFocused {
+			focus.SetLabel("Exit Focus").SetSymbol("arrow.down.right.and.arrow.up.left")
+		} else {
+			focus.SetLabel("Focus").SetSymbol("arrow.up.left.and.arrow.down.right")
+		}
+		app.Event.Emit("toolbar:focus", isFocused)
+	}
+
 	newNote.OnClick(func(*application.Context) { app.Event.Emit("toolbar:new") })
 	search.OnSearch(func(_ *application.Context, query string) { app.Event.Emit("toolbar:search", query) })
 	share.OnClick(func(*application.Context) { app.Event.Emit("toolbar:share") })
 	details.OnClick(func(*application.Context) { app.Event.Emit("toolbar:details") })
-	save.OnClick(func(*application.Context) {
-		dirty = false
-		save.SetBadgeCount(0).SetLabel("Saved")
-		app.Event.Emit("toolbar:save")
-	})
-	focus.OnClick(func(*application.Context) {
-		focused = !focused
-		details.SetHidden(focused)
-		app.Event.Emit("toolbar:focus", focused)
-	})
+	save.OnClick(func(*application.Context) { setSaved() })
+	focus.OnClick(func(*application.Context) { toggleFocus() })
 
 	menu := app.NewMenu()
 	if runtime.GOOS == "darwin" {
 		menu.AddRole(application.AppMenu)
 	}
-	menu.AddRole(application.EditMenu)
-	menu.AddRole(application.WindowMenu)
-	menu.AddRole(application.HelpMenu)
-	daymarkMenu := menu.AddSubmenu("Daymark")
-	daymarkMenu.Add("New Note").SetAccelerator("CmdOrCtrl+n").OnClick(func(*application.Context) {
+	fileMenu := menu.AddSubmenu("File")
+	fileMenu.Add("New Note").SetAccelerator("CmdOrCtrl+n").OnClick(func(*application.Context) {
 		app.Event.Emit("toolbar:new")
 	})
-	daymarkMenu.Add("Save Note").SetAccelerator("CmdOrCtrl+s").OnClick(func(*application.Context) {
-		dirty = false
-		save.SetBadgeCount(0).SetLabel("Saved")
-		app.Event.Emit("toolbar:save")
+	fileMenu.Add("Save Note").SetAccelerator("CmdOrCtrl+s").OnClick(func(*application.Context) {
+		setSaved()
 	})
-	daymarkMenu.Add("Toggle Focus").SetAccelerator("CmdOrCtrl+Shift+f").OnClick(func(*application.Context) {
-		focused = !focused
-		details.SetHidden(focused)
-		app.Event.Emit("toolbar:focus", focused)
+	fileMenu.AddSeparator()
+	fileMenu.AddRole(application.CloseWindow)
+	menu.AddRole(application.EditMenu)
+	viewMenu := menu.AddSubmenu("View")
+	viewMenu.Add("Toggle Focus").SetAccelerator("CmdOrCtrl+Shift+f").OnClick(func(*application.Context) {
+		toggleFocus()
 	})
-	daymarkMenu.Add("Toggle Inspector").SetAccelerator("CmdOrCtrl+Option+i").OnClick(func(*application.Context) {
+	viewMenu.Add("Toggle Inspector").SetAccelerator("CmdOrCtrl+Option+i").OnClick(func(*application.Context) {
 		app.Event.Emit("toolbar:details")
 	})
+	menu.AddRole(application.WindowMenu)
+	menu.AddRole(application.HelpMenu)
 	app.Menu.Set(menu)
 
 	app.Event.On("editor:dirty", func(e *application.CustomEvent) {
 		isDirty, ok := e.Data.(bool)
-		if !ok || isDirty == dirty {
+		if !ok {
+			return
+		}
+		stateLock.Lock()
+		if isDirty == dirty {
+			stateLock.Unlock()
 			return
 		}
 		dirty = isDirty
-		if dirty {
+		stateLock.Unlock()
+		if isDirty {
 			save.SetBadgeCount(1).SetLabel("Save")
 		} else {
 			save.SetBadgeCount(0).SetLabel("Saved")
