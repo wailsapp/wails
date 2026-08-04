@@ -119,6 +119,7 @@ public class WailsBridge {
     private static native void nativeMainThreadCallback(int callbackID);
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
+    private static native boolean nativeOnBackPressed();
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
@@ -185,6 +186,15 @@ public class WailsBridge {
 
     public void onLowMemory() {
         if (initialized) nativeOnLowMemory();
+    }
+
+    /**
+     * Notify Go that the back button was pressed. Returns true if a Go listener
+     * consumed the event (caller should NOT perform default back navigation).
+     */
+    public boolean onBackPressed() {
+        if (initialized) return nativeOnBackPressed();
+        return false;
     }
 
     /**
