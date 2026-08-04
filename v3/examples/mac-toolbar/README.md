@@ -1,32 +1,20 @@
-# Mac Toolbar Example
+# Native macOS toolbar
 
-This example demonstrates `application.MacToolbar` / `WebviewWindow.SetToolbar`: a real `NSToolbar`
-attached above the webview, not a DOM element under the traffic lights.
+This example is a normal titled Wails window with a real AppKit `NSToolbar` above it.
+Nothing in the toolbar is HTML.
 
-A Notes-style app with:
+It demonstrates:
 
-- An Edit/Preview segmented group (`ToolbarGroup`)
-- A flexible space (`ToolbarFlexibleSpace`)
-- A native search field (`ToolbarSearchField`) whose query is submitted to Go and relayed back to
-  the frontend to highlight matches
-- A Share button (`ToolbarButton`, bordered)
-- An Info button (`ToolbarButton`, bordered + prominent + tinted) whose `BadgeCount` increments on
-  every click by rebuilding the toolbar and calling `SetToolbar` again — there is no per-item update
-  method, so this is the pattern for any dynamic toolbar state
+- a persistent `NSToolbarItemGroup` for Write/Preview mode;
+- an `NSSearchToolbarItem` with a Go callback;
+- native New, Share, Details, Save, and Focus controls;
+- generated internal item identifiers, with no IDs in application code;
+- live item handles that update labels, badges, selection, and visibility;
+- a working notes editor with a note list, write/preview modes, search, sharing,
+  local save state, details, focus mode, and keyboard save.
 
-Every toolbar interaction is logged in the activity panel at the bottom of the window so each Go
-callback firing is visible without opening a debugger.
+Run it on macOS from this directory:
 
-## Running the example
-
-```bash
+```sh
 go run .
 ```
-
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | N/A (MacToolbar is a no-op) |
-| Linux    | N/A (MacToolbar is a no-op) |

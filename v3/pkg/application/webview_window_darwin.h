@@ -43,6 +43,9 @@ NSString* acceleratorStringFromKeyEvent(NSEvent* event);
 BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window);
 
 void windowSetScreen(void* window, void* screen, int yOffset);
+void windowSetToolbarStyle(void* nsWindow, int style);
+void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator);
+void windowSetShowToolbarWhenFullscreen(void* window, bool setting);
 
 // Liquid Glass support functions
 bool isLiquidGlassSupported();
@@ -51,9 +54,5 @@ void windowSetLiquidGlass(void* window, int style, int material, double cornerRa
                           const char* groupID, double groupSpacing);
 void windowRemoveVisualEffects(void* window);
 void configureWebViewForLiquidGlass(void* window);
-
-// Shared by webview_window_split_darwin.m and
-// webview_window_titlebar_accessory_darwin.m; see the .m for details.
-WKWebView* buildAuxiliaryWebview(void* nsWindow, double width, double height);
 
 #endif /* WebviewWindowDelegate_h */

@@ -30,6 +30,9 @@ extern void processToolbarSearch(unsigned int itemID, char* query);
 // alive beyond populating it).
 void* toolbarNewAndAttach(void* nsWindow);
 
+// Re-reads the delegate's item identifiers after Wails has populated them.
+void toolbarReload(void* nsWindow, void* delegatePtr, int style);
+
 // Removes the window's toolbar entirely.
 void toolbarDetach(void* nsWindow);
 
@@ -37,7 +40,8 @@ void toolbarDetach(void* nsWindow);
 // true. Returns the constructed NSToolbarItem (also retained by the
 // delegate's itemsByIdentifier).
 void* toolbarAddButtonItem(void* delegatePtr, const char* identifier, unsigned int itemID,
-    const char* label, const char* symbolName, bool bordered, bool prominent,
+    const char* label, const char* symbolName, const char* tooltip,
+    bool bordered, bool prominent, bool disabled, bool hidden,
     bool hasTint, double tintR, double tintG, double tintB, double tintA, int badgeCount);
 
 // Appends a segmented group. memberItems must be items built via
@@ -45,15 +49,17 @@ void* toolbarAddButtonItem(void* delegatePtr, const char* identifier, unsigned i
 // target/action, so clicking a segment independently dispatches that
 // segment's own itemID, the group itself has no target/action of its own.
 void* toolbarAddGroupItem(void* delegatePtr, const char* identifier,
-    const char* label, void** memberItems, int memberCount);
+    const char* label, void** memberItems, int memberCount, int selectionMode, int selectedIndex);
 
 // Builds a standalone button item not yet attached to any delegate's
 // identifier list, for use as a group member.
 void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int itemID,
-    const char* label, const char* symbolName, bool bordered);
+    const char* label, const char* symbolName, const char* tooltip,
+    bool bordered, bool disabled, bool hidden);
 
 // Appends a search field item.
-void* toolbarAddSearchItem(void* delegatePtr, const char* identifier, unsigned int itemID, const char* label);
+void* toolbarAddSearchItem(void* delegatePtr, const char* identifier, unsigned int itemID,
+    const char* label, const char* tooltip, bool disabled, bool hidden);
 
 // Appends the system flexible-space identifier (no item construction needed).
 void toolbarAddFlexibleSpaceIdentifier(void* delegatePtr);
@@ -64,5 +70,12 @@ void toolbarAddFlexibleSpaceIdentifier(void* delegatePtr);
 // direct reference. Tracking-separator alignment with a specific pane's
 // divider is added separately by the split-window implementation.
 void toolbarAddSidebarToggleIdentifier(void* delegatePtr, const char* identifier);
+void toolbarAddInspectorToggleIdentifier(void* delegatePtr, const char* identifier);
+
+void toolbarItemSetLabel(void* delegatePtr, const char* identifier, const char* label);
+void toolbarItemSetEnabled(void* delegatePtr, const char* identifier, bool enabled);
+void toolbarItemSetHidden(void* delegatePtr, const char* identifier, bool hidden);
+void toolbarItemSetBadgeCount(void* delegatePtr, const char* identifier, int badgeCount);
+void toolbarGroupSetSelectedIndex(void* delegatePtr, const char* identifier, int index);
 
 #endif /* WebviewWindowToolbarDarwin_h */
