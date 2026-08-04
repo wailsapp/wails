@@ -1150,8 +1150,9 @@ import (
 )
 
 type macosWebviewWindow struct {
-	nsWindow unsafe.Pointer
-	parent   *WebviewWindow
+	nsWindow      unsafe.Pointer
+	parent        *WebviewWindow
+	activeToolbar *MacToolbar
 }
 
 func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
@@ -1651,11 +1652,6 @@ func (w *macosWebviewWindow) run() {
 			C.int(notchContentHeight),
 			cNotchScreenID,
 		)
-		if pending := w.parent.macSplitPending; pending != nil {
-			w.installSplitPanes(pending)
-		}
-		w.installPendingTitlebarAccessories()
-
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
 		}
@@ -1785,6 +1781,7 @@ func (w *macosWebviewWindow) run() {
 				}
 				if !options.Hidden {
 					w.parent.Show()
+					w.refreshToolbarAfterShow()
 				}
 			})
 		})

@@ -1,196 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notes</title>
-    <style>
-        * { box-sizing: border-box; }
-        html, body {
-            margin: 0;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: transparent;
-            color: #1d1d1f;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            padding-top: 50px; /* room for the invisible title bar / toolbar */
-        }
-        .toolbar-hint {
-            text-align: center;
-            font-size: 12px;
-            color: #8a8a8e;
-            padding: 4px 0 12px;
-        }
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 0 32px;
-            min-height: 0;
-        }
-        .stats {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            font-size: 12px;
-            color: #6e6e73;
-        }
-        .chip {
-            background: rgba(0, 0, 0, 0.06);
-            border-radius: 100px;
-            padding: 3px 10px;
-        }
-        #editor, #preview {
-            flex: 1;
-            min-height: 220px;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        #editor {
-            width: 100%;
-            resize: none;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 16px;
-            font: 15px/1.6 -apple-system, sans-serif;
-            background: rgba(255, 255, 255, 0.6);
-        }
-        #preview {
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.6);
-            overflow-y: auto;
-            line-height: 1.6;
-        }
-        #preview mark {
-            background: #ffe08a;
-            border-radius: 3px;
-        }
-        .hidden { display: none !important; }
-        #activity {
-            margin: 16px 0 24px;
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            padding-top: 10px;
-        }
-        #activity h2 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #8a8a8e;
-            margin: 0 0 8px;
-        }
-        #activity-log {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            max-height: 110px;
-            overflow-y: auto;
-            font: 12px/1.7 ui-monospace, SFMono-Regular, monospace;
-            color: #48484a;
-        }
-        #activity-log li:first-child { color: #1d1d1f; font-weight: 600; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daymark</title>
+  <style>
+    :root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #f4f4f1; color: #1e201d; }
+    body { padding: 30px 38px 36px; }
+    button, input, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    .shell { position: relative; max-width: 1120px; min-height: 660px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 236px) minmax(0, 1fr); gap: 24px; }
+    .rail { min-width: 0; max-width: 100%; overflow: hidden; padding: 14px 22px 14px 0; border-right: 1px solid rgba(30,32,29,.11); }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 0 28px; font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+    .brand-mark { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; color: white; background: linear-gradient(135deg, #e27b46, #a94032); box-shadow: 0 5px 14px rgba(169,64,50,.25); }
+    .rail-label { margin: 0 0 9px; color: #888b85; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .note-list { min-width: 0; max-width: 100%; display: grid; gap: 5px; }
+    .note-card { min-width: 0; max-width: 100%; overflow: hidden; width: 100%; padding: 11px 12px; border-radius: 10px; color: inherit; background: transparent; text-align: left; transition: background .15s, transform .15s; }
+    .note-card:hover { background: rgba(255,255,255,.66); transform: translateX(2px); }
+    .note-card.active { background: #fff; box-shadow: 0 5px 18px rgba(36,38,31,.08); }
+    .note-card strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .note-card span { display: block; margin-top: 5px; overflow: hidden; color: #91948e; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .rail-footer { margin-top: 35px; color: #999c95; font-size: 11px; line-height: 1.55; }
+    .editor { min-width: 0; padding: 12px 4px 0 0; }
+    .editor-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #8b8e88; font-size: 11px; }
+    .crumb { display: flex; align-items: center; gap: 7px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #52a36b; box-shadow: 0 0 0 4px rgba(82,163,107,.13); }
+    .save-state { color: #92958e; }
+    .title { width: 100%; margin: 40px 0 10px; padding: 0; border: 0; outline: 0; color: inherit; background: transparent; font-size: clamp(36px, 5vw, 62px); font-weight: 750; letter-spacing: -.065em; line-height: 1; }
+    .subtitle { width: 100%; padding: 0; border: 0; outline: 0; color: #888b85; background: transparent; font-size: 16px; line-height: 1.5; }
+    .writing-surface { min-height: 350px; margin-top: 34px; padding: 24px 26px; border: 1px solid rgba(30,32,29,.12); border-radius: 15px; outline: 0; color: inherit; background: rgba(255,255,255,.72); box-shadow: 0 16px 35px rgba(36,38,31,.07); font: 17px/1.75 Georgia, serif; white-space: pre-wrap; }
+    .writing-surface:focus { border-color: rgba(169,64,50,.46); box-shadow: 0 0 0 4px rgba(169,64,50,.09), 0 16px 35px rgba(36,38,31,.07); }
+    .preview { display: none; min-height: 350px; margin-top: 34px; padding: 24px 26px; border: 1px solid rgba(30,32,29,.12); border-radius: 15px; background: rgba(255,255,255,.72); box-shadow: 0 16px 35px rgba(36,38,31,.07); font: 18px/1.75 Georgia, serif; }
+    .preview p { margin: 0 0 1.1em; }
+    .preview strong { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .94em; }
+    .inspector { position: absolute; z-index: 5; top: 2px; right: 0; width: 286px; max-height: calc(100% - 8px); padding: 17px; border: 1px solid rgba(30,32,29,.12); border-radius: 15px; background: rgba(250,250,247,.96); box-shadow: 0 18px 45px rgba(36,38,31,.18); opacity: 0; pointer-events: none; transform: translateX(22px); transition: opacity .18s ease, transform .18s ease; }
+    .inspector.open { opacity: 1; pointer-events: auto; transform: translateX(0); }
+    .inspector-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .inspector-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+    .inspector-caption { margin: 5px 0 0; color: #92958e; font-size: 11px; line-height: 1.4; }
+    .inspector-close { width: 26px; height: 26px; border-radius: 8px; color: #777a74; background: rgba(0,0,0,.06); font-size: 16px; }
+    .inspector-close:hover { background: rgba(0,0,0,.1); }
+    .details { display: grid; gap: 9px; }
+    .detail { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 12px; border-radius: 10px; background: rgba(0,0,0,.045); }
+    .detail small { display: block; margin-bottom: 5px; color: #92958e; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .detail strong { font-size: 14px; }
+    .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 17px; color: #92958e; font-size: 11px; }
+    .shortcut { padding: 4px 7px; border: 1px solid rgba(30,32,29,.12); border-radius: 5px; background: rgba(255,255,255,.4); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .shell.focus { display: block; max-width: 900px; }
+    .shell.focus .rail { display: none; }
+    .shell.focus .editor { padding-right: 0; }
+    .shell.focus .title { margin-top: 68px; }
+    @media (prefers-color-scheme: dark) {
+      html, body { background: #1d1e1d; color: #f1f1ed; }
+      .rail { border-color: rgba(255,255,255,.1); }
+      .note-card:hover, .note-card.active, .details .detail { background: rgba(255,255,255,.08); }
+      .writing-surface, .preview { border-color: rgba(255,255,255,.11); background: rgba(38,39,37,.82); box-shadow: 0 16px 35px rgba(0,0,0,.2); }
+      .inspector { border-color: rgba(255,255,255,.12); background: rgba(39,40,38,.97); box-shadow: 0 18px 45px rgba(0,0,0,.35); }
+      .inspector-close, .detail { background: rgba(255,255,255,.08); }
+      .shortcut { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.06); }
+    }
+  </style>
 </head>
 <body>
-    <p class="toolbar-hint">The Edit/Preview segment, search field, Share and Info buttons above are real NSToolbarItems, not part of this page.</p>
+  <div class="shell" id="shell">
+    <aside class="rail">
+      <div class="brand"><span class="brand-mark">✦</span><span>Daymark</span></div>
+      <p class="rail-label">Your notes</p>
+      <div class="note-list" id="note-list"></div>
+      <div class="rail-footer">A small, quiet place<br>for useful thoughts.</div>
+    </aside>
+    <main class="editor">
+      <div class="editor-top"><span class="crumb"><i class="dot"></i><span id="category">Personal / Field Notes</span></span><span class="save-state" id="save-state">Saved locally</span></div>
+      <input class="title" id="title" aria-label="Note title" value="Saturday, slowly.">
+      <input class="subtitle" id="subtitle" aria-label="Note subtitle" value="A slow day is still a day well spent.">
+      <div class="writing-surface" id="writing" contenteditable="true" role="textbox" aria-label="Note body">A good day has room around it.
 
-    <main>
-        <div class="stats">
-            <span class="chip" id="mode-chip">Mode: edit</span>
-            <span class="chip" id="info-chip">Info clicks: 0</span>
-        </div>
-
-        <textarea id="editor" spellcheck="false"># Weekend plan
-
-**Saturday**: farmers market, then fix the bike.
-**Sunday**: long walk, read a chapter, call home.
-
-Search for "walk" using the toolbar search field to see it highlighted below in Preview mode.</textarea>
-        <div id="preview" class="hidden"></div>
-
-        <div id="activity">
-            <h2>Activity log (native toolbar &rarr; Go &rarr; frontend)</h2>
-            <ul id="activity-log"><li>Waiting for a toolbar interaction&hellip;</li></ul>
-        </div>
+Leave the phone at home. Walk until the city sounds different. Buy something warm on the way back.</div>
+      <div class="preview" id="preview"></div>
+      <div class="footer"><span id="hint">Write something worth keeping.</span><span class="shortcut">⌘ S to save</span></div>
     </main>
+    <aside class="inspector" id="details" aria-label="Note details">
+      <div class="inspector-head">
+        <div><h2 class="inspector-title">Inspector</h2><p class="inspector-caption">A quick read on this note.</p></div>
+        <button class="inspector-close" id="close-details" aria-label="Close inspector">×</button>
+      </div>
+      <div class="details">
+        <div class="detail"><small>Words</small><strong id="word-count">0</strong></div>
+        <div class="detail"><small>Reading time</small><strong id="reading-time">1 min</strong></div>
+        <div class="detail"><small>Last edited</small><strong id="last-edited">Just now</strong></div>
+      </div>
+    </aside>
+  </div>
+  <script type="module">
+    import { Events } from '/wails/runtime.js';
 
-    <script type="module">
-        import { Events } from '/wails/runtime.js';
+    const $ = (id) => document.getElementById(id);
+    const title = $('title'), subtitle = $('subtitle'), writing = $('writing'), preview = $('preview');
+    const notes = [
+      { title: 'Saturday, slowly.', subtitle: 'A slow day is still a day well spent.', body: writing.innerText, category: 'Personal / Field Notes' },
+      { title: 'Things worth noticing', subtitle: 'A list for paying closer attention.', body: 'The first warm patch of sunlight on the kitchen floor.\n\nThe sound of a neighbour watering plants.\n\nA good question asked at exactly the right time.', category: 'Ideas / Observations' },
+      { title: 'A smaller promise', subtitle: 'Start with what can be carried today.', body: 'Make the bed. Drink the water. Send the message.\n\nThen see what the day is willing to become.', category: 'Personal / Drafts' }
+    ];
+    let active = 0, mode = 'write', dirty = false, filtered = '';
 
-        const editor = document.getElementById('editor');
-        const preview = document.getElementById('preview');
-        const modeChip = document.getElementById('mode-chip');
-        const infoChip = document.getElementById('info-chip');
-        const log = document.getElementById('activity-log');
+    function current() { return notes[active]; }
+    function renderList() {
+      const list = $('note-list'); list.innerHTML = '';
+      notes.forEach((note, index) => {
+        if (filtered && !(note.title + note.body).toLowerCase().includes(filtered.toLowerCase())) return;
+        const button = document.createElement('button'); button.className = 'note-card' + (index === active ? ' active' : '');
+        button.innerHTML = '<strong></strong><span></span>'; button.querySelector('strong').textContent = note.title; button.querySelector('span').textContent = note.body.replace(/\s+/g, ' ').slice(0, 48);
+        button.onclick = () => selectNote(index); list.append(button);
+      });
+    }
+    function selectNote(index) { saveCurrent(); active = index; const note = current(); title.value = note.title; subtitle.value = note.subtitle; writing.innerText = note.body; $('category').textContent = note.category; dirty = false; setSaveState('Saved locally'); renderList(); updateDetails(); setMode(mode); }
+    function saveCurrent() { const note = current(); note.title = title.value.trim() || 'Untitled note'; note.subtitle = subtitle.value.trim(); note.body = writing.innerText.trim(); }
+    function markDirty() { dirty = true; setSaveState('Unsaved changes'); Events.Emit('editor:dirty', true); updateDetails(); renderList(); }
+    function setSaveState(text) { $('save-state').textContent = text; }
+    function updateDetails() { const words = writing.innerText.trim().split(/\s+/).filter(Boolean).length; $('word-count').textContent = words; $('reading-time').textContent = Math.max(1, Math.ceil(words / 220)) + ' min'; $('last-edited').textContent = dirty ? 'A moment ago' : 'Just now'; }
+    function setMode(next) { mode = next; const isPreview = mode === 'preview'; writing.style.display = isPreview ? 'none' : 'block'; preview.style.display = isPreview ? 'block' : 'none'; preview.innerHTML = current().body.split(/\n\s*\n/).map(p => '<p>' + p.replace(/^# (.*)$/gm, '<strong>$1</strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</p>').join(''); }
+    function createNote() { notes.unshift({ title: 'Untitled note', subtitle: 'Start with one honest sentence.', body: '', category: 'Personal / Drafts' }); selectNote(0); title.focus(); title.select(); }
+    function save() { saveCurrent(); dirty = false; setSaveState('Saved locally'); Events.Emit('editor:dirty', false); renderList(); updateDetails(); }
 
-        let mode = 'edit';
-        let lastQuery = '';
-
-        function escapeHtml(s) {
-            return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-        }
-
-        function renderMarkdownLite(text, query) {
-            let html = escapeHtml(text)
-                .replace(/^# (.+)$/gm, '<h2>$1</h2>')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-            if (query) {
-                const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                html = html.replace(new RegExp('(' + escaped + ')', 'ig'), '<mark>$1</mark>');
-            }
-            return html;
-        }
-
-        function renderPreview() {
-            preview.innerHTML = renderMarkdownLite(editor.value, lastQuery);
-        }
-
-        function logLine(text) {
-            const li = document.createElement('li');
-            li.textContent = text;
-            log.prepend(li);
-            while (log.children.length > 30) log.removeChild(log.lastChild);
-        }
-
-        Events.On('view:mode', (event) => {
-            mode = event.data;
-            modeChip.textContent = 'Mode: ' + mode;
-            if (mode === 'preview') {
-                renderPreview();
-                editor.classList.add('hidden');
-                preview.classList.remove('hidden');
-            } else {
-                editor.classList.remove('hidden');
-                preview.classList.add('hidden');
-            }
-            logLine('view: switched to ' + mode);
-        });
-
-        Events.On('toolbar:search', (event) => {
-            lastQuery = event.data ?? '';
-            const matches = lastQuery
-                ? (editor.value.match(new RegExp(lastQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig')) ?? []).length
-                : 0;
-            if (mode === 'preview') renderPreview();
-            logLine(lastQuery ? `search: "${lastQuery}" -> ${matches} match(es)` : 'search: cleared');
-        });
-
-        Events.On('toolbar:action', (event) => {
-            const { action, count } = event.data;
-            if (action === 'share') {
-                logLine('share: note content shared');
-            } else if (action === 'info') {
-                infoChip.textContent = 'Info clicks: ' + count;
-                logLine(`info: clicked (badge now ${count})`);
-            }
-        });
-    </script>
+    [title, subtitle, writing].forEach((element) => element.addEventListener('input', markDirty));
+    document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); save(); } });
+    Events.On('toolbar:new', createNote);
+    Events.On('toolbar:mode', (event) => setMode(event.data === 'preview' ? 'preview' : 'write'));
+    Events.On('toolbar:search', (event) => { filtered = event.data || ''; renderList(); });
+    Events.On('toolbar:share', async () => { saveCurrent(); const text = title.value + '\n\n' + writing.innerText; try { await navigator.clipboard.writeText(text); setSaveState('Copied to clipboard'); } catch (_) { setSaveState('Ready to share'); } });
+    Events.On('toolbar:details', () => $('details').classList.toggle('open'));
+    Events.On('toolbar:focus', (event) => $('shell').classList.toggle('focus', Boolean(event.data)));
+    Events.On('toolbar:save', save);
+    $('close-details').onclick = () => $('details').classList.remove('open');
+    renderList(); updateDetails(); setMode('write');
+  </script>
 </body>
 </html>
