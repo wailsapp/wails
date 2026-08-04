@@ -1,4 +1,5 @@
 name: Release v3
+run-name: Release v3 ${{ inputs.tag || github.ref_name }} (${{ inputs.orchestrator_run || 'direct' }})
 
 on:
   push:
@@ -20,6 +21,14 @@ on:
         required: false
         default: false
         type: boolean
+      release_notes:
+        description: 'Optional curated release notes supplied by the release orchestrator'
+        required: false
+        type: string
+      orchestrator_run:
+        description: 'Optional caller run identifier used to track this workflow'
+        required: false
+        type: string
 
 env:
   GO_VERSION: '1.25'
@@ -241,12 +250,17 @@ jobs:
           TAG: ${{ needs.preflight.outputs.tag }}
           PRE: ${{ needs.preflight.outputs.pre_release }}
           DRAFT: ${{ inputs.draft }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
         run: |
           FLAGS=(
             --repo "${{ github.repository }}"
             --title "Wails $TAG"
-            --generate-notes
           )
+          if [ -n "$RELEASE_NOTES" ]; then
+            FLAGS+=(--notes "$RELEASE_NOTES")
+          else
+            FLAGS+=(--generate-notes)
+          fi
           [[ "$PRE" == "true" ]] && FLAGS+=(--prerelease)
           # A draft release is visible only to maintainers and can be deleted,
           # which is what makes rehearsing the whole path possible without

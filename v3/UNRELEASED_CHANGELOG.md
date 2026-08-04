@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent nightly releases from becoming immutable before desktop binaries, checksums, and provenance are attached (#5876)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

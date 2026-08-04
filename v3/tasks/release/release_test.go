@@ -253,6 +253,77 @@ func TestGetUnreleasedChangelogTemplate(t *testing.T) {
 	}
 }
 
+func TestParseReleaseArgs_DeferGitHubRelease(t *testing.T) {
+	opts, err := parseReleaseArgs([]string{
+		"--defer-github-release",
+		"--branch", "master",
+		"--target", "master",
+		"--version", "v3.0.0-beta.4",
+	})
+	if err != nil {
+		t.Fatalf("parseReleaseArgs() failed: %v", err)
+	}
+
+	if !opts.deferGitHubRelease {
+		t.Fatal("expected GitHub release creation to be deferred")
+	}
+	if opts.dryRun {
+		t.Fatal("defer-github-release must not implicitly enable dry-run")
+	}
+	if opts.version != "v3.0.0-beta.4" {
+		t.Fatalf("version = %q, want v3.0.0-beta.4", opts.version)
+	}
+}
+
+func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
+	workflow, err := os.ReadFile("../../../.github/workflows/nightly-release-v3.yml")
+	if err != nil {
+		t.Fatalf("read nightly release workflow: %v", err)
+	}
+	contents := string(workflow)
+
+	deferFlag := strings.Index(contents, "ARGS+=(--defer-github-release)")
+	dispatch := strings.Index(contents, "gh workflow run release-v3.yml")
+	if deferFlag == -1 {
+		t.Fatal("nightly release must defer GitHub release creation")
+	}
+	if dispatch == -1 {
+		t.Fatal("nightly release must dispatch the desktop artifact workflow")
+	}
+	if deferFlag > dispatch {
+		t.Fatal("nightly release must defer publication before dispatching the artifact workflow")
+	}
+	if !strings.Contains(contents, "release_notes=\"$RELEASE_NOTES\"") {
+		t.Fatal("nightly release must pass curated notes to the artifact workflow")
+	}
+	if !strings.Contains(contents, "gh run watch \"$run_id\"") {
+		t.Fatal("nightly release must wait for the dispatched publication workflow")
+	}
+	if !strings.Contains(contents, "steps.publication_check.outputs.needs_recovery == 'true'") {
+		t.Fatal("nightly release must recover a tagged commit whose publication failed")
+	}
+}
+
+func TestWriteGitHubMultilineOutput(t *testing.T) {
+	output := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(output, nil, 0o644); err != nil {
+		t.Fatalf("create output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", output)
+
+	value := "first line\nWAILS_RELEASE_NOTES_EOF\nlast line"
+	writeGitHubMultilineOutput("release_notes", value)
+
+	data, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatalf("read output file: %v", err)
+	}
+	want := "release_notes<<WAILS_RELEASE_NOTES_EOF_X\n" + value + "\nWAILS_RELEASE_NOTES_EOF_X\n"
+	if string(data) != want {
+		t.Fatalf("multiline output = %q, want %q", string(data), want)
+	}
+}
+
 func TestHasUnreleasedContent_WithContent(t *testing.T) {
 	cleanup, _ := setupTestEnvironment(t)
 	defer cleanup()
@@ -512,9 +583,9 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 // out-ranking the stray tag.
 func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
 	const (
-		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		strayTag     = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
 		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
-		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+		nextTag      = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
 	)
 
 	for _, v := range []string{strayTag, legacyLatest, nextTag} {
