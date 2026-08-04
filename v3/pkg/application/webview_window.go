@@ -814,40 +814,61 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 
 // SetToolbar sets or replaces the window's toolbar (macOS only; a no-op on
 // other platforms). Passing nil removes the toolbar. An item that requires
-// a callback (a button with no OnClick, a search field with no OnSearch)
-// is rejected: the whole call fails, logged via Window.Error, and the
-// previous toolbar (if any) is left in place.
+// a callback (a button with no OnClick, a search field with no OnSearch) is
+// rejected: the whole call fails, logged via Window.Error, and the previous
+// toolbar (if any) is left in place.
+//
+// A MacToolbar may only be attached to one window at a time. Removing or
+// replacing it releases that ownership so it can be attached elsewhere.
 func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
+	claimed := false
 	if toolbar != nil {
-		if err := validateToolbarItems(toolbar.items); err != nil {
+		if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
 			w.Error("SetToolbar: %s", err)
 			return w
 		}
-		toolbar.stateLock.Lock()
-		if toolbar.state == nil {
-			toolbar.state = &macToolbarState{window: w}
-		} else if toolbar.state.window != w {
-			w.Error("SetToolbar: toolbar is already attached to another window")
-			toolbar.stateLock.Unlock()
+		var err error
+		claimed, err = claimMacToolbar(toolbar, w)
+		if err != nil {
+			w.Error("SetToolbar: %s", err)
 			return w
 		}
-		toolbar.stateLock.Unlock()
 	}
-	w.toolbarLock.Lock()
-	w.toolbar = toolbar
-	w.toolbarLock.Unlock()
 
 	if w.impl == nil {
-		// Native window doesn't exist yet: run() will apply the stashed
-		// toolbar once it does.
+		// The native window does not exist yet. Swap the stashed toolbar and
+		// release the previous owner's claim; run() will attach the new one.
+		w.toolbarLock.Lock()
+		previous := w.toolbar
+		w.toolbar = toolbar
+		w.toolbarLock.Unlock()
+		if previous != nil && previous != toolbar {
+			releaseMacToolbarOwnership(previous, w)
+		}
 		return w
 	}
+
 	var err error
+	var previous *MacToolbar
 	InvokeSync(func() {
 		err = w.impl.setToolbar(toolbar)
+		if err == nil {
+			w.toolbarLock.Lock()
+			previous = w.toolbar
+			w.toolbar = toolbar
+			w.toolbarLock.Unlock()
+		}
 	})
 	if err != nil {
+		if toolbar != nil && claimed {
+			releaseMacToolbarOwnership(toolbar, w)
+		}
 		w.Error("SetToolbar: %s", err)
+	} else if previous != nil && previous != toolbar {
+		// The native implementation releases an active previous toolbar. This
+		// also releases a toolbar that was only stashed before the window was
+		// shown and therefore never became active.
+		releaseMacToolbarOwnership(previous, w)
 	}
 	return w
 }
