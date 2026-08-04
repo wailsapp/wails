@@ -437,6 +437,17 @@ These events work on all platforms:
 | `common:WindowDidResize` | Window was resized | Adjust layout, rerender charts |
 | `common:WindowDidMove` | Window was moved | Update position-dependent features |
 
+#### Application Lifecycle Events (Android, iOS, macOS)
+
+These events are emitted on Android, iOS, and macOS only. Windows and Linux do not have equivalent app-level foreground/background lifecycle transitions (use `common:SystemWillSleep`/`SystemDidWake` for machine-level suspend/resume on those platforms).
+
+| Event | Description | When to Use |
+|-------|-------------|-------------|
+| `common:ApplicationResumed` | Application became active (foreground + interactive). On macOS: app activated. On mobile: returned to foreground. | Reconnect services, resume rendering |
+| `common:ApplicationPaused` | Application is about to lose focus / go inactive. On macOS: app resigned active. On mobile: transitioning to background. | Pause expensive operations, save transient state |
+| `common:ApplicationBackgrounded` | Application moved to the background. On macOS: app hidden. On mobile: fully backgrounded. | Flush state, release resources, pause network |
+| `common:ApplicationForegrounded` | Application returning to the foreground (before becoming active). On macOS: app unhiding. On mobile: coming back from background. | Prepare to resume, refresh stale data |
+
 ### Platform-Specific Events
 
 #### Windows Events
