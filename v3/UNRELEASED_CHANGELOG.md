@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
