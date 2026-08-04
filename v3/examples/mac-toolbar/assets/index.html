@@ -22,6 +22,7 @@
     .note-card.active { background: #fff; box-shadow: 0 5px 18px rgba(36,38,31,.08); }
     .note-card strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
     .note-card span { display: block; margin-top: 5px; overflow: hidden; color: #91948e; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .empty-list { margin: 18px 12px; color: #92958e; font-size: 12px; line-height: 1.5; }
     .rail-footer { margin-top: 35px; color: #999c95; font-size: 11px; line-height: 1.55; }
     .editor { min-width: 0; padding: 12px 4px 0 0; }
     .editor-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #8b8e88; font-size: 11px; }
@@ -40,7 +41,7 @@
     .inspector-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
     .inspector-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
     .inspector-caption { margin: 5px 0 0; color: #92958e; font-size: 11px; line-height: 1.4; }
-    .inspector-close { width: 26px; height: 26px; border-radius: 8px; color: #777a74; background: rgba(0,0,0,.06); font-size: 16px; }
+    .inspector-close { width: 36px; height: 36px; border-radius: 10px; color: #777a74; background: rgba(0,0,0,.06); font-size: 18px; }
     .inspector-close:hover { background: rgba(0,0,0,.1); }
     .details { display: grid; gap: 9px; }
     .detail { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 12px; border-radius: 10px; background: rgba(0,0,0,.045); }
@@ -75,13 +76,13 @@
       <div class="editor-top"><span class="crumb"><i class="dot"></i><span id="category">Personal / Field Notes</span></span><span class="save-state" id="save-state">Saved locally</span></div>
       <input class="title" id="title" aria-label="Note title" value="Saturday, slowly.">
       <input class="subtitle" id="subtitle" aria-label="Note subtitle" value="A slow day is still a day well spent.">
-      <div class="writing-surface" id="writing" contenteditable="true" role="textbox" aria-label="Note body">A good day has room around it.
+      <div class="writing-surface" id="writing" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note body">A good day has room around it.
 
 Leave the phone at home. Walk until the city sounds different. Buy something warm on the way back.</div>
       <div class="preview" id="preview"></div>
       <div class="footer"><span id="hint">Write something worth keeping.</span><span class="shortcut">⌘ S to save</span></div>
     </main>
-    <aside class="inspector" id="details" aria-label="Note details">
+    <aside class="inspector" id="details" role="complementary" aria-label="Note details" aria-hidden="true">
       <div class="inspector-head">
         <div><h2 class="inspector-title">Inspector</h2><p class="inspector-caption">A quick read on this note.</p></div>
         <button class="inspector-close" id="close-details" aria-label="Close inspector">×</button>
@@ -98,43 +99,206 @@ Leave the phone at home. Walk until the city sounds different. Buy something war
 
     const $ = (id) => document.getElementById(id);
     const title = $('title'), subtitle = $('subtitle'), writing = $('writing'), preview = $('preview');
-    const notes = [
-      { title: 'Saturday, slowly.', subtitle: 'A slow day is still a day well spent.', body: writing.innerText, category: 'Personal / Field Notes' },
+    const storageKey = 'daymark.notes.v2';
+    const seedNotes = [
+      { title: 'Saturday, slowly.', subtitle: 'A slow day is still a day well spent.', body: writing.innerText.trim(), category: 'Personal / Field Notes' },
       { title: 'Things worth noticing', subtitle: 'A list for paying closer attention.', body: 'The first warm patch of sunlight on the kitchen floor.\n\nThe sound of a neighbour watering plants.\n\nA good question asked at exactly the right time.', category: 'Ideas / Observations' },
       { title: 'A smaller promise', subtitle: 'Start with what can be carried today.', body: 'Make the bed. Drink the water. Send the message.\n\nThen see what the day is willing to become.', category: 'Personal / Drafts' }
     ];
+
+    function loadNotes() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey));
+        if (Array.isArray(stored) && stored.length) return stored;
+      } catch (_) {}
+      return seedNotes.map((note) => ({ ...note }));
+    }
+
+    const notes = loadNotes();
     let active = 0, mode = 'write', dirty = false, filtered = '';
 
     function current() { return notes[active]; }
+    function persistNotes() { localStorage.setItem(storageKey, JSON.stringify(notes)); }
+    function syncCurrentFromEditor() {
+      const note = current();
+      note.title = title.value.trim() || 'Untitled note';
+      note.subtitle = subtitle.value.trim();
+      note.body = writing.innerText.trim();
+    }
+    function setSaveState(text) { $('save-state').textContent = text; }
+
     function renderList() {
-      const list = $('note-list'); list.innerHTML = '';
+      const list = $('note-list');
+      list.replaceChildren();
+      let visibleCount = 0;
       notes.forEach((note, index) => {
-        if (filtered && !(note.title + note.body).toLowerCase().includes(filtered.toLowerCase())) return;
-        const button = document.createElement('button'); button.className = 'note-card' + (index === active ? ' active' : '');
-        button.innerHTML = '<strong></strong><span></span>'; button.querySelector('strong').textContent = note.title; button.querySelector('span').textContent = note.body.replace(/\s+/g, ' ').slice(0, 48);
-        button.onclick = () => selectNote(index); list.append(button);
+        if (filtered && !(note.title + ' ' + note.body).toLowerCase().includes(filtered.toLowerCase())) return;
+        visibleCount += 1;
+        const button = document.createElement('button');
+        const heading = document.createElement('strong');
+        const excerpt = document.createElement('span');
+        button.className = 'note-card' + (index === active ? ' active' : '');
+        button.setAttribute('aria-pressed', String(index === active));
+        heading.textContent = note.title;
+        excerpt.textContent = note.body.replace(/\s+/g, ' ').slice(0, 48) || 'Empty note';
+        button.append(heading, excerpt);
+        button.onclick = () => selectNote(index);
+        list.append(button);
+      });
+      if (!visibleCount) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-list';
+        empty.textContent = 'No notes match this search.';
+        list.append(empty);
+      }
+    }
+
+    function loadCurrentIntoEditor() {
+      const note = current();
+      title.value = note.title;
+      subtitle.value = note.subtitle;
+      writing.innerText = note.body;
+      $('category').textContent = note.category;
+      renderList();
+      updateDetails();
+      setMode(mode);
+    }
+
+    function selectNote(index) {
+      syncCurrentFromEditor();
+      persistNotes();
+      active = index;
+      dirty = false;
+      setSaveState('Saved locally');
+      Events.Emit('editor:dirty', false);
+      loadCurrentIntoEditor();
+    }
+
+    function markDirty() {
+      syncCurrentFromEditor();
+      dirty = true;
+      setSaveState('Unsaved changes');
+      Events.Emit('editor:dirty', true);
+      updateDetails();
+      renderList();
+      if (mode === 'preview') renderPreview(current().body);
+    }
+
+    function updateDetails() {
+      const words = writing.innerText.trim().split(/\s+/).filter(Boolean).length;
+      $('word-count').textContent = words;
+      $('reading-time').textContent = Math.max(1, Math.ceil(words / 220)) + ' min';
+      $('last-edited').textContent = dirty ? 'A moment ago' : 'Just now';
+    }
+
+    function appendInlineFormatting(parent, text) {
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      parts.forEach((part) => {
+        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+          const strong = document.createElement('strong');
+          strong.textContent = part.slice(2, -2);
+          parent.append(strong);
+        } else {
+          parent.append(document.createTextNode(part));
+        }
       });
     }
-    function selectNote(index) { saveCurrent(); active = index; const note = current(); title.value = note.title; subtitle.value = note.subtitle; writing.innerText = note.body; $('category').textContent = note.category; dirty = false; setSaveState('Saved locally'); renderList(); updateDetails(); setMode(mode); }
-    function saveCurrent() { const note = current(); note.title = title.value.trim() || 'Untitled note'; note.subtitle = subtitle.value.trim(); note.body = writing.innerText.trim(); }
-    function markDirty() { dirty = true; setSaveState('Unsaved changes'); Events.Emit('editor:dirty', true); updateDetails(); renderList(); }
-    function setSaveState(text) { $('save-state').textContent = text; }
-    function updateDetails() { const words = writing.innerText.trim().split(/\s+/).filter(Boolean).length; $('word-count').textContent = words; $('reading-time').textContent = Math.max(1, Math.ceil(words / 220)) + ' min'; $('last-edited').textContent = dirty ? 'A moment ago' : 'Just now'; }
-    function setMode(next) { mode = next; const isPreview = mode === 'preview'; writing.style.display = isPreview ? 'none' : 'block'; preview.style.display = isPreview ? 'block' : 'none'; preview.innerHTML = current().body.split(/\n\s*\n/).map(p => '<p>' + p.replace(/^# (.*)$/gm, '<strong>$1</strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</p>').join(''); }
-    function createNote() { notes.unshift({ title: 'Untitled note', subtitle: 'Start with one honest sentence.', body: '', category: 'Personal / Drafts' }); selectNote(0); title.focus(); title.select(); }
-    function save() { saveCurrent(); dirty = false; setSaveState('Saved locally'); Events.Emit('editor:dirty', false); renderList(); updateDetails(); }
+
+    function renderPreview(text) {
+      preview.replaceChildren();
+      const blocks = text.split(/\n\s*\n/).filter(Boolean);
+      if (!blocks.length) {
+        const empty = document.createElement('p');
+        empty.textContent = 'Nothing to preview yet.';
+        preview.append(empty);
+        return;
+      }
+      blocks.forEach((block) => {
+        const paragraph = document.createElement('p');
+        if (block.startsWith('# ')) {
+          const strong = document.createElement('strong');
+          strong.textContent = block.slice(2);
+          paragraph.append(strong);
+        } else {
+          appendInlineFormatting(paragraph, block);
+        }
+        preview.append(paragraph);
+      });
+    }
+
+    function setMode(next) {
+      mode = next;
+      const isPreview = mode === 'preview';
+      writing.style.display = isPreview ? 'none' : 'block';
+      preview.style.display = isPreview ? 'block' : 'none';
+      if (isPreview) renderPreview(current().body);
+    }
+
+    function createNote() {
+      syncCurrentFromEditor();
+      persistNotes();
+      notes.unshift({ title: 'Untitled note', subtitle: 'Start with one honest sentence.', body: '', category: 'Personal / Drafts' });
+      active = 0;
+      dirty = true;
+      filtered = '';
+      setSaveState('Unsaved new note');
+      Events.Emit('editor:dirty', true);
+      setMode('write');
+      loadCurrentIntoEditor();
+      title.focus();
+      title.select();
+    }
+
+    function save() {
+      syncCurrentFromEditor();
+      persistNotes();
+      dirty = false;
+      setSaveState('Saved locally');
+      Events.Emit('editor:dirty', false);
+      renderList();
+      updateDetails();
+    }
+
+    function setInspector(open, moveFocus = true) {
+      const inspector = $('details');
+      inspector.classList.toggle('open', open);
+      inspector.setAttribute('aria-hidden', String(!open));
+      if (open && moveFocus) $('close-details').focus();
+    }
 
     [title, subtitle, writing].forEach((element) => element.addEventListener('input', markDirty));
-    document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); save(); } });
+    document.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        save();
+      } else if (event.key === 'Escape' && $('details').classList.contains('open')) {
+        event.preventDefault();
+        setInspector(false);
+        writing.focus();
+      }
+    });
     Events.On('toolbar:new', createNote);
     Events.On('toolbar:mode', (event) => setMode(event.data === 'preview' ? 'preview' : 'write'));
     Events.On('toolbar:search', (event) => { filtered = event.data || ''; renderList(); });
-    Events.On('toolbar:share', async () => { saveCurrent(); const text = title.value + '\n\n' + writing.innerText; try { await navigator.clipboard.writeText(text); setSaveState('Copied to clipboard'); } catch (_) { setSaveState('Ready to share'); } });
-    Events.On('toolbar:details', () => $('details').classList.toggle('open'));
-    Events.On('toolbar:focus', (event) => $('shell').classList.toggle('focus', Boolean(event.data)));
+    Events.On('toolbar:share', async () => {
+      syncCurrentFromEditor();
+      const text = title.value + '\n\n' + writing.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        setSaveState('Copied to clipboard');
+      } catch (_) {
+        setSaveState('Ready to share');
+      }
+    });
+    Events.On('toolbar:details', () => setInspector(!$('details').classList.contains('open')));
+    Events.On('toolbar:focus', (event) => {
+      const focused = Boolean(event.data);
+      if (focused) setInspector(false, false);
+      $('shell').classList.toggle('focus', focused);
+    });
     Events.On('toolbar:save', save);
-    $('close-details').onclick = () => $('details').classList.remove('open');
-    renderList(); updateDetails(); setMode('write');
+    $('close-details').onclick = () => { setInspector(false); writing.focus(); };
+    loadCurrentIntoEditor();
   </script>
 </body>
 </html>
