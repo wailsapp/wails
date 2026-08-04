@@ -21,7 +21,11 @@ Wails v3 is a **complete rewrite** with significant improvements in architecture
 ## Automated Migration
 
 :::caution[Experimental]
-The migrate command is experimental. It handles common project shapes well, but your mileage may vary: review the generated code and test your application thoroughly. If it stumbles on your project, please [open an issue](https://github.com/wailsapp/wails/issues) with the details so we can improve it. Pull requests are very welcome.
+The `wails3 migrate` command is included in the V3 CLI, but it is experimental.
+It handles common project shapes well, but your mileage may vary: review the
+generated code and test your application thoroughly. If it stumbles on your
+project, please [open an issue](https://github.com/wailsapp/wails/issues) with
+the details so we can improve it. Pull requests are very welcome.
 :::
 
 The CLI can perform most of this guide for you:
@@ -510,20 +514,23 @@ Events.Emit("action", data)
 }
 ```
 
-**v3 (wails.json):**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+V3 project-level development and build commands are defined in the root
+`Taskfile.yml`. The generated project keeps frontend commands there and uses
+`build/config.yml` for application and packaging configuration. Do not create
+a V3 `wails.json` by copying the V2 file.
 
 ## Feature Mapping
 
@@ -702,6 +709,28 @@ wails3 generate bindings
 - **Better docs** - Comprehensive guides
 
 ## Getting Help
+
+### Reporting migration problems
+
+Migration tool failures are bugs. Before opening an issue, reduce the problem
+to the smallest reproducible V2 project you can and include:
+
+- the Wails V2 version and the V3 CLI version or commit;
+- the operating system and architecture;
+- the exact `wails3 migrate` command;
+- the command output and generated `MIGRATION.md`;
+- `wails3 doctor` output; and
+- a redacted project or minimal reproduction, if the project contains private
+  code.
+
+Open the report in the [Wails issue tracker](https://github.com/wailsapp/wails/issues)
+using the bug report template. Do not attach secrets, signing credentials, or
+private source code.
+
+If you want to propose a change to the migration behavior or V3 API, submit a
+[Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/wep)
+as a pull request. Product proposals should not be filed as ordinary feature
+requests.
 
 ### Resources
 
