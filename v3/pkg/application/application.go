@@ -602,13 +602,12 @@ func (a *App) Run() error {
 			a.options.Services = services[:i+1]
 		}
 
-
-	// Start the MCP server when the application is built with -tags mcp.
-	// All configuration is read from environment variables (WAILS_MCP_HOST,
-	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
-	if err := startMCPServer(a); err != nil {
-		return fmt.Errorf("mcp: %w", err)
-	}
+		// Start the MCP server when the application is built with -tags mcp.
+		// All configuration is read from environment variables (WAILS_MCP_HOST,
+		// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+		if err := startMCPServer(a); err != nil {
+			return fmt.Errorf("mcp: %w", err)
+		}
 
 		go func() {
 			for {
@@ -664,6 +663,12 @@ func (a *App) Run() error {
 			for {
 				event := <-toolbarSearchTriggered
 				go handleToolbarSearch(event.itemID, event.query)
+			}
+		}()
+		go func() {
+			for {
+				event := <-toolbarShareCompleted
+				go handleToolbarShareResult(event)
 			}
 		}()
 

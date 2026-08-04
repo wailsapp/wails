@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -9,13 +11,17 @@ func TestValidateToolbarItems(t *testing.T) {
 	toolbar := NewMacToolbar()
 	button := toolbar.AddButton("Save").SetSymbol("checkmark").OnClick(func(*Context) {})
 	search := toolbar.AddSearch("Search").OnSearch(func(*Context, string) {})
+	share := toolbar.AddShare("Share").SetProvider(MacShareProviderFunc{
+		Available: []MacShareRepresentation{{ContentType: MacShareTypePlainText}},
+		Load:      func(MacShareRequest) ([]byte, error) { return []byte("A note"), nil },
+	})
 	group := toolbar.AddGroup("View", ToolbarGroupSelectOne)
 	group.AddButton("Write").OnClick(func(*Context) {})
 
 	if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
 		t.Fatalf("valid toolbar rejected: %v", err)
 	}
-	if toolbar.identifier == "" || button.identifier == "" || search.identifier == "" || group.identifier == "" {
+	if toolbar.identifier == "" || button.identifier == "" || search.identifier == "" || share.identifier == "" || group.identifier == "" {
 		t.Fatal("toolbar and items should receive internal identifiers")
 	}
 	if button.identifier == search.identifier || button.identifier == group.identifier {
@@ -23,6 +29,104 @@ func TestValidateToolbarItems(t *testing.T) {
 	}
 	if toolbar.identifier == NewMacToolbar().identifier {
 		t.Fatal("toolbar identifiers should be unique per toolbar")
+	}
+}
+
+func TestToolbarShareProviderIsNormalisedAndInvokedLazily(t *testing.T) {
+	toolbar := NewMacToolbar()
+	formats := []MacShareRepresentation{
+		{ContentType: MacShareTypeHTML},
+		{ContentType: MacShareTypePlainText},
+		{ContentType: MacShareTypeHTML},
+		{},
+	}
+	var requested MacShareRequest
+	share := toolbar.AddShare("Share").SetProvider(MacShareProviderFunc{
+		Available: formats,
+		Load: func(request MacShareRequest) ([]byte, error) {
+			requested = request
+			return []byte("<strong>A note</strong>"), nil
+		},
+	}).SetSuggestedName("Daymark Note")
+	formats[0].ContentType = MacShareTypePDF
+
+	snapshot := snapshotToolbarItemForTest(share.MacToolbarItem)
+	if len(snapshot.shareFormats) != 2 {
+		t.Fatalf("share formats = %#v, want two unique non-empty formats", snapshot.shareFormats)
+	}
+	if snapshot.shareFormats[0].ContentType != MacShareTypeHTML {
+		t.Fatal("share representation slices must be copied")
+	}
+	if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
+		t.Fatalf("share item should not require a click callback: %v", err)
+	}
+
+	providerID := registerToolbarShareProvider(share.shareProvider, share.shareFormats, share.shareSuggestedName)
+	t.Cleanup(func() { releaseToolbarShareProvider(providerID) })
+	data, err := handleToolbarShareData(providerID, MacShareTypeHTML)
+	if err != nil {
+		t.Fatalf("load HTML representation: %v", err)
+	}
+	if string(data) != "<strong>A note</strong>" {
+		t.Fatalf("share data = %q", data)
+	}
+	if requested.ContentType != MacShareTypeHTML || requested.SuggestedName != "Daymark Note" {
+		t.Fatalf("request = %#v", requested)
+	}
+}
+
+func TestToolbarShareProviderErrors(t *testing.T) {
+	toolbar := NewMacToolbar()
+	share := toolbar.AddShare("Share").SetProvider(MacShareProviderFunc{
+		Available: []MacShareRepresentation{{ContentType: MacShareTypePDF}},
+		Load:      func(MacShareRequest) ([]byte, error) { panic("renderer failed") },
+	})
+	providerID := registerToolbarShareProvider(share.shareProvider, share.shareFormats, share.shareSuggestedName)
+	t.Cleanup(func() { releaseToolbarShareProvider(providerID) })
+
+	if _, err := handleToolbarShareData(providerID, MacShareTypeHTML); err == nil {
+		t.Fatal("an unadvertised representation should fail")
+	}
+	if _, err := handleToolbarShareData(providerID, MacShareTypePDF); err == nil || !strings.Contains(err.Error(), "panicked") {
+		t.Fatalf("provider panic was not converted to an error: %v", err)
+	}
+
+	share.SetProvider(MacShareProviderFunc{
+		Available: []MacShareRepresentation{{ContentType: MacShareTypePDF}},
+		Load:      func(MacShareRequest) ([]byte, error) { return nil, errors.New("PDF unavailable") },
+	})
+	if _, err := handleToolbarShareData(providerID, MacShareTypePDF); err == nil || !strings.Contains(err.Error(), "panicked") {
+		t.Fatalf("existing registration did not retain its provider snapshot: %v", err)
+	}
+	newProviderID := registerToolbarShareProvider(share.shareProvider, share.shareFormats, share.shareSuggestedName)
+	t.Cleanup(func() { releaseToolbarShareProvider(newProviderID) })
+	if _, err := handleToolbarShareData(newProviderID, MacShareTypePDF); err == nil || err.Error() != "PDF unavailable" {
+		t.Fatalf("provider error = %v", err)
+	}
+}
+
+func TestToolbarShareCallbacks(t *testing.T) {
+	toolbar := NewMacToolbar()
+	share := toolbar.AddShare("Share")
+	var sharedService string
+	var failedService string
+	var failure string
+	share.OnShared(func(_ *Context, service string) { sharedService = service })
+	share.OnShareError(func(_ *Context, service string, err error) {
+		failedService = service
+		failure = err.Error()
+	})
+	id := nextToolbarNativeID()
+	addToToolbarItemMap(id, share.MacToolbarItem)
+	t.Cleanup(func() { removeFromToolbarItemMap(id) })
+
+	handleToolbarShareResult(toolbarShareEvent{itemID: id, service: "Mail"})
+	if sharedService != "Mail" {
+		t.Fatalf("shared service = %q, want Mail", sharedService)
+	}
+	handleToolbarShareResult(toolbarShareEvent{itemID: id, service: "AirDrop", err: "Unavailable"})
+	if failedService != "AirDrop" || failure != "Unavailable" {
+		t.Fatalf("failure callback = %q, %q", failedService, failure)
 	}
 }
 
@@ -160,6 +264,9 @@ type toolbarItemTestSnapshot struct {
 	hidden        bool
 	selectionMode MacToolbarGroupSelectionMode
 	selectedIndex int
+	shareProvider MacShareProvider
+	shareFormats  []MacShareRepresentation
+	shareSubject  string
 }
 
 func snapshotToolbarItemForTest(item *MacToolbarItem) toolbarItemTestSnapshot {
@@ -176,6 +283,9 @@ func snapshotToolbarItemForTest(item *MacToolbarItem) toolbarItemTestSnapshot {
 		hidden:        item.hidden,
 		selectionMode: item.selectionMode,
 		selectedIndex: item.selectedIndex,
+		shareProvider: item.shareProvider,
+		shareFormats:  append([]MacShareRepresentation(nil), item.shareFormats...),
+		shareSubject:  item.shareSubject,
 	}
 	if item.tintColor != nil {
 		copyOfColor := *item.tintColor
