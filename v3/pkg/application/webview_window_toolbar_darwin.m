@@ -1,6 +1,7 @@
 //go:build darwin && !ios && !server
 
 #import "webview_window_toolbar_darwin.h"
+#import <dispatch/dispatch.h>
 #import <objc/runtime.h>
 #import <stdlib.h>
 #import <string.h>
@@ -13,11 +14,22 @@ typedef struct {
 static const void* WailsToolbarDelegateAssociationKey = &WailsToolbarDelegateAssociationKey;
 static const void* WailsToolbarSearchTargetAssociationKey = &WailsToolbarSearchTargetAssociationKey;
 static const void* WailsToolbarGroupTargetAssociationKey = &WailsToolbarGroupTargetAssociationKey;
+static const void* WailsToolbarShareTargetAssociationKey = &WailsToolbarShareTargetAssociationKey;
+static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolbarShareProviderLifetimeAssociationKey;
 
 @implementation WailsToolbarItem
 
 - (void)handleClick {
     processToolbarItemClick(self.itemID);
+}
+
+@end
+
+@implementation WailsToolbarShareProviderLifetime
+
+- (void)dealloc {
+    processToolbarShareProviderRelease(self.providerID);
+    [super dealloc];
 }
 
 @end
@@ -48,6 +60,77 @@ static const void* WailsToolbarGroupTargetAssociationKey = &WailsToolbarGroupTar
 - (void)handleSearch:(id)sender {
     NSSearchField* field = (NSSearchField*)sender;
     processToolbarSearch(self.itemID, (char*)field.stringValue.UTF8String);
+}
+
+@end
+
+@implementation WailsToolbarShareTarget
+
+- (void)dealloc {
+    [_items release];
+    [_subject release];
+    [_activePicker release];
+    [super dealloc];
+}
+
+- (NSArray*)itemsForSharingServicePickerToolbarItem:(NSSharingServicePickerToolbarItem*)pickerToolbarItem {
+    return self.items ?: @[];
+}
+
+- (id<NSSharingServiceDelegate>)sharingServicePicker:(NSSharingServicePicker*)sharingServicePicker
+    delegateForSharingService:(NSSharingService*)sharingService {
+    if (self.subject.length > 0) sharingService.subject = self.subject;
+    return self;
+}
+
+- (void)sharingServicePicker:(NSSharingServicePicker*)sharingServicePicker
+    didChooseSharingService:(NSSharingService*)sharingService {
+    if (sharingService != nil && self.subject.length > 0) {
+        sharingService.subject = self.subject;
+    }
+    if (self.activePicker != nil) {
+        // Keep the picker alive until the current AppKit callback unwinds.
+        NSSharingServicePicker* closingPicker = [[self.activePicker retain] autorelease];
+        self.activePicker = nil;
+        (void)closingPicker;
+    }
+}
+
+- (void)sharingService:(NSSharingService*)sharingService didShareItems:(NSArray*)items {
+    NSString* service = sharingService.title ?: @"";
+    processToolbarShareResult(self.itemID, (char*)service.UTF8String, (char*)"");
+}
+
+- (void)sharingService:(NSSharingService*)sharingService
+    didFailToShareItems:(NSArray*)items error:(NSError*)error {
+    NSString* service = sharingService.title ?: @"";
+    NSString* message = error.localizedDescription ?: @"Sharing failed";
+    processToolbarShareResult(self.itemID, (char*)service.UTF8String, (char*)message.UTF8String);
+}
+
+- (NSWindow*)sharingService:(NSSharingService*)sharingService
+    sourceWindowForShareItems:(NSArray*)items sharingContentScope:(NSSharingContentScope*)sharingContentScope {
+    if (sharingContentScope != NULL) *sharingContentScope = NSSharingContentScopeFull;
+    return self.window;
+}
+
+- (void)showSharePicker:(id)sender {
+    if (self.items.count == 0) return;
+    NSToolbarItem* toolbarItem = [sender isKindOfClass:[NSToolbarItem class]] ? sender : nil;
+    NSView* anchor = toolbarItem.view;
+    if (anchor == nil) anchor = self.window.contentView;
+    if (anchor == nil) return;
+
+    NSSharingServicePicker* picker = [[NSSharingServicePicker alloc] initWithItems:self.items];
+    picker.delegate = self;
+    self.activePicker = picker;
+    [picker release];
+
+    NSRect rect = anchor.bounds;
+    if (toolbarItem.view == nil) {
+        rect = NSMakeRect(NSMaxX(anchor.bounds) - 1, NSMaxY(anchor.bounds) - 1, 1, 1);
+    }
+    [self.activePicker showRelativeToRect:rect ofView:anchor preferredEdge:NSMinYEdge];
 }
 
 @end
@@ -174,6 +257,11 @@ void toolbarAttach(void* nsWindow, void* handlePtr, int style) {
         for (NSToolbarItemIdentifier identifier in identifiers) {
             [toolbar insertItemWithItemIdentifier:identifier atIndex:toolbar.items.count];
         }
+    }
+
+    for (NSToolbarItem* item in delegate.itemsByIdentifier.allValues) {
+        WailsToolbarShareTarget* shareTarget = objc_getAssociatedObject(item, WailsToolbarShareTargetAssociationKey);
+        if (shareTarget != nil) shareTarget.window = window;
     }
 
     window.toolbar = toolbar;
@@ -369,6 +457,144 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
     return item;
 }
 
+static NSError* toolbarShareError(NSString* message) {
+    return [NSError errorWithDomain:@"WailsMacShareError" code:1
+        userInfo:@{NSLocalizedDescriptionKey: message ?: @"Unable to provide share data"}];
+}
+
+static void toolbarShareTargetSetProvider(WailsToolbarShareTarget* target, const char* providerJSON) {
+    target.items = @[];
+    target.subject = @"";
+    if (providerJSON == NULL || strlen(providerJSON) == 0) return;
+
+    NSData* data = [[NSString stringWithUTF8String:providerJSON] dataUsingEncoding:NSUTF8StringEncoding];
+    if (data == nil) return;
+    id decoded = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![decoded isKindOfClass:[NSDictionary class]]) return;
+    NSDictionary* descriptor = (NSDictionary*)decoded;
+    id providerIDValue = descriptor[@"providerID"];
+    unsigned int providerID = [providerIDValue isKindOfClass:[NSNumber class]]
+        ? ((NSNumber*)providerIDValue).unsignedIntValue
+        : 0;
+    id subject = descriptor[@"subject"];
+    if ([subject isKindOfClass:[NSString class]]) target.subject = subject;
+
+    id encodedRepresentations = descriptor[@"representations"];
+    if (![encodedRepresentations isKindOfClass:[NSArray class]] ||
+        ((NSArray*)encodedRepresentations).count == 0) return;
+
+    NSItemProvider* provider = [[NSItemProvider alloc] init];
+    if (providerID > 0) {
+        WailsToolbarShareProviderLifetime* lifetime = [[WailsToolbarShareProviderLifetime alloc] init];
+        lifetime.providerID = providerID;
+        objc_setAssociatedObject(provider, WailsToolbarShareProviderLifetimeAssociationKey,
+            lifetime, OBJC_ASSOCIATION_RETAIN);
+        [lifetime release];
+    }
+    id suggestedName = descriptor[@"suggestedName"];
+    if (@available(macOS 10.14, *)) {
+        if ([suggestedName isKindOfClass:[NSString class]] &&
+            ((NSString*)suggestedName).length > 0) {
+            provider.suggestedName = suggestedName;
+        }
+    }
+    __block BOOL registeredRepresentation = NO;
+    for (id encodedRepresentation in (NSArray*)encodedRepresentations) {
+        if (![encodedRepresentation isKindOfClass:[NSDictionary class]]) continue;
+        id contentTypeValue = encodedRepresentation[@"contentType"];
+        if (![contentTypeValue isKindOfClass:[NSString class]] ||
+            ((NSString*)contentTypeValue).length == 0) continue;
+
+        NSString* contentType = [(NSString*)contentTypeValue copy];
+        [provider registerDataRepresentationForTypeIdentifier:contentType
+            visibility:NSItemProviderRepresentationVisibilityAll
+            loadHandler:^NSProgress* (void (^completionHandler)(NSData*, NSError*)) {
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    char* responseJSON = processToolbarShareData(providerID, (char*)contentType.UTF8String);
+                    if (responseJSON == NULL) {
+                        completionHandler(nil, toolbarShareError(@"The share provider returned no response"));
+                        return;
+                    }
+
+                    NSData* responseData = [[NSString stringWithUTF8String:responseJSON]
+                        dataUsingEncoding:NSUTF8StringEncoding];
+                    free(responseJSON);
+                    NSError* decodeError = nil;
+                    id response = responseData == nil ? nil :
+                        [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&decodeError];
+                    if (![response isKindOfClass:[NSDictionary class]]) {
+                        completionHandler(nil, toolbarShareError(
+                            decodeError.localizedDescription ?: @"The share provider returned an invalid response"));
+                        return;
+                    }
+
+                    id errorMessage = response[@"error"];
+                    if ([errorMessage isKindOfClass:[NSString class]] &&
+                        ((NSString*)errorMessage).length > 0) {
+                        completionHandler(nil, toolbarShareError(errorMessage));
+                        return;
+                    }
+
+                    id encodedData = response[@"data"];
+                    if (![encodedData isKindOfClass:[NSString class]]) {
+                        completionHandler(nil, toolbarShareError(@"The share provider returned no data"));
+                        return;
+                    }
+                    NSData* providedData = [[NSData alloc]
+                        initWithBase64EncodedString:encodedData options:0];
+                    if (providedData == nil) {
+                        completionHandler(nil, toolbarShareError(@"The share provider returned invalid data"));
+                        return;
+                    }
+                    completionHandler(providedData, nil);
+                    [providedData release];
+                });
+                return nil;
+            }];
+        registeredRepresentation = YES;
+        [contentType release];
+    }
+    if (registeredRepresentation) target.items = @[provider];
+    [provider release];
+}
+
+void* toolbarAddShareItem(void* handlePtr, const char* identifier, unsigned int itemID,
+    const char* label, const char* symbolName, const char* tooltip,
+    bool disabled, bool hidden, const char* providerJSON) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return NULL;
+
+    NSString* identifierString = [NSString stringWithUTF8String:identifier];
+    WailsToolbarShareTarget* target = [[WailsToolbarShareTarget alloc] init];
+    target.itemID = itemID;
+    toolbarShareTargetSetProvider(target, providerJSON);
+
+    NSToolbarItem* item = nil;
+    if (@available(macOS 10.15, *)) {
+        NSSharingServicePickerToolbarItem* sharingItem =
+            [[NSSharingServicePickerToolbarItem alloc] initWithItemIdentifier:identifierString];
+        sharingItem.delegate = target;
+        item = sharingItem;
+    } else {
+        item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
+        item.target = target;
+        item.action = @selector(showSharePicker:);
+    }
+
+    item.label = [NSString stringWithUTF8String:label];
+    NSImage* symbol = toolbarSymbolImage(symbolName, item.label);
+    if (symbol != nil) item.image = symbol;
+    applyCommonItemStyle(item, tooltip, false, false, disabled || target.items.count == 0, hidden,
+        false, 0, 0, 0, 0, 0);
+    objc_setAssociatedObject(item, WailsToolbarShareTargetAssociationKey, target, OBJC_ASSOCIATION_RETAIN);
+    [target release];
+
+    [delegate.orderedIdentifiers addObject:identifierString];
+    delegate.itemsByIdentifier[identifierString] = item;
+    [item release];
+    return item;
+}
+
 void toolbarAddFlexibleSpaceIdentifier(void* handlePtr) {
     WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
     if (delegate != nil) {
@@ -380,6 +606,12 @@ static NSToolbarItem* toolbarItemForIdentifier(void* handlePtr, const char* iden
     WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
     if (delegate == nil || identifier == NULL) return nil;
     return delegate.itemsByIdentifier[[NSString stringWithUTF8String:identifier]];
+}
+
+void toolbarShareItemSetProvider(void* handlePtr, const char* identifier, const char* providerJSON) {
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    WailsToolbarShareTarget* target = objc_getAssociatedObject(item, WailsToolbarShareTargetAssociationKey);
+    if (target != nil) toolbarShareTargetSetProvider(target, providerJSON);
 }
 
 void toolbarItemSetLabel(void* handlePtr, const char* identifier, const char* label) {
@@ -434,6 +666,8 @@ void toolbarItemSetTintColor(void* handlePtr, const char* identifier, bool hasTi
 void toolbarItemSetEnabled(void* handlePtr, const char* identifier, bool enabled) {
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
     if (item != nil) {
+        WailsToolbarShareTarget* shareTarget = objc_getAssociatedObject(item, WailsToolbarShareTargetAssociationKey);
+        if (shareTarget != nil) enabled = enabled && shareTarget.items.count > 0;
         item.enabled = enabled;
         if ([item.view isKindOfClass:[NSControl class]]) {
             ((NSControl*)item.view).enabled = enabled;

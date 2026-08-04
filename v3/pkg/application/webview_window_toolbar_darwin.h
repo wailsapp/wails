@@ -4,9 +4,14 @@
 #define WebviewWindowToolbarDarwin_h
 
 #import <Cocoa/Cocoa.h>
+#import <AppKit/NSSharingServicePickerToolbarItem.h>
 
 extern void processToolbarItemClick(unsigned int itemID);
 extern void processToolbarSearch(unsigned int itemID, char* query);
+extern void processToolbarShareResult(unsigned int itemID, char* service, char* errorMessage);
+// The caller owns the returned UTF-8 JSON string and must free it.
+extern char* processToolbarShareData(unsigned int providerID, char* contentType);
+extern void processToolbarShareProviderRelease(unsigned int providerID);
 
 @interface WailsToolbarItem : NSToolbarItem
 @property unsigned int itemID;
@@ -20,6 +25,19 @@ extern void processToolbarSearch(unsigned int itemID, char* query);
 @interface WailsToolbarGroupTarget : NSObject
 @property (strong) NSArray<NSNumber*>* itemIDs;
 - (void)handleClick:(id)sender;
+@end
+
+@interface WailsToolbarShareTarget : NSObject <NSSharingServicePickerToolbarItemDelegate, NSSharingServiceDelegate>
+@property unsigned int itemID;
+@property (strong) NSArray* items;
+@property (copy) NSString* subject;
+@property (assign) NSWindow* window;
+@property (strong) NSSharingServicePicker* activePicker;
+- (void)showSharePicker:(id)sender;
+@end
+
+@interface WailsToolbarShareProviderLifetime : NSObject
+@property unsigned int providerID;
 @end
 
 // WailsToolbarDelegate owns the fully-built item list for one toolbar. Items
@@ -59,6 +77,10 @@ void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int item
 void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* tooltip, bool disabled, bool hidden);
 
+void* toolbarAddShareItem(void* handlePtr, const char* identifier, unsigned int itemID,
+    const char* label, const char* symbolName, const char* tooltip,
+    bool disabled, bool hidden, const char* providerJSON);
+
 void toolbarAddFlexibleSpaceIdentifier(void* handlePtr);
 
 void toolbarItemSetLabel(void* handlePtr, const char* identifier, const char* label);
@@ -73,5 +95,6 @@ void toolbarItemSetHidden(void* handlePtr, const char* identifier, bool hidden);
 void toolbarItemSetBadgeCount(void* handlePtr, const char* identifier, int badgeCount);
 void toolbarGroupSetSelectedIndex(void* handlePtr, const char* identifier, int index);
 void toolbarGroupSetSelectionMode(void* handlePtr, const char* identifier, int selectionMode);
+void toolbarShareItemSetProvider(void* handlePtr, const char* identifier, const char* providerJSON);
 
 #endif /* WebviewWindowToolbarDarwin_h */

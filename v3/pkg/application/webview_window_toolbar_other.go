@@ -16,3 +16,5 @@ func macToolbarItemSetBadgeCount(unsafe.Pointer, string, int)     {}
 func macToolbarGroupSetSelectedIndex(unsafe.Pointer, string, int) {}
 func macToolbarGroupSetSelectionMode(unsafe.Pointer, string, MacToolbarGroupSelectionMode) {
 }
+func macToolbarShareItemSetProvider(unsafe.Pointer, string, MacShareProvider, string, string, []MacShareRepresentation) {
+}

@@ -125,6 +125,13 @@ Leave the phone at home. Walk until the city sounds different. Buy something war
       note.subtitle = subtitle.value.trim();
       note.body = writing.innerText.trim();
     }
+    function publishShareContent() {
+      Events.Emit('editor:share-content', JSON.stringify({
+        title: title.value,
+        subtitle: subtitle.value,
+        body: writing.innerText
+      }));
+    }
     function setSaveState(text) { $('save-state').textContent = text; }
 
     function renderList() {
@@ -162,6 +169,7 @@ Leave the phone at home. Walk until the city sounds different. Buy something war
       renderList();
       updateDetails();
       setMode(mode);
+      publishShareContent();
     }
 
     function selectNote(index) {
@@ -179,6 +187,7 @@ Leave the phone at home. Walk until the city sounds different. Buy something war
       dirty = true;
       setSaveState('Unsaved changes');
       Events.Emit('editor:dirty', true);
+      publishShareContent();
       updateDetails();
       renderList();
       if (mode === 'preview') renderPreview(current().body);
@@ -280,15 +289,12 @@ Leave the phone at home. Walk until the city sounds different. Buy something war
     Events.On('toolbar:new', createNote);
     Events.On('toolbar:mode', (event) => setMode(event.data === 'preview' ? 'preview' : 'write'));
     Events.On('toolbar:search', (event) => { filtered = event.data || ''; renderList(); });
-    Events.On('toolbar:share', async () => {
-      syncCurrentFromEditor();
-      const text = title.value + '\n\n' + writing.innerText;
-      try {
-        await navigator.clipboard.writeText(text);
-        setSaveState('Copied to clipboard');
-      } catch (_) {
-        setSaveState('Ready to share');
-      }
+    Events.On('toolbar:share-complete', (event) => {
+      setSaveState(event.data ? `Shared with ${event.data}` : 'Shared');
+    });
+    Events.On('toolbar:share-error', (event) => {
+      const message = event.data?.message || 'Sharing failed';
+      setSaveState(message);
     });
     Events.On('toolbar:details', () => setInspector(!$('details').classList.contains('open')));
     Events.On('toolbar:focus', (event) => {

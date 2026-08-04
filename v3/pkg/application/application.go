@@ -744,6 +744,12 @@ func (a *App) Run() error {
 				go handleToolbarSearch(event.itemID, event.query)
 			}
 		}()
+		go func() {
+			for {
+				event := <-toolbarShareCompleted
+				go handleToolbarShareResult(event)
+			}
+		}()
 
 		a.runLock.Lock()
 		a.running = true
