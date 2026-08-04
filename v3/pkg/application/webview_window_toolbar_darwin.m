@@ -55,8 +55,12 @@
 
 @end
 
-static void applyCommonItemStyle(NSToolbarItem* item, bool bordered, bool prominent,
+static void applyCommonItemStyle(NSToolbarItem* item, const char* tooltip,
+    bool bordered, bool prominent, bool disabled, bool hidden,
     bool hasTint, double tintR, double tintG, double tintB, double tintA, int badgeCount) {
+    if (tooltip != NULL && strlen(tooltip) > 0) item.toolTip = [NSString stringWithUTF8String:tooltip];
+    item.enabled = !disabled;
+    item.hidden = hidden;
     if (@available(macOS 10.15, *)) {
         item.bordered = bordered;
     }
@@ -81,13 +85,58 @@ void* toolbarNewAndAttach(void* nsWindow) {
     NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"] autorelease];
     toolbar.delegate = delegate;
     toolbar.displayMode = NSToolbarDisplayModeIconAndLabel;
+    // A toolbar can be restored as hidden from AppKit's per-window toolbar
+    // state. Wails owns this toolbar configuration, so always make it
+    // visible when attaching it.
+    toolbar.allowsUserCustomization = NO;
+    toolbar.autosavesConfiguration = NO;
+    toolbar.visible = YES;
     // NSToolbar.delegate is a weak/assign reference: without this, the
     // delegate has no owner once this function returns and gets
     // deallocated, silently breaking every item lookup. Associate it with
     // RETAIN so it lives exactly as long as the toolbar does.
     objc_setAssociatedObject(toolbar, "wailsToolbarDelegate", delegate, OBJC_ASSOCIATION_RETAIN);
     window.toolbar = toolbar;
+    toolbar.visible = YES;
     return (void*)delegate;
+}
+
+void toolbarReload(void* nsWindow, void* delegatePtr, int style) {
+    NSWindow* window = (NSWindow*)nsWindow;
+    NSToolbar* toolbar = window.toolbar;
+    if (toolbar == nil) return;
+
+    // AppKit may ask for defaultItemIdentifiers while the toolbar is first
+    // attached. Reinstalling the delegate after the item tree is complete
+    // makes it re-read the now-populated identifiers.
+    toolbar.delegate = nil;
+    toolbar.delegate = (WailsToolbarDelegate*)delegatePtr;
+    WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
+    NSArray<NSToolbarItemIdentifier>* identifiers = delegate.orderedIdentifiers;
+    if (@available(macOS 15.0, *)) {
+        // Explicitly set the live item list. Default identifiers are only
+        // consulted when a toolbar is first configured, which is too early
+        // for Wails because the Go item tree is built after attachment.
+        toolbar.itemIdentifiers = identifiers;
+    } else {
+        while (toolbar.items.count > 0) {
+            [toolbar removeItemAtIndex:toolbar.items.count - 1];
+        }
+        for (NSToolbarItemIdentifier identifier in identifiers) {
+            [toolbar insertItemWithItemIdentifier:identifier atIndex:toolbar.items.count];
+        }
+    }
+    [toolbar retain];
+    window.toolbar = nil;
+    window.toolbar = toolbar;
+    [toolbar release];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (@available(macOS 11.0, *)) {
+        window.toolbarStyle = style;
+    }
+#endif
+    [toolbar validateVisibleItems];
+    toolbar.visible = YES;
 }
 
 void toolbarDetach(void* nsWindow) {
@@ -100,13 +149,17 @@ void toolbarDetach(void* nsWindow) {
 // to something that retains it (an NSDictionary/NSArray) and then
 // releasing this +1.
 void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int itemID,
-    const char* label, const char* symbolName, bool bordered) {
+    const char* label, const char* symbolName, const char* tooltip,
+    bool bordered, bool disabled, bool hidden) {
     NSString* identifierStr = [NSString stringWithUTF8String:identifier];
     WailsToolbarItem* item = [[WailsToolbarItem alloc] initWithItemIdentifier:identifierStr];
     item.itemID = itemID;
     item.label = [NSString stringWithUTF8String:label];
     item.target = item;
     item.action = @selector(handleClick);
+    item.enabled = !disabled;
+    item.hidden = hidden;
+    if (tooltip != NULL && strlen(tooltip) > 0) item.toolTip = [NSString stringWithUTF8String:tooltip];
     if (@available(macOS 10.15, *)) {
         item.bordered = bordered;
     }
@@ -120,12 +173,14 @@ void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int item
 }
 
 void* toolbarAddButtonItem(void* delegatePtr, const char* identifier, unsigned int itemID,
-    const char* label, const char* symbolName, bool bordered, bool prominent,
+    const char* label, const char* symbolName, const char* tooltip,
+    bool bordered, bool prominent, bool disabled, bool hidden,
     bool hasTint, double tintR, double tintG, double tintB, double tintA, int badgeCount) {
     WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
     WailsToolbarItem* item = (WailsToolbarItem*)toolbarBuildButtonItemStandalone(
-        identifier, itemID, label, symbolName, bordered); // +1
-    applyCommonItemStyle(item, bordered, prominent, hasTint, tintR, tintG, tintB, tintA, badgeCount);
+        identifier, itemID, label, symbolName, tooltip, bordered, disabled, hidden); // +1
+    applyCommonItemStyle(item, tooltip, bordered, prominent, disabled, hidden,
+        hasTint, tintR, tintG, tintB, tintA, badgeCount);
 
     NSString* identifierStr = [NSString stringWithUTF8String:identifier];
     [delegate.orderedIdentifiers addObject:identifierStr];
@@ -135,13 +190,14 @@ void* toolbarAddButtonItem(void* delegatePtr, const char* identifier, unsigned i
 }
 
 void* toolbarAddGroupItem(void* delegatePtr, const char* identifier,
-    const char* label, void** memberItems, int memberCount) {
+    const char* label, void** memberItems, int memberCount, int selectionMode, int selectedIndex) {
     WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
 
     NSMutableArray<NSToolbarItem*>* subitems = [NSMutableArray arrayWithCapacity:memberCount];
     for (int i = 0; i < memberCount; i++) {
         NSToolbarItem* memberItem = (NSToolbarItem*)memberItems[i]; // +1 from the standalone builder
         [subitems addObject:memberItem]; // array takes its own retain
+        delegate.itemsByIdentifier[memberItem.itemIdentifier] = memberItem;
         [memberItem release]; // release our +1
     }
 
@@ -154,7 +210,12 @@ void* toolbarAddGroupItem(void* delegatePtr, const char* identifier,
     group.subitems = subitems;
     group.label = [NSString stringWithUTF8String:label];
     if (@available(macOS 10.15, *)) {
-        group.selectionMode = NSToolbarItemGroupSelectionModeMomentary;
+        switch (selectionMode) {
+            case 1: group.selectionMode = NSToolbarItemGroupSelectionModeMomentary; break;
+            case 2: group.selectionMode = NSToolbarItemGroupSelectionModeSelectAny; break;
+            default: group.selectionMode = NSToolbarItemGroupSelectionModeSelectOne; break;
+        }
+        if (selectedIndex >= 0 && selectedIndex < memberCount) group.selectedIndex = selectedIndex;
         group.controlRepresentation = NSToolbarItemGroupControlRepresentationAutomatic;
     }
 
@@ -164,7 +225,8 @@ void* toolbarAddGroupItem(void* delegatePtr, const char* identifier,
     return (void*)group;
 }
 
-void* toolbarAddSearchItem(void* delegatePtr, const char* identifier, unsigned int itemID, const char* label) {
+void* toolbarAddSearchItem(void* delegatePtr, const char* identifier, unsigned int itemID,
+    const char* label, const char* tooltip, bool disabled, bool hidden) {
     WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
     NSString* identifierStr = [NSString stringWithUTF8String:identifier];
 
@@ -174,6 +236,9 @@ void* toolbarAddSearchItem(void* delegatePtr, const char* identifier, unsigned i
     item.searchField.target = item;
     item.searchField.action = @selector(handleSearch:);
     item.searchField.sendsWholeSearchString = YES;
+    item.enabled = !disabled;
+    item.hidden = hidden;
+    if (tooltip != NULL && strlen(tooltip) > 0) item.toolTip = [NSString stringWithUTF8String:tooltip];
 
     [delegate.orderedIdentifiers addObject:identifierStr];
     delegate.itemsByIdentifier[identifierStr] = item; // dictionary retains
@@ -202,4 +267,57 @@ void toolbarAddSidebarToggleIdentifier(void* delegatePtr, const char* identifier
     [delegate.orderedIdentifiers addObject:identifierStr];
     delegate.itemsByIdentifier[identifierStr] = item; // dictionary retains
     [item release]; // release our +1 from alloc
+}
+
+void toolbarAddInspectorToggleIdentifier(void* delegatePtr, const char* identifier) {
+    WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
+    NSString* identifierStr = [NSString stringWithUTF8String:identifier];
+    WailsToolbarItem* item = [[WailsToolbarItem alloc] initWithItemIdentifier:identifierStr];
+    item.itemID = 0;
+    item.label = @"Inspector";
+    if (@available(macOS 11.0, *)) {
+        item.image = [NSImage imageWithSystemSymbolName:@"sidebar.right" accessibilityDescription:@"Toggle Inspector"];
+    }
+    item.target = nil;
+    item.action = @selector(toggleInspector:);
+    [delegate.orderedIdentifiers addObject:identifierStr];
+    delegate.itemsByIdentifier[identifierStr] = item;
+    [item release];
+}
+
+static NSToolbarItem* toolbarItemForIdentifier(void* delegatePtr, const char* identifier) {
+    WailsToolbarDelegate* delegate = (WailsToolbarDelegate*)delegatePtr;
+    return delegate.itemsByIdentifier[[NSString stringWithUTF8String:identifier]];
+}
+
+void toolbarItemSetLabel(void* delegatePtr, const char* identifier, const char* label) {
+    NSToolbarItem* item = toolbarItemForIdentifier(delegatePtr, identifier);
+    if (item != nil) item.label = [NSString stringWithUTF8String:label];
+}
+
+void toolbarItemSetEnabled(void* delegatePtr, const char* identifier, bool enabled) {
+    NSToolbarItem* item = toolbarItemForIdentifier(delegatePtr, identifier);
+    if (item != nil) item.enabled = enabled;
+}
+
+void toolbarItemSetHidden(void* delegatePtr, const char* identifier, bool hidden) {
+    NSToolbarItem* item = toolbarItemForIdentifier(delegatePtr, identifier);
+    if (item != nil) item.hidden = hidden;
+}
+
+void toolbarItemSetBadgeCount(void* delegatePtr, const char* identifier, int badgeCount) {
+    NSToolbarItem* item = toolbarItemForIdentifier(delegatePtr, identifier);
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+    if (@available(macOS 26.0, *)) {
+        item.badge = badgeCount > 0 ? [NSItemBadge badgeWithCount:badgeCount] : nil;
+    }
+#endif
+}
+
+void toolbarGroupSetSelectedIndex(void* delegatePtr, const char* identifier, int index) {
+    NSToolbarItem* item = toolbarItemForIdentifier(delegatePtr, identifier);
+    if ([item isKindOfClass:[NSToolbarItemGroup class]]) {
+        NSToolbarItemGroup* group = (NSToolbarItemGroup*)item;
+        if (index >= 0 && index < (int)group.subitems.count) group.selectedIndex = index;
+    }
 }

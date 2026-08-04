@@ -213,18 +213,6 @@ type WebviewWindow struct {
 	// once run() creates the window, instead of being silently dropped.
 	toolbar     *MacToolbar
 	toolbarLock sync.RWMutex
-
-	// macSplitPending holds a MacSplitWindow's pane configuration between
-	// NewSplitWindow and the point where this window's Run() actually
-	// executes; darwin's run() consumes it via installSplitPanes. Always
-	// nil for windows created any other way.
-	macSplitPending *macSplitPendingConfig
-
-	// titlebarAccessoriesPending queues AddTitlebarAccessory calls made
-	// before the native window exists; darwin's run() consumes it via
-	// installPendingTitlebarAccessories.
-	titlebarAccessoriesPending []*macPendingTitlebarAccessory
-	titlebarAccessoriesLock    sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -799,6 +787,21 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 // is rejected: the whole call fails, logged via Window.Error, and the
 // previous toolbar (if any) is left in place.
 func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
+	if toolbar != nil {
+		if err := validateToolbarItems(toolbar.items); err != nil {
+			w.Error("SetToolbar: %s", err)
+			return w
+		}
+		toolbar.stateLock.Lock()
+		if toolbar.state == nil {
+			toolbar.state = &macToolbarState{window: w}
+		} else if toolbar.state.window != w {
+			w.Error("SetToolbar: toolbar is already attached to another window")
+			toolbar.stateLock.Unlock()
+			return w
+		}
+		toolbar.stateLock.Unlock()
+	}
 	w.toolbarLock.Lock()
 	w.toolbar = toolbar
 	w.toolbarLock.Unlock()
