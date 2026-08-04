@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
 
 ## Fixed
 <!-- Bug fixes -->
