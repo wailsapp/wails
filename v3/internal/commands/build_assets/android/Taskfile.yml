@@ -124,11 +124,14 @@ tasks:
 
   package:
     summary: Packages a production build of the application into a signed release APK
+    desc: |
+      Builds for arm64 by default (covers 99%+ of real devices). Set ARCH=amd64
+      for emulator-only APKs, or use package:fat for a universal APK.
     deps:
       - task: build
         vars:
           PRODUCTION: "true"
-          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+          ARCH: '{{.ARCH | default "arm64"}}'
     cmds:
       - task: assemble:apk:release
 
@@ -148,11 +151,14 @@ tasks:
 
   bundle:
     summary: Packages a production AAB (Android App Bundle) for Play Store submission
+    desc: |
+      Builds for arm64 by default. Set ARCH=amd64 for emulator builds, or use
+      bundle:fat for a universal AAB.
     deps:
       - task: build
         vars:
           PRODUCTION: "true"
-          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+          ARCH: '{{.ARCH | default "arm64"}}'
     cmds:
       - task: assemble:aab:release
 
@@ -338,7 +344,10 @@ tasks:
 
   deploy-emulator:
     summary: Deploy the packaged release APK to the Android Emulator
-    deps: [package]
+    deps:
+      - task: package
+        vars:
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
     cmds:
       - task: ensure-emulator
       - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
