@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -302,8 +303,70 @@ func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
 	if !strings.Contains(contents, "steps.publication_check.outputs.needs_recovery == 'true'") {
 		t.Fatal("nightly release must recover a tagged commit whose publication failed")
 	}
+	if !strings.Contains(contents, "steps.release.outputs.release_tag != ''") {
+		t.Fatal("nightly release must not dispatch publication when the release task produces no tag")
+	}
+	if !strings.Contains(contents, `RECOVERY_TAG: ${{ steps.publication_check.outputs.tag }}`) {
+		t.Fatal("nightly release must dispatch the reachable recovery tag after bookkeeping commits")
+	}
+	newReleaseGate := `(steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'`
+	if strings.Count(contents, newReleaseGate) != 2 {
+		t.Fatal("nightly release must recover an unpublished tag before creating a newer tag")
+	}
+	if !strings.Contains(contents, `gh api --include --silent "repos/$GITHUB_REPOSITORY/releases/tags/$tag"`) ||
+		!strings.Contains(contents, `grep -Eq '^HTTP/[0-9.]+ 404 '`) {
+		t.Fatal("publication recovery must distinguish a missing release from API failures")
+	}
 	if !strings.Contains(contents, "github.event.inputs.dry_run != 'true' &&") {
 		t.Fatal("manual dry runs must gate all artifact publication, including recovery")
+	}
+}
+
+func TestNightlyPublicationRecoveryFindsReachableTagAfterBookkeeping(t *testing.T) {
+	workflow, err := os.ReadFile("../../../.github/workflows/nightly-release-v3.yml")
+	if err != nil {
+		t.Fatalf("read nightly release workflow: %v", err)
+	}
+	contents := string(workflow)
+	selector := `git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1`
+	if !strings.Contains(contents, "tag=$("+selector+")") {
+		t.Fatal("publication recovery must select the latest active v3 tag reachable from HEAD")
+	}
+	if strings.Contains(contents, "id: publication_check\n      if: steps.check_tag.outputs.has_tag == 'true'") {
+		t.Fatal("publication recovery must run when bookkeeping commits follow the release tag")
+	}
+
+	repo := t.TempDir()
+	runGit := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repo
+		if output, runErr := cmd.CombinedOutput(); runErr != nil {
+			t.Fatalf("git %s: %v\n%s", strings.Join(args, " "), runErr, output)
+		}
+	}
+
+	runGit("init", "--initial-branch=master")
+	runGit("config", "user.name", "release-test")
+	runGit("config", "user.email", "release-test@example.invalid")
+	runGit("commit", "--allow-empty", "-m", "release commit")
+	runGit("tag", "v3.0.0-beta.3")
+	runGit("checkout", "-b", "unreachable-release")
+	runGit("commit", "--allow-empty", "-m", "unreachable release")
+	runGit("tag", "v3.0.0-rc.9")
+	runGit("checkout", "master")
+	runGit("commit", "--allow-empty", "-m", "release bookkeeping [skip ci]")
+
+	cmd := exec.Command("bash", "-c", selector)
+	cmd.Dir = repo
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("select reachable release tag: %v\n%s", err, output)
+	}
+	if got := strings.TrimSpace(string(output)); got != "v3.0.0-beta.3" {
+		t.Fatalf("reachable release tag = %q, want v3.0.0-beta.3", got)
 	}
 }
 

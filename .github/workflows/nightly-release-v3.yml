@@ -70,16 +70,30 @@ jobs:
 
     - name: Check whether a tagged commit still needs publication
       id: publication_check
-      if: steps.check_tag.outputs.has_tag == 'true'
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
-        tag="${{ steps.check_tag.outputs.tag }}"
-        if [[ "$tag" == v3.* ]] && ! gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+        # A release-bookkeeping commit can advance master after the release tag.
+        # Select only active-series tags that are ancestors of this checkout so
+        # a failed publication can still be recovered on the following run.
+        tag=$(git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
+        echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        if [ -z "$tag" ]; then
+          echo "needs_recovery=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        api_status=0
+        response=$(gh api --include --silent "repos/$GITHUB_REPOSITORY/releases/tags/$tag" 2>&1) || api_status=$?
+        if [ "$api_status" -eq 0 ]; then
+          echo "needs_recovery=false" >> "$GITHUB_OUTPUT"
+        elif grep -Eq '^HTTP/[0-9.]+ 404 ' <<< "$response"; then
           echo "needs_recovery=true" >> "$GITHUB_OUTPUT"
           echo "Release $tag is missing; the desktop artifact workflow will be re-dispatched."
         else
-          echo "needs_recovery=false" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$response" >&2
+          echo "::error::Unable to check publication state for $tag (gh api exit $api_status)."
+          exit "$api_status"
         fi
     
     - name: Check for unreleased changelog content
@@ -116,7 +130,7 @@ jobs:
           # Only consider the active release series (alpha2/beta/rc): they
           # outrank legacy alpha tags, and explicit patterns avoid stray tags
           # such as v3.0.0-alpha.98-tui being selected as the baseline.
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
+          LATEST_TAG=$(git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
         fi
 
         if [ -z "$LATEST_TAG" ]; then
@@ -170,8 +184,9 @@ jobs:
     
     - name: Continue with release process
       if: |
-        steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        (steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'
       run: |
         echo "✅ Proceeding with release process..."
         if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
@@ -181,8 +196,9 @@ jobs:
     - name: Run release script
       id: release
       if: |
-        steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        (steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'
       env:
         # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
         # against the API before pushing anything and falls back to
@@ -211,13 +227,19 @@ jobs:
       id: desktop_artifacts
       if: |
         github.event.inputs.dry_run != 'true' &&
-        ((steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true') ||
+        ((steps.release.outputs.release_tag != '' && steps.release.outputs.release_dry_run != 'true') ||
         steps.publication_check.outputs.needs_recovery == 'true')
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
         RELEASE_NOTES: ${{ steps.release.outputs.release_notes }}
+        RELEASE_TAG: ${{ steps.release.outputs.release_tag }}
+        RECOVERY_TAG: ${{ steps.publication_check.outputs.tag }}
       run: |
-        tag="${{ steps.release.outputs.release_tag || steps.check_tag.outputs.tag }}"
+        tag="${RELEASE_TAG:-$RECOVERY_TAG}"
+        if [ -z "$tag" ]; then
+          echo "::error::No release tag was produced or found for recovery."
+          exit 1
+        fi
         caller="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
         run_title="Release v3 $tag ($caller)"
         pre_release=false
