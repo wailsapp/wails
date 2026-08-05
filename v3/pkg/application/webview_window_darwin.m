@@ -239,11 +239,14 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
+    NSSize oldSize = self.frame.size;
     if (self.hasZoomRestoreFrame &&
         !self.applyingZoomAnimationFrame &&
         ![super isZoomed] &&
-        !NSEqualSizes(self.frame.size, frameRect.size)) {
-        self.zoomRestoreFrame = frameRect;
+        !NSEqualSizes(oldSize, frameRect.size)) {
+        [super setFrame:frameRect display:displayFlag];
+        self.zoomRestoreFrame = self.frame;
+        return;
     }
     [super setFrame:frameRect display:displayFlag];
 }
@@ -251,11 +254,14 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
+    NSSize oldSize = self.frame.size;
     if (self.hasZoomRestoreFrame &&
         !self.applyingZoomAnimationFrame &&
         ![super isZoomed] &&
-        !NSEqualSizes(self.frame.size, frameRect.size)) {
-        self.zoomRestoreFrame = frameRect;
+        !NSEqualSizes(oldSize, frameRect.size)) {
+        [super setFrame:frameRect display:displayFlag animate:animateFlag];
+        self.zoomRestoreFrame = self.frame;
+        return;
     }
     [super setFrame:frameRect display:displayFlag animate:animateFlag];
 }
