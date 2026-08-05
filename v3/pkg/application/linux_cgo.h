@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !gtk3 && !server && !android
 
 #ifndef LINUX_CGO_H
 #define LINUX_CGO_H

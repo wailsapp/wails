@@ -433,7 +433,7 @@ func Java_com_wails_app_WailsBridge_nativeOnPageFinished(env *C.JNIEnv, obj C.jo
 		if win != nil {
 			androidLogf("info", "🤖 [JNI] Injecting runtime.Core() into window %d", id)
 			// Get the runtime core JavaScript
-			runtimeJS := runtime.Core()
+			runtimeJS := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 			androidLogf("info", "🤖 [JNI] Runtime JS length: %d bytes", len(runtimeJS))
 			app.windowsLock.RUnlock()
 			// IMPORTANT: We must bypass win.ExecJS because it queues if runtimeLoaded is false.

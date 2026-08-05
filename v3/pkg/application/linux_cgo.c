@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !gtk3 && !server && !android
 
 #include "linux_cgo.h"
 

@@ -18,6 +18,12 @@ const (
 	IOSUserAgentSet                     = 8
 )
 
+// androidMethodNames is empty on iOS: messageprocessor.go's Debug logging
+// path references it unconditionally (for the androidRequest case), but
+// this platform never dispatches Android requests (see
+// processAndroidMethod below).
+var androidMethodNames = map[int]string{}
+
 var iosMethodNames = map[int]string{
 	IOSHapticsImpact:                    "Haptics.Impact",
 	IOSDeviceInfo:                       "Device.Info",

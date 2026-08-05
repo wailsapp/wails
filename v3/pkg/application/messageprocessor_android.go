@@ -12,6 +12,11 @@ const (
 	AndroidToast          = 2
 )
 
+// iosMethodNames is empty on Android: messageprocessor.go's Debug logging
+// path references it unconditionally (for the iosRequest case), but this
+// platform never dispatches iOS requests (see processIOSMethod below).
+var iosMethodNames = map[int]string{}
+
 var androidMethodNames = map[int]string{
 	AndroidHapticsVibrate: "Haptics.Vibrate",
 	AndroidDeviceInfo:     "Device.Info",
