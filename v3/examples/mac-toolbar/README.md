@@ -30,6 +30,18 @@ and plain text. Choosing Copy, Mail, Messages, Notes, or another installed
 sharing service causes AppKit to request the representation or representations
 that service understands.
 
+## Example layout
+
+- `main.go` creates the application and window, then attaches the toolbar and
+  menu.
+- `toolbar.go` constructs the native controls, registers their callbacks, and
+  keeps toolbar state in sync with editor events.
+- `menu.go` adds keyboard and menu equivalents for the toolbar actions.
+- `share.go` implements the lazy multi-format share provider and its plain-text
+  and HTML renderers.
+- `pdf.go` contains the demo's independent PDF renderer.
+- `assets/index.html` is the WebView editor controlled by the native chrome.
+
 ## Why sharing uses a provider
 
 Wails does not guess which DOM element, editor model, URL, or rendered view an
