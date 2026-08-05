@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
 - Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
 
 ## Deprecated
