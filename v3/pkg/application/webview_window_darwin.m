@@ -31,6 +31,8 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 @property BOOL zoomAnimationTargetIsZoomed;
 @property BOOL preparingZoomAnimationTarget;
 @property BOOL applyingZoomAnimationFrame;
+@property NSRect zoomRestoreFrame;
+@property BOOL hasZoomRestoreFrame;
 
 @end
 
@@ -237,11 +239,23 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
+    if (self.hasZoomRestoreFrame &&
+        !self.applyingZoomAnimationFrame &&
+        ![super isZoomed] &&
+        !NSEqualSizes(self.frame.size, frameRect.size)) {
+        self.zoomRestoreFrame = frameRect;
+    }
     [super setFrame:frameRect display:displayFlag];
 }
 - (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag animate:(BOOL)animateFlag {
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
+    }
+    if (self.hasZoomRestoreFrame &&
+        !self.applyingZoomAnimationFrame &&
+        ![super isZoomed] &&
+        !NSEqualSizes(self.frame.size, frameRect.size)) {
+        self.zoomRestoreFrame = frameRect;
     }
     [super setFrame:frameRect display:displayFlag animate:animateFlag];
 }
@@ -255,6 +269,9 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
         self.applyingZoomAnimationFrame = YES;
         [super setFrame:self.zoomAnimationTargetFrame display:YES animate:NO];
         self.applyingZoomAnimationFrame = NO;
+        if (!self.zoomAnimationTargetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
         [self cancelZoomAnimation];
         return;
     }
@@ -277,11 +294,15 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     self.applyingZoomAnimationFrame = NO;
 
     if (progress >= 1.0) {
+        if (!self.zoomAnimationTargetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
         [self cancelZoomAnimation];
     }
 }
 - (void)zoom:(id)sender {
     NSRect startFrame = self.frame;
+    BOOL startIsZoomed = [super isZoomed];
     BOOL interruptedAnimation = self.zoomAnimationTimer != nil;
     NSRect previousTargetFrame = self.zoomAnimationTargetFrame;
     [self cancelZoomAnimation];
@@ -305,12 +326,32 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     NSRect targetFrame = self.frame;
     BOOL targetIsZoomed = [super isZoomed];
     if (NSEqualRects(startFrame, targetFrame)) {
-        return;
+        if (startIsZoomed && self.hasZoomRestoreFrame) {
+            targetFrame = self.zoomRestoreFrame;
+            targetIsZoomed = NO;
+        } else {
+            return;
+        }
+    }
+
+    if (targetIsZoomed) {
+        if (!self.hasZoomRestoreFrame) {
+            self.zoomRestoreFrame = startFrame;
+            self.hasZoomRestoreFrame = YES;
+        }
+    } else if (self.hasZoomRestoreFrame) {
+        targetFrame = self.zoomRestoreFrame;
     }
 
     // Reduced-motion users should not receive a replacement animation. AppKit
     // has already applied the correct target and updated its zoom state.
     if ([self shouldReduceZoomMotion]) {
+        if (!targetIsZoomed) {
+            self.applyingZoomAnimationFrame = YES;
+            [super setFrame:targetFrame display:YES animate:NO];
+            self.applyingZoomAnimationFrame = NO;
+            self.hasZoomRestoreFrame = NO;
+        }
         return;
     }
 
@@ -326,6 +367,9 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
         self.applyingZoomAnimationFrame = YES;
         [super setFrame:targetFrame display:YES animate:NO];
         self.applyingZoomAnimationFrame = NO;
+        if (!targetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
         return;
     }
 
@@ -497,11 +541,16 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
     NSWindow *window = [event window];
-    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
     if( self.invisibleTitleBarHeight > 0 ) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];
         if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            // Only the first click can begin a drag. Starting another native
+            // drag for the second click races the JavaScript double-click
+            // handler and can make AppKit discard the zoom restore frame.
+            if (event.clickCount != 1) {
+                return;
+            }
             // Skip drag if the click is near a window edge (resize zone).
             // This prevents conflict between dragging and native top-corner resizing,
             // which causes window content to shake/jitter (#4960).
