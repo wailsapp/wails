@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
 - Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
 
 ## Deprecated
