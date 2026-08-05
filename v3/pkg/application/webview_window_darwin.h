@@ -13,6 +13,8 @@
 - (BOOL) becomeFirstResponder;
 - (BOOL) resignFirstResponder;
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+- (void)syncWebViewFrame;
+- (void)animateFullScreenTransitionFromFrame:(NSRect)startFrame toFrame:(NSRect)targetFrame duration:(NSTimeInterval)duration;
 
 @property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
 @property BOOL disableEscapeExitsFullscreen;
@@ -26,6 +28,8 @@
 @property unsigned int invisibleTitleBarHeight;
 @property BOOL showToolbarWhenFullscreen;
 @property NSWindowStyleMask previousStyleMask; // Used to restore the window style mask when using frameless
+@property NSRect frameBeforeFullScreen;
+@property BOOL hasFrameBeforeFullScreen;
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
 - (void)handleLeftMouseDown:(NSEvent*)event;

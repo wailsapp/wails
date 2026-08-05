@@ -33,6 +33,12 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 @property BOOL applyingZoomAnimationFrame;
 @property NSRect zoomRestoreFrame;
 @property BOOL hasZoomRestoreFrame;
+@property (retain) NSTimer* fullScreenAnimationTimer;
+@property NSRect fullScreenAnimationStartFrame;
+@property NSRect fullScreenAnimationTargetFrame;
+@property CFTimeInterval fullScreenAnimationStartTime;
+@property NSTimeInterval fullScreenAnimationDuration;
+@property BOOL applyingFullScreenAnimationFrame;
 
 @end
 
@@ -40,6 +46,8 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
     self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    // Render the webview throughout native resize animations instead of stretching a cached window snapshot.
+    [self setPreservesContentDuringLiveResize:NO];
     [self setAlphaValue:1.0];
     [self setBackgroundColor:[NSColor clearColor]];
     [self setOpaque:NO];
@@ -216,6 +224,77 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     }
     [super cancelOperation:sender];
 }
+- (void)syncWebViewFrame {
+    // AppKit may advance the window frame before WebKit's autoresizing pass during zoom and fullscreen transitions.
+    NSView *container = self.webView.superview;
+    if (!container) {
+        return;
+    }
+    [container layoutSubtreeIfNeeded];
+    [self.webView setFrame:container.bounds];
+}
+- (void)cancelFullScreenAnimation {
+    [self.fullScreenAnimationTimer invalidate];
+    self.fullScreenAnimationTimer = nil;
+}
+- (void)stepFullScreenAnimation:(NSTimer*)timer {
+    if (timer != self.fullScreenAnimationTimer) {
+        [timer invalidate];
+        return;
+    }
+
+    double progress = (CACurrentMediaTime() - self.fullScreenAnimationStartTime) / self.fullScreenAnimationDuration;
+    progress = MIN(1.0, MAX(0.0, progress));
+    double easedProgress = progress * progress * (3.0 - (2.0 * progress));
+
+    NSRect start = self.fullScreenAnimationStartFrame;
+    NSRect target = self.fullScreenAnimationTargetFrame;
+    NSRect frame = NSMakeRect(
+        start.origin.x + ((target.origin.x - start.origin.x) * easedProgress),
+        start.origin.y + ((target.origin.y - start.origin.y) * easedProgress),
+        start.size.width + ((target.size.width - start.size.width) * easedProgress),
+        start.size.height + ((target.size.height - start.size.height) * easedProgress)
+    );
+
+    self.applyingFullScreenAnimationFrame = YES;
+    [super setFrame:frame display:YES animate:NO];
+    self.applyingFullScreenAnimationFrame = NO;
+    [self syncWebViewFrame];
+
+    if (progress >= 1.0) {
+        [self cancelFullScreenAnimation];
+    }
+}
+- (void)animateFullScreenTransitionFromFrame:(NSRect)startFrame toFrame:(NSRect)targetFrame duration:(NSTimeInterval)duration {
+    [self cancelFullScreenAnimation];
+
+    if ([[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion] || duration <= 0) {
+        self.applyingFullScreenAnimationFrame = YES;
+        [super setFrame:targetFrame display:YES animate:NO];
+        self.applyingFullScreenAnimationFrame = NO;
+        [self syncWebViewFrame];
+        return;
+    }
+
+    // Establish the visible starting geometry before driving the custom transition.
+    self.applyingFullScreenAnimationFrame = YES;
+    [super setFrame:startFrame display:YES animate:NO];
+    self.applyingFullScreenAnimationFrame = NO;
+    [self syncWebViewFrame];
+
+    self.fullScreenAnimationStartFrame = startFrame;
+    self.fullScreenAnimationTargetFrame = targetFrame;
+    self.fullScreenAnimationStartTime = CACurrentMediaTime();
+    self.fullScreenAnimationDuration = duration;
+
+    NSTimer *timer = [NSTimer timerWithTimeInterval:MacZoomAnimationFrameInterval
+        target:self
+        selector:@selector(stepFullScreenAnimation:)
+        userInfo:nil
+        repeats:YES];
+    self.fullScreenAnimationTimer = timer;
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+}
 - (void)cancelZoomAnimation {
     [self.zoomAnimationTimer invalidate];
     self.zoomAnimationTimer = nil;
@@ -236,34 +315,46 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     return [super animationResizeTime:newFrame];
 }
 - (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag {
+    if (self.fullScreenAnimationTimer && !self.applyingFullScreenAnimationFrame) {
+        [self cancelFullScreenAnimation];
+    }
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
     NSSize oldSize = self.frame.size;
     if (self.hasZoomRestoreFrame &&
         !self.applyingZoomAnimationFrame &&
+        !self.applyingFullScreenAnimationFrame &&
         ![super isZoomed] &&
         !NSEqualSizes(oldSize, frameRect.size)) {
         [super setFrame:frameRect display:displayFlag];
         self.zoomRestoreFrame = self.frame;
+        [self syncWebViewFrame];
         return;
     }
     [super setFrame:frameRect display:displayFlag];
+    [self syncWebViewFrame];
 }
 - (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag animate:(BOOL)animateFlag {
+    if (self.fullScreenAnimationTimer && !self.applyingFullScreenAnimationFrame) {
+        [self cancelFullScreenAnimation];
+    }
     if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
     NSSize oldSize = self.frame.size;
     if (self.hasZoomRestoreFrame &&
         !self.applyingZoomAnimationFrame &&
+        !self.applyingFullScreenAnimationFrame &&
         ![super isZoomed] &&
         !NSEqualSizes(oldSize, frameRect.size)) {
         [super setFrame:frameRect display:displayFlag animate:animateFlag];
         self.zoomRestoreFrame = self.frame;
+        [self syncWebViewFrame];
         return;
     }
     [super setFrame:frameRect display:displayFlag animate:animateFlag];
+    [self syncWebViewFrame];
 }
 - (void)stepZoomAnimation:(NSTimer*)timer {
     if (timer != self.zoomAnimationTimer) {
@@ -403,10 +494,12 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 }
 - (void)close {
     [self cancelZoomAnimation];
+    [self cancelFullScreenAnimation];
     [super close];
 }
 - (void) dealloc {
     [self cancelZoomAnimation];
+    [self cancelFullScreenAnimation];
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
@@ -598,6 +691,22 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
         return proposedOptions | NSApplicationPresentationAutoHideToolbar;
     }
 }
+- (NSArray<NSWindow *> *)customWindowsToEnterFullScreenForWindow:(NSWindow *)window {
+    return @[window];
+}
+- (void)window:(NSWindow *)window startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
+    WebviewWindow *webviewWindow = (WebviewWindow *)window;
+    NSScreen *screen = window.screen ?: NSScreen.mainScreen;
+    [webviewWindow animateFullScreenTransitionFromFrame:self.frameBeforeFullScreen toFrame:screen.frame duration:duration];
+}
+- (NSArray<NSWindow *> *)customWindowsToExitFullScreenForWindow:(NSWindow *)window {
+    return @[window];
+}
+- (void)window:(NSWindow *)window startCustomAnimationToExitFullScreenWithDuration:(NSTimeInterval)duration {
+    WebviewWindow *webviewWindow = (WebviewWindow *)window;
+    NSRect fullScreenFrame = window.frame;
+    [webviewWindow animateFullScreenTransitionFromFrame:fullScreenFrame toFrame:self.frameBeforeFullScreen duration:duration];
+}
 - (void)windowDidChangeOcclusionState:(NSNotification *)notification {
     NSWindow *window = notification.object;
     BOOL isVisible = ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
@@ -731,6 +840,7 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     }
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
+    self.hasFrameBeforeFullScreen = NO;
     if( hasListeners(EventWindowDidExitFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidExitFullScreen);
     }
@@ -781,6 +891,8 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     }
 }
 - (void)windowDidResize:(NSNotification *)notification {
+    WebviewWindow *window = notification.object;
+    [window syncWebViewFrame];
     if( hasListeners(EventWindowDidResize) ) {
         processWindowEvent(self.windowId, EventWindowDidResize);
     }
@@ -851,6 +963,10 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     }
 }
 - (void)windowWillEnterFullScreen:(NSNotification *)notification {
+    if (!self.hasFrameBeforeFullScreen) {
+        self.frameBeforeFullScreen = [notification.object frame];
+        self.hasFrameBeforeFullScreen = YES;
+    }
     if( hasListeners(EventWindowWillEnterFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillEnterFullScreen);
     }
