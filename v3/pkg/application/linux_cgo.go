@@ -1166,6 +1166,17 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew). On GTK4 that only
+	// happens after the application's "activate" signal fires: WebviewWindow.Run
+	// sets w.impl and then blocks in waitForActivation *before* creating the
+	// widget, so there is a startup window in which w.impl != nil but w.window is
+	// still NULL. A window whose widget does not exist yet is, by definition, not
+	// visible; without this guard a visibility poll during that gap calls
+	// gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion and
+	// returns false anyway.
+	if w.window == nil {
+		return false
+	}
 	return C.gtk_widget_is_visible(w.gtkWidget()) != 0
 }
 
