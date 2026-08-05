@@ -1,0 +1,819 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Events API · Wails</title><meta name="description" content="Complete reference for the Events API"><link rel="canonical" href="https://v3.wails.io/reference/events/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/reference/events/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/reference/events/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/reference/events/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="stylesheet" href="../../assets/custom.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/reference/events/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/reference/events/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/reference/events/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/reference/events/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details open><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="active" aria-current="page" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><main id="content"><article><h1>Events API</h1><h2 id="overview">Overview</h2>
+<p>The Events API provides methods to emit and listen to events, enabling communication between different parts of your application.</p>
+<p><strong>Event Types:</strong></p>
+<ul>
+<li><strong>Application Events</strong> - App lifecycle events (startup, shutdown)</li>
+<li><strong>Window Events</strong> - Window state changes (focus, blur, resize)</li>
+<li><strong>Custom Events</strong> - User-defined events for app-specific communication</li>
+</ul>
+<p><strong>Communication Patterns:</strong></p>
+<ul>
+<li><strong>Go to Frontend</strong> - Emit events from Go, listen in JavaScript</li>
+<li><strong>Frontend to Go</strong> - Not directly (use service bindings instead)</li>
+<li><strong>Frontend to Frontend</strong> - Via Go or local runtime events</li>
+<li><strong>Window to Window</strong> - Target specific windows or broadcast to all</li>
+</ul>
+<h2 id="event-methods-go">Event Methods (Go)</h2>
+<h3 id="appeventemit">app.Event.Emit()</h3>
+<p>Emits a custom event to all windows. Returns <code>true</code> if a hook cancelled the emit.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (em *EventManager) Emit(name string, data ...any) bool"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (em <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventManager</span>) <span class="mpress-token-function">Emit</span>(name string, data ...any) bool</span></code></pre></div>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>name</code> - Event name</li>
+<li><code>data</code> - Optional data to send with the event</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Emit simple event&#10;app.Event.Emit(&#34;user-logged-in&#34;)&#10;&#10;// Emit with data&#10;app.Event.Emit(&#34;data-updated&#34;, map[string]interface{}{&#10;    &#34;count&#34;: 42,&#10;    &#34;status&#34;: &#34;success&#34;,&#10;})&#10;&#10;// Emit multiple values&#10;app.Event.Emit(&#34;progress&#34;, 75, &#34;Processing files...&#34;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Emit simple event</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;user-logged-in&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Emit with data</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;data-updated&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;count&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">42</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;status&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;success&#34;</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Emit multiple values</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;progress&#34;</span>, <span class="mpress-token-number">75</span>, <span class="mpress-token-string">&#34;Processing files...&#34;</span>)</span></code></pre></div>
+<h3 id="appeventon">app.Event.On()</h3>
+<p>Listens for custom events in Go.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (em *EventManager) On(name string, callback func(*CustomEvent)) func()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (em <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventManager</span>) <span class="mpress-token-function">On</span>(name string, callback <span class="mpress-token-keyword">func</span>(<span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomEvent</span>)) <span class="mpress-token-keyword">func</span>()</span></code></pre></div>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>name</code> - Event name to listen for</li>
+<li><code>callback</code> - Function called when event is emitted</li>
+</ul>
+<p><strong>Returns:</strong> Cleanup function to remove the event listener</p>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Listen for events&#10;cleanup := app.Event.On(&#34;user-action&#34;, func(e *application.CustomEvent) {&#10;    data := e.Data.(map[string]interface{})&#10;    action := data[&#34;action&#34;].(string)&#10;    app.Logger.Info(&#34;User action&#34;, &#34;action&#34;, action)&#10;})&#10;&#10;// Later, remove listener&#10;cleanup()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Listen for events</span>
+</span><span class="mpress-code-line">cleanup <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;user-action&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    data <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(<span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{})
+</span><span class="mpress-code-line">    action <span class="mpress-token-operator">:=</span> data[<span class="mpress-token-string">&#34;action&#34;</span>].(string)
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;User action&#34;</span>, <span class="mpress-token-string">&#34;action&#34;</span>, action)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Later, remove listener</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">cleanup</span>()</span></code></pre></div>
+<h3 id="window-specific-events">Window-Specific Events</h3>
+<p>Emit events to a specific window:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Emit to specific window&#10;window.EmitEvent(&#34;notification&#34;, &#34;Hello from Go!&#34;)&#10;&#10;// Emit to all windows&#10;app.Event.Emit(&#34;global-update&#34;, data)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Emit to specific window</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;notification&#34;</span>, <span class="mpress-token-string">&#34;Hello from Go!&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Emit to all windows</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;global-update&#34;</span>, data)</span></code></pre></div>
+<h2 id="event-methods-frontend">Event Methods (Frontend)</h2>
+<h3 id="on">On()</h3>
+<p>Listens for events from Go.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;Events.On(eventName, callback)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(eventName, callback)</span></code></pre></div>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>eventName</code> - Name of the event to listen for</li>
+<li><code>callback</code> - Function called when event is received</li>
+</ul>
+<p><strong>Returns:</strong> Cleanup function</p>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Listen for events&#10;const cleanup = Events.On(&#39;data-updated&#39;, (data) =&gt; {&#10;    console.log(&#39;Count:&#39;, data.count)&#10;    console.log(&#39;Status:&#39;, data.status)&#10;    updateUI(data)&#10;})&#10;&#10;// Later, remove listener&#10;cleanup()"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Listen for events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> cleanup <span class="mpress-token-operator">=</span> <span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;data-updated&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Count:&#39;</span>, data.count)
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Status:&#39;</span>, data.status)
+</span><span class="mpress-code-line">    <span class="mpress-token-function">updateUI</span>(data)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Later, remove listener</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">cleanup</span>()</span></code></pre></div>
+<h3 id="once">Once()</h3>
+<p>Listens for a single event occurrence.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;Events.Once(eventName, callback)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Once</span>(eventName, callback)</span></code></pre></div>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Listen for first occurrence only&#10;Events.Once(&#39;initialization-complete&#39;, (data) =&gt; {&#10;    console.log(&#39;App initialized!&#39;, data)&#10;    // This will only fire once&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Listen for first occurrence only</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Once</span>(<span class="mpress-token-string">&#39;initialization-complete&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;App initialized!&#39;</span>, data)
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// This will only fire once</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="off">Off()</h3>
+<p>Removes all listeners for one or more events. <code>Off</code> takes variadic event-name strings — it does <strong>not</strong> take a callback. To remove a single listener, keep the unsubscribe function returned by <code>Events.On(...)</code> and call it.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;Events.Off(...eventNames: string[]): void"><code class="language-typescript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Off</span>(...eventNames<span class="mpress-token-operator">:</span> string[])<span class="mpress-token-operator">:</span> void</span></code></pre></div>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Preferred: keep the unsubscribe fn from On()&#10;const unsubscribe = Events.On(&#39;my-event&#39;, (data) =&gt; {&#10;    console.log(&#39;Event received:&#39;, data)&#10;})&#10;&#10;// Later — remove just this listener&#10;unsubscribe()&#10;&#10;// Or: remove every listener for one or more events&#10;Events.Off(&#39;my-event&#39;, &#39;another-event&#39;)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Preferred: keep the unsubscribe fn from On()</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> unsubscribe <span class="mpress-token-operator">=</span> <span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;my-event&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Event received:&#39;</span>, data)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Later — remove just this listener</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">unsubscribe</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Or: remove every listener for one or more events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Off</span>(<span class="mpress-token-string">&#39;my-event&#39;</span>, <span class="mpress-token-string">&#39;another-event&#39;</span>)</span></code></pre></div>
+<h3 id="offall">OffAll()</h3>
+<p>Removes <strong>every</strong> event listener. Takes no arguments.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;Events.OffAll(): void"><code class="language-typescript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">OffAll</span>()<span class="mpress-token-operator">:</span> void</span></code></pre></div>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Remove all listeners — typically used during teardown.&#10;Events.OffAll()"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Remove all listeners — typically used during teardown.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">OffAll</span>()</span></code></pre></div>
+<h3 id="onmultiple">OnMultiple()</h3>
+<p>Listens for an event up to <code>max</code> times, then automatically unsubscribes.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Events.OnMultiple(eventName: string, callback, max: number): () =&gt; void"><code class="language-typescript"><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">OnMultiple</span>(eventName<span class="mpress-token-operator">:</span> string, callback, max<span class="mpress-token-operator">:</span> number)<span class="mpress-token-operator">:</span> () <span class="mpress-token-operator">=&gt;</span> void</span></code></pre></div>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Events.OnMultiple(&#39;progress&#39;, (data) =&gt; {&#10;    console.log(&#39;progress&#39;, data)&#10;}, 5)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">OnMultiple</span>(<span class="mpress-token-string">&#39;progress&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;progress&#39;</span>, data)
+</span><span class="mpress-code-line">}, <span class="mpress-token-number">5</span>)</span></code></pre></div>
+<h2 id="application-events">Application Events</h2>
+<h3 id="appeventonapplicationevent">app.Event.OnApplicationEvent()</h3>
+<p>Listens for application lifecycle events.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (em *EventManager) OnApplicationEvent(&#10;    eventType events.ApplicationEventType,&#10;    callback func(*ApplicationEvent),&#10;) func()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (em <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventManager</span>) <span class="mpress-token-function">OnApplicationEvent</span>(
+</span><span class="mpress-code-line">    eventType events.<span class="mpress-token-type">ApplicationEventType</span>,
+</span><span class="mpress-code-line">    callback <span class="mpress-token-keyword">func</span>(<span class="mpress-token-operator">*</span><span class="mpress-token-type">ApplicationEvent</span>),
+</span><span class="mpress-code-line">) <span class="mpress-token-keyword">func</span>()</span></code></pre></div>
+<p>Event constants live in the <code>events</code> package — <code>events.Common.*</code> for cross-platform events, <code>events.Mac.*</code> / <code>events.Windows.*</code> / <code>events.Linux.*</code> for platform-specific ones.</p>
+<p><strong>Common application events:</strong></p>
+<ul>
+<li><code>events.Common.ApplicationStarted</code> - Application has finished launching.</li>
+<li><code>events.Common.ThemeChanged</code> - System theme switched between light and dark.</li>
+<li><code>events.Common.ApplicationOpenedWithFile</code> - Launched via a file association.</li>
+<li><code>events.Common.ApplicationLaunchedWithUrl</code> - Launched via a URL scheme.</li>
+</ul>
+<p>There is <strong>no</strong> generic &ldquo;application shutdown&rdquo; event constant — register shutdown cleanup via <code>application.Options.OnShutdown</code> or <code>app.OnShutdown(func())</code>.</p>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;&#10;// Handle application startup&#10;app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {&#10;    app.Logger.Info(&#34;Application started&#34;)&#10;})&#10;&#10;// React to theme changes&#10;app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {&#10;    if e.Context().IsDarkMode() {&#10;        app.Logger.Info(&#34;Dark mode enabled&#34;)&#10;    }&#10;})&#10;&#10;// Shutdown cleanup is configured on the application, not as an event:&#10;app.OnShutdown(func() {&#10;    database.Close()&#10;    saveSettings()&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Handle application startup</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Application started&#34;</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// React to theme changes</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ThemeChanged</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> e.<span class="mpress-token-function">Context</span>().<span class="mpress-token-function">IsDarkMode</span>() {
+</span><span class="mpress-code-line">        app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Dark mode enabled&#34;</span>)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Shutdown cleanup is configured on the application, not as an event:</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-function">OnShutdown</span>(<span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">    database.<span class="mpress-token-function">Close</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-function">saveSettings</span>()
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="window-events">Window Events</h2>
+<h3 id="onwindowevent">OnWindowEvent()</h3>
+<p>Listens for window-specific events.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (w *WebviewWindow) OnWindowEvent(&#10;    eventType events.WindowEventType,&#10;    callback func(*WindowEvent),&#10;) func()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (w <span class="mpress-token-operator">*</span><span class="mpress-token-type">WebviewWindow</span>) <span class="mpress-token-function">OnWindowEvent</span>(
+</span><span class="mpress-code-line">    eventType events.<span class="mpress-token-type">WindowEventType</span>,
+</span><span class="mpress-code-line">    callback <span class="mpress-token-keyword">func</span>(<span class="mpress-token-operator">*</span><span class="mpress-token-type">WindowEvent</span>),
+</span><span class="mpress-code-line">) <span class="mpress-token-keyword">func</span>()</span></code></pre></div>
+<p>Window event constants live in the <code>events</code> package: <code>events.Common.*</code> for cross-platform events (and <code>events.Mac.*</code> / <code>events.Windows.*</code> / <code>events.Linux.*</code> for platform-specific ones).</p>
+<p><strong>Common window events:</strong></p>
+<ul>
+<li><code>events.Common.WindowFocus</code> - Window gained focus.</li>
+<li><code>events.Common.WindowLostFocus</code> - Window lost focus.</li>
+<li><code>events.Common.WindowClosing</code> - Window is about to close (cancellable via <code>RegisterHook</code>).</li>
+<li><code>events.Common.WindowDidResize</code> - Window was resized.</li>
+<li><code>events.Common.WindowDidMove</code> - Window was moved.</li>
+<li><code>events.Common.WindowMinimise</code> / <code>WindowUnMinimise</code> / <code>WindowMaximise</code> / <code>WindowUnMaximise</code> / <code>WindowFullscreen</code> / <code>WindowUnFullscreen</code>.</li>
+<li><code>events.Common.WindowRuntimeReady</code> - Safe to emit events to the in-window runtime.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;&#10;// Handle window focus&#10;window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {&#10;    app.Logger.Info(&#34;Window focused&#34;)&#10;})&#10;&#10;// Handle window resize&#10;window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {&#10;    width, height := window.Size()&#10;    app.Logger.Info(&#34;Window resized&#34;, &#34;width&#34;, width, &#34;height&#34;, height)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Handle window focus</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window focused&#34;</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Handle window resize</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowDidResize</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    width, height <span class="mpress-token-operator">:=</span> window.<span class="mpress-token-function">Size</span>()
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window resized&#34;</span>, <span class="mpress-token-string">&#34;width&#34;</span>, width, <span class="mpress-token-string">&#34;height&#34;</span>, height)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="common-patterns">Common Patterns</h2>
+<p>These patterns demonstrate proven approaches for using events in real-world applications. Each pattern solves a specific communication challenge between your Go backend and frontend, helping you build responsive, well-structured applications.</p>
+<h3 id="requestresponse-pattern">Request/Response Pattern</h3>
+<p>Use this when you want to notify the frontend about the completion of backend operations, such as after data fetching, file processing, or background tasks. The service binding returns data directly, while events provide additional notifications for UI updates like showing toast messages or refreshing lists.</p>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Service method&#10;type DataService struct {&#10;    app *application.App&#10;}&#10;&#10;func (s *DataService) FetchData(query string) ([]Item, error) {&#10;    items := fetchFromDatabase(query)&#10;&#10;    // Emit event when done&#10;    s.app.Event.Emit(&#34;data-fetched&#34;, map[string]interface{}{&#10;        &#34;query&#34;: query,&#10;        &#34;count&#34;: len(items),&#10;    })&#10;&#10;    return items, nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Service method</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">DataService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">DataService</span>) <span class="mpress-token-function">FetchData</span>(query string) ([]<span class="mpress-token-type">Item</span>, error) {
+</span><span class="mpress-code-line">    items <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">fetchFromDatabase</span>(query)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Emit event when done</span>
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;data-fetched&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;query&#34;</span><span class="mpress-token-operator">:</span> query,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;count&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-function">len</span>(items),
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> items, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { FetchData } from &#39;./bindings/DataService&#39;&#10;import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Listen for completion event&#10;Events.On(&#39;data-fetched&#39;, (data) =&gt; {&#10;    console.log(`Fetched ${data.count} items for query: ${data.query}`)&#10;    showNotification(`Found ${data.count} results`)&#10;})&#10;&#10;// Call service method&#10;const items = await FetchData(&#34;search term&#34;)&#10;displayItems(items)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">FetchData</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/DataService&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Listen for completion event</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;data-fetched&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">`Fetched ${data.count} items for query: ${data.query}`</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-function">showNotification</span>(<span class="mpress-token-string">`Found ${data.count} results`</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Call service method</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> items <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">FetchData</span>(<span class="mpress-token-string">&#34;search term&#34;</span>)
+</span><span class="mpress-code-line"><span class="mpress-token-function">displayItems</span>(items)</span></code></pre></div>
+<h3 id="progress-updates">Progress Updates</h3>
+<p>Ideal for long-running operations like file uploads, batch processing, large data imports, or video encoding. Emit progress events during the operation to update progress bars, status text, or step indicators in the UI, providing users with real-time feedback.</p>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (s *Service) ProcessFiles(files []string) error {&#10;    total := len(files)&#10;&#10;    for i, file := range files {&#10;        // Process file&#10;        processFile(file)&#10;&#10;        // Emit progress event&#10;        s.app.Event.Emit(&#34;progress&#34;, map[string]interface{}{&#10;            &#34;current&#34;: i + 1,&#10;            &#34;total&#34;:   total,&#10;            &#34;percent&#34;: float64(i+1) / float64(total) * 100,&#10;            &#34;file&#34;:    file,&#10;        })&#10;    }&#10;&#10;    s.app.Event.Emit(&#34;processing-complete&#34;)&#10;    return nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">Service</span>) <span class="mpress-token-function">ProcessFiles</span>(files []string) error {
+</span><span class="mpress-code-line">    total <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">len</span>(files)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> i, file <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> files {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Process file</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-function">processFile</span>(file)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Emit progress event</span>
+</span><span class="mpress-code-line">        s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;progress&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">            <span class="mpress-token-string">&#34;current&#34;</span><span class="mpress-token-operator">:</span> i <span class="mpress-token-operator">+</span> <span class="mpress-token-number">1</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-string">&#34;total&#34;</span><span class="mpress-token-operator">:</span>   total,
+</span><span class="mpress-code-line">            <span class="mpress-token-string">&#34;percent&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-function">float64</span>(i<span class="mpress-token-operator">+</span><span class="mpress-token-number">1</span>) / <span class="mpress-token-function">float64</span>(total) <span class="mpress-token-operator">*</span> <span class="mpress-token-number">100</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-string">&#34;file&#34;</span><span class="mpress-token-operator">:</span>    file,
+</span><span class="mpress-code-line">        })
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;processing-complete&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Update progress bar&#10;Events.On(&#39;progress&#39;, (data) =&gt; {&#10;    progressBar.style.width = `${data.percent}%`&#10;    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`&#10;})&#10;&#10;// Handle completion&#10;Events.Once(&#39;processing-complete&#39;, () =&gt; {&#10;    progressBar.style.width = &#39;100%&#39;&#10;    statusText.textContent = &#39;Complete!&#39;&#10;    setTimeout(() =&gt; hideProgressBar(), 2000)&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Update progress bar</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;progress&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    progressBar.style.width <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`${data.percent}%`</span>
+</span><span class="mpress-code-line">    statusText.textContent <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`Processing ${data.file}... (${data.current}/${data.total})`</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Handle completion</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Once</span>(<span class="mpress-token-string">&#39;processing-complete&#39;</span>, () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    progressBar.style.width <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#39;100%&#39;</span>
+</span><span class="mpress-code-line">    statusText.textContent <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#39;Complete!&#39;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-function">setTimeout</span>(() <span class="mpress-token-operator">=&gt;</span> <span class="mpress-token-function">hideProgressBar</span>(), <span class="mpress-token-number">2000</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="multi-window-communication">Multi-Window Communication</h3>
+<p>Perfect for applications with multiple windows like settings panels, dashboards, or document viewers. Broadcast events to synchronize state across all windows (theme changes, user preferences) or send targeted events to specific windows for window-specific updates.</p>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Broadcast to all windows&#10;app.Event.Emit(&#34;theme-changed&#34;, &#34;dark&#34;)&#10;&#10;// Send to specific window&#10;preferencesWindow.EmitEvent(&#34;settings-updated&#34;, settings)&#10;&#10;// Per-window listener — receive on the global event bus, but&#10;// gate by the event&#39;s source-window name (set automatically when&#10;// a window emits via window.EmitEvent).&#10;app.Event.On(&#34;request-data&#34;, func(e *application.CustomEvent) {&#10;    if e.Sender != window1.Name() {&#10;        return&#10;    }&#10;    window1.EmitEvent(&#34;data-response&#34;, data)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Broadcast to all windows</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;theme-changed&#34;</span>, <span class="mpress-token-string">&#34;dark&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Send to specific window</span>
+</span><span class="mpress-code-line">preferencesWindow.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;settings-updated&#34;</span>, settings)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Per-window listener — receive on the global event bus, but</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// gate by the event&#39;s source-window name (set automatically when</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// a window emits via window.EmitEvent).</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;request-data&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> e.<span class="mpress-token-type">Sender</span> <span class="mpress-token-operator">!=</span> window1.<span class="mpress-token-function">Name</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    window1.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;data-response&#34;</span>, data)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Listen in any window&#10;Events.On(&#39;theme-changed&#39;, (theme) =&gt; {&#10;    document.body.className = theme&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Listen in any window</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;theme-changed&#39;</span>, (theme) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    document.body.className <span class="mpress-token-operator">=</span> theme
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="state-synchronization">State Synchronization</h3>
+<p>Use when you need to keep frontend and backend state in sync, such as user sessions, application configuration, or collaborative features. When state changes on the backend, emit events to update all connected frontends, ensuring consistency across your application.</p>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type StateService struct {&#10;    app   *application.App&#10;    state map[string]interface{}&#10;    mu    sync.RWMutex&#10;}&#10;&#10;func (s *StateService) UpdateState(key string, value interface{}) {&#10;    s.mu.Lock()&#10;    s.state[key] = value&#10;    s.mu.Unlock()&#10;&#10;    // Notify all windows&#10;    s.app.Event.Emit(&#34;state-updated&#34;, map[string]interface{}{&#10;        &#34;key&#34;:   key,&#10;        &#34;value&#34;: value,&#10;    })&#10;}&#10;&#10;func (s *StateService) GetState(key string) interface{} {&#10;    s.mu.RLock()&#10;    defer s.mu.RUnlock()&#10;    return s.state[key]&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">StateService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app   <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">    state <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}
+</span><span class="mpress-code-line">    mu    sync.<span class="mpress-token-type">RWMutex</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">StateService</span>) <span class="mpress-token-function">UpdateState</span>(key string, value <span class="mpress-token-keyword">interface</span>{}) {
+</span><span class="mpress-code-line">    s.mu.<span class="mpress-token-function">Lock</span>()
+</span><span class="mpress-code-line">    s.state[key] <span class="mpress-token-operator">=</span> value
+</span><span class="mpress-code-line">    s.mu.<span class="mpress-token-function">Unlock</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Notify all windows</span>
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;state-updated&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;key&#34;</span><span class="mpress-token-operator">:</span>   key,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;value&#34;</span><span class="mpress-token-operator">:</span> value,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">StateService</span>) <span class="mpress-token-function">GetState</span>(key string) <span class="mpress-token-keyword">interface</span>{} {
+</span><span class="mpress-code-line">    s.mu.<span class="mpress-token-function">RLock</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">defer</span> s.mu.<span class="mpress-token-function">RUnlock</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> s.state[key]
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;import { GetState } from &#39;./bindings/StateService&#39;&#10;&#10;// Keep local state in sync&#10;let localState = {}&#10;&#10;Events.On(&#39;state-updated&#39;, async (data) =&gt; {&#10;    localState[data.key] = data.value&#10;    updateUI(data.key, data.value)&#10;})&#10;&#10;// Initialize state&#10;const initialState = await GetState(&#34;all&#34;)&#10;localState = initialState"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetState</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/StateService&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Keep local state in sync</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">let</span> localState <span class="mpress-token-operator">=</span> {}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;state-updated&#39;</span>, <span class="mpress-token-keyword">async</span> (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    localState[data.key] <span class="mpress-token-operator">=</span> data.value
+</span><span class="mpress-code-line">    <span class="mpress-token-function">updateUI</span>(data.key, data.value)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Initialize state</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> initialState <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetState</span>(<span class="mpress-token-string">&#34;all&#34;</span>)
+</span><span class="mpress-code-line">localState <span class="mpress-token-operator">=</span> initialState</span></code></pre></div>
+<h3 id="event-driven-notifications">Event-Driven Notifications</h3>
+<p>Best for displaying user feedback like success confirmations, error alerts, or info messages. Instead of calling UI code directly from services, emit notification events that the frontend handles consistently, making it easy to change notification styles or add features like notification history.</p>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationService struct {&#10;    app *application.App&#10;}&#10;&#10;func (s *NotificationService) Success(message string) {&#10;    s.app.Event.Emit(&#34;notification&#34;, map[string]interface{}{&#10;        &#34;type&#34;:    &#34;success&#34;,&#10;        &#34;message&#34;: message,&#10;    })&#10;}&#10;&#10;func (s *NotificationService) Error(message string) {&#10;    s.app.Event.Emit(&#34;notification&#34;, map[string]interface{}{&#10;        &#34;type&#34;:    &#34;error&#34;,&#10;        &#34;message&#34;: message,&#10;    })&#10;}&#10;&#10;func (s *NotificationService) Info(message string) {&#10;    s.app.Event.Emit(&#34;notification&#34;, map[string]interface{}{&#10;        &#34;type&#34;:    &#34;info&#34;,&#10;        &#34;message&#34;: message,&#10;    })&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">NotificationService</span>) <span class="mpress-token-function">Success</span>(message string) {
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;notification&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;type&#34;</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;success&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;message&#34;</span><span class="mpress-token-operator">:</span> message,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">NotificationService</span>) <span class="mpress-token-function">Error</span>(message string) {
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;notification&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;type&#34;</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;error&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;message&#34;</span><span class="mpress-token-operator">:</span> message,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">NotificationService</span>) <span class="mpress-token-function">Info</span>(message string) {
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;notification&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;type&#34;</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;info&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;message&#34;</span><span class="mpress-token-operator">:</span> message,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;// Unified notification handler&#10;Events.On(&#39;notification&#39;, (data) =&gt; {&#10;    const toast = document.createElement(&#39;div&#39;)&#10;    toast.className = `toast toast-${data.type}`&#10;    toast.textContent = data.message&#10;&#10;    document.body.appendChild(toast)&#10;&#10;    setTimeout(() =&gt; {&#10;        toast.classList.add(&#39;fade-out&#39;)&#10;        setTimeout(() =&gt; toast.remove(), 300)&#10;    }, 3000)&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Unified notification handler</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;notification&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> toast <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">createElement</span>(<span class="mpress-token-string">&#39;div&#39;</span>)
+</span><span class="mpress-code-line">    toast.className <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`toast toast-${data.type}`</span>
+</span><span class="mpress-code-line">    toast.textContent <span class="mpress-token-operator">=</span> data.message
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    document.body.<span class="mpress-token-function">appendChild</span>(toast)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-function">setTimeout</span>(() <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">        toast.classList.<span class="mpress-token-function">add</span>(<span class="mpress-token-string">&#39;fade-out&#39;</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-function">setTimeout</span>(() <span class="mpress-token-operator">=&gt;</span> toast.<span class="mpress-token-function">remove</span>(), <span class="mpress-token-number">300</span>)
+</span><span class="mpress-code-line">    }, <span class="mpress-token-number">3000</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="complete-example">Complete Example</h2>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;sync&#34;&#10;    &#34;time&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;)&#10;&#10;type EventDemoService struct {&#10;    app *application.App&#10;    mu  sync.Mutex&#10;}&#10;&#10;func NewEventDemoService(app *application.App) *EventDemoService {&#10;    service := &amp;EventDemoService{app: app}&#10;&#10;    // Listen for custom events&#10;    app.Event.On(&#34;user-action&#34;, func(e *application.CustomEvent) {&#10;        data := e.Data.(map[string]interface{})&#10;        app.Logger.Info(&#34;User action received&#34;, &#34;data&#34;, data)&#10;    })&#10;&#10;    return service&#10;}&#10;&#10;func (s *EventDemoService) StartLongTask() {&#10;    go func() {&#10;        s.app.Event.Emit(&#34;task-started&#34;)&#10;&#10;        for i := 1; i &lt;= 10; i++ {&#10;            time.Sleep(500 * time.Millisecond)&#10;&#10;            s.app.Event.Emit(&#34;task-progress&#34;, map[string]interface{}{&#10;                &#34;step&#34;:    i,&#10;                &#34;total&#34;:   10,&#10;                &#34;percent&#34;: i * 10,&#10;            })&#10;        }&#10;&#10;        s.app.Event.Emit(&#34;task-completed&#34;, map[string]interface{}{&#10;            &#34;message&#34;: &#34;Task finished successfully!&#34;,&#10;        })&#10;    }()&#10;}&#10;&#10;func (s *EventDemoService) BroadcastMessage(message string) {&#10;    s.app.Event.Emit(&#34;broadcast&#34;, message)&#10;}&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Name: &#34;Event Demo&#34;,&#10;    })&#10;&#10;    // Handle application lifecycle&#10;    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {&#10;        app.Logger.Info(&#34;Application started!&#34;)&#10;    })&#10;&#10;    app.OnShutdown(func() {&#10;        app.Logger.Info(&#34;Application shutting down...&#34;)&#10;    })&#10;&#10;    // Register service (RegisterService returns nothing).&#10;    service := NewEventDemoService(app)&#10;    app.RegisterService(application.NewService(service))&#10;&#10;    // Create window&#10;    window := app.Window.New()&#10;&#10;    // Handle window events&#10;    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {&#10;        window.EmitEvent(&#34;window-state&#34;, &#34;focused&#34;)&#10;    })&#10;&#10;    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {&#10;        window.EmitEvent(&#34;window-state&#34;, &#34;blurred&#34;)&#10;    })&#10;&#10;    window.Show()&#10;    app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;sync&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;time&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">EventDemoService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">    mu  sync.<span class="mpress-token-type">Mutex</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewEventDemoService</span>(app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>) <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventDemoService</span> {
+</span><span class="mpress-code-line">    service <span class="mpress-token-operator">:=</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">EventDemoService</span>{app<span class="mpress-token-operator">:</span> app}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Listen for custom events</span>
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;user-action&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">        data <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(<span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{})
+</span><span class="mpress-code-line">        app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;User action received&#34;</span>, <span class="mpress-token-string">&#34;data&#34;</span>, data)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> service
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventDemoService</span>) <span class="mpress-token-function">StartLongTask</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">go</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;task-started&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">for</span> i <span class="mpress-token-operator">:=</span> <span class="mpress-token-number">1</span>; i <span class="mpress-token-operator">&lt;=</span> <span class="mpress-token-number">10</span>; i<span class="mpress-token-operator">++</span> {
+</span><span class="mpress-code-line">            time.<span class="mpress-token-function">Sleep</span>(<span class="mpress-token-number">500</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Millisecond</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">            s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;task-progress&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">                <span class="mpress-token-string">&#34;step&#34;</span><span class="mpress-token-operator">:</span>    i,
+</span><span class="mpress-code-line">                <span class="mpress-token-string">&#34;total&#34;</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-number">10</span>,
+</span><span class="mpress-code-line">                <span class="mpress-token-string">&#34;percent&#34;</span><span class="mpress-token-operator">:</span> i <span class="mpress-token-operator">*</span> <span class="mpress-token-number">10</span>,
+</span><span class="mpress-code-line">            })
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;task-completed&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">            <span class="mpress-token-string">&#34;message&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Task finished successfully!&#34;</span>,
+</span><span class="mpress-code-line">        })
+</span><span class="mpress-code-line">    }()
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">EventDemoService</span>) <span class="mpress-token-function">BroadcastMessage</span>(message string) {
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;broadcast&#34;</span>, message)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Event Demo&#34;</span>,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle application lifecycle</span>
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">        app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Application started!&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">OnShutdown</span>(<span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Application shutting down...&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Register service (RegisterService returns nothing).</span>
+</span><span class="mpress-code-line">    service <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">NewEventDemoService</span>(app)
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">RegisterService</span>(application.<span class="mpress-token-function">NewService</span>(service))
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Create window</span>
+</span><span class="mpress-code-line">    window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle window events</span>
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">        window.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;window-state&#34;</span>, <span class="mpress-token-string">&#34;focused&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowLostFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">        window.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;window-state&#34;</span>, <span class="mpress-token-string">&#34;blurred&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;import { StartLongTask, BroadcastMessage } from &#39;./bindings/EventDemoService&#39;&#10;&#10;// Task events&#10;Events.On(&#39;task-started&#39;, () =&gt; {&#10;    console.log(&#39;Task started...&#39;)&#10;    document.getElementById(&#39;status&#39;).textContent = &#39;Running...&#39;&#10;})&#10;&#10;Events.On(&#39;task-progress&#39;, (data) =&gt; {&#10;    const progressBar = document.getElementById(&#39;progress&#39;)&#10;    progressBar.style.width = `${data.percent}%`&#10;    console.log(`Step ${data.step} of ${data.total}`)&#10;})&#10;&#10;Events.Once(&#39;task-completed&#39;, (data) =&gt; {&#10;    console.log(&#39;Task completed!&#39;, data.message)&#10;    document.getElementById(&#39;status&#39;).textContent = data.message&#10;})&#10;&#10;// Broadcast events&#10;Events.On(&#39;broadcast&#39;, (message) =&gt; {&#10;    console.log(&#39;Broadcast:&#39;, message)&#10;    alert(message)&#10;})&#10;&#10;// Window state events&#10;Events.On(&#39;window-state&#39;, (state) =&gt; {&#10;    console.log(&#39;Window is now:&#39;, state)&#10;    document.body.dataset.windowState = state&#10;})&#10;&#10;// Trigger long task&#10;document.getElementById(&#39;startTask&#39;).addEventListener(&#39;click&#39;, async () =&gt; {&#10;    await StartLongTask()&#10;})&#10;&#10;// Send broadcast&#10;document.getElementById(&#39;broadcast&#39;).addEventListener(&#39;click&#39;, async () =&gt; {&#10;    const message = document.getElementById(&#39;message&#39;).value&#10;    await BroadcastMessage(message)&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">StartLongTask</span>, <span class="mpress-token-type">BroadcastMessage</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/EventDemoService&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Task events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;task-started&#39;</span>, () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Task started...&#39;</span>)
+</span><span class="mpress-code-line">    document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;status&#39;</span>).textContent <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#39;Running...&#39;</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;task-progress&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> progressBar <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;progress&#39;</span>)
+</span><span class="mpress-code-line">    progressBar.style.width <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`${data.percent}%`</span>
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">`Step ${data.step} of ${data.total}`</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Once</span>(<span class="mpress-token-string">&#39;task-completed&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Task completed!&#39;</span>, data.message)
+</span><span class="mpress-code-line">    document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;status&#39;</span>).textContent <span class="mpress-token-operator">=</span> data.message
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Broadcast events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;broadcast&#39;</span>, (message) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Broadcast:&#39;</span>, message)
+</span><span class="mpress-code-line">    <span class="mpress-token-function">alert</span>(message)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Window state events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;window-state&#39;</span>, (state) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#39;Window is now:&#39;</span>, state)
+</span><span class="mpress-code-line">    document.body.dataset.windowState <span class="mpress-token-operator">=</span> state
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Trigger long task</span>
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;startTask&#39;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;click&#39;</span>, <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">StartLongTask</span>()
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Send broadcast</span>
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;broadcast&#39;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;click&#39;</span>, <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> message <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;message&#39;</span>).value
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">BroadcastMessage</span>(message)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="built-in-events">Built-in Events</h2>
+<p>Wails provides built-in system events for application and window lifecycle. These events are emitted automatically by the framework.</p>
+<h3 id="common-events-vs-platform-native-events">Common Events vs Platform-Native Events</h3>
+<p>Wails provides two types of system events:</p>
+<p><strong>Common Events</strong> (<code>events.Common.*</code>) are cross-platform abstractions that work consistently across macOS, Windows, and Linux. These are the events you should use in your application for maximum portability.</p>
+<p><strong>Platform-Native Events</strong> (<code>events.Mac.*</code>, <code>events.Windows.*</code>, <code>events.Linux.*</code>) are the underlying OS-specific events that Common Events are mapped from. These provide access to platform-specific behaviors and edge cases.</p>
+<p><strong>How They Work:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;&#10;// ✅ RECOMMENDED: Use Common Events for cross-platform code&#10;window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    // This works on all platforms&#10;})&#10;&#10;// Platform-specific events for advanced use cases&#10;window.OnWindowEvent(events.Mac.WindowWillClose, func(e *application.WindowEvent) {&#10;    // macOS-specific &#34;will close&#34; event (before WindowClosing)&#10;})&#10;&#10;window.OnWindowEvent(events.Windows.WindowClosing, func(e *application.WindowEvent) {&#10;    // Windows-specific close event&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ✅ RECOMMENDED: Use Common Events for cross-platform code</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// This works on all platforms</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Platform-specific events for advanced use cases</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Mac</span>.<span class="mpress-token-type">WindowWillClose</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// macOS-specific &#34;will close&#34; event (before WindowClosing)</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Windows</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Windows-specific close event</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Event Mapping:</strong></p>
+<p>Platform-native events are automatically mapped to Common Events:</p>
+<ul>
+<li>macOS: <code>events.Mac.WindowShouldClose</code> → <code>events.Common.WindowClosing</code></li>
+<li>Windows: <code>events.Windows.WindowClosing</code> → <code>events.Common.WindowClosing</code></li>
+<li>Linux: <code>events.Linux.WindowDeleteEvent</code> → <code>events.Common.WindowClosing</code></li>
+</ul>
+<p>This mapping happens automatically in the background, so when you listen for <code>events.Common.WindowClosing</code>, you&rsquo;ll receive it regardless of the platform.</p>
+<p><strong>When to Use Each:</strong></p>
+<ul>
+<li><strong>Use Common Events</strong> for 99% of your application code - they provide consistent behavior across platforms</li>
+<li><strong>Use Platform-Native Events</strong> only when you need platform-specific functionality that isn&rsquo;t available in Common Events (e.g., macOS-specific window lifecycle events, Windows power management events)</li>
+</ul>
+<h3 id="application-events-1">Application Events</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+<th>When Emitted</th>
+<th>Cancellable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ApplicationOpenedWithFile</code></td>
+<td>Application opened with a file</td>
+<td>When app is launched with a file (e.g., from file association)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>ApplicationStarted</code></td>
+<td>Application has finished launching</td>
+<td>After app initialization is complete and app is ready</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>ApplicationLaunchedWithUrl</code></td>
+<td>Application launched with a URL</td>
+<td>When app is launched via URL scheme</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>ThemeChanged</code></td>
+<td>System theme changed</td>
+<td>When OS theme switches between light/dark mode</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>SystemWillSleep</code></td>
+<td>System is about to suspend</td>
+<td>Just before the OS suspends (macOS / Windows / Linux-with-logind)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>SystemDidWake</code></td>
+<td>System resumed from suspend</td>
+<td>Immediately on resume from sleep (macOS / Windows / Linux-with-logind)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Usage:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;&#10;app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {&#10;    app.Logger.Info(&#34;Application ready!&#34;)&#10;})&#10;&#10;app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {&#10;    // Update app theme&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Application ready!&#34;</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ThemeChanged</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Update app theme</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="window-events-1">Window Events</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+<th>When Emitted</th>
+<th>Cancellable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WindowClosing</code></td>
+<td>Window is about to close</td>
+<td>Before window closes (user clicked X, Close() called)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>WindowDidMove</code></td>
+<td>Window moved to new position</td>
+<td>After window position changes (debounced)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowDidResize</code></td>
+<td>Window was resized</td>
+<td>After window size changes</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowDPIChanged</code></td>
+<td>Window DPI scaling changed</td>
+<td>When moving between monitors with different DPI (Windows)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowFilesDropped</code></td>
+<td>Files dropped via native OS drag-drop</td>
+<td>After files are dropped from OS onto window</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowFocus</code></td>
+<td>Window gained focus</td>
+<td>When window becomes active</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowFullscreen</code></td>
+<td>Window entered fullscreen</td>
+<td>After Fullscreen() or user enters fullscreen</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowHide</code></td>
+<td>Window was hidden</td>
+<td>After Hide() or window becomes occluded</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowLostFocus</code></td>
+<td>Window lost focus</td>
+<td>When window becomes inactive</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowMaximise</code></td>
+<td>Window was maximized</td>
+<td>After Maximise() or user maximizes</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowMinimise</code></td>
+<td>Window was minimized</td>
+<td>After Minimise() or user minimizes</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowRestore</code></td>
+<td>Window restored from min/max state</td>
+<td>After Restore() (Windows primarily)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowRuntimeReady</code></td>
+<td>Wails runtime loaded and ready</td>
+<td>When JavaScript runtime initialization completes</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowShow</code></td>
+<td>Window became visible</td>
+<td>After Show() or window becomes visible</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowUnFullscreen</code></td>
+<td>Window exited fullscreen</td>
+<td>After UnFullscreen() or user exits fullscreen</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>WindowUnMaximise</code></td>
+<td>Window exited maximized state</td>
+<td>After UnMaximise() or user unmaximizes</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowUnMinimise</code></td>
+<td>Window exited minimized state</td>
+<td>After UnMinimise()/Restore() or user restores</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowZoomIn</code></td>
+<td>Window content zoom increased</td>
+<td>After ZoomIn() called (macOS primarily)</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowZoomOut</code></td>
+<td>Window content zoom decreased</td>
+<td>After ZoomOut() called (macOS primarily)</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowZoomReset</code></td>
+<td>Window content zoom reset to 100%</td>
+<td>After ZoomReset() called (macOS primarily)</td>
+<td>Yes (macOS)</td>
+</tr>
+<tr>
+<td><code>WindowDropZoneFilesDropped</code></td>
+<td>Files dropped on JS-defined drop zone</td>
+<td>When files dropped onto element with drop zone</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Usage:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/events&#34;&#10;&#10;// Listen for window events&#10;window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {&#10;    app.Logger.Info(&#34;Window focused&#34;)&#10;})&#10;&#10;// Cancel window close&#10;window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    dlg := app.Dialog.Question().SetMessage(&#34;Close window?&#34;)&#10;    yes := dlg.AddButton(&#34;Yes&#34;)&#10;    no := dlg.AddButton(&#34;No&#34;)&#10;    dlg.SetDefaultButton(yes)&#10;    dlg.SetCancelButton(no)&#10;    no.OnClick(func() { e.Cancel() })&#10;&#10;    dlg.Show()&#10;})&#10;&#10;// Wait for runtime ready&#10;window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {&#10;    app.Logger.Info(&#34;Runtime ready, safe to emit events to frontend&#34;)&#10;    window.EmitEvent(&#34;app-initialized&#34;, data)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/events&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Listen for window events</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window focused&#34;</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Cancel window close</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    dlg <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Dialog</span>.<span class="mpress-token-function">Question</span>().<span class="mpress-token-function">SetMessage</span>(<span class="mpress-token-string">&#34;Close window?&#34;</span>)
+</span><span class="mpress-code-line">    yes <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Yes&#34;</span>)
+</span><span class="mpress-code-line">    no <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;No&#34;</span>)
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">SetDefaultButton</span>(yes)
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">SetCancelButton</span>(no)
+</span><span class="mpress-code-line">    no.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>() { e.<span class="mpress-token-function">Cancel</span>() })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Wait for runtime ready</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowRuntimeReady</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Runtime ready, safe to emit events to frontend&#34;</span>)
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">EmitEvent</span>(<span class="mpress-token-string">&#34;app-initialized&#34;</span>, data)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li><strong>WindowRuntimeReady</strong> is critical - wait for this event before emitting events to the frontend</li>
+<li><strong>WindowDidMove</strong> and <strong>WindowDidResize</strong> are debounced (50ms default) to prevent event flooding</li>
+<li><strong>Cancellable events</strong> can be prevented by calling <code>event.Cancel()</code> in a <code>RegisterHook()</code> handler</li>
+<li><strong>WindowFilesDropped</strong> is for native OS file drops; <strong>WindowDropZoneFilesDropped</strong> is for web-based drop zones</li>
+<li>Some events are platform-specific (e.g., WindowDPIChanged on Windows, zoom events primarily on macOS)</li>
+</ul>
+<h2 id="event-naming-conventions">Event Naming Conventions</h2>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Good - descriptive and specific&#10;app.Event.Emit(&#34;user:logged-in&#34;, user)&#10;app.Event.Emit(&#34;data:fetch:complete&#34;, results)&#10;app.Event.Emit(&#34;ui:theme:changed&#34;, theme)&#10;&#10;// Bad - vague and unclear&#10;app.Event.Emit(&#34;event1&#34;, data)&#10;app.Event.Emit(&#34;update&#34;, stuff)&#10;app.Event.Emit(&#34;e&#34;, value)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Good - descriptive and specific</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;user:logged-in&#34;</span>, user)
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;data:fetch:complete&#34;</span>, results)
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;ui:theme:changed&#34;</span>, theme)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Bad - vague and unclear</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;event1&#34;</span>, data)
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;update&#34;</span>, stuff)
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;e&#34;</span>, value)</span></code></pre></div>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="debouncing-high-frequency-events">Debouncing High-Frequency Events</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Service struct {&#10;    app            *application.App&#10;    lastEmit       time.Time&#10;    debounceWindow time.Duration&#10;}&#10;&#10;func (s *Service) EmitWithDebounce(event string, data interface{}) {&#10;    now := time.Now()&#10;    if now.Sub(s.lastEmit) &lt; s.debounceWindow {&#10;        return // Skip this emission&#10;    }&#10;&#10;    s.app.Event.Emit(event, data)&#10;    s.lastEmit = now&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Service</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app            <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">    lastEmit       time.<span class="mpress-token-type">Time</span>
+</span><span class="mpress-code-line">    debounceWindow time.<span class="mpress-token-type">Duration</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">Service</span>) <span class="mpress-token-function">EmitWithDebounce</span>(event string, data <span class="mpress-token-keyword">interface</span>{}) {
+</span><span class="mpress-code-line">    now <span class="mpress-token-operator">:=</span> time.<span class="mpress-token-function">Now</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> now.<span class="mpress-token-function">Sub</span>(s.lastEmit) <span class="mpress-token-operator">&lt;</span> s.debounceWindow {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-comment">// Skip this emission</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(event, data)
+</span><span class="mpress-code-line">    s.lastEmit <span class="mpress-token-operator">=</span> now
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="throttling-events">Throttling Events</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;let lastUpdate = 0&#10;const throttleMs = 100&#10;&#10;Events.On(&#39;high-frequency-event&#39;, (data) =&gt; {&#10;    const now = Date.now()&#10;    if (now - lastUpdate &lt; throttleMs) {&#10;        return // Skip this update&#10;    }&#10;&#10;    processUpdate(data)&#10;    lastUpdate = now&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">let</span> lastUpdate <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> throttleMs <span class="mpress-token-operator">=</span> <span class="mpress-token-number">100</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#39;high-frequency-event&#39;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> now <span class="mpress-token-operator">=</span> <span class="mpress-token-type">Date</span>.<span class="mpress-token-function">now</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> (now <span class="mpress-token-operator">-</span> lastUpdate <span class="mpress-token-operator">&lt;</span> throttleMs) {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-comment">// Skip this update</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-function">processUpdate</span>(data)
+</span><span class="mpress-code-line">    lastUpdate <span class="mpress-token-operator">=</span> now
+</span><span class="mpress-code-line">})</span></code></pre></div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/reference/events.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../reference/menu/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Menu</strong></a><a rel="next" href="../../reference/dialogs/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Dialogs</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#overview">Overview</a><a class="toc-level-2" href="#event-methods-go">Event Methods (Go)</a><a class="toc-level-3" href="#appeventemit">app.Event.Emit()</a><a class="toc-level-3" href="#appeventon">app.Event.On()</a><a class="toc-level-3" href="#window-specific-events">Window-Specific Events</a><a class="toc-level-2" href="#event-methods-frontend">Event Methods (Frontend)</a><a class="toc-level-3" href="#on">On()</a><a class="toc-level-3" href="#once">Once()</a><a class="toc-level-3" href="#off">Off()</a><a class="toc-level-3" href="#offall">OffAll()</a><a class="toc-level-3" href="#onmultiple">OnMultiple()</a><a class="toc-level-2" href="#application-events">Application Events</a><a class="toc-level-3" href="#appeventonapplicationevent">app.Event.OnApplicationEvent()</a><a class="toc-level-2" href="#window-events">Window Events</a><a class="toc-level-3" href="#onwindowevent">OnWindowEvent()</a><a class="toc-level-2" href="#common-patterns">Common Patterns</a><a class="toc-level-3" href="#requestresponse-pattern">Request/Response Pattern</a><a class="toc-level-3" href="#progress-updates">Progress Updates</a><a class="toc-level-3" href="#multi-window-communication">Multi-Window Communication</a><a class="toc-level-3" href="#state-synchronization">State Synchronization</a><a class="toc-level-3" href="#event-driven-notifications">Event-Driven Notifications</a><a class="toc-level-2" href="#complete-example">Complete Example</a><a class="toc-level-2" href="#built-in-events">Built-in Events</a><a class="toc-level-3" href="#common-events-vs-platform-native-events">Common Events vs Platform-Native Events</a><a class="toc-level-3" href="#application-events-1">Application Events</a><a class="toc-level-3" href="#window-events-1">Window Events</a><a class="toc-level-2" href="#event-naming-conventions">Event Naming Conventions</a><a class="toc-level-2" href="#performance-considerations">Performance Considerations</a><a class="toc-level-3" href="#debouncing-high-frequency-events">Debouncing High-Frequency Events</a><a class="toc-level-3" href="#throttling-events">Throttling Events</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

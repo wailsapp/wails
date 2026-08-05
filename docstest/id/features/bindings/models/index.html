@@ -1,0 +1,662 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Model Data · Wails</title><meta name="description" content="Bind struktur data kompleks antara Go dan JavaScript"><link rel="canonical" href="https://v3.wails.io/id/features/bindings/models/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/features/bindings/models/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/features/bindings/models/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/features/bindings/models/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../../assets/mpress.css"><link rel="stylesheet" href="../../../../assets/custom.css"><link rel="icon" href="../../../../favicon.svg"></head><body class="docs-page" data-search="../../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/features/bindings/models/" role="menuitem"><span>English</span></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/features/bindings/models/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/features/bindings/models/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../../id/">Home</a><a class="" href="../../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/quick-start/installation/">Installation</a><a class="" href="../../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../../id/tutorials/overview/">Tutorial</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../../id/concepts/build-system/">Build System</a></div></details><details open><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../../id/features/windows/options/">Window Options</a><a class="" href="../../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../../id/features/menus/reference/">Menu Reference</a></div></details><details open><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../../id/features/bindings/services/">Services</a><a class="active" aria-current="page" href="../../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/events/system/">Event System</a><a class="" href="../../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/mobile/">Overview</a><a class="" href="../../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../../id/guides/mobile/android/">Android</a><a class="" href="../../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/experimental/">Overview</a><a class="" href="../../../../id/experimental/wake/">Wake</a><a class="" href="../../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../../id/guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/server-build/">Server Build</a><a class="" href="../../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/reference/overview/">Overview</a><a class="" href="../../../../id/reference/application/">Application</a><a class="" href="../../../../id/reference/window/">Window</a><a class="" href="../../../../id/reference/menu/">Menu</a><a class="" href="../../../../id/reference/events/">Events</a><a class="" href="../../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../../id/reference/cli/">CLI</a><a class="" href="../../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/links/">Links</a><a class="" href="../../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../../id/community/showcase/october/">October</a><a class="" href="../../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../../id/status/">Status</a><a class="" href="../../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Model Data</h1><h2 id="binding-model-data">Binding Model Data</h2>
+<p>Wails <strong>secara otomatis menghasilkan class JavaScript/TypeScript</strong> dari struct Go, memberikan type safety penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan binding, dan dapatkan model frontend bertipe penuh lengkap dengan constructor, anotasi tipe, dan komentar JSDoc.</p>
+<h2 id="memulai-cepat">Memulai Cepat</h2>
+<p><strong>Struct Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type User struct {&#10;    ID        int       `json:&#34;id&#34;`&#10;    Name      string    `json:&#34;name&#34;`&#10;    Email     string    `json:&#34;email&#34;`&#10;    CreatedAt time.Time `json:&#34;createdAt&#34;`&#10;}&#10;&#10;func (s *UserService) GetUser(id int) (*User, error) {&#10;    // Return user&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>        int       <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>      string    <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Email</span>     string    <span class="mpress-token-string">`json:&#34;email&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CreatedAt</span> time.<span class="mpress-token-type">Time</span> <span class="mpress-token-string">`json:&#34;createdAt&#34;`</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">UserService</span>) <span class="mpress-token-function">GetUser</span>(id int) (<span class="mpress-token-operator">*</span><span class="mpress-token-type">User</span>, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Return user</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Hasilkan:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings"><code><span class="mpress-cmd">wails3 generate bindings</span>
+</code></pre>
+</div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { GetUser } from &#39;./bindings/changeme/userservice&#39;&#10;import { User } from &#39;./bindings/changeme/models&#39;&#10;&#10;const user = await GetUser(1)&#10;console.log(user.Name)  // Type-safe!"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetUser</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetUser</span>(<span class="mpress-token-number">1</span>)
+</span><span class="mpress-code-line">console.<span class="mpress-token-function">log</span>(user.<span class="mpress-token-type">Name</span>)  <span class="mpress-token-comment">// Type-safe!</span></span></code></pre></div>
+<p><strong>Itu saja!</strong> Type safety penuh melintasi bridge.</p>
+<h2 id="mendefinisikan-model">Mendefinisikan Model</h2>
+<h3 id="struct-dasar">Struct Dasar</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Person struct {&#10;    Name string&#10;    Age  int&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Person</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span> string
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Age</span>  int
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export class Person {&#10;    /** @type {string} */&#10;    Name = &#34;&#34;&#10;    &#10;    /** @type {number} */&#10;    Age = 0&#10;    &#10;    constructor(source = {}) {&#10;        Object.assign(this, source)&#10;    }&#10;    &#10;    static createFrom(source = {}) {&#10;        return new Person(source)&#10;    }&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">Person</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {number} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Age</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-function">constructor</span>(source <span class="mpress-token-operator">=</span> {}) {
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Object</span>.<span class="mpress-token-function">assign</span>(this, source)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    static <span class="mpress-token-function">createFrom</span>(source <span class="mpress-token-operator">=</span> {}) {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Person</span>(source)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="dengan-tag-json">Dengan Tag JSON</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type User struct {&#10;    ID        int       `json:&#34;id&#34;`&#10;    Name      string    `json:&#34;name&#34;`&#10;    Email     string    `json:&#34;email&#34;`&#10;    CreatedAt time.Time `json:&#34;createdAt&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>        int       <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>      string    <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Email</span>     string    <span class="mpress-token-string">`json:&#34;email&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CreatedAt</span> time.<span class="mpress-token-type">Time</span> <span class="mpress-token-string">`json:&#34;createdAt&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export class User {&#10;    /** @type {number} */&#10;    id = 0&#10;    &#10;    /** @type {string} */&#10;    name = &#34;&#34;&#10;    &#10;    /** @type {string} */&#10;    email = &#34;&#34;&#10;    &#10;    /** @type {Date} */&#10;    createdAt = new Date()&#10;    &#10;    constructor(source = {}) {&#10;        Object.assign(this, source)&#10;    }&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {number} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    id <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    name <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    email <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {<span class="mpress-token-type">Date</span>} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    createdAt <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Date</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-function">constructor</span>(source <span class="mpress-token-operator">=</span> {}) {
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Object</span>.<span class="mpress-token-function">assign</span>(this, source)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Tag JSON mengontrol nama field</strong> di JavaScript.</p>
+<h3 id="dengan-komentar">Dengan Komentar</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// User represents an application user&#10;type User struct {&#10;    // Unique identifier&#10;    ID int `json:&#34;id&#34;`&#10;    &#10;    // Full name of the user&#10;    Name string `json:&#34;name&#34;`&#10;    &#10;    // Email address (must be unique)&#10;    Email string `json:&#34;email&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// User represents an application user</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Unique identifier</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span> int <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Full name of the user</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span> string <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Email address (must be unique)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Email</span> string <span class="mpress-token-string">`json:&#34;email&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="/**&#10; * User represents an application user&#10; */&#10;export class User {&#10;    /**&#10;     * Unique identifier&#10;     * @type {number}&#10;     */&#10;    id = 0&#10;    &#10;    /**&#10;     * Full name of the user&#10;     * @type {string}&#10;     */&#10;    name = &#34;&#34;&#10;    &#10;    /**&#10;     * Email address (must be unique)&#10;     * @type {string}&#10;     */&#10;    email = &#34;&#34;&#10;}"><code class="language-javascript"><span class="mpress-code-line">/<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-operator">*</span> <span class="mpress-token-type">User</span> represents an application user
+</span><span class="mpress-code-line"> <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Unique</span> identifier
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> @<span class="mpress-token-keyword">type</span> {number}
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    id <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Full</span> name of the user
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> @<span class="mpress-token-keyword">type</span> {string}
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    name <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Email</span> <span class="mpress-token-function">address</span> (must be unique)
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> @<span class="mpress-token-keyword">type</span> {string}
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    email <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Komentar menjadi JSDoc!</strong> IDE Anda menampilkannya.</p>
+<h3 id="struct-bersarang">Struct Bersarang</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Address struct {&#10;    Street  string `json:&#34;street&#34;`&#10;    City    string `json:&#34;city&#34;`&#10;    Country string `json:&#34;country&#34;`&#10;}&#10;&#10;type User struct {&#10;    ID      int     `json:&#34;id&#34;`&#10;    Name    string  `json:&#34;name&#34;`&#10;    Address Address `json:&#34;address&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Address</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Street</span>  string <span class="mpress-token-string">`json:&#34;street&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">City</span>    string <span class="mpress-token-string">`json:&#34;city&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Country</span> string <span class="mpress-token-string">`json:&#34;country&#34;`</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>      int     <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>    string  <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Address</span> <span class="mpress-token-type">Address</span> <span class="mpress-token-string">`json:&#34;address&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export class Address {&#10;    /** @type {string} */&#10;    street = &#34;&#34;&#10;    &#10;    /** @type {string} */&#10;    city = &#34;&#34;&#10;    &#10;    /** @type {string} */&#10;    country = &#34;&#34;&#10;}&#10;&#10;export class User {&#10;    /** @type {number} */&#10;    id = 0&#10;    &#10;    /** @type {string} */&#10;    name = &#34;&#34;&#10;    &#10;    /** @type {Address} */&#10;    address = new Address()&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">Address</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    street <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    city <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    country <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {number} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    id <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    name <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {<span class="mpress-token-type">Address</span>} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    address <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Address</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Penggunaan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const user = new User({&#10;    id: 1,&#10;    name: &#34;Alice&#34;,&#10;    address: new Address({&#10;        street: &#34;123 Main St&#34;,&#10;        city: &#34;Springfield&#34;,&#10;        country: &#34;USA&#34;&#10;    })&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">    id<span class="mpress-token-operator">:</span> <span class="mpress-token-number">1</span>,
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span>,
+</span><span class="mpress-code-line">    address<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Address</span>({
+</span><span class="mpress-code-line">        street<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;123 Main St&#34;</span>,
+</span><span class="mpress-code-line">        city<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Springfield&#34;</span>,
+</span><span class="mpress-code-line">        country<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;USA&#34;</span>
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="array-dan-slice">Array dan Slice</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Team struct {&#10;    Name    string   `json:&#34;name&#34;`&#10;    Members []string `json:&#34;members&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Team</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>    string   <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Members</span> []string <span class="mpress-token-string">`json:&#34;members&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export class Team {&#10;    /** @type {string} */&#10;    name = &#34;&#34;&#10;    &#10;    /** @type {string[]} */&#10;    members = []&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">Team</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    name <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {string[]} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    members <span class="mpress-token-operator">=</span> []
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Penggunaan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const team = new Team({&#10;    name: &#34;Engineering&#34;,&#10;    members: [&#34;Alice&#34;, &#34;Bob&#34;, &#34;Charlie&#34;]&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> team <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Team</span>({
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Engineering&#34;</span>,
+</span><span class="mpress-code-line">    members<span class="mpress-token-operator">:</span> [<span class="mpress-token-string">&#34;Alice&#34;</span>, <span class="mpress-token-string">&#34;Bob&#34;</span>, <span class="mpress-token-string">&#34;Charlie&#34;</span>]
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="map">Map</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Config struct {&#10;    Settings map[string]string `json:&#34;settings&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Config</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Settings</span> <span class="mpress-token-keyword">map</span>[string]string <span class="mpress-token-string">`json:&#34;settings&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export class Config {&#10;    /** @type {Record&lt;string, string&gt;} */&#10;    settings = {}&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">Config</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {<span class="mpress-token-type">Record</span><span class="mpress-token-operator">&lt;</span>string, string<span class="mpress-token-operator">&gt;</span>} <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    settings <span class="mpress-token-operator">=</span> {}
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Penggunaan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const config = new Config({&#10;    settings: {&#10;        theme: &#34;dark&#34;,&#10;        language: &#34;en&#34;&#10;    }&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> config <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Config</span>({
+</span><span class="mpress-code-line">    settings<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">        theme<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;dark&#34;</span>,
+</span><span class="mpress-code-line">        language<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;en&#34;</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="pemetaan-tipe">Pemetaan Tipe</h2>
+<h3 id="tipe-primitif">Tipe Primitif</h3>
+<table>
+<thead>
+<tr>
+<th>Tipe Go</th>
+<th>JavaScript/TypeScript</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td><code>boolean</code></td>
+</tr>
+<tr>
+<td><code>int</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code></td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><code>uint</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code></td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><code>float32</code>, <code>float64</code></td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><code>byte</code></td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><code>rune</code></td>
+<td><code>number</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tipe-kompleks">Tipe Kompleks</h3>
+<table>
+<thead>
+<tr>
+<th>Tipe Go</th>
+<th>JavaScript/TypeScript</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[]T</code></td>
+<td><code>T[]</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>[N]T</code></td>
+<td><code>T[]</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>map[string]T</code></td>
+<td><code>{ [_: string]: T }</code></td>
+<td>map dengan key string</td>
+</tr>
+<tr>
+<td><code>map[K]V</code></td>
+<td><code>{ [_ in K]?: V }</code></td>
+<td><code>K</code> non-string dirender sebagai mapped type, <strong>bukan</strong> JS <code>Map</code></td>
+</tr>
+<tr>
+<td><code>[]byte</code></td>
+<td><code>string</code></td>
+<td>base64-encoded</td>
+</tr>
+<tr>
+<td><code>struct</code></td>
+<td><code>class</code> / <code>interface</code></td>
+<td>dengan field</td>
+</tr>
+<tr>
+<td><code>time.Time</code></td>
+<td><code>any</code></td>
+<td>diserialisasi sebagai string RFC3339Nano di runtime</td>
+</tr>
+<tr>
+<td><code>*T</code></td>
+<td><code>T | null</code></td>
+<td>pointer berarti nullable</td>
+</tr>
+<tr>
+<td><code>any</code> / <code>interface{}</code></td>
+<td><code>any</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>any</code> / <code>Exception</code></td>
+<td>Exception jika sebagai nilai return, selain itu any</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tipe-yang-tidak-didukung">Tipe yang Tidak Didukung</h3>
+<ul>
+<li><code>chan T</code> (channel)</li>
+<li><code>func()</code> (fungsi)</li>
+<li>Interface kompleks (kecuali <code>interface{}</code>)</li>
+<li>Field tidak diekspor (lowercase)</li>
+</ul>
+<h2 id="menggunakan-model">Menggunakan Model</h2>
+<h3 id="membuat-instance">Membuat Instance</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { User } from &#39;./bindings/changeme/models&#39;&#10;&#10;// Empty instance&#10;const user1 = new User()&#10;&#10;// With data&#10;const user2 = new User({&#10;    id: 1,&#10;    name: &#34;Alice&#34;,&#10;    email: &#34;alice@example.com&#34;&#10;})&#10;&#10;// From JSON string&#10;const user3 = User.createFrom(&#39;{&#34;id&#34;:1,&#34;name&#34;:&#34;Alice&#34;}&#39;)&#10;&#10;// From object&#10;const user4 = User.createFrom({ id: 1, name: &#34;Alice&#34; })"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Empty instance</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user1 <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// With data</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user2 <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">    id<span class="mpress-token-operator">:</span> <span class="mpress-token-number">1</span>,
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span>,
+</span><span class="mpress-code-line">    email<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;alice@example.com&#34;</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// From JSON string</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user3 <span class="mpress-token-operator">=</span> <span class="mpress-token-type">User</span>.<span class="mpress-token-function">createFrom</span>(<span class="mpress-token-string">&#39;{&#34;id&#34;:1,&#34;name&#34;:&#34;Alice&#34;}&#39;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// From object</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user4 <span class="mpress-token-operator">=</span> <span class="mpress-token-type">User</span>.<span class="mpress-token-function">createFrom</span>({ id<span class="mpress-token-operator">:</span> <span class="mpress-token-number">1</span>, name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span> })</span></code></pre></div>
+<h3 id="meneruskan-ke-go">Meneruskan ke Go</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { CreateUser } from &#39;./bindings/changeme/userservice&#39;&#10;import { User } from &#39;./bindings/changeme/models&#39;&#10;&#10;const user = new User({&#10;    name: &#34;Bob&#34;,&#10;    email: &#34;bob@example.com&#34;&#10;})&#10;&#10;const created = await CreateUser(user)&#10;console.log(&#34;Created user:&#34;, created.id)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">CreateUser</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Bob&#34;</span>,
+</span><span class="mpress-code-line">    email<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;bob@example.com&#34;</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> created <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">CreateUser</span>(user)
+</span><span class="mpress-code-line">console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#34;Created user:&#34;</span>, created.id)</span></code></pre></div>
+<h3 id="menerima-dari-go">Menerima dari Go</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { GetUser } from &#39;./bindings/changeme/userservice&#39;&#10;&#10;const user = await GetUser(1)&#10;&#10;// user is already a User instance&#10;console.log(user.name)&#10;console.log(user.email)&#10;console.log(user.createdAt.toISOString())"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetUser</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetUser</span>(<span class="mpress-token-number">1</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// user is already a User instance</span>
+</span><span class="mpress-code-line">console.<span class="mpress-token-function">log</span>(user.name)
+</span><span class="mpress-code-line">console.<span class="mpress-token-function">log</span>(user.email)
+</span><span class="mpress-code-line">console.<span class="mpress-token-function">log</span>(user.createdAt.<span class="mpress-token-function">toISOString</span>())</span></code></pre></div>
+<h3 id="memperbarui-model">Memperbarui Model</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { GetUser, UpdateUser } from &#39;./bindings/changeme/userservice&#39;&#10;&#10;// Get user&#10;const user = await GetUser(1)&#10;&#10;// Modify&#10;user.name = &#34;Alice Smith&#34;&#10;user.email = &#34;alice.smith@example.com&#34;&#10;&#10;// Save&#10;await UpdateUser(user)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetUser</span>, <span class="mpress-token-type">UpdateUser</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Get user</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetUser</span>(<span class="mpress-token-number">1</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Modify</span>
+</span><span class="mpress-code-line">user.name <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;Alice Smith&#34;</span>
+</span><span class="mpress-code-line">user.email <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;alice.smith@example.com&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Save</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">await</span> <span class="mpress-token-function">UpdateUser</span>(user)</span></code></pre></div>
+<h2 id="dukungan-typescript">Dukungan TypeScript</h2>
+<h3 id="typescript-yang-dihasilkan">TypeScript yang Dihasilkan</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings -ts"><code><span class="mpress-cmd">wails3 generate bindings -ts</span>
+</code></pre>
+</div>
+<p><strong>Yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="/**&#10; * User represents an application user&#10; */&#10;export class User {&#10;    /**&#10;     * Unique identifier&#10;     */&#10;    id: number = 0&#10;    &#10;    /**&#10;     * Full name of the user&#10;     */&#10;    name: string = &#34;&#34;&#10;    &#10;    /**&#10;     * Email address (must be unique)&#10;     */&#10;    email: string = &#34;&#34;&#10;    &#10;    /**&#10;     * Account creation date&#10;     */&#10;    createdAt: Date = new Date()&#10;    &#10;    constructor(source: Partial&lt;User&gt; = {}) {&#10;        Object.assign(this, source)&#10;    }&#10;    &#10;    static createFrom(source: string | Partial&lt;User&gt; = {}): User {&#10;        const parsedSource = typeof source === &#39;string&#39; &#10;            ? JSON.parse(source) &#10;            : source&#10;        return new User(parsedSource)&#10;    }&#10;}"><code class="language-typescript"><span class="mpress-code-line">/<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-operator">*</span> <span class="mpress-token-type">User</span> represents an application user
+</span><span class="mpress-code-line"> <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">class</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Unique</span> identifier
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    id<span class="mpress-token-operator">:</span> number <span class="mpress-token-operator">=</span> <span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Full</span> name of the user
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> string <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Email</span> <span class="mpress-token-function">address</span> (must be unique)
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    email<span class="mpress-token-operator">:</span> string <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Account</span> creation date
+</span><span class="mpress-code-line">     <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">    createdAt<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Date</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Date</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-function">constructor</span>(source<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Partial</span><span class="mpress-token-operator">&lt;</span><span class="mpress-token-type">User</span><span class="mpress-token-operator">&gt;</span> <span class="mpress-token-operator">=</span> {}) {
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Object</span>.<span class="mpress-token-function">assign</span>(this, source)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    static <span class="mpress-token-function">createFrom</span>(source<span class="mpress-token-operator">:</span> string <span class="mpress-token-operator">|</span> <span class="mpress-token-type">Partial</span><span class="mpress-token-operator">&lt;</span><span class="mpress-token-type">User</span><span class="mpress-token-operator">&gt;</span> <span class="mpress-token-operator">=</span> {})<span class="mpress-token-operator">:</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">const</span> parsedSource <span class="mpress-token-operator">=</span> typeof source <span class="mpress-token-operator">===</span> <span class="mpress-token-string">&#39;string&#39;</span> 
+</span><span class="mpress-code-line">            ? <span class="mpress-token-type">JSON</span>.<span class="mpress-token-function">parse</span>(source) 
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">:</span> source
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>(parsedSource)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="penggunaan-di-typescript">Penggunaan di TypeScript</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { GetUser, CreateUser } from &#39;./bindings/changeme/userservice&#39;&#10;import { User } from &#39;./bindings/changeme/models&#39;&#10;&#10;async function example() {&#10;    // Create user&#10;    const newUser = new User({&#10;        name: &#34;Alice&#34;,&#10;        email: &#34;alice@example.com&#34;&#10;    })&#10;    &#10;    const created: User = await CreateUser(newUser)&#10;    &#10;    // Get user&#10;    const user: User = await GetUser(created.id)&#10;    &#10;    // Type-safe access&#10;    console.log(user.name.toUpperCase())  // ✅ string method&#10;    console.log(user.id + 1)              // ✅ number operation&#10;    console.log(user.createdAt.getTime()) // ✅ Date method&#10;}"><code class="language-typescript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetUser</span>, <span class="mpress-token-type">CreateUser</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">example</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Create user</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> newUser <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">        name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span>,
+</span><span class="mpress-code-line">        email<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;alice@example.com&#34;</span>
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> created<span class="mpress-token-operator">:</span> <span class="mpress-token-type">User</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">CreateUser</span>(newUser)
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get user</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> user<span class="mpress-token-operator">:</span> <span class="mpress-token-type">User</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetUser</span>(created.id)
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Type-safe access</span>
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(user.name.<span class="mpress-token-function">toUpperCase</span>())  <span class="mpress-token-comment">// ✅ string method</span>
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(user.id <span class="mpress-token-operator">+</span> <span class="mpress-token-number">1</span>)              <span class="mpress-token-comment">// ✅ number operation</span>
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(user.createdAt.<span class="mpress-token-function">getTime</span>()) <span class="mpress-token-comment">// ✅ Date method</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="pola-lanjutan">Pola Lanjutan</h2>
+<h3 id="field-opsional">Field Opsional</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type User struct {&#10;    ID       int     `json:&#34;id&#34;`&#10;    Name     string  `json:&#34;name&#34;`&#10;    Nickname *string `json:&#34;nickname,omitempty&#34;`&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>       int     <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>     string  <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Nickname</span> <span class="mpress-token-operator">*</span>string <span class="mpress-token-string">`json:&#34;nickname,omitempty&#34;`</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const user = new User({&#10;    id: 1,&#10;    name: &#34;Alice&#34;,&#10;    nickname: &#34;Ally&#34;  // Optional&#10;})&#10;&#10;// Check if set&#10;if (user.nickname) {&#10;    console.log(&#34;Nickname:&#34;, user.nickname)&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">    id<span class="mpress-token-operator">:</span> <span class="mpress-token-number">1</span>,
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span>,
+</span><span class="mpress-code-line">    nickname<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Ally&#34;</span>  <span class="mpress-token-comment">// Optional</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Check if set</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> (user.nickname) {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#34;Nickname:&#34;</span>, user.nickname)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="enum">Enum</h3>
+<p>Generator binding secara otomatis mendeteksi tipe bernama Go dengan konstanta dan menghasilkan enum TypeScript atau const object JavaScript — termasuk anggota <code>$zero</code> untuk nilai nol Go dan preservasi JSDoc penuh.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type UserRole string&#10;&#10;const (&#10;    RoleAdmin UserRole = &#34;admin&#34;&#10;    RoleUser  UserRole = &#34;user&#34;&#10;    RoleGuest UserRole = &#34;guest&#34;&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">UserRole</span> string
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleAdmin</span> <span class="mpress-token-type">UserRole</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;admin&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleUser</span>  <span class="mpress-token-type">UserRole</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;user&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleGuest</span> <span class="mpress-token-type">UserRole</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;guest&#34;</span>
+</span><span class="mpress-code-line">)</span></code></pre></div>
+<p><strong>TypeScript yang Dihasilkan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="export enum UserRole {&#10;    $zero = &#34;&#34;,&#10;    RoleAdmin = &#34;admin&#34;,&#10;    RoleUser = &#34;user&#34;,&#10;    RoleGuest = &#34;guest&#34;,&#10;}"><code class="language-typescript"><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> enum <span class="mpress-token-type">UserRole</span> {
+</span><span class="mpress-code-line">    $zero <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleAdmin</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;admin&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleUser</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;user&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">RoleGuest</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;guest&#34;</span>,
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Penggunaan:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { User, UserRole } from &#39;./bindings/changeme/models&#39;&#10;&#10;const admin = new User({&#10;    name: &#34;Admin&#34;,&#10;    role: UserRole.RoleAdmin&#10;})"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span>, <span class="mpress-token-type">UserRole</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> admin <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">    name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Admin&#34;</span>,
+</span><span class="mpress-code-line">    role<span class="mpress-token-operator">:</span> <span class="mpress-token-type">UserRole</span>.<span class="mpress-token-type">RoleAdmin</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Untuk cakupan lengkap enum string, enum integer, type alias, enum paket yang diimpor, dan keterbatasan, lihat halaman khusus <strong><a href="/id/features/bindings/enums/">Enum</a></strong>.</p>
+<h3 id="validasi">Validasi</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="class User {&#10;    validate() {&#10;        if (!this.name) {&#10;            throw new Error(&#34;Name is required&#34;)&#10;        }&#10;        if (!this.email.includes(&#39;@&#39;)) {&#10;            throw new Error(&#34;Invalid email&#34;)&#10;        }&#10;        return true&#10;    }&#10;}&#10;&#10;// Use&#10;const user = new User({ name: &#34;Alice&#34;, email: &#34;alice@example.com&#34; })&#10;user.validate()  // ✅&#10;&#10;const invalid = new User({ name: &#34;&#34;, email: &#34;invalid&#34; })&#10;invalid.validate()  // ❌ Throws"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">class</span> <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-function">validate</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> (<span class="mpress-token-operator">!</span>this.name) {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">throw</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Error</span>(<span class="mpress-token-string">&#34;Name is required&#34;</span>)
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> (<span class="mpress-token-operator">!</span>this.email.<span class="mpress-token-function">includes</span>(<span class="mpress-token-string">&#39;@&#39;</span>)) {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">throw</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Error</span>(<span class="mpress-token-string">&#34;Invalid email&#34;</span>)
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">true</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Use</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({ name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Alice&#34;</span>, email<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;alice@example.com&#34;</span> })
+</span><span class="mpress-code-line">user.<span class="mpress-token-function">validate</span>()  <span class="mpress-token-comment">// ✅</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> invalid <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({ name<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;&#34;</span>, email<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;invalid&#34;</span> })
+</span><span class="mpress-code-line">invalid.<span class="mpress-token-function">validate</span>()  <span class="mpress-token-comment">// ❌ Throws</span></span></code></pre></div>
+<h3 id="serialisasi">Serialisasi</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// To JSON&#10;const json = JSON.stringify(user)&#10;&#10;// From JSON&#10;const user = User.createFrom(json)&#10;&#10;// To plain object&#10;const obj = { ...user }&#10;&#10;// From plain object&#10;const user2 = new User(obj)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// To JSON</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> json <span class="mpress-token-operator">=</span> <span class="mpress-token-type">JSON</span>.<span class="mpress-token-function">stringify</span>(user)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// From JSON</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-type">User</span>.<span class="mpress-token-function">createFrom</span>(json)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// To plain object</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> obj <span class="mpress-token-operator">=</span> { ...user }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// From plain object</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> user2 <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>(obj)</span></code></pre></div>
+<h2 id="contoh-lengkap">Contoh Lengkap</h2>
+<p><strong>Go:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;fmt&#34;&#10;    &#34;time&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;)&#10;&#10;type Address struct {&#10;    Street  string `json:&#34;street&#34;`&#10;    City    string `json:&#34;city&#34;`&#10;    Country string `json:&#34;country&#34;`&#10;}&#10;&#10;type User struct {&#10;    ID        int       `json:&#34;id&#34;`&#10;    Name      string    `json:&#34;name&#34;`&#10;    Email     string    `json:&#34;email&#34;`&#10;    Address   Address   `json:&#34;address&#34;`&#10;    CreatedAt time.Time `json:&#34;createdAt&#34;`&#10;}&#10;&#10;type UserService struct {&#10;    users []User&#10;}&#10;&#10;func (s *UserService) GetAll() []User {&#10;    return s.users&#10;}&#10;&#10;func (s *UserService) GetByID(id int) (*User, error) {&#10;    for _, user := range s.users {&#10;        if user.ID == id {&#10;            return &amp;user, nil&#10;        }&#10;    }&#10;    return nil, fmt.Errorf(&#34;user %d not found&#34;, id)&#10;}&#10;&#10;func (s *UserService) Create(user User) User {&#10;    user.ID = len(s.users) + 1&#10;    user.CreatedAt = time.Now()&#10;    s.users = append(s.users, user)&#10;    return user&#10;}&#10;&#10;func (s *UserService) Update(user User) error {&#10;    for i, u := range s.users {&#10;        if u.ID == user.ID {&#10;            s.users[i] = user&#10;            return nil&#10;        }&#10;    }&#10;    return fmt.Errorf(&#34;user %d not found&#34;, user.ID)&#10;}&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Services: []application.Service{&#10;            application.NewService(&amp;UserService{}),&#10;        },&#10;    })&#10;    &#10;    app.Window.New()&#10;    app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;fmt&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;time&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Address</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Street</span>  string <span class="mpress-token-string">`json:&#34;street&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">City</span>    string <span class="mpress-token-string">`json:&#34;city&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Country</span> string <span class="mpress-token-string">`json:&#34;country&#34;`</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">User</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>        int       <span class="mpress-token-string">`json:&#34;id&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>      string    <span class="mpress-token-string">`json:&#34;name&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Email</span>     string    <span class="mpress-token-string">`json:&#34;email&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Address</span>   <span class="mpress-token-type">Address</span>   <span class="mpress-token-string">`json:&#34;address&#34;`</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CreatedAt</span> time.<span class="mpress-token-type">Time</span> <span class="mpress-token-string">`json:&#34;createdAt&#34;`</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">UserService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    users []<span class="mpress-token-type">User</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">UserService</span>) <span class="mpress-token-function">GetAll</span>() []<span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> s.users
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">UserService</span>) <span class="mpress-token-function">GetByID</span>(id int) (<span class="mpress-token-operator">*</span><span class="mpress-token-type">User</span>, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> _, user <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> s.users {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> user.<span class="mpress-token-type">ID</span> <span class="mpress-token-operator">==</span> id {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span>user, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, fmt.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;user %d not found&#34;</span>, id)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">UserService</span>) <span class="mpress-token-function">Create</span>(user <span class="mpress-token-type">User</span>) <span class="mpress-token-type">User</span> {
+</span><span class="mpress-code-line">    user.<span class="mpress-token-type">ID</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-function">len</span>(s.users) <span class="mpress-token-operator">+</span> <span class="mpress-token-number">1</span>
+</span><span class="mpress-code-line">    user.<span class="mpress-token-type">CreatedAt</span> <span class="mpress-token-operator">=</span> time.<span class="mpress-token-function">Now</span>()
+</span><span class="mpress-code-line">    s.users <span class="mpress-token-operator">=</span> <span class="mpress-token-function">append</span>(s.users, user)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> user
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">UserService</span>) <span class="mpress-token-function">Update</span>(user <span class="mpress-token-type">User</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> i, u <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> s.users {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> u.<span class="mpress-token-type">ID</span> <span class="mpress-token-operator">==</span> user.<span class="mpress-token-type">ID</span> {
+</span><span class="mpress-code-line">            s.users[i] <span class="mpress-token-operator">=</span> user
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> fmt.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;user %d not found&#34;</span>, user.<span class="mpress-token-type">ID</span>)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">            application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">UserService</span>{}),
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>JavaScript:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { GetAll, GetByID, Create, Update } from &#39;./bindings/changeme/userservice&#39;&#10;import { User, Address } from &#39;./bindings/changeme/models&#39;&#10;&#10;class UserManager {&#10;    async loadUsers() {&#10;        const users = await GetAll()&#10;        this.renderUsers(users)&#10;    }&#10;    &#10;    async createUser(name, email, address) {&#10;        const user = new User({&#10;            name,&#10;            email,&#10;            address: new Address(address)&#10;        })&#10;        &#10;        try {&#10;            const created = await Create(user)&#10;            console.log(&#34;Created user:&#34;, created.id)&#10;            this.loadUsers()&#10;        } catch (error) {&#10;            console.error(&#34;Failed to create user:&#34;, error)&#10;        }&#10;    }&#10;    &#10;    async updateUser(id, updates) {&#10;        try {&#10;            const user = await GetByID(id)&#10;            Object.assign(user, updates)&#10;            await Update(user)&#10;            this.loadUsers()&#10;        } catch (error) {&#10;            console.error(&#34;Failed to update user:&#34;, error)&#10;        }&#10;    }&#10;    &#10;    renderUsers(users) {&#10;        const list = document.getElementById(&#39;users&#39;)&#10;        list.innerHTML = users.map(user =&gt; `&#10;            &lt;div class=&#34;user&#34;&gt;&#10;                &lt;h3&gt;${user.name}&lt;/h3&gt;&#10;                &lt;p&gt;${user.email}&lt;/p&gt;&#10;                &lt;p&gt;${user.address.city}, ${user.address.country}&lt;/p&gt;&#10;                &lt;small&gt;Created: ${user.createdAt.toLocaleDateString()}&lt;/small&gt;&#10;            &lt;/div&gt;&#10;        `).join(&#39;&#39;)&#10;    }&#10;}&#10;&#10;const manager = new UserManager()&#10;manager.loadUsers()"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">GetAll</span>, <span class="mpress-token-type">GetByID</span>, <span class="mpress-token-type">Create</span>, <span class="mpress-token-type">Update</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/userservice&#39;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">User</span>, <span class="mpress-token-type">Address</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/models&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">class</span> <span class="mpress-token-type">UserManager</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">async</span> <span class="mpress-token-function">loadUsers</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">const</span> users <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetAll</span>()
+</span><span class="mpress-code-line">        this.<span class="mpress-token-function">renderUsers</span>(users)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">async</span> <span class="mpress-token-function">createUser</span>(name, email, address) {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">User</span>({
+</span><span class="mpress-code-line">            name,
+</span><span class="mpress-code-line">            email,
+</span><span class="mpress-code-line">            address<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">Address</span>(address)
+</span><span class="mpress-code-line">        })
+</span><span class="mpress-code-line">        
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">try</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">const</span> created <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">Create</span>(user)
+</span><span class="mpress-code-line">            console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#34;Created user:&#34;</span>, created.id)
+</span><span class="mpress-code-line">            this.<span class="mpress-token-function">loadUsers</span>()
+</span><span class="mpress-code-line">        } <span class="mpress-token-keyword">catch</span> (error) {
+</span><span class="mpress-code-line">            console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">&#34;Failed to create user:&#34;</span>, error)
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">async</span> <span class="mpress-token-function">updateUser</span>(id, updates) {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">try</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">const</span> user <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">GetByID</span>(id)
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Object</span>.<span class="mpress-token-function">assign</span>(user, updates)
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">Update</span>(user)
+</span><span class="mpress-code-line">            this.<span class="mpress-token-function">loadUsers</span>()
+</span><span class="mpress-code-line">        } <span class="mpress-token-keyword">catch</span> (error) {
+</span><span class="mpress-code-line">            console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">&#34;Failed to update user:&#34;</span>, error)
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-function">renderUsers</span>(users) {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">const</span> list <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;users&#39;</span>)
+</span><span class="mpress-code-line">        list.innerHTML <span class="mpress-token-operator">=</span> users.<span class="mpress-token-keyword">map</span>(user <span class="mpress-token-operator">=&gt;</span> <span class="mpress-token-string">`</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>div <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;user&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-operator">&lt;</span>h3<span class="mpress-token-operator">&gt;</span>${user.name}<span class="mpress-token-operator">&lt;</span>/h3<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span>${user.email}<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span>${user.address.city}, ${user.address.country}<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-operator">&lt;</span>small<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Created</span><span class="mpress-token-operator">:</span> ${user.createdAt.<span class="mpress-token-function">toLocaleDateString</span>()}<span class="mpress-token-operator">&lt;</span>/small<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-string">`).join(&#39;&#39;)</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> manager <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">new</span> <span class="mpress-token-function">UserManager</span>()
+</span><span class="mpress-code-line">manager.<span class="mpress-token-function">loadUsers</span>()</span></code></pre></div>
+<h2 id="praktik-terbaik">Praktik Terbaik</h2>
+<h3 id="-lakukan">✅ Lakukan</h3>
+<ul>
+<li><strong>Gunakan tag JSON</strong> - Kontrol nama field</li>
+<li><strong>Tambahkan komentar</strong> - Menjadi JSDoc</li>
+<li><strong>Gunakan time.Time</strong> - Dikonversi ke Date</li>
+<li><strong>Validasi di sisi Go</strong> - Jangan percaya frontend</li>
+<li><strong>Jaga model sederhana</strong> - Hanya sebagai container data</li>
+<li><strong>Gunakan pointer untuk opsional</strong> - <code>*string</code> untuk nullable</li>
+</ul>
+<h3 id="-jangan">❌ Jangan</h3>
+<ul>
+<li><strong>Jangan tambahkan metode ke struct Go</strong> - Jaga sebagai data</li>
+<li><strong>Jangan gunakan field tidak diekspor</strong> - Tidak akan ter-bind</li>
+<li><strong>Jangan gunakan interface kompleks</strong> - Tidak didukung</li>
+<li><strong>Jangan lupa tag JSON</strong> - Nama field penting</li>
+<li><strong>Jangan nest terlalu dalam</strong> - Jaga tetap sederhana</li>
+</ul>
+<h2 id="langkah-selanjutnya">Langkah Selanjutnya</h2>
+<div class="mpress-card-grid mpress-cards mpress-cards-2">
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.87 12.87 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+    <div class="mpress-card-title">Binding Metode</div>
+<div class="mpress-card-desc">
+<p>Pelajari cara bind metode Go.</p>
+<p><a href="/id/features/bindings/methods/">Pelajari Lebih Lanjut →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="mpress-card-title">Services</div>
+<div class="mpress-card-desc">
+<p>Atur kode dengan service.</p>
+<p><a href="/id/features/bindings/services/">Pelajari Lebih Lanjut →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mpress-card-title">Praktik Terbaik</div>
+<div class="mpress-card-desc">
+<p>Pola desain binding.</p>
+<p><a href="/id/features/bindings/best-practices/">Pelajari Lebih Lanjut →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.164.75a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.61 1.88l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.97 0l-4.618 2.428a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.162 9.79a.53.53 0 0 1 .294-.906l5.165-.75a2.12 2.12 0 0 0 1.594-1.16z"/></svg></div>
+    <div class="mpress-card-title">Bridge Go-Frontend</div>
+<div class="mpress-card-desc">
+<p>Pahami mekanisme bridge.</p>
+<p><a href="/id/concepts/bridge/">Pelajari Lebih Lanjut →</a></p>
+</div>
+  </div>
+</div>
+<hr>
+<p><strong>Ada pertanyaan?</strong> Tanyakan di <a href="https://discord.gg/JDdSxwjhGf">Discord</a> atau lihat <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/binding">contoh binding</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/features/bindings/models.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../../id/features/bindings/services/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Services</strong></a><a rel="next" href="../../../../id/features/bindings/enums/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Enums</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#binding-model-data">Binding Model Data</a><a class="toc-level-2" href="#memulai-cepat">Memulai Cepat</a><a class="toc-level-2" href="#mendefinisikan-model">Mendefinisikan Model</a><a class="toc-level-3" href="#struct-dasar">Struct Dasar</a><a class="toc-level-3" href="#dengan-tag-json">Dengan Tag JSON</a><a class="toc-level-3" href="#dengan-komentar">Dengan Komentar</a><a class="toc-level-3" href="#struct-bersarang">Struct Bersarang</a><a class="toc-level-3" href="#array-dan-slice">Array dan Slice</a><a class="toc-level-3" href="#map">Map</a><a class="toc-level-2" href="#pemetaan-tipe">Pemetaan Tipe</a><a class="toc-level-3" href="#tipe-primitif">Tipe Primitif</a><a class="toc-level-3" href="#tipe-kompleks">Tipe Kompleks</a><a class="toc-level-3" href="#tipe-yang-tidak-didukung">Tipe yang Tidak Didukung</a><a class="toc-level-2" href="#menggunakan-model">Menggunakan Model</a><a class="toc-level-3" href="#membuat-instance">Membuat Instance</a><a class="toc-level-3" href="#meneruskan-ke-go">Meneruskan ke Go</a><a class="toc-level-3" href="#menerima-dari-go">Menerima dari Go</a><a class="toc-level-3" href="#memperbarui-model">Memperbarui Model</a><a class="toc-level-2" href="#dukungan-typescript">Dukungan TypeScript</a><a class="toc-level-3" href="#typescript-yang-dihasilkan">TypeScript yang Dihasilkan</a><a class="toc-level-3" href="#penggunaan-di-typescript">Penggunaan di TypeScript</a><a class="toc-level-2" href="#pola-lanjutan">Pola Lanjutan</a><a class="toc-level-3" href="#field-opsional">Field Opsional</a><a class="toc-level-3" href="#enum">Enum</a><a class="toc-level-3" href="#validasi">Validasi</a><a class="toc-level-3" href="#serialisasi">Serialisasi</a><a class="toc-level-2" href="#contoh-lengkap">Contoh Lengkap</a><a class="toc-level-2" href="#praktik-terbaik">Praktik Terbaik</a><a class="toc-level-3" href="#-lakukan">✅ Lakukan</a><a class="toc-level-3" href="#-jangan">❌ Jangan</a><a class="toc-level-2" href="#langkah-selanjutnya">Langkah Selanjutnya</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../../assets/mpress.js" defer></script></body></html>

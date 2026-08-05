@@ -1,0 +1,647 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sistem Build · Wails</title><meta name="description" content="Memahami bagaimana Wails mem-build dan mengemas aplikasi Anda"><link rel="canonical" href="https://v3.wails.io/id/concepts/build-system/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/concepts/build-system/"><link rel="alternate" hreflang="zh-cn" href="https://v3.wails.io/zh-cn/concepts/build-system/"><link rel="alternate" hreflang="zh-tw" href="https://v3.wails.io/zh-tw/concepts/build-system/"><link rel="alternate" hreflang="ja" href="https://v3.wails.io/ja/concepts/build-system/"><link rel="alternate" hreflang="ko" href="https://v3.wails.io/ko/concepts/build-system/"><link rel="alternate" hreflang="ru" href="https://v3.wails.io/ru/concepts/build-system/"><link rel="alternate" hreflang="fr" href="https://v3.wails.io/fr/concepts/build-system/"><link rel="alternate" hreflang="pt" href="https://v3.wails.io/pt/concepts/build-system/"><link rel="alternate" hreflang="de" href="https://v3.wails.io/de/concepts/build-system/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/concepts/build-system/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/concepts/build-system/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/concepts/build-system/" role="menuitem"><span>English</span></a></li><li><a href="/zh-cn/concepts/build-system/" role="menuitem"><span>简体中文</span></a></li><li><a href="/zh-tw/concepts/build-system/" role="menuitem"><span>繁體中文</span></a></li><li><a href="/ja/concepts/build-system/" role="menuitem"><span>日本語</span></a></li><li><a href="/ko/concepts/build-system/" role="menuitem"><span>한국어</span></a></li><li><a href="/ru/concepts/build-system/" role="menuitem"><span>Русский</span></a></li><li><a href="/fr/concepts/build-system/" role="menuitem"><span>Français</span></a></li><li><a href="/pt/concepts/build-system/" role="menuitem"><span>Português (Brasil)</span></a></li><li><a href="/de/concepts/build-system/" role="menuitem"><span>Deutsch</span></a></li><li><a href="/id/concepts/build-system/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../id/">Home</a><a class="" href="../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/quick-start/installation/">Installation</a><a class="" href="../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../id/tutorials/overview/">Tutorial</a></div></details><details open><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="active" aria-current="page" href="../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../id/features/windows/options/">Window Options</a><a class="" href="../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../id/features/bindings/services/">Services</a><a class="" href="../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/events/system/">Event System</a><a class="" href="../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/mobile/">Overview</a><a class="" href="../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../id/guides/mobile/android/">Android</a><a class="" href="../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/experimental/">Overview</a><a class="" href="../../../id/experimental/wake/">Wake</a><a class="" href="../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../id/guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/server-build/">Server Build</a><a class="" href="../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/reference/overview/">Overview</a><a class="" href="../../../id/reference/application/">Application</a><a class="" href="../../../id/reference/window/">Window</a><a class="" href="../../../id/reference/menu/">Menu</a><a class="" href="../../../id/reference/events/">Events</a><a class="" href="../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../id/reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/links/">Links</a><a class="" href="../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../id/community/showcase/october/">October</a><a class="" href="../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../id/status/">Status</a><a class="" href="../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Sistem Build</h1><h2 id="sistem-build-terpadu">Sistem Build Terpadu</h2>
+<p>Wails menyediakan <strong>sistem build terpadu</strong> yang mengompilasi kode Go, membundel aset frontend, meng-embed semuanya ke executable tunggal, dan menangani build spesifik platform—semuanya dengan satu perintah.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build"><code><span class="mpress-cmd">wails3 build</span>
+</code></pre>
+</div>
+<p><strong>Output:</strong> Executable native dengan semuanya ter-embed.</p>
+<h2 id="ringkasan-proses-build">Ringkasan Proses Build</h2>
+<p><strong>[Placeholder Diagram Proses Build]</strong></p>
+<h2 id="fase-build">Fase Build</h2>
+<h3 id="1-fase-analisis">1. Fase Analisis</h3>
+<p>Wails memindai kode Go Anda untuk memahami service Anda:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type GreetService struct {&#10;    prefix string&#10;}&#10;&#10;func (g *GreetService) Greet(name string) string {&#10;    return g.prefix + name + &#34;!&#34;&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">GreetService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    prefix string
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">Greet</span>(name string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> g.prefix <span class="mpress-token-operator">+</span> name <span class="mpress-token-operator">+</span> <span class="mpress-token-string">&#34;!&#34;</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Yang diekstrak Wails:</strong></p>
+<ul>
+<li>Nama service: <code>GreetService</code></li>
+<li>Nama metode: <code>Greet</code></li>
+<li>Tipe parameter: <code>string</code></li>
+<li>Tipe return: <code>string</code></li>
+</ul>
+<p><strong>Digunakan untuk:</strong> Menghasilkan binding TypeScript</p>
+<h3 id="2-fase-generasi">2. Fase Generasi</h3>
+<h4 id="binding-typescript">Binding TypeScript</h4>
+<p>Wails menghasilkan binding type-safe:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Auto-generated: frontend/bindings/&lt;full-go-import-path&gt;/greetservice.js&#10;// (TypeScript is also generated when you pass `-ts`. The shape below is the real&#10;// runtime call format — numeric IDs via $Call.ByID, imported from /wails/runtime.js.)&#10;import { Call as $Call } from &#34;/wails/runtime.js&#34;;&#10;&#10;export function Greet($0) {&#10;    return $Call.ByID(1234567890, $0);&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// Auto-generated: frontend/bindings/&lt;full-go-import-path&gt;/greetservice.js</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// (TypeScript is also generated when you pass `-ts`. The shape below is the real</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// runtime call format — numeric IDs via $Call.ByID, imported from /wails/runtime.js.)</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Call</span> <span class="mpress-token-keyword">as</span> $Call } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;/wails/runtime.js&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">Greet</span>($0) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> $Call.<span class="mpress-token-function">ByID</span>(<span class="mpress-token-number">1234567890</span>, $0);
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Manfaat:</strong></p>
+<ul>
+<li>Type safety penuh</li>
+<li>Autocomplete IDE</li>
+<li>Error compile-time</li>
+<li>Komentar JSDoc</li>
+</ul>
+<h4 id="build-frontend">Build Frontend</h4>
+<p>Bundler frontend Anda berjalan (Vite, webpack, dll.):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="vite build --outDir dist"><code><span class="mpress-output"># Vite example</span>
+<span class="mpress-cmd">vite build --outDir dist</span>
+</code></pre>
+</div>
+<p><strong>Yang terjadi:</strong></p>
+<ul>
+<li>JavaScript/TypeScript dikompilasi</li>
+<li>CSS diproses dan diminify</li>
+<li>Aset dioptimasi</li>
+<li>Source map dihasilkan (dev saja)</li>
+<li>Output ke <code>frontend/dist/</code></li>
+</ul>
+<h3 id="3-fase-kompilasi">3. Fase Kompilasi</h3>
+<h4 id="kompilasi-go">Kompilasi Go</h4>
+<p>Kode Go dikompilasi dengan optimasi:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go build -ldflags=&#34;-s -w&#34; -o myapp.exe"><code><span class="mpress-cmd">go build -ldflags=&#34;-s -w&#34; -o myapp.exe</span>
+</code></pre>
+</div>
+<p><strong>Flag:</strong></p>
+<ul>
+<li><code>-s</code>: Strip symbol table</li>
+<li><code>-w</code>: Strip info debugging DWARF</li>
+<li>Hasil: Binary lebih kecil (~30% reduksi)</li>
+</ul>
+<p><strong>Spesifik platform:</strong></p>
+<ul>
+<li>Windows: <code>.exe</code> dengan ikon ter-embed</li>
+<li>macOS: Struktur bundle <code>.app</code></li>
+<li>Linux: Binary ELF</li>
+</ul>
+<h4 id="embedding-aset">Embedding Aset</h4>
+<p>Aset frontend di-embed ke binary Go:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:embed frontend/dist&#10;var assets embed.FS"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed frontend/dist</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> assets embed.<span class="mpress-token-type">FS</span></span></code></pre></div>
+<p><strong>Hasil:</strong> Executable tunggal dengan semuanya di dalam.</p>
+<h3 id="4-output">4. Output</h3>
+<p><strong>Binary native tunggal:</strong></p>
+<ul>
+<li>Windows: <code>myapp.exe</code> (~15MB)</li>
+<li>macOS: <code>myapp.app</code> (~15MB)</li>
+<li>Linux: <code>myapp</code> (~15MB)</li>
+</ul>
+<p><strong>Tanpa dependensi</strong> (kecuali WebView sistem).</p>
+<h2 id="development-vs-production">Development vs Production</h2>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-14e75867" data-sync-key="mode">
+<div role="tablist">
+<button id="mpress-tabs-14e75867-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-14e75867-panel-1">Development (wails3 dev)</button>
+<button id="mpress-tabs-14e75867-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-14e75867-panel-2" tabindex="-1">Production (wails3 build)</button>
+</div>
+<div id="mpress-tabs-14e75867-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-14e75867-tab-1">
+<p><strong>Dioptimasi untuk kecepatan:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 dev"><code><span class="mpress-cmd">wails3 dev</span>
+</code></pre>
+</div>
+<p><strong>Yang terjadi:</strong></p>
+<ol>
+<li>Memulai dev server frontend (Vite di port 9245 secara default)</li>
+<li>Mengompilasi Go tanpa optimasi</li>
+<li>Meluncurkan app yang mengarah ke dev server</li>
+<li>Mengaktifkan hot reload</li>
+<li>Menyertakan source maps</li>
+</ol>
+<p><strong>Karakteristik:</strong></p>
+<ul>
+<li><strong>Rebuild cepat</strong> (&lt;1s untuk perubahan frontend)</li>
+<li><strong>Tanpa embedding aset</strong> (disajikan dari dev server)</li>
+<li><strong>Debug symbols</strong> disertakan</li>
+<li><strong>Source maps</strong> diaktifkan</li>
+<li><strong>Logging verbose</strong></li>
+</ul>
+<p><strong>Ukuran file:</strong> Lebih besar (~50MB dengan debug symbols)</p>
+</div>
+<div id="mpress-tabs-14e75867-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-14e75867-tab-2" hidden>
+<p><strong>Dioptimasi untuk ukuran dan performa:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build"><code><span class="mpress-cmd">wails3 build</span>
+</code></pre>
+</div>
+<p><strong>Yang terjadi:</strong></p>
+<ol>
+<li>Build frontend untuk production (diminify)</li>
+<li>Kompilasi Go dengan optimasi</li>
+<li>Strip debug symbols</li>
+<li>Embed aset</li>
+<li>Buat binary tunggal</li>
+</ol>
+<p><strong>Karakteristik:</strong></p>
+<ul>
+<li><strong>Kode dioptimasi</strong> (diminify, tree-shaken)</li>
+<li><strong>Aset ter-embed</strong> (tanpa file eksternal)</li>
+<li><strong>Debug symbols di-strip</strong></li>
+<li><strong>Tanpa source maps</strong></li>
+<li><strong>Logging minimal</strong></li>
+</ul>
+<p><strong>Ukuran file:</strong> Lebih kecil (~15MB)</p>
+</div>
+</ot-tabs>
+<h2 id="perintah-build">Perintah Build</h2>
+<h3 id="build-dasar">Build Dasar</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build"><code><span class="mpress-cmd">wails3 build</span>
+</code></pre>
+</div>
+<p><strong>Output:</strong> <code>bin/&lt;APP_NAME&gt;</code> (atau <code>bin/&lt;APP_NAME&gt;.exe</code> di Windows). Direktori <code>bin/</code> berada di root proyek.</p>
+<p><code>wails3 build</code> adalah wrapper tipis di sekitar <code>wails3 task build</code>. Satu-satunya flag build-time yang diteruskan adalah <code>--tags</code>, yang menjadi variabel Taskfile <code>EXTRA_TAGS</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build --tags &#34;myfeature,gtk4&#34;"><code><span class="mpress-output"># Build with extra Go build tags</span>
+<span class="mpress-cmd">wails3 build --tags &#34;myfeature,gtk4&#34;</span>
+</code></pre>
+</div>
+<p>Tidak ada flag <code>-platform</code>, <code>-o</code>, <code>-skipbindings</code>, <code>-clean</code>, <code>-debug</code>, <code>-devbuild</code>, <code>-icon</code>, <code>-ldflags</code>, atau <code>-package</code> pada <code>wails3 build</code>. Cross-compilation, path output, ikon, dan packaging dikontrol melalui Taskfile proyek (<code>Taskfile.yml</code> + <code>build/config.yml</code>).</p>
+<h3 id="build-lintas-platform-dan-spesifik-platform">Build lintas platform dan spesifik platform</h3>
+<p>Build platform diekspos sebagai task Taskfile di namespace <code>darwin:</code> / <code>windows:</code> / <code>linux:</code> (didefinisikan di <code>build/Taskfile.&lt;platform&gt;.yml</code>). Contoh:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:build:universal
+wails3 task darwin:build
+wails3 task windows:build
+wails3 task linux:build"><code><span class="mpress-output"># macOS — universal binary</span>
+<span class="mpress-cmd">wails3 task darwin:build:universal</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># macOS — arsitektur saat ini</span>
+<span class="mpress-cmd">wails3 task darwin:build</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Windows</span>
+<span class="mpress-cmd">wails3 task windows:build</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Linux</span>
+<span class="mpress-cmd">wails3 task linux:build</span>
+</code></pre>
+</div>
+<p>Untuk melihat setiap task yang tersedia di proyek saat ini:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task --list"><code><span class="mpress-cmd">wails3 task --list</span>
+</code></pre>
+</div>
+<h3 id="ikon-dan-packaging">Ikon dan packaging</h3>
+<p>Hasilkan ikon platform (<code>build/icons.icns</code>, <code>build/icon.ico</code>, dll.) dari PNG sumber:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons -input appicon.png"><code><span class="mpress-cmd">wails3 generate icons -input appicon.png</span>
+</code></pre>
+</div>
+<p>Build installer/paket spesifik platform:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 package           # uses the current Go build env
+wails3 task linux:create:deb
+wails3 task windows:package
+wails3 task darwin:package:universal"><code><span class="mpress-cmd">wails3 package           # uses the current Go build env</span>
+<span class="mpress-cmd">wails3 task linux:create:deb</span>
+<span class="mpress-cmd">wails3 task windows:package</span>
+<span class="mpress-cmd">wails3 task darwin:package:universal</span>
+</code></pre>
+</div>
+<h2 id="konfigurasi-build">Konfigurasi Build</h2>
+<h3 id="taskfileyml">Taskfile.yml</h3>
+<p>Proyek Wails 3 menggunakan <a href="https://taskfile.dev/">Taskfile</a> sebagai orchestrator build mereka. <code>Taskfile.yml</code> root menyertakan file task per-platform dari <code>build/</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="# Taskfile.yml (excerpt — the real templates are richer)&#10;version: &#39;3&#39;&#10;&#10;includes:&#10;  common: ./build/Taskfile.yml&#10;  darwin: ./build/Taskfile.darwin.yml&#10;  windows: ./build/Taskfile.windows.yml&#10;  linux: ./build/Taskfile.linux.yml&#10;&#10;tasks:&#10;  build:&#10;    desc: Build the application&#10;    cmds:&#10;      - task: &#34;{{OS}}:build&#34;"><code class="language-yaml"><span class="mpress-code-line"><span class="mpress-token-comment"># Taskfile.yml (excerpt — the real templates are richer)</span>
+</span><span class="mpress-code-line">version<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;3&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">includes<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  common<span class="mpress-token-operator">:</span> ./build/<span class="mpress-token-type">Taskfile</span>.yml
+</span><span class="mpress-code-line">  darwin<span class="mpress-token-operator">:</span> ./build/<span class="mpress-token-type">Taskfile</span>.darwin.yml
+</span><span class="mpress-code-line">  windows<span class="mpress-token-operator">:</span> ./build/<span class="mpress-token-type">Taskfile</span>.windows.yml
+</span><span class="mpress-code-line">  linux<span class="mpress-token-operator">:</span> ./build/<span class="mpress-token-type">Taskfile</span>.linux.yml
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">tasks<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    desc<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> the application
+</span><span class="mpress-code-line">    cmds<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> task<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;{{OS}}:build&#34;</span></span></code></pre></div>
+<p>Jalankan task dengan <code>wails3 task &lt;name&gt;</code> atau <code>task &lt;name&gt;</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task windows:build
+wails3 task darwin:package:universal
+wails3 task linux:create:appimage"><code><span class="mpress-cmd">wails3 task windows:build</span>
+<span class="mpress-cmd">wails3 task darwin:package:universal</span>
+<span class="mpress-cmd">wails3 task linux:create:appimage</span>
+</code></pre>
+</div>
+<h3 id="konfigurasi-proyek-buildconfigyml">Konfigurasi proyek: <code>build/config.yml</code></h3>
+<p>Metadata proyek (nama, identifier, versi, nilai info-plist, pengaturan NSIS, field <code>.desktop</code>, protokol kustom, dll.) berada di <code>build/config.yml</code>. Taskfile membaca file ini saat menghasilkan ikon, manifest, installer, dan sejenisnya. <strong>Tidak ada</strong> file <code>build/build.json</code> di Wails 3.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="# build/config.yml (illustrative)&#10;info:&#10;  productName: &#34;My App&#34;&#10;  productIdentifier: &#34;com.example.myapp&#34;&#10;  productVersion: &#34;1.0.0&#34;&#10;  companyName: &#34;Example Ltd.&#34;&#10;  productDescription: &#34;An application built with Wails&#34;"><code class="language-yaml"><span class="mpress-code-line"><span class="mpress-token-comment"># build/config.yml (illustrative)</span>
+</span><span class="mpress-code-line">info<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  productName<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>
+</span><span class="mpress-code-line">  productIdentifier<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;com.example.myapp&#34;</span>
+</span><span class="mpress-code-line">  productVersion<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>
+</span><span class="mpress-code-line">  companyName<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Example Ltd.&#34;</span>
+</span><span class="mpress-code-line">  productDescription<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;An application built with Wails&#34;</span></span></code></pre></div>
+<p>Jalankan <code>wails3 generate build-assets</code> (atau <code>wails3 update build-assets</code>) untuk memperbarui aset build spesifik platform dari konfigurasi ini.</p>
+<h2 id="embedding-aset-1">Embedding Aset</h2>
+<h3 id="cara-kerjanya">Cara Kerjanya</h3>
+<p>Wails menggunakan paket <code>embed</code> Go:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;embed&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;)&#10;&#10;//go:embed frontend/dist&#10;var assets embed.FS&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Name:   &#34;My App&#34;,&#10;        Assets: application.AssetOptions{&#10;            Handler: application.AssetFileServerFS(assets),&#10;        },&#10;    })&#10;    &#10;    app.Window.New()&#10;    app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed frontend/dist</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> assets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">AssetFileServerFS</span>(assets),
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Saat build:</strong></p>
+<ol>
+<li>Frontend di-build ke <code>frontend/dist/</code></li>
+<li>Direktif <code>//go:embed</code> menyertakan file</li>
+<li>File dikompilasi ke binary</li>
+<li>Binary berisi semuanya</li>
+</ol>
+<p><strong>Saat runtime:</strong></p>
+<ol>
+<li>App start</li>
+<li>Aset disajikan dari memori</li>
+<li>Tanpa I/O disk untuk aset</li>
+<li>Loading cepat</li>
+</ol>
+<h3 id="aset-kustom">Aset Kustom</h3>
+<p>Embed file tambahan:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:embed frontend/dist&#10;var frontendAssets embed.FS&#10;&#10;//go:embed data/*.json&#10;var dataAssets embed.FS&#10;&#10;//go:embed templates/*.html&#10;var templateAssets embed.FS"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed frontend/dist</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> frontendAssets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed data/*.json</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> dataAssets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed templates/*.html</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> templateAssets embed.<span class="mpress-token-type">FS</span></span></code></pre></div>
+<h2 id="optimasi-build">Optimasi Build</h2>
+<h3 id="optimasi-frontend">Optimasi Frontend</h3>
+<p><strong>Vite (default):</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// vite.config.js&#10;export default {&#10;  build: {&#10;    minify: &#39;terser&#39;,&#10;    terserOptions: {&#10;      compress: {&#10;        drop_console: true,  // Remove console.log&#10;        drop_debugger: true,&#10;      },&#10;    },&#10;    rollupOptions: {&#10;      output: {&#10;        manualChunks: {&#10;          vendor: [&#39;react&#39;, &#39;react-dom&#39;],  // Separate vendor bundle&#10;        },&#10;      },&#10;    },&#10;  },&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// vite.config.js</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">default</span> {
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">    minify<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;terser&#39;</span>,
+</span><span class="mpress-code-line">    terserOptions<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">      compress<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">        drop_console<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,  <span class="mpress-token-comment">// Remove console.log</span>
+</span><span class="mpress-code-line">        drop_debugger<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">      },
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">    rollupOptions<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">      output<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">        manualChunks<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">          vendor<span class="mpress-token-operator">:</span> [<span class="mpress-token-string">&#39;react&#39;</span>, <span class="mpress-token-string">&#39;react-dom&#39;</span>],  <span class="mpress-token-comment">// Separate vendor bundle</span>
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">      },
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">  },
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Hasil:</strong></p>
+<ul>
+<li>JavaScript diminify (~70% reduksi)</li>
+<li>CSS diminify (~60% reduksi)</li>
+<li>Gambar dioptimasi</li>
+<li>Tree-shaking diterapkan</li>
+</ul>
+<h3 id="optimasi-go">Optimasi Go</h3>
+<p><strong>Flag compiler:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="-ldflags=&#34;-s -w&#34;"><code><span class="mpress-cmd">-ldflags=&#34;-s -w&#34;</span>
+</code></pre>
+</div>
+<ul>
+<li><code>-s</code>: Strip symbol table (~10% reduksi)</li>
+<li><code>-w</code>: Strip info debug DWARF (~20% reduksi)</li>
+</ul>
+<p><strong>Optimasi tambahan:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="-ldflags=&#34;-s -w -X main.version=1.0.0&#34;"><code><span class="mpress-cmd">-ldflags=&#34;-s -w -X main.version=1.0.0&#34;</span>
+</code></pre>
+</div>
+<ul>
+<li><code>-X</code>: Set nilai variabel saat build</li>
+<li>Berguna untuk nomor versi, tanggal build</li>
+</ul>
+<h3 id="kompresi-binary">Kompresi Binary</h3>
+<p><strong>UPX (opsional):</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="upx --best bin/myapp.exe"><code><span class="mpress-output"># After building</span>
+<span class="mpress-cmd">upx --best bin/myapp.exe</span>
+</code></pre>
+</div>
+<p><strong>Hasil:</strong></p>
+<ul>
+<li>~50% reduksi ukuran</li>
+<li>Startup sedikit lebih lambat (~100ms)</li>
+<li>Tidak direkomendasikan untuk macOS (masalah code signing)</li>
+</ul>
+<h2 id="build-spesifik-platform">Build Spesifik Platform</h2>
+<h3 id="windows">Windows</h3>
+<p><strong>Output:</strong> <code>myapp.exe</code></p>
+<p><strong>Termasuk:</strong></p>
+<ul>
+<li>Ikon aplikasi</li>
+<li>Informasi versi</li>
+<li>Manifest (pengaturan UAC)</li>
+</ul>
+<p><strong>Ikon:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons -input appicon.png -windowsfilename build/icon.ico"><code><span class="mpress-output"># Generate platform icons from a source PNG</span>
+<span class="mpress-cmd">wails3 generate icons -input appicon.png -windowsfilename build/icon.ico</span>
+</code></pre>
+</div>
+<p>Langkah <code>tool package</code> Windows kemudian meng-embed <code>.ico</code> yang dihasilkan ke executable.</p>
+<p><strong>Manifest:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="&lt;!-- build/windows/manifest.xml --&gt;&#10;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;yes&#34;?&gt;&#10;&lt;assembly xmlns=&#34;urn:schemas-microsoft-com:asm.v1&#34; manifestVersion=&#34;1.0&#34;&gt;&#10;  &lt;assemblyIdentity version=&#34;1.0.0.0&#34; name=&#34;MyApp&#34;/&gt;&#10;  &lt;trustInfo xmlns=&#34;urn:schemas-microsoft-com:asm.v3&#34;&gt;&#10;    &lt;security&gt;&#10;      &lt;requestedPrivileges&gt;&#10;        &lt;requestedExecutionLevel level=&#34;asInvoker&#34; uiAccess=&#34;false&#34;/&gt;&#10;      &lt;/requestedPrivileges&gt;&#10;    &lt;/security&gt;&#10;  &lt;/trustInfo&gt;&#10;&lt;/assembly&gt;"><code class="language-xml"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> build/windows/manifest.xml <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>?xml version<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;1.0&#34;</span> encoding<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;UTF-8&#34;</span> standalone<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;yes&#34;</span>?<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>assembly xmlns<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;urn:schemas-microsoft-com:asm.v1&#34;</span> manifestVersion<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;1.0&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">&lt;</span>assemblyIdentity version<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;1.0.0.0&#34;</span> name<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;MyApp&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">&lt;</span>trustInfo xmlns<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;urn:schemas-microsoft-com:asm.v3&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>security<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">&lt;</span>requestedPrivileges<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>requestedExecutionLevel level<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;asInvoker&#34;</span> uiAccess<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;false&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">&lt;</span>/requestedPrivileges<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>/security<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">&lt;</span>/trustInfo<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/assembly<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<h3 id="macos">macOS</h3>
+<p><strong>Output:</strong> <code>myapp.app</code> (application bundle)</p>
+<p><strong>Struktur:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp.app/&#10;├── Contents/&#10;│   ├── Info.plist          # App metadata&#10;│   ├── MacOS/&#10;│   │   └── myapp           # Binary&#10;│   ├── Resources/&#10;│   │   └── icon.icns       # Icon&#10;│   └── _CodeSignature/     # Code signature (if signed)"><code class="language-text"><span class="mpress-code-line">myapp.app/
+</span><span class="mpress-code-line">├── Contents/
+</span><span class="mpress-code-line">│   ├── Info.plist          # App metadata
+</span><span class="mpress-code-line">│   ├── MacOS/
+</span><span class="mpress-code-line">│   │   └── myapp           # Binary
+</span><span class="mpress-code-line">│   ├── Resources/
+</span><span class="mpress-code-line">│   │   └── icon.icns       # Icon
+</span><span class="mpress-code-line">│   └── _CodeSignature/     # Code signature (if signed)</span></code></pre></div>
+<p><strong>Info.plist:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;&#10;&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;&#10;&lt;plist version=&#34;1.0&#34;&gt;&#10;&lt;dict&gt;&#10;    &lt;key&gt;CFBundleName&lt;/key&gt;&#10;    &lt;string&gt;My App&lt;/string&gt;&#10;    &lt;key&gt;CFBundleIdentifier&lt;/key&gt;&#10;    &lt;string&gt;com.example.myapp&lt;/string&gt;&#10;    &lt;key&gt;CFBundleVersion&lt;/key&gt;&#10;    &lt;string&gt;1.0.0&lt;/string&gt;&#10;&lt;/dict&gt;&#10;&lt;/plist&gt;"><code class="language-xml"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>?xml version<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;1.0&#34;</span> encoding<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;UTF-8&#34;</span>?<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!</span><span class="mpress-token-type">DOCTYPE</span> plist <span class="mpress-token-type">PUBLIC</span> <span class="mpress-token-string">&#34;-//Apple//DTD PLIST 1.0//EN&#34;</span> <span class="mpress-token-string">&#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>plist version<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;1.0&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>dict<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>key<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">CFBundleName</span><span class="mpress-token-operator">&lt;</span>/key<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>string<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">My</span> <span class="mpress-token-type">App</span><span class="mpress-token-operator">&lt;</span>/string<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>key<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">CFBundleIdentifier</span><span class="mpress-token-operator">&lt;</span>/key<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>string<span class="mpress-token-operator">&gt;</span>com.example.myapp<span class="mpress-token-operator">&lt;</span>/string<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>key<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">CFBundleVersion</span><span class="mpress-token-operator">&lt;</span>/key<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>string<span class="mpress-token-operator">&gt;</span><span class="mpress-token-number">1.0.0</span><span class="mpress-token-operator">&lt;</span>/string<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/dict<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/plist<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p><strong>Universal Binary:</strong></p>
+<p>Taskfile macOS menyediakan task <code>darwin:build:universal</code> (dan <code>darwin:package:universal</code>) yang mem-build kedua arsitektur dan menggabungkannya via <code>wails3 tool lipo</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:build:universal"><code><span class="mpress-cmd">wails3 task darwin:build:universal</span>
+</code></pre>
+</div>
+<h3 id="linux">Linux</h3>
+<p><strong>Output:</strong> <code>myapp</code> (binary ELF)</p>
+<p><strong>Dependensi:</strong></p>
+<ul>
+<li>GTK3</li>
+<li>WebKitGTK</li>
+</ul>
+<p><strong>File desktop:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="# myapp.desktop&#10;[Desktop Entry]&#10;Name=My App&#10;Exec=/usr/bin/myapp&#10;Icon=myapp&#10;Type=Application&#10;Categories=Utility;"><code class="language-ini"><span class="mpress-code-line"># myapp.desktop
+</span><span class="mpress-code-line">[<span class="mpress-token-type">Desktop</span> <span class="mpress-token-type">Entry</span>]
+</span><span class="mpress-code-line"><span class="mpress-token-type">Name</span><span class="mpress-token-operator">=</span><span class="mpress-token-type">My</span> <span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Exec</span><span class="mpress-token-operator">=</span>/usr/bin/myapp
+</span><span class="mpress-code-line"><span class="mpress-token-type">Icon</span><span class="mpress-token-operator">=</span>myapp
+</span><span class="mpress-code-line"><span class="mpress-token-type">Type</span><span class="mpress-token-operator">=</span><span class="mpress-token-type">Application</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Categories</span><span class="mpress-token-operator">=</span><span class="mpress-token-type">Utility</span>;</span></code></pre></div>
+<p><strong>Instalasi:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="sudo cp myapp /usr/bin/
+sudo cp myapp.desktop /usr/share/applications/
+sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png"><code><span class="mpress-output"># Copy binary</span>
+<span class="mpress-cmd">sudo cp myapp /usr/bin/</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Copy desktop file</span>
+<span class="mpress-cmd">sudo cp myapp.desktop /usr/share/applications/</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Copy icon</span>
+<span class="mpress-cmd">sudo cp icon.png /usr/share/icons/hicolor/256x256/apps/myapp.png</span>
+</code></pre>
+</div>
+<h2 id="performa-build">Performa Build</h2>
+<h3 id="waktu-build-tipikal">Waktu Build Tipikal</h3>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Waktu</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Analisis</td>
+<td>&lt;1s</td>
+<td>Pemindaian kode Go</td>
+</tr>
+<tr>
+<td>Generasi Binding</td>
+<td>&lt;1s</td>
+<td>Generasi TypeScript</td>
+</tr>
+<tr>
+<td>Build Frontend</td>
+<td>5-30s</td>
+<td>Tergantung ukuran proyek</td>
+</tr>
+<tr>
+<td>Kompilasi Go</td>
+<td>2-10s</td>
+<td>Tergantung ukuran kode</td>
+</tr>
+<tr>
+<td>Embedding Aset</td>
+<td>&lt;1s</td>
+<td>Embedding frontend</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>10-45s</strong></td>
+<td>Build pertama</td>
+</tr>
+<tr>
+<td><strong>Incremental</strong></td>
+<td><strong>5-15s</strong></td>
+<td>Build berikutnya</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mempercepat-build">Mempercepat Build</h3>
+<p><strong>1. Gunakan build cache:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="npm run build  # Uses cache by default"><code><span class="mpress-output"># Go build cache is automatic</span>
+<span class="mpress-output"># Frontend cache (Vite)</span>
+<span class="mpress-cmd">npm run build  # Uses cache by default</span>
+</code></pre>
+</div>
+<p><strong>2. Jalankan hanya yang Anda butuhkan:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task common:build:frontend   # rebuild only the frontend
+wails3 task windows:build           # rebuild only the Windows binary"><code><span class="mpress-output"># Pick the specific Taskfile target you actually need</span>
+<span class="mpress-cmd">wails3 task common:build:frontend   # rebuild only the frontend</span>
+<span class="mpress-cmd">wails3 task windows:build           # rebuild only the Windows binary</span>
+</code></pre>
+</div>
+<p><strong>3. Build paralel (multi-machine / CI):</strong></p>
+<p>Cross-compilation antara Linux/Windows/macOS di v3 umumnya terjadi di container Docker <code>wails-cross</code> atau di runner khusus per platform — <code>wails3 build</code> sendiri menargetkan OS host. Lihat <a href="/id/guides/build/cross-platform/">Build Lintas Platform</a> untuk alur kerja yang didukung.</p>
+<p><strong>4. Gunakan alat yang lebih cepat:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands=""><code><span class="mpress-output"># Use esbuild instead of webpack</span>
+<span class="mpress-output"># (Vite uses esbuild by default)</span>
+</code></pre>
+</div>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="build-gagal">Build Gagal</h3>
+<p><strong>Gejala:</strong> <code>wails3 build</code> keluar dengan error</p>
+<p><strong>Penyebab umum:</strong></p>
+<ol>
+<li><strong>Error kompilasi Go</strong></li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go build"><code><span class="mpress-output"># Check Go code compiles</span>
+<span class="mpress-cmd">go build</span>
+</code></pre>
+</div>
+<ol start="2">
+<li><strong>Error build frontend</strong></li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="cd frontend
+npm run build"><code><span class="mpress-output"># Check frontend builds</span>
+<span class="mpress-cmd">cd frontend</span>
+<span class="mpress-cmd">npm run build</span>
+</code></pre>
+</div>
+<ol start="3">
+<li><strong>Dependensi hilang</strong></li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="npm install
+go mod download"><code><span class="mpress-output"># Install dependencies</span>
+<span class="mpress-cmd">npm install</span>
+<span class="mpress-cmd">go mod download</span>
+</code></pre>
+</div>
+<h3 id="binary-terlalu-besar">Binary Terlalu Besar</h3>
+<p><strong>Gejala:</strong> Binary &gt;50MB</p>
+<p><strong>Solusi:</strong></p>
+<ol>
+<li>
+<p><strong>Strip debug symbols</strong> (Taskfile yang dikirim sudah meneruskan <code>-ldflags=&quot;-s -w&quot;</code> ke <code>go build</code>).</p>
+</li>
+<li>
+<p><strong>Periksa aset ter-embed</strong></p>
+</li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands=""><code><span class="mpress-output"># Remove unnecessary files from frontend/dist/</span>
+<span class="mpress-output"># Check for large images, videos, etc.</span>
+</code></pre>
+</div>
+<ol start="3">
+<li><strong>Gunakan kompresi UPX</strong></li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="upx --best bin/myapp.exe"><code><span class="mpress-cmd">upx --best bin/myapp.exe</span>
+</code></pre>
+</div>
+<h3 id="build-lambat">Build Lambat</h3>
+<p><strong>Gejala:</strong> Build memakan waktu &gt;1 menit</p>
+<p><strong>Solusi:</strong></p>
+<ol>
+<li>
+<p><strong>Gunakan build cache</strong></p>
+<ul>
+<li>Cache Go otomatis</li>
+<li>Cache frontend (Vite) otomatis</li>
+</ul>
+</li>
+<li>
+<p><strong>Jalankan hanya task yang Anda butuhkan</strong></p>
+</li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task common:build:frontend
+wails3 task windows:build"><code><span class="mpress-cmd">wails3 task common:build:frontend</span>
+<span class="mpress-cmd">wails3 task windows:build</span>
+</code></pre>
+</div>
+<ol start="3">
+<li><strong>Optimasi build frontend</strong></li>
+</ol>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// vite.config.js&#10;export default {&#10;  build: {&#10;    minify: &#39;esbuild&#39;,  // Faster than terser&#10;  },&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// vite.config.js</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">default</span> {
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">    minify<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;esbuild&#39;</span>,  <span class="mpress-token-comment">// Faster than terser</span>
+</span><span class="mpress-code-line">  },
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="praktik-terbaik">Praktik Terbaik</h2>
+<h3 id="-lakukan">✅ Lakukan</h3>
+<ul>
+<li><strong>Gunakan <code>wails3 dev</code> selama development</strong> - Iterasi cepat</li>
+<li><strong>Gunakan <code>wails3 build</code> untuk rilis</strong> - Output dioptimasi</li>
+<li><strong>Versioning build Anda</strong> - Gunakan <code>-ldflags</code> untuk embed versi</li>
+<li><strong>Uji build di platform target</strong> - Cross-compilation tidak sempurna</li>
+<li><strong>Jaga build frontend tetap cepat</strong> - Optimasi konfigurasi bundler</li>
+<li><strong>Gunakan build cache</strong> - Mempercepat build berikutnya</li>
+</ul>
+<h3 id="-jangan">❌ Jangan</h3>
+<ul>
+<li><strong>Jangan commit direktori <code>build/</code></strong> - Tambahkan ke <code>.gitignore</code></li>
+<li><strong>Jangan lewati pengujian build</strong> - Selalu uji sebelum rilis</li>
+<li><strong>Jangan embed aset yang tidak perlu</strong> - Jaga binary tetap kecil</li>
+<li><strong>Jangan gunakan debug build untuk production</strong> - Gunakan build dioptimasi</li>
+<li><strong>Jangan lupa code signing</strong> - Diperlukan untuk distribusi</li>
+</ul>
+<h2 id="langkah-selanjutnya">Langkah Selanjutnya</h2>
+<p><strong>Mem-build Aplikasi</strong> - Panduan detail untuk build dan packaging<br>
+<a href="/id/guides/build/building/">Pelajari Selengkapnya →</a></p>
+<p><strong>Build Lintas Platform</strong> - Build untuk semua platform dari satu mesin<br>
+<a href="/id/guides/build/cross-platform/">Pelajari Selengkapnya →</a></p>
+<p><strong>Membuat Installer</strong> - Buat installer untuk pengguna akhir<br>
+<a href="/id/guides/installers/">Pelajari Selengkapnya →</a></p>
+<hr>
+<p><strong>Pertanyaan tentang build?</strong> Tanyakan di <a href="https://discord.gg/JDdSxwjhGf">Discord</a> atau lihat <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/build">contoh build</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/concepts/build-system.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../id/concepts/bridge/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Go-Frontend Bridge</strong></a><a rel="next" href="../../../id/features/windows/basics/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Window Basics</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#sistem-build-terpadu">Sistem Build Terpadu</a><a class="toc-level-2" href="#ringkasan-proses-build">Ringkasan Proses Build</a><a class="toc-level-2" href="#fase-build">Fase Build</a><a class="toc-level-3" href="#1-fase-analisis">1. Fase Analisis</a><a class="toc-level-3" href="#2-fase-generasi">2. Fase Generasi</a><a class="toc-level-3" href="#3-fase-kompilasi">3. Fase Kompilasi</a><a class="toc-level-3" href="#4-output">4. Output</a><a class="toc-level-2" href="#development-vs-production">Development vs Production</a><a class="toc-level-2" href="#perintah-build">Perintah Build</a><a class="toc-level-3" href="#build-dasar">Build Dasar</a><a class="toc-level-3" href="#build-lintas-platform-dan-spesifik-platform">Build lintas platform dan spesifik platform</a><a class="toc-level-3" href="#ikon-dan-packaging">Ikon dan packaging</a><a class="toc-level-2" href="#konfigurasi-build">Konfigurasi Build</a><a class="toc-level-3" href="#taskfileyml">Taskfile.yml</a><a class="toc-level-3" href="#konfigurasi-proyek-buildconfigyml">Konfigurasi proyek: build/config.yml</a><a class="toc-level-2" href="#embedding-aset-1">Embedding Aset</a><a class="toc-level-3" href="#cara-kerjanya">Cara Kerjanya</a><a class="toc-level-3" href="#aset-kustom">Aset Kustom</a><a class="toc-level-2" href="#optimasi-build">Optimasi Build</a><a class="toc-level-3" href="#optimasi-frontend">Optimasi Frontend</a><a class="toc-level-3" href="#optimasi-go">Optimasi Go</a><a class="toc-level-3" href="#kompresi-binary">Kompresi Binary</a><a class="toc-level-2" href="#build-spesifik-platform">Build Spesifik Platform</a><a class="toc-level-3" href="#windows">Windows</a><a class="toc-level-3" href="#macos">macOS</a><a class="toc-level-3" href="#linux">Linux</a><a class="toc-level-2" href="#performa-build">Performa Build</a><a class="toc-level-3" href="#waktu-build-tipikal">Waktu Build Tipikal</a><a class="toc-level-3" href="#mempercepat-build">Mempercepat Build</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-3" href="#build-gagal">Build Gagal</a><a class="toc-level-3" href="#binary-terlalu-besar">Binary Terlalu Besar</a><a class="toc-level-3" href="#build-lambat">Build Lambat</a><a class="toc-level-2" href="#praktik-terbaik">Praktik Terbaik</a><a class="toc-level-3" href="#-lakukan">✅ Lakukan</a><a class="toc-level-3" href="#-jangan">❌ Jangan</a><a class="toc-level-2" href="#langkah-selanjutnya">Langkah Selanjutnya</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

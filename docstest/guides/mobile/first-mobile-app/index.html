@@ -1,0 +1,585 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your First Mobile App · Wails</title><meta name="description" content="Run your Wails app on iOS Simulator or Android Emulator in minutes"><link rel="canonical" href="https://v3.wails.io/guides/mobile/first-mobile-app/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/mobile/first-mobile-app/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/mobile/first-mobile-app/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/mobile/first-mobile-app/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/mobile/first-mobile-app/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/mobile/first-mobile-app/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/mobile/first-mobile-app/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../">Home</a><a class="" href="../../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../quick-start/installation/">Installation</a><a class="" href="../../../quick-start/first-app/">Your First App</a><a class="" href="../../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../concepts/architecture/">How Wails Works</a><a class="" href="../../../concepts/manager-api/">Manager API</a><a class="" href="../../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/windows/basics/">Window Basics</a><a class="" href="../../../features/windows/options/">Window Options</a><a class="" href="../../../features/windows/permissions/">Permissions</a><a class="" href="../../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/menus/application/">Application Menus</a><a class="" href="../../../features/menus/context/">Context Menus</a><a class="" href="../../../features/menus/systray/">System Tray Menus</a><a class="" href="../../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/bindings/methods/">Method Binding</a><a class="" href="../../../features/bindings/services/">Services</a><a class="" href="../../../features/bindings/models/">Data Models</a><a class="" href="../../../features/bindings/enums/">Enums</a><a class="" href="../../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/events/system/">Event System</a><a class="" href="../../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/dialogs/file/">File Dialogs</a><a class="" href="../../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details open><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/mobile/">Overview</a><a class="active" aria-current="page" href="../../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../guides/mobile/ios/">iOS</a><a class="" href="../../../guides/mobile/android/">Android</a><a class="" href="../../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../experimental/">Overview</a><a class="" href="../../../experimental/wake/">Wake</a><a class="" href="../../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/build/building/">Building Applications</a><a class="" href="../../../guides/build/customization/">Build Customization</a><a class="" href="../../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../guides/build/signing/">Code Signing</a><a class="" href="../../../guides/build/windows/">Windows Packaging</a><a class="" href="../../../guides/build/macos/">macOS Packaging</a><a class="" href="../../../guides/build/linux/">Linux Packaging</a><a class="" href="../../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/updater/">In-App Updater</a><a class="" href="../../../guides/file-associations/">File Associations</a><a class="" href="../../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/routing/">Frontend Routing</a><a class="" href="../../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/server-build/">Server Build</a><a class="" href="../../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../reference/overview/">Overview</a><a class="" href="../../../reference/application/">Application</a><a class="" href="../../../reference/window/">Window</a><a class="" href="../../../reference/menu/">Menu</a><a class="" href="../../../reference/events/">Events</a><a class="" href="../../../reference/dialogs/">Dialogs</a><a class="" href="../../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../contributing/getting-started/">Getting Started</a><a class="" href="../../../contributing/setup/">Development Setup</a><a class="" href="../../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/links/">Links</a><a class="" href="../../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../community/showcase/clave/">Clave</a><a class="" href="../../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../community/showcase/emailit/">EmailIt</a><a class="" href="../../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../community/showcase/happytools/">HappyTools</a><a class="" href="../../../community/showcase/kira/">Kira</a><a class="" href="../../../community/showcase/ltools/">LTools</a><a class="" href="../../../community/showcase/mchat/">Mchat</a><a class="" href="../../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../../community/showcase/october/">October</a><a class="" href="../../../community/showcase/optimus/">Optimus</a><a class="" href="../../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../community/showcase/portfall/">Portfall</a><a class="" href="../../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../community/showcase/resizem/">Resizem</a><a class="" href="../../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../community/showcase/surge/">Surge</a><a class="" href="../../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../community/showcase/wally/">Wally</a><a class="" href="../../../community/showcase/wombat/">Wombat</a><a class="" href="../../../community/showcase/xensql/">XenSQL</a><a class="" href="../../../community/showcase/ytd/">Ytd</a><a class="" href="../../../community/showcase/hiposter/">hiposter</a><a class="" href="../../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../whats-new/">What&#39;s New</a><a class="" href="../../../status/">Status</a><a class="" href="../../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../credits/">Credits</a></nav></aside><main id="content"><article><h1>Your First Mobile App</h1><p>This guide takes a standard Wails desktop app and runs it on iOS Simulator or Android Emulator. <strong>You do not need to change your Go code.</strong> The same <code>main.go</code> builds for all targets.</p>
+<p><strong>Time to complete:</strong> 15–30 minutes (most of that is toolchain installation on first run)</p>
+<h2 id="start-from-a-desktop-project">Start from a desktop project</h2>
+<p>If you don&rsquo;t have one yet, create a fresh project:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 init -n mymobileapp
+cd mymobileapp"><code><span class="mpress-cmd">wails3 init -n mymobileapp</span>
+<span class="mpress-cmd">cd mymobileapp</span>
+</code></pre>
+</div>
+<p>Confirm the desktop app works first:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 dev"><code><span class="mpress-cmd">wails3 dev</span>
+</code></pre>
+</div>
+<p>Once it opens, quit and move on. Everything that runs on desktop also runs on mobile — you won&rsquo;t need to touch <code>main.go</code> or any Go code for this guide.</p>
+<hr>
+<h2 id="choose-your-platform">Choose your platform</h2>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-70ccfd68" data-sync-key="mobile-platform">
+<div role="tablist">
+<button id="mpress-tabs-70ccfd68-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-70ccfd68-panel-1">iOS Simulator</button>
+<button id="mpress-tabs-70ccfd68-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-70ccfd68-panel-2" tabindex="-1">Android Emulator</button>
+</div>
+<div id="mpress-tabs-70ccfd68-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-70ccfd68-tab-1">
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li><strong>macOS</strong> (iOS builds are macOS-only)</li>
+<li><strong>Full Xcode</strong> — not just command-line tools. Install from the App Store, then:</li>
+</ul>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept"><code><span class="mpress-cmd">sudo xcode-select -s /Applications/Xcode.app/Contents/Developer</span>
+<span class="mpress-cmd">sudo xcodebuild -license accept</span>
+</code></pre>
+</div>
+<ul>
+<li><strong>Go 1.25+</strong> and <strong>npm</strong> (already installed if you ran <code>wails3 init</code>)</li>
+</ul>
+<p>Run <code>wails3 doctor</code> to verify — it lists the iOS SDKs it can find.</p>
+<h3 id="run-on-the-simulator">Run on the Simulator</h3>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Launch the app</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:run"><code><span class="mpress-cmd">wails3 task ios:run</span>
+</code></pre>
+</div>
+<p>That&rsquo;s it — this builds your app, boots a simulator if one isn&rsquo;t already running, and launches it.</p>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>The first run takes a few minutes (it&rsquo;s compiling and caching the Wails framework for iOS). Every run after that is much faster.</p>
+</div>
+</aside>
+<p>When it launches, your unmodified desktop app is running on the iOS Simulator — same <code>main.go</code>, same frontend:</p>
+<p><img src="/assets/ios-simulator-first-app.png" alt="A default Wails app running on the iOS Simulator"></p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">2</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Stream logs</h4>
+<div class="mpress-step-content">
+<p>In a separate terminal:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:logs:dev"><code><span class="mpress-cmd">wails3 task ios:logs:dev</span>
+</code></pre>
+</div>
+<p>This tails the simulator log, filtered to your app. <code>fmt.Println</code> and <code>log.Println</code> output appears here.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">3</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Inspect the WebView</h4>
+<div class="mpress-step-content">
+<p>In Safari: <strong>Develop → Simulator → your app</strong>. The full Web Inspector works — console, debugger, network panel, everything.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">4</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Make a change</h4>
+<div class="mpress-step-content">
+<p>Edit any frontend file (<code>frontend/src/main.js</code>, <code>index.html</code>, etc.) and re-run <code>wails3 task ios:run</code>. Wails rebuilds the frontend and relaunches the app.</p>
+<p>For Go changes: also re-run <code>wails3 task ios:run</code>. Go recompilation is incremental, so only changed packages rebuild.</p>
+</div>
+    </div>
+  </div>
+</div>
+<h3 id="open-in-xcode-optional">Open in Xcode (optional)</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:xcode"><code><span class="mpress-cmd">wails3 task ios:xcode</span>
+</code></pre>
+</div>
+<p>This opens <code>build/ios/</code> in Xcode. You can use Xcode for device deployment, advanced profiling, or managing provisioning profiles. Wails regenerates the Xcode project on each build, so don&rsquo;t modify the generated files directly.</p>
+</div>
+<div id="mpress-tabs-70ccfd68-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-70ccfd68-tab-2" hidden>
+<h3 id="requirements-1">Requirements</h3>
+<p>You need the <strong>Android SDK</strong>, <strong>NDK</strong>, and a <strong>JDK</strong>. The easiest way is Android Studio, or the command-line tools:</p>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Install the Android command-line tools</h4>
+<div class="mpress-step-content">
+<p>Download from <a href="https://developer.android.com/studio#command-line-tools-only">developer.android.com/studio#command-line-tools-only</a>, unzip to <code>~/android-sdk/cmdline-tools/latest/</code>.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">2</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Install SDK components</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="sdkmanager &#34;platform-tools&#34; \
+           &#34;platforms;android-35&#34; \
+           &#34;build-tools;35.0.0&#34; \
+           &#34;ndk;26.3.11579264&#34; \
+           &#34;emulator&#34; \
+           &#34;system-images;android-35;google_apis;arm64-v8a&#34;"><code><span class="mpress-cmd">sdkmanager &#34;platform-tools&#34; \</span>
+<span class="mpress-cmd">           &#34;platforms;android-35&#34; \</span>
+<span class="mpress-cmd">           &#34;build-tools;35.0.0&#34; \</span>
+<span class="mpress-cmd">           &#34;ndk;26.3.11579264&#34; \</span>
+<span class="mpress-cmd">           &#34;emulator&#34; \</span>
+<span class="mpress-cmd">           &#34;system-images;android-35;google_apis;arm64-v8a&#34;</span>
+</code></pre>
+</div>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">3</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Create an emulator</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="avdmanager create avd \
+  --name wails \
+  --package &#34;system-images;android-35;google_apis;arm64-v8a&#34; \
+  --device pixel_7"><code><span class="mpress-cmd">avdmanager create avd \</span>
+<span class="mpress-cmd">  --name wails \</span>
+<span class="mpress-cmd">  --package &#34;system-images;android-35;google_apis;arm64-v8a&#34; \</span>
+<span class="mpress-cmd">  --device pixel_7</span>
+</code></pre>
+</div>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">4</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Set environment variables</h4>
+<div class="mpress-step-content">
+<p>Add to <code>~/.zshrc</code> or <code>~/.bashrc</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="export ANDROID_HOME=~/android-sdk
+export ANDROID_SDK_ROOT=~/android-sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin"><code><span class="mpress-cmd">export ANDROID_HOME=~/android-sdk</span>
+<span class="mpress-cmd">export ANDROID_SDK_ROOT=~/android-sdk</span>
+<span class="mpress-cmd">export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin</span>
+</code></pre>
+</div>
+<p>Reload: <code>source ~/.zshrc</code></p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">5</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Install a JDK</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="brew install openjdk@21
+export JAVA_HOME=$(brew --prefix openjdk@21)
+sudo apt install openjdk-21-jdk
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+scoop install openjdk21"><code><span class="mpress-output"># macOS</span>
+<span class="mpress-cmd">brew install openjdk@21</span>
+<span class="mpress-cmd">export JAVA_HOME=$(brew --prefix openjdk@21)</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Ubuntu/Debian</span>
+<span class="mpress-cmd">sudo apt install openjdk-21-jdk</span>
+<span class="mpress-cmd">export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Windows (scoop)</span>
+<span class="mpress-cmd">scoop install openjdk21</span>
+</code></pre>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+<p>Run <code>wails3 doctor</code> to confirm everything is found.</p>
+<h3 id="run-on-the-emulator">Run on the Emulator</h3>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Launch the app</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task android:run"><code><span class="mpress-cmd">wails3 task android:run</span>
+</code></pre>
+</div>
+<p>On first run this:</p>
+<ul>
+<li>Boots the emulator if none is running</li>
+<li>Generates bindings and builds the frontend</li>
+<li>Compiles your Go code to <code>libwails.so</code> via the NDK cross-compiler</li>
+<li>Assembles a debug APK with Gradle</li>
+<li>Installs and launches it on the emulator</li>
+</ul>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>The first build downloads Gradle and compiles the NDK toolchain — expect 5–10 minutes. Subsequent builds are incremental and take under a minute.</p>
+</div>
+</aside>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">2</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Stream logs</h4>
+<div class="mpress-step-content">
+<p>In a separate terminal:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task android:logs"><code><span class="mpress-cmd">wails3 task android:logs</span>
+</code></pre>
+</div>
+<p>This runs <code>adb logcat</code> filtered to your app. <code>fmt.Println</code> output appears here.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">3</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Inspect the WebView</h4>
+<div class="mpress-step-content">
+<p>Open Chrome and navigate to <code>chrome://inspect</code>. Your app&rsquo;s WebView appears under <strong>Remote Target</strong> — click <strong>inspect</strong> to open DevTools.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">4</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Make a change</h4>
+<div class="mpress-step-content">
+<p>Edit any file and re-run <code>wails3 task android:run</code>. Gradle&rsquo;s incremental build means only changed code recompiles.</p>
+</div>
+    </div>
+  </div>
+</div>
+</div>
+</ot-tabs>
+<hr>
+<h2 id="understanding-what-happened">Understanding what happened</h2>
+<p>Your <code>main.go</code> didn&rsquo;t change at all. Wails handled everything:</p>
+<ul>
+<li><strong>Build system</strong> — <code>Taskfile.yml</code> in your project contains <code>ios:*</code> and <code>android:*</code> tasks that drive the platform-specific toolchain.</li>
+<li><strong>Go cross-compilation</strong> — <code>GOOS=ios</code> or <code>GOOS=android</code> with the appropriate <code>GOARCH</code> and sysroot.</li>
+<li><strong>Native host</strong> — a generated Xcode project (iOS) or Gradle project (Android) that embeds your compiled Go code and hosts the WebView.</li>
+<li><strong>Asset serving</strong> — your <code>frontend/dist/</code> is embedded in the Go binary and served in-process. No localhost server is needed.</li>
+</ul>
+<hr>
+<h2 id="make-your-app-mobile-aware">Make your app mobile-aware</h2>
+<p>Your app already works, but it looks like a desktop app on a phone screen. A few small changes make a big difference.</p>
+<h3 id="responsive-css">Responsive CSS</h3>
+<p>Mobile screens are narrower and use different input patterns. In <code>frontend/public/style.css</code> (or equivalent):</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="/* Prevent horizontal scrolling */&#10;body {&#10;  overflow-x: hidden;&#10;}&#10;&#10;/* Touch-friendly tap targets */&#10;button {&#10;  min-height: 44px;&#10;  min-width: 44px;&#10;}&#10;&#10;/* Respect the iOS safe area (notch, home indicator) */&#10;body {&#10;  padding-top: env(safe-area-inset-top);&#10;  padding-bottom: env(safe-area-inset-bottom);&#10;  padding-left: env(safe-area-inset-left);&#10;  padding-right: env(safe-area-inset-right);&#10;}"><code class="language-css"><span class="mpress-code-line">/<span class="mpress-token-operator">*</span> <span class="mpress-token-type">Prevent</span> horizontal scrolling <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">body {
+</span><span class="mpress-code-line">  overflow<span class="mpress-token-operator">-</span>x<span class="mpress-token-operator">:</span> hidden;
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">/<span class="mpress-token-operator">*</span> <span class="mpress-token-type">Touch</span><span class="mpress-token-operator">-</span>friendly tap targets <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">button {
+</span><span class="mpress-code-line">  min<span class="mpress-token-operator">-</span>height<span class="mpress-token-operator">:</span> <span class="mpress-token-number">44</span>px;
+</span><span class="mpress-code-line">  min<span class="mpress-token-operator">-</span>width<span class="mpress-token-operator">:</span> <span class="mpress-token-number">44</span>px;
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">/<span class="mpress-token-operator">*</span> <span class="mpress-token-type">Respect</span> the iOS safe <span class="mpress-token-function">area</span> (notch, home indicator) <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">body {
+</span><span class="mpress-code-line">  padding<span class="mpress-token-operator">-</span>top<span class="mpress-token-operator">:</span> <span class="mpress-token-function">env</span>(safe<span class="mpress-token-operator">-</span>area<span class="mpress-token-operator">-</span>inset<span class="mpress-token-operator">-</span>top);
+</span><span class="mpress-code-line">  padding<span class="mpress-token-operator">-</span>bottom<span class="mpress-token-operator">:</span> <span class="mpress-token-function">env</span>(safe<span class="mpress-token-operator">-</span>area<span class="mpress-token-operator">-</span>inset<span class="mpress-token-operator">-</span>bottom);
+</span><span class="mpress-code-line">  padding<span class="mpress-token-operator">-</span>left<span class="mpress-token-operator">:</span> <span class="mpress-token-function">env</span>(safe<span class="mpress-token-operator">-</span>area<span class="mpress-token-operator">-</span>inset<span class="mpress-token-operator">-</span>left);
+</span><span class="mpress-code-line">  padding<span class="mpress-token-operator">-</span>right<span class="mpress-token-operator">:</span> <span class="mpress-token-function">env</span>(safe<span class="mpress-token-operator">-</span>area<span class="mpress-token-operator">-</span>inset<span class="mpress-token-operator">-</span>right);
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="detect-the-platform-in-go">Detect the platform in Go</h3>
+<p>Use build tags to add platform-specific behaviour without cluttering shared code.</p>
+<p>Create <code>mobile_ios.go</code> for iOS-only code:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">mobile_ios.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:build ios&#10;&#10;package main&#10;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;&#10;func platformOptions() application.IOSOptions {&#10;    return application.IOSOptions{&#10;        DisableBounce: true,&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:build ios</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">platformOptions</span>() application.<span class="mpress-token-type">IOSOptions</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> application.<span class="mpress-token-type">IOSOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">DisableBounce</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Create <code>mobile_android.go</code> for Android-only code:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">mobile_android.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:build android&#10;&#10;package main&#10;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;&#10;func platformOptions() application.AndroidOptions {&#10;    return application.AndroidOptions{}&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:build android</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">platformOptions</span>() application.<span class="mpress-token-type">AndroidOptions</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> application.<span class="mpress-token-type">AndroidOptions</span>{}
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Create <code>mobile_desktop.go</code> as a stub so the shared code compiles on desktop too:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">mobile_desktop.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:build !ios &amp;&amp; !android&#10;&#10;package main&#10;&#10;type mobileOptions struct{}&#10;&#10;func platformOptions() mobileOptions { return mobileOptions{} }"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:build !ios &amp;&amp; !android</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> mobileOptions <span class="mpress-token-keyword">struct</span>{}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">platformOptions</span>() mobileOptions { <span class="mpress-token-keyword">return</span> mobileOptions{} }</span></code></pre></div>
+<h3 id="detect-the-platform-in-javascript-and-gate-mobile-only-ui">Detect the platform in JavaScript and gate mobile-only UI</h3>
+<p>The <code>IOS.*</code> and <code>Android.*</code> runtime objects only exist on their respective platforms. Calling them on desktop throws. The right pattern — used by the Kitchen Sink — is to detect the platform once and hide mobile-only controls entirely:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Detect platform from the bridge the host injects into the WebView&#10;const platform = (() =&gt; {&#10;  if (typeof window.wails?.platform === &#39;function&#39;) return window.wails.platform(); // Android&#10;  if (window.webkit?.messageHandlers?.external) return &#39;ios&#39;;&#10;  return &#39;desktop&#39;;&#10;})();&#10;&#10;const isIOS     = platform === &#39;ios&#39;;&#10;const isAndroid = platform === &#39;android&#39;;&#10;const isMobile  = isIOS || isAndroid;&#10;&#10;// Hide any element marked as mobile-only&#10;document.querySelectorAll(&#39;.mobile-only&#39;).forEach(el =&gt; {&#10;  el.style.display = isMobile ? &#39;&#39; : &#39;none&#39;;&#10;});"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// Detect platform from the bridge the host injects into the WebView</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> platform <span class="mpress-token-operator">=</span> (() <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">  <span class="mpress-token-keyword">if</span> (typeof window.wails?.platform <span class="mpress-token-operator">===</span> <span class="mpress-token-string">&#39;function&#39;</span>) <span class="mpress-token-keyword">return</span> window.wails.<span class="mpress-token-function">platform</span>(); <span class="mpress-token-comment">// Android</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-keyword">if</span> (window.webkit?.messageHandlers?.external) <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#39;ios&#39;</span>;
+</span><span class="mpress-code-line">  <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#39;desktop&#39;</span>;
+</span><span class="mpress-code-line">})();
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> isIOS     <span class="mpress-token-operator">=</span> platform <span class="mpress-token-operator">===</span> <span class="mpress-token-string">&#39;ios&#39;</span>;
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> isAndroid <span class="mpress-token-operator">=</span> platform <span class="mpress-token-operator">===</span> <span class="mpress-token-string">&#39;android&#39;</span>;
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> isMobile  <span class="mpress-token-operator">=</span> isIOS <span class="mpress-token-operator">||</span> isAndroid;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Hide any element marked as mobile-only</span>
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">querySelectorAll</span>(<span class="mpress-token-string">&#39;.mobile-only&#39;</span>).<span class="mpress-token-function">forEach</span>(el <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">  el.style.display <span class="mpress-token-operator">=</span> isMobile ? <span class="mpress-token-string">&#39;&#39;</span> <span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;none&#39;</span>;
+</span><span class="mpress-code-line">});</span></code></pre></div>
+<p>Then in your HTML:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="&lt;section class=&#34;mobile-only&#34;&gt;&#10;  &lt;button id=&#34;btnHaptic&#34;&gt;Haptic feedback&lt;/button&gt;&#10;&lt;/section&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>section <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;mobile-only&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">&lt;</span>button id<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;btnHaptic&#34;</span><span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Haptic</span> feedback<span class="mpress-token-operator">&lt;</span>/button<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/section<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p>This way mobile-only buttons are never rendered on desktop, and you never need to guard every individual call with an <code>if (isMobile)</code> check.</p>
+<p>On the Go side, pair this with a build-tag stub so the event handlers are only registered on the platforms that need them:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">native_desktop.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:build !ios &amp;&amp; !android&#10;&#10;package main&#10;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;&#10;// No-op on desktop — mobile tabs are hidden in the frontend so these&#10;// events are never emitted.&#10;func registerNativeFeatures(app *application.App) {}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:build !ios &amp;&amp; !android</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// No-op on desktop — mobile tabs are hidden in the frontend so these</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// events are never emitted.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">registerNativeFeatures</span>(app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>) {}</span></code></pre></div>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">native_ios.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:build ios&#10;&#10;package main&#10;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;&#10;func registerNativeFeatures(app *application.App) {&#10;    app.Event.On(&#34;common:haptic&#34;, func(e *application.CustomEvent) {&#10;        // only compiled and called on iOS&#10;        application.IOS.Haptic(&#34;medium&#34;)&#10;    })&#10;    // ... other handlers&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:build ios</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">registerNativeFeatures</span>(app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;common:haptic&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// only compiled and called on iOS</span>
+</span><span class="mpress-code-line">        application.<span class="mpress-token-type">IOS</span>.<span class="mpress-token-function">Haptic</span>(<span class="mpress-token-string">&#34;medium&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// ... other handlers</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>This is the exact pattern the <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile">Kitchen Sink</a> uses — see <code>native_features_stub.go</code>, <code>native_features_ios.go</code>, and <code>native_features_android.go</code>.</p>
+<aside aria-label="Native feature API &amp; event naming" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Native feature API &amp; event naming</span></p>
+<div class="mpress-admonition-body">
+<p>Two conventions are worth knowing:</p>
+<ul>
+<li><strong>Go-side native features use platform managers.</strong> Call them through the
+<code>application.IOS.*</code> and <code>application.Android.*</code> singletons — for example
+<code>application.IOS.Haptic(&quot;medium&quot;)</code> or <code>application.Android.Share(payload)</code>.
+Each manager only exists on its own platform, so its calls live in
+<code>//go:build ios</code> / <code>//go:build android</code> files.</li>
+<li><strong>Events are namespaced by reach.</strong> Anything both platforms understand uses the
+<code>common:*</code> prefix (<code>common:haptic</code>, <code>common:location</code>, …); events that only one
+platform can produce or handle use <code>ios:*</code> or <code>android:*</code> (for example
+<code>ios:backgroundTask</code>, <code>android:foregroundService</code>). Because almost every mobile
+feature is shared, your frontend keeps a single listener per event under
+<code>common:*</code>.</li>
+</ul>
+</div>
+</aside>
+<h3 id="add-haptic-feedback-ios">Add haptic feedback (iOS)</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { IOS } from &#39;@wailsio/runtime&#39;;&#10;&#10;async function onButtonTap() {&#10;  if (isIOS) {&#10;    await IOS.Haptics.Impact({ style: &#39;medium&#39; });&#10;  }&#10;  // ... rest of your handler&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">IOS</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">onButtonTap</span>() {
+</span><span class="mpress-code-line">  <span class="mpress-token-keyword">if</span> (isIOS) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">await</span> <span class="mpress-token-type">IOS</span>.<span class="mpress-token-type">Haptics</span>.<span class="mpress-token-function">Impact</span>({ style<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;medium&#39;</span> });
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-comment">// ... rest of your handler</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="add-vibration-android">Add vibration (Android)</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Android } from &#39;@wailsio/runtime&#39;;&#10;&#10;async function onButtonTap() {&#10;  if (isAndroid) {&#10;    await Android.Haptics.Vibrate(50); // 50ms&#10;  }&#10;}"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Android</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">onButtonTap</span>() {
+</span><span class="mpress-code-line">  <span class="mpress-token-keyword">if</span> (isAndroid) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">await</span> <span class="mpress-token-type">Android</span>.<span class="mpress-token-type">Haptics</span>.<span class="mpress-token-function">Vibrate</span>(<span class="mpress-token-number">50</span>); <span class="mpress-token-comment">// 50ms</span>
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<hr>
+<h2 id="build-for-production">Build for production</h2>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-f85de657" data-sync-key="mobile-platform">
+<div role="tablist">
+<button id="mpress-tabs-f85de657-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-f85de657-panel-1">iOS</button>
+<button id="mpress-tabs-f85de657-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-f85de657-panel-2" tabindex="-1">Android</button>
+</div>
+<div id="mpress-tabs-f85de657-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-f85de657-tab-1">
+<p><strong>Simulator build</strong> (for testing on simulator, no signing needed):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:package
+wails3 task ios:deploy-simulator"><code><span class="mpress-cmd">wails3 task ios:package</span>
+<span class="mpress-cmd">wails3 task ios:deploy-simulator</span>
+</code></pre>
+</div>
+<p><strong>Device build</strong> (requires a signing identity and provisioning profile):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:package \
+  IOS_PLATFORM=device \
+  CODESIGN_IDENTITY=&#34;Apple Development: You (TEAMID)&#34; \
+  PROVISIONING_PROFILE=path/to/profile.mobileprovision
+wails3 task ios:deploy-device   # installs via xcrun devicectl"><code><span class="mpress-cmd">wails3 task ios:package \</span>
+<span class="mpress-cmd">  IOS_PLATFORM=device \</span>
+<span class="mpress-cmd">  CODESIGN_IDENTITY=&#34;Apple Development: You (TEAMID)&#34; \</span>
+<span class="mpress-cmd">  PROVISIONING_PROFILE=path/to/profile.mobileprovision</span>
+<span class="mpress-output"></span>
+<span class="mpress-cmd">wails3 task ios:deploy-device   # installs via xcrun devicectl</span>
+</code></pre>
+</div>
+<p><strong>Distribution IPA</strong> (for App Store or TestFlight):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task ios:package:ipa IOS_PLATFORM=device \
+  CODESIGN_IDENTITY=&#34;...&#34; \
+  PROVISIONING_PROFILE=path/to/distribution.mobileprovision"><code><span class="mpress-cmd">wails3 task ios:package:ipa IOS_PLATFORM=device \</span>
+<span class="mpress-cmd">  CODESIGN_IDENTITY=&#34;...&#34; \</span>
+<span class="mpress-cmd">  PROVISIONING_PROFILE=path/to/distribution.mobileprovision</span>
+</code></pre>
+</div>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>For App Store Connect uploads, use <code>wails3 task ios:xcode</code> and let Xcode manage signing and archiving — it handles the complexity of certificates, profiles and notarization automatically.</p>
+</div>
+</aside>
+</div>
+<div id="mpress-tabs-f85de657-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-f85de657-tab-2" hidden>
+<p><strong>Debug APK</strong> (signed with the Android debug keystore, installs directly):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task android:package
+wails3 task android:deploy-emulator"><code><span class="mpress-cmd">wails3 task android:package</span>
+<span class="mpress-cmd">wails3 task android:deploy-emulator</span>
+</code></pre>
+</div>
+<p><strong>Release APK</strong> (signed with your own keystore):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="ANDROID_KEYSTORE_FILE=/path/to/release.jks \
+ANDROID_KEYSTORE_PASSWORD=yourpassword \
+ANDROID_KEY_ALIAS=youralias \
+ANDROID_KEY_PASSWORD=yourkeypassword \
+  wails3 task android:package"><code><span class="mpress-cmd">ANDROID_KEYSTORE_FILE=/path/to/release.jks \</span>
+<span class="mpress-cmd">ANDROID_KEYSTORE_PASSWORD=yourpassword \</span>
+<span class="mpress-cmd">ANDROID_KEY_ALIAS=youralias \</span>
+<span class="mpress-cmd">ANDROID_KEY_PASSWORD=yourkeypassword \</span>
+<span class="mpress-cmd">  wails3 task android:package</span>
+</code></pre>
+</div>
+<p><strong>Universal APK</strong> (arm64 + x86_64 in one file):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task android:package:fat"><code><span class="mpress-cmd">wails3 task android:package:fat</span>
+</code></pre>
+</div>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>For Play Store uploads, produce an <code>.aab</code> (Android App Bundle) instead of an APK — open <code>build/android/</code> in Android Studio and use <strong>Build → Generate Signed Bundle / APK</strong>.</p>
+</div>
+</aside>
+</div>
+</ot-tabs>
+<hr>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h4 id="wails3-task-iosrun-fails-with-no-ios-sdks-found"><code>wails3 task ios:run</code> fails with &ldquo;no iOS SDKs found&rdquo;</h4>
+<p>Full Xcode must be installed and selected:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+xcode-select -p  # should print the Xcode path"><code><span class="mpress-cmd">sudo xcode-select -s /Applications/Xcode.app/Contents/Developer</span>
+<span class="mpress-cmd">xcode-select -p  # should print the Xcode path</span>
+</code></pre>
+</div>
+<h4 id="wails3-task-androidrun-fails-with-sdk-not-found"><code>wails3 task android:run</code> fails with &ldquo;SDK not found&rdquo;</h4>
+<p>Ensure <code>ANDROID_HOME</code> is set and exported. Verify with:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="echo $ANDROID_HOME
+ls $ANDROID_HOME/platform-tools/adb"><code><span class="mpress-cmd">echo $ANDROID_HOME</span>
+<span class="mpress-cmd">ls $ANDROID_HOME/platform-tools/adb</span>
+</code></pre>
+</div>
+<h4 id="simulator-doesnt-boot">Simulator doesn&rsquo;t boot</h4>
+<p>List available simulators and boot one manually:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="xcrun simctl list devices available
+xcrun simctl boot &#34;iPhone 16&#34;"><code><span class="mpress-cmd">xcrun simctl list devices available</span>
+<span class="mpress-cmd">xcrun simctl boot &#34;iPhone 16&#34;</span>
+</code></pre>
+</div>
+<h4 id="chromeinspect-shows-no-targets"><code>chrome://inspect</code> shows no targets</h4>
+<p>The WebView must be in debug mode (the default for <code>android:run</code>). Make sure you&rsquo;re running a debug build, not a production one. Also confirm <code>adb devices</code> shows the emulator as connected.</p>
+<h4 id="safe-area-insets-not-applied">Safe area insets not applied</h4>
+<p>Make sure your HTML includes the viewport meta tag:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="&lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1, viewport-fit=cover&#34;&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>meta name<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;viewport&#34;</span> content<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;width=device-width, initial-scale=1, viewport-fit=cover&#34;</span><span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<hr>
+<h2 id="explore-the-kitchen-sink">Explore the Kitchen Sink</h2>
+<p>Once your first app is running, the <strong>Kitchen Sink</strong> example is the fastest way to learn what else is possible. It&rsquo;s a complete Wails app that runs on iOS, Android and desktop from a single codebase, covering haptics, geolocation, biometrics, local notifications, secure storage, and more:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="git clone https://github.com/wailsapp/wails.git
+cd wails/v3/examples/mobile
+wails3 task ios:run        # iOS Simulator
+wails3 task android:run    # Android Emulator
+wails3 task run            # Desktop"><code><span class="mpress-cmd">git clone https://github.com/wailsapp/wails.git</span>
+<span class="mpress-cmd">cd wails/v3/examples/mobile</span>
+<span class="mpress-output"></span>
+<span class="mpress-cmd">wails3 task ios:run        # iOS Simulator</span>
+<span class="mpress-cmd">wails3 task android:run    # Android Emulator</span>
+<span class="mpress-cmd">wails3 task run            # Desktop</span>
+</code></pre>
+</div>
+<p>Browse the source at <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile"><code>v3/examples/mobile</code></a> — the <code>native_features_ios.go</code> and <code>native_features_android.go</code> files are particularly useful as copy-paste starting points for platform-specific features.</p>
+<h2 id="whats-next">What&rsquo;s next</h2>
+<div class="mpress-card-grid mpress-cards mpress-cards-2">
+  <div class="mpress-card">
+    <div class="mpress-card-title">iOS Guide</div>
+<div class="mpress-card-desc">
+<p>Full reference: configuration options, native tabs, WKWebView toggles, device builds, signing.</p>
+<p><a href="/guides/mobile/ios/">iOS Guide →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-title">Android Guide</div>
+<div class="mpress-card-desc">
+<p>Full reference: configuration, toasts, Play Store packaging, NDK details.</p>
+<p><a href="/guides/mobile/android/">Android Guide →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></div>
+    <div class="mpress-card-title">Kitchen Sink source</div>
+<div class="mpress-card-desc">
+<p>Haptics, geolocation, biometrics, notifications, secure storage — all in one runnable app.</p>
+<p><a href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile">View on GitHub →</a></p>
+</div>
+  </div>
+</div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/mobile/first-mobile-app.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../guides/mobile/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Overview</strong></a><a rel="next" href="../../../guides/mobile/ios/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>iOS</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#start-from-a-desktop-project">Start from a desktop project</a><a class="toc-level-2" href="#choose-your-platform">Choose your platform</a><a class="toc-level-3" href="#requirements">Requirements</a><a class="toc-level-3" href="#run-on-the-simulator">Run on the Simulator</a><a class="toc-level-3" href="#open-in-xcode-optional">Open in Xcode (optional)</a><a class="toc-level-3" href="#requirements-1">Requirements</a><a class="toc-level-3" href="#run-on-the-emulator">Run on the Emulator</a><a class="toc-level-2" href="#understanding-what-happened">Understanding what happened</a><a class="toc-level-2" href="#make-your-app-mobile-aware">Make your app mobile-aware</a><a class="toc-level-3" href="#responsive-css">Responsive CSS</a><a class="toc-level-3" href="#detect-the-platform-in-go">Detect the platform in Go</a><a class="toc-level-3" href="#detect-the-platform-in-javascript-and-gate-mobile-only-ui">Detect the platform in JavaScript and gate mobile-only UI</a><a class="toc-level-3" href="#add-haptic-feedback-ios">Add haptic feedback (iOS)</a><a class="toc-level-3" href="#add-vibration-android">Add vibration (Android)</a><a class="toc-level-2" href="#build-for-production">Build for production</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-2" href="#explore-the-kitchen-sink">Explore the Kitchen Sink</a><a class="toc-level-2" href="#whats-next">What’s next</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

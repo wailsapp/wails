@@ -1,0 +1,552 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Migrating from v2 to v3 · Wails</title><meta name="description" content="Complete guide to migrating your Wails v2 application to v3"><link rel="canonical" href="https://v3.wails.io/migration/v2-to-v3/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/migration/v2-to-v3/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/migration/v2-to-v3/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/migration/v2-to-v3/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="stylesheet" href="../../assets/custom.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/migration/v2-to-v3/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/migration/v2-to-v3/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/migration/v2-to-v3/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details open><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><main id="content"><article><h1>Migrating from v2 to v3</h1><p>Wails v3 is a <strong>complete rewrite</strong> with significant improvements in architecture, performance, and developer experience. This guide helps you migrate your v2 application to v3.</p>
+<p><strong>Key changes:</strong></p>
+<ul>
+<li>New application structure</li>
+<li>Improved bindings system</li>
+<li>Enhanced window management</li>
+<li>Better event system</li>
+<li>Simplified configuration</li>
+</ul>
+<p><strong>Migration time:</strong> 1-4 hours for typical applications</p>
+<h2 id="breaking-changes">Breaking Changes</h2>
+<h3 id="application-initialisation">Application Initialisation</h3>
+<p>In v2, application setup, window configuration, and execution were all combined into a single <code>wails.Run()</code> call. This monolithic approach made it difficult to create multiple windows, handle errors at different stages, or test individual components of your application.</p>
+<p>v3 separates these concerns into distinct phases: application creation, window creation, and execution. This separation gives you explicit control over each stage of your application&rsquo;s lifecycle and makes the code more modular and testable.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="err := wails.Run(&amp;options.App{&#10;    Title:  &#34;My App&#34;,&#10;    Width:  1024,&#10;    Height: 768,&#10;    Bind: []interface{}{&#10;        &amp;GreetService{},&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">err <span class="mpress-token-operator">:=</span> wails.<span class="mpress-token-function">Run</span>(<span class="mpress-token-operator">&amp;</span>options.<span class="mpress-token-type">App</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1024</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">768</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Bind</span><span class="mpress-token-operator">:</span> []<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">GreetService</span>{},
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Name: &#34;My App&#34;,&#10;    Services: []application.Service{&#10;        application.NewService(&amp;GreetService{}),&#10;    },&#10;})&#10;&#10;window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:  &#34;My App&#34;,&#10;    Width:  1024,&#10;    Height: 768,&#10;})&#10;&#10;app.Run()"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">GreetService</span>{}),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1024</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">768</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-function">Run</span>()</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>Multi-window support</strong>: You can create windows dynamically at any point, not just at startup</li>
+<li><strong>Better error handling</strong>: Each phase can be validated separately with proper error handling</li>
+<li><strong>Clearer code</strong>: The separation makes it obvious what&rsquo;s happening at each stage</li>
+<li><strong>More testable</strong>: You can test application setup without running the event loop</li>
+<li><strong>More flexible</strong>: Windows can be created, destroyed, and recreated throughout the application lifecycle</li>
+</ul>
+<h3 id="bindings">Bindings</h3>
+<p>In v2, every bound struct required a context field and a <code>startup(ctx)</code> method to receive the runtime context. This created tight coupling between your business logic and the Wails runtime, making code harder to test and understand.</p>
+<p>v3 introduces the service pattern, where your structs are completely standalone and don&rsquo;t need to store runtime context. If a service needs access to the application instance, it explicitly receives it through dependency injection rather than implicit context threading.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type App struct {&#10;    ctx context.Context&#10;}&#10;&#10;func (a *App) startup(ctx context.Context) {&#10;    a.ctx = ctx&#10;}&#10;&#10;func (a *App) Greet(name string) string {&#10;    return &#34;Hello &#34; + name&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">App</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    ctx context.<span class="mpress-token-type">Context</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (a <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span>) <span class="mpress-token-function">startup</span>(ctx context.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    a.ctx <span class="mpress-token-operator">=</span> ctx
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (a <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span>) <span class="mpress-token-function">Greet</span>(name string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;Hello &#34;</span> <span class="mpress-token-operator">+</span> name
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type GreetService struct{}&#10;&#10;func (g *GreetService) Greet(name string) string {&#10;    return &#34;Hello &#34; + name&#10;}&#10;&#10;// Register as service&#10;app := application.New(application.Options{&#10;    Services: []application.Service{&#10;        application.NewService(&amp;GreetService{}),&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">GreetService</span> <span class="mpress-token-keyword">struct</span>{}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">Greet</span>(name string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;Hello &#34;</span> <span class="mpress-token-operator">+</span> name
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Register as service</span>
+</span><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">GreetService</span>{}),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>No implicit dependencies</strong>: Services are plain Go structs without hidden runtime dependencies</li>
+<li><strong>Easier testing</strong>: You can test service methods without mocking a Wails context</li>
+<li><strong>Clearer code</strong>: Dependencies are explicit (passed as constructor arguments) rather than hidden in a context field</li>
+<li><strong>Better organization</strong>: Services can be grouped by domain rather than all living in a single <code>App</code> struct</li>
+<li><strong>Proper initialization</strong>: Use <code>ServiceStartup()</code> method when you need initialization, making it explicit</li>
+</ul>
+<h3 id="runtime">Runtime</h3>
+<p>In v2, all runtime operations required passing a context to global functions from the <code>runtime</code> package. This created tight coupling to the context object throughout your codebase and made the API feel procedural rather than object-oriented.</p>
+<p>v3 replaces the context-based runtime with direct method calls on application and window objects. Operations are called directly on the objects they affect, making the code more intuitive and object-oriented.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v2/pkg/runtime&#34;&#10;&#10;runtime.WindowSetTitle(a.ctx, &#34;New Title&#34;)&#10;runtime.EventsEmit(a.ctx, &#34;event-name&#34;, data)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v2/pkg/runtime&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">runtime.<span class="mpress-token-function">WindowSetTitle</span>(a.ctx, <span class="mpress-token-string">&#34;New Title&#34;</span>)
+</span><span class="mpress-code-line">runtime.<span class="mpress-token-function">EventsEmit</span>(a.ctx, <span class="mpress-token-string">&#34;event-name&#34;</span>, data)</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Store app reference&#10;type MyService struct {&#10;    app *application.App&#10;}&#10;&#10;func (s *MyService) UpdateTitle() {&#10;    window := s.app.Window.Current()&#10;    window.SetTitle(&#34;New Title&#34;)&#10;}&#10;&#10;func (s *MyService) EmitEvent() {&#10;    s.app.Event.Emit(&#34;event-name&#34;, data)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Store app reference</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">MyService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">UpdateTitle</span>() {
+</span><span class="mpress-code-line">    window <span class="mpress-token-operator">:=</span> s.app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">Current</span>()
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;New Title&#34;</span>)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">EmitEvent</span>() {
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;event-name&#34;</span>, data)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>Object-oriented design</strong>: Methods are called on the objects they affect (window, app, menu, etc.)</li>
+<li><strong>Clearer intent</strong>: <code>window.SetTitle()</code> is more obvious than <code>runtime.WindowSetTitle(ctx, ...)</code></li>
+<li><strong>Better IDE support</strong>: Autocomplete works properly when methods are on objects</li>
+<li><strong>Multi-window clarity</strong>: With multiple windows, you explicitly choose which window to operate on</li>
+<li><strong>No context threading</strong>: You don&rsquo;t need to pass context through every function</li>
+</ul>
+<h3 id="frontend-bindings">Frontend Bindings</h3>
+<p>In v2, bindings were organized by Go package and struct name, typically resulting in paths like <code>wailsjs/go/main/App</code>. This structure didn&rsquo;t reflect logical grouping and made it hard to find related functionality.</p>
+<p>v3 organizes bindings by service name and application module, creating a clearer logical structure. The bindings are generated into a <code>bindings</code> directory organized by your application name and service names, making it easier to understand what functionality is available.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Greet } from &#39;../wailsjs/go/main/App&#39;&#10;&#10;const result = await Greet(&#34;World&#34;)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Greet</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;../wailsjs/go/main/App&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> result <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">Greet</span>(<span class="mpress-token-string">&#34;World&#34;</span>)</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Greet } from &#39;./bindings/changeme/greetservice&#39;&#10;&#10;const result = await Greet(&#34;World&#34;)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Greet</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/greetservice&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> result <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-function">Greet</span>(<span class="mpress-token-string">&#34;World&#34;</span>)</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>Logical organization</strong>: Bindings are grouped by service name rather than Go package structure</li>
+<li><strong>Clearer imports</strong>: The path reflects the domain logic (greetservice) not the file structure (main/App)</li>
+<li><strong>Better discoverability</strong>: You can navigate bindings by feature rather than by technical structure</li>
+<li><strong>Consistent naming</strong>: Service-based organization matches your backend architecture</li>
+<li><strong>Simpler paths</strong>: No more <code>../wailsjs/go</code> prefix - just <code>./bindings</code></li>
+</ul>
+<h3 id="events">Events</h3>
+<p>In v2, events used variadic <code>interface{}</code> parameters and required passing context to every event function. Event handlers received untyped data that needed manual type assertions, making the event system error-prone and hard to debug.</p>
+<p>v3 introduces typed event objects and removes the context requirement. Event handlers receive a proper event object with typed data, making the event system more reliable and easier to use.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="runtime.EventsOn(ctx, &#34;event-name&#34;, func(data ...interface{}) {&#10;    // Handle event&#10;})&#10;&#10;runtime.EventsEmit(ctx, &#34;event-name&#34;, data)"><code class="language-go"><span class="mpress-code-line">runtime.<span class="mpress-token-function">EventsOn</span>(ctx, <span class="mpress-token-string">&#34;event-name&#34;</span>, <span class="mpress-token-keyword">func</span>(data ...<span class="mpress-token-keyword">interface</span>{}) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle event</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">runtime.<span class="mpress-token-function">EventsEmit</span>(ctx, <span class="mpress-token-string">&#34;event-name&#34;</span>, data)</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Event.On(&#34;event-name&#34;, func(e *application.CustomEvent) {&#10;    data := e.Data&#10;    // Handle event&#10;})&#10;&#10;app.Event.Emit(&#34;event-name&#34;, data)"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;event-name&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    data <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle event</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;event-name&#34;</span>, data)</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>Type safety</strong>: Events use proper event objects instead of <code>...interface{}</code></li>
+<li><strong>Better debugging</strong>: Event objects contain metadata like event name, making debugging easier</li>
+<li><strong>Clearer API</strong>: <code>app.Event.On()</code> and <code>app.Event.Emit()</code> are more intuitive than runtime functions</li>
+<li><strong>No context needed</strong>: Events work directly on the app object without threading context</li>
+<li><strong>Simpler handlers</strong>: Event handlers have a clear signature instead of variadic parameters</li>
+</ul>
+<h3 id="windows">Windows</h3>
+<p>v2 supported only a single window per application. The window was created at startup and all window operations were performed through runtime functions that implicitly targeted that single window.</p>
+<p>v3 introduces native multi-window support as a core feature. Each window is a first-class object with its own methods and lifecycle. You can create, manage, and destroy multiple windows dynamically throughout your application&rsquo;s lifetime.</p>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Single window only&#10;runtime.WindowSetSize(ctx, 800, 600)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Single window only</span>
+</span><span class="mpress-code-line">runtime.<span class="mpress-token-function">WindowSetSize</span>(ctx, <span class="mpress-token-number">800</span>, <span class="mpress-token-number">600</span>)</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Multiple windows supported&#10;window1 := app.Window.New()&#10;window1.SetSize(800, 600)&#10;&#10;window2 := app.Window.New()&#10;window2.SetSize(1024, 768)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Multiple windows supported</span>
+</span><span class="mpress-code-line">window1 <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">window1.<span class="mpress-token-function">SetSize</span>(<span class="mpress-token-number">800</span>, <span class="mpress-token-number">600</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window2 <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">window2.<span class="mpress-token-function">SetSize</span>(<span class="mpress-token-number">1024</span>, <span class="mpress-token-number">768</span>)</span></code></pre></div>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li><strong>Multi-window applications</strong>: Build apps with multiple independent windows (dashboards, preferences, tools, etc.)</li>
+<li><strong>Explicit window references</strong>: Each window is an object you can store and manipulate directly</li>
+<li><strong>Dynamic window creation</strong>: Create and destroy windows at any time during runtime</li>
+<li><strong>Independent window state</strong>: Each window has its own events, properties, and lifecycle</li>
+<li><strong>Better architecture</strong>: Window management is object-oriented rather than context-based</li>
+</ul>
+<h2 id="migration-steps">Migration Steps</h2>
+<h3 id="step-1-update-dependencies">Step 1: Update Dependencies</h3>
+<p><strong>go.mod:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="module myapp&#10;&#10;go 1.25.0&#10;&#10;require (&#10;    github.com/wailsapp/wails/v3 v3.0.0-beta.0&#10;)"><code class="language-go"><span class="mpress-code-line">module myapp
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">go</span> <span class="mpress-token-number">1.25.0</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-function">require</span> (
+</span><span class="mpress-code-line">    github.com/wailsapp/wails/v3 v3.<span class="mpress-token-number">0.0</span><span class="mpress-token-operator">-</span>beta.<span class="mpress-token-number">0</span>
+</span><span class="mpress-code-line">)</span></code></pre></div>
+<p><strong>Update:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go get github.com/wailsapp/wails/v3@latest
+go mod tidy"><code><span class="mpress-cmd">go get github.com/wailsapp/wails/v3@latest</span>
+<span class="mpress-cmd">go mod tidy</span>
+</code></pre>
+</div>
+<h3 id="step-2-update-maingo">Step 2: Update main.go</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;embed&#34;&#10;    &#34;github.com/wailsapp/wails/v2/pkg/options&#34;&#10;    &#34;github.com/wailsapp/wails/v2/pkg/options/assetserver&#34;&#10;    &#34;github.com/wailsapp/wails/v2/pkg/options/windows&#34;&#10;)&#10;&#10;//go:embed all:frontend/dist&#10;var assets embed.FS&#10;&#10;func main() {&#10;    app := NewApp()&#10;&#10;    err := wails.Run(&amp;options.App{&#10;        Title:  &#34;My App&#34;,&#10;        Width:  1024,&#10;        Height: 768,&#10;        AssetServer: &amp;assetserver.Options{&#10;            Assets: assets,&#10;        },&#10;        Bind: []interface{}{&#10;            app,&#10;        },&#10;        Windows: &amp;windows.Options{&#10;            WebviewIsTransparent: false,&#10;        },&#10;    })&#10;&#10;    if err != nil {&#10;        println(&#34;Error:&#34;, err.Error())&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v2/pkg/options&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v2/pkg/options/assetserver&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v2/pkg/options/windows&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed all:frontend/dist</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> assets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">NewApp</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    err <span class="mpress-token-operator">:=</span> wails.<span class="mpress-token-function">Run</span>(<span class="mpress-token-operator">&amp;</span>options.<span class="mpress-token-type">App</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1024</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">768</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">AssetServer</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>assetserver.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> assets,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Bind</span><span class="mpress-token-operator">:</span> []<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">            app,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Windows</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>windows.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">WebviewIsTransparent</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">println</span>(<span class="mpress-token-string">&#34;Error:&#34;</span>, err.<span class="mpress-token-function">Error</span>())
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;embed&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;)&#10;&#10;//go:embed frontend/dist&#10;var assets embed.FS&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Name: &#34;My App&#34;,&#10;        Services: []application.Service{&#10;            application.NewService(&amp;MyService{}),&#10;        },&#10;        Assets: application.AssetOptions{&#10;            Handler: application.AssetFileServerFS(assets),&#10;        },&#10;    })&#10;&#10;    app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;        Title:  &#34;My App&#34;,&#10;        Width:  1024,&#10;        Height: 768,&#10;    })&#10;&#10;    err := app.Run()&#10;    if err != nil {&#10;        panic(err)&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed frontend/dist</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> assets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">            application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">MyService</span>{}),
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">AssetFileServerFS</span>(assets),
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1024</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">768</span>,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">panic</span>(err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="step-3-convert-app-struct-to-service">Step 3: Convert App Struct to Service</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type App struct {&#10;    ctx context.Context&#10;}&#10;&#10;func NewApp() *App {&#10;    return &amp;App{}&#10;}&#10;&#10;func (a *App) startup(ctx context.Context) {&#10;    a.ctx = ctx&#10;    // Initialisation&#10;}&#10;&#10;func (a *App) Greet(name string) string {&#10;    return &#34;Hello &#34; + name&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">App</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    ctx context.<span class="mpress-token-type">Context</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewApp</span>() <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">App</span>{}
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (a <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span>) <span class="mpress-token-function">startup</span>(ctx context.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    a.ctx <span class="mpress-token-operator">=</span> ctx
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Initialisation</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (a <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span>) <span class="mpress-token-function">Greet</span>(name string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;Hello &#34;</span> <span class="mpress-token-operator">+</span> name
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type MyService struct {&#10;    app *application.App&#10;}&#10;&#10;func NewMyService(app *application.App) *MyService {&#10;    return &amp;MyService{app: app}&#10;}&#10;&#10;func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    // Initialisation&#10;    return nil&#10;}&#10;&#10;func (s *MyService) Greet(name string) string {&#10;    return &#34;Hello &#34; + name&#10;}&#10;&#10;// Register after app creation&#10;app := application.New(application.Options{})&#10;app.RegisterService(application.NewService(NewMyService(app)))"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">MyService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewMyService</span>(app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>) <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">MyService</span>{app<span class="mpress-token-operator">:</span> app}
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Initialisation</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">Greet</span>(name string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;Hello &#34;</span> <span class="mpress-token-operator">+</span> name
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Register after app creation</span>
+</span><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{})
+</span><span class="mpress-code-line">app.<span class="mpress-token-function">RegisterService</span>(application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-function">NewMyService</span>(app)))</span></code></pre></div>
+<h3 id="step-4-update-runtime-calls">Step 4: Update Runtime Calls</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (a *App) DoSomething() {&#10;    runtime.WindowSetTitle(a.ctx, &#34;New Title&#34;)&#10;    runtime.EventsEmit(a.ctx, &#34;update&#34;, data)&#10;    runtime.LogInfo(a.ctx, &#34;Message&#34;)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (a <span class="mpress-token-operator">*</span><span class="mpress-token-type">App</span>) <span class="mpress-token-function">DoSomething</span>() {
+</span><span class="mpress-code-line">    runtime.<span class="mpress-token-function">WindowSetTitle</span>(a.ctx, <span class="mpress-token-string">&#34;New Title&#34;</span>)
+</span><span class="mpress-code-line">    runtime.<span class="mpress-token-function">EventsEmit</span>(a.ctx, <span class="mpress-token-string">&#34;update&#34;</span>, data)
+</span><span class="mpress-code-line">    runtime.<span class="mpress-token-function">LogInfo</span>(a.ctx, <span class="mpress-token-string">&#34;Message&#34;</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (s *MyService) DoSomething() {&#10;    window := s.app.Window.Current()&#10;    window.SetTitle(&#34;New Title&#34;)&#10;    &#10;    s.app.Event.Emit(&#34;update&#34;, data)&#10;    &#10;    s.app.Logger.Info(&#34;Message&#34;)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">DoSomething</span>() {
+</span><span class="mpress-code-line">    window <span class="mpress-token-operator">:=</span> s.app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">Current</span>()
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;New Title&#34;</span>)
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;update&#34;</span>, data)
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    s.app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Message&#34;</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="step-5-update-frontend">Step 5: Update Frontend</h3>
+<p><strong>Generate new bindings:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings"><code><span class="mpress-cmd">wails3 generate bindings</span>
+</code></pre>
+</div>
+<p><strong>Update imports:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// v2&#10;import { Greet } from &#39;../wailsjs/go/main/App&#39;&#10;&#10;// v3&#10;import { Greet } from &#39;./bindings/changeme/myservice&#39;"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// v2</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Greet</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;../wailsjs/go/main/App&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// v3</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Greet</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme/myservice&#39;</span></span></code></pre></div>
+<p><strong>Update event handling:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// v2&#10;import { EventsOn, EventsEmit } from &#39;../wailsjs/runtime/runtime&#39;&#10;&#10;EventsOn(&#34;update&#34;, (data) =&gt; {&#10;    console.log(data)&#10;})&#10;&#10;EventsEmit(&#34;action&#34;, data)&#10;&#10;// v3&#10;import { Events } from &#39;@wailsio/runtime&#39;&#10;&#10;Events.On(&#34;update&#34;, (data) =&gt; {&#10;    console.log(data)&#10;})&#10;&#10;Events.Emit(&#34;action&#34;, data)"><code class="language-javascript"><span class="mpress-code-line"><span class="mpress-token-comment">// v2</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">EventsOn</span>, <span class="mpress-token-type">EventsEmit</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;../wailsjs/runtime/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-function">EventsOn</span>(<span class="mpress-token-string">&#34;update&#34;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(data)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-function">EventsEmit</span>(<span class="mpress-token-string">&#34;action&#34;</span>, data)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// v3</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;@wailsio/runtime&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;update&#34;</span>, (data) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(data)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;action&#34;</span>, data)</span></code></pre></div>
+<h3 id="step-6-update-configuration">Step 6: Update Configuration</h3>
+<p><strong>v2 (wails.json):</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="{&#10;  &#34;name&#34;: &#34;myapp&#34;,&#10;  &#34;outputfilename&#34;: &#34;myapp&#34;,&#10;  &#34;frontend:install&#34;: &#34;npm install&#34;,&#10;  &#34;frontend:build&#34;: &#34;npm run build&#34;,&#10;  &#34;frontend:dev:watcher&#34;: &#34;npm run dev&#34;,&#10;  &#34;frontend:dev:serverUrl&#34;: &#34;auto&#34;&#10;}"><code class="language-json"><span class="mpress-code-line">{
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;name&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myapp&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;outputfilename&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myapp&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;frontend:install&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm install&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;frontend:build&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm run build&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;frontend:dev:watcher&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm run dev&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;frontend:dev:serverUrl&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;auto&#34;</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>v3 (wails.json):</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="{&#10;  &#34;name&#34;: &#34;myapp&#34;,&#10;  &#34;frontend&#34;: {&#10;    &#34;dir&#34;: &#34;./frontend&#34;,&#10;    &#34;install&#34;: &#34;npm install&#34;,&#10;    &#34;build&#34;: &#34;npm run build&#34;,&#10;    &#34;dev&#34;: &#34;npm run dev&#34;,&#10;    &#34;devServerUrl&#34;: &#34;http://localhost:5173&#34;&#10;  }&#10;}"><code class="language-json"><span class="mpress-code-line">{
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;name&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myapp&#34;</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;frontend&#34;</span><span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;dir&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;./frontend&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;install&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm install&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;build&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm run build&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;dev&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;npm run dev&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;devServerUrl&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;http://localhost:5173&#34;</span>
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="feature-mapping">Feature Mapping</h2>
+<h3 id="dialogs">dialogs</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="selection, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{&#10;    Title: &#34;Select File&#34;,&#10;})"><code class="language-go"><span class="mpress-code-line">selection, err <span class="mpress-token-operator">:=</span> runtime.<span class="mpress-token-function">OpenFileDialog</span>(ctx, runtime.<span class="mpress-token-type">OpenDialogOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Select File&#34;</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="selection, err := app.Dialog.OpenFileWithOptions(&amp;application.OpenFileDialogOptions{&#10;    Title: &#34;Select File&#34;,&#10;}).PromptForSingleSelection()"><code class="language-go"><span class="mpress-code-line">selection, err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Dialog</span>.<span class="mpress-token-function">OpenFileWithOptions</span>(<span class="mpress-token-operator">&amp;</span>application.<span class="mpress-token-type">OpenFileDialogOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Select File&#34;</span>,
+</span><span class="mpress-code-line">}).<span class="mpress-token-function">PromptForSingleSelection</span>()</span></code></pre></div>
+<h3 id="menus">Menus</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="menu := menu.NewMenu()&#10;menu.Append(menu.Text(&#34;File&#34;, nil, []*menu.MenuItem{&#10;    menu.Text(&#34;Quit&#34;, nil, func(_ *menu.CallbackData) {&#10;        runtime.Quit(ctx)&#10;    }),&#10;}))"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">NewMenu</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Append</span>(menu.<span class="mpress-token-function">Text</span>(<span class="mpress-token-string">&#34;File&#34;</span>, <span class="mpress-token-keyword">nil</span>, []<span class="mpress-token-operator">*</span>menu.<span class="mpress-token-type">MenuItem</span>{
+</span><span class="mpress-code-line">    menu.<span class="mpress-token-function">Text</span>(<span class="mpress-token-string">&#34;Quit&#34;</span>, <span class="mpress-token-keyword">nil</span>, <span class="mpress-token-keyword">func</span>(_ <span class="mpress-token-operator">*</span>menu.<span class="mpress-token-type">CallbackData</span>) {
+</span><span class="mpress-code-line">        runtime.<span class="mpress-token-function">Quit</span>(ctx)
+</span><span class="mpress-code-line">    }),
+</span><span class="mpress-code-line">}))</span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="menu := app.NewMenu()&#10;fileMenu := menu.AddSubmenu(&#34;File&#34;)&#10;fileMenu.Add(&#34;Quit&#34;).OnClick(func(ctx *application.Context) {&#10;    app.Quit()&#10;})"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">NewMenu</span>()
+</span><span class="mpress-code-line">fileMenu <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">AddSubmenu</span>(<span class="mpress-token-string">&#34;File&#34;</span>)
+</span><span class="mpress-code-line">fileMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Quit&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Quit</span>()
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="system-tray">System Tray</h3>
+<p><strong>v2:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Not available in v2"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Not available in v2</span></span></code></pre></div>
+<p><strong>v3:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="systray := app.SystemTray.New()&#10;systray.SetIcon(iconBytes)&#10;systray.SetLabel(&#34;My App&#34;)&#10;&#10;menu := app.NewMenu()&#10;menu.Add(&#34;Show&#34;).OnClick(showWindow)&#10;menu.Add(&#34;Quit&#34;).OnClick(app.Quit)&#10;systray.SetMenu(menu)"><code class="language-go"><span class="mpress-code-line">systray <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">SystemTray</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">systray.<span class="mpress-token-function">SetIcon</span>(iconBytes)
+</span><span class="mpress-code-line">systray.<span class="mpress-token-function">SetLabel</span>(<span class="mpress-token-string">&#34;My App&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">NewMenu</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Show&#34;</span>).<span class="mpress-token-function">OnClick</span>(showWindow)
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Quit&#34;</span>).<span class="mpress-token-function">OnClick</span>(app.<span class="mpress-token-type">Quit</span>)
+</span><span class="mpress-code-line">systray.<span class="mpress-token-function">SetMenu</span>(menu)</span></code></pre></div>
+<h2 id="common-issues">Common Issues</h2>
+<h3 id="issue-bindings-not-found">Issue: Bindings not found</h3>
+<p><strong>Problem:</strong> Import errors after migration</p>
+<p><strong>Solution:</strong></p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings
+ls frontend/bindings"><code><span class="mpress-output"># Regenerate bindings</span>
+<span class="mpress-cmd">wails3 generate bindings</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Check output directory</span>
+<span class="mpress-cmd">ls frontend/bindings</span>
+</code></pre>
+</div>
+<h3 id="issue-context-errors">Issue: Context errors</h3>
+<p><strong>Problem:</strong> <code>ctx</code> not available</p>
+<p><strong>Solution:</strong></p>
+<p>Store app reference instead:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type MyService struct {&#10;    app *application.App&#10;}&#10;&#10;func NewMyService(app *application.App) *MyService {&#10;    return &amp;MyService{app: app}&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">MyService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewMyService</span>(app <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">App</span>) <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">MyService</span>{app<span class="mpress-token-operator">:</span> app}
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="issue-window-methods-not-working">Issue: Window methods not working</h3>
+<p><strong>Problem:</strong> <code>runtime.WindowSetTitle()</code> doesn&rsquo;t exist</p>
+<p><strong>Solution:</strong></p>
+<p>Use window methods directly:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := s.app.Window.Current()&#10;window.SetTitle(&#34;New Title&#34;)"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> s.app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">Current</span>()
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;New Title&#34;</span>)</span></code></pre></div>
+<h3 id="issue-events-not-firing">Issue: Events not firing</h3>
+<p><strong>Problem:</strong> Events registered but not received</p>
+<p><strong>Solution:</strong></p>
+<p>Check event names match exactly:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Go&#10;app.Event.Emit(&#34;my-event&#34;, data)&#10;&#10;// JavaScript&#10;OnEvent(&#34;my-event&#34;, handler)  // Must match exactly"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Go</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;my-event&#34;</span>, data)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// JavaScript</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">OnEvent</span>(<span class="mpress-token-string">&#34;my-event&#34;</span>, handler)  <span class="mpress-token-comment">// Must match exactly</span></span></code></pre></div>
+<h2 id="testing-migration">Testing Migration</h2>
+<h3 id="checklist">Checklist</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Application starts without errors</li>
+<li><input disabled="" type="checkbox"> All bindings work</li>
+<li><input disabled="" type="checkbox"> Events are sent and received</li>
+<li><input disabled="" type="checkbox"> Windows open and close correctly</li>
+<li><input disabled="" type="checkbox"> Menus work (if applicable)</li>
+<li><input disabled="" type="checkbox"> dialogs work (if applicable)</li>
+<li><input disabled="" type="checkbox"> System tray works (if applicable)</li>
+<li><input disabled="" type="checkbox"> Build process works</li>
+<li><input disabled="" type="checkbox"> Production build works</li>
+</ul>
+<h3 id="test-commands">Test Commands</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 dev
+wails3 build
+wails3 generate bindings"><code><span class="mpress-output"># Development</span>
+<span class="mpress-cmd">wails3 dev</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Build</span>
+<span class="mpress-cmd">wails3 build</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Generate bindings</span>
+<span class="mpress-cmd">wails3 generate bindings</span>
+</code></pre>
+</div>
+<h2 id="benefits-of-v3">Benefits of v3</h2>
+<h3 id="performance">Performance</h3>
+<ul>
+<li><strong>Faster startup</strong> - Optimised initialisation</li>
+<li><strong>Lower memory</strong> - Efficient resource usage</li>
+<li><strong>Better bridge</strong> - &lt;1ms call overhead</li>
+</ul>
+<h3 id="features">Features</h3>
+<ul>
+<li><strong>Multi-window</strong> - Native support</li>
+<li><strong>System tray</strong> - Built-in</li>
+<li><strong>Better events</strong> - Typed, simpler API</li>
+<li><strong>Services</strong> - Better code organisation</li>
+</ul>
+<h3 id="developer-experience">Developer Experience</h3>
+<ul>
+<li><strong>Type safety</strong> - Full TypeScript support</li>
+<li><strong>Better errors</strong> - Clear error messages</li>
+<li><strong>Hot reload</strong> - Faster development</li>
+<li><strong>Better docs</strong> - Comprehensive guides</li>
+</ul>
+<h2 id="getting-help">Getting Help</h2>
+<h3 id="resources">Resources</h3>
+<ul>
+<li><a href="/quick-start/why-wails/">Documentation</a></li>
+<li><a href="https://discord.gg/JDdSxwjhGf">Discord Community</a></li>
+<li><a href="https://github.com/wailsapp/wails/issues">GitHub Issues</a></li>
+<li><a href="https://github.com/wailsapp/wails/tree/master/v3/examples">Examples</a></li>
+</ul>
+<h3 id="common-questions">Common Questions</h3>
+<p><strong>Q: Can I run v2 and v3 side by side?</strong><br>
+A: Yes, they use different import paths.</p>
+<p><strong>Q: Is v3 production-ready?</strong><br>
+A: v3 is beta software with a stable desktop API. Applications are running in
+production with it, but test thoroughly before deployment. v2 remains the
+current stable release.</p>
+<p><strong>Q: Will v2 be maintained?</strong><br>
+A: Yes, v2 will receive critical updates.</p>
+<p><strong>Q: How long does migration take?</strong><br>
+A: 1-4 hours for typical applications.</p>
+<h2 id="next-steps">Next Steps</h2>
+<div class="mpress-card-grid mpress-cards mpress-cards-2">
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.87 12.87 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+    <div class="mpress-card-title">Quick Start</div>
+<div class="mpress-card-desc">
+<p>Get started with Wails v3.</p>
+<p><a href="/quick-start/installation/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.164.75a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.61 1.88l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.97 0l-4.618 2.428a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.162 9.79a.53.53 0 0 1 .294-.906l5.165-.75a2.12 2.12 0 0 0 1.594-1.16z"/></svg></div>
+    <div class="mpress-card-title">Core Concepts</div>
+<div class="mpress-card-desc">
+<p>Understand v3 architecture.</p>
+<p><a href="/concepts/architecture/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="mpress-card-title">Bindings</div>
+<div class="mpress-card-desc">
+<p>Learn the new bindings system.</p>
+<p><a href="/features/bindings/methods/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></div>
+    <div class="mpress-card-title">Examples</div>
+<div class="mpress-card-desc">
+<p>See complete v3 examples.</p>
+<p><a href="https://github.com/wailsapp/wails/tree/master/v3/examples">View Examples →</a></p>
+</div>
+  </div>
+</div>
+<hr>
+<p><strong>Questions?</strong> Ask in <a href="https://discord.gg/JDdSxwjhGf">Discord</a> or <a href="https://github.com/wailsapp/wails/issues">open an issue</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/migration/v2-to-v3.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../contributing/standards/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Coding Standards</strong></a><a rel="next" href="../../troubleshooting/mac-syso/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Syso files on macOS</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#breaking-changes">Breaking Changes</a><a class="toc-level-3" href="#application-initialisation">Application Initialisation</a><a class="toc-level-3" href="#bindings">Bindings</a><a class="toc-level-3" href="#runtime">Runtime</a><a class="toc-level-3" href="#frontend-bindings">Frontend Bindings</a><a class="toc-level-3" href="#events">Events</a><a class="toc-level-3" href="#windows">Windows</a><a class="toc-level-2" href="#migration-steps">Migration Steps</a><a class="toc-level-3" href="#step-1-update-dependencies">Step 1: Update Dependencies</a><a class="toc-level-3" href="#step-2-update-maingo">Step 2: Update main.go</a><a class="toc-level-3" href="#step-3-convert-app-struct-to-service">Step 3: Convert App Struct to Service</a><a class="toc-level-3" href="#step-4-update-runtime-calls">Step 4: Update Runtime Calls</a><a class="toc-level-3" href="#step-5-update-frontend">Step 5: Update Frontend</a><a class="toc-level-3" href="#step-6-update-configuration">Step 6: Update Configuration</a><a class="toc-level-2" href="#feature-mapping">Feature Mapping</a><a class="toc-level-3" href="#dialogs">dialogs</a><a class="toc-level-3" href="#menus">Menus</a><a class="toc-level-3" href="#system-tray">System Tray</a><a class="toc-level-2" href="#common-issues">Common Issues</a><a class="toc-level-3" href="#issue-bindings-not-found">Issue: Bindings not found</a><a class="toc-level-3" href="#issue-context-errors">Issue: Context errors</a><a class="toc-level-3" href="#issue-window-methods-not-working">Issue: Window methods not working</a><a class="toc-level-3" href="#issue-events-not-firing">Issue: Events not firing</a><a class="toc-level-2" href="#testing-migration">Testing Migration</a><a class="toc-level-3" href="#checklist">Checklist</a><a class="toc-level-3" href="#test-commands">Test Commands</a><a class="toc-level-2" href="#benefits-of-v3">Benefits of v3</a><a class="toc-level-3" href="#performance">Performance</a><a class="toc-level-3" href="#features">Features</a><a class="toc-level-3" href="#developer-experience">Developer Experience</a><a class="toc-level-2" href="#getting-help">Getting Help</a><a class="toc-level-3" href="#resources">Resources</a><a class="toc-level-3" href="#common-questions">Common Questions</a><a class="toc-level-2" href="#next-steps">Next Steps</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

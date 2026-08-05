@@ -1,0 +1,261 @@
+<!doctype html><html lang="zh-tw" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>貢獻指南 · Wails</title><meta name="description" content="為 Wails 做出貢獻"><link rel="canonical" href="https://v3.wails.io/zh-tw/contributing/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/contributing/"><link rel="alternate" hreflang="zh-cn" href="https://v3.wails.io/zh-cn/contributing/"><link rel="alternate" hreflang="zh-tw" href="https://v3.wails.io/zh-tw/contributing/"><link rel="alternate" hreflang="ja" href="https://v3.wails.io/ja/contributing/"><link rel="alternate" hreflang="ko" href="https://v3.wails.io/ko/contributing/"><link rel="alternate" hreflang="ru" href="https://v3.wails.io/ru/contributing/"><link rel="alternate" hreflang="fr" href="https://v3.wails.io/fr/contributing/"><link rel="alternate" hreflang="pt" href="https://v3.wails.io/pt/contributing/"><link rel="alternate" hreflang="de" href="https://v3.wails.io/de/contributing/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/contributing/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/contributing/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="stylesheet" href="../../assets/custom.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../zh-tw/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: 繁體中文" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/contributing/" role="menuitem"><span>English</span></a></li><li><a href="/zh-cn/contributing/" role="menuitem"><span>简体中文</span></a></li><li><a href="/zh-tw/contributing/" role="menuitem" aria-current="true"><span>繁體中文</span></a></li><li><a href="/ja/contributing/" role="menuitem"><span>日本語</span></a></li><li><a href="/ko/contributing/" role="menuitem"><span>한국어</span></a></li><li><a href="/ru/contributing/" role="menuitem"><span>Русский</span></a></li><li><a href="/fr/contributing/" role="menuitem"><span>Français</span></a></li><li><a href="/pt/contributing/" role="menuitem"><span>Português (Brasil)</span></a></li><li><a href="/de/contributing/" role="menuitem"><span>Deutsch</span></a></li><li><a href="/id/contributing/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../zh-tw/">Home</a><a class="" href="../../zh-tw/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../zh-tw/quick-start/installation/">Installation</a><a class="" href="../../zh-tw/quick-start/first-app/">Your First App</a><a class="" href="../../zh-tw/quick-start/next-steps/">Next Steps</a></div></details><span class="nav-label">Tutorials</span><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../zh-tw/concepts/architecture/">How Wails Works</a><a class="" href="../../zh-tw/concepts/manager-api/">Manager API</a><a class="" href="../../zh-tw/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../zh-tw/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../zh-tw/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><span class="nav-label">Autostart</span><span class="nav-label">Clipboard</span><span class="nav-label">Browser</span><span class="nav-label">Drag &amp; Drop</span><span class="nav-label">Keyboard</span><span class="nav-label">Notifications</span><span class="nav-label">Screens</span><span class="nav-label">Environment</span><span class="nav-label">Platform-Specific</span></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../zh-tw/community/links/">Links</a><a class="" href="../../zh-tw/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><span class="nav-label">Applications</span></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../zh-tw/status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../zh-tw/credits/">Credits</a></nav></aside><main id="content"><article><h1>貢獻指南</h1><h2 id="heading">歡迎貢獻者！</h2>
+<p>我們歡迎大家為 Wails 做出貢獻！無論您是修復錯誤、新增功能，還是改善文件，您的幫助都備受感激。</p>
+<h2 id="heading-1">貢獻方式</h2>
+<h3 id="1-">1. 回報問題</h3>
+<p>發現了錯誤嗎？<a href="https://github.com/wailsapp/wails/issues/new">開啟一個 issue</a>，並包含：</p>
+<ul>
+<li>清晰的描述</li>
+<li>重現步驟</li>
+<li>預期行為與實際行為的對比</li>
+<li>系統資訊</li>
+<li>程式碼範例</li>
+</ul>
+<h3 id="2-">2. 改善文件</h3>
+<p>我們始終歡迎文件方面的改善：</p>
+<ul>
+<li>修正錯字和錯誤</li>
+<li>新增範例</li>
+<li>釐清說明</li>
+<li>翻譯內容</li>
+</ul>
+<h3 id="3-">3. 提交程式碼</h3>
+<p>透過 pull request 提交程式碼：</p>
+<ul>
+<li>錯誤修復</li>
+<li>新功能</li>
+<li>效能改進</li>
+<li>測試</li>
+</ul>
+<h2 id="heading-2">開始使用</h2>
+<h3 id="fork-">Fork 並複製</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+git remote add upstream https://github.com/wailsapp/wails.git"><code><span class="mpress-output"># 在 GitHub 上 fork 儲存庫</span>
+<span class="mpress-output"># 然後複製您的 fork</span>
+<span class="mpress-cmd">git clone https://github.com/YOUR_USERNAME/wails.git</span>
+<span class="mpress-cmd">cd wails</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 新增上游遠端倉庫</span>
+<span class="mpress-cmd">git remote add upstream https://github.com/wailsapp/wails.git</span>
+</code></pre>
+</div>
+<h3 id="heading-3">從原始碼建置</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go mod download
+cd v3/cmd/wails3
+go build
+./wails3 version"><code><span class="mpress-output"># 安裝相依性</span>
+<span class="mpress-cmd">go mod download</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 建置 Wails CLI</span>
+<span class="mpress-cmd">cd v3/cmd/wails3</span>
+<span class="mpress-cmd">go build</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 測試您的建置</span>
+<span class="mpress-cmd">./wails3 version</span>
+</code></pre>
+</div>
+<h3 id="heading-4">執行測試</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go test ./...
+go test ./v3/pkg/application
+go test -cover ./..."><code><span class="mpress-output"># 執行所有測試</span>
+<span class="mpress-cmd">go test ./...</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 執行特定套件測試</span>
+<span class="mpress-cmd">go test ./v3/pkg/application</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 執行並包含覆蓋率</span>
+<span class="mpress-cmd">go test -cover ./...</span>
+</code></pre>
+</div>
+<h2 id="heading-5">進行變更</h2>
+<h3 id="heading-6">建立分支</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="git checkout main
+git pull upstream main
+git checkout -b feature/my-feature"><code><span class="mpress-output"># 更新 main</span>
+<span class="mpress-cmd">git checkout main</span>
+<span class="mpress-cmd">git pull upstream main</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 建立功能分支</span>
+<span class="mpress-cmd">git checkout -b feature/my-feature</span>
+</code></pre>
+</div>
+<h3 id="heading-7">進行您的變更</h3>
+<ol>
+<li><strong>撰寫程式碼</strong>，遵循 Go 的慣例</li>
+<li><strong>新增測試</strong>以涵蓋新功能</li>
+<li><strong>更新文件</strong>（如有需要）</li>
+<li><strong>執行測試</strong>以確保沒有破壞現有功能</li>
+<li><strong>提交變更</strong>，並附上清晰的訊息</li>
+</ol>
+<h3 id="heading-8">提交訊息指南</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="git commit -m &#34;fix: resolve window focus issue on macOS&#34;
+git commit -m &#34;feat: add support for custom window chrome&#34;
+git commit -m &#34;docs: improve bindings documentation&#34;"><code><span class="mpress-output"># 良好的提交訊息</span>
+<span class="mpress-cmd">git commit -m &#34;fix: resolve window focus issue on macOS&#34;</span>
+<span class="mpress-cmd">git commit -m &#34;feat: add support for custom window chrome&#34;</span>
+<span class="mpress-cmd">git commit -m &#34;docs: improve bindings documentation&#34;</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 使用慣用提交格式 (conventional commits)：</span>
+<span class="mpress-output"># - feat: 新功能</span>
+<span class="mpress-output"># - fix: 錯誤修復</span>
+<span class="mpress-output"># - docs: 文件</span>
+<span class="mpress-output"># - test: 測試</span>
+<span class="mpress-output"># - refactor: 程式碼重構</span>
+<span class="mpress-output"># - chore: 維護</span>
+</code></pre>
+</div>
+<h3 id="-pull-request">提交 Pull Request</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="git push origin feature/my-feature"><code><span class="mpress-output"># 推送到您的 fork</span>
+<span class="mpress-cmd">git push origin feature/my-feature</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># 在 GitHub 上開啟 pull request</span>
+<span class="mpress-output"># 提供清晰的描述</span>
+<span class="mpress-output"># 關聯相關的 issues</span>
+</code></pre>
+</div>
+<h2 id="pull-request-">Pull Request 指南</h2>
+<h3 id="-pr-">良好的 PR 描述</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="## 描述&#10;簡短描述所做的變更&#10;&#10;## 變更內容&#10;- 新增了功能 X&#10;- 修復了錯誤 Y&#10;- 更新了文件&#10;&#10;## 測試&#10;- 在 macOS 14 上測試&#10;- 在 Windows 11 上測試&#10;- 所有測試通過&#10;&#10;## 相關 Issues&#10;Fixes #123"><code class="language-markdown"><span class="mpress-code-line">## 描述
+</span><span class="mpress-code-line">簡短描述所做的變更
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">## 變更內容
+</span><span class="mpress-code-line">- 新增了功能 X
+</span><span class="mpress-code-line">- 修復了錯誤 Y
+</span><span class="mpress-code-line">- 更新了文件
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">## 測試
+</span><span class="mpress-code-line">- 在 macOS 14 上測試
+</span><span class="mpress-code-line">- 在 Windows 11 上測試
+</span><span class="mpress-code-line">- 所有測試通過
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">## 相關 Issues
+</span><span class="mpress-code-line">Fixes #123</span></code></pre></div>
+<h3 id="pr-">PR 檢查清單</h3>
+<ul>
+<li><input disabled="" type="checkbox"> 程式碼遵循 Go 慣例</li>
+<li><input disabled="" type="checkbox"> 已新增/更新測試</li>
+<li><input disabled="" type="checkbox"> 文件已更新</li>
+<li><input disabled="" type="checkbox"> 所有測試通過</li>
+<li><input disabled="" type="checkbox"> 沒有破壞性變更（或有文件說明）</li>
+<li><input disabled="" type="checkbox"> 提交訊息清晰</li>
+</ul>
+<h2 id="heading-9">程式碼指南</h2>
+<h3 id="go-">Go 程式碼風格</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// ✅ 良好：清晰、有文件說明、有測試&#10;// ProcessData 處理輸入資料並回傳結果。&#10;// 如果資料無效，則回傳錯誤。&#10;func ProcessData(data string) (string, error) {&#10;    if data == &#34;&#34; {&#10;        return &#34;&#34;, errors.New(&#34;data cannot be empty&#34;)&#10;    }&#10;    &#10;    result := process(data)&#10;    return result, nil&#10;}&#10;&#10;// ❌ 不佳：無文件說明、無錯誤處理&#10;func ProcessData(data string) string {&#10;    return process(data)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// ✅ 良好：清晰、有文件說明、有測試</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ProcessData 處理輸入資料並回傳結果。</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// 如果資料無效，則回傳錯誤。</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">ProcessData</span>(data string) (string, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> data <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;&#34;</span>, errors.<span class="mpress-token-function">New</span>(<span class="mpress-token-string">&#34;data cannot be empty&#34;</span>)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    result <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">process</span>(data)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> result, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ❌ 不佳：無文件說明、無錯誤處理</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">ProcessData</span>(data string) string {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-function">process</span>(data)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="heading-10">測試</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func TestProcessData(t *testing.T) {&#10;    tests := []struct {&#10;        name    string&#10;        input   string&#10;        want    string&#10;        wantErr bool&#10;    }{&#10;        {&#34;valid input&#34;, &#34;test&#34;, &#34;processed&#34;, false},&#10;        {&#34;empty input&#34;, &#34;&#34;, &#34;&#34;, true},&#10;    }&#10;    &#10;    for _, tt := range tests {&#10;        t.Run(tt.name, func(t *testing.T) {&#10;            got, err := ProcessData(tt.input)&#10;            if (err != nil) != tt.wantErr {&#10;                t.Errorf(&#34;ProcessData() error = %v, wantErr %v&#34;, err, tt.wantErr)&#10;                return&#10;            }&#10;            if got != tt.want {&#10;                t.Errorf(&#34;ProcessData() = %v, want %v&#34;, got, tt.want)&#10;            }&#10;        })&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">TestProcessData</span>(t <span class="mpress-token-operator">*</span>testing.<span class="mpress-token-type">T</span>) {
+</span><span class="mpress-code-line">    tests <span class="mpress-token-operator">:=</span> []<span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">        name    string
+</span><span class="mpress-code-line">        input   string
+</span><span class="mpress-code-line">        want    string
+</span><span class="mpress-code-line">        wantErr bool
+</span><span class="mpress-code-line">    }{
+</span><span class="mpress-code-line">        {<span class="mpress-token-string">&#34;valid input&#34;</span>, <span class="mpress-token-string">&#34;test&#34;</span>, <span class="mpress-token-string">&#34;processed&#34;</span>, <span class="mpress-token-keyword">false</span>},
+</span><span class="mpress-code-line">        {<span class="mpress-token-string">&#34;empty input&#34;</span>, <span class="mpress-token-string">&#34;&#34;</span>, <span class="mpress-token-string">&#34;&#34;</span>, <span class="mpress-token-keyword">true</span>},
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> _, tt <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> tests {
+</span><span class="mpress-code-line">        t.<span class="mpress-token-function">Run</span>(tt.name, <span class="mpress-token-keyword">func</span>(t <span class="mpress-token-operator">*</span>testing.<span class="mpress-token-type">T</span>) {
+</span><span class="mpress-code-line">            got, err <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">ProcessData</span>(tt.input)
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">if</span> (err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span>) <span class="mpress-token-operator">!=</span> tt.wantErr {
+</span><span class="mpress-code-line">                t.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;ProcessData() error = %v, wantErr %v&#34;</span>, err, tt.wantErr)
+</span><span class="mpress-code-line">                <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">if</span> got <span class="mpress-token-operator">!=</span> tt.want {
+</span><span class="mpress-code-line">                t.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;ProcessData() = %v, want %v&#34;</span>, got, tt.want)
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">        })
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="heading-11">文件</h2>
+<h3 id="heading-12">撰寫文件</h3>
+<p>文件使用 Starlight (Astro) 撰寫：</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="cd docs
+npm install
+npm run dev"><code><span class="mpress-cmd">cd docs</span>
+<span class="mpress-cmd">npm install</span>
+<span class="mpress-cmd">npm run dev</span>
+</code></pre>
+</div>
+<h3 id="heading-13">文件風格</h3>
+<ul>
+<li>使用國際英文拼寫</li>
+<li>從問題開始說明</li>
+<li>提供可運作的範例</li>
+<li>包含疑難排解</li>
+<li>交叉引用相關內容</li>
+</ul>
+<h2 id="heading-14">社群</h2>
+<h3 id="heading-15">取得協助</h3>
+<ul>
+<li><strong>Discord：</strong> <a href="https://discord.gg/JDdSxwjhGf">加入我們的社群</a></li>
+<li><strong>GitHub Discussions：</strong> 提問</li>
+<li><strong>GitHub Issues：</strong> 回報錯誤</li>
+</ul>
+<h3 id="heading-16">行為準則</h3>
+<p>請保持尊重、包容且專業。我們都在這裡共同建構優秀的軟體。</p>
+<h2 id="heading-17">認可</h2>
+<p>貢獻者將被認可於：</p>
+<ul>
+<li>版本釋出筆記</li>
+<li>貢獻者名單</li>
+<li>GitHub insights</li>
+</ul>
+<p>感謝您為 Wails 做出的貢獻！🎉</p>
+<h2 id="heading-18">下一步</h2>
+<div class="mpress-card-grid mpress-cards mpress-cards-2">
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="mpress-card-title">GitHub 儲存庫</div>
+<div class="mpress-card-desc">
+<p>瀏覽 Wails 儲存庫。</p>
+<p><a href="https://github.com/wailsapp/wails">在 GitHub 上檢視 →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="mpress-card-title">Discord 社群</div>
+<div class="mpress-card-desc">
+<p>加入社群。</p>
+<p><a href="https://discord.gg/JDdSxwjhGf">加入 Discord →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v15a3 3 0 0 0-3-3Z"/><path d="M21 18a1 1 0 0 0 1-1V5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3Z"/></svg></div>
+    <div class="mpress-card-title">文件</div>
+<div class="mpress-card-desc">
+<p>閱讀文件。</p>
+<p><a href="/zh-tw/quick-start/why-wails/">瀏覽文件 →</a></p>
+</div>
+  </div>
+</div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/contributing.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#heading">歡迎貢獻者！</a><a class="toc-level-2" href="#heading-1">貢獻方式</a><a class="toc-level-3" href="#1-">1. 回報問題</a><a class="toc-level-3" href="#2-">2. 改善文件</a><a class="toc-level-3" href="#3-">3. 提交程式碼</a><a class="toc-level-2" href="#heading-2">開始使用</a><a class="toc-level-3" href="#fork-">Fork 並複製</a><a class="toc-level-3" href="#heading-3">從原始碼建置</a><a class="toc-level-3" href="#heading-4">執行測試</a><a class="toc-level-2" href="#heading-5">進行變更</a><a class="toc-level-3" href="#heading-6">建立分支</a><a class="toc-level-3" href="#heading-7">進行您的變更</a><a class="toc-level-3" href="#heading-8">提交訊息指南</a><a class="toc-level-3" href="#-pull-request">提交 Pull Request</a><a class="toc-level-2" href="#pull-request-">Pull Request 指南</a><a class="toc-level-3" href="#-pr-">良好的 PR 描述</a><a class="toc-level-3" href="#pr-">PR 檢查清單</a><a class="toc-level-2" href="#heading-9">程式碼指南</a><a class="toc-level-3" href="#go-">Go 程式碼風格</a><a class="toc-level-3" href="#heading-10">測試</a><a class="toc-level-2" href="#heading-11">文件</a><a class="toc-level-3" href="#heading-12">撰寫文件</a><a class="toc-level-3" href="#heading-13">文件風格</a><a class="toc-level-2" href="#heading-14">社群</a><a class="toc-level-3" href="#heading-15">取得協助</a><a class="toc-level-3" href="#heading-16">行為準則</a><a class="toc-level-2" href="#heading-17">認可</a><a class="toc-level-2" href="#heading-18">下一步</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

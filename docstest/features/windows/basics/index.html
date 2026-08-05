@@ -1,0 +1,537 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Window Basics · Wails</title><meta name="description" content="Creating and managing application windows in Wails"><link rel="canonical" href="https://v3.wails.io/features/windows/basics/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/features/windows/basics/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/features/windows/basics/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/features/windows/basics/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/features/windows/basics/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/features/windows/basics/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/features/windows/basics/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../">Home</a><a class="" href="../../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../quick-start/installation/">Installation</a><a class="" href="../../../quick-start/first-app/">Your First App</a><a class="" href="../../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../concepts/architecture/">How Wails Works</a><a class="" href="../../../concepts/manager-api/">Manager API</a><a class="" href="../../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../concepts/build-system/">Build System</a></div></details><details open><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../../features/windows/basics/">Window Basics</a><a class="" href="../../../features/windows/options/">Window Options</a><a class="" href="../../../features/windows/permissions/">Permissions</a><a class="" href="../../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/menus/application/">Application Menus</a><a class="" href="../../../features/menus/context/">Context Menus</a><a class="" href="../../../features/menus/systray/">System Tray Menus</a><a class="" href="../../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/bindings/methods/">Method Binding</a><a class="" href="../../../features/bindings/services/">Services</a><a class="" href="../../../features/bindings/models/">Data Models</a><a class="" href="../../../features/bindings/enums/">Enums</a><a class="" href="../../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/events/system/">Event System</a><a class="" href="../../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/dialogs/file/">File Dialogs</a><a class="" href="../../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/mobile/">Overview</a><a class="" href="../../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../guides/mobile/ios/">iOS</a><a class="" href="../../../guides/mobile/android/">Android</a><a class="" href="../../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../experimental/">Overview</a><a class="" href="../../../experimental/wake/">Wake</a><a class="" href="../../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/build/building/">Building Applications</a><a class="" href="../../../guides/build/customization/">Build Customization</a><a class="" href="../../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../guides/build/signing/">Code Signing</a><a class="" href="../../../guides/build/windows/">Windows Packaging</a><a class="" href="../../../guides/build/macos/">macOS Packaging</a><a class="" href="../../../guides/build/linux/">Linux Packaging</a><a class="" href="../../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/updater/">In-App Updater</a><a class="" href="../../../guides/file-associations/">File Associations</a><a class="" href="../../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/routing/">Frontend Routing</a><a class="" href="../../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/server-build/">Server Build</a><a class="" href="../../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../reference/overview/">Overview</a><a class="" href="../../../reference/application/">Application</a><a class="" href="../../../reference/window/">Window</a><a class="" href="../../../reference/menu/">Menu</a><a class="" href="../../../reference/events/">Events</a><a class="" href="../../../reference/dialogs/">Dialogs</a><a class="" href="../../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../contributing/getting-started/">Getting Started</a><a class="" href="../../../contributing/setup/">Development Setup</a><a class="" href="../../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/links/">Links</a><a class="" href="../../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../community/showcase/clave/">Clave</a><a class="" href="../../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../community/showcase/emailit/">EmailIt</a><a class="" href="../../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../community/showcase/happytools/">HappyTools</a><a class="" href="../../../community/showcase/kira/">Kira</a><a class="" href="../../../community/showcase/ltools/">LTools</a><a class="" href="../../../community/showcase/mchat/">Mchat</a><a class="" href="../../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../../community/showcase/october/">October</a><a class="" href="../../../community/showcase/optimus/">Optimus</a><a class="" href="../../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../community/showcase/portfall/">Portfall</a><a class="" href="../../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../community/showcase/resizem/">Resizem</a><a class="" href="../../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../community/showcase/surge/">Surge</a><a class="" href="../../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../community/showcase/wally/">Wally</a><a class="" href="../../../community/showcase/wombat/">Wombat</a><a class="" href="../../../community/showcase/xensql/">XenSQL</a><a class="" href="../../../community/showcase/ytd/">Ytd</a><a class="" href="../../../community/showcase/hiposter/">hiposter</a><a class="" href="../../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../whats-new/">What&#39;s New</a><a class="" href="../../../status/">Status</a><a class="" href="../../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../credits/">Credits</a></nav></aside><main id="content"><article><h1>Window Basics</h1><h2 id="window-management">Window Management</h2>
+<p>Wails provides a <strong>unified window management API</strong> that works across all platforms. Create windows, control their behaviour, and manage multiple windows with full control over creation, appearance, behaviour, and lifecycle.</p>
+<h2 id="quick-start">Quick Start</h2>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Name: &#34;My App&#34;,&#10;    })&#10;&#10;    // Create a window&#10;    window := app.Window.New()&#10;    &#10;    // Configure it&#10;    window.SetTitle(&#34;Hello Wails&#34;)&#10;    window.SetSize(800, 600)&#10;    window.Center()&#10;    &#10;    // Show it&#10;    window.Show()&#10;&#10;    app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Create a window</span>
+</span><span class="mpress-code-line">    window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Configure it</span>
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;Hello Wails&#34;</span>)
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">SetSize</span>(<span class="mpress-token-number">800</span>, <span class="mpress-token-number">600</span>)
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">Center</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Show it</span>
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>That&rsquo;s it!</strong> You have a cross-platform window.</p>
+<h2 id="creating-windows">Creating Windows</h2>
+<h3 id="basic-window">Basic Window</h3>
+<p>The simplest way to create a window:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.New()"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()</span></code></pre></div>
+<p><strong>What you get:</strong></p>
+<ul>
+<li>Default size (800x600)</li>
+<li>Default title (application name)</li>
+<li>WebView ready for your frontend</li>
+<li>Platform-native appearance</li>
+</ul>
+<h3 id="window-with-options">Window with Options</h3>
+<p>Create a window with custom configuration:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:  &#34;My Application&#34;,&#10;    Width:  1200,&#10;    Height: 800,&#10;    X:      100,   // Position from left&#10;    Y:      100,   // Position from top&#10;    AlwaysOnTop: false,&#10;    Frameless: false,&#10;    Hidden: false,&#10;    MinWidth: 400,&#10;    MinHeight: 300,&#10;    MaxWidth: 1920,&#10;    MaxHeight: 1080,&#10;})"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My Application&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1200</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">800</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">X</span><span class="mpress-token-operator">:</span>      <span class="mpress-token-number">100</span>,   <span class="mpress-token-comment">// Position from left</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Y</span><span class="mpress-token-operator">:</span>      <span class="mpress-token-number">100</span>,   <span class="mpress-token-comment">// Position from top</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AlwaysOnTop</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Frameless</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Hidden</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">MinWidth</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">MinHeight</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">300</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">MaxWidth</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">1920</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">MaxHeight</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">1080</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Common options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Title</code></td>
+<td><code>string</code></td>
+<td>Window title</td>
+</tr>
+<tr>
+<td><code>Width</code></td>
+<td><code>int</code></td>
+<td>Window width in pixels</td>
+</tr>
+<tr>
+<td><code>Height</code></td>
+<td><code>int</code></td>
+<td>Window height in pixels</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td><code>int</code></td>
+<td>X position (from left)</td>
+</tr>
+<tr>
+<td><code>Y</code></td>
+<td><code>int</code></td>
+<td>Y position (from top)</td>
+</tr>
+<tr>
+<td><code>AlwaysOnTop</code></td>
+<td><code>bool</code></td>
+<td>Keep window above others</td>
+</tr>
+<tr>
+<td><code>Frameless</code></td>
+<td><code>bool</code></td>
+<td>Remove title bar and borders</td>
+</tr>
+<tr>
+<td><code>Hidden</code></td>
+<td><code>bool</code></td>
+<td>Start hidden</td>
+</tr>
+<tr>
+<td><code>MinWidth</code></td>
+<td><code>int</code></td>
+<td>Minimum width</td>
+</tr>
+<tr>
+<td><code>MinHeight</code></td>
+<td><code>int</code></td>
+<td>Minimum height</td>
+</tr>
+<tr>
+<td><code>MaxWidth</code></td>
+<td><code>int</code></td>
+<td>Maximum width</td>
+</tr>
+<tr>
+<td><code>MaxHeight</code></td>
+<td><code>int</code></td>
+<td>Maximum height</td>
+</tr>
+</tbody>
+</table>
+<p><strong>See <a href="/features/windows/options/">Window Options</a> for complete list.</strong></p>
+<h3 id="named-windows">Named Windows</h3>
+<p>Give windows names for easy retrieval:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Name:  &#34;main-window&#34;,&#10;    Title: &#34;Main Application&#34;,&#10;})&#10;&#10;// Later, find it by name&#10;if mainWindow, ok := app.Window.GetByName(&#34;main-window&#34;); ok {&#10;    mainWindow.Show()&#10;}"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;main-window&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Main Application&#34;</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Later, find it by name</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> mainWindow, ok <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">GetByName</span>(<span class="mpress-token-string">&#34;main-window&#34;</span>); ok {
+</span><span class="mpress-code-line">    mainWindow.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Multiple windows (main, settings, about)</li>
+<li>Finding windows from different parts of your code</li>
+<li>Window communication</li>
+</ul>
+<h2 id="controlling-windows">Controlling Windows</h2>
+<h3 id="show-and-hide">Show and Hide</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Show window&#10;window.Show()&#10;&#10;// Hide window&#10;window.Hide()&#10;&#10;// Check if visible&#10;if window.IsVisible() {&#10;    fmt.Println(&#34;Window is visible&#34;)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Show window</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Hide window</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Hide</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Check if visible</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> window.<span class="mpress-token-function">IsVisible</span>() {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Window is visible&#34;</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Use cases:</strong></p>
+<ul>
+<li>Splash screens (show, then hide)</li>
+<li>Settings windows (hide when not needed)</li>
+<li>Popup windows (show on demand)</li>
+</ul>
+<h3 id="position-and-size">Position and Size</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Set size&#10;window.SetSize(1024, 768)&#10;&#10;// Set position&#10;window.SetPosition(100, 100)&#10;&#10;// Centre on screen&#10;window.Center()&#10;&#10;// Get current size&#10;width, height := window.Size()&#10;&#10;// Get current position&#10;x, y := window.Position()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Set size</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetSize</span>(<span class="mpress-token-number">1024</span>, <span class="mpress-token-number">768</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Set position</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetPosition</span>(<span class="mpress-token-number">100</span>, <span class="mpress-token-number">100</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Centre on screen</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Center</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Get current size</span>
+</span><span class="mpress-code-line">width, height <span class="mpress-token-operator">:=</span> window.<span class="mpress-token-function">Size</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Get current position</span>
+</span><span class="mpress-code-line">x, y <span class="mpress-token-operator">:=</span> window.<span class="mpress-token-function">Position</span>()</span></code></pre></div>
+<p><strong>Coordinate system:</strong></p>
+<ul>
+<li>(0, 0) is top-left of primary screen</li>
+<li>Positive X goes right</li>
+<li>Positive Y goes down</li>
+</ul>
+<h3 id="window-state">Window State</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Minimise&#10;window.Minimise()&#10;&#10;// Maximise&#10;window.Maximise()&#10;&#10;// Fullscreen&#10;window.Fullscreen()&#10;&#10;// Restore to normal&#10;window.Restore()&#10;&#10;// Check state&#10;if window.IsMinimised() {&#10;    fmt.Println(&#34;Window is minimised&#34;)&#10;}&#10;&#10;if window.IsMaximised() {&#10;    fmt.Println(&#34;Window is maximised&#34;)&#10;}&#10;&#10;if window.IsFullscreen() {&#10;    fmt.Println(&#34;Window is fullscreen&#34;)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Minimise</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Minimise</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Maximise</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Maximise</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Fullscreen</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Fullscreen</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Restore to normal</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Restore</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Check state</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> window.<span class="mpress-token-function">IsMinimised</span>() {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Window is minimised&#34;</span>)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> window.<span class="mpress-token-function">IsMaximised</span>() {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Window is maximised&#34;</span>)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> window.<span class="mpress-token-function">IsFullscreen</span>() {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Window is fullscreen&#34;</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>State transitions:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Normal ←→ Minimised&#10;Normal ←→ Maximised&#10;Normal ←→ Fullscreen"><code class="language-text"><span class="mpress-code-line">Normal ←→ Minimised
+</span><span class="mpress-code-line">Normal ←→ Maximised
+</span><span class="mpress-code-line">Normal ←→ Fullscreen</span></code></pre></div>
+<h3 id="title-and-appearance">Title and Appearance</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Set title&#10;window.SetTitle(&#34;My Application - Document.txt&#34;)&#10;&#10;// Set background colour — RGBA value (helper for RGB)&#10;window.SetBackgroundColour(application.NewRGBA(0, 0, 0, 255))&#10;&#10;// Set always on top&#10;window.SetAlwaysOnTop(true)&#10;&#10;// Set resizable&#10;window.SetResizable(false)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Set title</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;My Application - Document.txt&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Set background colour — RGBA value (helper for RGB)</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetBackgroundColour</span>(application.<span class="mpress-token-function">NewRGBA</span>(<span class="mpress-token-number">0</span>, <span class="mpress-token-number">0</span>, <span class="mpress-token-number">0</span>, <span class="mpress-token-number">255</span>))
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Set always on top</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetAlwaysOnTop</span>(<span class="mpress-token-keyword">true</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Set resizable</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetResizable</span>(<span class="mpress-token-keyword">false</span>)</span></code></pre></div>
+<h3 id="closing-windows">Closing Windows</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().&#10;window.Close()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Close</span>()</span></code></pre></div>
+<p>There is no <code>window.Destroy()</code> method in v3 — use <code>Close()</code> and either listen with <code>OnWindowEvent</code> (cannot cancel) or hook with <code>RegisterHook</code> (can call <code>e.Cancel()</code> to keep the window open).</p>
+<h2 id="finding-windows">Finding Windows</h2>
+<h3 id="by-name">By Name</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="if window, ok := app.Window.GetByName(&#34;settings&#34;); ok {&#10;    window.Show()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> window, ok <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">GetByName</span>(<span class="mpress-token-string">&#34;settings&#34;</span>); ok {
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="by-id">By ID</h3>
+<p>Every window has a unique ID:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="id := window.ID()&#10;fmt.Printf(&#34;Window ID: %d\n&#34;, id)&#10;&#10;// Find by ID&#10;if found, ok := app.Window.GetByID(id); ok {&#10;    found.Focus()&#10;}"><code class="language-go"><span class="mpress-code-line">id <span class="mpress-token-operator">:=</span> window.<span class="mpress-token-function">ID</span>()
+</span><span class="mpress-code-line">fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Window ID: %d\n&#34;</span>, id)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Find by ID</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> found, ok <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">GetByID</span>(id); ok {
+</span><span class="mpress-code-line">    found.<span class="mpress-token-function">Focus</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="current-window">Current Window</h3>
+<p>Get the currently focused window:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="current := app.Window.Current()&#10;if current != nil {&#10;    current.SetTitle(&#34;Active Window&#34;)&#10;}"><code class="language-go"><span class="mpress-code-line">current <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">Current</span>()
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> current <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    current.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;Active Window&#34;</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="all-windows">All Windows</h3>
+<p>Get all windows:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="windows := app.Window.GetAll()&#10;fmt.Printf(&#34;Total windows: %d\n&#34;, len(windows))&#10;&#10;for _, w := range windows {&#10;    fmt.Printf(&#34;Window: %s (ID: %d)\n&#34;, w.Name(), w.ID())&#10;}"><code class="language-go"><span class="mpress-code-line">windows <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">GetAll</span>()
+</span><span class="mpress-code-line">fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Total windows: %d\n&#34;</span>, <span class="mpress-token-function">len</span>(windows))
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">for</span> _, w <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> windows {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Window: %s (ID: %d)\n&#34;</span>, w.<span class="mpress-token-function">Name</span>(), w.<span class="mpress-token-function">ID</span>())
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="window-lifecycle">Window Lifecycle</h2>
+<h3 id="creation">Creation</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Window.OnCreate(func(window application.Window) {&#10;    fmt.Printf(&#34;Window created: %s\n&#34;, window.Name())&#10;&#10;    // Configure new windows&#10;    window.SetMinSize(400, 300)&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">OnCreate</span>(<span class="mpress-token-keyword">func</span>(window application.<span class="mpress-token-type">Window</span>) {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Window created: %s\n&#34;</span>, window.<span class="mpress-token-function">Name</span>())
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Configure new windows</span>
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">SetMinSize</span>(<span class="mpress-token-number">400</span>, <span class="mpress-token-number">300</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="closing">Closing</h3>
+<p>To prevent a window from closing, use <code>RegisterHook</code> with the <code>WindowClosing</code> event:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {&#10;    if hasUnsavedChanges() {&#10;        // Ask user for confirmation&#10;        result := showConfirmDialog(&#34;Unsaved changes. Close anyway?&#34;)&#10;        if result != &#34;yes&#34; {&#10;            // Cancel the close event&#10;            event.Cancel()&#10;        }&#10;    }&#10;})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-function">hasUnsavedChanges</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Ask user for confirmation</span>
+</span><span class="mpress-code-line">        result <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">showConfirmDialog</span>(<span class="mpress-token-string">&#34;Unsaved changes. Close anyway?&#34;</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> result <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;yes&#34;</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">// Cancel the close event</span>
+</span><span class="mpress-code-line">            event.<span class="mpress-token-function">Cancel</span>()
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Important:</strong> <code>RegisterHook</code> intercepts the close event before it happens. Call <code>event.Cancel()</code> to prevent the window from closing. This works for user-initiated closes (clicking X button).</p>
+<h3 id="destruction">Destruction</h3>
+<p>To perform cleanup when a window closes, use <code>OnWindowEvent</code> with the <code>WindowClosing</code> event:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {&#10;    fmt.Println(&#34;Window is closing&#34;)&#10;    // Cleanup resources&#10;})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Window is closing&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Cleanup resources</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="multiple-windows">Multiple Windows</h2>
+<h3 id="creating-multiple-windows">Creating Multiple Windows</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Main window&#10;mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Name:   &#34;main&#34;,&#10;    Title:  &#34;Main Application&#34;,&#10;    Width:  1200,&#10;    Height: 800,&#10;})&#10;&#10;// Settings window&#10;settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Name:   &#34;settings&#34;,&#10;    Title:  &#34;Settings&#34;,&#10;    Width:  600,&#10;    Height: 400,&#10;    Hidden: true,  // Start hidden&#10;})&#10;&#10;// Show settings when needed&#10;settingsWindow.Show()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Main window</span>
+</span><span class="mpress-code-line">mainWindow <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;main&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Main Application&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1200</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">800</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Settings window</span>
+</span><span class="mpress-code-line">settingsWindow <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;settings&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Settings&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Hidden</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,  <span class="mpress-token-comment">// Start hidden</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Show settings when needed</span>
+</span><span class="mpress-code-line">settingsWindow.<span class="mpress-token-function">Show</span>()</span></code></pre></div>
+<h3 id="window-communication">Window Communication</h3>
+<p>Windows can communicate via events:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// In main window&#10;app.Event.Emit(&#34;data-updated&#34;, map[string]interface{}{&#10;    &#34;value&#34;: 42,&#10;})&#10;&#10;// In settings window&#10;app.Event.On(&#34;data-updated&#34;, func(event *application.CustomEvent) {&#10;    data := event.Data.(map[string]interface{})&#10;    value := data[&#34;value&#34;].(int)&#10;    fmt.Printf(&#34;Received: %d\n&#34;, value)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// In main window</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;data-updated&#34;</span>, <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;value&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">42</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// In settings window</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;data-updated&#34;</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    data <span class="mpress-token-operator">:=</span> event.<span class="mpress-token-type">Data</span>.(<span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{})
+</span><span class="mpress-code-line">    value <span class="mpress-token-operator">:=</span> data[<span class="mpress-token-string">&#34;value&#34;</span>].(int)
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Received: %d\n&#34;</span>, value)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>See <a href="/features/events/system/">Events</a> for more.</strong></p>
+<h3 id="parent-child-windows">Parent-Child Windows</h3>
+<p><code>WebviewWindowOptions</code> has no <code>Parent</code> field. Create the child as a normal window and attach it to a parent as a sheet modal:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Create child window&#10;childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title: &#34;Child Window&#34;,&#10;})&#10;&#10;// Attach to the parent — presents as a sheet on macOS.&#10;mainWindow.AttachModal(childWindow)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Create child window</span>
+</span><span class="mpress-code-line">childWindow <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Child Window&#34;</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Attach to the parent — presents as a sheet on macOS.</span>
+</span><span class="mpress-code-line">mainWindow.<span class="mpress-token-function">AttachModal</span>(childWindow)</span></code></pre></div>
+<p><strong>Behaviour:</strong></p>
+<ul>
+<li>Child stays above parent.</li>
+<li>Child is modal — blocks interaction with the parent.</li>
+</ul>
+<p><strong>Platform support:</strong></p>
+<ul>
+<li><strong>macOS:</strong> Full support (presents as a sheet).</li>
+<li><strong>Windows:</strong> Not supported.</li>
+<li><strong>Linux:</strong> Not supported.</li>
+</ul>
+<h2 id="platform-specific-features">Platform-Specific Features</h2>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-1f483c09" data-sync-key="platform">
+<div role="tablist">
+<button id="mpress-tabs-1f483c09-tab-1" role="tab" type="button" class="mpress-tab-os mpress-tab-os-windows" aria-selected="true" aria-controls="mpress-tabs-1f483c09-panel-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-seti-windows" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0.125 11.544L0.125 3.450L9.815 2.120L9.815 11.506L0.125 11.544ZM0.125 12.532L9.815 12.570L9.815 21.956L0.125 20.626L0.125 12.532ZM10.993 11.468L10.993 1.968L23.837 0.106L23.837 11.392L10.993 11.468ZM10.955 12.646L23.875 12.684L23.837 23.894L10.993 22.108L10.955 12.646Z"/></svg> Windows</button>
+<button id="mpress-tabs-1f483c09-tab-2" role="tab" type="button" class="mpress-tab-os mpress-tab-os-macos" aria-selected="false" aria-controls="mpress-tabs-1f483c09-panel-2" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-apple" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42Zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12.45 4.24 17 6 19.47c.8 1.21 1.8 2.58 3.12 2.53s1.75-.82 3.28-.82 2 .82 3.3.79 2.22-1.24 3.06-2.45a11 11 0 0 0 1.38-2.85 4.41 4.41 0 0 1-2.68-4.04Z"/></svg> macOS</button>
+<button id="mpress-tabs-1f483c09-tab-3" role="tab" type="button" class="mpress-tab-os mpress-tab-os-linux" aria-selected="false" aria-controls="mpress-tabs-1f483c09-panel-3" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-linux" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.7 17.6c-.1-.2-.2-.4-.2-.6 0-.4-.2-.7-.5-1-.1-.1-.3-.2-.4-.2.6-1.8-.3-3.6-1.3-4.9-.8-1.2-2-2.1-1.9-3.7 0-1.9.2-5.4-3.3-5.1-3.6.2-2.6 3.9-2.7 5.2 0 1.1-.5 2.2-1.3 3.1-.2.2-.4.5-.5.7-1 1.2-1.5 2.8-1.5 4.3-.2.2-.4.4-.5.6-.1.1-.2.2-.2.3-.1.1-.3.2-.5.3-.4.1-.7.3-.9.7-.1.3-.2.7-.1 1.1.1.2.1.4 0 .7-.2.4-.2.9 0 1.4.3.4.8.5 1.5.6.5 0 1.1.2 1.6.4.5.3 1.1.5 1.7.5.3 0 .7-.1 1-.2.3-.2.5-.4.6-.7.4 0 1-.2 1.7-.2.6 0 1.2.2 2 .1 0 .1 0 .2.1.3.2.5.7.9 1.3 1h.2c.8-.1 1.6-.5 2.1-1.1.4-.4.9-.7 1.4-.9.6-.3 1-.5 1.1-1 .1-.7-.1-1.1-.5-1.7zM12.8 4.8c.6.1 1.1.6 1 1.2 0 .3-.1.6-.3.9h-.1c-.2-.1-.3-.1-.4-.2.1-.1.1-.3.2-.5 0-.4-.2-.7-.4-.7-.3 0-.5.3-.5.7v.1c-.1-.1-.3-.1-.4-.2V6c-.1-.5.3-1.1.9-1.2zm-.3 2c.1.1.3.2.4.2.1 0 .3.1.4.2.2.1.4.2.4.5s-.3.6-.9.8c-.2.1-.3.1-.4.2-.3.2-.6.3-1 .3-.3 0-.6-.2-.8-.4-.1-.1-.2-.2-.4-.3-.1-.1-.3-.3-.4-.6 0-.1.1-.2.2-.3.3-.2.4-.3.5-.4l.1-.1c.2-.3.6-.5 1-.5.3.1.6.2.9.4zM10.4 5c.4 0 .7.4.8 1.1v.2c-.1 0-.3.1-.4.2v-.2c0-.3-.2-.6-.4-.5-.2 0-.3.3-.3.6 0 .2.1.3.2.4 0 0-.1.1-.2.1-.2-.2-.4-.5-.4-.8 0-.6.3-1.1.7-1.1zm-1 16.1c-.7.3-1.6.2-2.2-.2-.6-.3-1.1-.4-1.8-.4-.5-.1-1-.1-1.1-.3-.1-.2-.1-.5.1-1 .1-.3.1-.6 0-.9-.1-.3-.1-.5 0-.8.1-.3.3-.4.6-.5.3-.1.5-.2.7-.4.1-.1.2-.2.3-.4.3-.4.5-.6.8-.6.6.1 1.1 1 1.5 1.9.2.3.4.7.7 1 .4.5.9 1.2.9 1.6 0 .5-.2.8-.5 1zm4.9-2.2c0 .1 0 .1-.1.2-1.2.9-2.8 1-4.1.3l-.6-.9c.9-.1.7-1.3-1.2-2.5-2-1.3-.6-3.7.1-4.8.1-.1.1 0-.3.8-.3.6-.9 2.1-.1 3.2 0-.8.2-1.6.5-2.4.7-1.3 1.2-2.8 1.5-4.3.1.1.1.1.2.1.1.1.2.2.3.2.2.3.6.4.9.4h.1c.4 0 .8-.1 1.1-.4.1-.1.2-.2.4-.2.3-.1.6-.3.9-.6.4 1.3.8 2.5 1.4 3.6.4.8.7 1.6.9 2.5.3 0 .7.1 1 .3.8.4 1.1.7 1 1.2H18c0-.3-.2-.6-.9-.9-.7-.3-1.3-.3-1.5.4-.1 0-.2.1-.3.1-.8.4-.8 1.5-.9 2.6.1.4 0 .7-.1 1.1zm4.6.6c-.6.2-1.1.6-1.5 1.1-.4.6-1.1 1-1.9.9-.4 0-.8-.3-.9-.7-.1-.6-.1-1.2.2-1.8.1-.4.2-.7.3-1.1.1-1.2.1-1.9.6-2.2 0 .5.3.8.7 1 .5 0 1-.1 1.4-.5h.2c.3 0 .5 0 .7.2.2.2.3.5.3.7 0 .3.2.6.3.9.5.5.5.8.5.9-.1.2-.5.4-.9.6zm-9-12c-.1 0-.1 0-.1.1 0 0 0 .1.1.1s.1.1.1.1c.3.4.8.6 1.4.7.5-.1 1-.2 1.5-.6l.6-.3c.1 0 .1-.1.1-.1 0-.1 0-.1-.1-.1-.2.1-.5.2-.7.3-.4.3-.9.5-1.4.5-.5 0-.9-.3-1.2-.6-.1 0-.2-.1-.3-.1z"/></svg> Linux</button>
+</div>
+<div id="mpress-tabs-1f483c09-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-1f483c09-tab-1">
+<p><strong>Windows-specific features:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Flash taskbar button&#10;window.Flash(true)  // Start flashing&#10;window.Flash(false) // Stop flashing&#10;&#10;// Trigger Windows 11 Snap Assist (Win+Z)&#10;window.SnapAssist()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Flash taskbar button</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Flash</span>(<span class="mpress-token-keyword">true</span>)  <span class="mpress-token-comment">// Start flashing</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Flash</span>(<span class="mpress-token-keyword">false</span>) <span class="mpress-token-comment">// Stop flashing</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Trigger Windows 11 Snap Assist (Win+Z)</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SnapAssist</span>()</span></code></pre></div>
+<p>There is no per-window <code>SetIcon</code> — the application icon is set on the app via <code>app.SetIcon([]byte)</code> (or for a Linux-specific window icon, the <code>application.LinuxWindow.Icon</code> field at window creation).</p>
+<p><strong>Snap Assist:</strong>
+Shows Windows 11 snap layout options through the system shortcut path. For a custom HTML maximize button with native hover Snap Layouts, use <a href="/features/windows/frameless/#native-non-client-regions-on-windows">Native Non-Client Regions on Windows</a> instead.</p>
+<p><strong>Taskbar flashing:</strong>
+Useful for notifications when window is minimised.</p>
+</div>
+<div id="mpress-tabs-1f483c09-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-1f483c09-tab-2" hidden>
+<p><strong>macOS-specific features:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Transparent title bar&#10;window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Mac: application.MacWindow{&#10;        TitleBar: application.MacTitleBar{&#10;            AppearsTransparent: true,&#10;        },&#10;        Backdrop: application.MacBackdropTranslucent,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Transparent title bar</span>
+</span><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Mac</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">TitleBar</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacTitleBar</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">AppearsTransparent</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Backdrop</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacBackdropTranslucent</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Backdrop types:</strong></p>
+<ul>
+<li><code>MacBackdropNormal</code> - Standard window</li>
+<li><code>MacBackdropTranslucent</code> - Translucent background</li>
+<li><code>MacBackdropTransparent</code> - Fully transparent</li>
+</ul>
+<p><strong>Collection behavior:</strong>
+Control how windows behave across Spaces:</p>
+<ul>
+<li><code>MacWindowCollectionBehaviorCanJoinAllSpaces</code> - Visible on all Spaces</li>
+<li><code>MacWindowCollectionBehaviorFullScreenAuxiliary</code> - Can overlay fullscreen apps</li>
+</ul>
+<p><strong>Native fullscreen:</strong>
+macOS fullscreen creates a new Space (virtual desktop).</p>
+</div>
+<div id="mpress-tabs-1f483c09-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-1f483c09-tab-3" hidden>
+<p><strong>Linux-specific features:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)&#10;window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Linux: application.LinuxWindow{&#10;        Icon: iconBytes,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Set window icon (per-window struct is LinuxWindow, not the app-level LinuxOptions)</span>
+</span><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Linux</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">LinuxWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Icon</span><span class="mpress-token-operator">:</span> iconBytes,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Desktop environment notes:</strong></p>
+<ul>
+<li>GNOME: Full support</li>
+<li>KDE Plasma: Full support</li>
+<li>XFCE: Partial support</li>
+<li>Others: Varies</li>
+</ul>
+<p><strong>Tiling window managers (Hyprland, Sway, i3, etc.):</strong></p>
+<ul>
+<li><code>Minimise()</code> and <code>Maximise()</code> may not work as expected - the WM controls window geometry</li>
+<li><code>SetSize()</code> and <code>SetPosition()</code> requests are advisory and may be ignored</li>
+<li><code>Fullscreen()</code> typically works as expected</li>
+<li>Some WMs don&rsquo;t support always-on-top</li>
+</ul>
+</div>
+</ot-tabs>
+<h2 id="common-patterns">Common Patterns</h2>
+<h3 id="splash-screen">Splash Screen</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Create splash screen&#10;splash := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:     &#34;Loading...&#34;,&#10;    Width:     400,&#10;    Height:    300,&#10;    Frameless: true,&#10;    AlwaysOnTop: true,&#10;})&#10;&#10;// Show splash&#10;splash.Show()&#10;&#10;// Initialise application&#10;time.Sleep(2 * time.Second)&#10;&#10;// Hide splash, show main window&#10;splash.Close()&#10;mainWindow.Show()"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Create splash screen</span>
+</span><span class="mpress-code-line">splash <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>     <span class="mpress-token-string">&#34;Loading...&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>     <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-number">300</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Frameless</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AlwaysOnTop</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Show splash</span>
+</span><span class="mpress-code-line">splash.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Initialise application</span>
+</span><span class="mpress-code-line">time.<span class="mpress-token-function">Sleep</span>(<span class="mpress-token-number">2</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Second</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Hide splash, show main window</span>
+</span><span class="mpress-code-line">splash.<span class="mpress-token-function">Close</span>()
+</span><span class="mpress-code-line">mainWindow.<span class="mpress-token-function">Show</span>()</span></code></pre></div>
+<h3 id="settings-window">Settings Window</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="var settingsWindow *application.WebviewWindow&#10;&#10;func showSettings() {&#10;    if settingsWindow == nil {&#10;        settingsWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;            Name:   &#34;settings&#34;,&#10;            Title:  &#34;Settings&#34;,&#10;            Width:  600,&#10;            Height: 400,&#10;        })&#10;    }&#10;    &#10;    settingsWindow.Show()&#10;    settingsWindow.Focus()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> settingsWindow <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WebviewWindow</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">showSettings</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> settingsWindow <span class="mpress-token-operator">==</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        settingsWindow <span class="mpress-token-operator">=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;settings&#34;</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Settings&#34;</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">        })
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    settingsWindow.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">    settingsWindow.<span class="mpress-token-function">Focus</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="confirm-before-close">Confirm Before Close</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {&#10;    if hasUnsavedChanges() {&#10;        // Show dialog&#10;        result := showConfirmDialog(&#34;Unsaved changes. Close anyway?&#34;)&#10;        if result != &#34;yes&#34; {&#10;            // Cancel the close event&#10;            event.Cancel()&#10;        }&#10;    }&#10;})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-function">hasUnsavedChanges</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Show dialog</span>
+</span><span class="mpress-code-line">        result <span class="mpress-token-operator">:=</span> <span class="mpress-token-function">showConfirmDialog</span>(<span class="mpress-token-string">&#34;Unsaved changes. Close anyway?&#34;</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> result <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;yes&#34;</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">// Cancel the close event</span>
+</span><span class="mpress-code-line">            event.<span class="mpress-token-function">Cancel</span>()
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="-do">✅ Do</h3>
+<ul>
+<li><strong>Name important windows</strong> - Easier to find later</li>
+<li><strong>Set minimum size</strong> - Prevent unusable layouts</li>
+<li><strong>Centre windows</strong> - Better UX than random position</li>
+<li><strong>Handle close events</strong> - Prevent data loss</li>
+<li><strong>Test on all platforms</strong> - Behaviour varies</li>
+<li><strong>Use appropriate sizes</strong> - Consider different screen sizes</li>
+</ul>
+<h3 id="-dont">❌ Don&rsquo;t</h3>
+<ul>
+<li><strong>Don&rsquo;t create too many windows</strong> - Confusing for users</li>
+<li><strong>Don&rsquo;t forget to close windows</strong> - Memory leaks</li>
+<li><strong>Don&rsquo;t hardcode positions</strong> - Different screen sizes</li>
+<li><strong>Don&rsquo;t ignore platform differences</strong> - Test thoroughly</li>
+<li><strong>Don&rsquo;t block the UI thread</strong> - Use goroutines for long operations</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="window-not-showing">Window Not Showing</h3>
+<p><strong>Possible causes:</strong></p>
+<ol>
+<li>Window created as hidden</li>
+<li>Window off-screen</li>
+<li>Window behind other windows</li>
+</ol>
+<p><strong>Solution:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.Show()&#10;window.Center()&#10;window.Focus()"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Center</span>()
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">Focus</span>()</span></code></pre></div>
+<h3 id="window-wrong-size">Window Wrong Size</h3>
+<p><strong>Cause:</strong> DPI scaling on Windows/Linux</p>
+<p><strong>Solution:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Wails handles DPI automatically&#10;// Just use logical pixels&#10;window.SetSize(800, 600)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Wails handles DPI automatically</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Just use logical pixels</span>
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">SetSize</span>(<span class="mpress-token-number">800</span>, <span class="mpress-token-number">600</span>)</span></code></pre></div>
+<h3 id="window-closes-immediately">Window Closes Immediately</h3>
+<p><strong>Cause:</strong> Application exits when last window closes</p>
+<p><strong>Solution:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Mac: application.MacOptions{&#10;        ApplicationShouldTerminateAfterLastWindowClosed: false,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Mac</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">ApplicationShouldTerminateAfterLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="next-steps">Next Steps</h2>
+<div class="mpress-card-grid mpress-cards mpress-cards-2">
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" aria-hidden="true"><path d="M12.22 2h-.44C9.28 2 8 3.28 8 5.78v.44C8 8.72 6.72 10 4.22 10h-.44C1.28 10 0 11.28 0 13.78v.44C0 16.72 1.28 18 3.78 18h.44C6.72 18 8 19.28 8 21.78v.44C8 24.72 9.28 26 11.78 26h.44" transform="scale(.75) translate(4 3)"/><circle cx="12" cy="12" r="3"/></svg></div>
+    <div class="mpress-card-title">Window Options</div>
+<div class="mpress-card-desc">
+<p>Complete reference for all window options.</p>
+<p><a href="/features/windows/options/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div>
+    <div class="mpress-card-title">Multiple Windows</div>
+<div class="mpress-card-desc">
+<p>Patterns for multi-window applications.</p>
+<p><a href="/features/windows/multiple/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.164.75a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.61 1.88l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.97 0l-4.618 2.428a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.162 9.79a.53.53 0 0 1 .294-.906l5.165-.75a2.12 2.12 0 0 0 1.594-1.16z"/></svg></div>
+    <div class="mpress-card-title">Frameless Windows</div>
+<div class="mpress-card-desc">
+<p>Create custom window chrome.</p>
+<p><a href="/features/windows/frameless/">Learn More →</a></p>
+</div>
+  </div>
+  <div class="mpress-card">
+    <div class="mpress-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.87 12.87 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+    <div class="mpress-card-title">Window Events</div>
+<div class="mpress-card-desc">
+<p>Handle window lifecycle events.</p>
+<p><a href="/features/windows/events/">Learn More →</a></p>
+</div>
+  </div>
+</div>
+<hr>
+<p><strong>Questions?</strong> Ask in <a href="https://discord.gg/JDdSxwjhGf">Discord</a> or check the <a href="https://github.com/wailsapp/wails/tree/master/v3/examples">window examples</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/features/windows/basics.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:32Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../concepts/build-system/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Build System</strong></a><a rel="next" href="../../../features/windows/options/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Window Options</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#window-management">Window Management</a><a class="toc-level-2" href="#quick-start">Quick Start</a><a class="toc-level-2" href="#creating-windows">Creating Windows</a><a class="toc-level-3" href="#basic-window">Basic Window</a><a class="toc-level-3" href="#window-with-options">Window with Options</a><a class="toc-level-3" href="#named-windows">Named Windows</a><a class="toc-level-2" href="#controlling-windows">Controlling Windows</a><a class="toc-level-3" href="#show-and-hide">Show and Hide</a><a class="toc-level-3" href="#position-and-size">Position and Size</a><a class="toc-level-3" href="#window-state">Window State</a><a class="toc-level-3" href="#title-and-appearance">Title and Appearance</a><a class="toc-level-3" href="#closing-windows">Closing Windows</a><a class="toc-level-2" href="#finding-windows">Finding Windows</a><a class="toc-level-3" href="#by-name">By Name</a><a class="toc-level-3" href="#by-id">By ID</a><a class="toc-level-3" href="#current-window">Current Window</a><a class="toc-level-3" href="#all-windows">All Windows</a><a class="toc-level-2" href="#window-lifecycle">Window Lifecycle</a><a class="toc-level-3" href="#creation">Creation</a><a class="toc-level-3" href="#closing">Closing</a><a class="toc-level-3" href="#destruction">Destruction</a><a class="toc-level-2" href="#multiple-windows">Multiple Windows</a><a class="toc-level-3" href="#creating-multiple-windows">Creating Multiple Windows</a><a class="toc-level-3" href="#window-communication">Window Communication</a><a class="toc-level-3" href="#parent-child-windows">Parent-Child Windows</a><a class="toc-level-2" href="#platform-specific-features">Platform-Specific Features</a><a class="toc-level-2" href="#common-patterns">Common Patterns</a><a class="toc-level-3" href="#splash-screen">Splash Screen</a><a class="toc-level-3" href="#settings-window">Settings Window</a><a class="toc-level-3" href="#confirm-before-close">Confirm Before Close</a><a class="toc-level-2" href="#best-practices">Best Practices</a><a class="toc-level-3" href="#-do">✅ Do</a><a class="toc-level-3" href="#-dont">❌ Don’t</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-3" href="#window-not-showing">Window Not Showing</a><a class="toc-level-3" href="#window-wrong-size">Window Wrong Size</a><a class="toc-level-3" href="#window-closes-immediately">Window Closes Immediately</a><a class="toc-level-2" href="#next-steps">Next Steps</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

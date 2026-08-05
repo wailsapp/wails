@@ -1,0 +1,439 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aplikasi Wails dengan Self-Update · Wails</title><meta name="description" content="Bangun aplikasi Wails v3 yang memperbarui dirinya sendiri dari GitHub Releases — dari `wails3 init` hingga verifikasi rilis yang ditandatangani dan pertukaran biner mode helper."><link rel="canonical" href="https://v3.wails.io/id/tutorials/04-self-update-a-wails-app/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/tutorials/04-self-update-a-wails-app/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/tutorials/04-self-update-a-wails-app/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/tutorials/04-self-update-a-wails-app/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>English</span></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/tutorials/04-self-update-a-wails-app/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/tutorials/04-self-update-a-wails-app/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../id/">Home</a><a class="" href="../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/quick-start/installation/">Installation</a><a class="" href="../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../id/quick-start/next-steps/">Next Steps</a></div></details><details open><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../id/tutorials/overview/">Tutorial</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../id/features/windows/options/">Window Options</a><a class="" href="../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../id/features/bindings/services/">Services</a><a class="" href="../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/events/system/">Event System</a><a class="" href="../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/mobile/">Overview</a><a class="" href="../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../id/guides/mobile/android/">Android</a><a class="" href="../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/experimental/">Overview</a><a class="" href="../../../id/experimental/wake/">Wake</a><a class="" href="../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../id/guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/server-build/">Server Build</a><a class="" href="../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/reference/overview/">Overview</a><a class="" href="../../../id/reference/application/">Application</a><a class="" href="../../../id/reference/window/">Window</a><a class="" href="../../../id/reference/menu/">Menu</a><a class="" href="../../../id/reference/events/">Events</a><a class="" href="../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../id/reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/links/">Links</a><a class="" href="../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../id/community/showcase/october/">October</a><a class="" href="../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../id/status/">Status</a><a class="" href="../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Aplikasi Wails dengan Self-Update</h1><p>Dalam tutorial ini Anda akan menambahkan updater dalam aplikasi ke aplikasi Wails v3 baru. Di akhir, aplikasi akan:</p>
+<ul>
+<li>Mengecek GitHub Releases sesuai permintaan (dan opsional dengan timer).</li>
+<li>Mengunduh asset yang tepat untuk OS + arsitektur yang sedang berjalan.</li>
+<li>Memverifikasi digest SHA-256 (dan opsional tanda tangan Ed25519) terhadap byte yang diunduh.</li>
+<li>Menampilkan release notes di jendela update default framework.</li>
+<li>Menukar biner yang sedang berjalan dan meluncurkan ulang — semua tanpa mengirim executable helper terpisah.</li>
+</ul>
+<p>Kita akan menggunakan <strong>GitHub Releases</strong> sebagai sumber update karena gratis dan tidak memerlukan infrastruktur. Pola yang sama bekerja dengan <a href="/id/guides/updater/#keygensh--updaterproviderskeygen">keygen.sh</a> dan <a href="/id/guides/updater/#sparkle-appcast--updaterprovidersappcast">Sparkle AppCast</a> — lihat <a href="/id/guides/updater/">panduan Updater</a> setelah selesai.</p>
+<aside aria-label="Prasyarat" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Prasyarat</span></p>
+<div class="mpress-admonition-body">
+<ul>
+<li>Go 1.25 atau lebih baru</li>
+<li>CLI <code>wails3</code> terinstal (<code>go install github.com/wailsapp/wails/v3/cmd/wails3@latest</code>)</li>
+<li>Repositori GitHub tempat Anda dapat mendorong rilis</li>
+<li>Familiar dengan <a href="/id/tutorials/01-creating-a-service/">tutorial Layanan QR Code</a> membantu tetapi tidak wajib</li>
+</ul>
+</div>
+</aside>
+<br/>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Mulai dengan aplikasi Wails baru</h4>
+<div class="mpress-step-content">
+<p>Buat proyek baru dengan template vanilla:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 init --template vanilla --name updater-tutorial
+cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanilla --name updater-tutorial</span>
+<span class="mpress-cmd">cd updater-tutorial</span>
+</code></pre>
+</div>
+<p>Anda sekarang seharusnya memiliki direktori dengan <code>main.go</code>, <code>frontend/</code>, dan <code>Taskfile.yml</code>. Konfirmasi dapat di-build dan diluncurkan:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task dev"><code><span class="mpress-cmd">wails3 task dev</span>
+</code></pre>
+</div>
+<p>Jendela Wails kosong seharusnya terbuka. Keluar dan lanjutkan.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">2</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Tambahkan import updater</h4>
+<div class="mpress-step-content">
+<p>Buka <code>main.go</code> dan tambahkan dua paket updater ke import Anda:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    _ &#34;embed&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    _ <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line mpress-code-line-inserted">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line mpress-code-line-inserted">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;</span>
+</span><span class="mpress-code-line">)</span></code></pre></div>
+<p>Ini menarik Updater itu sendiri dan provider GitHub Releases.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">3</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Konfigurasi Updater</h4>
+<div class="mpress-step-content">
+<p><code>app.Updater</code> sudah terhubung ke setiap <code>*application.App</code> — Anda hanya perlu memanggil <code>Init</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const currentVersion = &#34;1.0.0&#34;&#10;&#10;gh, err := github.New(github.Config{&#10;    Repository:    &#34;yourorg/your-repo&#34;,   // ← change this&#10;    ChecksumAsset: &#34;SHA256SUMS&#34;,          // sibling file with sha256 digests&#10;})&#10;if err != nil {&#10;    log.Fatalf(&#34;github.New: %v&#34;, err)&#10;}&#10;&#10;if err := app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;}); err != nil {&#10;    log.Fatalf(&#34;Updater.Init: %v&#34;, err)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> currentVersion <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">gh, err <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;yourorg/your-repo&#34;</span>,   <span class="mpress-token-comment">// ← change this</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ChecksumAsset</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;SHA256SUMS&#34;</span>,          <span class="mpress-token-comment">// sibling file with sha256 digests</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Fatalf</span>(<span class="mpress-token-string">&#34;github.New: %v&#34;</span>, err)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> currentVersion,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{gh},
+</span><span class="mpress-code-line">}); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Fatalf</span>(<span class="mpress-token-string">&#34;Updater.Init: %v&#34;</span>, err)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Tempatkan ini setelah <code>application.New</code> dan sebelum <code>app.Run()</code>.</p>
+<aside aria-label="Format string versi" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Format string versi</span></p>
+<div class="mpress-admonition-body">
+<p>Teruskan versi yang sama dengan yang Anda tag untuk rilis, <strong>tanpa</strong> awalan <code>v</code>. Provider menghapus <code>v</code> dari nama tag di sisinya. <code>1.0.0</code> di sini ↔ <code>v1.0.0</code> di GitHub.</p>
+</div>
+</aside>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">4</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Tambahkan item menu yang memicu update</h4>
+<div class="mpress-step-content">
+<p>Di <code>main.go</code> yang sama, tambahkan entri menu &ldquo;Check for Updates…&rdquo;:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="menu := app.Menu.New()&#10;app.Menu.SetApplicationMenu(menu)&#10;appMenu := menu.AddSubmenu(&#34;App&#34;)&#10;appMenu.Add(&#34;Check for Updates…&#34;).OnClick(func(*application.Context) {&#10;    go func() {&#10;        if err := app.Updater.CheckAndInstall(context.Background()); err != nil {&#10;            app.Logger.Error(&#34;update&#34;, &#34;error&#34;, err)&#10;        }&#10;    }()&#10;})"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">SetApplicationMenu</span>(menu)
+</span><span class="mpress-code-line">appMenu <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">AddSubmenu</span>(<span class="mpress-token-string">&#34;App&#34;</span>)
+</span><span class="mpress-code-line">appMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Check for Updates…&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(<span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">go</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">CheckAndInstall</span>(context.<span class="mpress-token-function">Background</span>()); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">            app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Error</span>(<span class="mpress-token-string">&#34;update&#34;</span>, <span class="mpress-token-string">&#34;error&#34;</span>, err)
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }()
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><code>CheckAndInstall</code> membuka jendela update framework, menjalankan <code>Check</code>, dan jika rilis ditemukan, menjalankan <code>DownloadAndInstall</code> otomatis. Jendela tetap terbuka dalam state &ldquo;Up to Date&rdquo; saat tidak ada yang baru — pengguna menutupnya dengan tombol <strong>Close</strong>.</p>
+<aside aria-label="Jalankan di goroutine" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>Jalankan di goroutine</span></p>
+<div class="mpress-admonition-body">
+<p><code>CheckAndInstall</code> memblokir sampai verify + install selesai. Memanggilnya langsung dari klik menu akan memblokir thread UI. Bungkus dengan <code>go func()</code>.</p>
+</div>
+</aside>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">5</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Jalankan sekali tanpa rilis</h4>
+<div class="mpress-step-content">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task dev"><code><span class="mpress-cmd">wails3 task dev</span>
+</code></pre>
+</div>
+<p>Klik <strong>App → Check for Updates…</strong>. Anda seharusnya melihat jendela update terbuka sebentar, mengakses API GitHub, tidak menemukan rilis lebih baru dari <code>1.0.0</code>, dan menetap pada state <strong>Up to Date</strong> dengan ✓ hijau.</p>
+<p>Jika Anda mendapat error di sini, biasanya salah satu dari:</p>
+<table>
+<thead>
+<tr>
+<th>Gejala</th>
+<th>Perbaikan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>Field <code>Repository</code> salah — harus <code>owner/repo</code></td>
+</tr>
+<tr>
+<td><code>403 rate-limited</code></td>
+<td>Tambahkan <code>Token: &quot;ghp_…&quot;</code> ke github.Config (gunakan PAT dengan scope <code>public_repo</code>)</td>
+</tr>
+<tr>
+<td>Network errors</td>
+<td>Konfirmasi aplikasi yang berjalan dapat mengakses <code>api.github.com</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">6</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Terbitkan rilis uji</h4>
+<div class="mpress-step-content">
+<p>Naikkan <code>currentVersion</code> di <code>main.go</code> ke <code>1.0.0</code> (atau biarkan). Build untuk satu platform untuk mendapatkan biner yang dapat dilampirkan ke rilis:</p>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-2bd3a74a">
+<div role="tablist">
+<button id="mpress-tabs-2bd3a74a-tab-1" role="tab" type="button" class="mpress-tab-os mpress-tab-os-macos" aria-selected="true" aria-controls="mpress-tabs-2bd3a74a-panel-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-apple" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42Zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12.45 4.24 17 6 19.47c.8 1.21 1.8 2.58 3.12 2.53s1.75-.82 3.28-.82 2 .82 3.3.79 2.22-1.24 3.06-2.45a11 11 0 0 0 1.38-2.85 4.41 4.41 0 0 1-2.68-4.04Z"/></svg> macOS</button>
+<button id="mpress-tabs-2bd3a74a-tab-2" role="tab" type="button" class="mpress-tab-os mpress-tab-os-linux" aria-selected="false" aria-controls="mpress-tabs-2bd3a74a-panel-2" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-linux" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.7 17.6c-.1-.2-.2-.4-.2-.6 0-.4-.2-.7-.5-1-.1-.1-.3-.2-.4-.2.6-1.8-.3-3.6-1.3-4.9-.8-1.2-2-2.1-1.9-3.7 0-1.9.2-5.4-3.3-5.1-3.6.2-2.6 3.9-2.7 5.2 0 1.1-.5 2.2-1.3 3.1-.2.2-.4.5-.5.7-1 1.2-1.5 2.8-1.5 4.3-.2.2-.4.4-.5.6-.1.1-.2.2-.2.3-.1.1-.3.2-.5.3-.4.1-.7.3-.9.7-.1.3-.2.7-.1 1.1.1.2.1.4 0 .7-.2.4-.2.9 0 1.4.3.4.8.5 1.5.6.5 0 1.1.2 1.6.4.5.3 1.1.5 1.7.5.3 0 .7-.1 1-.2.3-.2.5-.4.6-.7.4 0 1-.2 1.7-.2.6 0 1.2.2 2 .1 0 .1 0 .2.1.3.2.5.7.9 1.3 1h.2c.8-.1 1.6-.5 2.1-1.1.4-.4.9-.7 1.4-.9.6-.3 1-.5 1.1-1 .1-.7-.1-1.1-.5-1.7zM12.8 4.8c.6.1 1.1.6 1 1.2 0 .3-.1.6-.3.9h-.1c-.2-.1-.3-.1-.4-.2.1-.1.1-.3.2-.5 0-.4-.2-.7-.4-.7-.3 0-.5.3-.5.7v.1c-.1-.1-.3-.1-.4-.2V6c-.1-.5.3-1.1.9-1.2zm-.3 2c.1.1.3.2.4.2.1 0 .3.1.4.2.2.1.4.2.4.5s-.3.6-.9.8c-.2.1-.3.1-.4.2-.3.2-.6.3-1 .3-.3 0-.6-.2-.8-.4-.1-.1-.2-.2-.4-.3-.1-.1-.3-.3-.4-.6 0-.1.1-.2.2-.3.3-.2.4-.3.5-.4l.1-.1c.2-.3.6-.5 1-.5.3.1.6.2.9.4zM10.4 5c.4 0 .7.4.8 1.1v.2c-.1 0-.3.1-.4.2v-.2c0-.3-.2-.6-.4-.5-.2 0-.3.3-.3.6 0 .2.1.3.2.4 0 0-.1.1-.2.1-.2-.2-.4-.5-.4-.8 0-.6.3-1.1.7-1.1zm-1 16.1c-.7.3-1.6.2-2.2-.2-.6-.3-1.1-.4-1.8-.4-.5-.1-1-.1-1.1-.3-.1-.2-.1-.5.1-1 .1-.3.1-.6 0-.9-.1-.3-.1-.5 0-.8.1-.3.3-.4.6-.5.3-.1.5-.2.7-.4.1-.1.2-.2.3-.4.3-.4.5-.6.8-.6.6.1 1.1 1 1.5 1.9.2.3.4.7.7 1 .4.5.9 1.2.9 1.6 0 .5-.2.8-.5 1zm4.9-2.2c0 .1 0 .1-.1.2-1.2.9-2.8 1-4.1.3l-.6-.9c.9-.1.7-1.3-1.2-2.5-2-1.3-.6-3.7.1-4.8.1-.1.1 0-.3.8-.3.6-.9 2.1-.1 3.2 0-.8.2-1.6.5-2.4.7-1.3 1.2-2.8 1.5-4.3.1.1.1.1.2.1.1.1.2.2.3.2.2.3.6.4.9.4h.1c.4 0 .8-.1 1.1-.4.1-.1.2-.2.4-.2.3-.1.6-.3.9-.6.4 1.3.8 2.5 1.4 3.6.4.8.7 1.6.9 2.5.3 0 .7.1 1 .3.8.4 1.1.7 1 1.2H18c0-.3-.2-.6-.9-.9-.7-.3-1.3-.3-1.5.4-.1 0-.2.1-.3.1-.8.4-.8 1.5-.9 2.6.1.4 0 .7-.1 1.1zm4.6.6c-.6.2-1.1.6-1.5 1.1-.4.6-1.1 1-1.9.9-.4 0-.8-.3-.9-.7-.1-.6-.1-1.2.2-1.8.1-.4.2-.7.3-1.1.1-1.2.1-1.9.6-2.2 0 .5.3.8.7 1 .5 0 1-.1 1.4-.5h.2c.3 0 .5 0 .7.2.2.2.3.5.3.7 0 .3.2.6.3.9.5.5.5.8.5.9-.1.2-.5.4-.9.6zm-9-12c-.1 0-.1 0-.1.1 0 0 0 .1.1.1s.1.1.1.1c.3.4.8.6 1.4.7.5-.1 1-.2 1.5-.6l.6-.3c.1 0 .1-.1.1-.1 0-.1 0-.1-.1-.1-.2.1-.5.2-.7.3-.4.3-.9.5-1.4.5-.5 0-.9-.3-1.2-.6-.1 0-.2-.1-.3-.1z"/></svg> Linux</button>
+<button id="mpress-tabs-2bd3a74a-tab-3" role="tab" type="button" class="mpress-tab-os mpress-tab-os-windows" aria-selected="false" aria-controls="mpress-tabs-2bd3a74a-panel-3" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-seti-windows" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0.125 11.544L0.125 3.450L9.815 2.120L9.815 11.506L0.125 11.544ZM0.125 12.532L9.815 12.570L9.815 21.956L0.125 20.626L0.125 12.532ZM10.993 11.468L10.993 1.968L23.837 0.106L23.837 11.392L10.993 11.468ZM10.955 12.646L23.875 12.684L23.837 23.894L10.993 22.108L10.955 12.646Z"/></svg> Windows</button>
+</div>
+<div id="mpress-tabs-2bd3a74a-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-2bd3a74a-tab-1">
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build:darwin
+cd bin &amp;&amp; zip -r updater-tutorial-darwin-arm64.zip updater-tutorial.app &amp;&amp; cd .."><code><span class="mpress-cmd">wails3 task build:darwin</span>
+<span class="mpress-output"># produces bin/updater-tutorial.app</span>
+<span class="mpress-output"># zip it for the release asset:</span>
+<span class="mpress-cmd">cd bin &amp;&amp; zip -r updater-tutorial-darwin-arm64.zip updater-tutorial.app &amp;&amp; cd ..</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-2bd3a74a-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-2bd3a74a-tab-2" hidden>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build:linux
+mv bin/updater-tutorial bin/updater-tutorial-linux-amd64"><code><span class="mpress-cmd">wails3 task build:linux</span>
+<span class="mpress-output"># produces bin/updater-tutorial</span>
+<span class="mpress-cmd">mv bin/updater-tutorial bin/updater-tutorial-linux-amd64</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-2bd3a74a-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-2bd3a74a-tab-3" hidden>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build:windows
+mv bin/updater-tutorial.exe bin/updater-tutorial-windows-amd64.exe"><code><span class="mpress-cmd">wails3 task build:windows</span>
+<span class="mpress-output"># produces bin/updater-tutorial.exe</span>
+<span class="mpress-cmd">mv bin/updater-tutorial.exe bin/updater-tutorial-windows-amd64.exe</span>
+</code></pre>
+</div>
+</div>
+</ot-tabs>
+<p>Buat file <code>SHA256SUMS</code> di samping biner:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="cd bin
+shasum -a 256 updater-tutorial-* &gt; SHA256SUMS
+cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
+<span class="mpress-cmd">shasum -a 256 updater-tutorial-* &gt; SHA256SUMS</span>
+<span class="mpress-cmd">cat SHA256SUMS</span>
+</code></pre>
+</div>
+<p>Anda seharusnya melihat satu atau lebih baris seperti:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="abc123…  updater-tutorial-darwin-arm64.zip"><code class="language-text"><span class="mpress-code-line">abc123…  updater-tutorial-darwin-arm64.zip</span></code></pre></div>
+<p>Sekarang terbitkan ini sebagai <strong>v2.0.0</strong> di repositori GitHub Anda:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="gh release create v2.0.0 \
+    --title &#34;v2.0.0&#34; \
+    --notes &#34;First update for the self-update tutorial.
+- **Bold** Markdown renders in the update window
+- \`Code spans\` too
+- Lists work
+- GFM tables work&#34; \
+    bin/SHA256SUMS bin/updater-tutorial-*"><code><span class="mpress-cmd">gh release create v2.0.0 \</span>
+<span class="mpress-cmd">    --title &#34;v2.0.0&#34; \</span>
+<span class="mpress-cmd">    --notes &#34;First update for the self-update tutorial.</span>
+<span class="mpress-output"></span>
+<span class="mpress-cmd">- **Bold** Markdown renders in the update window</span>
+<span class="mpress-cmd">- \`Code spans\` too</span>
+<span class="mpress-cmd">- Lists work</span>
+<span class="mpress-cmd">- GFM tables work&#34; \</span>
+<span class="mpress-cmd">    bin/SHA256SUMS bin/updater-tutorial-*</span>
+</code></pre>
+</div>
+<aside aria-label="Penamaan asset" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Penamaan asset</span></p>
+<div class="mpress-admonition-body">
+<p>Matcher asset default memilih berdasarkan substring <code>GOOS</code> + <code>GOARCH</code> pada nama file. Selama nama asset Anda menyertakan <code>darwin</code> (atau <code>linux</code> / <code>windows</code>) dan <code>arm64</code> (atau <code>amd64</code> / <code>386</code>), matcher menemukannya. Lihat <a href="/id/guides/updater/#github-releases--updaterprovidersgithub">panduan Updater</a> untuk matcher kustom.</p>
+</div>
+</aside>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">7</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Jalankan aplikasi dan verifikasi update</h4>
+<div class="mpress-step-content">
+<p>Dengan <code>currentVersion</code> masih <code>1.0.0</code>, jalankan aplikasi lagi:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task dev"><code><span class="mpress-cmd">wails3 task dev</span>
+</code></pre>
+</div>
+<p>Klik <strong>App → Check for Updates…</strong>. Kali ini Anda seharusnya melihat sesuatu seperti:</p>
+<p><img src="/assets/updater/default-window-ready.png" alt="Jendela updater default dalam state Update Ready, menampilkan pill versi, release notes yang dirender Markdown, dan tombol utama Restart &amp; Apply."></p>
+<ul>
+<li>Ikon hero berubah dari biru ↓ (&ldquo;Update Available&rdquo;) ke hijau ✓ (&ldquo;Update Ready&rdquo;).</li>
+<li>Subtitle menampilkan <code>v1.0.0 → v2.0.0 · &lt;size&gt;</code>.</li>
+<li>Panel release notes merender Markdown Anda dengan bold, code span, dan tabel.</li>
+<li>Progress bar terisi selama unduhan (cepat — biner kecil).</li>
+</ul>
+<p>Updater men-stage biner baru di direktori temp. Untuk menyelesaikan update:</p>
+<ul>
+<li>Klik <strong>Restart &amp; Apply</strong>.</li>
+<li>Aplikasi Anda keluar, helper menukar biner, biner baru diluncurkan ulang.</li>
+<li>Aplikasi yang diluncurkan ulang melaporkan <code>currentVersion = &quot;1.0.0&quot;</code> (karena kita hardcode), tetapi byte di disk sesuai build v2.0.0.</li>
+</ul>
+<p>Di aplikasi nyata, <code>currentVersion</code> akan diset saat build via <code>-ldflags</code> agar biner baru tahu sekarang v2.0.0 dan pengecekan berikutnya tidak menemukan update.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">8</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Hubungkan `currentVersion` ke build</h4>
+<div class="mpress-step-content">
+<p>Ganti konstanta dengan variabel build-time:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="var (&#10;    currentVersion = &#34;dev&#34; // overridden by -ldflags at release time&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> (
+</span><span class="mpress-code-line mpress-code-line-inserted">    currentVersion <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;dev&#34;</span> <span class="mpress-token-comment">// overridden by -ldflags at release time</span>
+</span><span class="mpress-code-line">)</span></code></pre></div>
+<p>Lalu di perintah build Anda:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build:darwin -- -ldflags &#34;-X main.currentVersion=2.0.0&#34;"><code><span class="mpress-cmd">wails3 task build:darwin -- -ldflags &#34;-X main.currentVersion=2.0.0&#34;</span>
+</code></pre>
+</div>
+<p>Atau tambahkan <code>-ldflags</code> ke <code>Taskfile.yml</code> agar mengambil dari <code>git describe --tags</code>.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">9</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Tambahkan penandatanganan kriptografis (disarankan untuk produksi)</h4>
+<div class="mpress-step-content">
+<p>Path SHA256SUMS memverifikasi <em>integritas</em> (byte sesuai yang disimpan GitHub) tetapi bukan <em>autentisitas</em> (byte tersebut diproduksi pipeline rilis Anda, bukan akun maintainer yang dikompromikan). Untuk ketahanan terhadap perubahan, tandatangani setiap rilis dengan kunci Ed25519:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="ssh-keygen -t ed25519 -f updater-key -N &#34;&#34; -C &#34;wails-updater&#34;"><code><span class="mpress-output"># One-time: generate the keypair</span>
+<span class="mpress-cmd">ssh-keygen -t ed25519 -f updater-key -N &#34;&#34; -C &#34;wails-updater&#34;</span>
+<span class="mpress-output">#   updater-key      — keep secret (build server, HSM, password manager)</span>
+<span class="mpress-output">#   updater-key.pub  — bundle in your app</span>
+</code></pre>
+</div>
+<p>Untuk setiap rilis, tandatangani digest SHA-256 setiap asset dengan kunci privat Anda. Helper Go kecil:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">cmd/sign-release/main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;crypto/ed25519&#34;&#10;    &#34;crypto/sha256&#34;&#10;    &#34;encoding/base64&#34;&#10;    &#34;fmt&#34;&#10;    &#34;io&#34;&#10;    &#34;os&#34;&#10;)&#10;&#10;func main() {&#10;    priv, _ := os.ReadFile(&#34;updater-key&#34;)&#10;    key := ed25519.PrivateKey(priv) // raw 64-byte private key&#10;&#10;    f, _ := os.Open(os.Args[1])&#10;    defer f.Close()&#10;    h := sha256.New()&#10;    _, _ = io.Copy(h, f)&#10;    sig := ed25519.Sign(key, h.Sum(nil))&#10;    fmt.Println(base64.StdEncoding.EncodeToString(sig))&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;crypto/ed25519&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;crypto/sha256&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;encoding/base64&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;fmt&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;io&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;os&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    priv, _ <span class="mpress-token-operator">:=</span> os.<span class="mpress-token-function">ReadFile</span>(<span class="mpress-token-string">&#34;updater-key&#34;</span>)
+</span><span class="mpress-code-line">    key <span class="mpress-token-operator">:=</span> ed25519.<span class="mpress-token-function">PrivateKey</span>(priv) <span class="mpress-token-comment">// raw 64-byte private key</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    f, _ <span class="mpress-token-operator">:=</span> os.<span class="mpress-token-function">Open</span>(os.<span class="mpress-token-type">Args</span>[<span class="mpress-token-number">1</span>])
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">defer</span> f.<span class="mpress-token-function">Close</span>()
+</span><span class="mpress-code-line">    h <span class="mpress-token-operator">:=</span> sha256.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    _, _ <span class="mpress-token-operator">=</span> io.<span class="mpress-token-function">Copy</span>(h, f)
+</span><span class="mpress-code-line">    sig <span class="mpress-token-operator">:=</span> ed25519.<span class="mpress-token-function">Sign</span>(key, h.<span class="mpress-token-function">Sum</span>(<span class="mpress-token-keyword">nil</span>))
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Println</span>(base64.<span class="mpress-token-type">StdEncoding</span>.<span class="mpress-token-function">EncodeToString</span>(sig))
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Provider GitHub default saat ini tidak mengambil file tanda tangan terpisah — Anda dapat <a href="/id/guides/updater/">menulis provider kustom</a> yang melakukannya, atau beralih ke <strong>keygen.sh</strong> yang menandatangani setiap artifact di sisi server dan mengekspos digest dan tanda tangan via API-nya.</p>
+<p>Embed kunci publik di aplikasi Anda:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:embed updater-key.pub&#10;var updaterPublicKey []byte&#10;&#10;app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    PublicKey:      updaterPublicKey,&#10;    Providers:      []updater.Provider{gh},&#10;})"><code class="language-go"><span class="mpress-code-line mpress-code-line-inserted"><span class="mpress-token-comment">//go:embed updater-key.pub</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> updaterPublicKey []byte
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> currentVersion,
+</span><span class="mpress-code-line mpress-code-line-inserted">    <span class="mpress-token-type">PublicKey</span><span class="mpress-token-operator">:</span>      updaterPublicKey,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{gh},
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Dengan <code>PublicKey</code> diset, rilis apa pun yang mengirim <code>Signature</code> harus diverifikasi terhadap kunci ini. Sumber rilis tidak dapat mengganti kuncinya sendiri — itulah tujuan pinning out-of-band saat build time.</p>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">10</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Sesuaikan jendela</h4>
+<div class="mpress-step-content">
+<p>Jendela default mencakup kasus umum. Tiga jalan keluar jika Anda butuh kontrol lebih — pilih satu berdasarkan seberapa banyak yang ingin disesuaikan:</p>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-2838d013">
+<div role="tablist">
+<button id="mpress-tabs-2838d013-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-2838d013-panel-1">CSS only</button>
+<button id="mpress-tabs-2838d013-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-2838d013-panel-2" tabindex="-1">Custom HTML</button>
+<button id="mpress-tabs-2838d013-tab-3" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-2838d013-panel-3" tabindex="-1">Bring your own window</button>
+</div>
+<div id="mpress-tabs-2838d013-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-2838d013-tab-1">
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{&#10;        CSS: `:root { --accent: #ff6f00; --radius: 16px; }`,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">CSS</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">`:root { --accent: #ff6f00; --radius: 16px; }`</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Lihat bagian <a href="/id/guides/updater/#theme-via-css-variables">Tema via variabel CSS</a> untuk daftar variabel lengkap.</p>
+</div>
+<div id="mpress-tabs-2838d013-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-2838d013-tab-2" hidden>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:embed updater-window.html&#10;var updaterHTML string&#10;&#10;app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{HTML: updaterHTML},&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed updater-window.html</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> updaterHTML string
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{<span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span> updaterHTML},
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>HTML Anda harus subscribe ke event <code>updater:*</code> dan emit aksi <code>updater:user:*</code> via channel event Wails. Lihat <a href="/id/guides/updater/">Ganti template</a> untuk shim JS.</p>
+</div>
+<div id="mpress-tabs-2838d013-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-2838d013-tab-3" hidden>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:                &#34;My App Updater&#34;,&#10;    Width:                520, Height: 460,&#10;    HTML:                 updaterHTML,&#10;    AllowSimpleEventEmit: true,  // required — see security note&#10;})&#10;app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),&#10;})"><code class="language-go"><span class="mpress-code-line">myWin <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-string">&#34;My App Updater&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-number">520</span>, <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">460</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span>                 updaterHTML,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AllowSimpleEventEmit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,  <span class="mpress-token-comment">// required — see security note</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-function">BYOWindow</span>(myWin.<span class="mpress-token-function">AsUpdaterWindow</span>()),
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Berguna saat Anda sudah punya infrastruktur jendela sendiri dan ingin updater mengendalikannya alih-alih membuka jendela lain. Template HTML sepenuhnya kustom — didorong oleh event updater yang sama dengan default — terlihat seperti ini:</p>
+<p><img src="/assets/updater/byo-custom-window.png" alt="Jendela updater bring-your-own dengan latar belakang gradien pink-orange dan tata letak kartu bulat kustom, mendemonstrasikan UI default sepenuhnya dapat diganti."></p>
+<aside aria-label="`AllowSimpleEventEmit` wajib" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>`AllowSimpleEventEmit` wajib</span></p>
+<div class="mpress-admonition-body">
+<p>Shim custom-HTML updater mengendalikan Install / Skip / Remind / Restart melalui shortcut postMessage <code>wails:event:emit:</code>, dan shortcut itu digated oleh field ini untuk keamanan. Melupakannya membuat tombol diam-diam no-op. Jangan aktifkan di jendela yang memuat HTML yang tidak Anda kontrol sepenuhnya — lihat bagian <a href="/id/guides/updater/#bring-your-own-window">Bring your own window</a> di panduan untuk threat model.</p>
+</div>
+</aside>
+</div>
+</ot-tabs>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">11</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Jalankan pengecekan otomatis di latar belakang</h4>
+<div class="mpress-step-content">
+<p>Untuk mengecek dengan timer alih-alih (atau selain) klik menu:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;    PublicKey:      updaterPublicKey,&#10;    CheckInterval:  6 * time.Hour,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> currentVersion,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{gh},
+</span><span class="mpress-code-line">    <span class="mpress-token-type">PublicKey</span><span class="mpress-token-operator">:</span>      updaterPublicKey,
+</span><span class="mpress-code-line mpress-code-line-inserted">    <span class="mpress-token-type">CheckInterval</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">6</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Hour</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Setiap tick menjalankan alur <code>CheckAndInstall</code> yang sama seperti klik manual. Set <code>Window: updater.WindowNone</code> jika Anda ingin pengecekan berkala diam sampai sesuatu benar-benar ditemukan — lalu subscribe ke <code>EventUpdateAvailable</code> sendiri untuk memutuskan UX apa yang ditampilkan.</p>
+</div>
+    </div>
+  </div>
+</div>
+<h2 id="selesai">Selesai</h2>
+<p>Anda sekarang memiliki aplikasi Wails yang:</p>
+<ul>
+<li>Mengecek GitHub Releases untuk update sesuai permintaan dan dengan timer.</li>
+<li>Merender release notes sebagai Markdown di jendela default yang rapi.</li>
+<li>Memverifikasi unduhan terhadap digest SHA-256 yang Anda terbitkan.</li>
+<li>Opsional memverifikasi tanda tangan Ed25519 terhadap kunci publik yang Anda embed saat build time.</li>
+<li>Menukar biner yang sedang berjalan in-place dan meluncurkan ulang otomatis.</li>
+</ul>
+<h2 id="langkah-selanjutnya">Langkah selanjutnya</h2>
+<ul>
+<li><a href="/id/guides/updater/">Panduan Updater</a> memiliki referensi API lengkap, setiap event, setiap opsi konfigurasi, dan mekanisme swap mode helper.</li>
+<li>Lihat <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/updater"><code>v3/examples/updater</code></a> untuk contoh lengkap yang dapat Anda clone.</li>
+<li>Repo target uji <a href="https://github.com/wailsapp/updater-demo"><code>wailsapp/updater-demo</code></a> menunjukkan tata letak release-asset yang disarankan.</li>
+</ul>
+<h2 id="hal-yang-perlu-diperhatikan-di-produksi">Hal yang perlu diperhatikan di produksi</h2>
+<ul>
+<li><strong>Code signing di macOS</strong> — Gatekeeper memerlukan biner yang ditukar ditandatangani dan dinotarisasi. Tandatangani bundle <code>.app</code> Anda <em>sebelum</em> zip untuk rilis. Updater mempertahankan byte verbatim; tidak menandatangani ulang apa pun.</li>
+<li><strong>Antivirus di Windows</strong> — file <code>.exe</code> unsigned yang diunduh dari internet dapat memicu peringatan SmartScreen. Tandatangani biner dengan sertifikat Authenticode, atau terima bahwa pengguna di mesin terkunci mungkin perlu whitelist aplikasi Anda.</li>
+<li><strong>Rilis atomik</strong> — terbitkan <code>SHA256SUMS</code> (dan biner Anda) bersama, bukan di commit terpisah. Updater mengambil sidecar terpisah dari biner; jika keduanya drift, pemeriksaan digest gagal closed.</li>
+<li><strong>Versi yang dilewati</strong> — tombol &ldquo;Skip This Version&rdquo; jendela default mencatat skip secara lokal. Jika Anda mengirim update keamanan kritis, beri nomor versi baru agar tidak otomatis dilewati pengguna yang menolak rilis sebelumnya.</li>
+</ul>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/tutorials/04-self-update-a-wails-app.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../id/quick-start/next-steps/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Next Steps</strong></a><a rel="next" href="../../../id/tutorials/03-notes-vanilla/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Catatan</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#selesai">Selesai</a><a class="toc-level-2" href="#langkah-selanjutnya">Langkah selanjutnya</a><a class="toc-level-2" href="#hal-yang-perlu-diperhatikan-di-produksi">Hal yang perlu diperhatikan di produksi</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

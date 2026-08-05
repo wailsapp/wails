@@ -1,0 +1,851 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Updater · Wails</title><meta name="description" content="Self-update dalam aplikasi untuk Wails v3 — provider yang dapat di-plug, verifikasi kriptografis, atomic swap, dan UI default yang dapat di-theme atau diganti."><link rel="canonical" href="https://v3.wails.io/id/guides/updater/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/updater/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/updater/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/updater/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/updater/" role="menuitem"><span>English</span></a></li><li><a href="/guides/updater/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/updater/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../id/">Home</a><a class="" href="../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/quick-start/installation/">Installation</a><a class="" href="../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../id/tutorials/overview/">Tutorial</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../id/features/windows/options/">Window Options</a><a class="" href="../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../id/features/bindings/services/">Services</a><a class="" href="../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/events/system/">Event System</a><a class="" href="../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/mobile/">Overview</a><a class="" href="../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../id/guides/mobile/android/">Android</a><a class="" href="../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/experimental/">Overview</a><a class="" href="../../../id/experimental/wake/">Wake</a><a class="" href="../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details open><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../id/guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details open><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/server-build/">Server Build</a><a class="" href="../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/reference/overview/">Overview</a><a class="" href="../../../id/reference/application/">Application</a><a class="" href="../../../id/reference/window/">Window</a><a class="" href="../../../id/reference/menu/">Menu</a><a class="" href="../../../id/reference/events/">Events</a><a class="" href="../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../id/reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/links/">Links</a><a class="" href="../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../id/community/showcase/october/">October</a><a class="" href="../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../id/status/">Status</a><a class="" href="../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Updater</h1><p>Updater menyediakan pembaruan perangkat lunak dalam aplikasi tanpa memaksa Anda membangun pipeline download / verify / swap sendiri. Updater duduk di atas <code>app.Updater</code>, menerima satu atau lebih <code>Provider</code> yang dapat di-plug (GitHub Releases, keygen.sh, Sparkle AppCast, atau milik Anda sendiri), mengautentikasi download terhadap public key yang dikonfigurasi, menukar binary yang sedang berjalan dengan aman, dan menampilkan setiap transisi melalui event bus Wails standar.</p>
+<p><img src="/assets/updater/default-window-ready.png" alt="Window updater default dalam state Update Ready — ikon aware state, pill versi (v1.0.0 → v2.0.1 · 8.8 MB), release notes yang di-render Markdown termasuk tabel GFM, dan satu aksi primary."></p>
+<h2 id="quick-start">Quick start</h2>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    &#34;context&#34;&#10;    &#34;log&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;&#10;)&#10;&#10;func main() {&#10;    app := application.New(application.Options{Name: &#34;Demo&#34;})&#10;&#10;    gh, _ := github.New(github.Config{Repository: &#34;myorg/myapp&#34;})&#10;    if err := app.Updater.Init(updater.Config{&#10;        CurrentVersion: &#34;1.0.0&#34;,&#10;        Providers:      []updater.Provider{gh},&#10;    }); err != nil {&#10;        log.Fatal(err)&#10;    }&#10;&#10;    if err := app.Updater.CheckAndInstall(context.Background()); err != nil {&#10;        log.Printf(&#34;update: %v&#34;, err)&#10;    }&#10;&#10;    _ = app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;context&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;log&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{<span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Demo&#34;</span>})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    gh, _ <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{<span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>})
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{gh},
+</span><span class="mpress-code-line">    }); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">CheckAndInstall</span>(context.<span class="mpress-token-function">Background</span>()); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update: %v&#34;</span>, err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    _ <span class="mpress-token-operator">=</span> app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Itu membuka window update framework, memeriksa GitHub, mengunduh asset platform, memverifikasinya, menukar binary, dan menunggu pengguna restart.</p>
+<h2 id="lifecycle">Lifecycle</h2>
+<p><code>app.Updater</code> adalah state machine dengan state berikut (<code>updater.State</code>):</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Kapan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unconfigured</code></td>
+<td>Sebelum <code>Init</code> dipanggil</td>
+</tr>
+<tr>
+<td><code>idle</code></td>
+<td>Setelah <code>Init</code>, sebelum pemeriksaan apa pun</td>
+</tr>
+<tr>
+<td><code>checking</code></td>
+<td><code>Check</code> sedang berjalan</td>
+</tr>
+<tr>
+<td><code>up-to-date</code></td>
+<td>Respons provider terbaru mengatakan caller sudah current</td>
+</tr>
+<tr>
+<td><code>available</code></td>
+<td>Release baru ditemukan; belum mengunduh</td>
+</tr>
+<tr>
+<td><code>downloading</code></td>
+<td>Byte sedang streaming dari provider</td>
+</tr>
+<tr>
+<td><code>verifying</code></td>
+<td>Download selesai, signature/digest sedang diperiksa</td>
+</tr>
+<tr>
+<td><code>installing</code></td>
+<td>Byte terverifikasi sedang di-unpack dan di-rename ke staging dir</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Update di-stage; panggil <code>Restart</code> untuk menerapkan</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Langkah sebelumnya gagal</td>
+</tr>
+</tbody>
+</table>
+<p>Anda dapat membaca state saat ini dengan <code>app.Updater.State()</code> kapan saja. Setiap transisi juga mengirim Wails event (lihat <a href="#events">Events</a>).</p>
+<p>Window default mencerminkan state saat ini secara otomatis — misalnya, saat <code>Check</code> tidak menemukan upgrade, pengguna melihat ini dan menutup dengan <strong>Close</strong>:</p>
+<p><img src="/assets/updater/default-window-up-to-date.png" alt="Window updater default dalam state Up-to-Date — centang hijau, heading &lsquo;You&rsquo;re Up to Date&rsquo;, tombol Close tunggal."></p>
+<h2 id="providers">Providers</h2>
+<p><code>Provider</code> adalah apa pun yang memenuhi interface ini:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type Provider interface {&#10;    Name() string&#10;    Check(ctx context.Context, req CheckRequest) (*Release, error)&#10;    Download(ctx context.Context, r *Release, dst io.Writer, onProgress func(written, total int64)) error&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Provider</span> <span class="mpress-token-keyword">interface</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Name</span>() string
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Check</span>(ctx context.<span class="mpress-token-type">Context</span>, req <span class="mpress-token-type">CheckRequest</span>) (<span class="mpress-token-operator">*</span><span class="mpress-token-type">Release</span>, error)
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Download</span>(ctx context.<span class="mpress-token-type">Context</span>, r <span class="mpress-token-operator">*</span><span class="mpress-token-type">Release</span>, dst io.<span class="mpress-token-type">Writer</span>, onProgress <span class="mpress-token-keyword">func</span>(written, total int64)) error
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Tiga implementasi tersedia in-tree.</p>
+<h3 id="github-releases--updaterprovidersgithub">GitHub Releases — <code>updater/providers/github</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">github provider</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="gh, err := github.New(github.Config{&#10;    Repository:    &#34;myorg/myapp&#34;,     // owner/repo Anda (wajib)&#10;    Token:         &#34;ghp_…&#34;,           // opsional; meningkatkan rate limit + repo private&#10;    Prerelease:    false,             // sertakan pre-release dalam lookup latest&#10;    ChecksumAsset: &#34;SHA256SUMS&#34;,      // asset sibling opsional untuk verifikasi digest&#10;    BaseURL:       &#34;&#34;,                // override opsional (mis. GitHub Enterprise)&#10;    AssetMatcher:  nil,               // asset-picker kustom opsional; nil memakai DefaultAssetMatcher&#10;    HTTPClient:    nil,               // override client opsional&#10;})"><code class="language-go"><span class="mpress-code-line">gh, err <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>,     <span class="mpress-token-comment">// owner/repo Anda (wajib)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Token</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-string">&#34;ghp_…&#34;</span>,           <span class="mpress-token-comment">// opsional; meningkatkan rate limit + repo private</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Prerelease</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">false</span>,             <span class="mpress-token-comment">// sertakan pre-release dalam lookup latest</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ChecksumAsset</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;SHA256SUMS&#34;</span>,      <span class="mpress-token-comment">// asset sibling opsional untuk verifikasi digest</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">BaseURL</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;&#34;</span>,                <span class="mpress-token-comment">// override opsional (mis. GitHub Enterprise)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AssetMatcher</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-keyword">nil</span>,               <span class="mpress-token-comment">// asset-picker kustom opsional; nil memakai DefaultAssetMatcher</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">nil</span>,               <span class="mpress-token-comment">// override client opsional</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Default asset matcher memilih berdasarkan substring <code>GOOS</code> + <code>GOARCH</code> pada nama file, mengenali alias umum (<code>amd64</code> / <code>x86_64</code> / <code>x64</code>, <code>arm64</code> / <code>aarch64</code>, <code>386</code> / <code>i386</code> / <code>x86</code> / <code>ia32</code>). Untuk skema penamaan kustom:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="gh, _ := github.New(github.Config{&#10;    Repository: &#34;myorg/myapp&#34;,&#10;    AssetMatcher: func(req updater.CheckRequest, assets []github.ReleaseAsset) int {&#10;        for i, a := range assets {&#10;            if strings.Contains(a.Name, &#34;my-naming-convention&#34;) &amp;&amp;&#10;               strings.Contains(a.Name, req.Platform) {&#10;                return i&#10;            }&#10;        }&#10;        return -1 // tidak ada kecocokan&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">gh, _ <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AssetMatcher</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>(req updater.<span class="mpress-token-type">CheckRequest</span>, assets []github.<span class="mpress-token-type">ReleaseAsset</span>) int {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">for</span> i, a <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> assets {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">if</span> strings.<span class="mpress-token-function">Contains</span>(a.<span class="mpress-token-type">Name</span>, <span class="mpress-token-string">&#34;my-naming-convention&#34;</span>) <span class="mpress-token-operator">&amp;&amp;</span>
+</span><span class="mpress-code-line">               strings.<span class="mpress-token-function">Contains</span>(a.<span class="mpress-token-type">Name</span>, req.<span class="mpress-token-type">Platform</span>) {
+</span><span class="mpress-code-line">                <span class="mpress-token-keyword">return</span> i
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">-</span><span class="mpress-token-number">1</span> <span class="mpress-token-comment">// tidak ada kecocokan</span>
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><code>ChecksumAsset</code> adalah nama asset release sibling yang kontennya baris <code>&lt;sha256&gt;  &lt;filename&gt;</code> (format yang dihasilkan <code>sha256sum</code> dan <code>shasum -a 256</code>). Provider mengambilnya saat <code>Check</code>, menemukan baris yang cocok dengan artifact yang dipilih, dan mengisi <code>Release.Verification.Digest</code> agar framework memverifikasi download.</p>
+<h3 id="keygensh--updaterproviderskeygen">keygen.sh — <code>updater/providers/keygen</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">keygen provider</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="kg, err := keygen.New(keygen.Config{&#10;    Account:    &#34;your-account-slug&#34;, // wajib&#10;    Product:    &#34;product-uuid&#34;,      // opsional tapi direkomendasikan jika account punya banyak product&#10;    Package:    &#34;&#34;,                  // penyempitan lebih lanjut opsional&#10;    Channel:    &#34;stable&#34;,            // &#34;stable&#34; / &#34;rc&#34; / &#34;beta&#34; / &#34;alpha&#34; / &#34;dev&#34;&#10;    Filetype:   &#34;&#34;,                  // filter filetype artifact opsional (&#34;dmg&#34;, &#34;exe&#34;, …)&#10;    Token:      &#34;prod-…&#34;,            // product / environment / user / admin token; menang atas LicenseKey&#10;    LicenseKey: &#34;&#34;,                  // auth license key (hanya dipakai saat Token kosong)&#10;    BaseURL:    &#34;&#34;,                  // override base API opsional&#10;    HTTPClient: nil,                 // override client opsional; redirect-strip wrapper tetap diterapkan&#10;})"><code class="language-go"><span class="mpress-code-line">kg, err <span class="mpress-token-operator">:=</span> keygen.<span class="mpress-token-function">New</span>(keygen.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Account</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;your-account-slug&#34;</span>, <span class="mpress-token-comment">// wajib</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Product</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;product-uuid&#34;</span>,      <span class="mpress-token-comment">// opsional tapi direkomendasikan jika account punya banyak product</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Package</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// penyempitan lebih lanjut opsional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Channel</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;stable&#34;</span>,            <span class="mpress-token-comment">// &#34;stable&#34; / &#34;rc&#34; / &#34;beta&#34; / &#34;alpha&#34; / &#34;dev&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Filetype</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// filter filetype artifact opsional (&#34;dmg&#34;, &#34;exe&#34;, …)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Token</span><span class="mpress-token-operator">:</span>      <span class="mpress-token-string">&#34;prod-…&#34;</span>,            <span class="mpress-token-comment">// product / environment / user / admin token; menang atas LicenseKey</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">LicenseKey</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// auth license key (hanya dipakai saat Token kosong)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">BaseURL</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// override base API opsional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">nil</span>,                 <span class="mpress-token-comment">// override client opsional; redirect-strip wrapper tetap diterapkan</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Provider secara otomatis memetakan checksum SHA-512 per-artifact dan signature Ed25519ph keygen.sh ke blok <code>Release.Verification</code> framework — tanpa wiring tambahan.</p>
+<p><strong>Format token:</strong> token keygen.sh membawa prefix role (<code>admi-</code> / <code>prod-</code> / <code>envi-</code> / <code>user-</code>). UUID mentah yang Anda lihat di dashboard adalah <em>identifier</em> token, bukan nilai secret — secret hanya terlihat saat token dibuat. Lihat <a href="https://keygen.sh/docs/api/authentication/">auth docs</a> keygen.sh untuk detail.</p>
+<h3 id="sparkle-appcast--updaterprovidersappcast">Sparkle AppCast — <code>updater/providers/appcast</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">appcast provider</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="ac, err := appcast.New(appcast.Config{&#10;    URL:        &#34;https://your.app/appcast.xml&#34;, // wajib&#10;    Channel:    &#34;stable&#34;,                       // filter sparkle:channel opsional&#10;    HTTPClient: nil,                            // override client opsional&#10;})"><code class="language-go"><span class="mpress-code-line">ac, err <span class="mpress-token-operator">:=</span> appcast.<span class="mpress-token-function">New</span>(appcast.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">URL</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;https://your.app/appcast.xml&#34;</span>, <span class="mpress-token-comment">// wajib</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Channel</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;stable&#34;</span>,                       <span class="mpress-token-comment">// filter sparkle:channel opsional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">nil</span>,                            <span class="mpress-token-comment">// override client opsional</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Drop-in ke infrastruktur Sparkle / WinSparkle yang sudah ada tanpa perubahan. Membaca <code>sparkle:shortVersionString</code>, <code>&lt;enclosure url type length sparkle:os sparkle:edSignature&gt;</code>, dan <code>sparkle:channel</code> dari feed.</p>
+<p>Signature DSA Sparkle 1 (<code>sparkle:dsaSignature</code>) tidak didukung — proyek pada skema signing itu harus beralih ke EdDSA (Sparkle 2).</p>
+<h3 id="fallback-chain">Fallback chain</h3>
+<p><code>Config.Providers</code> berurutan. Updater menelusurinya secara berurutan: provider pertama yang mengembalikan release menang, yang pertama melaporkan &ldquo;up to date&rdquo; mempersingkat chain (fallback untuk &ldquo;primary unreachable&rdquo;, bukan &ldquo;provider tidak setuju&rdquo;). Error lanjut ke provider berikutnya.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    CurrentVersion: &#34;1.0.0&#34;,&#10;    Providers: []updater.Provider{&#10;        kg, // primary: pelanggan berlisensi&#10;        gh, // fallback: mirror publik&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span> []updater.<span class="mpress-token-type">Provider</span>{
+</span><span class="mpress-code-line">        kg, <span class="mpress-token-comment">// primary: pelanggan berlisensi</span>
+</span><span class="mpress-code-line">        gh, <span class="mpress-token-comment">// fallback: mirror publik</span>
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="menulis-provider-sendiri">Menulis provider sendiri</h3>
+<p>Tiga method, ~150 baris untuk implementasi tipikal. Updater memiliki verifikasi, atomic staging, swap, dan window — kode provider menyelesaikan release berikutnya dan streaming byte:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type CustomProvider struct { /* config */ }&#10;&#10;func (p *CustomProvider) Name() string { return &#34;custom&#34; }&#10;&#10;func (p *CustomProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {&#10;    // Hit endpoint update Anda, tentukan apakah req.CurrentVersion sudah current,&#10;    // dan kembalikan nil (tanpa upgrade) atau *Release dengan Artifact + optional&#10;    // Verification terisi.&#10;    // Error di sini lanjut ke provider berikutnya di Config.Providers.&#10;}&#10;&#10;func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {&#10;    // Stream byte artifact ke dst. Panggil onProgress(written, total) saat&#10;    // byte mengalir; Updater debounce emit ke ~10 Hz di event bus.&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">CustomProvider</span> <span class="mpress-token-keyword">struct</span> { /<span class="mpress-token-operator">*</span> config <span class="mpress-token-operator">*</span>/ }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Name</span>() string { <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;custom&#34;</span> }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Check</span>(ctx context.<span class="mpress-token-type">Context</span>, req updater.<span class="mpress-token-type">CheckRequest</span>) (<span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Hit endpoint update Anda, tentukan apakah req.CurrentVersion sudah current,</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// dan kembalikan nil (tanpa upgrade) atau *Release dengan Artifact + optional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Verification terisi.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Error di sini lanjut ke provider berikutnya di Config.Providers.</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Download</span>(ctx context.<span class="mpress-token-type">Context</span>, r <span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>, dst io.<span class="mpress-token-type">Writer</span>, onProgress <span class="mpress-token-keyword">func</span>(int64, int64)) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Stream byte artifact ke dst. Panggil onProgress(written, total) saat</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// byte mengalir; Updater debounce emit ke ~10 Hz di event bus.</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Gunakan provider in-tree sebagai referensi — masing-masing satu file Go.</p>
+<h2 id="verifikasi-kriptografis">Verifikasi kriptografis</h2>
+<p>Release diautentikasi oleh verifier framework menggunakan <code>Config.PublicKey</code> sebagai trust root:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="//go:embed publickey.pem&#10;var publicKey []byte&#10;&#10;app.Updater.Init(updater.Config{&#10;    CurrentVersion: &#34;1.0.0&#34;,&#10;    Providers:      []updater.Provider{...},&#10;    PublicKey:      publicKey,&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed publickey.pem</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> publicKey []byte
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{...},
+</span><span class="mpress-code-line">    <span class="mpress-token-type">PublicKey</span><span class="mpress-token-operator">:</span>      publicKey,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Algoritma yang didukung (<code>Release.Verification.SignatureAlgo</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Algoritma</th>
+<th>Yang ditandatangani</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ed25519</code></td>
+<td>Digest SHA-256 artifact</td>
+<td>Dipakai Sparkle EdDSA</td>
+</tr>
+<tr>
+<td><code>ed25519ph</code></td>
+<td>Artifact penuh via pre-hash Ed25519ph (SHA-512 internal)</td>
+<td>Dipakai keygen.sh</td>
+</tr>
+<tr>
+<td><code>ecdsa-p256</code></td>
+<td>Digest SHA-256 artifact</td>
+<td>Signature raw <code>r∥s</code> dan DER diterima</td>
+</tr>
+</tbody>
+</table>
+<p>Plus digest-only (<code>DigestAlgo</code>: <code>sha256</code> / <code>sha512</code>) saat release mengirim hash tanpa signature.</p>
+<p><code>Config.PublicKey</code> adalah SATU-SATUNYA trust anchor untuk verifikasi signature — sumber release tidak bisa mengganti key sendiri. Release yang membawa <code>Signature</code> tanpa <code>Config.PublicKey</code> yang dikonfigurasi gagal closed. Verifier menghitung digest dalam pass streaming saat download, jadi bahkan pada update multi-GB verifikasi tidak menambah pass disk ekstra.</p>
+<aside aria-label="Digest-only ≠ verifikasi kriptografis" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>Digest-only ≠ verifikasi kriptografis</span></p>
+<div class="mpress-admonition-body">
+<p>Release dengan hanya <code>Digest</code> diautentikasi terhadap TLS registry plus jaminan integritas yang diberikan registry — bukan terhadap root kriptografis yang Anda kontrol. Gunakan digest-only untuk deteksi bit-rot; gunakan signature untuk ketahanan tamper terhadap pipeline release yang compromised.</p>
+</div>
+</aside>
+<h3 id="menghasilkan-signing-key">Menghasilkan signing key</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="ssh-keygen -t ed25519 -f updater-key -N &#34;&#34; -C &#34;wails-updater&#34;"><code><span class="mpress-output"># Generate keypair Ed25519 baru untuk signing</span>
+<span class="mpress-cmd">ssh-keygen -t ed25519 -f updater-key -N &#34;&#34; -C &#34;wails-updater&#34;</span>
+<span class="mpress-output"># updater-key       — rahasiakan, pakai untuk sign release</span>
+<span class="mpress-output"># updater-key.pub   — bundle di app via go:embed</span>
+</code></pre>
+</div>
+<p>Atau di Go:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;crypto/ed25519&#34;&#10;import &#34;crypto/rand&#34;&#10;&#10;pub, priv, _ := ed25519.GenerateKey(rand.Reader)&#10;// Persist `priv` dengan aman (HSM, signing CI, dll.); embed `pub` di binary Anda."><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;crypto/ed25519&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;crypto/rand&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">pub, priv, _ <span class="mpress-token-operator">:=</span> ed25519.<span class="mpress-token-function">GenerateKey</span>(rand.<span class="mpress-token-type">Reader</span>)
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Persist `priv` dengan aman (HSM, signing CI, dll.); embed `pub` di binary Anda.</span></span></code></pre></div>
+<h2 id="format-artifact">Format artifact</h2>
+<p>Provider streaming byte untuk file apa pun yang Anda publikasikan; framework lalu unpack sebelum swap:</p>
+<ul>
+<li><strong>Single binary</strong> (mis. <code>myapp-linux-amd64</code>) — dipakai apa adanya. Umum di Linux.</li>
+<li><strong><code>.zip</code></strong> — diekstrak in-place. Archive harus berisi tepat satu entry top-level (biasanya bundle <code>.app</code> macOS atau single binary). Packaging yang direkomendasikan untuk macOS.</li>
+<li><strong><code>.tar.gz</code></strong> / <strong><code>.tgz</code></strong> — diekstrak in-place dengan aturan single-top-level-entry yang sama. Berguna untuk distribusi Linux yang mengirim runtime tree bersama binary.</li>
+</ul>
+<p>Archive dengan lebih dari satu entry top-level ditolak: framework menukar satu target on-disk, jadi &ldquo;swap archive ini ke tempat&rdquo; ambigu saat archive berisi banyak hal. <code>.dmg</code> dan <code>.pkg</code> (macOS) serta <code>.msi</code> (Windows) tidak didukung di v1 — distribusikan <code>.zip</code> bundle sebagai gantinya. Ekstraksi menerapkan proteksi zip-slip, menolak symlink yang keluar dari root archive, dan membatasi total ukuran uncompressed (2 GiB) dan jumlah entry (50 000).</p>
+<h2 id="window-default">Window default</h2>
+<p><code>app.Updater.CheckAndInstall(ctx)</code> membuka window 520×540 milik framework dengan:</p>
+<ul>
+<li>Ikon hero berdasarkan state (biru ↓ untuk available/downloading, hijau ✓ untuk ready/up-to-date, merah ! untuk error)</li>
+<li>Pill versi: <code>v1.0.0 → v2.0.1 · 8.8 MB</code></li>
+<li>Panel release-notes scrollable dengan <strong>Markdown yang di-render</strong> (paragraf, bold/italic, list, tabel GFM, inline code, fenced code block, h1–h3, link)</li>
+<li>Satu aksi primary per state (Install / Restart &amp; Apply / Try Again)</li>
+<li>Aksi secondary bergaya ghost (Skip This Version / Remind Me Later)</li>
+<li>Dark/light mode via <code>prefers-color-scheme</code></li>
+<li>Shimmer progress indeterminate saat total ukuran tidak diketahui</li>
+</ul>
+<p>Window mendengarkan events <code>updater:*</code> di event bus Wails dan mengirim aksi <code>updater:user:*</code> kembali ke Go.</p>
+<h3 id="theme-via-css-variables">Theme via CSS variables</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{&#10;        CSS: `:root { --accent: #ff6f00; --bg: #1a1a1a; --fg: #fafafa; }`,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">CSS</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">`:root { --accent: #ff6f00; --bg: #1a1a1a; --fg: #fafafa; }`</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Stylesheet default mengekspos variabel ini — override mana pun:</p>
+<table>
+<thead>
+<tr>
+<th>Variabel</th>
+<th>Default (light)</th>
+<th>Default (dark)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--bg</code></td>
+<td><code>#f8f8fa</code></td>
+<td><code>#1a1a1c</code></td>
+</tr>
+<tr>
+<td><code>--surface</code></td>
+<td><code>#ffffff</code></td>
+<td><code>#232326</code></td>
+</tr>
+<tr>
+<td><code>--surface-2</code></td>
+<td><code>#f0f0f3</code></td>
+<td><code>#2c2c30</code></td>
+</tr>
+<tr>
+<td><code>--fg</code></td>
+<td><code>#1d1d1f</code></td>
+<td><code>#f5f5f7</code></td>
+</tr>
+<tr>
+<td><code>--fg-dim</code></td>
+<td><code>#6b6b73</code></td>
+<td><code>#b0b0b8</code></td>
+</tr>
+<tr>
+<td><code>--fg-faint</code></td>
+<td><code>#99999f</code></td>
+<td><code>#7a7a82</code></td>
+</tr>
+<tr>
+<td><code>--border</code></td>
+<td><code>#d6d6dc</code></td>
+<td><code>#3a3a3e</code></td>
+</tr>
+<tr>
+<td><code>--accent</code></td>
+<td><code>#0a84ff</code></td>
+<td><code>#0a84ff</code></td>
+</tr>
+<tr>
+<td><code>--accent-fg</code></td>
+<td><code>#ffffff</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--success</code></td>
+<td><code>#34c759</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--error</code></td>
+<td><code>#ff3b30</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--radius</code></td>
+<td><code>10px</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--font</code></td>
+<td>system stack</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ganti-template">Ganti template</h3>
+<p>Sediakan HTML Anda sendiri; cukup dengarkan events <code>wails:updater:*</code> dan kirim aksi <code>wails:updater:user:*</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{&#10;        HTML: myCustomTemplate,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span> myCustomTemplate,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Window InitialHTML dimuat tanpa origin asset-server, jadi tidak bisa fetch <code>/wails/runtime.js</code> secara dinamis. Ada dua cara berkomunikasi dengan host:</p>
+<ol>
+<li><strong>Tulis HTML saja.</strong> Framework auto-inject shim <code>window.wails.Events</code> minimal ke window apa pun yang dibuka dengan <code>WebviewWindowOptions.AllowSimpleEventEmit = true</code> dan <code>HTML</code> diset — persis yang dilakukan path builtin dan BYO updater. Tanpa build step. Ini jalur yang dipakai contoh di bawah.</li>
+<li><strong>Bundle <code>@wailsio/runtime</code> dengan bundler pilihan Anda</strong> (Vite, esbuild, Rollup) dan import ke custom HTML saat build time. <code>Events.On</code> berfungsi out of the box karena purely client-side; <code>Events.Emit</code> melalui fetch transport runtime, yang null origin rusak — jadi pasang transport postMessage kecil via hook <a href="https://wails.io/wails/runtime.js"><code>setTransport</code></a> runtime yang route melalui <code>window._wails.invoke(&quot;wails:event:emit:&lt;name&gt;&quot;)</code>. Injection framework no-op jika <code>window.wails.Events</code> sudah ada, jadi kedua pendekatan tidak bentrok.</li>
+</ol>
+<p>Bagaimanapun, JS di custom HTML memanggil API <code>Events.On</code> / <code>Events.Emit</code> yang sama:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="&lt;script&gt;&#10;const { On, Emit } = window.wails.Events;&#10;&#10;On(&#34;wails:updater:update-available&#34;, (e) =&gt; {&#10;    const rel = e.data ?? e;&#10;    document.getElementById(&#34;ver&#34;).textContent = rel.version;&#10;});&#10;&#10;document.getElementById(&#34;install&#34;).addEventListener(&#34;click&#34;,&#10;    () =&gt; Emit(&#34;wails:updater:user:install&#34;));&#10;&#10;// Minta host replay state saat ini agar kita paint benar saat (re)open.&#10;Emit(&#34;wails:updater:window:ready&#34;);&#10;&lt;/script&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>script<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> { <span class="mpress-token-type">On</span>, <span class="mpress-token-type">Emit</span> } <span class="mpress-token-operator">=</span> window.wails.<span class="mpress-token-type">Events</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;wails:updater:update-available&#34;</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> rel <span class="mpress-token-operator">=</span> e.data ?? e;
+</span><span class="mpress-code-line">    document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;ver&#34;</span>).textContent <span class="mpress-token-operator">=</span> rel.version;
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;install&#34;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#34;click&#34;</span>,
+</span><span class="mpress-code-line">    () <span class="mpress-token-operator">=&gt;</span> <span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;wails:updater:user:install&#34;</span>));
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Minta host replay state saat ini agar kita paint benar saat (re)open.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;wails:updater:window:ready&#34;</span>);
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/script<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p>Shim mengekspos subset runtime modern yang dibutuhkan bare-name events: <code>Events.On(name, cb)</code> mengembalikan fungsi unsubscribe, dan <code>Events.Emit(nameOrEventObject)</code> route ke host via jalur postMessage <code>wails:event:emit:</code> yang gated. Terpasang sekali saat page-load sebelum inline script Anda jalan.</p>
+<p>Jika Anda <em>ingin</em> override shim (atau memuat full runtime cara lain), set <code>window.wails.Events</code> sebelum tag <code>&lt;script&gt;</code> pertama halaman dieksekusi dan injection melewatinya.</p>
+<h3 id="window-chrome">Window chrome</h3>
+<p>Override opsi window (ukuran, frameless, always-on-top) tanpa menyentuh HTML:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Window: &amp;updater.BuiltinWindow{&#10;    Options: updater.WindowOptions{&#10;        Title:         &#34;My App Updater&#34;,&#10;        Width:         640,&#10;        Height:        480,&#10;        Frameless:     true,&#10;        AlwaysOnTop:   true,&#10;        DisableResize: false,&#10;    },&#10;},"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Options</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-type">WindowOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-string">&#34;My App Updater&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-number">640</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-number">480</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Frameless</span><span class="mpress-token-operator">:</span>     <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">AlwaysOnTop</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">DisableResize</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">},</span></code></pre></div>
+<h3 id="bring-your-own-window">Bring your own window</h3>
+<p>Kendalikan alur update terhadap <code>*application.WebviewWindow</code> yang Anda buat sendiri. Updater memanggil <code>Show()</code> / <code>Close()</code> / <code>EmitEvent()</code> pada window Anda — HTML Anda yang memutuskan apa yang di-render:</p>
+<p><img src="/assets/updater/byo-custom-window.png" alt="Window updater &lsquo;Bring your own&rsquo; dengan background gradient pink-orange, satu kartu putih rounded, tipografi kustom, dan events updater yang sama mengendalikan state yang terlihat. Menunjukkan seberapa lengkap UI default dapat diganti."></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:                &#34;My Updater&#34;,&#10;    Width:                520, Height: 460,&#10;    HTML:                 myCustomHTML,&#10;    AllowSimpleEventEmit: true,           // lihat catatan keamanan di bawah&#10;})&#10;app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),&#10;})"><code class="language-go"><span class="mpress-code-line">myWin <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-string">&#34;My Updater&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-number">520</span>, <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">460</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span>                 myCustomHTML,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AllowSimpleEventEmit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,           <span class="mpress-token-comment">// lihat catatan keamanan di bawah</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-function">BYOWindow</span>(myWin.<span class="mpress-token-function">AsUpdaterWindow</span>()),
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>HTML Anda memakai <code>window.wails.Events.On</code> / <code>Events.Emit</code> seperti template builtin — shim auto-inject framework masuk ke window apa pun dengan <code>AllowSimpleEventEmit: true</code> terlepas dari window milik framework atau milik Anda. Lihat <a href="#ganti-template">Ganti template</a> untuk API.</p>
+<aside aria-label="`AllowSimpleEventEmit` wajib untuk window updater BYO" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>`AllowSimpleEventEmit` wajib untuk window updater BYO</span></p>
+<div class="mpress-admonition-body">
+<p>Framework meng-gate shortcut postMessage <code>wails:event:emit:</code> pada field ini untuk keamanan: window tanpa field ini tidak bisa mensintesis custom events di sisi host. Shim custom-HTML updater mengirim events <code>updater:user:*</code> via shortcut itu, jadi window BYO yang lupa field ini diam-diam menelan setiap klik tombol — pengguna klik Install dan tidak terjadi apa-apa.</p>
+<p>Jaga <code>AllowSimpleEventEmit</code> <strong>off</strong> untuk window yang memuat HTML yang tidak Anda kontrol penuh (URL remote, konten dari pengguna). Saat on, JavaScript apa pun di halaman — termasuk XSS sink — bisa fire handler <code>app.Event.On(name, …)</code> apa pun. Shortcut hanya menyampaikan bare name (tanpa payload) dan tidak bisa mencapai jalur binding/Call, tapi masih bisa memicu handler custom-event privileged di kode Go jika handler hanya bertindak berdasarkan nama event.</p>
+<p>Window updater <em>builtin</em> framework sudah set ini secara internal — hanya pemanggil BYO yang perlu ingat.</p>
+</div>
+</aside>
+<h3 id="headless">Headless</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: updater.WindowNone,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-type">WindowNone</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Tidak ada window yang pernah dibuka. Subscribe ke events <code>updater:*</code> dari UI Anda sendiri (atau main window yang sudah ada) dan panggil <code>app.Updater.CheckAndInstall(ctx)</code> dari button handler. Berguna untuk pemeriksaan background berkala yang hanya muncul saat sesuatu ditemukan, atau app yang mengintegrasikan alur update ke panel settings kustom.</p>
+<h2 id="events">Events</h2>
+<p>Go dan JavaScript subscribe melalui event bus Wails standar. <strong>Jangan ketik wire string manual</strong> — gunakan konstanta yang diekspor dari paket updater (Go) atau paket runtime (JS). Kedua lapisan berbagi set nama yang sama, disinkronkan oleh regression test.</p>
+<h3 id="dari-go">Dari Go</h3>
+<p>Konstanta ada di <code>github.com/wailsapp/wails/v3/pkg/updater</code>. Subscribe via <code>app.Event.On(name, fn)</code>; callback menerima <code>*application.CustomEvent</code> yang field <code>Data</code>-nya adalah payload bertipe yang tercantum di <a href="#referensi-event">referensi event</a> — type-assert, jangan JSON-decode:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import (&#10;    &#34;log&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;)&#10;&#10;// …&#10;&#10;app.Event.On(updater.EventUpdateAvailable, func(e *application.CustomEvent) {&#10;    rel, ok := e.Data.(*updater.Release)&#10;    if !ok { return }&#10;    log.Printf(&#34;update found: %s&#34;, rel.Version)&#10;})&#10;&#10;app.Event.On(updater.EventDownloadProgress, func(e *application.CustomEvent) {&#10;    p, ok := e.Data.(updater.Progress)&#10;    if !ok { return }&#10;    log.Printf(&#34;%d / %d bytes (%.0f KB/s)&#34;, p.Written, p.Total, p.Rate/1024)&#10;})&#10;&#10;app.Event.On(updater.EventError, func(e *application.CustomEvent) {&#10;    info, ok := e.Data.(updater.ErrorInfo)&#10;    if !ok { return }&#10;    log.Printf(&#34;update failed during %s: %s&#34;, info.Stage, info.Message)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;log&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventUpdateAvailable</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    rel, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(<span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update found: %s&#34;</span>, rel.<span class="mpress-token-type">Version</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventDownloadProgress</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    p, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(updater.<span class="mpress-token-type">Progress</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;%d / %d bytes (%.0f KB/s)&#34;</span>, p.<span class="mpress-token-type">Written</span>, p.<span class="mpress-token-type">Total</span>, p.<span class="mpress-token-type">Rate</span>/<span class="mpress-token-number">1024</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventError</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    info, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(updater.<span class="mpress-token-type">ErrorInfo</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update failed during %s: %s&#34;</span>, info.<span class="mpress-token-type">Stage</span>, info.<span class="mpress-token-type">Message</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Semua konstanta Go yang tersedia:</p>
+<table>
+<thead>
+<tr>
+<th>Konstanta</th>
+<th>Wire string</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventCheckStarted</code></td>
+<td><code>wails:updater:check-started</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateAvailable</code></td>
+<td><code>wails:updater:update-available</code></td>
+</tr>
+<tr>
+<td><code>updater.EventNoUpdate</code></td>
+<td><code>wails:updater:no-update</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadStarted</code></td>
+<td><code>wails:updater:download-started</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadProgress</code></td>
+<td><code>wails:updater:download-progress</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadComplete</code></td>
+<td><code>wails:updater:download-complete</code></td>
+</tr>
+<tr>
+<td><code>updater.EventVerifying</code></td>
+<td><code>wails:updater:verifying</code></td>
+</tr>
+<tr>
+<td><code>updater.EventInstalling</code></td>
+<td><code>wails:updater:installing</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateReady</code></td>
+<td><code>wails:updater:update-ready</code></td>
+</tr>
+<tr>
+<td><code>updater.EventError</code></td>
+<td><code>wails:updater:error</code></td>
+</tr>
+<tr>
+<td><code>updater.EventMeta</code></td>
+<td><code>wails:updater:meta</code></td>
+</tr>
+<tr>
+<td><code>updater.EventWindowReady</code></td>
+<td><code>wails:updater:window:ready</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserInstall</code></td>
+<td><code>wails:updater:user:install</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserSkip</code></td>
+<td><code>wails:updater:user:skip</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserRemind</code></td>
+<td><code>wails:updater:user:remind</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserCancel</code></td>
+<td><code>wails:updater:user:cancel</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserRestart</code></td>
+<td><code>wails:updater:user:restart</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dari-javascript">Dari JavaScript</h3>
+<p>Konstanta ada di bawah <code>Updater.Events</code> di <code>@wailsio/runtime</code>. Nama sama dengan Go, diorganisir per sub-namespace (<code>User.*</code>, <code>Window.*</code>) untuk discoverability autocomplete:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Events, Updater } from &#34;@wailsio/runtime&#34;;&#10;&#10;Events.On(Updater.Events.UpdateAvailable, (e) =&gt; {&#10;    console.log(&#34;update found:&#34;, e.data.version);&#10;});&#10;&#10;Events.On(Updater.Events.DownloadProgress, (e) =&gt; {&#10;    const p = e.data;&#10;    console.log(`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`);&#10;});&#10;&#10;Events.On(Updater.Events.Error, (e) =&gt; {&#10;    const info = e.data;&#10;    console.error(`update failed during ${info.stage}: ${info.message}`);&#10;});"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span>, <span class="mpress-token-type">Updater</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;@wailsio/runtime&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">UpdateAvailable</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#34;update found:&#34;</span>, e.data.version);
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">DownloadProgress</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> p <span class="mpress-token-operator">=</span> e.data;
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`</span>);
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">Error</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> info <span class="mpress-token-operator">=</span> e.data;
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">`update failed during ${info.stage}: ${info.message}`</span>);
+</span><span class="mpress-code-line">});</span></code></pre></div>
+<p>Events aksi pengguna yang custom HTML Anda kirim <em>kembali</em> ke host ada di bawah <code>Updater.Events.User</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import { Updater } from &#34;@wailsio/runtime&#34;;&#10;&#10;document.getElementById(&#34;install-btn&#34;).addEventListener(&#34;click&#34;, () =&gt; {&#10;    // Window framework melakukan ini secara internal via postMessage shim;&#10;    // ditampilkan di sini untuk template BYO yang perlu mengendalikan alur sendiri.&#10;    window._wails.invoke(&#34;wails:event:emit:&#34; + Updater.Events.User.Install);&#10;});"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Updater</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;@wailsio/runtime&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;install-btn&#34;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#34;click&#34;</span>, () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Window framework melakukan ini secara internal via postMessage shim;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// ditampilkan di sini untuk template BYO yang perlu mengendalikan alur sendiri.</span>
+</span><span class="mpress-code-line">    window._wails.<span class="mpress-token-function">invoke</span>(<span class="mpress-token-string">&#34;wails:event:emit:&#34;</span> <span class="mpress-token-operator">+</span> <span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">User</span>.<span class="mpress-token-type">Install</span>);
+</span><span class="mpress-code-line">});</span></code></pre></div>
+<h3 id="referensi-event">Referensi event</h3>
+<p>Sisi subscribe (host → page):</p>
+<table>
+<thead>
+<tr>
+<th>Konstanta (Go)</th>
+<th>Konstanta (JS)</th>
+<th>Payload</th>
+<th>Kapan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventCheckStarted</code></td>
+<td><code>Updater.Events.CheckStarted</code></td>
+<td>none</td>
+<td>Sebelum setiap round-trip <code>Check</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateAvailable</code></td>
+<td><code>Updater.Events.UpdateAvailable</code></td>
+<td><code>*Release</code></td>
+<td><code>Check</code> menemukan release lebih baru</td>
+</tr>
+<tr>
+<td><code>updater.EventNoUpdate</code></td>
+<td><code>Updater.Events.NoUpdate</code></td>
+<td>none</td>
+<td><code>Check</code> mengonfirmasi up-to-date</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadStarted</code></td>
+<td><code>Updater.Events.DownloadStarted</code></td>
+<td><code>*Release</code></td>
+<td>Byte mulai streaming</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadProgress</code></td>
+<td><code>Updater.Events.DownloadProgress</code></td>
+<td><code>Progress</code></td>
+<td>~10 Hz saat download</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadComplete</code></td>
+<td><code>Updater.Events.DownloadComplete</code></td>
+<td><code>*Release</code></td>
+<td>Semua byte ditulis, sebelum verify</td>
+</tr>
+<tr>
+<td><code>updater.EventVerifying</code></td>
+<td><code>Updater.Events.Verifying</code></td>
+<td><code>*Release</code></td>
+<td>Pemeriksaan signature/digest dimulai</td>
+</tr>
+<tr>
+<td><code>updater.EventInstalling</code></td>
+<td><code>Updater.Events.Installing</code></td>
+<td><code>*Release</code></td>
+<td>Unpack + staging dimulai</td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateReady</code></td>
+<td><code>Updater.Events.UpdateReady</code></td>
+<td><code>*Release</code></td>
+<td>Restart menunggu</td>
+</tr>
+<tr>
+<td><code>updater.EventError</code></td>
+<td><code>Updater.Events.Error</code></td>
+<td><code>ErrorInfo</code></td>
+<td>Tahap apa pun gagal</td>
+</tr>
+<tr>
+<td><code>updater.EventMeta</code></td>
+<td><code>Updater.Events.Meta</code></td>
+<td><code>Meta</code></td>
+<td>Sekali per sesi sebelum snapshot replay</td>
+</tr>
+</tbody>
+</table>
+<p>Sisi page (page → host) — kode Anda subscribe jika menulis template kustom:</p>
+<table>
+<thead>
+<tr>
+<th>Konstanta (Go)</th>
+<th>Konstanta (JS)</th>
+<th>Kapan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventWindowReady</code></td>
+<td><code>Updater.Events.Window.Ready</code></td>
+<td>Window selesai loading; host replay state saat ini</td>
+</tr>
+<tr>
+<td><code>updater.EventUserInstall</code></td>
+<td><code>Updater.Events.User.Install</code></td>
+<td>Aksi primary di state <code>available</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserRestart</code></td>
+<td><code>Updater.Events.User.Restart</code></td>
+<td>Aksi primary di state <code>ready</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserSkip</code></td>
+<td><code>Updater.Events.User.Skip</code></td>
+<td>&ldquo;Skip This Version&rdquo;</td>
+</tr>
+<tr>
+<td><code>updater.EventUserRemind</code></td>
+<td><code>Updater.Events.User.Remind</code></td>
+<td>&ldquo;Remind Me Later&rdquo;</td>
+</tr>
+<tr>
+<td><code>updater.EventUserCancel</code></td>
+<td><code>Updater.Events.User.Cancel</code></td>
+<td>Tombol Close</td>
+</tr>
+</tbody>
+</table>
+<h2 id="referensi-api">Referensi API</h2>
+<h3 id="updaterconfig"><code>updater.Config</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Tipe</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CurrentVersion</code></td>
+<td><code>string</code></td>
+<td><strong>Wajib.</strong> String yang sama dengan tag release (tanpa prefix <code>v</code>)</td>
+</tr>
+<tr>
+<td><code>Providers</code></td>
+<td><code>[]updater.Provider</code></td>
+<td><strong>Wajib.</strong> Fallback chain berurutan</td>
+</tr>
+<tr>
+<td><code>PublicKey</code></td>
+<td><code>[]byte</code></td>
+<td>PEM atau raw bytes. Opsional tapi release bertanda tangan gagal closed tanpanya</td>
+</tr>
+<tr>
+<td><code>CheckInterval</code></td>
+<td><code>time.Duration</code></td>
+<td>Non-zero memulai loop poll background yang memanggil <code>CheckAndInstall</code></td>
+</tr>
+<tr>
+<td><code>Platform</code></td>
+<td><code>string</code></td>
+<td>Override <code>runtime.GOOS</code> untuk pemilihan asset</td>
+</tr>
+<tr>
+<td><code>Arch</code></td>
+<td><code>string</code></td>
+<td>Override <code>runtime.GOARCH</code> untuk pemilihan asset</td>
+</tr>
+<tr>
+<td><code>Channel</code></td>
+<td><code>string</code></td>
+<td>Saat ini informatif; filter channel spesifik provider</td>
+</tr>
+<tr>
+<td><code>Window</code></td>
+<td><code>updater.WindowOption</code></td>
+<td><code>nil</code> (default builtin), <code>&amp;BuiltinWindow{…}</code>, <code>BYOWindow(handle)</code>, atau <code>WindowNone</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="method-pada-updaterupdater">Method pada <code>*updater.Updater</code></h3>
+<table>
+<thead>
+<tr>
+<th>Signature</th>
+<th>Tujuan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Init(cfg Config) error</code></td>
+<td>Konfigurasi. Mengembalikan <code>ErrAlreadyConfigured</code> pada panggilan kedua</td>
+</tr>
+<tr>
+<td><code>State() State</code></td>
+<td>Fase lifecycle saat ini</td>
+</tr>
+<tr>
+<td><code>CurrentVersion() string</code></td>
+<td>Versi yang diteruskan ke <code>Init</code></td>
+</tr>
+<tr>
+<td><code>Check(ctx) (*Release, error)</code></td>
+<td>Telusuri provider chain. <code>(rel, nil)</code> = ditemukan, <code>(nil, nil)</code> = up-to-date, <code>(nil, err)</code> = semua gagal</td>
+</tr>
+<tr>
+<td><code>DownloadAndInstall(ctx) error</code></td>
+<td>Stream, verify, extract (jika archive), stage. Memerlukan <code>Check</code> sebelumnya</td>
+</tr>
+<tr>
+<td><code>CheckAndInstall(ctx) error</code></td>
+<td>Convenience: buka window, <code>Check</code>, lalu <code>DownloadAndInstall</code> jika ditemukan</td>
+</tr>
+<tr>
+<td><code>Restart(ctx) error</code></td>
+<td>Spawn helper, panggil <code>Host.Quit</code>, keluar; helper swap + relaunch</td>
+</tr>
+<tr>
+<td><code>DownloadedPath() string</code></td>
+<td>Lokasi update staged on-disk, atau <code>&quot;&quot;</code> jika tidak ada</td>
+</tr>
+<tr>
+<td><code>SkipVersion(v string)</code></td>
+<td>Catat <code>v</code> sebagai skipped; <code>Check</code> berikutnya memperlakukannya sebagai up-to-date</td>
+</tr>
+<tr>
+<td><code>SkippedVersion() string</code></td>
+<td>Baca versi yang saat ini di-skip</td>
+</tr>
+<tr>
+<td><code>StopPeriodicCheck()</code></td>
+<td>Batalkan timer yang dimulai <code>Config.CheckInterval</code> dan tunggu loop kembali</td>
+</tr>
+</tbody>
+</table>
+<h3 id="errors">Errors</h3>
+<table>
+<thead>
+<tr>
+<th>Sentinel</th>
+<th>Dikembalikan oleh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ErrAlreadyConfigured</code></td>
+<td><code>Init</code> setelah sukses pertama</td>
+</tr>
+<tr>
+<td><code>ErrNotConfigured</code></td>
+<td>Operasi apa pun sebelum <code>Init</code></td>
+</tr>
+<tr>
+<td><code>ErrNoPendingRelease</code></td>
+<td><code>DownloadAndInstall</code> tanpa <code>Check</code> sebelumnya</td>
+</tr>
+<tr>
+<td><code>ErrDownloadInProgress</code></td>
+<td><code>DownloadAndInstall</code> dipanggil saat yang lain berjalan</td>
+</tr>
+<tr>
+<td><code>ErrNotReady</code></td>
+<td><code>Restart</code> tanpa update staged</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cara-swap-bekerja">Cara swap bekerja</h2>
+<p><code>Restart</code> re-exec binary saat ini dengan environment variable sentinel diset. <code>application.New</code> mendeteksinya saat startup dan beralih ke helper-mode:</p>
+<ol>
+<li>Helper menunggu hingga 30 dtk parent PID exit (<code>platformIsAlive</code> poll via <code>syscall.OpenProcess</code> + <code>GetExitCodeProcess</code> di Windows, <code>os.FindProcess</code> + <code>proc.Signal(syscall.Signal(0))</code> di Unix).</li>
+<li>Helper backup target (copy untuk file, recursive copy untuk direktori bundle <code>.app</code> macOS).</li>
+<li>Helper mengganti target dengan artifact staged, retry hingga 20 kali dengan backoff 500 ms antar percobaan:
+<ul>
+<li><strong>Unix</strong> — <code>os.RemoveAll(target)</code> + <code>os.Rename(newPath, target)</code>. File descriptor terbuka terhadap inode lama tetap valid.</li>
+<li><strong>Windows</strong> — <code>os.Rename(target, target.old.&lt;nanos&gt;)</code> + <code>os.Rename(newPath, target)</code>. Windows mengizinkan rename file yang image-nya masih mapped, tapi tidak delete; pada update berikutnya helper sweep sibling <code>.old.*</code> yang mapping kernel-nya sudah dilepas.</li>
+</ul>
+</li>
+<li>Helper memulihkan mode executable asli pada binary baru (file unduhan dibuat dengan umask default, yang menghilangkan <code>+x</code> di Unix; di Windows ini no-op).</li>
+<li>Helper membersihkan env var helper-mode dan re-launch binary (yang sudah diganti).</li>
+<li>Helper exit.</li>
+</ol>
+<p>Jika launch gagal, helper memulihkan backup. Jika parent tidak exit dalam 30 dtk, helper abort sebelum menyentuh target (pengguna tetap punya app yang berfungsi meski dialog shutdown memblokir <code>Quit</code>).</p>
+<p>Untuk bundle <code>.app</code> macOS yang didistribusikan sebagai <code>.zip</code> (packaging yang direkomendasikan), archive di-unpack antara verify dan ready agar helper punya direktori nyata untuk di-swap.</p>
+<h2 id="pemeriksaan-berkala">Pemeriksaan berkala</h2>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    CheckInterval: 6 * time.Hour,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CheckInterval</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">6</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Hour</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Saat <code>CheckInterval &gt; 0</code>, goroutine background memanggil <code>CheckAndInstall</code> pada interval yang dikonfigurasi. Tick yang tiba saat alur lain sedang berjalan (checking / downloading / verifying / installing) di-drop — state machine konkuren tidak didukung.</p>
+<p>Untuk polling background silent yang hanya muncul saat sesuatu ditemukan, set <code>Window: updater.WindowNone</code> dan bereaksi terhadap <code>EventUpdateAvailable</code> dari UI Anda sendiri.</p>
+<h2 id="skip--remind">Skip &amp; remind</h2>
+<p>Tombol &ldquo;Skip This Version&rdquo; window default mencatat versi tersedia via <code>SkipVersion(rel.Version)</code>. <code>Check</code> berikutnya menemukan versi yang sama dan memperlakukannya sebagai up-to-date (sampai pengguna memperbarui <code>CurrentVersion</code>, yang terjadi otomatis setelah <code>Restart</code> sukses). &ldquo;Remind Me Later&rdquo; hanya menutup window tanpa mencatat apa pun.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Membaca apa yang di-skip pengguna (mis. untuk ditampilkan di app settings)&#10;if v := app.Updater.SkippedVersion(); v != &#34;&#34; {&#10;    log.Printf(&#34;user skipped %s&#34;, v)&#10;}&#10;&#10;// Menghapus skip secara programatik:&#10;app.Updater.SkipVersion(&#34;&#34;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Membaca apa yang di-skip pengguna (mis. untuk ditampilkan di app settings)</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> v <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">SkippedVersion</span>(); v <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;user skipped %s&#34;</span>, v)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Menghapus skip secara programatik:</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">SkipVersion</span>(<span class="mpress-token-string">&#34;&#34;</span>)</span></code></pre></div>
+<h2 id="checklist-distribusi">Checklist distribusi</h2>
+<p>Sebelum mempublikasikan release yang akan di-install updater:</p>
+<ol>
+<li><strong>Pilih format archive yang tepat.</strong> macOS: <code>.zip</code> bundle <code>.app</code>. Linux: single binary atau <code>.tar.gz</code>. Windows: single <code>.exe</code> atau <code>.zip</code>. <code>.dmg</code> / <code>.msi</code> / <code>.pkg</code> tidak didukung.</li>
+<li><strong>Sign artifact</strong> dengan private key yang cocok dengan <code>Config.PublicKey</code>. Untuk feed yang dipublikasikan provider (keygen.sh, AppCast), ikuti workflow signing masing-masing provider. Untuk GitHub Releases dengan <code>ChecksumAsset</code>, generate file <code>SHA256SUMS</code> dengan <code>sha256sum</code> / <code>shasum -a 256</code>.</li>
+<li><strong>Cocokkan string versi.</strong> <code>Config.CurrentVersion</code> dan tag versi release harus cocok persis (mis. <code>1.0.0</code> ↔ tag <code>v1.0.0</code>; prefix <code>v</code> di-strip di sisi provider).</li>
+<li><strong>Uji swap di platform target</strong> minimal sekali sebelum ship — codesigning, notarization, dan penanganan Gatekeeper spesifik platform dan tidak dicakup updater.</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>&ldquo;signature requires a public key but none configured&rdquo;</strong> — release punya field <code>Signature</code> tapi <code>Config.PublicKey</code> kosong. Set public key atau ubah pipeline release agar tidak menyertakan signature.</p>
+<p><strong>&ldquo;digest mismatch&rdquo;</strong> — byte unduhan tidak cocok dengan yang dijanjikan provider. Biasanya unduhan partial (gangguan jaringan) atau artifact corrupt. Menjalankan ulang sering memperbaikinya.</p>
+<p><strong>Window terbuka lalu langsung hilang, tanpa markdown, tanpa progress</strong> — custom HTML tidak memanggil <code>wails:runtime:ready</code>. Lihat shim <a href="#ganti-template">Ganti template</a>.</p>
+<p><strong>Update Windows tidak pernah selesai; log helper &ldquo;remove old (attempt N): Access is denied&rdquo;</strong> — hanya terjadi pada versi pre-<code>de764fb</code> PR ini; implementasi saat ini memakai rename-aside yang tidak mengalami ini. Upgrade.</p>
+<p><strong>macOS Gatekeeper memblokir binary yang di-swap</strong> — code-signing harus dipertahankan end-to-end. Sign <code>.app</code> asli <em>dan</em> re-sign binary yang di-relaunch jika pipeline build Anda mengubah entitlements saat update.</p>
+<h2 id="lihat-juga">Lihat juga</h2>
+<ul>
+<li>Contoh yang dapat dijalankan: <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/updater"><code>v3/examples/updater</code></a></li>
+<li>Repo demo test: <a href="https://github.com/wailsapp/updater-demo"><code>wailsapp/updater-demo</code></a></li>
+<li>Tutorial: <a href="/id/tutorials/04-self-update-a-wails-app/">Menambahkan self-update ke aplikasi Wails</a></li>
+</ul>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/updater.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../id/guides/build/obfuscation/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Obfuscated Builds</strong></a><a rel="next" href="../../../id/guides/file-associations/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>File Associations</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#quick-start">Quick start</a><a class="toc-level-2" href="#lifecycle">Lifecycle</a><a class="toc-level-2" href="#providers">Providers</a><a class="toc-level-3" href="#github-releases--updaterprovidersgithub">GitHub Releases — updater/providers/github</a><a class="toc-level-3" href="#keygensh--updaterproviderskeygen">keygen.sh — updater/providers/keygen</a><a class="toc-level-3" href="#sparkle-appcast--updaterprovidersappcast">Sparkle AppCast — updater/providers/appcast</a><a class="toc-level-3" href="#fallback-chain">Fallback chain</a><a class="toc-level-3" href="#menulis-provider-sendiri">Menulis provider sendiri</a><a class="toc-level-2" href="#verifikasi-kriptografis">Verifikasi kriptografis</a><a class="toc-level-3" href="#menghasilkan-signing-key">Menghasilkan signing key</a><a class="toc-level-2" href="#format-artifact">Format artifact</a><a class="toc-level-2" href="#window-default">Window default</a><a class="toc-level-3" href="#theme-via-css-variables">Theme via CSS variables</a><a class="toc-level-3" href="#ganti-template">Ganti template</a><a class="toc-level-3" href="#window-chrome">Window chrome</a><a class="toc-level-3" href="#bring-your-own-window">Bring your own window</a><a class="toc-level-3" href="#headless">Headless</a><a class="toc-level-2" href="#events">Events</a><a class="toc-level-3" href="#dari-go">Dari Go</a><a class="toc-level-3" href="#dari-javascript">Dari JavaScript</a><a class="toc-level-3" href="#referensi-event">Referensi event</a><a class="toc-level-2" href="#referensi-api">Referensi API</a><a class="toc-level-3" href="#updaterconfig">updater.Config</a><a class="toc-level-3" href="#method-pada-updaterupdater">Method pada *updater.Updater</a><a class="toc-level-3" href="#errors">Errors</a><a class="toc-level-2" href="#cara-swap-bekerja">Cara swap bekerja</a><a class="toc-level-2" href="#pemeriksaan-berkala">Pemeriksaan berkala</a><a class="toc-level-2" href="#skip--remind">Skip &amp; remind</a><a class="toc-level-2" href="#checklist-distribusi">Checklist distribusi</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-2" href="#lihat-juga">Lihat juga</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

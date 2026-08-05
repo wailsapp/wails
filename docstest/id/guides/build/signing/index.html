@@ -1,0 +1,1028 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menandatangani Aplikasi · Wails</title><meta name="description" content="Tandatangani aplikasi untuk distribusi"><link rel="canonical" href="https://v3.wails.io/id/guides/build/signing/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/build/signing/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/build/signing/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/build/signing/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../../assets/mpress.css"><link rel="stylesheet" href="../../../../assets/custom.css"><link rel="icon" href="../../../../favicon.svg"></head><body class="docs-page" data-search="../../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/build/signing/" role="menuitem"><span>English</span></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/build/signing/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/build/signing/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../../id/">Home</a><a class="" href="../../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/quick-start/installation/">Installation</a><a class="" href="../../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../../id/tutorials/overview/">Tutorial</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../../id/features/windows/options/">Window Options</a><a class="" href="../../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../../id/features/bindings/services/">Services</a><a class="" href="../../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/events/system/">Event System</a><a class="" href="../../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/mobile/">Overview</a><a class="" href="../../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../../id/guides/mobile/android/">Android</a><a class="" href="../../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/experimental/">Overview</a><a class="" href="../../../../id/experimental/wake/">Wake</a><a class="" href="../../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details open><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../../id/guides/dev/debugging/">Debugging</a></div></details><details open><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="active" aria-current="page" href="../../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/guides/server-build/">Server Build</a><a class="" href="../../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/reference/overview/">Overview</a><a class="" href="../../../../id/reference/application/">Application</a><a class="" href="../../../../id/reference/window/">Window</a><a class="" href="../../../../id/reference/menu/">Menu</a><a class="" href="../../../../id/reference/events/">Events</a><a class="" href="../../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../../id/reference/cli/">CLI</a><a class="" href="../../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/links/">Links</a><a class="" href="../../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../../id/community/showcase/october/">October</a><a class="" href="../../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../../id/status/">Status</a><a class="" href="../../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Menandatangani Aplikasi</h1><h1 id="code-signing-your-application">Code Signing Your Application</h1>
+<p>This guide covers how to sign your Wails applications for macOS, Windows, and Linux. Wails v3 provides built-in CLI tools for code signing, notarization, and PGP key management.</p>
+<ul>
+<li><strong>macOS</strong> - Sign and notarize your macOS applications</li>
+<li><strong>Windows</strong> - Sign your Windows executables and packages</li>
+<li><strong>Linux</strong> - Sign DEB and RPM packages with PGP keys</li>
+</ul>
+<h2 id="cross-platform-signing-matrix">Cross-Platform Signing Matrix</h2>
+<p>This matrix shows what you can sign from each source platform:</p>
+<table>
+<thead>
+<tr>
+<th>Target Format</th>
+<th style="text-align:center">From Windows</th>
+<th style="text-align:center">From macOS</th>
+<th style="text-align:center">From Linux</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows EXE/MSI</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+</tr>
+<tr>
+<td>macOS .app bundle</td>
+<td style="text-align:center">❌</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">❌</td>
+</tr>
+<tr>
+<td>macOS notarization</td>
+<td style="text-align:center">❌</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">❌</td>
+</tr>
+<tr>
+<td>Linux DEB</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+</tr>
+<tr>
+<td>Linux RPM</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">✅</td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>Windows and Linux packages can be signed from <strong>any platform</strong>. macOS signing requires a Mac due to Apple&rsquo;s tooling requirements.</p>
+</div>
+</aside>
+<h3 id="signing-backends">Signing Backends</h3>
+<p>Wails automatically selects the best available signing backend:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Native Backend</th>
+<th>Cross-Platform Backend</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td><code>signtool.exe</code> (Windows SDK)</td>
+<td>Built-in</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>codesign</code> (Xcode)</td>
+<td>Not available</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>N/A</td>
+<td>Built-in</td>
+</tr>
+</tbody>
+</table>
+<p>When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.</p>
+<h2 id="mulai-cepat">Mulai Cepat</h2>
+<p>The easiest way to configure signing is using the interactive setup wizard:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup signing"><code><span class="mpress-cmd">wails3 setup signing</span>
+</code></pre>
+</div>
+<p>This command:</p>
+<ul>
+<li>Walks you through configuring signing credentials for each platform</li>
+<li>On macOS, lists available Developer ID certificates from your keychain</li>
+<li>For Linux, can generate a new PGP key if you don&rsquo;t have one</li>
+<li><strong>Stores passwords securely in your system keychain</strong> (not in Taskfiles)</li>
+<li>Updates the <code>vars</code> section in each platform&rsquo;s Taskfile with non-sensitive config</li>
+</ul>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>Passwords are stored in your system&rsquo;s native credential store (macOS Keychain, Windows Credential Manager, or Linux Secret Service). This means your signing configuration is secure and works across all your Wails projects.</p>
+</div>
+</aside>
+<p>To configure only specific platforms:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup signing --platform darwin
+wails3 setup signing --platform windows --platform linux"><code><span class="mpress-cmd">wails3 setup signing --platform darwin</span>
+<span class="mpress-cmd">wails3 setup signing --platform windows --platform linux</span>
+</code></pre>
+</div>
+<h3 id="manual-configuration">Manual Configuration</h3>
+<p>Alternatively, you can manually edit the platform-specific Taskfiles. Edit the <code>vars</code> section at the top of each file:</p>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-4000c095">
+<div role="tablist">
+<button id="mpress-tabs-4000c095-tab-1" role="tab" type="button" class="mpress-tab-os mpress-tab-os-macos" aria-selected="true" aria-controls="mpress-tabs-4000c095-panel-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-apple" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42Zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12.45 4.24 17 6 19.47c.8 1.21 1.8 2.58 3.12 2.53s1.75-.82 3.28-.82 2 .82 3.3.79 2.22-1.24 3.06-2.45a11 11 0 0 0 1.38-2.85 4.41 4.41 0 0 1-2.68-4.04Z"/></svg> macOS</button>
+<button id="mpress-tabs-4000c095-tab-2" role="tab" type="button" class="mpress-tab-os mpress-tab-os-windows" aria-selected="false" aria-controls="mpress-tabs-4000c095-panel-2" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-seti-windows" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0.125 11.544L0.125 3.450L9.815 2.120L9.815 11.506L0.125 11.544ZM0.125 12.532L9.815 12.570L9.815 21.956L0.125 20.626L0.125 12.532ZM10.993 11.468L10.993 1.968L23.837 0.106L23.837 11.392L10.993 11.468ZM10.955 12.646L23.875 12.684L23.837 23.894L10.993 22.108L10.955 12.646Z"/></svg> Windows</button>
+<button id="mpress-tabs-4000c095-tab-3" role="tab" type="button" class="mpress-tab-os mpress-tab-os-linux" aria-selected="false" aria-controls="mpress-tabs-4000c095-panel-3" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-linux" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.7 17.6c-.1-.2-.2-.4-.2-.6 0-.4-.2-.7-.5-1-.1-.1-.3-.2-.4-.2.6-1.8-.3-3.6-1.3-4.9-.8-1.2-2-2.1-1.9-3.7 0-1.9.2-5.4-3.3-5.1-3.6.2-2.6 3.9-2.7 5.2 0 1.1-.5 2.2-1.3 3.1-.2.2-.4.5-.5.7-1 1.2-1.5 2.8-1.5 4.3-.2.2-.4.4-.5.6-.1.1-.2.2-.2.3-.1.1-.3.2-.5.3-.4.1-.7.3-.9.7-.1.3-.2.7-.1 1.1.1.2.1.4 0 .7-.2.4-.2.9 0 1.4.3.4.8.5 1.5.6.5 0 1.1.2 1.6.4.5.3 1.1.5 1.7.5.3 0 .7-.1 1-.2.3-.2.5-.4.6-.7.4 0 1-.2 1.7-.2.6 0 1.2.2 2 .1 0 .1 0 .2.1.3.2.5.7.9 1.3 1h.2c.8-.1 1.6-.5 2.1-1.1.4-.4.9-.7 1.4-.9.6-.3 1-.5 1.1-1 .1-.7-.1-1.1-.5-1.7zM12.8 4.8c.6.1 1.1.6 1 1.2 0 .3-.1.6-.3.9h-.1c-.2-.1-.3-.1-.4-.2.1-.1.1-.3.2-.5 0-.4-.2-.7-.4-.7-.3 0-.5.3-.5.7v.1c-.1-.1-.3-.1-.4-.2V6c-.1-.5.3-1.1.9-1.2zm-.3 2c.1.1.3.2.4.2.1 0 .3.1.4.2.2.1.4.2.4.5s-.3.6-.9.8c-.2.1-.3.1-.4.2-.3.2-.6.3-1 .3-.3 0-.6-.2-.8-.4-.1-.1-.2-.2-.4-.3-.1-.1-.3-.3-.4-.6 0-.1.1-.2.2-.3.3-.2.4-.3.5-.4l.1-.1c.2-.3.6-.5 1-.5.3.1.6.2.9.4zM10.4 5c.4 0 .7.4.8 1.1v.2c-.1 0-.3.1-.4.2v-.2c0-.3-.2-.6-.4-.5-.2 0-.3.3-.3.6 0 .2.1.3.2.4 0 0-.1.1-.2.1-.2-.2-.4-.5-.4-.8 0-.6.3-1.1.7-1.1zm-1 16.1c-.7.3-1.6.2-2.2-.2-.6-.3-1.1-.4-1.8-.4-.5-.1-1-.1-1.1-.3-.1-.2-.1-.5.1-1 .1-.3.1-.6 0-.9-.1-.3-.1-.5 0-.8.1-.3.3-.4.6-.5.3-.1.5-.2.7-.4.1-.1.2-.2.3-.4.3-.4.5-.6.8-.6.6.1 1.1 1 1.5 1.9.2.3.4.7.7 1 .4.5.9 1.2.9 1.6 0 .5-.2.8-.5 1zm4.9-2.2c0 .1 0 .1-.1.2-1.2.9-2.8 1-4.1.3l-.6-.9c.9-.1.7-1.3-1.2-2.5-2-1.3-.6-3.7.1-4.8.1-.1.1 0-.3.8-.3.6-.9 2.1-.1 3.2 0-.8.2-1.6.5-2.4.7-1.3 1.2-2.8 1.5-4.3.1.1.1.1.2.1.1.1.2.2.3.2.2.3.6.4.9.4h.1c.4 0 .8-.1 1.1-.4.1-.1.2-.2.4-.2.3-.1.6-.3.9-.6.4 1.3.8 2.5 1.4 3.6.4.8.7 1.6.9 2.5.3 0 .7.1 1 .3.8.4 1.1.7 1 1.2H18c0-.3-.2-.6-.9-.9-.7-.3-1.3-.3-1.5.4-.1 0-.2.1-.3.1-.8.4-.8 1.5-.9 2.6.1.4 0 .7-.1 1.1zm4.6.6c-.6.2-1.1.6-1.5 1.1-.4.6-1.1 1-1.9.9-.4 0-.8-.3-.9-.7-.1-.6-.1-1.2.2-1.8.1-.4.2-.7.3-1.1.1-1.2.1-1.9.6-2.2 0 .5.3.8.7 1 .5 0 1-.1 1.4-.5h.2c.3 0 .5 0 .7.2.2.2.3.5.3.7 0 .3.2.6.3.9.5.5.5.8.5.9-.1.2-.5.4-.9.6zm-9-12c-.1 0-.1 0-.1.1 0 0 0 .1.1.1s.1.1.1.1c.3.4.8.6 1.4.7.5-.1 1-.2 1.5-.6l.6-.3c.1 0 .1-.1.1-.1 0-.1 0-.1-.1-.1-.2.1-.5.2-.7.3-.4.3-.9.5-1.4.5-.5 0-.9-.3-1.2-.6-.1 0-.2-.1-.3-.1z"/></svg> Linux</button>
+</div>
+<div id="mpress-tabs-4000c095-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-4000c095-tab-1">
+<p>Edit <code>build/darwin/Taskfile.yml</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  SIGN_IDENTITY: &#34;Developer ID Application: Your Company (TEAMID)&#34;&#10;  KEYCHAIN_PROFILE: &#34;my-notarize-profile&#34;&#10;  # ENTITLEMENTS: &#34;build/darwin/entitlements.plist&#34;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">SIGN_IDENTITY</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Developer ID Application: Your Company (TEAMID)&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">KEYCHAIN_PROFILE</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;my-notarize-profile&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># ENTITLEMENTS: &#34;build/darwin/entitlements.plist&#34;</span></span></code></pre></div>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:sign           # Sign only
+wails3 task darwin:sign:notarize  # Sign and notarize"><code><span class="mpress-cmd">wails3 task darwin:sign           # Sign only</span>
+<span class="mpress-cmd">wails3 task darwin:sign:notarize  # Sign and notarize</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-4000c095-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-4000c095-tab-2" hidden>
+<p>Edit <code>build/windows/Taskfile.yml</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  SIGN_CERTIFICATE: &#34;path/to/certificate.pfx&#34;&#10;  # Or use thumbprint instead:&#10;  # SIGN_THUMBPRINT: &#34;certificate-thumbprint&#34;&#10;  # TIMESTAMP_SERVER: &#34;http://timestamp.digicert.com&#34;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">SIGN_CERTIFICATE</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;path/to/certificate.pfx&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># Or use thumbprint instead:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># SIGN_THUMBPRINT: &#34;certificate-thumbprint&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># TIMESTAMP_SERVER: &#34;http://timestamp.digicert.com&#34;</span></span></code></pre></div>
+<p>Password is retrieved from system keychain (run <code>wails3 setup signing</code> to configure).</p>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task windows:sign           # Sign executable
+wails3 task windows:sign:installer # Sign NSIS installer"><code><span class="mpress-cmd">wails3 task windows:sign           # Sign executable</span>
+<span class="mpress-cmd">wails3 task windows:sign:installer # Sign NSIS installer</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-4000c095-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-4000c095-tab-3" hidden>
+<p>Edit <code>build/linux/Taskfile.yml</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  PGP_KEY: &#34;path/to/signing-key.asc&#34;&#10;  # SIGN_ROLE: &#34;builder&#34;  # Options: origin, maint, archive, builder"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">PGP_KEY</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;path/to/signing-key.asc&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># SIGN_ROLE: &#34;builder&#34;  # Options: origin, maint, archive, builder</span></span></code></pre></div>
+<p>Password is retrieved from system keychain (run <code>wails3 setup signing</code> to configure).</p>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task linux:sign:deb       # Sign DEB package
+wails3 task linux:sign:rpm       # Sign RPM package
+wails3 task linux:sign:packages  # Sign all packages"><code><span class="mpress-cmd">wails3 task linux:sign:deb       # Sign DEB package</span>
+<span class="mpress-cmd">wails3 task linux:sign:rpm       # Sign RPM package</span>
+<span class="mpress-cmd">wails3 task linux:sign:packages  # Sign all packages</span>
+</code></pre>
+</div>
+</div>
+</ot-tabs>
+<p>You can also inspect signing state from the system directly:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="security find-identity -v -p codesigning
+gpg --list-keys"><code><span class="mpress-output"># List available macOS code-signing identities</span>
+<span class="mpress-cmd">security find-identity -v -p codesigning</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># List PGP keys (Linux package signing)</span>
+<span class="mpress-cmd">gpg --list-keys</span>
+</code></pre>
+</div>
+<p>For interactive setup of every platform&rsquo;s signing configuration, use the wizard:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup signing"><code><span class="mpress-cmd">wails3 setup signing</span>
+</code></pre>
+</div>
+<h2 id="macos-code-signing">macOS Code Signing</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Apple Developer Account ($99/year)</li>
+<li>Developer ID Application certificate</li>
+<li>Xcode Command Line Tools installed</li>
+</ul>
+<h3 id="signing-identities">Signing Identities</h3>
+<p>Check available signing identities:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="security find-identity -v -p codesigning"><code><span class="mpress-cmd">security find-identity -v -p codesigning</span>
+</code></pre>
+</div>
+<p>Output:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Found 2 signing identities:&#10;&#10;  Developer ID Application: Your Company (ABCD1234) [valid]&#10;    Hash: ABC123DEF456...&#10;&#10;  Apple Development: your@email.com (XYZ789) [valid]&#10;    Hash: DEF789ABC123..."><code class="language-text"><span class="mpress-code-line">Found 2 signing identities:
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">  Developer ID Application: Your Company (ABCD1234) [valid]
+</span><span class="mpress-code-line">    Hash: ABC123DEF456...
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">  Apple Development: your@email.com (XYZ789) [valid]
+</span><span class="mpress-code-line">    Hash: DEF789ABC123...</span></code></pre></div>
+<aside aria-label="Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Tip</span></p>
+<div class="mpress-admonition-body">
+<p>For distribution outside the App Store, you need a <strong>Developer ID Application</strong> certificate.</p>
+</div>
+</aside>
+<h3 id="configuration">Configuration</h3>
+<p>Edit <code>build/darwin/Taskfile.yml</code> and set the signing variables:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  SIGN_IDENTITY: &#34;Developer ID Application: Your Company (TEAMID)&#34;&#10;  KEYCHAIN_PROFILE: &#34;my-notarize-profile&#34;&#10;  ENTITLEMENTS: &#34;build/darwin/entitlements.plist&#34;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">SIGN_IDENTITY</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Developer ID Application: Your Company (TEAMID)&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">KEYCHAIN_PROFILE</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;my-notarize-profile&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">ENTITLEMENTS</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;build/darwin/entitlements.plist&#34;</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SIGN_IDENTITY</code></td>
+<td>Yes</td>
+<td>Your Developer ID (e.g., &ldquo;Developer ID Application: Your Company (TEAMID)&rdquo;)</td>
+</tr>
+<tr>
+<td><code>KEYCHAIN_PROFILE</code></td>
+<td>For notarization</td>
+<td>Keychain profile name with stored credentials</td>
+</tr>
+<tr>
+<td><code>ENTITLEMENTS</code></td>
+<td>No</td>
+<td>Path to entitlements file</td>
+</tr>
+</tbody>
+</table>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:sign           # Build, package, and sign
+wails3 task darwin:sign:notarize  # Build, package, sign, and notarize"><code><span class="mpress-cmd">wails3 task darwin:sign           # Build, package, and sign</span>
+<span class="mpress-cmd">wails3 task darwin:sign:notarize  # Build, package, sign, and notarize</span>
+</code></pre>
+</div>
+<h3 id="entitlements">Entitlements</h3>
+<p>Entitlements control what capabilities your app has access to. Wails apps typically need different entitlements for development vs production:</p>
+<ul>
+<li><strong>Development</strong>: Requires JIT, unsigned memory, and debugging entitlements</li>
+<li><strong>Production</strong>: Minimal entitlements (just network access)</li>
+</ul>
+<p>Use the interactive setup wizard to generate both files:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup entitlements"><code><span class="mpress-cmd">wails3 setup entitlements</span>
+</code></pre>
+</div>
+<p>This creates:</p>
+<ul>
+<li><code>build/darwin/entitlements.dev.plist</code> - For development builds</li>
+<li><code>build/darwin/entitlements.plist</code> - For production/signed builds</li>
+</ul>
+<p><strong>Presets available:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Development</td>
+<td>JIT, unsigned memory, debugging, network</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Network only (minimal, most secure)</td>
+</tr>
+<tr>
+<td>Both</td>
+<td>Creates both dev and production files (recommended)</td>
+</tr>
+<tr>
+<td>App Store</td>
+<td>Sandbox enabled with network and file access</td>
+</tr>
+<tr>
+<td>Custom</td>
+<td>Choose individual entitlements</td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="note.note" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>note.note</span></p>
+<div class="mpress-admonition-body">
+<p>The <code>run</code> task in the darwin Taskfile uses <code>entitlements.dev.plist</code> automatically. The <code>sign</code> tasks use <code>entitlements.plist</code> for production builds.</p>
+</div>
+</aside>
+<p>Then set <code>ENTITLEMENTS</code> in your Taskfile vars to point to the appropriate file.</p>
+<h3 id="notarization">Notarization</h3>
+<p>Apple requires all distributed apps to be notarized.</p>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h4 class="mpress-step-title">Step 1</h4>
+<div class="mpress-step-content">
+<ol>
+<li><strong>Store your credentials in the keychain</strong> (one-time setup). Either run <code>wails3 setup signing</code> (it prompts for these values and calls <code>notarytool</code> under the hood) or call <code>notarytool</code> directly:</li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="xcrun notarytool store-credentials &#34;my-notarize-profile&#34; \
+  --apple-id &#34;your@email.com&#34; \
+  --team-id &#34;ABCD1234&#34; \
+  --password &#34;app-specific-password&#34;"><code><span class="mpress-cmd">xcrun notarytool store-credentials &#34;my-notarize-profile&#34; \</span>
+<span class="mpress-cmd">  --apple-id &#34;your@email.com&#34; \</span>
+<span class="mpress-cmd">  --team-id &#34;ABCD1234&#34; \</span>
+<span class="mpress-cmd">  --password &#34;app-specific-password&#34;</span>
+</code></pre>
+</div>
+<ol start="2">
+<li>
+<p><strong>Set KEYCHAIN_PROFILE in your Taskfile</strong> to match the profile name above.</p>
+</li>
+<li>
+<p><strong>Sign and notarize your app</strong>:</p>
+</li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:sign:notarize"><code><span class="mpress-cmd">wails3 task darwin:sign:notarize</span>
+</code></pre>
+</div>
+<ol start="4">
+<li><strong>Verify notarization</strong>:</li>
+</ol>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="spctl --assess --verbose=2 bin/MyApp.app"><code><span class="mpress-cmd">spctl --assess --verbose=2 bin/MyApp.app</span>
+</code></pre>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+<aside aria-label="note.note" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>note.note</span></p>
+<div class="mpress-admonition-body">
+<p>Notarization typically takes 1-2 minutes. The ticket is automatically stapled to your app.</p>
+</div>
+</aside>
+<h2 id="windows-code-signing">Windows Code Signing</h2>
+<h3 id="prerequisites-1">Prerequisites</h3>
+<ul>
+<li>Code signing certificate (from DigiCert, Sectigo, etc.)</li>
+<li>For native signing: Windows SDK installed (for signtool.exe)</li>
+<li>For cross-platform: Just the certificate file</li>
+</ul>
+<h3 id="configuration-1">Configuration</h3>
+<p>Edit <code>build/windows/Taskfile.yml</code> and set the signing variables:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  SIGN_CERTIFICATE: &#34;path/to/certificate.pfx&#34;&#10;  # Or use thumbprint instead:&#10;  # SIGN_THUMBPRINT: &#34;certificate-thumbprint&#34;&#10;  # TIMESTAMP_SERVER: &#34;http://timestamp.digicert.com&#34;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">SIGN_CERTIFICATE</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;path/to/certificate.pfx&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># Or use thumbprint instead:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># SIGN_THUMBPRINT: &#34;certificate-thumbprint&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># TIMESTAMP_SERVER: &#34;http://timestamp.digicert.com&#34;</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SIGN_CERTIFICATE</code></td>
+<td>One of these</td>
+<td>Path to .pfx/.p12 certificate file</td>
+</tr>
+<tr>
+<td><code>SIGN_THUMBPRINT</code></td>
+<td>One of these</td>
+<td>Certificate thumbprint in Windows cert store</td>
+</tr>
+<tr>
+<td><code>TIMESTAMP_SERVER</code></td>
+<td>No</td>
+<td>Timestamp server URL (default: <a href="http://timestamp.digicert.com">http://timestamp.digicert.com</a>)</td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="note.note" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>note.note</span></p>
+<div class="mpress-admonition-body">
+<p>The certificate password is stored in your system keychain, not in the Taskfile. Run <code>wails3 setup signing</code> to configure it, or set the <code>WAILS_WINDOWS_CERT_PASSWORD</code> environment variable in CI.</p>
+</div>
+</aside>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task windows:sign           # Build and sign executable
+wails3 task windows:sign:installer # Build and sign NSIS installer"><code><span class="mpress-cmd">wails3 task windows:sign           # Build and sign executable</span>
+<span class="mpress-cmd">wails3 task windows:sign:installer # Build and sign NSIS installer</span>
+</code></pre>
+</div>
+<h3 id="cross-platform-signing">Cross-Platform Signing</h3>
+<p>Windows executables can be signed from any platform. The same Taskfile configuration and commands work on macOS and Linux.</p>
+<h3 id="supported-windows-formats">Supported Windows Formats</h3>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Extension</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Executables</td>
+<td>.exe</td>
+<td>Standard PE signing</td>
+</tr>
+<tr>
+<td>Installers</td>
+<td>.msi</td>
+<td>Windows Installer packages</td>
+</tr>
+<tr>
+<td>App Packages</td>
+<td>.msix, .appx</td>
+<td>Modern Windows apps</td>
+</tr>
+</tbody>
+</table>
+<h2 id="linux-package-signing">Linux Package Signing</h2>
+<p>Linux packages (DEB and RPM) are signed using PGP/GPG keys. Unlike Windows and macOS code signing, Linux package signing proves the package came from a trusted source rather than that the code is trusted by the OS.</p>
+<h3 id="prerequisites-2">Prerequisites</h3>
+<ul>
+<li>PGP key pair (can be generated with Wails)</li>
+</ul>
+<h3 id="generating-a-pgp-key">Generating a PGP Key</h3>
+<p>If you don&rsquo;t have a PGP key, generate one with <code>gpg</code> (the <code>wails3 setup signing</code> wizard offers to do this for you and asks the same questions):</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="gpg --full-generate-key
+gpg --armor --export-secret-keys &#34;your@email.com&#34; &gt; signing-key.asc
+gpg --armor --export &#34;your@email.com&#34; &gt; signing-key.pub.asc"><code><span class="mpress-output"># Interactive — the wizard will prompt for name, email, key size and expiry.</span>
+<span class="mpress-cmd">gpg --full-generate-key</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Export the key pair to ASCII-armoured files for the Taskfile to consume.</span>
+<span class="mpress-cmd">gpg --armor --export-secret-keys &#34;your@email.com&#34; &gt; signing-key.asc</span>
+<span class="mpress-cmd">gpg --armor --export &#34;your@email.com&#34; &gt; signing-key.pub.asc</span>
+</code></pre>
+</div>
+<p>Recommended settings: RSA 4096-bit, 1-year expiry, protected with a strong password.</p>
+<aside aria-label="Caution" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>Caution</span></p>
+<div class="mpress-admonition-body">
+<p>Keep your private key secure! Store it encrypted and back it up safely.</p>
+</div>
+</aside>
+<h3 id="configuration-2">Configuration</h3>
+<p>Edit <code>build/linux/Taskfile.yml</code> and set the signing variables:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  PGP_KEY: &#34;path/to/signing-key.asc&#34;&#10;  # SIGN_ROLE: &#34;builder&#34;  # Options: origin, maint, archive, builder"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">PGP_KEY</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;path/to/signing-key.asc&#34;</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-comment"># SIGN_ROLE: &#34;builder&#34;  # Options: origin, maint, archive, builder</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PGP_KEY</code></td>
+<td>Yes</td>
+<td>Path to PGP private key file</td>
+</tr>
+<tr>
+<td><code>SIGN_ROLE</code></td>
+<td>No</td>
+<td>DEB signing role (default: builder)</td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="note.note" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>note.note</span></p>
+<div class="mpress-admonition-body">
+<p>The PGP key password is stored in your system keychain, not in the Taskfile. Run <code>wails3 setup signing</code> to configure it, or set the <code>WAILS_PGP_PASSWORD</code> environment variable in CI.</p>
+</div>
+</aside>
+<p>Then run:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task linux:sign:deb       # Build and sign DEB package
+wails3 task linux:sign:rpm       # Build and sign RPM package
+wails3 task linux:sign:packages  # Build and sign all packages"><code><span class="mpress-cmd">wails3 task linux:sign:deb       # Build and sign DEB package</span>
+<span class="mpress-cmd">wails3 task linux:sign:rpm       # Build and sign RPM package</span>
+<span class="mpress-cmd">wails3 task linux:sign:packages  # Build and sign all packages</span>
+</code></pre>
+</div>
+<h3 id="deb-signing-roles">DEB Signing Roles</h3>
+<p>For DEB packages, you can specify the signing role via <code>SIGN_ROLE</code>:</p>
+<ul>
+<li><code>origin</code>: Signature from the package origin</li>
+<li><code>maint</code>: Signature from the package maintainer</li>
+<li><code>archive</code>: Signature from the archive maintainer</li>
+<li><code>builder</code>: Signature from the package builder (default)</li>
+</ul>
+<h3 id="cross-platform-signing-1">Cross-Platform Signing</h3>
+<p>Linux packages can be signed from any platform. The same Taskfile configuration and commands work on Windows and macOS.</p>
+<h3 id="viewing-key-information">Viewing Key Information</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="gpg --show-keys signing-key.asc"><code><span class="mpress-cmd">gpg --show-keys signing-key.asc</span>
+</code></pre>
+</div>
+<p>Output:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="pub   rsa4096 2024-01-15 [SC] [expires: 2025-01-15]&#10;      1234 5678 90AB CDEF 1234 5678 90AB CDEF 1234 5678&#10;uid                      Your Name &lt;your@email.com&gt;"><code class="language-text"><span class="mpress-code-line">pub   rsa4096 2024-01-15 [SC] [expires: 2025-01-15]
+</span><span class="mpress-code-line">      1234 5678 90AB CDEF 1234 5678 90AB CDEF 1234 5678
+</span><span class="mpress-code-line">uid                      Your Name &lt;your@email.com&gt;</span></code></pre></div>
+<h3 id="verifying-linux-packages">Verifying Linux Packages</h3>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="dpkg-sig --verify myapp_1.0.0_amd64.deb
+rpm --checksig myapp-1.0.0.x86_64.rpm"><code><span class="mpress-output"># Verify DEB signature</span>
+<span class="mpress-cmd">dpkg-sig --verify myapp_1.0.0_amd64.deb</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Verify RPM signature</span>
+<span class="mpress-cmd">rpm --checksig myapp-1.0.0.x86_64.rpm</span>
+</code></pre>
+</div>
+<h3 id="distributing-your-public-key">Distributing Your Public Key</h3>
+<p>Users need your public key to verify packages:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="gpg --armor --export &#34;your@email.com&#34; &gt; myapp-signing.pub.asc
+sudo apt-key add myapp-signing.pub.asc
+sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/
+sudo rpm --import myapp-signing.pub.asc"><code><span class="mpress-output"># Export public key for distribution</span>
+<span class="mpress-cmd">gpg --armor --export &#34;your@email.com&#34; &gt; myapp-signing.pub.asc</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Users can import it:</span>
+<span class="mpress-output"># For DEB (apt):</span>
+<span class="mpress-cmd">sudo apt-key add myapp-signing.pub.asc</span>
+<span class="mpress-output"># Or for modern apt:</span>
+<span class="mpress-cmd">sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># For RPM:</span>
+<span class="mpress-cmd">sudo rpm --import myapp-signing.pub.asc</span>
+</code></pre>
+</div>
+<h2 id="github-actions-integration">GitHub Actions Integration</h2>
+<p>In CI environments, passwords are provided via environment variables instead of the system keychain:</p>
+<table>
+<thead>
+<tr>
+<th>Environment Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WAILS_WINDOWS_CERT_PASSWORD</code></td>
+<td>Windows certificate password</td>
+</tr>
+<tr>
+<td><code>WAILS_PGP_PASSWORD</code></td>
+<td>PGP key password for Linux packages</td>
+</tr>
+</tbody>
+</table>
+<p>You can also pass Taskfile variables directly:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task darwin:sign SIGN_IDENTITY=&#34;$SIGN_IDENTITY&#34; KEYCHAIN_PROFILE=&#34;$KEYCHAIN_PROFILE&#34;"><code><span class="mpress-cmd">wails3 task darwin:sign SIGN_IDENTITY=&#34;$SIGN_IDENTITY&#34; KEYCHAIN_PROFILE=&#34;$KEYCHAIN_PROFILE&#34;</span>
+</code></pre>
+</div>
+<h3 id="macos-workflow">macOS Workflow</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="name: Build and Sign macOS&#10;&#10;on:&#10;  push:&#10;    tags: [&#39;v*&#39;]&#10;&#10;jobs:&#10;  build:&#10;    runs-on: macos-latest&#10;    steps:&#10;      - uses: actions/checkout@v4&#10;&#10;      - name: Setup Go&#10;        uses: actions/setup-go@v5&#10;        with:&#10;          go-version: &#39;1.23&#39;&#10;&#10;      - name: Install Wails&#10;        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest&#10;&#10;      - name: Import Certificate&#10;        env:&#10;          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}&#10;          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}&#10;        run: |&#10;          echo $CERTIFICATE_BASE64 | base64 --decode &gt; certificate.p12&#10;          security create-keychain -p &#34;&#34; build.keychain&#10;          security default-keychain -s build.keychain&#10;          security unlock-keychain -p &#34;&#34; build.keychain&#10;          security import certificate.p12 -k build.keychain -P &#34;$CERTIFICATE_PASSWORD&#34; -T /usr/bin/codesign&#10;          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k &#34;&#34; build.keychain&#10;&#10;      - name: Store Notarization Credentials&#10;        env:&#10;          APPLE_ID: ${{ secrets.APPLE_ID }}&#10;          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}&#10;          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}&#10;        run: |&#10;          xcrun notarytool store-credentials &#34;notarize-profile&#34; \&#10;            --apple-id &#34;$APPLE_ID&#34; \&#10;            --team-id &#34;$APPLE_TEAM_ID&#34; \&#10;            --password &#34;$APPLE_APP_PASSWORD&#34;&#10;&#10;      - name: Build, Sign, and Notarize&#10;        env:&#10;          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}&#10;        run: |&#10;          wails3 task darwin:sign:notarize \&#10;            SIGN_IDENTITY=&#34;$SIGN_IDENTITY&#34; \&#10;            KEYCHAIN_PROFILE=&#34;notarize-profile&#34;&#10;&#10;      - name: Upload Artifact&#10;        uses: actions/upload-artifact@v4&#10;        with:&#10;          name: MyApp-macOS&#10;          path: bin/*.app"><code class="language-yaml"><span class="mpress-code-line">name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-type">Sign</span> macOS
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">on<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  push<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    tags<span class="mpress-token-operator">:</span> [<span class="mpress-token-string">&#39;v*&#39;</span>]
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">jobs<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    runs<span class="mpress-token-operator">-</span>on<span class="mpress-token-operator">:</span> macos<span class="mpress-token-operator">-</span>latest
+</span><span class="mpress-code-line">    steps<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> uses<span class="mpress-token-operator">:</span> actions/checkout@v4
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Setup</span> <span class="mpress-token-type">Go</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/setup<span class="mpress-token-operator">-</span><span class="mpress-token-keyword">go</span>@v5
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-keyword">go</span><span class="mpress-token-operator">-</span>version<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;1.23&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Install</span> <span class="mpress-token-type">Wails</span>
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">go</span> install github.com/wailsapp/wails/v3/cmd/wails3@latest
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Import</span> <span class="mpress-token-type">Certificate</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">CERTIFICATE_BASE64</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">MACOS_CERTIFICATE</span> }}
+</span><span class="mpress-code-line">          <span class="mpress-token-type">CERTIFICATE_PASSWORD</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">MACOS_CERTIFICATE_PASSWORD</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          echo $CERTIFICATE_BASE64 <span class="mpress-token-operator">|</span> base64 <span class="mpress-token-operator">--</span>decode <span class="mpress-token-operator">&gt;</span> certificate.p12
+</span><span class="mpress-code-line">          security create<span class="mpress-token-operator">-</span>keychain <span class="mpress-token-operator">-</span>p <span class="mpress-token-string">&#34;&#34;</span> build.keychain
+</span><span class="mpress-code-line">          security <span class="mpress-token-keyword">default</span><span class="mpress-token-operator">-</span>keychain <span class="mpress-token-operator">-</span>s build.keychain
+</span><span class="mpress-code-line">          security unlock<span class="mpress-token-operator">-</span>keychain <span class="mpress-token-operator">-</span>p <span class="mpress-token-string">&#34;&#34;</span> build.keychain
+</span><span class="mpress-code-line">          security <span class="mpress-token-keyword">import</span> certificate.p12 <span class="mpress-token-operator">-</span>k build.keychain <span class="mpress-token-operator">-</span><span class="mpress-token-type">P</span> <span class="mpress-token-string">&#34;$CERTIFICATE_PASSWORD&#34;</span> <span class="mpress-token-operator">-</span><span class="mpress-token-type">T</span> /usr/bin/codesign
+</span><span class="mpress-code-line">          security set<span class="mpress-token-operator">-</span>key<span class="mpress-token-operator">-</span>partition<span class="mpress-token-operator">-</span>list <span class="mpress-token-operator">-</span><span class="mpress-token-type">S</span> apple<span class="mpress-token-operator">-</span>tool<span class="mpress-token-operator">:</span>,apple<span class="mpress-token-operator">:</span>,codesign<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">-</span>s <span class="mpress-token-operator">-</span>k <span class="mpress-token-string">&#34;&#34;</span> build.keychain
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Store</span> <span class="mpress-token-type">Notarization</span> <span class="mpress-token-type">Credentials</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">APPLE_ID</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">APPLE_ID</span> }}
+</span><span class="mpress-code-line">          <span class="mpress-token-type">APPLE_TEAM_ID</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">APPLE_TEAM_ID</span> }}
+</span><span class="mpress-code-line">          <span class="mpress-token-type">APPLE_APP_PASSWORD</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">APPLE_APP_PASSWORD</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          xcrun notarytool store<span class="mpress-token-operator">-</span>credentials <span class="mpress-token-string">&#34;notarize-profile&#34;</span> \
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">--</span>apple<span class="mpress-token-operator">-</span>id <span class="mpress-token-string">&#34;$APPLE_ID&#34;</span> \
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">--</span>team<span class="mpress-token-operator">-</span>id <span class="mpress-token-string">&#34;$APPLE_TEAM_ID&#34;</span> \
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">--</span>password <span class="mpress-token-string">&#34;$APPLE_APP_PASSWORD&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span>, <span class="mpress-token-type">Sign</span>, and <span class="mpress-token-type">Notarize</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">SIGN_IDENTITY</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">MACOS_SIGN_IDENTITY</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          wails3 task darwin<span class="mpress-token-operator">:</span>sign<span class="mpress-token-operator">:</span>notarize \
+</span><span class="mpress-code-line">            <span class="mpress-token-type">SIGN_IDENTITY</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;$SIGN_IDENTITY&#34;</span> \
+</span><span class="mpress-code-line">            <span class="mpress-token-type">KEYCHAIN_PROFILE</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;notarize-profile&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Upload</span> <span class="mpress-token-type">Artifact</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/upload<span class="mpress-token-operator">-</span>artifact@v4
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">MyApp</span><span class="mpress-token-operator">-</span>macOS
+</span><span class="mpress-code-line">          path<span class="mpress-token-operator">:</span> bin/<span class="mpress-token-operator">*</span>.app</span></code></pre></div>
+<h3 id="windows-workflow">Windows Workflow</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="name: Build and Sign Windows&#10;&#10;on:&#10;  push:&#10;    tags: [&#39;v*&#39;]&#10;&#10;jobs:&#10;  build:&#10;    runs-on: windows-latest&#10;    steps:&#10;      - uses: actions/checkout@v4&#10;&#10;      - name: Setup Go&#10;        uses: actions/setup-go@v5&#10;        with:&#10;          go-version: &#39;1.23&#39;&#10;&#10;      - name: Install Wails&#10;        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest&#10;&#10;      - name: Import Certificate&#10;        env:&#10;          CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE }}&#10;        run: |&#10;          $certBytes = [Convert]::FromBase64String($env:CERTIFICATE_BASE64)&#10;          [IO.File]::WriteAllBytes(&#34;certificate.pfx&#34;, $certBytes)&#10;&#10;      - name: Build and Sign&#10;        env:&#10;          WAILS_WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}&#10;        run: |&#10;          wails3 task windows:sign SIGN_CERTIFICATE=certificate.pfx&#10;&#10;      - name: Upload Artifact&#10;        uses: actions/upload-artifact@v4&#10;        with:&#10;          name: MyApp-Windows&#10;          path: bin/*.exe"><code class="language-yaml"><span class="mpress-code-line">name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-type">Sign</span> <span class="mpress-token-type">Windows</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">on<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  push<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    tags<span class="mpress-token-operator">:</span> [<span class="mpress-token-string">&#39;v*&#39;</span>]
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">jobs<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    runs<span class="mpress-token-operator">-</span>on<span class="mpress-token-operator">:</span> windows<span class="mpress-token-operator">-</span>latest
+</span><span class="mpress-code-line">    steps<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> uses<span class="mpress-token-operator">:</span> actions/checkout@v4
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Setup</span> <span class="mpress-token-type">Go</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/setup<span class="mpress-token-operator">-</span><span class="mpress-token-keyword">go</span>@v5
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-keyword">go</span><span class="mpress-token-operator">-</span>version<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;1.23&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Install</span> <span class="mpress-token-type">Wails</span>
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">go</span> install github.com/wailsapp/wails/v3/cmd/wails3@latest
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Import</span> <span class="mpress-token-type">Certificate</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">CERTIFICATE_BASE64</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">WINDOWS_CERTIFICATE</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          $certBytes <span class="mpress-token-operator">=</span> [<span class="mpress-token-type">Convert</span>]<span class="mpress-token-operator">::</span><span class="mpress-token-function">FromBase64String</span>($env<span class="mpress-token-operator">:</span><span class="mpress-token-type">CERTIFICATE_BASE64</span>)
+</span><span class="mpress-code-line">          [<span class="mpress-token-type">IO</span>.<span class="mpress-token-type">File</span>]<span class="mpress-token-operator">::</span><span class="mpress-token-function">WriteAllBytes</span>(<span class="mpress-token-string">&#34;certificate.pfx&#34;</span>, $certBytes)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-type">Sign</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">WAILS_WINDOWS_CERT_PASSWORD</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">WINDOWS_CERTIFICATE_PASSWORD</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          wails3 task windows<span class="mpress-token-operator">:</span>sign <span class="mpress-token-type">SIGN_CERTIFICATE</span><span class="mpress-token-operator">=</span>certificate.pfx
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Upload</span> <span class="mpress-token-type">Artifact</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/upload<span class="mpress-token-operator">-</span>artifact@v4
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">MyApp</span><span class="mpress-token-operator">-</span><span class="mpress-token-type">Windows</span>
+</span><span class="mpress-code-line">          path<span class="mpress-token-operator">:</span> bin/<span class="mpress-token-operator">*</span>.exe</span></code></pre></div>
+<h3 id="cross-platform-workflow-linux-runner">Cross-Platform Workflow (Linux Runner)</h3>
+<p>Sign Windows and Linux packages from a single Linux runner:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="name: Build and Sign (Cross-Platform)&#10;&#10;on:&#10;  push:&#10;    tags: [&#39;v*&#39;]&#10;&#10;jobs:&#10;  build-and-sign:&#10;    runs-on: ubuntu-latest&#10;&#10;    steps:&#10;      - uses: actions/checkout@v4&#10;&#10;      - name: Setup Go&#10;        uses: actions/setup-go@v5&#10;        with:&#10;          go-version: &#39;1.23&#39;&#10;&#10;      - name: Install Wails&#10;        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest&#10;&#10;      - name: Install Build Dependencies&#10;        run: |&#10;          sudo apt-get update&#10;          sudo apt-get install -y nsis rpm&#10;&#10;      # Import certificates&#10;      - name: Import Certificates&#10;        env:&#10;          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERTIFICATE }}&#10;          PGP_KEY_BASE64: ${{ secrets.PGP_PRIVATE_KEY }}&#10;        run: |&#10;          echo &#34;$WINDOWS_CERT_BASE64&#34; | base64 -d &gt; certificate.pfx&#10;          echo &#34;$PGP_KEY_BASE64&#34; | base64 -d &gt; signing-key.asc&#10;&#10;      # Build and sign Windows&#10;      - name: Build and Sign Windows&#10;        env:&#10;          WAILS_WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}&#10;        run: |&#10;          wails3 task windows:sign SIGN_CERTIFICATE=certificate.pfx&#10;&#10;      # Build and sign Linux packages&#10;      - name: Build and Sign Linux Packages&#10;        env:&#10;          WAILS_PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}&#10;        run: |&#10;          wails3 task linux:sign:packages PGP_KEY=signing-key.asc&#10;&#10;      # Cleanup secrets&#10;      - name: Cleanup&#10;        if: always()&#10;        run: rm -f certificate.pfx signing-key.asc&#10;&#10;      - name: Upload Artifacts&#10;        uses: actions/upload-artifact@v4&#10;        with:&#10;          name: signed-binaries&#10;          path: |&#10;            bin/*.exe&#10;            bin/*.deb&#10;            bin/*.rpm"><code class="language-yaml"><span class="mpress-code-line">name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-function">Sign</span> (<span class="mpress-token-type">Cross</span><span class="mpress-token-operator">-</span><span class="mpress-token-type">Platform</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">on<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  push<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    tags<span class="mpress-token-operator">:</span> [<span class="mpress-token-string">&#39;v*&#39;</span>]
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">jobs<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">-</span>and<span class="mpress-token-operator">-</span>sign<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    runs<span class="mpress-token-operator">-</span>on<span class="mpress-token-operator">:</span> ubuntu<span class="mpress-token-operator">-</span>latest
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    steps<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> uses<span class="mpress-token-operator">:</span> actions/checkout@v4
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Setup</span> <span class="mpress-token-type">Go</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/setup<span class="mpress-token-operator">-</span><span class="mpress-token-keyword">go</span>@v5
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-keyword">go</span><span class="mpress-token-operator">-</span>version<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;1.23&#39;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Install</span> <span class="mpress-token-type">Wails</span>
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">go</span> install github.com/wailsapp/wails/v3/cmd/wails3@latest
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Install</span> <span class="mpress-token-type">Build</span> <span class="mpress-token-type">Dependencies</span>
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          sudo apt<span class="mpress-token-operator">-</span>get update
+</span><span class="mpress-code-line">          sudo apt<span class="mpress-token-operator">-</span>get install <span class="mpress-token-operator">-</span>y nsis rpm
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-comment"># Import certificates</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Import</span> <span class="mpress-token-type">Certificates</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">WINDOWS_CERT_BASE64</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">WINDOWS_CERTIFICATE</span> }}
+</span><span class="mpress-code-line">          <span class="mpress-token-type">PGP_KEY_BASE64</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">PGP_PRIVATE_KEY</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          echo <span class="mpress-token-string">&#34;$WINDOWS_CERT_BASE64&#34;</span> <span class="mpress-token-operator">|</span> base64 <span class="mpress-token-operator">-</span>d <span class="mpress-token-operator">&gt;</span> certificate.pfx
+</span><span class="mpress-code-line">          echo <span class="mpress-token-string">&#34;$PGP_KEY_BASE64&#34;</span> <span class="mpress-token-operator">|</span> base64 <span class="mpress-token-operator">-</span>d <span class="mpress-token-operator">&gt;</span> signing<span class="mpress-token-operator">-</span>key.asc
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-comment"># Build and sign Windows</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-type">Sign</span> <span class="mpress-token-type">Windows</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">WAILS_WINDOWS_CERT_PASSWORD</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">WINDOWS_CERTIFICATE_PASSWORD</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          wails3 task windows<span class="mpress-token-operator">:</span>sign <span class="mpress-token-type">SIGN_CERTIFICATE</span><span class="mpress-token-operator">=</span>certificate.pfx
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-comment"># Build and sign Linux packages</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Build</span> and <span class="mpress-token-type">Sign</span> <span class="mpress-token-type">Linux</span> <span class="mpress-token-type">Packages</span>
+</span><span class="mpress-code-line">        env<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          <span class="mpress-token-type">WAILS_PGP_PASSWORD</span><span class="mpress-token-operator">:</span> ${{ secrets.<span class="mpress-token-type">PGP_PASSWORD</span> }}
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">          wails3 task linux<span class="mpress-token-operator">:</span>sign<span class="mpress-token-operator">:</span>packages <span class="mpress-token-type">PGP_KEY</span><span class="mpress-token-operator">=</span>signing<span class="mpress-token-operator">-</span>key.asc
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-comment"># Cleanup secrets</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Cleanup</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span><span class="mpress-token-operator">:</span> <span class="mpress-token-function">always</span>()
+</span><span class="mpress-code-line">        run<span class="mpress-token-operator">:</span> rm <span class="mpress-token-operator">-</span>f certificate.pfx signing<span class="mpress-token-operator">-</span>key.asc
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> name<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Upload</span> <span class="mpress-token-type">Artifacts</span>
+</span><span class="mpress-code-line">        uses<span class="mpress-token-operator">:</span> actions/upload<span class="mpress-token-operator">-</span>artifact@v4
+</span><span class="mpress-code-line">        with<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">          name<span class="mpress-token-operator">:</span> signed<span class="mpress-token-operator">-</span>binaries
+</span><span class="mpress-code-line">          path<span class="mpress-token-operator">:</span> <span class="mpress-token-operator">|</span>
+</span><span class="mpress-code-line">            bin/<span class="mpress-token-operator">*</span>.exe
+</span><span class="mpress-code-line">            bin/<span class="mpress-token-operator">*</span>.deb
+</span><span class="mpress-code-line">            bin/<span class="mpress-token-operator">*</span>.rpm</span></code></pre></div>
+<aside aria-label="note.note" class="mpress-admonition mpress-admonition-note" data-variant="note">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>note.note</span></p>
+<div class="mpress-admonition-body">
+<p>Using a Linux runner for cross-platform signing simplifies CI/CD by eliminating the need for separate Windows runners. macOS still requires a macOS runner for signing due to Apple&rsquo;s native tooling requirements.</p>
+</div>
+</aside>
+<h2 id="cli-reference">CLI Reference</h2>
+<h3 id="wails3-setup-signing">wails3 setup signing</h3>
+<p>Interactive wizard to configure signing for your project.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup signing [flags]
+Flags:
+  --platform    Platform to configure (darwin, windows, linux). Repeatable.
+                If omitted, auto-detects which platforms to configure from the build directory."><code><span class="mpress-cmd">wails3 setup signing [flags]</span>
+<span class="mpress-output"></span>
+<span class="mpress-cmd">Flags:</span>
+<span class="mpress-cmd">  --platform    Platform to configure (darwin, windows, linux). Repeatable.</span>
+<span class="mpress-cmd">                If omitted, auto-detects which platforms to configure from the build directory.</span>
+</code></pre>
+</div>
+<p>The wizard guides you through:</p>
+<ul>
+<li><strong>macOS</strong>: Selecting a Developer ID certificate, configuring notarization credentials (calls <code>xcrun notarytool store-credentials</code>).</li>
+<li><strong>Windows</strong>: Choosing between certificate file or thumbprint, setting password and timestamp server.</li>
+<li><strong>Linux</strong>: Using an existing PGP key or generating a new one (calls <code>gpg</code>), configuring signing role.</li>
+</ul>
+<h3 id="wails3-setup-entitlements">wails3 setup entitlements</h3>
+<p>Interactive wizard to configure macOS entitlements.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 setup entitlements [flags]
+Flags:
+  --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)"><code><span class="mpress-cmd">wails3 setup entitlements [flags]</span>
+<span class="mpress-output"></span>
+<span class="mpress-cmd">Flags:</span>
+<span class="mpress-cmd">  --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)</span>
+</code></pre>
+</div>
+<p><strong>Presets:</strong></p>
+<ul>
+<li><strong>Development</strong>: Creates <code>entitlements.dev.plist</code> with JIT, debugging, and network</li>
+<li><strong>Production</strong>: Creates <code>entitlements.plist</code> with minimal entitlements</li>
+<li><strong>Both</strong>: Creates both files (recommended)</li>
+<li><strong>App Store</strong>: Creates sandboxed entitlements for Mac App Store</li>
+<li><strong>Custom</strong>: Choose individual entitlements and target file</li>
+</ul>
+<h3 id="wails3-sign">wails3 sign</h3>
+<p>Sign binaries and packages for the current or specified platform. This is a wrapper that calls the appropriate platform-specific signing task.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 sign
+wails3 sign GOOS=darwin
+wails3 sign GOOS=windows
+wails3 sign GOOS=linux"><code><span class="mpress-cmd">wails3 sign</span>
+<span class="mpress-cmd">wails3 sign GOOS=darwin</span>
+<span class="mpress-cmd">wails3 sign GOOS=windows</span>
+<span class="mpress-cmd">wails3 sign GOOS=linux</span>
+</code></pre>
+</div>
+<p>This runs the corresponding <code>&lt;platform&gt;:sign</code> task which uses the signing configuration from your Taskfile.</p>
+<h3 id="wails3-tool-sign">wails3 tool sign</h3>
+<p>Low-level command to sign a specific file directly. Used internally by the Taskfiles.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool sign [flags]"><code><span class="mpress-cmd">wails3 tool sign [flags]</span>
+</code></pre>
+</div>
+<p><strong>Common Flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--input</code></td>
+<td>Path to the file to sign</td>
+</tr>
+<tr>
+<td><code>--output</code></td>
+<td>Output path (optional, defaults to in-place)</td>
+</tr>
+<tr>
+<td><code>--verbose</code></td>
+<td>Enable verbose output</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Windows/macOS Flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--certificate</code></td>
+<td>Path to PKCS#12 (.pfx/.p12) certificate</td>
+</tr>
+<tr>
+<td><code>--password</code></td>
+<td>Certificate password</td>
+</tr>
+<tr>
+<td><code>--timestamp</code></td>
+<td>Timestamp server URL</td>
+</tr>
+</tbody>
+</table>
+<p><strong>macOS-Specific Flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--identity</code></td>
+<td>Signing identity (use &lsquo;-&rsquo; for ad-hoc)</td>
+</tr>
+<tr>
+<td><code>--entitlements</code></td>
+<td>Path to entitlements plist</td>
+</tr>
+<tr>
+<td><code>--hardened-runtime</code></td>
+<td>Enable hardened runtime (default: true)</td>
+</tr>
+<tr>
+<td><code>--notarize</code></td>
+<td>Submit for notarization</td>
+</tr>
+<tr>
+<td><code>--keychain-profile</code></td>
+<td>Keychain profile for notarization</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Windows-Specific Flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--thumbprint</code></td>
+<td>Certificate thumbprint in Windows store</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Linux-Specific Flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--pgp-key</code></td>
+<td>Path to PGP private key</td>
+</tr>
+<tr>
+<td><code>--pgp-password</code></td>
+<td>PGP key password</td>
+</tr>
+<tr>
+<td><code>--role</code></td>
+<td>DEB signing role (origin/maint/archive/builder)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inspecting-signing-state-native-tools">Inspecting signing state (native tools)</h3>
+<p>There is <strong>no</strong> <code>wails3 signing</code> command in v3. To inspect signing state, use the native tooling directly:</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>List macOS code-signing identities</td>
+<td><code>security find-identity -v -p codesigning</code></td>
+</tr>
+<tr>
+<td>Store notarization credentials</td>
+<td><code>xcrun notarytool store-credentials &quot;&lt;profile&gt;&quot; --apple-id … --team-id … --password …</code></td>
+</tr>
+<tr>
+<td>Inspect a PGP key file</td>
+<td><code>gpg --show-keys &lt;key.asc&gt;</code></td>
+</tr>
+<tr>
+<td>Generate a PGP key pair</td>
+<td><code>gpg --full-generate-key</code></td>
+</tr>
+<tr>
+<td>Export a public key</td>
+<td><code>gpg --armor --export &lt;email&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="macos-issues">macOS Issues</h3>
+<p><strong>&ldquo;No Developer ID certificate found&rdquo;</strong></p>
+<ul>
+<li>Ensure your certificate is installed in the Keychain</li>
+<li>Check it hasn&rsquo;t expired with <code>security find-identity -v -p codesigning</code></li>
+<li>Make sure you have a &ldquo;Developer ID Application&rdquo; certificate (not just &ldquo;Apple Development&rdquo;)</li>
+</ul>
+<p><strong>&ldquo;Notarization failed&rdquo;</strong></p>
+<ul>
+<li>Check the notarization log: <code>xcrun notarytool log &lt;submission-id&gt; --keychain-profile &lt;profile&gt;</code></li>
+<li>Ensure hardened runtime is enabled</li>
+<li>Verify your app doesn&rsquo;t include unsigned binaries</li>
+</ul>
+<p><strong>&ldquo;Codesign failed&rdquo;</strong></p>
+<ul>
+<li>Make sure the keychain is unlocked: <code>security unlock-keychain</code></li>
+<li>Check file permissions on the app bundle</li>
+</ul>
+<h3 id="windows-issues">Windows Issues</h3>
+<p><strong>&ldquo;Certificate not found&rdquo;</strong></p>
+<ul>
+<li>Verify the certificate path is correct</li>
+<li>Check the certificate password</li>
+<li>Ensure the certificate is valid (not expired or revoked)</li>
+</ul>
+<p><strong>&ldquo;Timestamp server error&rdquo;</strong></p>
+<ul>
+<li>Try a different timestamp server:
+<ul>
+<li><code>http://timestamp.digicert.com</code></li>
+<li><code>http://timestamp.sectigo.com</code></li>
+<li><code>http://timestamp.comodoca.com</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="linux-issues">Linux Issues</h3>
+<p><strong>&ldquo;Invalid PGP key&rdquo;</strong></p>
+<ul>
+<li>Ensure the key file is in ASCII-armored format</li>
+<li>Check the key hasn&rsquo;t expired with <code>gpg --show-keys &lt;key.asc&gt;</code></li>
+<li>Verify the password is correct</li>
+</ul>
+<p><strong>&ldquo;Signature verification failed&rdquo;</strong></p>
+<ul>
+<li>Ensure the public key is properly imported</li>
+<li>Check that the package wasn&rsquo;t modified after signing</li>
+</ul>
+<h2 id="additional-resources">Additional Resources</h2>
+<h3 id="official-documentation">Official Documentation</h3>
+<ul>
+<li><a href="https://developer.apple.com/support/code-signing/">Apple Code Signing Guide</a></li>
+<li><a href="https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution">Apple Notarization Documentation</a></li>
+<li><a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate">Microsoft Code Signing</a></li>
+<li><a href="https://wiki.debian.org/SecureApt">Debian Package Signing</a></li>
+<li><a href="https://rpm-software-management.github.io/rpm/manual/signatures.html">RPM Package Signing</a></li>
+</ul>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/build/signing.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../../id/guides/build/cross-platform/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Cross-Platform Builds</strong></a><a rel="next" href="../../../../id/guides/build/windows/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Windows Packaging</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#cross-platform-signing-matrix">Cross-Platform Signing Matrix</a><a class="toc-level-3" href="#signing-backends">Signing Backends</a><a class="toc-level-2" href="#mulai-cepat">Mulai Cepat</a><a class="toc-level-3" href="#manual-configuration">Manual Configuration</a><a class="toc-level-2" href="#macos-code-signing">macOS Code Signing</a><a class="toc-level-3" href="#prerequisites">Prerequisites</a><a class="toc-level-3" href="#signing-identities">Signing Identities</a><a class="toc-level-3" href="#configuration">Configuration</a><a class="toc-level-3" href="#entitlements">Entitlements</a><a class="toc-level-3" href="#notarization">Notarization</a><a class="toc-level-2" href="#windows-code-signing">Windows Code Signing</a><a class="toc-level-3" href="#prerequisites-1">Prerequisites</a><a class="toc-level-3" href="#configuration-1">Configuration</a><a class="toc-level-3" href="#cross-platform-signing">Cross-Platform Signing</a><a class="toc-level-3" href="#supported-windows-formats">Supported Windows Formats</a><a class="toc-level-2" href="#linux-package-signing">Linux Package Signing</a><a class="toc-level-3" href="#prerequisites-2">Prerequisites</a><a class="toc-level-3" href="#generating-a-pgp-key">Generating a PGP Key</a><a class="toc-level-3" href="#configuration-2">Configuration</a><a class="toc-level-3" href="#deb-signing-roles">DEB Signing Roles</a><a class="toc-level-3" href="#cross-platform-signing-1">Cross-Platform Signing</a><a class="toc-level-3" href="#viewing-key-information">Viewing Key Information</a><a class="toc-level-3" href="#verifying-linux-packages">Verifying Linux Packages</a><a class="toc-level-3" href="#distributing-your-public-key">Distributing Your Public Key</a><a class="toc-level-2" href="#github-actions-integration">GitHub Actions Integration</a><a class="toc-level-3" href="#macos-workflow">macOS Workflow</a><a class="toc-level-3" href="#windows-workflow">Windows Workflow</a><a class="toc-level-3" href="#cross-platform-workflow-linux-runner">Cross-Platform Workflow (Linux Runner)</a><a class="toc-level-2" href="#cli-reference">CLI Reference</a><a class="toc-level-3" href="#wails3-setup-signing">wails3 setup signing</a><a class="toc-level-3" href="#wails3-setup-entitlements">wails3 setup entitlements</a><a class="toc-level-3" href="#wails3-sign">wails3 sign</a><a class="toc-level-3" href="#wails3-tool-sign">wails3 tool sign</a><a class="toc-level-3" href="#inspecting-signing-state-native-tools">Inspecting signing state (native tools)</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-3" href="#macos-issues">macOS Issues</a><a class="toc-level-3" href="#windows-issues">Windows Issues</a><a class="toc-level-3" href="#linux-issues">Linux Issues</a><a class="toc-level-2" href="#additional-resources">Additional Resources</a><a class="toc-level-3" href="#official-documentation">Official Documentation</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../../assets/mpress.js" defer></script></body></html>

@@ -1,0 +1,160 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wails v2 Released · Wails</title><meta name="description" content="Release notes and announcements for Wails"><link rel="canonical" href="https://v3.wails.io/blog/wails-v2-released/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/blog/wails-v2-released/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/blog/wails-v2-released/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/blog/wails-v2-released/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="stylesheet" href="../../assets/custom.css"><link rel="icon" href="../../favicon.svg"></head><body class="blog-article-page" data-search="../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/blog/wails-v2-released/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/blog/wails-v2-released/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/blog/wails-v2-released/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="blog-layout blog-article-layout"><aside class="blog-sidebar" aria-label="Blog archive"><div class="blog-sidebar-inner"><a class="blog-archive-home" href="../../blog/"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>All articles</span></a><section class="blog-period"><span class="blog-sidebar-label">2026</span><div class="blog-period-posts"><a class="blog-article-link" href="../../blog/wails-v3-beta/"><span>Wails v3 Beta: a new foundation for Go desktop applications</span><time datetime="2026-08-02">2 August 2026</time></a></div></section><section class="blog-period"><span class="blog-sidebar-label">2024</span><div class="blog-period-posts"><a class="blog-article-link" href="../../blog/2024-12-03-alpha10-and-new-release-strategy/"><span>Alpha 10 Released - A New Chapter for Wails</span><time datetime="2024-12-03">3 December 2024</time></a></div></section><section class="blog-period"><span class="blog-sidebar-label">2023</span><div class="blog-period-posts"><a class="blog-article-link" href="../../blog/the-road-to-wails-v3/"><span>The Road to Wails v3</span><time datetime="2023-01-17">17 January 2023</time></a></div></section><section class="blog-period"><span class="blog-sidebar-label">2022</span><div class="blog-period-posts"><a class="blog-article-link active" aria-current="page" href="../../blog/wails-v2-released/"><span>Wails v2 Released</span><time datetime="2022-09-22">22 September 2022</time></a><a class="blog-article-link" href="../../blog/wails-v2-beta-for-linux/"><span>Wails v2 Beta for Linux</span><time datetime="2022-02-22">22 February 2022</time></a></div></section><section class="blog-period"><span class="blog-sidebar-label">2021</span><div class="blog-period-posts"><a class="blog-article-link" href="../../blog/wails-v2-beta-for-mac/"><span>Wails v2 Beta for MacOS</span><time datetime="2021-11-08">8 November 2021</time></a><a class="blog-article-link" href="../../blog/wails-v2-beta-for-windows/"><span>Wails v2 Beta for Windows</span><time datetime="2021-09-27">27 September 2021</time></a></div></section></div></aside><main class="blog-article-main" id="content"><article class="blog-article"><header class="blog-article-header"><a class="blog-article-kicker" href="../../blog/">Blog</a><h1>Wails v2 Released</h1><p>Release notes and announcements for Wails</p><div class="blog-meta"><time datetime="2022-09-22">22 September 2022</time><span>leaanthony</span><span>8 min read</span></div></header><div class="blog-article-body"><p><img src="/assets/blog-images/montage.png" alt="montage screenshot"></p>
+<h1 id="its-here">It&rsquo;s here!</h1>
+<p>Today marks the release of <a href="https://wails.io">Wails</a> v2. It&rsquo;s been about 18
+months since the first v2 alpha and about a year from the first beta release.
+I&rsquo;m truly grateful to everyone involved in the evolution of the project.</p>
+<p>Part of the reason it took that long was due to wanting to get to some
+definition of completeness before officially calling it v2. The truth is,
+there&rsquo;s never a perfect time to tag a release - there&rsquo;s always outstanding
+issues or &ldquo;just one more&rdquo; feature to squeeze in. What tagging an imperfect major
+release does do, however, is to provide a bit of stability for users of the
+project, as well as a bit of a reset for the developers.</p>
+<p>This release is more than I&rsquo;d ever expected it to be. I hope it gives you as
+much pleasure as it has given us to develop it.</p>
+<h1 id="what--is--wails">What <em>is</em> Wails?</h1>
+<p>If you are unfamiliar with Wails, it is a project that enables Go programmers to
+provide rich frontends for their Go programs using familiar web technologies.
+It&rsquo;s a lightweight, Go alternative to Electron. Much more information can be
+found on the <a href="https://wails.io/docs/introduction">official site</a>.</p>
+<h1 id="whats-new">What&rsquo;s new?</h1>
+<p>The v2 release is a huge leap forward for the project, addressing many of the
+pain points of v1. If you have not read any of the blog posts on the Beta
+releases for <a href="/blog/wails-v2-beta-for-mac/">macOS</a>,
+<a href="/blog/wails-v2-beta-for-windows/">Windows</a> or
+<a href="/blog/wails-v2-beta-for-linux/">Linux</a>, then I encourage you to do so as it
+covers all the major changes in more detail. In summary:</p>
+<ul>
+<li>Webview2 component for Windows that supports modern web standards and
+debugging capabilities.</li>
+<li><a href="https://wails.io/docs/reference/options#theme">Dark / Light theme</a> +
+<a href="https://wails.io/docs/reference/options#customtheme">custom theming</a> on Windows.</li>
+<li>Windows now has no CGO requirements.</li>
+<li>Out-of-the-box support for Svelte, Vue, React, Preact, Lit &amp; Vanilla project
+templates.</li>
+<li><a href="https://vitejs.dev/">Vite</a> integration providing a hot-reload development
+environment for your application.</li>
+<li>Native application
+<a href="https://wails.io/docs/guides/application-development#application-menu">menus</a> and
+<a href="https://wails.io/docs/reference/runtime/dialog">dialogs</a>.</li>
+<li>Native window translucency effects for
+<a href="https://wails.io/docs/reference/options#windowistranslucent">Windows</a> and
+<a href="https://wails.io/docs/reference/options#windowistranslucent-1">macOS</a>. Support for Mica &amp;
+Acrylic backdrops.</li>
+<li>Easily generate an <a href="https://wails.io/docs/guides/windows-installer">NSIS installer</a> for
+Windows deployments.</li>
+<li>A rich <a href="https://wails.io/docs/reference/runtime/intro">runtime library</a> providing utility
+methods for window manipulation, eventing, dialogs, menus and logging.</li>
+<li>Support for <a href="https://wails.io/docs/guides/obfuscated">obfuscating</a> your application using
+<a href="https://github.com/burrowers/garble">garble</a>.</li>
+<li>Support for compressing your application using <a href="https://upx.github.io/">UPX</a>.</li>
+<li>Automatic TypeScript generation of Go structs. More info
+<a href="https://wails.io/docs/howdoesitwork#calling-bound-go-methods">here</a>.</li>
+<li>No extra libraries or DLLs are required to be shipped with your application.
+For any platform.</li>
+<li>No requirement to bundle frontend assets. Just develop your application like
+any other web application.</li>
+</ul>
+<h1 id="credit--thanks">Credit &amp; Thanks</h1>
+<p>Getting to v2 has been a huge effort. There have been ~2.2K commits by 89
+contributors between the initial alpha and the release today, and many, many
+more that have provided translations, testing, feedback and help on the
+discussion forums as well as the issue tracker. I&rsquo;m so unbelievably grateful to
+each one of you. I&rsquo;d also like to give an extra special thank you to all the
+project sponsors who have provided guidance, advice and feedback. Everything you
+do is hugely appreciated.</p>
+<p>There are a few people I&rsquo;d like to give special mention to:</p>
+<p>Firstly, a <strong>huge</strong> thank you to <a href="https://github.com/stffabi">@stffabi</a> who has
+provided so many contributions which we all benefit from, as well as providing a
+lot of support on many issues. He has provided some key features such as the
+external dev server support which transformed our dev mode offering by allowing
+us to hook into <a href="https://vitejs.dev/">Vite</a>&rsquo;s superpowers. It&rsquo;s fair to say that
+Wails v2 would be a far less exciting release without his
+<a href="https://github.com/wailsapp/wails/commits?author=stffabi&amp;since=2020-01-04">incredible contributions</a>.
+Thank you so much @stffabi!</p>
+<p>I&rsquo;d also like to give a huge shout-out to
+<a href="https://github.com/misitebao">@misitebao</a> who has tirelessly been maintaining
+the website, as well as providing Chinese translations, managing Crowdin and
+helping new translators get up to speed. This is a hugely important task, and
+I&rsquo;m extremely grateful for all the time and effort put into this! You rock!</p>
+<p>Last, but not least, a huge thank you to Mat Ryer who has provided advice and
+support during the development of v2. Writing xBar together using an early Alpha
+of v2 was helpful in shaping the direction of v2, as well as give me an
+understanding of some design flaws in the early releases. I&rsquo;m happy to announce
+that as of today, we will start to port xBar to Wails v2, and it will become the
+flagship application for the project. Cheers Mat!</p>
+<h1 id="lessons-learnt">Lessons Learnt</h1>
+<p>There are a number of lessons learnt in getting to v2 that will shape
+development moving forward.</p>
+<h2 id="smaller-quicker-focused-releases">Smaller, Quicker, Focused Releases</h2>
+<p>In the course of developing v2, there were many features and bug fixes that were
+developed on an ad-hoc basis. This led to longer release cycles and were harder
+to debug. Moving forward, we are going to create releases more often that will
+include a reduced number of features. A release will involve updates to
+documentation as well as thorough testing. Hopefully, these smaller, quicker,
+focussed releases will lead to fewer regressions and better quality
+documentation.</p>
+<h2 id="encourage-engagement">Encourage Engagement</h2>
+<p>When starting this project, I wanted to immediately help everyone who had a
+problem. Issues were &ldquo;personal&rdquo; and I wanted them resolved as quickly as
+possible. This is unsustainable and ultimately works against the longevity of
+the project. Moving forward, I will be giving more space for people to get
+involved in answering questions and triaging issues. It would be good to get
+some tooling to help with this so if you have any suggestions, please join in
+the discussion <a href="https://github.com/wailsapp/wails/discussions/1855">here</a>.</p>
+<h2 id="learning-to-say-no">Learning to say No</h2>
+<p>The more people that engage with an Open Source project, the more requests there
+will be for additional features that may or may not be useful to the majority of
+people. These features will take an initial amount of time to develop and debug,
+and incur an ongoing maintenance cost from that point on. I myself am the most
+guilty of this, often wanting to &ldquo;boil the sea&rdquo; rather than provide the minimum
+viable feature. Moving forward, we will need to say &ldquo;No&rdquo; a bit more to adding
+core features and focus our energies on a way to empower developers to provide
+that functionality themselves. We are looking seriously into plugins for this
+scenario. This will allow anyone to extend the project as they see fit, as well
+as providing an easy way to contribute towards the project.</p>
+<h1 id="looking-to-the-future">Looking to the Future</h1>
+<p>There are so many core features we are looking at to add to Wails in the next
+major development cycle already. The
+<a href="https://github.com/wailsapp/wails/discussions/1484">roadmap</a> is full of
+interesting ideas, and I&rsquo;m keen to start work on them. One of the big asks has
+been for multiple window support. It&rsquo;s a tricky one and to do it right, and we
+may need to look at providing an alternative API, as the current one was not
+designed with this in mind. Based on some preliminary ideas and feedback, I
+think you&rsquo;ll like where we&rsquo;re looking to go with it.</p>
+<p>I&rsquo;m personally very excited at the prospect of getting Wails apps running on
+mobile. We already have a demo project showing that it is possible to run a
+Wails app on Android, so I&rsquo;m really keen to explore where we can go with this!</p>
+<p>A final point I&rsquo;d like to raise is that of feature parity. It has long been a
+core principle that we wouldn&rsquo;t add anything to the project without there being
+full cross-platform support for it. Whilst this has proven to be (mainly)
+achievable so far, it has really held the project back in releasing new
+features. Moving forward, we will be adopting a slightly different approach: any
+new feature that cannot be immediately released for all platforms will be
+released under an experimental configuration or API. This allows early adopters
+on certain platforms to try the feature and provide feedback that will feed into
+the final design of the feature. This, of course, means that there are no
+guarantees of API stability until it is fully supported by all the platforms it
+can be supported on, but at least it will unblock development.</p>
+<h1 id="final-words">Final Words</h1>
+<p>I&rsquo;m really proud of what we&rsquo;ve been able to achieve with the V2 release. It&rsquo;s
+amazing to see what people have already been able to build using the beta
+releases so far. Quality applications like <a href="https://varly.app/">Varly</a>,
+<a href="https://getsurge.io/">Surge</a> and <a href="https://october.utf9k.net/">October</a>. I
+encourage you to check them out.</p>
+<p>This release was achieved through the hard work of many contributors. Whilst it
+is free to download and use, it has not come about through zero cost. Make no
+mistakes, this project has come at considerable cost. It has not only been my
+time and the time of each and every contributor, but also the cost of absence
+from friends and families of each of those people too. That&rsquo;s why I&rsquo;m extremely
+grateful for every second that has been dedicated to making this project happen.
+The more contributors we have, the more this effort can be spread out and the
+more we can achieve together. I&rsquo;d like to encourage you all to pick one thing
+that you can contribute, whether it is confirming someone&rsquo;s bug, suggesting a
+fix, making a documentation change or helping out someone who needs it. All of
+these small things have such a huge impact! It would be so awesome if you too
+were part of the story in getting to v3.</p>
+<p>Enjoy!</p>
+<p>‐ Lea</p>
+<p>PS: If you or your company find Wails useful, please consider
+<a href="https://github.com/sponsors/leaanthony">sponsoring the project</a>. Thanks!</p>
+</div></article></main></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

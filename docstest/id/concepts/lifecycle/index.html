@@ -1,0 +1,721 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Siklus Hidup Aplikasi · Wails</title><meta name="description" content="Memahami siklus hidup aplikasi Wails dari startup hingga shutdown"><link rel="canonical" href="https://v3.wails.io/id/concepts/lifecycle/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/concepts/lifecycle/"><link rel="alternate" hreflang="zh-cn" href="https://v3.wails.io/zh-cn/concepts/lifecycle/"><link rel="alternate" hreflang="zh-tw" href="https://v3.wails.io/zh-tw/concepts/lifecycle/"><link rel="alternate" hreflang="ja" href="https://v3.wails.io/ja/concepts/lifecycle/"><link rel="alternate" hreflang="ko" href="https://v3.wails.io/ko/concepts/lifecycle/"><link rel="alternate" hreflang="ru" href="https://v3.wails.io/ru/concepts/lifecycle/"><link rel="alternate" hreflang="fr" href="https://v3.wails.io/fr/concepts/lifecycle/"><link rel="alternate" hreflang="pt" href="https://v3.wails.io/pt/concepts/lifecycle/"><link rel="alternate" hreflang="de" href="https://v3.wails.io/de/concepts/lifecycle/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/concepts/lifecycle/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/concepts/lifecycle/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../id/search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../id/blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/concepts/lifecycle/" role="menuitem"><span>English</span></a></li><li><a href="/zh-cn/concepts/lifecycle/" role="menuitem"><span>简体中文</span></a></li><li><a href="/zh-tw/concepts/lifecycle/" role="menuitem"><span>繁體中文</span></a></li><li><a href="/ja/concepts/lifecycle/" role="menuitem"><span>日本語</span></a></li><li><a href="/ko/concepts/lifecycle/" role="menuitem"><span>한국어</span></a></li><li><a href="/ru/concepts/lifecycle/" role="menuitem"><span>Русский</span></a></li><li><a href="/fr/concepts/lifecycle/" role="menuitem"><span>Français</span></a></li><li><a href="/pt/concepts/lifecycle/" role="menuitem"><span>Português (Brasil)</span></a></li><li><a href="/de/concepts/lifecycle/" role="menuitem"><span>Deutsch</span></a></li><li><a href="/id/concepts/lifecycle/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../id/">Home</a><a class="" href="../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/quick-start/installation/">Installation</a><a class="" href="../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../id/tutorials/overview/">Tutorial</a></div></details><details open><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../id/concepts/manager-api/">Manager API</a><a class="active" aria-current="page" href="../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../id/features/windows/options/">Window Options</a><a class="" href="../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../id/features/bindings/services/">Services</a><a class="" href="../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/events/system/">Event System</a><a class="" href="../../../id/features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/browser/integration/">Integrasi Browser</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/notifications/overview/">Notifikasi</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/screens/info/">Informasi Layar</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/mobile/">Overview</a><a class="" href="../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../id/guides/mobile/android/">Android</a><a class="" href="../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/experimental/">Overview</a><a class="" href="../../../id/experimental/wake/">Wake</a><a class="" href="../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../id/guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/server-build/">Server Build</a><a class="" href="../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/reference/overview/">Overview</a><a class="" href="../../../id/reference/application/">Application</a><a class="" href="../../../id/reference/window/">Window</a><a class="" href="../../../id/reference/menu/">Menu</a><a class="" href="../../../id/reference/events/">Events</a><a class="" href="../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../id/reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/links/">Links</a><a class="" href="../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../id/community/showcase/october/">October</a><a class="" href="../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../id/status/">Status</a><a class="" href="../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../id/credits/">Credits</a></nav></aside><main id="content"><article><h1>Siklus Hidup Aplikasi</h1><h2 id="memahami-siklus-hidup-aplikasi">Memahami Siklus Hidup Aplikasi</h2>
+<p>Aplikasi desktop memiliki siklus hidup dari startup hingga shutdown. Wails v3 menyediakan <strong>service</strong>, <strong>event</strong>, dan <strong>hook</strong> untuk mengelola siklus hidup ini secara efektif.</p>
+<h2 id="tahap-siklus-hidup">Tahap Siklus Hidup</h2>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="direction: down&#10;&#10;Start: &#34;Application Start&#34; {&#10;  shape: oval&#10;  style.fill: &#34;#10B981&#34;&#10;}&#10;&#10;Init: &#34;Initialisation&#34; {&#10;  Parse: &#34;Parse Options&#34; {&#10;    shape: rectangle&#10;  }&#10;  Register: &#34;Register Services&#34; {&#10;    shape: rectangle&#10;  }&#10;  Setup: &#34;Setup Runtime&#34; {&#10;    shape: rectangle&#10;  }&#10;}&#10;&#10;AppRun: &#34;app.Run()&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#3B82F6&#34;&#10;}&#10;&#10;ServiceStartup: &#34;Service Startup&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#8B5CF6&#34;&#10;}&#10;&#10;EventLoop: &#34;Event Loop&#34; {&#10;  Process: &#34;Process Events&#34; {&#10;    shape: rectangle&#10;  }&#10;  Handle: &#34;Handle Messages&#34; {&#10;    shape: rectangle&#10;  }&#10;  Update: &#34;Update UI&#34; {&#10;    shape: rectangle&#10;  }&#10;}&#10;&#10;QuitSignal: &#34;Quit Signal&#34; {&#10;  shape: diamond&#10;  style.fill: &#34;#F59E0B&#34;&#10;}&#10;&#10;ShouldQuit: &#34;ShouldQuit Check&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#3B82F6&#34;&#10;}&#10;&#10;OnShutdown: &#34;OnShutdown Callbacks&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#3B82F6&#34;&#10;}&#10;&#10;ServiceShutdown: &#34;Service Shutdown&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#8B5CF6&#34;&#10;}&#10;&#10;Cleanup: &#34;Cleanup&#34; {&#10;  Close: &#34;Close Windows&#34; {&#10;    shape: rectangle&#10;  }&#10;  Release: &#34;Release Resources&#34; {&#10;    shape: rectangle&#10;  }&#10;}&#10;&#10;End: &#34;Application End&#34; {&#10;  shape: oval&#10;  style.fill: &#34;#EF4444&#34;&#10;}&#10;&#10;Start -&gt; Init.Parse&#10;Init.Parse -&gt; Init.Register&#10;Init.Register -&gt; Init.Setup&#10;Init.Setup -&gt; AppRun&#10;AppRun -&gt; ServiceStartup&#10;ServiceStartup -&gt; EventLoop.Process&#10;EventLoop.Process -&gt; EventLoop.Handle&#10;EventLoop.Handle -&gt; EventLoop.Update&#10;EventLoop.Update -&gt; EventLoop.Process: &#34;Loop&#34;&#10;EventLoop.Process -&gt; QuitSignal: &#34;User quits&#34;&#10;QuitSignal -&gt; ShouldQuit: &#34;Check allowed?&#34;&#10;ShouldQuit -&gt; EventLoop.Process: &#34;Denied&#34;&#10;ShouldQuit -&gt; OnShutdown: &#34;Allowed&#34;&#10;OnShutdown -&gt; ServiceShutdown&#10;ServiceShutdown -&gt; Cleanup.Close&#10;Cleanup.Close -&gt; Cleanup.Release&#10;Cleanup.Release -&gt; End"><code class="language-d2"><span class="mpress-code-line">direction<span class="mpress-token-operator">:</span> down
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Start</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Application Start&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> oval
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#10B981&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Init</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Initialisation&#34;</span> {
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Parse</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Parse Options&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Register</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Register Services&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Setup</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Setup Runtime&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">AppRun</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;app.Run()&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#3B82F6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">ServiceStartup</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Service Startup&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#8B5CF6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">EventLoop</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Event Loop&#34;</span> {
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Process</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Process Events&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Handle</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Handle Messages&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Update</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Update UI&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">QuitSignal</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Quit Signal&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> diamond
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#F59E0B&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">ShouldQuit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;ShouldQuit Check&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#3B82F6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">OnShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;OnShutdown Callbacks&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#3B82F6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">ServiceShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Service Shutdown&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#8B5CF6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Cleanup</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Cleanup&#34;</span> {
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Close</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Close Windows&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Release</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Release Resources&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">End</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Application End&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> oval
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#EF4444&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Start</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Parse</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Parse</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Register</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Register</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Setup</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Init</span>.<span class="mpress-token-type">Setup</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">AppRun</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">AppRun</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">ServiceStartup</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">ServiceStartup</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Process</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Process</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Handle</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Handle</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Update</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Update</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Process</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Loop&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Process</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">QuitSignal</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;User quits&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">QuitSignal</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">ShouldQuit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Check allowed?&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">ShouldQuit</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">EventLoop</span>.<span class="mpress-token-type">Process</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Denied&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">ShouldQuit</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">OnShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Allowed&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">OnShutdown</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">ServiceShutdown</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">ServiceShutdown</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Cleanup</span>.<span class="mpress-token-type">Close</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Cleanup</span>.<span class="mpress-token-type">Close</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Cleanup</span>.<span class="mpress-token-type">Release</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Cleanup</span>.<span class="mpress-token-type">Release</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">End</span></span></code></pre></div>
+<h3 id="1-pembuatan-aplikasi">1. Pembuatan Aplikasi</h3>
+<p>Buat aplikasi Anda dengan <code>application.New()</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Name:        &#34;My App&#34;,&#10;    Description: &#34;An application built with Wails&#34;,&#10;    Services: []application.Service{&#10;        application.NewService(&amp;MyService{}),&#10;    },&#10;    Assets: application.AssetOptions{&#10;        Handler: application.BundledAssetFileServer(assets),&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Description</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;An application built with Wails&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">MyService</span>{}),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">BundledAssetFileServer</span>(assets),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Yang terjadi:</strong></p>
+<ol>
+<li>Options di-parse dan divalidasi</li>
+<li>Service didaftarkan (tetapi belum dijalankan)</li>
+<li>Asset server dikonfigurasi</li>
+<li>Runtime disiapkan</li>
+</ol>
+<h3 id="2-menjalankan-aplikasi">2. Menjalankan Aplikasi</h3>
+<p>Panggil <code>app.Run()</code> untuk memulai aplikasi:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="err := app.Run()  // Blocks until quit&#10;if err != nil {&#10;    log.Fatal(err)&#10;}"><code class="language-go"><span class="mpress-code-line">err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Run</span>()  <span class="mpress-token-comment">// Blocks until quit</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>Yang terjadi:</strong></p>
+<ol>
+<li>Service dijalankan sesuai urutan registrasi</li>
+<li>Event listener diaktifkan</li>
+<li>Window dapat dibuat</li>
+<li>Event loop dimulai</li>
+</ol>
+<h3 id="3-event-loop">3. Event Loop</h3>
+<p>Aplikasi memasuki event loop di mana ia menghabiskan sebagian besar waktunya:</p>
+<ul>
+<li>Event OS diproses (mouse, keyboard, event window)</li>
+<li>Pesan Go-ke-JS ditangani</li>
+<li>Panggilan JS-ke-Go dieksekusi</li>
+<li>Pembaruan UI dirender</li>
+</ul>
+<h3 id="4-shutdown">4. Shutdown</h3>
+<p>Ketika aplikasi keluar:</p>
+<ol>
+<li>Callback <code>ShouldQuit</code> diperiksa (jika diset)</li>
+<li>Callback <code>OnShutdown</code> dieksekusi</li>
+<li>Service di-shutdown dalam urutan terbalik</li>
+<li>Window ditutup</li>
+<li>Resource dilepas</li>
+</ol>
+<h2 id="siklus-hidup-service">Siklus Hidup Service</h2>
+<p>Service adalah cara utama mengelola siklus hidup di Wails v3. Mereka menyediakan hook startup dan shutdown melalui interface. Untuk dokumentasi lengkap tentang service, lihat <a href="/id/features/bindings/services/">Panduan Service</a>.</p>
+<h3 id="membuat-service">Membuat Service</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type MyService struct {&#10;    db *sql.DB&#10;}&#10;&#10;// ServiceStartup is called when the application starts&#10;func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    var err error&#10;    s.db, err = sql.Open(&#34;sqlite3&#34;, &#34;app.db&#34;)&#10;    if err != nil {&#10;        return err  // Startup aborts if error returned&#10;    }&#10;&#10;    // Run migrations&#10;    if err := s.runMigrations(); err != nil {&#10;        return err&#10;    }&#10;&#10;    return nil&#10;}&#10;&#10;// ServiceShutdown is called when the application shuts down&#10;func (s *MyService) ServiceShutdown() error {&#10;    if s.db != nil {&#10;        return s.db.Close()&#10;    }&#10;    return nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">MyService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    db <span class="mpress-token-operator">*</span>sql.<span class="mpress-token-type">DB</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ServiceStartup is called when the application starts</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">var</span> err error
+</span><span class="mpress-code-line">    s.db, err <span class="mpress-token-operator">=</span> sql.<span class="mpress-token-function">Open</span>(<span class="mpress-token-string">&#34;sqlite3&#34;</span>, <span class="mpress-token-string">&#34;app.db&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> err  <span class="mpress-token-comment">// Startup aborts if error returned</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Run migrations</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> s.<span class="mpress-token-function">runMigrations</span>(); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ServiceShutdown is called when the application shuts down</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceShutdown</span>() error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> s.db <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> s.db.<span class="mpress-token-function">Close</span>()
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="mendaftarkan-service">Mendaftarkan Service</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Services: []application.Service{&#10;        application.NewService(&amp;MyService{}),&#10;        application.NewService(&amp;AnotherService{}),&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">MyService</span>{}),
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">AnotherService</span>{}),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Poin penting:</strong></p>
+<ul>
+<li>Service dimulai sesuai urutan registrasi</li>
+<li>Service di-shutdown dalam urutan registrasi <strong>terbalik</strong></li>
+<li>Jika <code>ServiceStartup</code> service mengembalikan error, aplikasi dibatalkan</li>
+<li><code>ctx</code> yang diteruskan ke <code>ServiceStartup</code> dibatalkan saat shutdown dimulai</li>
+</ul>
+<h3 id="menggunakan-application-context">Menggunakan Application Context</h3>
+<p>Context yang diteruskan ke <code>ServiceStartup</code> valid selama masa hidup aplikasi:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    // Start a background task that respects shutdown&#10;    go func() {&#10;        ticker := time.NewTicker(5 * time.Minute)&#10;        defer ticker.Stop()&#10;&#10;        for {&#10;            select {&#10;            case &lt;-ticker.C:&#10;                s.performBackgroundSync()&#10;            case &lt;-ctx.Done():&#10;                // Application is shutting down&#10;                return&#10;            }&#10;        }&#10;    }()&#10;&#10;    return nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Start a background task that respects shutdown</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">go</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        ticker <span class="mpress-token-operator">:=</span> time.<span class="mpress-token-function">NewTicker</span>(<span class="mpress-token-number">5</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Minute</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">defer</span> ticker.<span class="mpress-token-function">Stop</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">for</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">select</span> {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">case</span> <span class="mpress-token-operator">&lt;-</span>ticker.<span class="mpress-token-type">C</span><span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">                s.<span class="mpress-token-function">performBackgroundSync</span>()
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">case</span> <span class="mpress-token-operator">&lt;-</span>ctx.<span class="mpress-token-function">Done</span>()<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-comment">// Application is shutting down</span>
+</span><span class="mpress-code-line">                <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Anda juga dapat mengakses context dari instance aplikasi:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.Get()&#10;ctx := app.Context()"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">Get</span>()
+</span><span class="mpress-code-line">ctx <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Context</span>()</span></code></pre></div>
+<h2 id="hook-tingkat-aplikasi">Hook Tingkat Aplikasi</h2>
+<p>Ini adalah callback kemudahan di <code>application.Options</code> yang memungkinkan Anda terhubung ke siklus hidup aplikasi tanpa membuat service penuh. Berguna untuk tugas cleanup sederhana, konfirmasi quit, atau ketika Anda perlu menjalankan kode pada titik tertentu dalam urutan shutdown.</p>
+<p>Untuk manajemen siklus hidup yang lebih kompleks dengan logika startup, dependency injection, atau resource stateful, gunakan <a href="#siklus-hidup-service">Service</a>.</p>
+<h3 id="shouldquit">ShouldQuit</h3>
+<p>Callback <code>ShouldQuit</code> dipanggil setiap kali quit diminta—baik oleh pengguna menutup window terakhir, menekan Cmd+Q (macOS) / Alt+F4 (Windows), atau memanggil <code>app.Quit()</code> secara programatik.</p>
+<p><strong>Nilai return:</strong></p>
+<ul>
+<li>Return <code>true</code> untuk mengizinkan quit melanjutkan (aplikasi akan shutdown)</li>
+<li>Return <code>false</code> untuk membatalkan quit (aplikasi tetap berjalan)</li>
+</ul>
+<p>Ini kesempatan Anda untuk mencegat permintaan quit dan opsional mencegahnya, misalnya untuk memprompt pengguna tentang perubahan yang belum disimpan:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    ShouldQuit: func() bool {&#10;        if !hasUnsavedChanges() {&#10;            return true // No unsaved changes, allow quit&#10;        }&#10;&#10;        // Prompt the user — MessageDialog.Show() blocks and returns nothing.&#10;        // The button&#39;s OnClick callback fires for whichever button the user picks.&#10;        shouldQuit := false&#10;&#10;        dlg := application.Get().Dialog.Question().&#10;            SetTitle(&#34;Unsaved Changes&#34;).&#10;            SetMessage(&#34;You have unsaved changes. Quit anyway?&#34;)&#10;&#10;        quit := dlg.AddButton(&#34;Quit&#34;)&#10;        cancel := dlg.AddButton(&#34;Cancel&#34;)&#10;        dlg.SetDefaultButton(cancel)&#10;        dlg.SetCancelButton(cancel)&#10;&#10;        quit.OnClick(func() { shouldQuit = true })&#10;&#10;        dlg.Show()&#10;        return shouldQuit&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ShouldQuit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>() bool {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span><span class="mpress-token-function">hasUnsavedChanges</span>() {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">true</span> <span class="mpress-token-comment">// No unsaved changes, allow quit</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Prompt the user — MessageDialog.Show() blocks and returns nothing.</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// The button&#39;s OnClick callback fires for whichever button the user picks.</span>
+</span><span class="mpress-code-line">        shouldQuit <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">false</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        dlg <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">Get</span>().<span class="mpress-token-type">Dialog</span>.<span class="mpress-token-function">Question</span>().
+</span><span class="mpress-code-line">            <span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;Unsaved Changes&#34;</span>).
+</span><span class="mpress-code-line">            <span class="mpress-token-function">SetMessage</span>(<span class="mpress-token-string">&#34;You have unsaved changes. Quit anyway?&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        quit <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Quit&#34;</span>)
+</span><span class="mpress-code-line">        cancel <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Cancel&#34;</span>)
+</span><span class="mpress-code-line">        dlg.<span class="mpress-token-function">SetDefaultButton</span>(cancel)
+</span><span class="mpress-code-line">        dlg.<span class="mpress-token-function">SetCancelButton</span>(cancel)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        quit.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>() { shouldQuit <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">true</span> })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        dlg.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> shouldQuit
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Jika <code>ShouldQuit</code> tidak diset, aplikasi akan langsung quit saat diminta.</p>
+<p><strong>Kapan ShouldQuit dipanggil:</strong></p>
+<ul>
+<li>Pengguna menutup window terakhir (kecuali <code>DisableQuitOnLastWindowClosed</code> diset)</li>
+<li>Pengguna menekan Cmd+Q di macOS</li>
+<li>Pengguna menekan Alt+F4 di Windows (saat fokus pada window terakhir)</li>
+<li>Kode memanggil <code>app.Quit()</code></li>
+</ul>
+<p><strong>Kapan ShouldQuit TIDAK dipanggil:</strong></p>
+<ul>
+<li>Proses di-kill (SIGKILL, force-quit Task Manager)</li>
+<li><code>os.Exit()</code> dipanggil langsung</li>
+</ul>
+<h3 id="onshutdown">OnShutdown</h3>
+<p>Callback <code>OnShutdown</code> dipanggil ketika aplikasi dikonfirmasi akan quit (setelah <code>ShouldQuit</code> return <code>true</code>, jika diset). Gunakan ini untuk tugas cleanup seperti menyimpan state, menutup koneksi database, atau melepaskan resource.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    OnShutdown: func() {&#10;        // Save application state&#10;        saveState()&#10;&#10;        // Close connections&#10;        cleanup()&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">OnShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Save application state</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-function">saveState</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Close connections</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-function">cleanup</span>()
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Anda juga dapat mendaftarkan callback shutdown tambahan secara programatik kapan saja selama siklus hidup aplikasi:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.OnShutdown(func() {&#10;    log.Println(&#34;Application shutting down...&#34;)&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-function">OnShutdown</span>(<span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Application shutting down...&#34;</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Beberapa callback dieksekusi sesuai urutan pendaftaran. Proses shutdown memblokir hingga semua callback selesai.</p>
+<p><strong>Penting:</strong> Jaga callback shutdown tetap cepat (di bawah 1 detik). Sistem operasi dapat memaksa terminasi aplikasi yang terlalu lama quit, yang dapat menginterupsi cleanup dan menyebabkan kehilangan data.</p>
+<h3 id="postshutdown">PostShutdown</h3>
+<p>Callback <code>PostShutdown</code> dipanggil setelah semua tugas shutdown selesai, tepat sebelum proses terminasi. Pada titik ini, instance aplikasi tidak lagi dapat digunakan—window ditutup, service di-shutdown, dan resource dilepas.</p>
+<p>Ini terutama berguna untuk:</p>
+<ul>
+<li>Logging akhir yang harus terjadi setelah semua cleanup lain</li>
+<li>Testing dan debugging perilaku shutdown</li>
+<li>Platform di mana <code>app.Run()</code> tidak return (callback memastikan kode Anda berjalan)</li>
+</ul>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    PostShutdown: func() {&#10;        // Final logging&#10;        log.Println(&#34;Application terminated cleanly&#34;)&#10;&#10;        // Flush any buffered logs&#10;        logger.Sync()&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">PostShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Final logging</span>
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Application terminated cleanly&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// Flush any buffered logs</span>
+</span><span class="mpress-code-line">        logger.<span class="mpress-token-function">Sync</span>()
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Catatan:</strong> Jangan mencoba menggunakan fitur aplikasi (window, dialog, dll.) di <code>PostShutdown</code>—fitur tersebut tidak lagi tersedia.</p>
+<h2 id="siklus-hidup-berbasis-event">Siklus Hidup Berbasis Event</h2>
+<p>Wails menyediakan sistem event yang memberi tahu Anda ketika sesuatu terjadi di aplikasi—window terbuka, aplikasi dimulai, perubahan tema, dan lainnya. Anda dapat mendengarkan event ini untuk bereaksi terhadap perubahan siklus hidup tanpa memblokir atau mencegatnya.</p>
+<p>Untuk event window, Anda juga dapat menggunakan <code>RegisterHook</code> alih-alih <code>OnWindowEvent</code> untuk mencegat dan membatalkan aksi—misalnya, mencegah window ditutup. Lihat <a href="">Window Hook</a> di bawah.</p>
+<p>Untuk dokumentasi lengkap tentang sistem event, lihat <a href="/id/features/events/system/">Panduan Event</a>.</p>
+<h3 id="event-aplikasi">Event Aplikasi</h3>
+<p>Dengarkan event siklus hidup aplikasi:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {&#10;    app.Logger.Info(&#34;Application has started!&#34;)&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Application has started!&#34;</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Event spesifik platform juga tersedia:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// macOS&#10;app.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {&#10;    // Handle macOS launch&#10;})&#10;&#10;app.Event.OnApplicationEvent(events.Mac.ApplicationWillTerminate, func(event *application.ApplicationEvent) {&#10;    // Handle macOS termination&#10;})&#10;&#10;// Windows&#10;app.Event.OnApplicationEvent(events.Windows.ApplicationStarted, func(event *application.ApplicationEvent) {&#10;    // Handle Windows start&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// macOS</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Mac</span>.<span class="mpress-token-type">ApplicationDidFinishLaunching</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle macOS launch</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Mac</span>.<span class="mpress-token-type">ApplicationWillTerminate</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle macOS termination</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Windows</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Windows</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(event <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle Windows start</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="event-window">Event Window</h3>
+<p>Dengarkan event siklus hidup window:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.New()&#10;&#10;window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {&#10;    app.Logger.Info(&#34;Window gained focus&#34;)&#10;})&#10;&#10;window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    app.Logger.Info(&#34;Window is closing&#34;)&#10;})"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window gained focus&#34;</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window is closing&#34;</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="window-hook-event-yang-dapat-dibatalkan">Window Hook (Event yang Dapat Dibatalkan)</h3>
+<p>Gunakan <code>RegisterHook</code> alih-alih <code>OnWindowEvent</code> ketika Anda perlu <strong>membatalkan</strong> event:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.New()&#10;&#10;var countdown = 3&#10;&#10;window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    countdown--&#10;    if countdown &gt; 0 {&#10;        app.Logger.Info(&#34;Not closing yet!&#34;, &#34;remaining&#34;, countdown)&#10;        e.Cancel()  // Prevent the window from closing&#10;        return&#10;    }&#10;    app.Logger.Info(&#34;Window closing now&#34;)&#10;})"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> countdown <span class="mpress-token-operator">=</span> <span class="mpress-token-number">3</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    countdown<span class="mpress-token-operator">--</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> countdown <span class="mpress-token-operator">&gt;</span> <span class="mpress-token-number">0</span> {
+</span><span class="mpress-code-line">        app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Not closing yet!&#34;</span>, <span class="mpress-token-string">&#34;remaining&#34;</span>, countdown)
+</span><span class="mpress-code-line">        e.<span class="mpress-token-function">Cancel</span>()  <span class="mpress-token-comment">// Prevent the window from closing</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Logger</span>.<span class="mpress-token-function">Info</span>(<span class="mpress-token-string">&#34;Window closing now&#34;</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Perbedaan antara OnWindowEvent dan RegisterHook:</strong></p>
+<ul>
+<li><code>OnWindowEvent</code>: Memberi tahu Anda ketika event terjadi (tidak dapat dibatalkan)</li>
+<li><code>RegisterHook</code>: Memungkinkan Anda mencegat dan potensial membatalkan event</li>
+</ul>
+<h2 id="siklus-hidup-window">Siklus Hidup Window</h2>
+<p>Window memiliki siklus hidup sendiri, dari pembuatan hingga penghancuran. Setiap window memuat konten frontend-nya secara independen dan dapat ditampilkan, disembunyikan, atau ditutup kapan saja. Ketika pengguna mencoba menutup window, Anda dapat mencegatnya dengan <code>RegisterHook</code> untuk memprompt konfirmasi atau menyembunyikan window alih-alih menghancurkannya.</p>
+<p>Untuk dokumentasi window lengkap, lihat <a href="/id/features/windows/basics/">Panduan Window</a>.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="direction: down&#10;&#10;Create: &#34;Create Window&#34; {&#10;  shape: oval&#10;  style.fill: &#34;#10B981&#34;&#10;}&#10;&#10;Load: &#34;Load Frontend&#34; {&#10;  shape: rectangle&#10;}&#10;&#10;Show: &#34;Show Window&#34; {&#10;  shape: rectangle&#10;}&#10;&#10;Active: &#34;Window Active&#34; {&#10;  Events: &#34;Handle Events&#34; {&#10;    shape: rectangle&#10;  }&#10;}&#10;&#10;CloseRequest: &#34;Close Request&#34; {&#10;  shape: diamond&#10;  style.fill: &#34;#F59E0B&#34;&#10;}&#10;&#10;Hook: &#34;WindowClosing Hook&#34; {&#10;  shape: rectangle&#10;  style.fill: &#34;#3B82F6&#34;&#10;}&#10;&#10;Destroy: &#34;Destroy Window&#34; {&#10;  shape: rectangle&#10;}&#10;&#10;End: &#34;Window Closed&#34; {&#10;  shape: oval&#10;  style.fill: &#34;#EF4444&#34;&#10;}&#10;&#10;Create -&gt; Load&#10;Load -&gt; Show&#10;Show -&gt; Active.Events&#10;Active.Events -&gt; Active.Events: &#34;Loop&#34;&#10;Active.Events -&gt; CloseRequest: &#34;User closes&#34;&#10;CloseRequest -&gt; Hook&#10;Hook -&gt; Active.Events: &#34;Cancelled&#34;&#10;Hook -&gt; Destroy: &#34;Allowed&#34;&#10;Destroy -&gt; End"><code class="language-d2"><span class="mpress-code-line">direction<span class="mpress-token-operator">:</span> down
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Create</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Create Window&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> oval
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#10B981&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Load</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Load Frontend&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Show</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Show Window&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Active</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Window Active&#34;</span> {
+</span><span class="mpress-code-line">  <span class="mpress-token-type">Events</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Handle Events&#34;</span> {
+</span><span class="mpress-code-line">    shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">CloseRequest</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Close Request&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> diamond
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#F59E0B&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Hook</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;WindowClosing Hook&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#3B82F6&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Destroy</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Destroy Window&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> rectangle
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">End</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Window Closed&#34;</span> {
+</span><span class="mpress-code-line">  shape<span class="mpress-token-operator">:</span> oval
+</span><span class="mpress-code-line">  style.fill<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;#EF4444&#34;</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Create</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Load</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Load</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Show</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Show</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Active</span>.<span class="mpress-token-type">Events</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Active</span>.<span class="mpress-token-type">Events</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Active</span>.<span class="mpress-token-type">Events</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Loop&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Active</span>.<span class="mpress-token-type">Events</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">CloseRequest</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;User closes&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">CloseRequest</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Hook</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Hook</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Active</span>.<span class="mpress-token-type">Events</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Cancelled&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Hook</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">Destroy</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Allowed&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">Destroy</span> <span class="mpress-token-operator">-&gt;</span> <span class="mpress-token-type">End</span></span></code></pre></div>
+<h3 id="membuat-window">Membuat Window</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:  &#34;My Window&#34;,&#10;    Width:  800,&#10;    Height: 600,&#10;})"><code class="language-go"><span class="mpress-code-line">window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;My Window&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">800</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="mencegah-penutupan-window">Mencegah Penutupan Window</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    if !hasUnsavedChanges() {&#10;        return&#10;    }&#10;&#10;    // MessageDialog.Show() returns nothing; per-button OnClick handlers fire.&#10;    dlg := application.Get().Dialog.Question().&#10;        SetTitle(&#34;Unsaved Changes&#34;).&#10;        SetMessage(&#34;Save before closing?&#34;)&#10;&#10;    save := dlg.AddButton(&#34;Save&#34;)&#10;    discard := dlg.AddButton(&#34;Discard&#34;)&#10;    cancel := dlg.AddButton(&#34;Cancel&#34;)&#10;    dlg.SetDefaultButton(save)&#10;    dlg.SetCancelButton(cancel)&#10;&#10;    save.OnClick(func() { saveChanges() })&#10;    cancel.OnClick(func() { e.Cancel() }) // Prevent close&#10;    _ = discard                            // &#34;Discard&#34; falls through and allows close&#10;&#10;    dlg.Show()&#10;})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span><span class="mpress-token-function">hasUnsavedChanges</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// MessageDialog.Show() returns nothing; per-button OnClick handlers fire.</span>
+</span><span class="mpress-code-line">    dlg <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">Get</span>().<span class="mpress-token-type">Dialog</span>.<span class="mpress-token-function">Question</span>().
+</span><span class="mpress-code-line">        <span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;Unsaved Changes&#34;</span>).
+</span><span class="mpress-code-line">        <span class="mpress-token-function">SetMessage</span>(<span class="mpress-token-string">&#34;Save before closing?&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    save <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Save&#34;</span>)
+</span><span class="mpress-code-line">    discard <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Discard&#34;</span>)
+</span><span class="mpress-code-line">    cancel <span class="mpress-token-operator">:=</span> dlg.<span class="mpress-token-function">AddButton</span>(<span class="mpress-token-string">&#34;Cancel&#34;</span>)
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">SetDefaultButton</span>(save)
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">SetCancelButton</span>(cancel)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    save.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>() { <span class="mpress-token-function">saveChanges</span>() })
+</span><span class="mpress-code-line">    cancel.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>() { e.<span class="mpress-token-function">Cancel</span>() }) <span class="mpress-token-comment">// Prevent close</span>
+</span><span class="mpress-code-line">    _ <span class="mpress-token-operator">=</span> discard                            <span class="mpress-token-comment">// &#34;Discard&#34; falls through and allows close</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    dlg.<span class="mpress-token-function">Show</span>()
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="sembunyikan-alih-alih-tutup">Sembunyikan Alih-alih Tutup</h3>
+<p>Pola umum untuk aplikasi system tray:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {&#10;    window.Hide()  // Hide instead of destroy&#10;    e.Cancel()     // Prevent actual close&#10;})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">RegisterHook</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowClosing</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {
+</span><span class="mpress-code-line">    window.<span class="mpress-token-function">Hide</span>()  <span class="mpress-token-comment">// Hide instead of destroy</span>
+</span><span class="mpress-code-line">    e.<span class="mpress-token-function">Cancel</span>()     <span class="mpress-token-comment">// Prevent actual close</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="siklus-hidup-multi-window">Siklus Hidup Multi-Window</h2>
+<p>Dengan beberapa window:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title: &#34;Main Window&#34;,&#10;})&#10;&#10;settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:  &#34;Settings&#34;,&#10;    Width:  400,&#10;    Height: 600,&#10;    Hidden: true,  // Start hidden&#10;})"><code class="language-go"><span class="mpress-code-line">mainWindow <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Main Window&#34;</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">settingsWindow <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Settings&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Hidden</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,  <span class="mpress-token-comment">// Start hidden</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Perilaku default bervariasi per platform:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Default saat window terakhir ditutup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>macOS</td>
+<td>App tetap berjalan (menu bar tetap ada)</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>App quit</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>App quit</td>
+</tr>
+</tbody>
+</table>
+<p>macOS mengikuti konvensi platform native di mana aplikasi biasanya tetap aktif di menu bar meskipun tanpa window. Windows dan Linux quit secara default.</p>
+<p><strong>Buat semua platform quit saat window terakhir ditutup:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Mac: application.MacOptions{&#10;        ApplicationShouldTerminateAfterLastWindowClosed: true,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Mac</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">ApplicationShouldTerminateAfterLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><strong>Buat semua platform tetap berjalan saat window terakhir ditutup:</strong></p>
+<p>Ini berguna untuk aplikasi system tray atau app yang harus tetap berjalan di background.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app := application.New(application.Options{&#10;    Windows: application.WindowsOptions{&#10;        DisableQuitOnLastWindowClosed: true,&#10;    },&#10;    Linux: application.LinuxOptions{&#10;        DisableQuitOnLastWindowClosed: true,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Windows</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">WindowsOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">DisableQuitOnLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Linux</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">LinuxOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">DisableQuitOnLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="pola-umum">Pola Umum</h2>
+<h3 id="pola-1-database-service">Pola 1: Database Service</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type DatabaseService struct {&#10;    db *sql.DB&#10;}&#10;&#10;func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    var err error&#10;    s.db, err = sql.Open(&#34;sqlite3&#34;, &#34;app.db&#34;)&#10;    if err != nil {&#10;        return fmt.Errorf(&#34;failed to open database: %w&#34;, err)&#10;    }&#10;&#10;    if err := s.db.PingContext(ctx); err != nil {&#10;        return fmt.Errorf(&#34;failed to connect to database: %w&#34;, err)&#10;    }&#10;&#10;    return nil&#10;}&#10;&#10;func (s *DatabaseService) ServiceShutdown() error {&#10;    if s.db != nil {&#10;        return s.db.Close()&#10;    }&#10;    return nil&#10;}&#10;&#10;// Exported methods are available to the frontend&#10;func (s *DatabaseService) GetUsers() ([]User, error) {&#10;    // Query implementation&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">DatabaseService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    db <span class="mpress-token-operator">*</span>sql.<span class="mpress-token-type">DB</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">DatabaseService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">var</span> err error
+</span><span class="mpress-code-line">    s.db, err <span class="mpress-token-operator">=</span> sql.<span class="mpress-token-function">Open</span>(<span class="mpress-token-string">&#34;sqlite3&#34;</span>, <span class="mpress-token-string">&#34;app.db&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> fmt.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;failed to open database: %w&#34;</span>, err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> s.db.<span class="mpress-token-function">PingContext</span>(ctx); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> fmt.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;failed to connect to database: %w&#34;</span>, err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">DatabaseService</span>) <span class="mpress-token-function">ServiceShutdown</span>() error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> s.db <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> s.db.<span class="mpress-token-function">Close</span>()
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Exported methods are available to the frontend</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">DatabaseService</span>) <span class="mpress-token-function">GetUsers</span>() ([]<span class="mpress-token-type">User</span>, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Query implementation</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="pola-2-configuration-service">Pola 2: Configuration Service</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type ConfigService struct {&#10;    config *Config&#10;    path   string&#10;}&#10;&#10;func (s *ConfigService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    s.path = &#34;config.json&#34;&#10;&#10;    data, err := os.ReadFile(s.path)&#10;    if err != nil {&#10;        if os.IsNotExist(err) {&#10;            s.config = &amp;Config{} // Default config&#10;            return nil&#10;        }&#10;        return err&#10;    }&#10;&#10;    return json.Unmarshal(data, &amp;s.config)&#10;}&#10;&#10;func (s *ConfigService) ServiceShutdown() error {&#10;    data, err := json.MarshalIndent(s.config, &#34;&#34;, &#34;  &#34;)&#10;    if err != nil {&#10;        return err&#10;    }&#10;    return os.WriteFile(s.path, data, 0644)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">ConfigService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    config <span class="mpress-token-operator">*</span><span class="mpress-token-type">Config</span>
+</span><span class="mpress-code-line">    path   string
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">ConfigService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    s.path <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;config.json&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    data, err <span class="mpress-token-operator">:=</span> os.<span class="mpress-token-function">ReadFile</span>(s.path)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> os.<span class="mpress-token-function">IsNotExist</span>(err) {
+</span><span class="mpress-code-line">            s.config <span class="mpress-token-operator">=</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">Config</span>{} <span class="mpress-token-comment">// Default config</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> json.<span class="mpress-token-function">Unmarshal</span>(data, <span class="mpress-token-operator">&amp;</span>s.config)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">ConfigService</span>) <span class="mpress-token-function">ServiceShutdown</span>() error {
+</span><span class="mpress-code-line">    data, err <span class="mpress-token-operator">:=</span> json.<span class="mpress-token-function">MarshalIndent</span>(s.config, <span class="mpress-token-string">&#34;&#34;</span>, <span class="mpress-token-string">&#34;  &#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> os.<span class="mpress-token-function">WriteFile</span>(s.path, data, <span class="mpress-token-number">0644</span>)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="pola-3-background-worker">Pola 3: Background Worker</h3>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type WorkerService struct {&#10;    cancel context.CancelFunc&#10;}&#10;&#10;func (s *WorkerService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    workerCtx, cancel := context.WithCancel(ctx)&#10;    s.cancel = cancel&#10;&#10;    go s.runWorker(workerCtx)&#10;&#10;    return nil&#10;}&#10;&#10;func (s *WorkerService) ServiceShutdown() error {&#10;    if s.cancel != nil {&#10;        s.cancel()&#10;    }&#10;    return nil&#10;}&#10;&#10;func (s *WorkerService) runWorker(ctx context.Context) {&#10;    ticker := time.NewTicker(time.Minute)&#10;    defer ticker.Stop()&#10;&#10;    for {&#10;        select {&#10;        case &lt;-ticker.C:&#10;            s.doWork()&#10;        case &lt;-ctx.Done():&#10;            return&#10;        }&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">WorkerService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    cancel context.<span class="mpress-token-type">CancelFunc</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">WorkerService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    workerCtx, cancel <span class="mpress-token-operator">:=</span> context.<span class="mpress-token-function">WithCancel</span>(ctx)
+</span><span class="mpress-code-line">    s.cancel <span class="mpress-token-operator">=</span> cancel
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">go</span> s.<span class="mpress-token-function">runWorker</span>(workerCtx)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">WorkerService</span>) <span class="mpress-token-function">ServiceShutdown</span>() error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> s.cancel <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        s.<span class="mpress-token-function">cancel</span>()
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">WorkerService</span>) <span class="mpress-token-function">runWorker</span>(ctx context.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    ticker <span class="mpress-token-operator">:=</span> time.<span class="mpress-token-function">NewTicker</span>(time.<span class="mpress-token-type">Minute</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">defer</span> ticker.<span class="mpress-token-function">Stop</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">select</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">case</span> <span class="mpress-token-operator">&lt;-</span>ticker.<span class="mpress-token-type">C</span><span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">            s.<span class="mpress-token-function">doWork</span>()
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">case</span> <span class="mpress-token-operator">&lt;-</span>ctx.<span class="mpress-token-function">Done</span>()<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="referensi-siklus-hidup">Referensi Siklus Hidup</h2>
+<table>
+<thead>
+<tr>
+<th>Hook/Interface</th>
+<th>Kapan Dipanggil</th>
+<th>Dapat Dibatalkan?</th>
+<th>Digunakan Untuk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ServiceStartup</code></td>
+<td>Selama <code>app.Run()</code>, sebelum event loop</td>
+<td>Tidak (return error untuk abort)</td>
+<td>Inisialisasi</td>
+</tr>
+<tr>
+<td><code>ServiceShutdown</code></td>
+<td>Selama shutdown, setelah <code>OnShutdown</code></td>
+<td>Tidak</td>
+<td>Cleanup</td>
+</tr>
+<tr>
+<td><code>OnShutdown</code></td>
+<td>Ketika quit dikonfirmasi</td>
+<td>Tidak</td>
+<td>Cleanup aplikasi</td>
+</tr>
+<tr>
+<td><code>ShouldQuit</code></td>
+<td>Ketika quit diminta</td>
+<td>Ya (return false)</td>
+<td>Konfirmasi quit</td>
+</tr>
+<tr>
+<td><code>RegisterHook(WindowClosing)</code></td>
+<td>Ketika penutupan window diminta</td>
+<td>Ya (<code>e.Cancel()</code>)</td>
+<td>Cegah penutupan window</td>
+</tr>
+<tr>
+<td><code>OnWindowEvent</code></td>
+<td>Ketika event terjadi</td>
+<td>Tidak</td>
+<td>Bereaksi terhadap event</td>
+</tr>
+<tr>
+<td><code>OnApplicationEvent</code></td>
+<td>Ketika event terjadi</td>
+<td>Tidak</td>
+<td>Bereaksi terhadap event</td>
+</tr>
+</tbody>
+</table>
+<h2 id="perbedaan-platform">Perbedaan Platform</h2>
+<h3 id="macos">macOS</h3>
+<ul>
+<li><strong>Menu aplikasi</strong> tetap ada meskipun tanpa window</li>
+<li><strong>Cmd+Q</strong> memicu quit (melalui <code>ShouldQuit</code>)</li>
+<li><strong>Ikon Dock</strong> tetap kecuali disembunyikan</li>
+<li>Gunakan <code>ApplicationShouldTerminateAfterLastWindowClosed</code> untuk mengontrol perilaku quit</li>
+</ul>
+<h3 id="windows">Windows</h3>
+<ul>
+<li><strong>Tanpa menu aplikasi</strong> tanpa window</li>
+<li><strong>Alt+F4</strong> menutup window (dapat dicegah dengan <code>RegisterHook</code>)</li>
+<li><strong>System tray</strong> dapat menjaga app tetap berjalan</li>
+</ul>
+<h3 id="linux">Linux</h3>
+<ul>
+<li><strong>Perilaku bervariasi</strong> menurut desktop environment</li>
+<li><strong>Umumnya mirip Windows</strong></li>
+</ul>
+<h2 id="debugging-masalah-siklus-hidup">Debugging Masalah Siklus Hidup</h2>
+<h3 id="masalah-aplikasi-tidak-mau-quit">Masalah: Aplikasi Tidak Mau Quit</h3>
+<p><strong>Penyebab:</strong></p>
+<ol>
+<li><code>ShouldQuit</code> return <code>false</code></li>
+<li><code>OnShutdown</code> terlalu lama</li>
+<li>Goroutine background tidak berhenti</li>
+</ol>
+<p><strong>Solusi:</strong></p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// 1. Check ShouldQuit logic&#10;ShouldQuit: func() bool {&#10;    log.Println(&#34;ShouldQuit called&#34;)&#10;    return true&#10;}&#10;&#10;// 2. Keep OnShutdown fast&#10;OnShutdown: func() {&#10;    log.Println(&#34;OnShutdown started&#34;)&#10;    // Fast cleanup only&#10;    log.Println(&#34;OnShutdown finished&#34;)&#10;}&#10;&#10;// 3. Use context for background tasks&#10;func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    go func() {&#10;        &lt;-ctx.Done()&#10;        log.Println(&#34;Context cancelled, stopping background work&#34;)&#10;    }()&#10;    return nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// 1. Check ShouldQuit logic</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">ShouldQuit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>() bool {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;ShouldQuit called&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">true</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// 2. Keep OnShutdown fast</span>
+</span><span class="mpress-code-line"><span class="mpress-token-type">OnShutdown</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;OnShutdown started&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Fast cleanup only</span>
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;OnShutdown finished&#34;</span>)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// 3. Use context for background tasks</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">go</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;-</span>ctx.<span class="mpress-token-function">Done</span>()
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Println</span>(<span class="mpress-token-string">&#34;Context cancelled, stopping background work&#34;</span>)
+</span><span class="mpress-code-line">    }()
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="masalah-service-startup-gagal">Masalah: Service Startup Gagal</h3>
+<p><strong>Solusi:</strong> Return error yang deskriptif:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    if err := s.init(); err != nil {&#10;        return fmt.Errorf(&#34;failed to initialise: %w&#34;, err)&#10;    }&#10;    return nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">MyService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> s.<span class="mpress-token-function">init</span>(); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> fmt.<span class="mpress-token-function">Errorf</span>(<span class="mpress-token-string">&#34;failed to initialise: %w&#34;</span>, err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Error akan dicatat dan aplikasi tidak akan start.</p>
+<h2 id="praktik-terbaik">Praktik Terbaik</h2>
+<h3 id="lakukan">Lakukan</h3>
+<ul>
+<li><strong>Gunakan service untuk manajemen siklus hidup</strong> - Mereka menyediakan hook startup/shutdown yang tepat</li>
+<li><strong>Jaga shutdown tetap cepat</strong> - Target di bawah 1 detik untuk semua cleanup</li>
+<li><strong>Gunakan context untuk pembatalan</strong> - Hentikan tugas background dengan benar</li>
+<li><strong>Tangani error di startup</strong> - Return error untuk abort dengan bersih</li>
+<li><strong>Log event siklus hidup</strong> - Membantu debugging</li>
+</ul>
+<h3 id="jangan">Jangan</h3>
+<ul>
+<li><strong>Jangan block di service startup</strong> - Jaga inisialisasi tetap cepat (di bawah 2 detik)</li>
+<li><strong>Jangan tampilkan dialog di shutdown</strong> - App sedang quit, UI mungkin tidak berfungsi</li>
+<li><strong>Jangan abaikan context</strong> - Selalu periksa <code>ctx.Done()</code> di goroutine</li>
+<li><strong>Jangan bocorkan resource</strong> - Selalu implementasikan <code>ServiceShutdown</code></li>
+</ul>
+<h2 id="langkah-selanjutnya">Langkah Selanjutnya</h2>
+<p><strong>Service</strong> - Pelajari selengkapnya tentang sistem service
+<a href="/id/features/bindings/services/">Pelajari Selengkapnya →</a></p>
+<p><strong>Sistem Event</strong> - Gunakan event untuk komunikasi
+<a href="/id/features/events/system/">Pelajari Selengkapnya →</a></p>
+<p><strong>Manajemen Window</strong> - Buat dan kelola window
+<a href="/id/features/windows/basics/">Pelajari Selengkapnya →</a></p>
+<hr>
+<p><strong>Pertanyaan tentang siklus hidup?</strong> Tanyakan di <a href="https://discord.gg/JDdSxwjhGf">Discord</a> atau lihat <a href="https://github.com/wailsapp/wails/tree/master/v3/examples">contoh</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/concepts/lifecycle.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:33Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../id/concepts/manager-api/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Manager API</strong></a><a rel="next" href="../../../id/concepts/bridge/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Go-Frontend Bridge</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#memahami-siklus-hidup-aplikasi">Memahami Siklus Hidup Aplikasi</a><a class="toc-level-2" href="#tahap-siklus-hidup">Tahap Siklus Hidup</a><a class="toc-level-3" href="#1-pembuatan-aplikasi">1. Pembuatan Aplikasi</a><a class="toc-level-3" href="#2-menjalankan-aplikasi">2. Menjalankan Aplikasi</a><a class="toc-level-3" href="#3-event-loop">3. Event Loop</a><a class="toc-level-3" href="#4-shutdown">4. Shutdown</a><a class="toc-level-2" href="#siklus-hidup-service">Siklus Hidup Service</a><a class="toc-level-3" href="#membuat-service">Membuat Service</a><a class="toc-level-3" href="#mendaftarkan-service">Mendaftarkan Service</a><a class="toc-level-3" href="#menggunakan-application-context">Menggunakan Application Context</a><a class="toc-level-2" href="#hook-tingkat-aplikasi">Hook Tingkat Aplikasi</a><a class="toc-level-3" href="#shouldquit">ShouldQuit</a><a class="toc-level-3" href="#onshutdown">OnShutdown</a><a class="toc-level-3" href="#postshutdown">PostShutdown</a><a class="toc-level-2" href="#siklus-hidup-berbasis-event">Siklus Hidup Berbasis Event</a><a class="toc-level-3" href="#event-aplikasi">Event Aplikasi</a><a class="toc-level-3" href="#event-window">Event Window</a><a class="toc-level-3" href="#window-hook-event-yang-dapat-dibatalkan">Window Hook (Event yang Dapat Dibatalkan)</a><a class="toc-level-2" href="#siklus-hidup-window">Siklus Hidup Window</a><a class="toc-level-3" href="#membuat-window">Membuat Window</a><a class="toc-level-3" href="#mencegah-penutupan-window">Mencegah Penutupan Window</a><a class="toc-level-3" href="#sembunyikan-alih-alih-tutup">Sembunyikan Alih-alih Tutup</a><a class="toc-level-2" href="#siklus-hidup-multi-window">Siklus Hidup Multi-Window</a><a class="toc-level-2" href="#pola-umum">Pola Umum</a><a class="toc-level-3" href="#pola-1-database-service">Pola 1: Database Service</a><a class="toc-level-3" href="#pola-2-configuration-service">Pola 2: Configuration Service</a><a class="toc-level-3" href="#pola-3-background-worker">Pola 3: Background Worker</a><a class="toc-level-2" href="#referensi-siklus-hidup">Referensi Siklus Hidup</a><a class="toc-level-2" href="#perbedaan-platform">Perbedaan Platform</a><a class="toc-level-3" href="#macos">macOS</a><a class="toc-level-3" href="#windows">Windows</a><a class="toc-level-3" href="#linux">Linux</a><a class="toc-level-2" href="#debugging-masalah-siklus-hidup">Debugging Masalah Siklus Hidup</a><a class="toc-level-3" href="#masalah-aplikasi-tidak-mau-quit">Masalah: Aplikasi Tidak Mau Quit</a><a class="toc-level-3" href="#masalah-service-startup-gagal">Masalah: Service Startup Gagal</a><a class="toc-level-2" href="#praktik-terbaik">Praktik Terbaik</a><a class="toc-level-3" href="#lakukan">Lakukan</a><a class="toc-level-3" href="#jangan">Jangan</a><a class="toc-level-2" href="#langkah-selanjutnya">Langkah Selanjutnya</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

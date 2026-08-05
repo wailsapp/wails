@@ -1,0 +1,593 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Notifications · Wails</title><meta name="description" content="Display native system notifications with action buttons and text input"><link rel="canonical" href="https://v3.wails.io/features/notifications/overview/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/features/notifications/overview/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/features/notifications/overview/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/features/notifications/overview/"><script>document.documentElement.classList.add('js')</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="stylesheet" href="../../../assets/custom.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../search-index.json"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../blog/">Blog</a></nav><label class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog" autocomplete="off" placeholder="Search documentation" readonly><kbd class="search-shortcut" aria-hidden="true"><kbd class="search-shortcut-platform">Ctrl</kbd><span>K</span></kbd></label><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/features/notifications/overview/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/features/notifications/overview/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/features/notifications/overview/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../">Home</a><a class="" href="../../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../quick-start/installation/">Installation</a><a class="" href="../../../quick-start/first-app/">Your First App</a><a class="" href="../../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../concepts/architecture/">How Wails Works</a><a class="" href="../../../concepts/manager-api/">Manager API</a><a class="" href="../../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../concepts/build-system/">Build System</a></div></details><details open><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/windows/basics/">Window Basics</a><a class="" href="../../../features/windows/options/">Window Options</a><a class="" href="../../../features/windows/permissions/">Permissions</a><a class="" href="../../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/menus/application/">Application Menus</a><a class="" href="../../../features/menus/context/">Context Menus</a><a class="" href="../../../features/menus/systray/">System Tray Menus</a><a class="" href="../../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/bindings/methods/">Method Binding</a><a class="" href="../../../features/bindings/services/">Services</a><a class="" href="../../../features/bindings/models/">Data Models</a><a class="" href="../../../features/bindings/enums/">Enums</a><a class="" href="../../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/events/system/">Event System</a><a class="" href="../../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/dialogs/file/">File Dialogs</a><a class="" href="../../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details open><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/mobile/">Overview</a><a class="" href="../../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../guides/mobile/ios/">iOS</a><a class="" href="../../../guides/mobile/android/">Android</a><a class="" href="../../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../experimental/">Overview</a><a class="" href="../../../experimental/wake/">Wake</a><a class="" href="../../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/build/building/">Building Applications</a><a class="" href="../../../guides/build/customization/">Build Customization</a><a class="" href="../../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../guides/build/signing/">Code Signing</a><a class="" href="../../../guides/build/windows/">Windows Packaging</a><a class="" href="../../../guides/build/macos/">macOS Packaging</a><a class="" href="../../../guides/build/linux/">Linux Packaging</a><a class="" href="../../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/updater/">In-App Updater</a><a class="" href="../../../guides/file-associations/">File Associations</a><a class="" href="../../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/routing/">Frontend Routing</a><a class="" href="../../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/server-build/">Server Build</a><a class="" href="../../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../reference/overview/">Overview</a><a class="" href="../../../reference/application/">Application</a><a class="" href="../../../reference/window/">Window</a><a class="" href="../../../reference/menu/">Menu</a><a class="" href="../../../reference/events/">Events</a><a class="" href="../../../reference/dialogs/">Dialogs</a><a class="" href="../../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../contributing/getting-started/">Getting Started</a><a class="" href="../../../contributing/setup/">Development Setup</a><a class="" href="../../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/links/">Links</a><a class="" href="../../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../community/showcase/clave/">Clave</a><a class="" href="../../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../community/showcase/emailit/">EmailIt</a><a class="" href="../../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../community/showcase/happytools/">HappyTools</a><a class="" href="../../../community/showcase/kira/">Kira</a><a class="" href="../../../community/showcase/ltools/">LTools</a><a class="" href="../../../community/showcase/mchat/">Mchat</a><a class="" href="../../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../../community/showcase/october/">October</a><a class="" href="../../../community/showcase/optimus/">Optimus</a><a class="" href="../../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../community/showcase/portfall/">Portfall</a><a class="" href="../../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../community/showcase/resizem/">Resizem</a><a class="" href="../../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../community/showcase/surge/">Surge</a><a class="" href="../../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../community/showcase/wally/">Wally</a><a class="" href="../../../community/showcase/wombat/">Wombat</a><a class="" href="../../../community/showcase/xensql/">XenSQL</a><a class="" href="../../../community/showcase/ytd/">Ytd</a><a class="" href="../../../community/showcase/hiposter/">hiposter</a><a class="" href="../../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../../whats-new/">What&#39;s New</a><a class="" href="../../../status/">Status</a><a class="" href="../../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../credits/">Credits</a></nav></aside><main id="content"><article><h1>Notifications</h1><h2 id="introduction">Introduction</h2>
+<p>Wails provides a comprehensive cross-platform notification system for desktop applications. This service allows you to display native system notifications, with support for:</p>
+<ul>
+<li>Basic notifications with title, subtitle, and body</li>
+<li>Interactive notifications with action buttons and text replies</li>
+<li>Reusable <a href="#interactive-notifications">notification categories</a> for actions</li>
+<li>Custom <a href="#custom-sound">sounds</a> (default, silent, or named)</li>
+<li><a href="#attachments">Attachments</a> (images on every platform; audio/video on macOS)</li>
+<li><a href="#threading-and-grouping">Grouping related notifications</a> by <code>ThreadID</code></li>
+<li><a href="#interruption-level">Priority</a> via <code>InterruptionLevel</code> (<code>passive</code> / <code>active</code> / <code>timeSensitive</code> / <code>critical</code>)</li>
+<li><a href="#scheduled-delivery">Scheduled delivery</a> (native on macOS; in-process timer on Windows + Linux)</li>
+<li><a href="#updating-notifications">Updating an in-flight notification</a> by ID</li>
+</ul>
+<p>Each new optional field gracefully degrades when a platform cannot honour it; see <a href="#platform-considerations">Platform Considerations</a> for the per-feature support matrix.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<h3 id="creating-the-service">Creating the Service</h3>
+<p>First, initialize the notifications service:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;import &#34;github.com/wailsapp/wails/v3/pkg/services/notifications&#34;&#10;&#10;// Create a new notification service&#10;notifier := notifications.New()&#10;&#10;//Register the service with the application&#10;app := application.New(application.Options{&#10;    Services: []application.Service{&#10;        application.NewService(notifier),&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/services/notifications&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Create a new notification service</span>
+</span><span class="mpress-code-line">notifier <span class="mpress-token-operator">:=</span> notifications.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//Register the service with the application</span>
+</span><span class="mpress-code-line">app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">        application.<span class="mpress-token-function">NewService</span>(notifier),
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="notification-authorization">Notification Authorization</h2>
+<p>Notifications on macOS require user authorization. Request and check authorization:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="authorized, err := notifier.CheckNotificationAuthorization()&#10;if err != nil {&#10;    // Handle authorization error&#10;}&#10;if authorized {&#10;    // Send notifications&#10;} else {&#10;    // Request authorization&#10;    authorized, err = notifier.RequestNotificationAuthorization()&#10;}"><code class="language-go"><span class="mpress-code-line">authorized, err <span class="mpress-token-operator">:=</span> notifier.<span class="mpress-token-function">CheckNotificationAuthorization</span>()
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle authorization error</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> authorized {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Send notifications</span>
+</span><span class="mpress-code-line">} <span class="mpress-token-keyword">else</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Request authorization</span>
+</span><span class="mpress-code-line">    authorized, err <span class="mpress-token-operator">=</span> notifier.<span class="mpress-token-function">RequestNotificationAuthorization</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>On Windows and Linux this always returns <code>true</code>.</p>
+<h2 id="notification-types">Notification Types</h2>
+<h3 id="basic-notifications">Basic Notifications</h3>
+<p>Send a basic notification with a unique id, title, optional subtitle (macOS and Linux), and body text to users:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.SendNotification(notifications.NotificationOptions{&#10;    ID: &#34;unique-id&#34;,&#10;    Title: &#34;New Calendar Invite&#34;,&#10;    Subtitle: &#34;From: Jane Doe&#34;, // Optional&#10;    Body: &#34;Tap to view the event&#34;,&#10;})&#10;"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;unique-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;New Calendar Invite&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Subtitle</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;From: Jane Doe&#34;</span>, <span class="mpress-token-comment">// Optional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Tap to view the event&#34;</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line"></span></code></pre></div>
+<h3 id="interactive-notifications">Interactive Notifications</h3>
+<p>Send a notification with action buttons and text inputs. These notifications require a notification category to be resgistered first:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Define a unique category id&#10;categoryID := &#34;unique-category-id&#34;&#10;&#10;// Define a category with actions&#10;category := notifications.NotificationCategory{&#10;    ID: categoryID,&#10;    Actions: []notifications.NotificationAction{&#10;        {&#10;            ID:    &#34;OPEN&#34;, &#10;            Title: &#34;Open&#34;,&#10;        },&#10;        {&#10;            ID:          &#34;ARCHIVE&#34;, &#10;            Title:       &#34;Archive&#34;, &#10;            Destructive: true,  /* macOS-specific */&#10;        },&#10;    },&#10;    HasReplyField:    true,&#10;    ReplyPlaceholder: &#34;message...&#34;,&#10;    ReplyButtonTitle: &#34;Reply&#34;,&#10;}&#10;&#10;// Register the category&#10;notifier.RegisterNotificationCategory(category)&#10;&#10;// Send an interactive notification with the actions registered in the provided category&#10;notifier.SendNotificationWithActions(notifications.NotificationOptions{&#10;    ID:         &#34;unique-id&#34;,&#10;    Title:      &#34;New Message&#34;,&#10;    Subtitle:   &#34;From: Jane Doe&#34;,&#10;    Body:       &#34;Are you able to make it?&#34;,&#10;    CategoryID: categoryID,&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Define a unique category id</span>
+</span><span class="mpress-code-line">categoryID <span class="mpress-token-operator">:=</span> <span class="mpress-token-string">&#34;unique-category-id&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Define a category with actions</span>
+</span><span class="mpress-code-line">category <span class="mpress-token-operator">:=</span> notifications.<span class="mpress-token-type">NotificationCategory</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span> categoryID,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Actions</span><span class="mpress-token-operator">:</span> []notifications.<span class="mpress-token-type">NotificationAction</span>{
+</span><span class="mpress-code-line">        {
+</span><span class="mpress-code-line">            <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;OPEN&#34;</span>, 
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Open&#34;</span>,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">        {
+</span><span class="mpress-code-line">            <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>          <span class="mpress-token-string">&#34;ARCHIVE&#34;</span>, 
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;Archive&#34;</span>, 
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Destructive</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,  /<span class="mpress-token-operator">*</span> macOS<span class="mpress-token-operator">-</span>specific <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HasReplyField</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ReplyPlaceholder</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;message...&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ReplyButtonTitle</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Reply&#34;</span>,
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Register the category</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">RegisterNotificationCategory</span>(category)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Send an interactive notification with the actions registered in the provided category</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotificationWithActions</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-string">&#34;unique-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>      <span class="mpress-token-string">&#34;New Message&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Subtitle</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;From: Jane Doe&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;Are you able to make it?&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CategoryID</span><span class="mpress-token-operator">:</span> categoryID,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="notification-responses">Notification Responses</h2>
+<p>Process user interactions with notifications:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.OnNotificationResponse(func(result notifications.NotificationResult) {&#10;    response := result.Response&#10;    fmt.Printf(&#34;Notification %s was actioned with: %s\n&#34;, response.ID, response.ActionIdentifier)&#10;&#10;    if response.ActionIdentifier == &#34;TEXT_REPLY&#34; {&#10;        fmt.Printf(&#34;User replied: %s\n&#34;, response.UserText)&#10;    }&#10;&#10;    if data, ok := response.UserInfo[&#34;sender&#34;].(string); ok {&#10;        fmt.Printf(&#34;Original sender: %s\n&#34;, data)&#10;    }&#10;&#10;    // Emit an event to the frontend&#10;    app.Event.Emit(&#34;notification&#34;, result.Response)&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">OnNotificationResponse</span>(<span class="mpress-token-keyword">func</span>(result notifications.<span class="mpress-token-type">NotificationResult</span>) {
+</span><span class="mpress-code-line">    response <span class="mpress-token-operator">:=</span> result.<span class="mpress-token-type">Response</span>
+</span><span class="mpress-code-line">    fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Notification %s was actioned with: %s\n&#34;</span>, response.<span class="mpress-token-type">ID</span>, response.<span class="mpress-token-type">ActionIdentifier</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> response.<span class="mpress-token-type">ActionIdentifier</span> <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;TEXT_REPLY&#34;</span> {
+</span><span class="mpress-code-line">        fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;User replied: %s\n&#34;</span>, response.<span class="mpress-token-type">UserText</span>)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> data, ok <span class="mpress-token-operator">:=</span> response.<span class="mpress-token-type">UserInfo</span>[<span class="mpress-token-string">&#34;sender&#34;</span>].(string); ok {
+</span><span class="mpress-code-line">        fmt.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;Original sender: %s\n&#34;</span>, data)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Emit an event to the frontend</span>
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;notification&#34;</span>, result.<span class="mpress-token-type">Response</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h2 id="notification-customisation">Notification Customisation</h2>
+<h3 id="custom-metadata">Custom Metadata</h3>
+<p>Basic and interactive notifications can include custom data:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.SendNotification(notifications.NotificationOptions{&#10;    ID: &#34;unique-id&#34;,&#10;    Title: &#34;New Calendar Invite&#34;,&#10;    Subtitle: &#34;From: Jane Doe&#34;, // Optional&#10;    Body: &#34;Tap to view the event&#34;,&#10;    Data: map[string]interface{}{&#10;        &#34;sender&#34;: &#34;jane.doe@example.com&#34;,&#10;        &#34;timestamp&#34;: &#34;2025-03-10T15:30:00Z&#34;,&#10;    }&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;unique-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;New Calendar Invite&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Subtitle</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;From: Jane Doe&#34;</span>, <span class="mpress-token-comment">// Optional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Tap to view the event&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Data</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}{
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;sender&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;jane.doe@example.com&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;timestamp&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;2025-03-10T15:30:00Z&#34;</span>,
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="custom-sound">Custom Sound</h3>
+<p>Use <code>Sound</code> to control the audio played when a notification is delivered. Leaving it <code>nil</code> plays the platform default; set <code>Silent: true</code> to suppress sound; set <code>Name</code> to play a named/bundled sound.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Silent&#10;notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:    &#34;silent-id&#34;,&#10;    Title: &#34;Background sync complete&#34;,&#10;    Sound: &amp;notifications.NotificationSound{Silent: true},&#10;})&#10;&#10;// Named sound&#10;notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:    &#34;named-id&#34;,&#10;    Title: &#34;New message&#34;,&#10;    Body:  &#34;Tap to read&#34;,&#10;    Sound: &amp;notifications.NotificationSound{Name: &#34;Ping&#34;},&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Silent</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;silent-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Background sync complete&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Sound</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>notifications.<span class="mpress-token-type">NotificationSound</span>{<span class="mpress-token-type">Silent</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>},
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Named sound</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;named-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;New message&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Tap to read&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Sound</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>notifications.<span class="mpress-token-type">NotificationSound</span>{<span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Ping&#34;</span>},
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>How <code>Name</code> is resolved per platform:</p>
+<ul>
+<li><strong>macOS</strong> — <code>Name</code> is passed to <code>[UNNotificationSound soundNamed:]</code>; the audio file must live under your app bundle&rsquo;s <code>Library/Sounds</code>.</li>
+<li><strong>Windows</strong> — if <code>Name</code> already begins with <code>ms-winsoundevent:</code> or <code>ms-appx:</code>, it is used as-is; otherwise it is wrapped in <code>ms-winsoundevent:</code> for use as a built-in toast event name (see Microsoft&rsquo;s toast <code>&lt;audio&gt;</code> schema documentation).</li>
+<li><strong>Linux</strong> — forwarded as the freedesktop <code>sound-name</code> hint; whether it plays depends on the active notification daemon and sound theme.</li>
+</ul>
+<h3 id="attachments">Attachments</h3>
+<p><code>Attachments</code> adds media files alongside a notification. macOS supports multiple attachments of any media type; Windows and Linux honour the first image-typed attachment.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:    &#34;image-id&#34;,&#10;    Title: &#34;Photo uploaded&#34;,&#10;    Body:  &#34;Tap to view&#34;,&#10;    Attachments: []notifications.NotificationAttachment{&#10;        {&#10;            ID:   &#34;preview&#34;,&#10;            Path: &#34;/absolute/path/to/image.png&#34;,&#10;            // Type hint:&#10;            //   macOS:   UTI like &#34;public.png&#34; / &#34;public.audio&#34; (often inferred)&#10;            //   Windows: &#34;hero&#34; | &#34;appLogoOverride&#34; | &#34;inline&#34; (default &#34;inline&#34;)&#10;            //   Linux:   ignored&#10;            Type: &#34;inline&#34;,&#10;        },&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;image-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Photo uploaded&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Tap to view&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Attachments</span><span class="mpress-token-operator">:</span> []notifications.<span class="mpress-token-type">NotificationAttachment</span>{
+</span><span class="mpress-code-line">        {
+</span><span class="mpress-code-line">            <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;preview&#34;</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Path</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;/absolute/path/to/image.png&#34;</span>,
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">// Type hint:</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">//   macOS:   UTI like &#34;public.png&#34; / &#34;public.audio&#34; (often inferred)</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">//   Windows: &#34;hero&#34; | &#34;appLogoOverride&#34; | &#34;inline&#34; (default &#34;inline&#34;)</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-comment">//   Linux:   ignored</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Type</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;inline&#34;</span>,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><code>Path</code> must be an absolute filesystem path. macOS additionally accepts <code>file://</code> URLs.</p>
+<h4 id="attaching-a-file-that-ships-with-your-app">Attaching a file that ships with your app</h4>
+<p>The OS reads the attachment from disk when the notification is delivered, so <code>Path</code> has to resolve to a real file on the end user&rsquo;s machine. For an asset you bundle with the application (an icon or image embedded with <code>go:embed</code>), there is no fixed absolute path you can hard-code, because the file lives inside the binary rather than at a known location on disk. Write it to a writable directory once at startup and pass that path:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="import (&#10;    _ &#34;embed&#34;&#10;    &#34;os&#34;&#10;    &#34;path/filepath&#34;&#10;)&#10;&#10;//go:embed assets/preview.png&#10;var previewPNG []byte&#10;&#10;// Materialise the embedded asset to a stable path the OS can read.&#10;previewPath := filepath.Join(os.TempDir(), &#34;myapp-preview.png&#34;)&#10;if err := os.WriteFile(previewPath, previewPNG, 0o644); err != nil {&#10;    // handle error&#10;}&#10;&#10;notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:    &#34;image-id&#34;,&#10;    Title: &#34;Photo uploaded&#34;,&#10;    Body:  &#34;Tap to view&#34;,&#10;    Attachments: []notifications.NotificationAttachment{&#10;        {ID: &#34;preview&#34;, Path: previewPath, Type: &#34;inline&#34;},&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    _ <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;os&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;path/filepath&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed assets/preview.png</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> previewPNG []byte
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Materialise the embedded asset to a stable path the OS can read.</span>
+</span><span class="mpress-code-line">previewPath <span class="mpress-token-operator">:=</span> filepath.<span class="mpress-token-function">Join</span>(os.<span class="mpress-token-function">TempDir</span>(), <span class="mpress-token-string">&#34;myapp-preview.png&#34;</span>)
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> os.<span class="mpress-token-function">WriteFile</span>(previewPath, previewPNG, <span class="mpress-token-number">0</span>o644); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// handle error</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;image-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Photo uploaded&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Tap to view&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Attachments</span><span class="mpress-token-operator">:</span> []notifications.<span class="mpress-token-type">NotificationAttachment</span>{
+</span><span class="mpress-code-line">        {<span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;preview&#34;</span>, <span class="mpress-token-type">Path</span><span class="mpress-token-operator">:</span> previewPath, <span class="mpress-token-type">Type</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;inline&#34;</span>},
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>A user-supplied or downloaded file already has a real path on disk, so you can pass it to <code>Path</code> directly without this step. Passing attachment bytes in-memory may be added in a future release.</p>
+<h3 id="threading-and-grouping">Threading and Grouping</h3>
+<p><code>ThreadID</code> groups related notifications together so the OS can collapse them in Notification Center / Action Center.</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:       &#34;msg-42&#34;,&#10;    Title:    &#34;Jane Doe&#34;,&#10;    Body:     &#34;Are you free for lunch?&#34;,&#10;    ThreadID: &#34;chat:jane.doe&#34;,&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;msg-42&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;Jane Doe&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>     <span class="mpress-token-string">&#34;Are you free for lunch?&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ThreadID</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;chat:jane.doe&#34;</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="interruption-level">Interruption Level</h3>
+<p><code>InterruptionLevel</code> controls notification priority. Use one of the exported constants:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:                &#34;alert-id&#34;,&#10;    Title:             &#34;Server down&#34;,&#10;    Body:              &#34;Investigate immediately&#34;,&#10;    InterruptionLevel: notifications.InterruptionLevelTimeSensitive,&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-string">&#34;alert-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>             <span class="mpress-token-string">&#34;Server down&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>              <span class="mpress-token-string">&#34;Investigate immediately&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevel</span><span class="mpress-token-operator">:</span> notifications.<span class="mpress-token-type">InterruptionLevelTimeSensitive</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>InterruptionLevelPassive</code></td>
+<td><code>&quot;passive&quot;</code></td>
+<td>Quiet delivery; will not light up the screen or play a default sound</td>
+</tr>
+<tr>
+<td><code>InterruptionLevelActive</code></td>
+<td><code>&quot;active&quot;</code></td>
+<td>Default level</td>
+</tr>
+<tr>
+<td><code>InterruptionLevelTimeSensitive</code></td>
+<td><code>&quot;timeSensitive&quot;</code></td>
+<td>Breaks through Focus / Do Not Disturb where allowed</td>
+</tr>
+<tr>
+<td><code>InterruptionLevelCritical</code></td>
+<td><code>&quot;critical&quot;</code></td>
+<td>Bypasses Focus and ringer; macOS requires the Critical Alert entitlement (silently degrades without it)</td>
+</tr>
+</tbody>
+</table>
+<p>Per-platform mapping:</p>
+<ul>
+<li><strong>macOS</strong> — sets <code>UNNotificationContent.interruptionLevel</code>. <code>critical</code> requires macOS 12+ and the Critical Alert entitlement.</li>
+<li><strong>Windows</strong> — maps to the toast <code>&lt;toast scenario=&quot;...&quot;&gt;</code> attribute.</li>
+<li><strong>Linux</strong> — maps to the freedesktop <code>urgency</code> hint.</li>
+</ul>
+<h3 id="scheduled-delivery">Scheduled Delivery</h3>
+<p><code>Schedule</code> defers delivery. Set exactly one of <code>DelaySeconds</code> (seconds from now) or <code>At</code> (Unix seconds, UTC).</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Deliver in 60 seconds&#10;notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:       &#34;reminder-id&#34;,&#10;    Title:    &#34;Stand up and stretch&#34;,&#10;    Schedule: &amp;notifications.NotificationSchedule{DelaySeconds: 60},&#10;})&#10;&#10;// Deliver at an absolute time&#10;notifier.SendNotification(notifications.NotificationOptions{&#10;    ID:       &#34;alarm-id&#34;,&#10;    Title:    &#34;Meeting in 5 minutes&#34;,&#10;    Schedule: &amp;notifications.NotificationSchedule{At: time.Now().Add(time.Hour).Unix()},&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Deliver in 60 seconds</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;reminder-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;Stand up and stretch&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Schedule</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>notifications.<span class="mpress-token-type">NotificationSchedule</span>{<span class="mpress-token-type">DelaySeconds</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">60</span>},
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Deliver at an absolute time</span>
+</span><span class="mpress-code-line">notifier.<span class="mpress-token-function">SendNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;alarm-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;Meeting in 5 minutes&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Schedule</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>notifications.<span class="mpress-token-type">NotificationSchedule</span>{<span class="mpress-token-type">At</span><span class="mpress-token-operator">:</span> time.<span class="mpress-token-function">Now</span>().<span class="mpress-token-function">Add</span>(time.<span class="mpress-token-type">Hour</span>).<span class="mpress-token-function">Unix</span>()},
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<aside aria-label="Persistence" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>Persistence</span></p>
+<div class="mpress-admonition-body">
+<p>On <strong>macOS</strong>, scheduled notifications use a native trigger and survive app restarts. On <strong>Windows</strong> and <strong>Linux</strong>, scheduling falls back to an in-process <code>time.AfterFunc</code> timer and is <strong>lost if the app exits before delivery</strong> — neither <code>wintoast</code> nor the freedesktop spec exposes a deferred-delivery primitive.</p>
+</div>
+</aside>
+<h3 id="updating-notifications">Updating Notifications</h3>
+<p><code>UpdateNotification</code> replaces an in-flight notification with the same <code>ID</code>:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="notifier.UpdateNotification(notifications.NotificationOptions{&#10;    ID:    &#34;download-id&#34;,&#10;    Title: &#34;Download complete&#34;,&#10;    Body:  &#34;report.pdf is ready&#34;,&#10;})"><code class="language-go"><span class="mpress-code-line">notifier.<span class="mpress-token-function">UpdateNotification</span>(notifications.<span class="mpress-token-type">NotificationOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;download-id&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Download complete&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;report.pdf is ready&#34;</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Per-platform behaviour:</p>
+<ul>
+<li><strong>macOS</strong> — <code>UNUserNotificationCenter</code> auto-deduplicates by identifier, so the existing notification is updated in place.</li>
+<li><strong>Linux</strong> — uses the D-Bus <code>replaces_id</code> parameter to replace the previous notification.</li>
+<li><strong>Windows</strong> — currently redelivers as a new notification. True in-place replace requires upstream <code>wintoast</code> support for <code>tag</code> / <code>group</code>.</li>
+</ul>
+<h2 id="platform-considerations">Platform Considerations</h2>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-9f8e890b">
+<div role="tablist">
+<button id="mpress-tabs-9f8e890b-tab-1" role="tab" type="button" class="mpress-tab-os mpress-tab-os-macos" aria-selected="true" aria-controls="mpress-tabs-9f8e890b-panel-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-apple" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42Zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12.45 4.24 17 6 19.47c.8 1.21 1.8 2.58 3.12 2.53s1.75-.82 3.28-.82 2 .82 3.3.79 2.22-1.24 3.06-2.45a11 11 0 0 0 1.38-2.85 4.41 4.41 0 0 1-2.68-4.04Z"/></svg> macOS</button>
+<button id="mpress-tabs-9f8e890b-tab-2" role="tab" type="button" class="mpress-tab-os mpress-tab-os-windows" aria-selected="false" aria-controls="mpress-tabs-9f8e890b-panel-2" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-seti-windows" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0.125 11.544L0.125 3.450L9.815 2.120L9.815 11.506L0.125 11.544ZM0.125 12.532L9.815 12.570L9.815 21.956L0.125 20.626L0.125 12.532ZM10.993 11.468L10.993 1.968L23.837 0.106L23.837 11.392L10.993 11.468ZM10.955 12.646L23.875 12.684L23.837 23.894L10.993 22.108L10.955 12.646Z"/></svg> Windows</button>
+<button id="mpress-tabs-9f8e890b-tab-3" role="tab" type="button" class="mpress-tab-os mpress-tab-os-linux" aria-selected="false" aria-controls="mpress-tabs-9f8e890b-panel-3" tabindex="-1"><svg aria-hidden="true" class="starlight-icon starlight-icon-linux" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.7 17.6c-.1-.2-.2-.4-.2-.6 0-.4-.2-.7-.5-1-.1-.1-.3-.2-.4-.2.6-1.8-.3-3.6-1.3-4.9-.8-1.2-2-2.1-1.9-3.7 0-1.9.2-5.4-3.3-5.1-3.6.2-2.6 3.9-2.7 5.2 0 1.1-.5 2.2-1.3 3.1-.2.2-.4.5-.5.7-1 1.2-1.5 2.8-1.5 4.3-.2.2-.4.4-.5.6-.1.1-.2.2-.2.3-.1.1-.3.2-.5.3-.4.1-.7.3-.9.7-.1.3-.2.7-.1 1.1.1.2.1.4 0 .7-.2.4-.2.9 0 1.4.3.4.8.5 1.5.6.5 0 1.1.2 1.6.4.5.3 1.1.5 1.7.5.3 0 .7-.1 1-.2.3-.2.5-.4.6-.7.4 0 1-.2 1.7-.2.6 0 1.2.2 2 .1 0 .1 0 .2.1.3.2.5.7.9 1.3 1h.2c.8-.1 1.6-.5 2.1-1.1.4-.4.9-.7 1.4-.9.6-.3 1-.5 1.1-1 .1-.7-.1-1.1-.5-1.7zM12.8 4.8c.6.1 1.1.6 1 1.2 0 .3-.1.6-.3.9h-.1c-.2-.1-.3-.1-.4-.2.1-.1.1-.3.2-.5 0-.4-.2-.7-.4-.7-.3 0-.5.3-.5.7v.1c-.1-.1-.3-.1-.4-.2V6c-.1-.5.3-1.1.9-1.2zm-.3 2c.1.1.3.2.4.2.1 0 .3.1.4.2.2.1.4.2.4.5s-.3.6-.9.8c-.2.1-.3.1-.4.2-.3.2-.6.3-1 .3-.3 0-.6-.2-.8-.4-.1-.1-.2-.2-.4-.3-.1-.1-.3-.3-.4-.6 0-.1.1-.2.2-.3.3-.2.4-.3.5-.4l.1-.1c.2-.3.6-.5 1-.5.3.1.6.2.9.4zM10.4 5c.4 0 .7.4.8 1.1v.2c-.1 0-.3.1-.4.2v-.2c0-.3-.2-.6-.4-.5-.2 0-.3.3-.3.6 0 .2.1.3.2.4 0 0-.1.1-.2.1-.2-.2-.4-.5-.4-.8 0-.6.3-1.1.7-1.1zm-1 16.1c-.7.3-1.6.2-2.2-.2-.6-.3-1.1-.4-1.8-.4-.5-.1-1-.1-1.1-.3-.1-.2-.1-.5.1-1 .1-.3.1-.6 0-.9-.1-.3-.1-.5 0-.8.1-.3.3-.4.6-.5.3-.1.5-.2.7-.4.1-.1.2-.2.3-.4.3-.4.5-.6.8-.6.6.1 1.1 1 1.5 1.9.2.3.4.7.7 1 .4.5.9 1.2.9 1.6 0 .5-.2.8-.5 1zm4.9-2.2c0 .1 0 .1-.1.2-1.2.9-2.8 1-4.1.3l-.6-.9c.9-.1.7-1.3-1.2-2.5-2-1.3-.6-3.7.1-4.8.1-.1.1 0-.3.8-.3.6-.9 2.1-.1 3.2 0-.8.2-1.6.5-2.4.7-1.3 1.2-2.8 1.5-4.3.1.1.1.1.2.1.1.1.2.2.3.2.2.3.6.4.9.4h.1c.4 0 .8-.1 1.1-.4.1-.1.2-.2.4-.2.3-.1.6-.3.9-.6.4 1.3.8 2.5 1.4 3.6.4.8.7 1.6.9 2.5.3 0 .7.1 1 .3.8.4 1.1.7 1 1.2H18c0-.3-.2-.6-.9-.9-.7-.3-1.3-.3-1.5.4-.1 0-.2.1-.3.1-.8.4-.8 1.5-.9 2.6.1.4 0 .7-.1 1.1zm4.6.6c-.6.2-1.1.6-1.5 1.1-.4.6-1.1 1-1.9.9-.4 0-.8-.3-.9-.7-.1-.6-.1-1.2.2-1.8.1-.4.2-.7.3-1.1.1-1.2.1-1.9.6-2.2 0 .5.3.8.7 1 .5 0 1-.1 1.4-.5h.2c.3 0 .5 0 .7.2.2.2.3.5.3.7 0 .3.2.6.3.9.5.5.5.8.5.9-.1.2-.5.4-.9.6zm-9-12c-.1 0-.1 0-.1.1 0 0 0 .1.1.1s.1.1.1.1c.3.4.8.6 1.4.7.5-.1 1-.2 1.5-.6l.6-.3c.1 0 .1-.1.1-.1 0-.1 0-.1-.1-.1-.2.1-.5.2-.7.3-.4.3-.9.5-1.4.5-.5 0-.9-.3-1.2-.6-.1 0-.2-.1-.3-.1z"/></svg> Linux</button>
+</div>
+<div id="mpress-tabs-9f8e890b-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-9f8e890b-tab-1">
+<p>On macOS, notifications:</p>
+<ul>
+<li>Require user authorization</li>
+<li>Require the app to be packaged and signed (notarized for distribution)</li>
+<li>Use system-standard notification appearances</li>
+<li>Support <code>Subtitle</code></li>
+<li>Support user text input (replies)</li>
+<li>Support the <code>Destructive</code> action option</li>
+<li>Support multiple <code>Attachments</code> of any media type (images, audio, video)</li>
+<li>Support <code>ThreadID</code> for grouping in Notification Center</li>
+<li>Support all <code>InterruptionLevel</code> values (<code>critical</code> requires the Critical Alert entitlement)</li>
+<li>Support native scheduled delivery that survives app restarts</li>
+<li>Auto-deduplicate <code>UpdateNotification</code> calls by <code>ID</code></li>
+<li>Automatically handle dark/light mode</li>
+</ul>
+</div>
+<div id="mpress-tabs-9f8e890b-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-9f8e890b-tab-2" hidden>
+<p>On Windows, notifications:</p>
+<ul>
+<li>Use Windows system toast styles via the <code>wintoast</code> backend</li>
+<li>Adapt to Windows theme settings</li>
+<li>Support user text input (replies)</li>
+<li>Support high DPI displays</li>
+<li>Do not support <code>Subtitle</code></li>
+<li>Support a single image <code>Attachment</code> with placement hint <code>hero</code>, <code>appLogoOverride</code>, or <code>inline</code> (default <code>inline</code>)</li>
+<li>Support <code>ThreadID</code> for grouping in Action Center</li>
+<li>Support <code>InterruptionLevel</code> via the toast <code>scenario</code> attribute</li>
+<li>Support scheduled delivery via an in-process timer — <strong>scheduled notifications are lost if the app exits before delivery</strong></li>
+<li><code>UpdateNotification</code> currently redelivers as a new notification (true in-place replace pending upstream <code>wintoast</code> <code>tag</code>/<code>group</code> support)</li>
+</ul>
+</div>
+<div id="mpress-tabs-9f8e890b-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-9f8e890b-tab-3" hidden>
+<p>On Linux, notifications use the D-Bus <code>org.freedesktop.Notifications</code> interface. A compatible notification daemon <strong>must be running</strong> for notifications to work.</p>
+<aside aria-label="System requirement: notification daemon" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>System requirement: notification daemon</span></p>
+<div class="mpress-admonition-body">
+<p>A freedesktop-compatible notification daemon must be installed and running. Common choices:</p>
+<ul>
+<li><strong>dunst</strong> — lightweight, highly configurable (<code>apt install dunst</code> / <code>dnf install dunst</code>)</li>
+<li><strong>mako</strong> — Wayland-native (<code>apt install mako-notifier</code>)</li>
+<li><strong>GNOME Shell</strong> — registers the interface automatically on GNOME 43+. On Ubuntu 24.04 (GNOME Shell 46) the interface may not self-register at session start; install <code>dunst</code> as a fallback if notifications are not appearing.</li>
+<li><strong>xfce4-notifyd</strong> — bundled with XFCE desktops</li>
+</ul>
+<p>If no daemon is running, <code>SendNotification</code> will return a D-Bus error: <code>The name org.freedesktop.Notifications was not provided by any .service files</code>. Handle this error in your app and inform the user to install a notification daemon.</p>
+</div>
+</aside>
+<pre><code>On Linux, notifications:
+
+- Follow desktop environment theme
+- Position according to desktop environment rules
+- Support `Subtitle` (concatenated into the body for daemons that don't render it separately)
+- Do not support user text input (not part of the freedesktop spec)
+- Support a single image `Attachment` via the `image-path` hint
+- Support `ThreadID` (handled by the daemon where supported)
+- `Sound.Name` is forwarded as the `sound-name` hint; whether it plays depends on the active daemon and sound theme
+- Map `InterruptionLevel` to the freedesktop `urgency` hint
+- Support scheduled delivery via an in-process timer — **scheduled notifications are lost if the app exits before delivery**
+- `UpdateNotification` uses the D-Bus `replaces_id` parameter to replace the previous notification in place
+</code></pre>
+</div>
+</ot-tabs>
+<h2 id="best-practices">Best Practices</h2>
+<ol>
+<li>
+<p>Check and request for authorization:</p>
+<ul>
+<li>macOS requires user authorization</li>
+</ul>
+</li>
+<li>
+<p>Provide clear and concise notifications:</p>
+<ul>
+<li>Use descriptive titles, subtitles, text, and action titles</li>
+</ul>
+</li>
+<li>
+<p>Handle notification responses appropriately:</p>
+<ul>
+<li>Check for errors in notification responses</li>
+<li>Provide feedback for user actions</li>
+</ul>
+</li>
+<li>
+<p>Consider platform conventions:</p>
+<ul>
+<li>Follow platform-specific notification patterns</li>
+<li>Respect system settings</li>
+</ul>
+</li>
+<li>
+<p>On Linux, handle the daemon dependency:</p>
+<ul>
+<li>Check the error returned by <code>SendNotification</code> — a missing daemon produces a D-Bus error</li>
+<li>Package docs or app README should note that a freedesktop notification daemon is required</li>
+</ul>
+</li>
+</ol>
+<h2 id="examples">Examples</h2>
+<p>Explore this example:</p>
+<ul>
+<li><a href="https://github.com/wailsapp/wails/tree/master/v3/examples/notifications">Notifications</a></li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
+<h3 id="service-management">Service Management</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>New()</code></td>
+<td>Creates a new notifications service</td>
+</tr>
+</tbody>
+</table>
+<h3 id="notification-authorization-1">Notification Authorization</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RequestNotificationAuthorization()</code></td>
+<td>Requests permission to display notifications (macOS)</td>
+</tr>
+<tr>
+<td><code>CheckNotificationAuthorization()</code></td>
+<td>Checks current notification authorization status (macOS)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sending-notifications">Sending Notifications</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SendNotification(options NotificationOptions)</code></td>
+<td>Sends a basic notification</td>
+</tr>
+<tr>
+<td><code>SendNotificationWithActions(options NotificationOptions)</code></td>
+<td>Sends an interactive notification with actions</td>
+</tr>
+<tr>
+<td><code>UpdateNotification(options NotificationOptions)</code></td>
+<td>Updates an in-flight notification by <code>ID</code> (see <a href="#updating-notifications">Updating Notifications</a>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="notification-categories">Notification Categories</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RegisterNotificationCategory(category NotificationCategory)</code></td>
+<td>Registers a reusable notification category</td>
+</tr>
+<tr>
+<td><code>RemoveNotificationCategory(categoryID string)</code></td>
+<td>Removes a previously registered category</td>
+</tr>
+</tbody>
+</table>
+<h3 id="managing-notifications">Managing Notifications</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RemoveAllPendingNotifications()</code></td>
+<td>Removes all pending notifications (macOS and Linux only)</td>
+</tr>
+<tr>
+<td><code>RemovePendingNotification(identifier string)</code></td>
+<td>Removes a specific pending notification (macOS and Linux only)</td>
+</tr>
+<tr>
+<td><code>RemoveAllDeliveredNotifications()</code></td>
+<td>Removes all delivered notifications (macOS and Linux only)</td>
+</tr>
+<tr>
+<td><code>RemoveDeliveredNotification(identifier string)</code></td>
+<td>Removes a specific delivered notification (macOS and Linux only)</td>
+</tr>
+<tr>
+<td><code>RemoveNotification(identifier string)</code></td>
+<td>Removes a notification (Linux-specific)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="event-handling">Event Handling</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OnNotificationResponse(callback func(result NotificationResult))</code></td>
+<td>Registers a callback for notification responses</td>
+</tr>
+</tbody>
+</table>
+<h3 id="structs-and-types">Structs and Types</h3>
+<h4 id="notificationoptions">NotificationOptions</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationOptions struct {&#10;    ID         string                 // Unique identifier for the notification (required)&#10;    Title      string                 // Main notification title (required)&#10;    Subtitle   string                 // Subtitle text (macOS and Linux only)&#10;    Body       string                 // Main notification content&#10;    CategoryID string                 // Category identifier for interactive notifications&#10;    Data       map[string]interface{} // Custom data to associate with the notification&#10;&#10;    // Sound controls the sound played on delivery. nil = platform default.&#10;    Sound *NotificationSound&#10;&#10;    // Attachments are media files shown alongside the notification.&#10;    // macOS supports multiple attachments of any media type;&#10;    // Windows and Linux honour the first image-typed attachment.&#10;    Attachments []NotificationAttachment&#10;&#10;    // ThreadID groups related notifications together in&#10;    // Notification Center / Action Center / the Linux notification daemon.&#10;    ThreadID string&#10;&#10;    // InterruptionLevel controls priority. One of &#34;passive&#34;,&#10;    // &#34;active&#34; (default), &#34;timeSensitive&#34;, &#34;critical&#34;.&#10;    InterruptionLevel string&#10;&#10;    // Schedule defers delivery. macOS uses a native trigger that survives&#10;    // restarts; Windows and Linux use an in-process timer that does NOT.&#10;    Schedule *NotificationSchedule&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationOptions</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>         string                 <span class="mpress-token-comment">// Unique identifier for the notification (required)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span>      string                 <span class="mpress-token-comment">// Main notification title (required)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Subtitle</span>   string                 <span class="mpress-token-comment">// Subtitle text (macOS and Linux only)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span>       string                 <span class="mpress-token-comment">// Main notification content</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CategoryID</span> string                 <span class="mpress-token-comment">// Category identifier for interactive notifications</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Data</span>       <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{} <span class="mpress-token-comment">// Custom data to associate with the notification</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Sound controls the sound played on delivery. nil = platform default.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Sound</span> <span class="mpress-token-operator">*</span><span class="mpress-token-type">NotificationSound</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Attachments are media files shown alongside the notification.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// macOS supports multiple attachments of any media type;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Windows and Linux honour the first image-typed attachment.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Attachments</span> []<span class="mpress-token-type">NotificationAttachment</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// ThreadID groups related notifications together in</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Notification Center / Action Center / the Linux notification daemon.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ThreadID</span> string
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// InterruptionLevel controls priority. One of &#34;passive&#34;,</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// &#34;active&#34; (default), &#34;timeSensitive&#34;, &#34;critical&#34;.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevel</span> string
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Schedule defers delivery. macOS uses a native trigger that survives</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// restarts; Windows and Linux use an in-process timer that does NOT.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Schedule</span> <span class="mpress-token-operator">*</span><span class="mpress-token-type">NotificationSchedule</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationsound">NotificationSound</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationSound struct {&#10;    Silent bool   // If true, no sound is played&#10;    Name   string // Named/bundled sound (see &#34;Custom Sound&#34; above)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationSound</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Silent</span> bool   <span class="mpress-token-comment">// If true, no sound is played</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Name</span>   string <span class="mpress-token-comment">// Named/bundled sound (see &#34;Custom Sound&#34; above)</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationattachment">NotificationAttachment</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationAttachment struct {&#10;    ID   string // Optional identifier&#10;    Path string // Absolute filesystem path (macOS also accepts file:// URLs)&#10;    // Type is an optional placement/UTI hint:&#10;    //   macOS:   UTI like &#34;public.png&#34; / &#34;public.audio&#34; (often inferred)&#10;    //   Windows: &#34;hero&#34; | &#34;appLogoOverride&#34; | &#34;inline&#34; (default &#34;inline&#34;)&#10;    //   Linux:   ignored (always image-path hint)&#10;    Type string&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationAttachment</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>   string <span class="mpress-token-comment">// Optional identifier</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Path</span> string <span class="mpress-token-comment">// Absolute filesystem path (macOS also accepts file:// URLs)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Type is an optional placement/UTI hint:</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">//   macOS:   UTI like &#34;public.png&#34; / &#34;public.audio&#34; (often inferred)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">//   Windows: &#34;hero&#34; | &#34;appLogoOverride&#34; | &#34;inline&#34; (default &#34;inline&#34;)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">//   Linux:   ignored (always image-path hint)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Type</span> string
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationschedule">NotificationSchedule</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Exactly one of DelaySeconds or At must be set. At is Unix seconds (UTC).&#10;type NotificationSchedule struct {&#10;    DelaySeconds int   // Seconds from now until delivery&#10;    At           int64 // Absolute Unix timestamp (seconds, UTC)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Exactly one of DelaySeconds or At must be set. At is Unix seconds (UTC).</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationSchedule</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">DelaySeconds</span> int   <span class="mpress-token-comment">// Seconds from now until delivery</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">At</span>           int64 <span class="mpress-token-comment">// Absolute Unix timestamp (seconds, UTC)</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="interruptionlevel-constants">InterruptionLevel constants</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const (&#10;    InterruptionLevelPassive       = &#34;passive&#34;&#10;    InterruptionLevelActive        = &#34;active&#34; // default&#10;    InterruptionLevelTimeSensitive = &#34;timeSensitive&#34;&#10;    InterruptionLevelCritical      = &#34;critical&#34;&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevelPassive</span>       <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;passive&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevelActive</span>        <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;active&#34;</span> <span class="mpress-token-comment">// default</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevelTimeSensitive</span> <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;timeSensitive&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">InterruptionLevelCritical</span>      <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;critical&#34;</span>
+</span><span class="mpress-code-line">)</span></code></pre></div>
+<h4 id="notificationcategory">NotificationCategory</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationCategory struct {&#10;    ID               string                // Unique identifier for the category&#10;    Actions          []NotificationAction  // Button actions for the notification&#10;    HasReplyField    bool                  // Whether to include a text input field&#10;    ReplyPlaceholder string                // Placeholder text for the input field&#10;    ReplyButtonTitle string                // Text for the reply button&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationCategory</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>               string                <span class="mpress-token-comment">// Unique identifier for the category</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Actions</span>          []<span class="mpress-token-type">NotificationAction</span>  <span class="mpress-token-comment">// Button actions for the notification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HasReplyField</span>    bool                  <span class="mpress-token-comment">// Whether to include a text input field</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ReplyPlaceholder</span> string                <span class="mpress-token-comment">// Placeholder text for the input field</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ReplyButtonTitle</span> string                <span class="mpress-token-comment">// Text for the reply button</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationaction">NotificationAction</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationAction struct {&#10;    ID          string  // Unique identifier for the action&#10;    Title       string  // Button text&#10;    Destructive bool    // Whether the action is destructive (macOS-specific)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationAction</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>          string  <span class="mpress-token-comment">// Unique identifier for the action</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span>       string  <span class="mpress-token-comment">// Button text</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Destructive</span> bool    <span class="mpress-token-comment">// Whether the action is destructive (macOS-specific)</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationresponse">NotificationResponse</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationResponse struct {&#10;    ID               string                  // Notification identifier&#10;    ActionIdentifier string                  // Action that was triggered&#10;    CategoryID       string                  // Category of the notification&#10;    Title            string                  // Title of the notification&#10;    Subtitle         string                  // Subtitle of the notification&#10;    Body             string                  // Body text of the notification&#10;    UserText         string                  // Text entered by the user&#10;    UserInfo         map[string]interface{}  // Custom data from the notification&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationResponse</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ID</span>               string                  <span class="mpress-token-comment">// Notification identifier</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ActionIdentifier</span> string                  <span class="mpress-token-comment">// Action that was triggered</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CategoryID</span>       string                  <span class="mpress-token-comment">// Category of the notification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span>            string                  <span class="mpress-token-comment">// Title of the notification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Subtitle</span>         string                  <span class="mpress-token-comment">// Subtitle of the notification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Body</span>             string                  <span class="mpress-token-comment">// Body text of the notification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">UserText</span>         string                  <span class="mpress-token-comment">// Text entered by the user</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">UserInfo</span>         <span class="mpress-token-keyword">map</span>[string]<span class="mpress-token-keyword">interface</span>{}  <span class="mpress-token-comment">// Custom data from the notification</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h4 id="notificationresult">NotificationResult</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="type NotificationResult struct {&#10;    Response NotificationResponse  // Response data&#10;    Error    error                 // Any error that occurred&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">NotificationResult</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Response</span> <span class="mpress-token-type">NotificationResponse</span>  <span class="mpress-token-comment">// Response data</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Error</span>    error                 <span class="mpress-token-comment">// Any error that occurred</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/features/notifications/overview.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:32Z">Aug 4, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../../features/keyboard/shortcuts/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Keyboard Shortcuts</strong></a><a rel="next" href="../../../features/screens/info/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Screen Information</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#introduction">Introduction</a><a class="toc-level-2" href="#basic-usage">Basic Usage</a><a class="toc-level-3" href="#creating-the-service">Creating the Service</a><a class="toc-level-2" href="#notification-authorization">Notification Authorization</a><a class="toc-level-2" href="#notification-types">Notification Types</a><a class="toc-level-3" href="#basic-notifications">Basic Notifications</a><a class="toc-level-3" href="#interactive-notifications">Interactive Notifications</a><a class="toc-level-2" href="#notification-responses">Notification Responses</a><a class="toc-level-2" href="#notification-customisation">Notification Customisation</a><a class="toc-level-3" href="#custom-metadata">Custom Metadata</a><a class="toc-level-3" href="#custom-sound">Custom Sound</a><a class="toc-level-3" href="#attachments">Attachments</a><a class="toc-level-3" href="#threading-and-grouping">Threading and Grouping</a><a class="toc-level-3" href="#interruption-level">Interruption Level</a><a class="toc-level-3" href="#scheduled-delivery">Scheduled Delivery</a><a class="toc-level-3" href="#updating-notifications">Updating Notifications</a><a class="toc-level-2" href="#platform-considerations">Platform Considerations</a><a class="toc-level-2" href="#best-practices">Best Practices</a><a class="toc-level-2" href="#examples">Examples</a><a class="toc-level-2" href="#api-reference">API Reference</a><a class="toc-level-3" href="#service-management">Service Management</a><a class="toc-level-3" href="#notification-authorization-1">Notification Authorization</a><a class="toc-level-3" href="#sending-notifications">Sending Notifications</a><a class="toc-level-3" href="#notification-categories">Notification Categories</a><a class="toc-level-3" href="#managing-notifications">Managing Notifications</a><a class="toc-level-3" href="#event-handling">Event Handling</a><a class="toc-level-3" href="#structs-and-types">Structs and Types</a></aside></div><footer><span>Built with <strong>M-Press</strong></span><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>
