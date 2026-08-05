@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
 - Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
 - Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
 
