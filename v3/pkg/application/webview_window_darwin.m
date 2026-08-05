@@ -8,6 +8,7 @@ extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
+extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
@@ -46,11 +47,9 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     [self setMovableByWindowBackground:YES];
     return self;
 }
-- (void)keyDown:(NSEvent *)event {
+- (NSString *)acceleratorStringFromEvent:(NSEvent *)event {
     NSUInteger modifierFlags = event.modifierFlags;
-    // Create an array to hold the modifier strings
     NSMutableArray *modifierStrings = [NSMutableArray array];
-    // Check for modifier flags and add corresponding strings to the array
     if (modifierFlags & NSEventModifierFlagShift) {
         [modifierStrings addObject:@"shift"];
     }
@@ -67,11 +66,29 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     if (keyString.length > 0) {
         [modifierStrings addObject:keyString];
     }
-    // Combine the modifier strings with the key character
-    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
-    const char* utf8String = [keyEventString UTF8String];
+    return [modifierStrings componentsJoinedByString:@"+"];
+}
+- (void)keyDown:(NSEvent *)event {
+    NSString *keyEventString = [self acceleratorStringFromEvent:event];
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
-    processWindowKeyDownEvent(delegate.windowId, utf8String);
+    processWindowKeyDownEvent(delegate.windowId, [keyEventString UTF8String]);
+}
+// performKeyEquivalent is invoked by Cocoa for every modifier-key combo
+// BEFORE the responder chain runs, giving the window a chance to claim
+// accelerators (e.g. Ctrl+Tab) that the WKWebView would otherwise consume
+// silently. Returns YES only when there is an actual KeyBinding match;
+// otherwise falls through to super so normal Cocoa handling — including
+// main-menu key equivalents — continues unchanged.
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    if (delegate != nil) {
+        NSString *keyEventString = [self acceleratorStringFromEvent:event];
+        if (keyEventString.length > 0 &&
+            processWindowKeyEquivalent(delegate.windowId, [keyEventString UTF8String])) {
+            return YES;
+        }
+    }
+    return [super performKeyEquivalent:event];
 }
 - (NSString *)keyStringFromEvent:(NSEvent *)event {
     // Get the pressed key
