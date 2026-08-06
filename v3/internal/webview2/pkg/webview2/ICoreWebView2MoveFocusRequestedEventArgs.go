@@ -1,16 +1,15 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2MoveFocusRequestedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetReason  ComProc
+	GetReason ComProc
 	GetHandled ComProc
 	PutHandled ComProc
 }
@@ -19,10 +18,16 @@ type ICoreWebView2MoveFocusRequestedEventArgs struct {
 	Vtbl *ICoreWebView2MoveFocusRequestedEventArgsVtbl
 }
 
-func (i *ICoreWebView2MoveFocusRequestedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2MoveFocusRequestedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2MoveFocusRequestedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2MoveFocusRequestedEventArgs) GetReason() (COREWEBVIEW2_MOVE_FOCUS_REASON, error) {
 
@@ -50,21 +55,21 @@ func (i *ICoreWebView2MoveFocusRequestedEventArgs) GetHandled() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2MoveFocusRequestedEventArgs) PutHandled(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

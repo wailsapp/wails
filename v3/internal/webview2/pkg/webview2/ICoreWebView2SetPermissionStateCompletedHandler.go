@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2SetPermissionStateCompletedHandler struct {
 	impl ICoreWebView2SetPermissionStateCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2SetPermissionStateCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2SetPermissionStateCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2SetPermissionStateCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2SetPermissionStateCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2SetPermissionStateCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2SetPermissionStateCompletedHandlerIUnknownQueryInterface(this 
 }
 
 func ICoreWebView2SetPermissionStateCompletedHandlerIUnknownAddRef(this *ICoreWebView2SetPermissionStateCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2SetPermissionStateCompletedHandlerIUnknownRelease(this *ICoreWebView2SetPermissionStateCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2SetPermissionStateCompletedHandlerInvoke(this *ICoreWebView2SetPermissionStateCompletedHandler, errorCode uintptr) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2SetPermissionStateCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2SetPermissionStateCompletedHandlerFn = ICoreWebView2SetPermissionStateCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2SetPermissionStateCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2SetPermissionStateCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2SetPermissionStateCompletedHandlerIUnknownRelease),

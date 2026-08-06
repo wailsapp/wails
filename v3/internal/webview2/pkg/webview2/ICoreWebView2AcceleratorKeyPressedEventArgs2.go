@@ -1,15 +1,14 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2AcceleratorKeyPressedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 	GetIsBrowserAcceleratorKeyEnabled ComProc
 	PutIsBrowserAcceleratorKeyEnabled ComProc
 }
@@ -18,22 +17,34 @@ type ICoreWebView2AcceleratorKeyPressedEventArgs2 struct {
 	Vtbl *ICoreWebView2AcceleratorKeyPressedEventArgs2Vtbl
 }
 
-func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) AddRef() uintptr {
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2AcceleratorKeyPressedEventArgs2() *ICoreWebView2AcceleratorKeyPressedEventArgs2 {
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2AcceleratorKeyPressedEventArgs2 queries the object for its ICoreWebView2AcceleratorKeyPressedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2AcceleratorKeyPressedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetICoreWebView2AcceleratorKeyPressedEventArgs2() (*ICoreWebView2AcceleratorKeyPressedEventArgs2, error) {
 	var result *ICoreWebView2AcceleratorKeyPressedEventArgs2
 
 	iidICoreWebView2AcceleratorKeyPressedEventArgs2 := NewGUID("{03b2c8c8-7799-4e34-bd66-ed26aa85f2bf}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2AcceleratorKeyPressedEventArgs2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) GetIsBrowserAcceleratorKeyEnabled() (bool, error) {
 	// Create int32 to hold bool result
@@ -47,21 +58,21 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) GetIsBrowserAcceleratorKe
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs2) PutIsBrowserAcceleratorKeyEnabled(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsBrowserAcceleratorKeyEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

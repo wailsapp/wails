@@ -1,0 +1,6 @@
+
+	// Convert Go bool to COM BOOL (int32)
+	var {{.Param.LocalName}} int32
+	if {{.Param.Name}} {
+		{{.Param.LocalName}} = 1
+	}

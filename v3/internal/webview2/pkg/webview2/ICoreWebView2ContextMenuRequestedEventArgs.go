@@ -1,33 +1,38 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ContextMenuRequestedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetMenuItems         ComProc
+	GetMenuItems ComProc
 	GetContextMenuTarget ComProc
-	GetLocation          ComProc
+	GetLocation ComProc
 	PutSelectedCommandId ComProc
 	GetSelectedCommandId ComProc
-	PutHandled           ComProc
-	GetHandled           ComProc
-	GetDeferral          ComProc
+	PutHandled ComProc
+	GetHandled ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2ContextMenuRequestedEventArgs struct {
 	Vtbl *ICoreWebView2ContextMenuRequestedEventArgsVtbl
 }
 
-func (i *ICoreWebView2ContextMenuRequestedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2ContextMenuRequestedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ContextMenuRequestedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ContextMenuRequestedEventArgs) GetMenuItems() (*ICoreWebView2ContextMenuItemCollection, error) {
 
@@ -73,9 +78,10 @@ func (i *ICoreWebView2ContextMenuRequestedEventArgs) GetLocation() (POINT, error
 
 func (i *ICoreWebView2ContextMenuRequestedEventArgs) PutSelectedCommandId(value int32) error {
 
+
 	hr, _, _ := i.Vtbl.PutSelectedCommandId.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&value)),
+		uintptr(value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -99,15 +105,15 @@ func (i *ICoreWebView2ContextMenuRequestedEventArgs) GetSelectedCommandId() (int
 
 func (i *ICoreWebView2ContextMenuRequestedEventArgs) PutHandled(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -127,7 +133,7 @@ func (i *ICoreWebView2ContextMenuRequestedEventArgs) GetHandled() (bool, error) 
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 

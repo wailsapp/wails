@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ContextMenuRequestedEventHandler struct {
 	impl ICoreWebView2ContextMenuRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ContextMenuRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ContextMenuRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ContextMenuRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ContextMenuRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ContextMenuRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ContextMenuRequestedEventHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2ContextMenuRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2ContextMenuRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ContextMenuRequestedEventHandlerIUnknownRelease(this *ICoreWebView2ContextMenuRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ContextMenuRequestedEventHandlerInvoke(this *ICoreWebView2ContextMenuRequestedEventHandler, sender *ICoreWebView2, args *ICoreWebView2ContextMenuRequestedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ContextMenuRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ContextMenuRequestedEventHandlerFn = ICoreWebView2ContextMenuRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ContextMenuRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ContextMenuRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ContextMenuRequestedEventHandlerIUnknownRelease),
