@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daymark</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #20211e;
+      --muted: #777970;
+      --faint: rgba(32, 33, 30, .12);
+      --accent: #c15d43;
+      --accent-soft: rgba(193, 93, 67, .13);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: transparent;
+      color: var(--ink);
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+    }
+
+    body {
+      min-width: 320px;
+      caret-color: var(--accent);
+    }
+
+    ::selection { background: var(--accent-soft); }
+
+    input { font: inherit; }
+
+    .page {
+      width: min(100%, 840px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(122px, 17vh, 156px) clamp(36px, 8vw, 86px) 180px;
+      transition: width .25s ease, padding .25s ease;
+    }
+
+    .editor {
+      position: relative;
+      min-width: 0;
+      animation: arrive .42s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .editor::before {
+      position: absolute;
+      top: 7px;
+      bottom: -70px;
+      left: -30px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--accent), var(--faint) 16%, transparent 84%);
+      content: "";
+      opacity: .65;
+    }
+
+    .title,
+    .subtitle {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      color: inherit;
+      background: transparent;
+      border-radius: 0;
+      appearance: none;
+    }
+
+    .title {
+      font-size: clamp(43px, 6.2vw, 68px);
+      font-weight: 720;
+      letter-spacing: -.057em;
+      line-height: .98;
+    }
+
+    .title::placeholder { color: color-mix(in srgb, var(--ink) 25%, transparent); }
+
+    .subtitle {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: clamp(16px, 2vw, 19px);
+      font-weight: 420;
+      letter-spacing: -.012em;
+      line-height: 1.5;
+    }
+
+    .subtitle::placeholder { color: color-mix(in srgb, var(--muted) 55%, transparent); }
+
+    .writing-surface {
+      width: 100%;
+      min-height: 720px;
+      margin-top: clamp(54px, 8vh, 82px);
+      padding: 0;
+      border: 0;
+      outline: 0;
+      color: color-mix(in srgb, var(--ink) 93%, var(--muted));
+      background: transparent;
+      font-family: ui-serif, "New York", "Iowan Old Style", "Baskerville", Georgia, serif;
+      font-size: clamp(19px, 2.3vw, 22px);
+      font-weight: 400;
+      letter-spacing: -.012em;
+      line-height: 1.78;
+      white-space: pre-wrap;
+    }
+
+    .writing-surface { position: relative; }
+
+    .writing-surface[data-empty="true"]::before {
+      position: absolute;
+      color: color-mix(in srgb, var(--muted) 48%, transparent);
+      content: attr(data-placeholder);
+      pointer-events: none;
+    }
+
+    .reading-view {
+      width: min(100%, 700px);
+      margin: 0 auto;
+      animation: arrive .32s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .reading-kicker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 28px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 680;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .reading-kicker::after {
+      width: 42px;
+      height: 1px;
+      background: var(--accent);
+      content: "";
+      opacity: .6;
+    }
+
+    .reading-title {
+      max-width: 12ch;
+      margin: 0;
+      color: var(--ink);
+      font-family: ui-serif, "New York", "Iowan Old Style", "Baskerville", Georgia, serif;
+      font-size: clamp(48px, 7vw, 76px);
+      font-weight: 600;
+      letter-spacing: -.052em;
+      line-height: .98;
+    }
+
+    .reading-subtitle {
+      max-width: 34em;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-family: ui-serif, "New York", "Iowan Old Style", "Baskerville", Georgia, serif;
+      font-size: clamp(18px, 2.2vw, 21px);
+      font-style: italic;
+      line-height: 1.55;
+    }
+
+    .preview {
+      width: 100%;
+      margin-top: clamp(60px, 9vh, 92px);
+      color: color-mix(in srgb, var(--ink) 94%, var(--muted));
+      font-family: ui-serif, "New York", "Iowan Old Style", "Baskerville", Georgia, serif;
+      font-size: clamp(20px, 2.5vw, 24px);
+      letter-spacing: -.014em;
+      line-height: 1.82;
+    }
+
+    .preview p { margin: 0 0 1.35em; }
+
+    .preview p:first-child {
+      color: var(--ink);
+      font-size: 1.12em;
+      line-height: 1.68;
+    }
+
+    .preview p:first-child::first-letter {
+      float: left;
+      margin: .08em .13em 0 0;
+      color: var(--accent);
+      font-size: 3.35em;
+      font-weight: 540;
+      line-height: .76;
+    }
+
+    .preview strong {
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      font-size: .93em;
+      font-weight: 650;
+      letter-spacing: -.02em;
+    }
+
+    .page.focus {
+      width: min(100%, 740px);
+      padding-top: clamp(132px, 19vh, 176px);
+    }
+
+    .page[data-mode="preview"] {
+      width: min(100%, 900px);
+      padding-top: clamp(126px, 18vh, 166px);
+    }
+
+    .page[data-mode="preview"] .editor::before { opacity: 0; }
+
+    .page[data-content-layout="below-toolbar"] {
+      padding-top: clamp(64px, 9vh, 108px);
+    }
+
+    .page.focus[data-content-layout="below-toolbar"] {
+      padding-top: clamp(84px, 13vh, 140px);
+    }
+
+    .page[data-mode="preview"][data-content-layout="below-toolbar"] {
+      padding-top: clamp(72px, 10vh, 118px);
+    }
+
+    [hidden] { display: none !important; }
+
+    .sr-only {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 620px) {
+      .page { padding-right: 30px; padding-left: 42px; }
+      .editor::before { left: -18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .editor { animation: none; }
+      .page { transition: none; }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #f0efe9;
+        --muted: #96978f;
+        --faint: rgba(240, 239, 233, .13);
+        --accent: #e07859;
+        --accent-soft: rgba(224, 120, 89, .2);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="page" data-mode="write" data-content-layout="edge-to-edge">
+    <article class="editor">
+      <section class="compose" id="compose" aria-label="Write note">
+        <input class="title" id="title" aria-label="Note title" placeholder="Untitled note" value="Saturday, slowly.">
+        <input class="subtitle" id="subtitle" aria-label="Note subtitle" placeholder="Add a quiet thought…" value="A slow day is still a day well spent.">
+        <div class="writing-surface" id="writing" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note body" data-placeholder="Begin here…">A good day has room around it.
+
+Leave the phone at home. Walk until the city sounds different. Buy something warm on the way back.
+
+# The long way home
+
+Take the street with the old trees, even though it adds twenty minutes. Notice the windows left open above the bakery and the bicycles leaning against every second fence.
+
+At the market, choose the peaches by scent instead of colour. Carry them carefully. Let the paper bag warm in your hands.
+
+There is no prize for arriving early today. Sit near the water until the light changes, and allow the afternoon to become evening without asking it to be useful.
+
+When you finally turn home, leave enough quiet in the day to hear your own footsteps.</div>
+      </section>
+      <section class="reading-view" id="reading" aria-label="Note preview" hidden>
+        <p class="reading-kicker">Reading view</p>
+        <h1 class="reading-title" id="readingTitle"></h1>
+        <p class="reading-subtitle" id="readingSubtitle"></p>
+        <div class="preview" id="preview"></div>
+      </section>
+    </article>
+  </main>
+  <div class="sr-only" id="announcer" aria-live="polite"></div>
+
+  <script type="module">
+    import { Events } from '/wails/runtime.js';
+
+    // This is the window's only WebView. Navigation and property editing live
+    // in native AppKit panes and communicate with this editor through events.
+    const $ = (id) => document.getElementById(id);
+    const page = $('page');
+    const compose = $('compose');
+    const reading = $('reading');
+    const title = $('title');
+    const subtitle = $('subtitle');
+    const writing = $('writing');
+    const readingTitle = $('readingTitle');
+    const readingSubtitle = $('readingSubtitle');
+    const preview = $('preview');
+    const announcer = $('announcer');
+
+    let activeIndex = 0;
+    let mode = 'write';
+    let dirty = false;
+    let category = 'Personal / Field Notes';
+    let pinned = false;
+
+    function announce(message) {
+      announcer.textContent = '';
+      requestAnimationFrame(() => { announcer.textContent = message; });
+    }
+
+    function updateEmptyState() {
+      writing.dataset.empty = String(!writing.innerText.trim());
+    }
+
+    function publishNoteUpdate() {
+      Events.Emit('editor:note-updated', JSON.stringify({
+        index: activeIndex,
+        title: title.value,
+        subtitle: subtitle.value,
+        body: writing.innerText,
+        category,
+        pinned
+      }));
+    }
+
+    function publishShareContent() {
+      Events.Emit('editor:share-content', JSON.stringify({
+        title: title.value,
+        subtitle: subtitle.value,
+        body: writing.innerText
+      }));
+    }
+
+    function publishInspectorState() {
+      const words = writing.innerText.trim().split(/\s+/).filter(Boolean).length;
+      Events.Emit('editor:inspector-state', JSON.stringify({
+        title: title.value,
+        category,
+        pinned,
+        words,
+        characters: writing.innerText.length,
+        readingMinutes: Math.max(1, Math.ceil(words / 220)),
+        dirty
+      }));
+    }
+
+    function markDirty() {
+      dirty = true;
+      updateEmptyState();
+      Events.Emit('editor:dirty', true);
+      publishNoteUpdate();
+      publishShareContent();
+      publishInspectorState();
+      if (mode === 'preview') renderPreview(writing.innerText);
+    }
+
+    function appendInlineFormatting(parent, text) {
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      parts.forEach((part) => {
+        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+          const strong = document.createElement('strong');
+          strong.textContent = part.slice(2, -2);
+          parent.append(strong);
+        } else {
+          parent.append(document.createTextNode(part));
+        }
+      });
+    }
+
+    function renderPreview(text) {
+      readingTitle.textContent = title.value.trim() || 'Untitled note';
+      readingSubtitle.textContent = subtitle.value.trim();
+      readingSubtitle.hidden = !subtitle.value.trim();
+      preview.replaceChildren();
+      const blocks = text.split(/\n\s*\n/).filter(Boolean);
+      if (!blocks.length) {
+        const empty = document.createElement('p');
+        empty.textContent = 'Nothing to preview yet.';
+        preview.append(empty);
+        return;
+      }
+      blocks.forEach((block) => {
+        const paragraph = document.createElement('p');
+        if (block.startsWith('# ')) {
+          const strong = document.createElement('strong');
+          strong.textContent = block.slice(2);
+          paragraph.append(strong);
+        } else {
+          appendInlineFormatting(paragraph, block);
+        }
+        preview.append(paragraph);
+      });
+    }
+
+    function setMode(next) {
+      mode = next;
+      const isPreview = mode === 'preview';
+      page.dataset.mode = mode;
+      compose.hidden = isPreview;
+      reading.hidden = !isPreview;
+      if (isPreview) renderPreview(writing.innerText);
+      if (!isPreview) writing.focus({ preventScroll: true });
+    }
+
+    function save() {
+      dirty = false;
+      publishNoteUpdate();
+      Events.Emit('editor:dirty', false);
+      publishInspectorState();
+      announce('Saved');
+    }
+
+    function loadNote(index, note) {
+      activeIndex = index;
+      title.value = note.title || '';
+      subtitle.value = note.subtitle || '';
+      writing.innerText = note.body || '';
+      category = note.category || 'Personal / Drafts';
+      pinned = Boolean(note.pinned);
+      dirty = false;
+      updateEmptyState();
+      Events.Emit('editor:dirty', false);
+      publishInspectorState();
+      setMode(mode);
+      publishShareContent();
+    }
+
+    [title, subtitle, writing].forEach((element) => element.addEventListener('input', markDirty));
+
+    document.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        save();
+      }
+    });
+
+    Events.On('sidebar:note-selected', (event) => {
+      const selection = event.data;
+      if (!selection || typeof selection.index !== 'number' || !selection.note) return;
+      loadNote(selection.index, selection.note);
+      if (title.value === 'Untitled note' && !writing.innerText.trim()) {
+        title.focus();
+        title.select();
+      }
+    });
+
+    Events.On('toolbar:mode', (event) => setMode(event.data === 'preview' ? 'preview' : 'write'));
+    Events.On('toolbar:share-complete', (event) => announce(event.data ? `Shared with ${event.data}` : 'Shared'));
+    Events.On('toolbar:share-error', (event) => announce(event.data?.message || 'Sharing failed'));
+    Events.On('toolbar:focus', (event) => page.classList.toggle('focus', Boolean(event.data)));
+    Events.On('toolbar:save', save);
+    Events.On('layout:content', (event) => {
+      page.dataset.contentLayout = event.data === 'below-toolbar' ? 'below-toolbar' : 'edge-to-edge';
+    });
+
+    Events.On('inspector:title-changed', (event) => {
+      title.value = event.data || 'Untitled note';
+      markDirty();
+    });
+    Events.On('inspector:category-changed', (event) => {
+      category = event.data || 'Personal / Drafts';
+      markDirty();
+    });
+    Events.On('inspector:pinned-changed', (event) => {
+      pinned = Boolean(event.data);
+      markDirty();
+    });
+
+    updateEmptyState();
+    publishInspectorState();
+    publishShareContent();
+    Events.Emit('editor:ready');
+  </script>
+</body>
+</html>

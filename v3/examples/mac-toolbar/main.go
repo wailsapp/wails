@@ -26,17 +26,31 @@ func main() {
 		Title:  "Daymark",
 		Width:  1180,
 		Height: 760,
-		URL:    "/",
+		URL:    "/editor.html",
 		Mac: application.MacWindow{
+			// Finder's window structure is an ordinary opaque AppKit window
+			// with edge-to-edge content. AppKit supplies the toolbar material;
+			// the document is not made into a custom glass surface.
+			Backdrop:      application.MacBackdropNormal,
+			ContentLayout: application.MacContentLayoutEdgeToEdge,
 			TitleBar: application.MacTitleBar{
-				ToolbarStyle: application.MacToolbarStyleExpanded,
+				AppearsTransparent:   false,
+				FullSizeContent:      true,
+				HideToolbarSeparator: true,
+				ToolbarStyle:         application.MacToolbarStyleUnified,
 			},
 		},
 	})
 
-	toolbar := newDaymarkToolbar(app)
+	// The split view must be configured before the window is shown, and its
+	// installation precedes toolbar attachment so the toolbar's tracking
+	// separator can align with the sidebar divider.
+	split := newDaymarkSplit(app)
+	window.SetSplitView(split.NativeSplitView())
+
+	toolbar := newDaymarkToolbar(app, split)
 	window.SetToolbar(toolbar.NativeToolbar())
-	installDaymarkMenu(app, toolbar)
+	installDaymarkMenu(app, toolbar, split)
 
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

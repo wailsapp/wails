@@ -671,6 +671,30 @@ func (a *App) Run() error {
 				go handleToolbarShareResult(event)
 			}
 		}()
+		go func() {
+			for {
+				event := <-splitPaneLoadedEvents
+				handleMacSplitPaneLoaded(event)
+			}
+		}()
+		go func() {
+			for {
+				event := <-splitPaneCollapseEvents
+				handleMacSplitPaneCollapsed(event.paneID, event.collapsed)
+			}
+		}()
+		go func() {
+			for {
+				itemID := <-macSidebarItemSelected
+				go handleMacSidebarItemSelected(itemID)
+			}
+		}()
+		go func() {
+			for {
+				event := <-macInspectorControlEvents
+				go handleMacInspectorControlEvent(event)
+			}
+		}()
 
 		a.runLock.Lock()
 		a.running = true

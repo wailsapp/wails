@@ -32,6 +32,21 @@ func TestValidateToolbarItems(t *testing.T) {
 	}
 }
 
+func TestToolbarDisplayModeDefaultsAndValidation(t *testing.T) {
+	toolbar := NewMacToolbar()
+	if toolbar.displayMode != MacToolbarDisplayModeIconAndLabel {
+		t.Fatalf("default display mode = %d, want icon and label", toolbar.displayMode)
+	}
+	toolbar.SetDisplayMode(MacToolbarDisplayModeIconOnly)
+	if toolbar.displayMode != MacToolbarDisplayModeIconOnly {
+		t.Fatal("SetDisplayMode should update the pending toolbar")
+	}
+	toolbar.SetDisplayMode(MacToolbarDisplayMode(99))
+	if toolbar.displayMode != MacToolbarDisplayModeIconOnly {
+		t.Fatal("SetDisplayMode should ignore invalid values")
+	}
+}
+
 func TestToolbarShareProviderIsNormalisedAndInvokedLazily(t *testing.T) {
 	toolbar := NewMacToolbar()
 	formats := []MacShareRepresentation{
@@ -127,6 +142,67 @@ func TestToolbarShareCallbacks(t *testing.T) {
 	handleToolbarShareResult(toolbarShareEvent{itemID: id, service: "AirDrop", err: "Unavailable"})
 	if failedService != "AirDrop" || failure != "Unavailable" {
 		t.Fatalf("failure callback = %q, %q", failedService, failure)
+	}
+}
+
+func TestToolbarSidebarItemsRequireNoCallbacks(t *testing.T) {
+	toolbar := NewMacToolbar()
+	toolbar.AddSidebarToggle()
+	toolbar.AddButton("New").OnClick(func(*Context) {})
+	toolbar.AddSidebarTrackingSeparator()
+
+	if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
+		t.Fatalf("sidebar items should not require callbacks: %v", err)
+	}
+	if !toolbar.hasSidebarTrackingSeparator() {
+		t.Fatal("hasSidebarTrackingSeparator should report the separator")
+	}
+	if NewMacToolbar().hasSidebarTrackingSeparator() {
+		t.Fatal("an empty toolbar must not report a tracking separator")
+	}
+}
+
+func TestToolbarRejectsDuplicateSidebarItems(t *testing.T) {
+	toggleToolbar := NewMacToolbar()
+	toggleToolbar.AddSidebarToggle()
+	toggleToolbar.AddSidebarToggle()
+	if err := validateToolbarItems(toggleToolbar.itemSnapshot()); err == nil || !strings.Contains(err.Error(), "one sidebar toggle") {
+		t.Fatalf("duplicate sidebar toggles should be rejected, got %v", err)
+	}
+
+	separatorToolbar := NewMacToolbar()
+	separatorToolbar.AddSidebarTrackingSeparator()
+	separatorToolbar.AddSidebarTrackingSeparator()
+	if err := validateToolbarItems(separatorToolbar.itemSnapshot()); err == nil || !strings.Contains(err.Error(), "one sidebar tracking separator") {
+		t.Fatalf("duplicate tracking separators should be rejected, got %v", err)
+	}
+}
+
+func TestToolbarInspectorItemsRequireNoApplicationCallbacks(t *testing.T) {
+	toolbar := NewMacToolbar()
+	toolbar.AddInspectorTrackingSeparator()
+	toolbar.AddInspectorToggle()
+	if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
+		t.Fatalf("inspector items should own their actions: %v", err)
+	}
+	if !toolbar.hasInspectorChrome() {
+		t.Fatal("toolbar should report native inspector chrome")
+	}
+
+	toggleToolbar := NewMacToolbar()
+	toggleToolbar.AddInspectorToggle()
+	toggleToolbar.AddInspectorToggle()
+	if err := validateToolbarItems(toggleToolbar.itemSnapshot()); err == nil ||
+		!strings.Contains(err.Error(), "one inspector toggle") {
+		t.Fatalf("duplicate inspector toggles should be rejected, got %v", err)
+	}
+
+	separatorToolbar := NewMacToolbar()
+	separatorToolbar.AddInspectorTrackingSeparator()
+	separatorToolbar.AddInspectorTrackingSeparator()
+	if err := validateToolbarItems(separatorToolbar.itemSnapshot()); err == nil ||
+		!strings.Contains(err.Error(), "one inspector tracking separator") {
+		t.Fatalf("duplicate inspector tracking separators should be rejected, got %v", err)
 	}
 }
 

@@ -24,8 +24,9 @@ type MacToolbar struct {
 	// stateLock protects state and every field in macToolbarState. Native
 	// operations take this lock on the application thread so a toolbar cannot
 	// be detached while an item update is using its AppKit handle.
-	stateLock sync.RWMutex
-	state     *macToolbarState
+	stateLock   sync.RWMutex
+	state       *macToolbarState
+	displayMode MacToolbarDisplayMode
 }
 
 var toolbarIdentifier uint64
@@ -33,7 +34,51 @@ var toolbarIdentifier uint64
 // NewMacToolbar creates an empty native macOS toolbar.
 func NewMacToolbar() *MacToolbar {
 	sequence := atomic.AddUint64(&toolbarIdentifier, 1)
-	return &MacToolbar{identifier: fmt.Sprintf("wails.toolbar.%d", sequence)}
+	return &MacToolbar{
+		identifier:  fmt.Sprintf("wails.toolbar.%d", sequence),
+		displayMode: MacToolbarDisplayModeIconAndLabel,
+	}
+}
+
+// MacToolbarDisplayMode controls whether an NSToolbar shows item icons,
+// labels, or both. Individual controls such as search fields keep their
+// native AppKit presentation in every mode.
+type MacToolbarDisplayMode int
+
+const (
+	// MacToolbarDisplayModeDefault lets AppKit choose the presentation.
+	MacToolbarDisplayModeDefault MacToolbarDisplayMode = iota
+	// MacToolbarDisplayModeIconAndLabel shows both icons and labels. This is
+	// the Wails default for compatibility with existing toolbars.
+	MacToolbarDisplayModeIconAndLabel
+	// MacToolbarDisplayModeIconOnly shows toolbar icons without labels.
+	MacToolbarDisplayModeIconOnly
+	// MacToolbarDisplayModeLabelOnly shows labels without icons.
+	MacToolbarDisplayModeLabelOnly
+)
+
+// SetDisplayMode sets the toolbar's native AppKit display mode. It may be
+// called before or after the toolbar is attached; live changes are applied on
+// the application thread. Invalid values are ignored.
+func (t *MacToolbar) SetDisplayMode(mode MacToolbarDisplayMode) *MacToolbar {
+	if t == nil || mode < MacToolbarDisplayModeDefault || mode > MacToolbarDisplayModeLabelOnly {
+		return t
+	}
+	t.stateLock.Lock()
+	t.displayMode = mode
+	installed := t.state != nil && t.state.native != nil
+	t.stateLock.Unlock()
+	if !installed {
+		return t
+	}
+	InvokeSync(func() {
+		t.stateLock.RLock()
+		defer t.stateLock.RUnlock()
+		if t.state != nil && t.state.native != nil {
+			macToolbarSetDisplayMode(t.state.native, t.displayMode)
+		}
+	})
+	return t
 }
 
 type macToolbarItemKind int
@@ -44,6 +89,10 @@ const (
 	toolbarSearchField
 	toolbarShare
 	toolbarFlexibleSpace
+	toolbarSidebarToggle
+	toolbarSidebarTrackingSeparator
+	toolbarInspectorToggle
+	toolbarInspectorTrackingSeparator
 )
 
 // MacShareContentType is a Uniform Type Identifier (UTI) advertised to
@@ -262,6 +311,108 @@ func (t *MacToolbar) AddGroup(label string, mode MacToolbarGroupSelectionMode) *
 // AddFlexibleSpace adds a native flexible-space item.
 func (t *MacToolbar) AddFlexibleSpace() *MacToolbarItem {
 	return t.add(newMacToolbarItem(t, toolbarFlexibleSpace, ""))
+}
+
+// AddSidebarToggle adds the standard AppKit toolbar item that sends
+// toggleSidebar: through the responder chain. It requires no callback or ID
+// because AppKit owns its action; collapse changes are observable on the
+// sidebar pane through MacSplitPane.OnCollapsedChange. A toolbar may contain
+// at most one sidebar toggle. AppKit owns this standard item, so there is no
+// mutable Wails item handle to return.
+func (t *MacToolbar) AddSidebarToggle() {
+	t.add(newMacToolbarItem(t, toolbarSidebarToggle, ""))
+}
+
+// AddSidebarTrackingSeparator divides the toolbar into a leading sidebar
+// section and a content section. AppKit keeps the leading section aligned
+// above the first native sidebar divider as it moves, on macOS 11 and newer;
+// older supported releases omit the separator while the sidebar and toggle
+// keep working. Attaching a toolbar that contains a tracking separator to a
+// window without a sidebar split layout is an error. A toolbar may contain at
+// most one tracking separator. AppKit owns this standard item, so there is no
+// mutable Wails item handle to return.
+func (t *MacToolbar) AddSidebarTrackingSeparator() {
+	t.add(newMacToolbarItem(t, toolbarSidebarTrackingSeparator, ""))
+}
+
+// AddInspectorToggle adds AppKit's standard inspector toggle on macOS 14 and
+// newer. On older supported releases Wails supplies a native toolbar button
+// with the same behavior. It requires a MacSplitView containing an inspector
+// pane and needs no application callback or identifier.
+func (t *MacToolbar) AddInspectorToggle() {
+	item := newMacToolbarItem(t, toolbarInspectorToggle, "Inspector")
+	item.symbolName = "sidebar.trailing"
+	item.tooltip = "Show or hide the inspector"
+	item.bordered = true
+	item.onClick = func(*Context) {
+		if pane := t.attachedInspectorPane(); pane != nil {
+			pane.Toggle()
+		}
+	}
+	t.add(item)
+}
+
+// AddInspectorTrackingSeparator adds AppKit's inspector tracking separator on
+// macOS 14 and newer. It follows the leading edge of the native inspector as
+// its divider moves. Older supported releases omit the separator while the
+// inspector and its toggle continue to work.
+func (t *MacToolbar) AddInspectorTrackingSeparator() {
+	t.add(newMacToolbarItem(t, toolbarInspectorTrackingSeparator, ""))
+}
+
+func (t *MacToolbar) attachedInspectorPane() *MacSplitPane {
+	if t == nil {
+		return nil
+	}
+	t.stateLock.RLock()
+	var window *WebviewWindow
+	if t.state != nil {
+		window = t.state.window
+	}
+	t.stateLock.RUnlock()
+	if window == nil {
+		return nil
+	}
+	window.splitViewLock.RLock()
+	split := window.splitView
+	window.splitViewLock.RUnlock()
+	if split == nil {
+		return nil
+	}
+	return split.inspectorPane()
+}
+
+// hasSidebarTrackingSeparator reports whether the toolbar contains a sidebar
+// tracking separator, which is only meaningful on a window with a native
+// sidebar split layout.
+func (t *MacToolbar) hasSidebarTrackingSeparator() bool {
+	for _, item := range t.itemSnapshot() {
+		if item == nil {
+			continue
+		}
+		item.lock.RLock()
+		kind := item.kind
+		item.lock.RUnlock()
+		if kind == toolbarSidebarTrackingSeparator {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *MacToolbar) hasInspectorChrome() bool {
+	for _, item := range t.itemSnapshot() {
+		if item == nil {
+			continue
+		}
+		item.lock.RLock()
+		kind := item.kind
+		item.lock.RUnlock()
+		if kind == toolbarInspectorToggle || kind == toolbarInspectorTrackingSeparator {
+			return true
+		}
+	}
+	return false
 }
 
 // AddButton adds a member to a native toolbar group.
@@ -591,6 +742,10 @@ func releaseMacToolbarOwnership(toolbar *MacToolbar, window *WebviewWindow) {
 }
 
 func validateToolbarItems(items []*MacToolbarItem) error {
+	sidebarToggles := 0
+	trackingSeparators := 0
+	inspectorToggles := 0
+	inspectorTrackingSeparators := 0
 	var validate func([]*MacToolbarItem, string) error
 	validate = func(items []*MacToolbarItem, parent string) error {
 		for _, item := range items {
@@ -633,6 +788,29 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 					return err
 				}
 			case toolbarShare, toolbarFlexibleSpace:
+			case toolbarSidebarToggle:
+				// AppKit owns the toggle's action, so no OnClick is required.
+				sidebarToggles++
+				if sidebarToggles > 1 {
+					return fmt.Errorf("toolbar may only contain one sidebar toggle")
+				}
+			case toolbarSidebarTrackingSeparator:
+				trackingSeparators++
+				if trackingSeparators > 1 {
+					return fmt.Errorf("toolbar may only contain one sidebar tracking separator")
+				}
+			case toolbarInspectorToggle:
+				// AppKit owns the action on macOS 14+. The internal callback is
+				// used by Wails' native fallback on earlier releases.
+				inspectorToggles++
+				if inspectorToggles > 1 {
+					return fmt.Errorf("toolbar may only contain one inspector toggle")
+				}
+			case toolbarInspectorTrackingSeparator:
+				inspectorTrackingSeparators++
+				if inspectorTrackingSeparators > 1 {
+					return fmt.Errorf("toolbar may only contain one inspector tracking separator")
+				}
 			default:
 				return fmt.Errorf("toolbar item %q has unknown kind %d", label, kind)
 			}

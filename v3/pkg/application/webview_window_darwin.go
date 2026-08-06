@@ -94,10 +94,10 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
-         if (preferences.FullscreenEnabled != NULL) {
-             config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
-         }
-     }
+		if (preferences.FullscreenEnabled != NULL) {
+			config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
+		}
+	}
 #endif
 
 	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
@@ -121,33 +121,32 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
- 	if (@available(macOS 10.15, *)) {
-         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
+	if (@available(macOS 10.15, *)) {
+		config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
 #endif
 
 	// Setup user content controller
-    WKUserContentController* userContentController = [WKUserContentController new];
+	WKUserContentController* userContentController = [WKUserContentController new];
 	[userContentController autorelease];
-
-    [userContentController addScriptMessageHandler:delegate name:@"external"];
-    config.userContentController = userContentController;
+	[userContentController addScriptMessageHandler:delegate name:@"external"];
+	config.userContentController = userContentController;
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
-        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
-    }
+	if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+		webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+	}
 	if (preferences.AllowsMagnification != NULL) {
 		webView.allowsMagnification = *preferences.AllowsMagnification;
 	}
 
 	[view addSubview:webView];
 
-    // support webview events
-    [webView setNavigationDelegate:delegate];
-    [webView setUIDelegate:delegate];
+	// support webview events
+	[webView setNavigationDelegate:delegate];
+	[webView setUIDelegate:delegate];
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -235,6 +234,20 @@ void setInvisibleTitleBarHeight(void* window, unsigned int height) {
 void windowSetTransparent(void* nsWindow) {
 	[(WebviewWindow*)nsWindow setOpaque:NO];
 	[(WebviewWindow*)nsWindow setBackgroundColor:[NSColor clearColor]];
+}
+
+// Restore the standard AppKit window surface. WebviewWindow starts clear so
+// explicit transparent backdrop modes can opt into translucency, but normal
+// document windows must be opaque for the titlebar, split view, and content
+// regions to resolve against one system background.
+void windowSetNormalBackdrop(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSColor* background = window.backgroundColor;
+	if (background == nil || background.alphaComponent <= 0.0) {
+		background = [NSColor windowBackgroundColor];
+	}
+	[window setBackgroundColor:background];
+	[window setOpaque:YES];
 }
 
 void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
@@ -1035,9 +1048,10 @@ import (
 )
 
 type macosWebviewWindow struct {
-	nsWindow      unsafe.Pointer
-	parent        *WebviewWindow
-	activeToolbar *MacToolbar
+	nsWindow        unsafe.Pointer
+	parent          *WebviewWindow
+	activeToolbar   *MacToolbar
+	activeSplitView *MacSplitView
 }
 
 func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
@@ -1470,7 +1484,6 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
 		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
 	}
-
 	return result
 }
 
@@ -1527,6 +1540,7 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropLiquidGlass:
 			w.applyLiquidGlass()
 		case MacBackdropNormal:
+			C.windowSetNormalBackdrop(w.nsWindow)
 		}
 
 		if macOptions.WindowLevel == "" {
@@ -1563,6 +1577,14 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
+		// Install the native split layout, if one was configured, before any
+		// toolbar is attached: a sidebar tracking separator requires its
+		// split view to already be in the same window as its toolbar.
+		w.installSplitView()
+		if w.activeSplitView == nil {
+			layout := resolveMacContentLayout(macOptions, MacContentLayoutAutomatic)
+			C.windowApplyContentLayout(w.nsWindow, C.int(layout))
+		}
 		// A SetToolbar call made before the native window existed (e.g. right
 		// after NewWithOptions, before app.Run()) is stashed on the parent;
 		// apply it now, overriding the placeholder toolbar UseToolbar may
@@ -1615,9 +1637,10 @@ func (w *macosWebviewWindow) run() {
 			globalApplication.handleFatalError(err)
 		}
 
-		w.setURL(startURL)
-
-		// We need to wait for the HTML to load before we can execute the javascript
+		// Register before starting navigation. Bundled assets can finish quickly
+		// enough for WebViewDidFinishNavigation to fire synchronously with respect
+		// to this setup path; registering afterwards can leave a healthy window
+		// permanently hidden.
 		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			InvokeAsync(func() {
 				if options.JS != "" {
@@ -1648,6 +1671,8 @@ func (w *macosWebviewWindow) run() {
 				}
 			})
 		})
+
+		w.setURL(startURL)
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)
@@ -1775,6 +1800,9 @@ func (w *macosWebviewWindow) destroy() {
 	w.parent.toolbarLock.Lock()
 	w.parent.toolbar = nil
 	w.parent.toolbarLock.Unlock()
+	// Detach the split-view callback state while its native controllers are
+	// still alive. The original WebView remains owned by the window throughout.
+	w.teardownSplitView()
 	// Clear caches for this window
 	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)

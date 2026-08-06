@@ -62,6 +62,9 @@ void toolbarRelease(void* handlePtr);
 // Removes the window's toolbar entirely.
 void toolbarDetach(void* nsWindow);
 
+// Sets NSToolbar.displayMode. Values map to NSToolbarDisplayMode.
+void toolbarSetDisplayMode(void* handlePtr, int displayMode);
+
 void* toolbarAddButtonItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* symbolName, const char* tooltip,
     bool bordered, bool prominent, bool disabled, bool hidden,
@@ -82,6 +85,17 @@ void* toolbarAddShareItem(void* handlePtr, const char* identifier, unsigned int 
     bool disabled, bool hidden, const char* providerJSON);
 
 void toolbarAddFlexibleSpaceIdentifier(void* handlePtr);
+
+// Standard AppKit sidebar items. AppKit creates and owns these; they never
+// pass through the delegate's item factory.
+void toolbarAddSidebarToggleIdentifier(void* handlePtr);
+// No-op on macOS releases without NSToolbarSidebarTrackingSeparatorItemIdentifier.
+void toolbarAddSidebarTrackingSeparatorIdentifier(void* handlePtr);
+// Uses NSToolbarToggleInspectorItemIdentifier on macOS 14+. Earlier releases
+// receive a Wails-owned native item routed through itemID.
+void toolbarAddInspectorToggleItem(void* handlePtr, const char* identifier, unsigned int itemID);
+// No-op on macOS releases without NSToolbarInspectorTrackingSeparatorItemIdentifier.
+void toolbarAddInspectorTrackingSeparatorIdentifier(void* handlePtr);
 
 void toolbarItemSetLabel(void* handlePtr, const char* identifier, const char* label);
 void toolbarItemSetSymbol(void* handlePtr, const char* identifier, const char* symbolName);

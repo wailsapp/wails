@@ -38,6 +38,10 @@ void windowSetToolbarStyle(void* nsWindow, int style);
 void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator);
 void windowSetShowToolbarWhenFullscreen(void* window, bool setting);
 
+// Applies one of the MacContentLayout values to the window's primary
+// WKWebView. The WebView may already have been reparented into a split pane.
+void windowApplyContentLayout(void* window, int layout);
+
 // Liquid Glass support functions
 bool isLiquidGlassSupported();
 void windowSetLiquidGlass(void* window, int style, int material, double cornerRadius, 
