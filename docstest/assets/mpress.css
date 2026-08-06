@@ -25,7 +25,7 @@
   --search-highlight: color-mix(in srgb, var(--text) 17%, var(--surface-solid));
   --search-outline: color-mix(in srgb, var(--text) 22%, var(--border));
   --layout-sidebar-width: 18.75rem;
-  --layout-content-width: 45rem;
+  --layout-content-width: 48rem;
   --layout-wide-content-width: 64rem;
   --layout-toc-width: 16rem;
   --layout-content-toc-gap: 2.5rem;
@@ -1091,15 +1091,15 @@ body > footer strong { color: var(--accent); }
 
 :root {
   --layout-sidebar-width: clamp(12rem, 18.75rem, 30rem);
-  --layout-content-width: clamp(30rem, 45rem, 100rem);
+  --layout-content-width: clamp(32rem, 48rem, 100rem);
   --layout-wide-content-width: clamp(30rem, 64rem, 120rem);
   --layout-toc-width: clamp(12rem, 16rem, 25rem);
   --layout-content-toc-gap: clamp(.75rem, 2.5rem, 6rem);
 }
 .docs-stage {
-  grid-template-columns: minmax(0, clamp(30rem, 45rem, 100rem)) minmax(0, clamp(12rem, 16rem, 25rem));
+  grid-template-columns: minmax(0, clamp(32rem, 48rem, 100rem)) minmax(0, clamp(12rem, 16rem, 25rem));
   column-gap: clamp(.75rem, 2.5rem, 6rem);
-  width: min(100%, calc(clamp(30rem, 45rem, 100rem) + clamp(.75rem, 2.5rem, 6rem) + clamp(12rem, 16rem, 25rem)));
+  width: min(100%, calc(clamp(32rem, 48rem, 100rem) + clamp(.75rem, 2.5rem, 6rem) + clamp(12rem, 16rem, 25rem)));
   margin-inline: auto;
 }
 .docs-page-wide .docs-stage {
@@ -1110,7 +1110,7 @@ body > footer strong { color: var(--accent); }
 @media (max-width: 1360px) {
   .docs-stage, .docs-page-wide .docs-stage {
     display: block;
-    width: min(100%, clamp(30rem, 45rem, 100rem));
+    width: min(100%, clamp(32rem, 48rem, 100rem));
     margin-inline: auto;
     padding-inline: 1.5rem;
   }
