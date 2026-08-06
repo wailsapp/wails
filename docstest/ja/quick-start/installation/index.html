@@ -18,7 +18,7 @@ wails3 doctor  # インストールの確認"><code><span class="mpress-output">
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Goのインストール（必須）</h4>
+      <h3 class="mpress-step-title">Goのインストール（必須）</h3>
 <div class="mpress-step-content">
 <p>WailsにはGo 1.25以降が必要です。</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-b96dbed7" data-sync-key="os">
@@ -116,7 +116,7 @@ echo $PATH | grep go/bin"><code><span class="mpress-cmd">go version</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">プラットフォーム依存関係のインストール</h4>
+      <h3 class="mpress-step-title">プラットフォーム依存関係のインストール</h3>
 <div class="mpress-step-content">
 <ot-tabs class="mpress-tabs" id="mpress-tabs-ccfa933a" data-sync-key="os">
 <div role="tablist">
@@ -233,7 +233,7 @@ sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev">
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Wails CLIのインストール</h4>
+      <h3 class="mpress-step-title">Wails CLIのインストール</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -247,7 +247,7 @@ sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev">
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">インストールの確認</h4>
+      <h3 class="mpress-step-title">インストールの確認</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -308,7 +308,7 @@ sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev">
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">npmのインストール（オプションですが推奨）</h4>
+      <h3 class="mpress-step-title">npmのインストール（オプションですが推奨）</h3>
 <div class="mpress-step-content">
 <p>ほとんどのWailsテンプレートは、フロントエンドのツールリングにnpmを使用しています。</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-e26e13a5" data-sync-key="os">
@@ -378,7 +378,7 @@ sudo pacman -S nodejs npm  # Arch"><code><span class="mpress-cmd">sudo dnf insta
   </div>
 </div>
 <h2 id="heading-1">トラブルシューティング</h2>
-<h4 id="wails3"><code>wails3</code>コマンドが見つからない</h4>
+<h3 id="wails3"><code>wails3</code>コマンドが見つからない</h3>
 <p><strong>原因：</strong> <code>~/go/bin</code>（Windowsの場合は<code>%USERPROFILE%\go\bin</code>）がPATHに含まれていません。</p>
 <p><strong>解決策：</strong></p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-91513240" data-sync-key="os">
@@ -426,7 +426,7 @@ wails3 version"><code><span class="mpress-cmd">echo $PATH | grep go/bin</span>
 </div>
 </ot-tabs>
 ---
-<h4 id="wails3-doctor"><code>wails3 doctor</code>で依存関係の不足が報告される</h4>
+<h3 id="wails3-doctor"><code>wails3 doctor</code>で依存関係の不足が報告される</h3>
 <p><strong>Linux：</strong> 出力にインストールが必要なパッケージが正確に表示されます。例：</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="❌ webkit2gtk が見つかりません&#10;   インストール方法：sudo apt install libwebkit2gtk-4.1-dev"><code class="language-text"><span class="mpress-code-line">❌ webkit2gtk が見つかりません
 </span><span class="mpress-code-line">   インストール方法：sudo apt install libwebkit2gtk-4.1-dev</span></code></pre></div>

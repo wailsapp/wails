@@ -23,7 +23,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Mulai dengan aplikasi Wails baru</h4>
+      <h3 class="mpress-step-title">Mulai dengan aplikasi Wails baru</h3>
 <div class="mpress-step-content">
 <p>Buat proyek baru dengan template vanilla:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -46,7 +46,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Tambahkan import updater</h4>
+      <h3 class="mpress-step-title">Tambahkan import updater</h3>
 <div class="mpress-step-content">
 <p>Buka <code>main.go</code> dan tambahkan dua paket updater ke import Anda:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    _ &#34;embed&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
@@ -65,7 +65,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Konfigurasi Updater</h4>
+      <h3 class="mpress-step-title">Konfigurasi Updater</h3>
 <div class="mpress-step-content">
 <p><code>app.Updater</code> sudah terhubung ke setiap <code>*application.App</code> — Anda hanya perlu memanggil <code>Init</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const currentVersion = &#34;1.0.0&#34;&#10;&#10;gh, err := github.New(github.Config{&#10;    Repository:    &#34;yourorg/your-repo&#34;,   // ← change this&#10;    ChecksumAsset: &#34;SHA256SUMS&#34;,          // sibling file with sha256 digests&#10;})&#10;if err != nil {&#10;    log.Fatalf(&#34;github.New: %v&#34;, err)&#10;}&#10;&#10;if err := app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;}); err != nil {&#10;    log.Fatalf(&#34;Updater.Init: %v&#34;, err)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> currentVersion <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>
@@ -97,7 +97,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Tambahkan item menu yang memicu update</h4>
+      <h3 class="mpress-step-title">Tambahkan item menu yang memicu update</h3>
 <div class="mpress-step-content">
 <p>Di <code>main.go</code> yang sama, tambahkan entri menu &ldquo;Check for Updates…&rdquo;:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="menu := app.Menu.New()&#10;app.Menu.SetApplicationMenu(menu)&#10;appMenu := menu.AddSubmenu(&#34;App&#34;)&#10;appMenu.Add(&#34;Check for Updates…&#34;).OnClick(func(*application.Context) {&#10;    go func() {&#10;        if err := app.Updater.CheckAndInstall(context.Background()); err != nil {&#10;            app.Logger.Error(&#34;update&#34;, &#34;error&#34;, err)&#10;        }&#10;    }()&#10;})"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
@@ -123,7 +123,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan sekali tanpa rilis</h4>
+      <h3 class="mpress-step-title">Jalankan sekali tanpa rilis</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">6</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Terbitkan rilis uji</h4>
+      <h3 class="mpress-step-title">Terbitkan rilis uji</h3>
 <div class="mpress-step-content">
 <p>Naikkan <code>currentVersion</code> di <code>main.go</code> ke <code>1.0.0</code> (atau biarkan). Build untuk satu platform untuk mendapatkan biner yang dapat dilampirkan ke rilis:</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-2bd3a74a">
@@ -246,7 +246,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">7</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan aplikasi dan verifikasi update</h4>
+      <h3 class="mpress-step-title">Jalankan aplikasi dan verifikasi update</h3>
 <div class="mpress-step-content">
 <p>Dengan <code>currentVersion</code> masih <code>1.0.0</code>, jalankan aplikasi lagi:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -275,7 +275,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">8</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Hubungkan `currentVersion` ke build</h4>
+      <h3 class="mpress-step-title">Hubungkan `currentVersion` ke build</h3>
 <div class="mpress-step-content">
 <p>Ganti konstanta dengan variabel build-time:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="var (&#10;    currentVersion = &#34;dev&#34; // overridden by -ldflags at release time&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> (
@@ -294,7 +294,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">9</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Tambahkan penandatanganan kriptografis (disarankan untuk produksi)</h4>
+      <h3 class="mpress-step-title">Tambahkan penandatanganan kriptografis (disarankan untuk produksi)</h3>
 <div class="mpress-step-content">
 <p>Path SHA256SUMS memverifikasi <em>integritas</em> (byte sesuai yang disimpan GitHub) tetapi bukan <em>autentisitas</em> (byte tersebut diproduksi pipeline rilis Anda, bukan akun maintainer yang dikompromikan). Untuk ketahanan terhadap perubahan, tandatangani setiap rilis dengan kunci Ed25519:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -345,7 +345,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">10</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Sesuaikan jendela</h4>
+      <h3 class="mpress-step-title">Sesuaikan jendela</h3>
 <div class="mpress-step-content">
 <p>Jendela default mencakup kasus umum. Tiga jalan keluar jika Anda butuh kontrol lebih — pilih satu berdasarkan seberapa banyak yang ingin disesuaikan:</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-2838d013">
@@ -400,7 +400,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">11</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan pengecekan otomatis di latar belakang</h4>
+      <h3 class="mpress-step-title">Jalankan pengecekan otomatis di latar belakang</h3>
 <div class="mpress-step-content">
 <p>Untuk mengecek dengan timer alih-alih (atau selain) klik menu:</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;    PublicKey:      updaterPublicKey,&#10;    CheckInterval:  6 * time.Hour,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{

@@ -20,7 +20,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Buat proyek</h4>
+      <h3 class="mpress-step-title">Buat proyek</h3>
 <div class="mpress-step-content">
 <p>Pertama, buat proyek Wails baru. Kita akan menggunakan template vanilla default yang memberikan titik awal bersih:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -37,7 +37,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Buat layanan TODO</h4>
+      <h3 class="mpress-step-title">Buat layanan TODO</h3>
 <div class="mpress-step-content">
 <p>Layanan TODO akan mengelola state aplikasi kita dan menyediakan metode untuk operasi CRUD. Berbeda dengan web server di mana setiap permintaan terisolasi, aplikasi desktop dapat memiliki banyak operasi konkuren, jadi kita perlu manajemen state thread-safe.</p>
 <p>Hapus <code>greetservice.go</code> dan buat file baru <code>todoservice.go</code>:</p>
@@ -157,7 +157,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Perbarui main.go</h4>
+      <h3 class="mpress-step-title">Perbarui main.go</h3>
 <div class="mpress-step-content">
 <p>Daftarkan layanan TODO ke aplikasi Wails Anda. Temukan bagian <code>Services</code> di <code>main.go</code> dan ganti GreetService dengan TodoService kita:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Services: []application.Service{&#10;    application.NewService(NewTodoService()),&#10;},"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
@@ -175,7 +175,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Buat UI frontend</h4>
+      <h3 class="mpress-step-title">Buat UI frontend</h3>
 <div class="mpress-step-content">
 <p>Sekarang mari bangun frontend. Di sini kita akan memanggil metode Go dan menampilkan UI. Kita menggunakan vanilla JavaScript agar sederhana dan menunjukkan cara kerja binding secara langsung.</p>
 <p>Ganti <code>frontend/src/main.js</code>:</p>
@@ -258,7 +258,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Perbarui HTML</h4>
+      <h3 class="mpress-step-title">Perbarui HTML</h3>
 <div class="mpress-step-content">
 <p>HTML menyediakan struktur untuk aplikasi TODO kita. Minimal dan semantik — keajaiban terjadi di JavaScript dan CSS.</p>
 <p>Ganti <code>frontend/index.html</code>:</p>
@@ -313,7 +313,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">6</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Style aplikasi</h4>
+      <h3 class="mpress-step-title">Style aplikasi</h3>
 <div class="mpress-step-content">
 <p>CSS membuat desain glassmorphic modern dengan transisi halus. Kita menargetkan nuansa rapi yang membuat aplikasi menyenangkan digunakan.</p>
 <p>Ganti <code>frontend/public/style.css</code>:</p>
@@ -528,7 +528,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">7</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan aplikasi</h4>
+      <h3 class="mpress-step-title">Jalankan aplikasi</h3>
 <div class="mpress-step-content">
 <p>Mari lihat hasilnya! Jalankan development server:</p>
 <div class="mpress-terminal mpress-terminal-macos">

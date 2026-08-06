@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">プロジェクトの生成</h4>
+      <h3 class="mpress-step-title">プロジェクトの生成</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -40,7 +40,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">プロジェクト構造の理解</h4>
+      <h3 class="mpress-step-title">プロジェクト構造の理解</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # アプリケーションのエントリポイント&#10;├── greetservice.go      # 挨拶サービス&#10;├── frontend/            # UIコード&#10;│   ├── index.html       # HTMLエントリポイント&#10;│   ├── src/&#10;│   │   └── main.js      # フロントエンドJavaScript&#10;│   ├── public/&#10;│   │   └── style.css    # スタイル&#10;│   ├── package.json     # フロントエンドの依存関係&#10;│   └── vite.config.js   # Viteバンドラー設定&#10;├── build/               # ビルド設定&#10;└── Taskfile.yml         # ビルドタスク"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # アプリケーションのエントリポイント
@@ -61,7 +61,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">アプリの実行</h4>
+      <h3 class="mpress-step-title">アプリの実行</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">GreetServiceにメソッドを追加</h4>
+      <h3 class="mpress-step-title">GreetServiceにメソッドを追加</h3>
 <div class="mpress-step-content">
 <p>これを <code>greetservice.go</code> に追加します：</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -176,7 +176,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">アプリが自動的に再ビルドされます</h4>
+      <h3 class="mpress-step-title">アプリが自動的に再ビルドされます</h3>
 <div class="mpress-step-content">
 <p>ファイルを保存すると、<code>wails3 dev</code> がGoコードを自動的に再ビルドし、アプリを再起動します。</p>
 <aside aria-label="自動再ビルド" class="mpress-admonition mpress-admonition-info">
@@ -191,7 +191,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">フロントエンドで使用</h4>
+      <h3 class="mpress-step-title">フロントエンドで使用</h3>
 <div class="mpress-step-content">
 <p>これを <code>frontend/src/main.js</code> に追加します：</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {

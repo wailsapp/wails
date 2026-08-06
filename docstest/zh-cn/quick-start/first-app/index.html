@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">生成项目</h4>
+      <h3 class="mpress-step-title">生成项目</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -40,7 +40,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">了解项目结构</h4>
+      <h3 class="mpress-step-title">了解项目结构</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # 应用程序入口点&#10;├── greetservice.go      # 问候服务&#10;├── frontend/            # 你的 UI 代码&#10;│   ├── index.html       # HTML 入口点&#10;│   ├── src/&#10;│   │   └── main.js      # 前端 JavaScript&#10;│   ├── public/&#10;│   │   └── style.css    # 样式&#10;│   ├── package.json     # 前端依赖&#10;│   └── vite.config.js   # Vite 打包器配置&#10;├── build/               # 构建配置&#10;└── Taskfile.yml         # 构建任务"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # 应用程序入口点
@@ -61,7 +61,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">运行应用</h4>
+      <h3 class="mpress-step-title">运行应用</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">将方法添加到 GreetService</h4>
+      <h3 class="mpress-step-title">将方法添加到 GreetService</h3>
 <div class="mpress-step-content">
 <p>将此添加到 <code>greetservice.go</code>：</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -176,7 +176,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">应用将自动重新构建</h4>
+      <h3 class="mpress-step-title">应用将自动重新构建</h3>
 <div class="mpress-step-content">
 <p>保存文件，<code>wails3 dev</code> 将自动重新构建你的 Go 代码并重启应用。</p>
 <aside aria-label="自动重新构建" class="mpress-admonition mpress-admonition-info">
@@ -191,7 +191,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">在前端中使用它</h4>
+      <h3 class="mpress-step-title">在前端中使用它</h3>
 <div class="mpress-step-content">
 <p>将此添加到 <code>frontend/src/main.js</code>：</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {

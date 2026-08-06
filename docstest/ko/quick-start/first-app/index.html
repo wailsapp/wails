@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">프로젝트 생성</h4>
+      <h3 class="mpress-step-title">프로젝트 생성</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -40,7 +40,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">프로젝트 구조 이해하기</h4>
+      <h3 class="mpress-step-title">프로젝트 구조 이해하기</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # 애플리케이션 진입점&#10;├── greetservice.go      # 인사 서비스&#10;├── frontend/            # UI 코드&#10;│   ├── index.html       # HTML 진입점&#10;│   ├── src/&#10;│   │   └── main.js      # 프론트엔드 JavaScript&#10;│   ├── public/&#10;│   │   └── style.css    # 스타일&#10;│   ├── package.json     # 프론트엔드 의존성&#10;│   └── vite.config.js   # Vite 번들러 구성&#10;├── build/               # 빌드 구성&#10;└── Taskfile.yml         # 빌드 작업"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # 애플리케이션 진입점
@@ -61,7 +61,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">앱 실행하기</h4>
+      <h3 class="mpress-step-title">앱 실행하기</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">GreetService에 메서드 추가하기</h4>
+      <h3 class="mpress-step-title">GreetService에 메서드 추가하기</h3>
 <div class="mpress-step-content">
 <p><code>greetservice.go</code>에 다음을 추가합니다:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -176,7 +176,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">앱이 자동으로 다시 빌드됨</h4>
+      <h3 class="mpress-step-title">앱이 자동으로 다시 빌드됨</h3>
 <div class="mpress-step-content">
 <p>파일을 저장하면 <code>wails3 dev</code>가 Go 코드를 자동으로 다시 빌드하고 앱을 재시작합니다.</p>
 <aside aria-label="자동 다시 빌드" class="mpress-admonition mpress-admonition-info">
@@ -191,7 +191,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">프론트엔드에서 사용하기</h4>
+      <h3 class="mpress-step-title">프론트엔드에서 사용하기</h3>
 <div class="mpress-step-content">
 <p><code>frontend/src/main.js</code>에 다음을 추가합니다:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {

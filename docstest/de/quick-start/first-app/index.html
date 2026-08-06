@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Generiere das Projekt</h4>
+      <h3 class="mpress-step-title">Generiere das Projekt</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -40,7 +40,7 @@ Führe <code>wails3 init -l</code> aus, um alle verfügbaren Vorlagen zu sehen.<
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Verstehe die Projektstruktur</h4>
+      <h3 class="mpress-step-title">Verstehe die Projektstruktur</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # Anwendungseinstiegspunkt&#10;├── greetservice.go      # Begrüßungsdienst&#10;├── frontend/            # Dein UI-Code&#10;│   ├── index.html       # HTML-Einstiegspunkt&#10;│   ├── src/&#10;│   │   └── main.js      # Frontend-JavaScript&#10;│   ├── public/&#10;│   │   └── style.css    # Styles&#10;│   ├── package.json     # Frontend-Abhängigkeiten&#10;│   └── vite.config.js   # Vite-Bundler-Konfiguration&#10;├── build/               # Build-Konfiguration&#10;└── Taskfile.yml         # Build-Aufgaben"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # Anwendungseinstiegspunkt
@@ -61,7 +61,7 @@ Führe <code>wails3 init -l</code> aus, um alle verfügbaren Vorlagen zu sehen.<
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Führe die App aus</h4>
+      <h3 class="mpress-step-title">Führe die App aus</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ Führe <code>wails3 init -l</code> aus, um alle verfügbaren Vorlagen zu sehen.<
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Füge die Methode zu GreetService hinzu</h4>
+      <h3 class="mpress-step-title">Füge die Methode zu GreetService hinzu</h3>
 <div class="mpress-step-content">
 <p>Füge dies zu <code>greetservice.go</code> hinzu:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -176,7 +176,7 @@ Führe <code>wails3 init -l</code> aus, um alle verfügbaren Vorlagen zu sehen.<
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Die App wird automatisch neu gebaut</h4>
+      <h3 class="mpress-step-title">Die App wird automatisch neu gebaut</h3>
 <div class="mpress-step-content">
 <p>Speichere die Datei und <code>wails3 dev</code> wird deinen Go-Code automatisch neu bauen und die App neu starten.</p>
 <aside aria-label="Auto-Rebuild" class="mpress-admonition mpress-admonition-info">
@@ -191,7 +191,7 @@ Führe <code>wails3 init -l</code> aus, um alle verfügbaren Vorlagen zu sehen.<
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Verwende es im Frontend</h4>
+      <h3 class="mpress-step-title">Verwende es im Frontend</h3>
 <div class="mpress-step-content">
 <p>Füge dies zu <code>frontend/src/main.js</code> hinzu:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {

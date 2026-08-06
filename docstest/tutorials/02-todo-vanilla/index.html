@@ -20,7 +20,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Generate the project</h4>
+      <h3 class="mpress-step-title">Generate the project</h3>
 <div class="mpress-step-content">
 <p>First, create a new Wails project. We&rsquo;ll use the default vanilla template which gives us a clean starting point:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -37,7 +37,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Create the TODO service</h4>
+      <h3 class="mpress-step-title">Create the TODO service</h3>
 <div class="mpress-step-content">
 <p>The TODO service will manage our application state and provide methods for CRUD operations. Unlike a web server where each request is isolated, desktop apps can have multiple concurrent operations, so we need thread-safe state management.</p>
 <p>Delete <code>greetservice.go</code> and create a new file <code>todoservice.go</code>:</p>
@@ -157,7 +157,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Update main.go</h4>
+      <h3 class="mpress-step-title">Update main.go</h3>
 <div class="mpress-step-content">
 <p>Register the TODO service with your Wails application. Find the <code>Services</code> section in <code>main.go</code> and replace the GreetService with our TodoService:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="Services: []application.Service{&#10;    application.NewService(NewTodoService()),&#10;},"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
@@ -175,7 +175,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Create the frontend UI</h4>
+      <h3 class="mpress-step-title">Create the frontend UI</h3>
 <div class="mpress-step-content">
 <p>Now let&rsquo;s build the frontend. This is where we&rsquo;ll call our Go methods and display the UI. We&rsquo;re using vanilla JavaScript to keep things simple and show you how the bindings work directly.</p>
 <p>Replace <code>frontend/src/main.js</code>:</p>
@@ -258,7 +258,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Update the HTML</h4>
+      <h3 class="mpress-step-title">Update the HTML</h3>
 <div class="mpress-step-content">
 <p>The HTML provides the structure for our TODO app. It&rsquo;s minimal and semantic - the magic happens in the JavaScript and CSS.</p>
 <p>Replace <code>frontend/index.html</code>:</p>
@@ -313,7 +313,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">6</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Style the app</h4>
+      <h3 class="mpress-step-title">Style the app</h3>
 <div class="mpress-step-content">
 <p>The CSS creates a modern, glassmorphic design with smooth transitions. We&rsquo;re going for a polished feel that makes the app enjoyable to use.</p>
 <p>Replace <code>frontend/public/style.css</code>:</p>
@@ -528,7 +528,7 @@ cd todo-app"><code><span class="mpress-cmd">wails3 init -n todo-app</span>
   <div class="mpress-step">
     <div class="mpress-step-number">7</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run the app</h4>
+      <h3 class="mpress-step-title">Run the app</h3>
 <div class="mpress-step-content">
 <p>Let&rsquo;s see it in action! Run the development server:</p>
 <div class="mpress-terminal mpress-terminal-macos">

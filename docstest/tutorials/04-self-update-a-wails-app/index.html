@@ -23,7 +23,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Start with a fresh Wails app</h4>
+      <h3 class="mpress-step-title">Start with a fresh Wails app</h3>
 <div class="mpress-step-content">
 <p>Scaffold a new project with the vanilla template:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -46,7 +46,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Add the updater import</h4>
+      <h3 class="mpress-step-title">Add the updater import</h3>
 <div class="mpress-step-content">
 <p>Open <code>main.go</code> and add the two updater packages to your imports:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="package main&#10;&#10;import (&#10;    _ &#34;embed&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
@@ -65,7 +65,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Configure the Updater</h4>
+      <h3 class="mpress-step-title">Configure the Updater</h3>
 <div class="mpress-step-content">
 <p><code>app.Updater</code> is already wired into every <code>*application.App</code> — you just need to call <code>Init</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="const currentVersion = &#34;1.0.0&#34;&#10;&#10;gh, err := github.New(github.Config{&#10;    Repository:    &#34;yourorg/your-repo&#34;,   // ← change this&#10;    ChecksumAsset: &#34;SHA256SUMS&#34;,          // sibling file with sha256 digests&#10;})&#10;if err != nil {&#10;    log.Fatalf(&#34;github.New: %v&#34;, err)&#10;}&#10;&#10;if err := app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;}); err != nil {&#10;    log.Fatalf(&#34;Updater.Init: %v&#34;, err)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> currentVersion <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>
@@ -97,7 +97,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Add a menu item that triggers the update</h4>
+      <h3 class="mpress-step-title">Add a menu item that triggers the update</h3>
 <div class="mpress-step-content">
 <p>In the same <code>main.go</code>, add a &ldquo;Check for Updates…&rdquo; menu entry:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="menu := app.Menu.New()&#10;app.Menu.SetApplicationMenu(menu)&#10;appMenu := menu.AddSubmenu(&#34;App&#34;)&#10;appMenu.Add(&#34;Check for Updates…&#34;).OnClick(func(*application.Context) {&#10;    go func() {&#10;        if err := app.Updater.CheckAndInstall(context.Background()); err != nil {&#10;            app.Logger.Error(&#34;update&#34;, &#34;error&#34;, err)&#10;        }&#10;    }()&#10;})"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
@@ -123,7 +123,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run it once with no releases</h4>
+      <h3 class="mpress-step-title">Run it once with no releases</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd updater-tutorial"><code><span class="mpress-cmd">wails3 init --template vanil
   <div class="mpress-step">
     <div class="mpress-step-number">6</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Publish a test release</h4>
+      <h3 class="mpress-step-title">Publish a test release</h3>
 <div class="mpress-step-content">
 <p>Bump <code>currentVersion</code> in <code>main.go</code> to <code>1.0.0</code> (or leave it). Build for one platform to get a binary you can attach to a release:</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-2bd3a74a">
@@ -246,7 +246,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">7</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run the app and verify the update</h4>
+      <h3 class="mpress-step-title">Run the app and verify the update</h3>
 <div class="mpress-step-content">
 <p>With <code>currentVersion</code> still <code>1.0.0</code>, run the app again:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -275,7 +275,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">8</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Wire `currentVersion` to the build</h4>
+      <h3 class="mpress-step-title">Wire `currentVersion` to the build</h3>
 <div class="mpress-step-content">
 <p>Replace the constant with a build-time variable:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">main.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="var (&#10;    currentVersion = &#34;dev&#34; // overridden by -ldflags at release time&#10;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> (
@@ -294,7 +294,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">9</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Add cryptographic signing (recommended for production)</h4>
+      <h3 class="mpress-step-title">Add cryptographic signing (recommended for production)</h3>
 <div class="mpress-step-content">
 <p>The SHA256SUMS path verifies <em>integrity</em> (the bytes match what GitHub stored) but not <em>authenticity</em> (those bytes were produced by your release pipeline, not a compromised maintainer account). For tamper-resistance, sign each release with an Ed25519 key:</p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -345,7 +345,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">10</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Customise the window</h4>
+      <h3 class="mpress-step-title">Customise the window</h3>
 <div class="mpress-step-content">
 <p>The default window covers the common case. Three escape hatches if you need more control — pick one based on how much you want to customise:</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-0faa8be4">
@@ -400,7 +400,7 @@ cat SHA256SUMS"><code><span class="mpress-cmd">cd bin</span>
   <div class="mpress-step">
     <div class="mpress-step-number">11</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run automatic checks in the background</h4>
+      <h3 class="mpress-step-title">Run automatic checks in the background</h3>
 <div class="mpress-step-content">
 <p>To check on a timer instead of (or in addition to) the menu click:</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="app.Updater.Init(updater.Config{&#10;    CurrentVersion: currentVersion,&#10;    Providers:      []updater.Provider{gh},&#10;    PublicKey:      updaterPublicKey,&#10;    CheckInterval:  6 * time.Hour,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{

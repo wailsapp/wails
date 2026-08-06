@@ -7,7 +7,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Prepare your app for Tracing</h4>
+      <h3 class="mpress-step-title">Prepare your app for Tracing</h3>
 <div class="mpress-step-content">
 <p>Close to your program entrypoint, ensure code along the following lines exists</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Create the file to store our trace data within&#10;traceFile, err := os.Create(&#34;trace.out&#34;)&#10;if err != nil {&#10;  log.Fatalf(&#34;trace.out could not be created: %v&#34;, err)&#10;}&#10;&#10;// Start the trace&#10;if err := trace.Start(traceFile); err != nil {&#10;  _ = traceFile.Close()&#10;  log.Fatalf(&#34;trace.start could not start: %v&#34;, err)&#10;}&#10;&#10;// Trace cleanup on exit. Alternatively,&#10;defer func() {&#10;  trace.Stop()&#10;  _ = traceFile.Close()&#10;}()&#10;&#10;...Start your wails app here..."><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Create the file to store our trace data within</span>
@@ -36,7 +36,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run your app to create the trace</h4>
+      <h3 class="mpress-step-title">Run your app to create the trace</h3>
 <div class="mpress-step-content">
 <p>With your app running, a continuous trace will be produced up to the point of exit so go ahead and perform some actions in your app and exit when complete</p>
 </div>
@@ -45,7 +45,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Install Visualisation helpers</h4>
+      <h3 class="mpress-step-title">Install Visualisation helpers</h3>
 <div class="mpress-step-content">
 <p>Some views need <a href="https://graphviz.org/">Graphviz</a>. You can verify it is installed by running <code>dot -V</code></p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -68,7 +68,7 @@ sudo pacman -S graphviz"><code><span class="mpress-output"># macOS</span>
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Visualize your trace</h4>
+      <h3 class="mpress-step-title">Visualize your trace</h3>
 <div class="mpress-step-content">
 <p>With your trace data available, we can start up the web interface</p>
 <div class="mpress-terminal mpress-terminal-macos">

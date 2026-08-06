@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Сгенерируйте проект</h4>
+      <h3 class="mpress-step-title">Сгенерируйте проект</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -40,7 +40,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Поймите структуру проекта</h4>
+      <h3 class="mpress-step-title">Поймите структуру проекта</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # Точка входа приложения&#10;├── greetservice.go      # Сервис приветствия&#10;├── frontend/            # Код вашего интерфейса&#10;│   ├── index.html       # Точка входа HTML&#10;│   ├── src/&#10;│   │   └── main.js      # JavaScript фронтенда&#10;│   ├── public/&#10;│   │   └── style.css    # Стили&#10;│   ├── package.json     # Зависимости фронтенда&#10;│   └── vite.config.js   # Конфигурация сборщика Vite&#10;├── build/               # Конфигурация сборки&#10;└── Taskfile.yml         # Задачи сборки"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # Точка входа приложения
@@ -61,7 +61,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Запустите приложение</h4>
+      <h3 class="mpress-step-title">Запустите приложение</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -160,7 +160,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Добавьте метод в GreetService</h4>
+      <h3 class="mpress-step-title">Добавьте метод в GreetService</h3>
 <div class="mpress-step-content">
 <p>Добавьте это в <code>greetservice.go</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -176,7 +176,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Приложение автоматически пересоберется</h4>
+      <h3 class="mpress-step-title">Приложение автоматически пересоберется</h3>
 <div class="mpress-step-content">
 <p>Сохраните файл, и <code>wails3 dev</code> автоматически пересоберет ваш код Go и перезапустит приложение.</p>
 <aside aria-label="Автоматическая пересборка" class="mpress-admonition mpress-admonition-info">
@@ -191,7 +191,7 @@ cd myapp"><code><span class="mpress-cmd">wails3 init -n myapp</span>
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Используйте его во фронтенде</h4>
+      <h3 class="mpress-step-title">Используйте его во фронтенде</h3>
 <div class="mpress-step-content">
 <p>Добавьте это в <code>frontend/src/main.js</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {

@@ -50,7 +50,7 @@ html[data-theme="dark"] {
 }
 
 @media (prefers-color-scheme: dark) {
-  html[data-theme="system"] {
+html[data-theme="system"] {
     --bg: #0d1119;
     --surface: #131925;
     --surface-solid: #131925;
@@ -1166,6 +1166,7 @@ html[data-theme="dark"] {
   --accent: hsl(0, 90%, 60%);
   --wails-accent-strong: hsl(0, 90%, 60%);
   --wails-accent-link: hsl(0, 90%, 60%);
+  --wails-accent-readable: hsl(0, 90%, 78%);
   --wails-sidebar-root: #ffffff;
   --wails-toc-muted: #888c96;
   --bg: #17181c;
@@ -1178,6 +1179,13 @@ html[data-theme="dark"] {
   --code: #23262f;
   --code-text: #ffffff;
 }
+
+/* Keep theme accents readable against every component surface. */
+.docs-page article a,
+.docs-page .toc a.active { color: var(--wails-accent-readable); }
+.docs-page .sidebar a.active { color: #17181c; }
+.docs-page .mpress-admonition a { color: var(--text); }
+.mpress-site-banner { color: #17181c; }
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] {
     --accent: hsl(0, 90%, 60%);

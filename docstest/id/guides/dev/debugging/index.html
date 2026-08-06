@@ -7,7 +7,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Siapkan aplikasi Anda untuk Tracing</h4>
+      <h3 class="mpress-step-title">Siapkan aplikasi Anda untuk Tracing</h3>
 <div class="mpress-step-content">
 <p>Dekat entrypoint program Anda, pastikan kode seperti berikut ada</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="// Create the file to store our trace data within&#10;traceFile, err := os.Create(&#34;trace.out&#34;)&#10;if err != nil {&#10;  log.Fatalf(&#34;trace.out could not be created: %v&#34;, err)&#10;}&#10;&#10;// Start the trace&#10;if err := trace.Start(traceFile); err != nil {&#10;  _ = traceFile.Close()&#10;  log.Fatalf(&#34;trace.start could not start: %v&#34;, err)&#10;}&#10;&#10;// Trace cleanup on exit. Alternatively,&#10;defer func() {&#10;  trace.Stop()&#10;  _ = traceFile.Close()&#10;}()&#10;&#10;...Start your wails app here..."><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Create the file to store our trace data within</span>
@@ -36,7 +36,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan aplikasi Anda untuk membuat trace</h4>
+      <h3 class="mpress-step-title">Jalankan aplikasi Anda untuk membuat trace</h3>
 <div class="mpress-step-content">
 <p>Dengan aplikasi berjalan, trace kontinu akan dihasilkan hingga titik exit, jadi lakukan beberapa aksi di aplikasi Anda dan exit saat selesai</p>
 </div>
@@ -45,7 +45,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Instal helper visualisasi</h4>
+      <h3 class="mpress-step-title">Instal helper visualisasi</h3>
 <div class="mpress-step-content">
 <p>Beberapa tampilan memerlukan <a href="https://graphviz.org/">Graphviz</a>. Anda dapat memverifikasi terinstal dengan menjalankan <code>dot -V</code></p>
 <div class="mpress-terminal mpress-terminal-macos">
@@ -68,7 +68,7 @@ sudo pacman -S graphviz"><code><span class="mpress-output"># macOS</span>
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Visualisasikan trace Anda</h4>
+      <h3 class="mpress-step-title">Visualisasikan trace Anda</h3>
 <div class="mpress-step-content">
 <p>Dengan data trace tersedia, kita dapat memulai antarmuka web</p>
 <div class="mpress-terminal mpress-terminal-macos">

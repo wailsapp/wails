@@ -18,7 +18,7 @@ wails3 setup   # Interactive setup wizard (experimental)"><code><span class="mpr
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Install Go (Required)</h4>
+      <h3 class="mpress-step-title">Install Go (Required)</h3>
 <div class="mpress-step-content">
 <p>Wails requires Go 1.25 or later.</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-9bcd2193" data-sync-key="os">
@@ -116,7 +116,7 @@ echo $PATH | grep go/bin"><code><span class="mpress-cmd">go version</span>
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Install Platform Dependencies</h4>
+      <h3 class="mpress-step-title">Install Platform Dependencies</h3>
 <div class="mpress-step-content">
 <ot-tabs class="mpress-tabs" id="mpress-tabs-30978617" data-sync-key="os">
 <div role="tablist">
@@ -233,7 +233,7 @@ sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev"><
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Install Wails CLI</h4>
+      <h3 class="mpress-step-title">Install Wails CLI</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -247,7 +247,7 @@ sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev"><
   <div class="mpress-step">
     <div class="mpress-step-number">4</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Run Setup Wizard (Recommended)</h4>
+      <h3 class="mpress-step-title">Run Setup Wizard (Recommended)</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -267,7 +267,7 @@ sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev"><
   <div class="mpress-step">
     <div class="mpress-step-number">5</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Verify Installation</h4>
+      <h3 class="mpress-step-title">Verify Installation</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -328,7 +328,7 @@ sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev"><
   <div class="mpress-step">
     <div class="mpress-step-number">6</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Install npm (Optional but Recommended)</h4>
+      <h3 class="mpress-step-title">Install npm (Optional but Recommended)</h3>
 <div class="mpress-step-content">
 <p>Most Wails templates use npm for frontend tooling.</p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-6301bc40" data-sync-key="os">
@@ -398,7 +398,7 @@ sudo pacman -S nodejs npm  # Arch"><code><span class="mpress-cmd">sudo dnf insta
   </div>
 </div>
 <h2 id="troubleshooting">Troubleshooting</h2>
-<h4 id="wails3-command-not-found"><code>wails3</code> command not found</h4>
+<h3 id="wails3-command-not-found"><code>wails3</code> command not found</h3>
 <p><strong>Cause:</strong> <code>~/go/bin</code> (or <code>%USERPROFILE%\go\bin</code>) isn&rsquo;t in your PATH.</p>
 <p><strong>Solution:</strong></p>
 <ot-tabs class="mpress-tabs" id="mpress-tabs-6c6b64c7" data-sync-key="os">
@@ -446,7 +446,7 @@ wails3 version"><code><span class="mpress-cmd">echo $PATH | grep go/bin</span>
 </div>
 </ot-tabs>
 ---
-<h4 id="wails3-doctor-reports-missing-dependencies"><code>wails3 doctor</code> reports missing dependencies</h4>
+<h3 id="wails3-doctor-reports-missing-dependencies"><code>wails3 doctor</code> reports missing dependencies</h3>
 <p><strong>Linux:</strong> The output tells you exactly which packages to install. Example:</p>
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="❌ webkit2gtk not found&#10;   Install with: sudo apt install libwebkit2gtk-4.1-dev"><code class="language-text"><span class="mpress-code-line">❌ webkit2gtk not found
 </span><span class="mpress-code-line">   Install with: sudo apt install libwebkit2gtk-4.1-dev</span></code></pre></div>

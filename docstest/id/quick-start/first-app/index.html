@@ -17,7 +17,7 @@
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Generate proyek</h4>
+      <h3 class="mpress-step-title">Generate proyek</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -41,7 +41,7 @@ Jalankan <code>wails3 init -l</code> untuk melihat semua template yang tersedia,
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Pahami struktur proyek</h4>
+      <h3 class="mpress-step-title">Pahami struktur proyek</h3>
 <div class="mpress-step-content">
 <div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="myapp/&#10;├── main.go              # Titik masuk aplikasi&#10;├── greetservice.go      # Layanan Greet&#10;├── frontend/            # Kode UI Anda&#10;│   ├── index.html       # Titik masuk HTML&#10;│   ├── src/&#10;│   │   └── main.ts      # TypeScript frontend&#10;│   ├── public/&#10;│   │   └── style.css    # Styles&#10;│   ├── package.json     # Dependensi frontend&#10;│   ├── tsconfig.json    # Konfigurasi TypeScript&#10;│   └── vite.config.ts   # Konfigurasi bundler Vite&#10;├── build/               # Konfigurasi build&#10;└── Taskfile.yml         # Tugas build"><code class="language-text"><span class="mpress-code-line">myapp/
 </span><span class="mpress-code-line">├── main.go              # Titik masuk aplikasi
@@ -63,7 +63,7 @@ Jalankan <code>wails3 init -l</code> untuk melihat semua template yang tersedia,
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Jalankan aplikasi</h4>
+      <h3 class="mpress-step-title">Jalankan aplikasi</h3>
 <div class="mpress-step-content">
 <div class="mpress-terminal mpress-terminal-macos">
   <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
@@ -162,7 +162,7 @@ Jalankan <code>wails3 init -l</code> untuk melihat semua template yang tersedia,
   <div class="mpress-step">
     <div class="mpress-step-number">1</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Tambahkan method ke GreetService</h4>
+      <h3 class="mpress-step-title">Tambahkan method ke GreetService</h3>
 <div class="mpress-step-content">
 <p>Tambahkan ini ke <code>greetservice.go</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">greetservice.go</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="func (g *GreetService) GreetMany(names []string) []string {&#10;    greetings := make([]string, len(names))&#10;    for i, name := range names {&#10;        greetings[i] = fmt.Sprintf(&#34;Hello %s!&#34;, name)&#10;    }&#10;    return greetings&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (g <span class="mpress-token-operator">*</span><span class="mpress-token-type">GreetService</span>) <span class="mpress-token-function">GreetMany</span>(names []string) []string {
@@ -178,7 +178,7 @@ Jalankan <code>wails3 init -l</code> untuk melihat semua template yang tersedia,
   <div class="mpress-step">
     <div class="mpress-step-number">2</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Aplikasi akan rebuild otomatis</h4>
+      <h3 class="mpress-step-title">Aplikasi akan rebuild otomatis</h3>
 <div class="mpress-step-content">
 <p>Simpan file dan <code>wails3 dev</code> akan otomatis rebuild kode Go Anda dan me-restart aplikasi.</p>
 <aside aria-label="Auto-Rebuild" class="mpress-admonition mpress-admonition-info">
@@ -193,7 +193,7 @@ Jalankan <code>wails3 init -l</code> untuk melihat semua template yang tersedia,
   <div class="mpress-step">
     <div class="mpress-step-number">3</div>
     <div class="mpress-step-body">
-      <h4 class="mpress-step-title">Gunakan di frontend</h4>
+      <h3 class="mpress-step-title">Gunakan di frontend</h3>
 <div class="mpress-step-content">
 <p>Tambahkan ini ke <code>frontend/src/main.js</code>:</p>
 <div class="mpress-codeframe"><div class="mpress-codeframe-title">frontend/src/main.js</div><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="window.greetMany = async () =&gt; {&#10;    const names = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;];&#10;    const greetings = await GreetService.GreetMany(names);&#10;    console.log(greetings);&#10;};"><code class="language-javascript"><span class="mpress-code-line">window.greetMany <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">async</span> () <span class="mpress-token-operator">=&gt;</span> {
