@@ -18,6 +18,36 @@ Wails v3 is a **complete rewrite** with significant improvements in architecture
 
 **Migration time:** 1-4 hours for typical applications
 
+## Automated Migration
+
+:::caution[Experimental]
+The migrate command is experimental. It handles common project shapes well, but your mileage may vary: review the generated code and test your application thoroughly. If it stumbles on your project, please [open an issue](https://github.com/wailsapp/wails/issues) with the details so we can improve it. Pull requests are very welcome.
+:::
+
+The CLI can perform most of this guide for you:
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+The command migrates what maps deterministically and documents the rest. It does not rewrite your application logic and it does not generate compatibility layers: code that still uses the v2 API is left untouched, and every such location is listed in a generated `MIGRATION.md` with its concrete v3 replacement, so the remaining work is a clear checklist rather than a half-migrated codebase.
+
+What it migrates for you:
+
+- `main.go` is rewritten around `application.New()` + `app.Window.NewWithOptions()`, keeping your own code and comments intact. Options are mapped to their v3 equivalents, including platform-specific window options.
+- Structs listed in `Bind` become v3 services, and the `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` callbacks are wired to their v3 counterparts (application events, `OnShutdown`, `ShouldQuit`).
+- `wails.json` is replaced by the v3 project files: a Taskfile-based build system and `build/config.yml` populated from your v2 metadata (product info, file associations, protocols).
+- `go.mod` swaps `wails/v2` for `wails/v3`; everything else is preserved.
+- The frontend is copied over and `@wailsio/runtime` is added to its dependencies. The generated `wailsjs/` directory is not carried over - it is v2 build output that cannot work with v3.
+
+What it documents for you (in `MIGRATION.md`):
+
+- Every call into the v2 `runtime` package, listed by file and line with the v3 replacement (for example `runtime.EventsEmit(ctx, ...)` becomes `app.Event.Emit(...)`). The project intentionally does not compile until these are ported - the compiler points at exactly the listed locations.
+- Every frontend import of `wailsjs/runtime` or `wailsjs/go/...`, with the `@wailsio/runtime` equivalent and the `wails3 generate bindings` workflow for bindings.
+- Options that need a human decision (menus, custom loggers, `EnumBind`, ...), each with instructions.
+
+The rest of this guide explains the underlying changes in depth - use it together with the generated checklist.
+
 ## Breaking Changes
 
 ### Application Initialisation
