@@ -20,5 +20,7 @@ func TestIOSOpenURLReturnsLaunchFailures(t *testing.T) {
 	assert.Contains(t, source, "completionHandler:^(BOOL success)")
 	assert.Contains(t, source, "if (!success) errorMessage")
 	assert.Contains(t, source, "timed out waiting for application to open URL")
+	assert.Contains(t, source, "dispatch_block_create")
+	assert.Contains(t, source, "dispatch_block_cancel(launch)")
 	assert.NotContains(t, source, "canOpenURL:url")
 }

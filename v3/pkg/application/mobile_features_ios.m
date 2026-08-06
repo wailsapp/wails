@@ -103,16 +103,20 @@ const char* ios_open_url(const char* curl) {
 
     __block NSString *errorMessage = nil;
     dispatch_semaphore_t completed = dispatch_semaphore_create(0);
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_block_t launch = dispatch_block_create(0, ^{
         UIApplication *application = [UIApplication sharedApplication];
         [application openURL:url options:@{} completionHandler:^(BOOL success) {
             if (!success) errorMessage = @"application rejected URL";
             dispatch_semaphore_signal(completed);
         }];
     });
+    dispatch_async(dispatch_get_main_queue(), launch);
     long waitResult = dispatch_semaphore_wait(
         completed, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
-    if (waitResult != 0) return mfDup(@"timed out waiting for application to open URL");
+    if (waitResult != 0) {
+        dispatch_block_cancel(launch);
+        return mfDup(@"timed out waiting for application to open URL");
+    }
     return mfDup(errorMessage);
 }
 
