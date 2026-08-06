@@ -44,6 +44,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		GeneratedJsEntityWithStringEnumTest,
 		GeneratedJsEntityWithEnumTsName,
 		GeneratedJsEntityWithNestedStructInterfacesTest,
+		NullableCollectionsInterfacesTest,
 		AnonymousSubStructTest,
 		AnonymousSubStructMultiLevelTest,
 		GeneratedJsEntityWithNestedStructTest,
