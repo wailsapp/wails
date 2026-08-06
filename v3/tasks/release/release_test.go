@@ -281,7 +281,7 @@ func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read nightly release workflow: %v", err)
 	}
-	contents := string(workflow)
+	contents := strings.ReplaceAll(string(workflow), "\r\n", "\n")
 
 	deferFlag := strings.Index(contents, "ARGS+=(--defer-github-release)")
 	dispatch := strings.Index(contents, "gh workflow run release-v3.yml")
@@ -329,7 +329,7 @@ func TestNightlyPublicationRecoveryFindsReachableTagAfterBookkeeping(t *testing.
 	if err != nil {
 		t.Fatalf("read nightly release workflow: %v", err)
 	}
-	contents := string(workflow)
+	contents := strings.ReplaceAll(string(workflow), "\r\n", "\n")
 	selector := `git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1`
 	if !strings.Contains(contents, "tag=$("+selector+")") {
 		t.Fatal("publication recovery must select the latest active v3 tag reachable from HEAD")
