@@ -31,6 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.4 - 2026-08-05
+
+## Changed
+- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
+
+## Fixed
+- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
+- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
+
 ## v3.0.0-beta.3 - 2026-08-03
 
 ## Added
