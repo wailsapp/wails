@@ -73,6 +73,17 @@ func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
 		return nil
 	}
 
+	// A tracking separator is meaningful only above a native sidebar divider.
+	// Reject the attachment instead of installing a misplaced decorative
+	// item; the split view is installed before toolbars, so a pending layout
+	// is already in the window by the time a stashed toolbar attaches.
+	if toolbar.hasSidebarTrackingSeparator() && !w.hasSidebarSplitLayout() {
+		return fmt.Errorf("a sidebar tracking separator requires a split view with a sidebar; call SetSplitView before the window is shown")
+	}
+	if toolbar.hasInspectorChrome() && !w.hasInspectorSplitLayout() {
+		return fmt.Errorf("inspector toolbar items require a split view with an inspector; call SetSplitView before the window is shown")
+	}
+
 	identifier := C.CString(toolbar.identifier)
 	handle := C.toolbarCreate(identifier)
 	C.free(unsafe.Pointer(identifier))
@@ -91,6 +102,10 @@ func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
 	for _, item := range toolbar.itemSnapshot() {
 		itemIDs = append(itemIDs, addToolbarItem(handle, item)...)
 	}
+	toolbar.stateLock.RLock()
+	displayMode := toolbar.displayMode
+	toolbar.stateLock.RUnlock()
+	macToolbarSetDisplayMode(handle, displayMode)
 
 	titleBar := w.parent.options.Mac.TitleBar
 	toolbar.stateLock.Lock()
@@ -266,8 +281,45 @@ func addToolbarItem(handle unsafe.Pointer, item *MacToolbarItem) []uint {
 
 	case toolbarFlexibleSpace:
 		C.toolbarAddFlexibleSpaceIdentifier(handle)
+
+	case toolbarSidebarToggle:
+		// A standard AppKit identifier: the toolbar creates and owns the
+		// item, so no callback registration or native ID is needed.
+		C.toolbarAddSidebarToggleIdentifier(handle)
+
+	case toolbarSidebarTrackingSeparator:
+		// Omitted natively on macOS releases without the tracking-separator
+		// API; the sidebar and toggle still work there.
+		C.toolbarAddSidebarTrackingSeparatorIdentifier(handle)
+
+	case toolbarInspectorToggle:
+		// AppKit owns the standard item on macOS 14+. On older releases the
+		// native fallback routes through this private item registration.
+		id := nextToolbarNativeID()
+		itemIDs = append(itemIDs, id)
+		addToToolbarItemMap(id, item)
+		C.toolbarAddInspectorToggleItem(handle, idCStr, C.uint(id))
+
+	case toolbarInspectorTrackingSeparator:
+		C.toolbarAddInspectorTrackingSeparatorIdentifier(handle)
 	}
 	return itemIDs
+}
+
+// hasSidebarSplitLayout reports whether this window has a pending or
+// installed split view containing a sidebar pane.
+func (w *macosWebviewWindow) hasSidebarSplitLayout() bool {
+	w.parent.splitViewLock.RLock()
+	split := w.parent.splitView
+	w.parent.splitViewLock.RUnlock()
+	return split != nil && split.hasSidebarPane()
+}
+
+func (w *macosWebviewWindow) hasInspectorSplitLayout() bool {
+	w.parent.splitViewLock.RLock()
+	split := w.parent.splitView
+	w.parent.splitViewLock.RUnlock()
+	return split != nil && split.hasInspectorPane()
 }
 
 func applyMacToolbarLatestState(toolbar *MacToolbar) {
@@ -276,16 +328,30 @@ func applyMacToolbarLatestState(toolbar *MacToolbar) {
 	if toolbar.state == nil || toolbar.state.native == nil {
 		return
 	}
+	macToolbarSetDisplayMode(toolbar.state.native, toolbar.displayMode)
 	for _, item := range toolbar.itemSnapshot() {
 		applyMacToolbarItemLatestState(toolbar.state.native, item)
 	}
 }
 
+func macToolbarSetDisplayMode(native unsafe.Pointer, mode MacToolbarDisplayMode) {
+	C.toolbarSetDisplayMode(native, C.int(mode))
+}
+
 func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem) {
 	snapshot := snapshotMacToolbarItem(item)
-	if snapshot.kind == toolbarFlexibleSpace {
+	// Standard AppKit identifiers (spaces, the sidebar toggle, the tracking
+	// separator) are created and owned by AppKit and have no entry in the
+	// delegate's item map.
+	if snapshot.kind == toolbarFlexibleSpace ||
+		snapshot.kind == toolbarSidebarToggle ||
+		snapshot.kind == toolbarSidebarTrackingSeparator ||
+		snapshot.kind == toolbarInspectorTrackingSeparator {
 		return
 	}
+	// The inspector toggle is standard on macOS 14+ and has no mutable
+	// delegate item there. Setters are harmless no-ops in that configuration;
+	// on older releases they update the Wails-owned fallback.
 
 	macToolbarItemSetLabel(native, snapshot.identifier, snapshot.label)
 	if snapshot.symbolName != "" {

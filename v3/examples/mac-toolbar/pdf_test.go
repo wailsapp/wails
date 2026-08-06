@@ -52,3 +52,11 @@ func TestDaymarkShareProviderOffersPDF(t *testing.T) {
 		t.Fatalf("PDF representation failed: %v", err)
 	}
 }
+
+func TestDaymarkPDFShareProviderOffersOnlyPDF(t *testing.T) {
+	provider := newDaymarkPDFShareProvider(sharePayload{Title: "A note", Body: "Share me"})
+	representations := provider.ShareRepresentations()
+	if len(representations) != 1 || representations[0].ContentType != application.MacShareTypePDF {
+		t.Fatalf("representations = %#v, want PDF only", representations)
+	}
+}

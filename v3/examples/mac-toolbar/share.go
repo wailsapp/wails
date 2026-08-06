@@ -17,15 +17,28 @@ type sharePayload struct {
 }
 
 type daymarkShareProvider struct {
-	lock sync.RWMutex
-	note sharePayload
+	lock            sync.RWMutex
+	note            sharePayload
+	representations []application.MacShareRepresentation
 }
 
 func (p *daymarkShareProvider) ShareRepresentations() []application.MacShareRepresentation {
+	if len(p.representations) != 0 {
+		return append([]application.MacShareRepresentation(nil), p.representations...)
+	}
 	return []application.MacShareRepresentation{
 		{ContentType: application.MacShareTypePDF},
 		{ContentType: application.MacShareTypeHTML},
 		{ContentType: application.MacShareTypePlainText},
+	}
+}
+
+func newDaymarkPDFShareProvider(note sharePayload) *daymarkShareProvider {
+	return &daymarkShareProvider{
+		note: note,
+		representations: []application.MacShareRepresentation{
+			{ContentType: application.MacShareTypePDF},
+		},
 	}
 }
 

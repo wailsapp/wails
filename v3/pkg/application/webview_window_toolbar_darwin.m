@@ -288,6 +288,13 @@ void toolbarDetach(void* nsWindow) {
     window.toolbar = nil;
 }
 
+void toolbarSetDisplayMode(void* handlePtr, int displayMode) {
+    WailsToolbarHandle* handle = toolbarHandle(handlePtr);
+    if (handle == NULL || handle->toolbar == nil) return;
+    if (displayMode < NSToolbarDisplayModeDefault || displayMode > NSToolbarDisplayModeLabelOnly) return;
+    handle->toolbar.displayMode = (NSToolbarDisplayMode)displayMode;
+}
+
 // Returns a +1 retained item. A caller must transfer it to an owning
 // collection and release this reference.
 void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int itemID,
@@ -600,6 +607,55 @@ void toolbarAddFlexibleSpaceIdentifier(void* handlePtr) {
     if (delegate != nil) {
         [delegate.orderedIdentifiers addObject:NSToolbarFlexibleSpaceItemIdentifier];
     }
+}
+
+void toolbarAddSidebarToggleIdentifier(void* handlePtr) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate != nil) {
+        [delegate.orderedIdentifiers addObject:NSToolbarToggleSidebarItemIdentifier];
+    }
+}
+
+void toolbarAddSidebarTrackingSeparatorIdentifier(void* handlePtr) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) {
+        return;
+    }
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (@available(macOS 11.0, *)) {
+        [delegate.orderedIdentifiers addObject:NSToolbarSidebarTrackingSeparatorItemIdentifier];
+    }
+#endif
+}
+
+void toolbarAddInspectorToggleItem(void* handlePtr, const char* identifier, unsigned int itemID) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        [delegate.orderedIdentifiers addObject:NSToolbarToggleInspectorItemIdentifier];
+        return;
+    }
+#endif
+
+    WailsToolbarItem* item = (WailsToolbarItem*)toolbarBuildButtonItemStandalone(
+        identifier, itemID, "Inspector", "sidebar.trailing", "Show or hide the inspector",
+        true, false, false);
+    if (item.image == nil) item.image = [NSImage imageNamed:NSImageNameInfo];
+    NSString* identifierString = [NSString stringWithUTF8String:identifier];
+    [delegate.orderedIdentifiers addObject:identifierString];
+    delegate.itemsByIdentifier[identifierString] = item;
+    [item release];
+}
+
+void toolbarAddInspectorTrackingSeparatorIdentifier(void* handlePtr) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        [delegate.orderedIdentifiers addObject:NSToolbarInspectorTrackingSeparatorItemIdentifier];
+    }
+#endif
 }
 
 static NSToolbarItem* toolbarItemForIdentifier(void* handlePtr, const char* identifier) {
