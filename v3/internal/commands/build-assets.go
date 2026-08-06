@@ -53,6 +53,7 @@ type BuildAssetsOptions struct {
 	Silent                bool   `description:"Suppress output to console"`
 	Typescript            bool   `description:"Use typescript" default:"false"`
 	UseInterfaces         bool   `description:"Generate TypeScript interfaces instead of classes"`
+	PreserveConfig        bool   `description:"Preserve an existing config.yml while generating build assets"`
 }
 
 type TemplateEnrichment struct {
@@ -161,7 +162,13 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	if !options.Silent {
 		println("Generating build assets in " + options.Dir)
 	}
-	err = gosod.New(tfs).Extract(options.Dir, config)
+	buildAssetsTemplate := gosod.New(tfs)
+	if options.PreserveConfig {
+		// A remote template may provide its own build/config.yml. Keep it instead
+		// of replacing it with Wails' default configuration during init.
+		buildAssetsTemplate.IgnoreFile("config.yml")
+	}
+	err = buildAssetsTemplate.Extract(options.Dir, config)
 	if err != nil {
 		return err
 	}
