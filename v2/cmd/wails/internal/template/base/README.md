@@ -4,6 +4,14 @@
 
 About your template
 
+## Template Usage
+
+Simply run the following command:
+
+```sh
+wails init -n my-project -t your-template-url
+```
+
 ## Live Development
 
 To run in live development mode, run `wails dev` in the project directory. In another terminal, go into the `frontend`
