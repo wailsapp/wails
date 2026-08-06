@@ -1,36 +1,39 @@
-//go:build linux && cgo && gtk3 && !android && !purego
+//go:build linux && purego && !gtk3 && !android
 
 package webview
 
-/*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1
+// CGO-free (purego) port of responsewriter_linux.go.
 
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
-
-// webview_asset_error_quark returns a stable GError domain for asset-server
-// failures. The string literal is static storage, so g_quark_from_static_string
-// interns it once and never leaks. Interning the per-request error message
-// instead (the previous behaviour) grew the global quark table unboundedly on
-// long-running apps, since GQuarks are never freed.
-static GQuark webview_asset_error_quark(void) {
-	return g_quark_from_static_string("wails-webview-assetserver");
-}
-
-*/
-import "C"
 import (
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"syscall"
-	"unsafe"
 )
 
+var (
+	webviewAssetErrorQuarkOnce sync.Once
+	webviewAssetErrorQuarkID   uint32
+)
+
+// webviewAssetErrorQuark returns a stable GError domain for asset-server
+// failures. The domain string is interned exactly once (sync.Once), the purego
+// equivalent of the cgo g_quark_from_static_string over a static string
+// literal, so it never leaks. Interning the per-request error message instead
+// (the previous behaviour) grew the global quark table unboundedly on
+// long-running apps, since GQuarks are never freed.
+func webviewAssetErrorQuark() uint32 {
+	webviewAssetErrorQuarkOnce.Do(func() {
+		webviewAssetErrorQuarkID = g_quark_from_string("wails-webview-assetserver")
+	})
+	return webviewAssetErrorQuarkID
+}
+
 type responseWriter struct {
-	req *C.WebKitURISchemeRequest
+	req uintptr
 
 	header      http.Header
 	wroteHeader bool
@@ -78,9 +81,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 		}
 	}
 
-	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
-	// read FD is given to the InputStream and will be closed there.
-	// Furthermore we especially don't want to have the FD_CLOEXEC
 	rFD, w, err := pipe()
 	if err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to open pipe: %s", err))
@@ -88,10 +88,11 @@ func (rw *responseWriter) WriteHeader(code int) {
 	}
 	rw.w = w
 
-	// webkit_uri_scheme_request_finish wraps the read end of the pipe in a
+	// webkitURISchemeRequestFinish wraps the read end of the pipe in a
 	// GUnixInputStream and completes the request on the GTK main thread; the
-	// stream is created and released there too. See webkit_linux_gtk3.go and #5631.
-	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), rFD, contentLength); err != nil {
+	// stream is created and released there too. See webkit_linux_purego.go and
+	// #5631.
+	if err := webkitURISchemeRequestFinish(rw.req, code, rw.Header(), rFD, contentLength); err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
 		return
 	}
@@ -119,16 +120,16 @@ func (rw *responseWriter) finishWithError(code int, err error) {
 	}
 	rw.wErr = err
 
-	msg := C.CString(err.Error())
-	defer C.free(unsafe.Pointer(msg))
+	msg := err.Error()
 
 	// webkit_uri_scheme_request_finish_error touches the WebKit-owned request
 	// on the GTK main loop; this runs on an asset-server worker goroutine, so
-	// it must hop to the main thread. See mainthread_linux.go and issue #5631.
+	// it must hop to the main thread. See mainthread_linux_purego.go and issue
+	// #5631.
 	invokeOnMainSync(func() {
-		gerr := C.g_error_new_literal(C.webview_asset_error_quark(), C.int(code), msg)
-		C.webkit_uri_scheme_request_finish_error(rw.req, gerr)
-		C.g_error_free(gerr)
+		gerr := g_error_new_literal(webviewAssetErrorQuark(), int32(code), msg)
+		webkit_uri_scheme_request_finish_error(rw.req, gerr)
+		g_error_free(gerr)
 	})
 }
 
