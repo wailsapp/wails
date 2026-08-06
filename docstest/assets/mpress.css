@@ -1450,6 +1450,14 @@ html[data-theme="light"] .docs-page .mpress-admonition-tip .mpress-admonition-ti
   .landing-page .landing-main > h2 { margin-top: 2.5rem; font-size: 28px; }
 }
 
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] { --wails-accent-readable: hsl(0, 90%, 78%); }
+}
+
+/* Final contrast overrides must follow the Starlight compatibility rules above. */
+.docs-page .toc a.active,
+.docs-page article a { color: var(--wails-accent-readable) !important; }
+
 .mpress-showcase-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
