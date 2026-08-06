@@ -375,6 +375,15 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     [self.mainWindow setBackgroundColor:colour];
 }
 
+- (void) SetAppearance:(NSString*)appearance {
+    if (appearance != nil) {
+        NSAppearance *nsAppearance = [NSAppearance appearanceNamed:appearance];
+        if (nsAppearance != nil) {
+            [self.mainWindow setAppearance:nsAppearance];
+        }
+    }
+}
+
 - (void) HideMouse {
     [NSCursor hide];
 }
