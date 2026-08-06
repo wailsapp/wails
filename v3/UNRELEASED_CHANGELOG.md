@@ -20,13 +20,13 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
 
 ## Fixed
 <!-- Bug fixes -->
 - Prevent nightly releases from becoming immutable before desktop binaries, checksums, and provenance are attached (#5876)
-- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
-- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
+- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
+- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
+- Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
