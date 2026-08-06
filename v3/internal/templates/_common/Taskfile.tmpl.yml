@@ -13,21 +13,23 @@ vars:
   ## ─── Build Customization ──────────────────────────────────────────────
   ## These variables are NOT overwritten by `wails3 update build-assets`.
   ## All values are additive — empty means no change from platform defaults.
-  ## Override via environment: APP_TAGS="extra" task build
+  ## Override via environment: APP_TAGS="extra" wails3 task build
 
-  # Tags included in EVERY build (all platforms, all modes)
-  APP_TAGS: ''
+  # Tags included in every Taskfile-driven build
+  APP_TAGS: '{{.Opn}}.APP_TAGS | default ""{{.Cls}}'
   # Platform-specific tags (only applied on that platform's builds)
-  APP_TAGS_LINUX: ''
-  APP_TAGS_DARWIN: ''
-  APP_TAGS_WINDOWS: ''
-  APP_TAGS_ANDROID: ''
-  APP_TAGS_IOS: ''
-  APP_TAGS_SERVER: ''
-  # Linker flags appended to all builds (e.g. -X main.Version=1.0.0)
-  APP_LDFLAGS: ''
-  # Override CGO_ENABLED (leave empty to use platform defaults: linux/darwin=1, windows=0)
-  APP_CGO_ENABLED: ''
+  APP_TAGS_LINUX: '{{.Opn}}.APP_TAGS_LINUX | default ""{{.Cls}}'
+  APP_TAGS_DARWIN: '{{.Opn}}.APP_TAGS_DARWIN | default ""{{.Cls}}'
+  APP_TAGS_WINDOWS: '{{.Opn}}.APP_TAGS_WINDOWS | default ""{{.Cls}}'
+  APP_TAGS_ANDROID: '{{.Opn}}.APP_TAGS_ANDROID | default ""{{.Cls}}'
+  APP_TAGS_IOS: '{{.Opn}}.APP_TAGS_IOS | default ""{{.Cls}}'
+  APP_TAGS_SERVER: '{{.Opn}}.APP_TAGS_SERVER | default ""{{.Cls}}'
+  # Linker flags appended to every Taskfile-driven build (e.g. -X main.Version=1.0.0)
+  APP_LDFLAGS: '{{.Opn}}.APP_LDFLAGS | default ""{{.Cls}}'
+  # Desktop/server CGO override. Empty uses linux/darwin=1 and windows=0;
+  # native server builds keep Go's host default, server Docker uses 0, and
+  # mobile toolchains always require CGO_ENABLED=1.
+  APP_CGO_ENABLED: '{{.Opn}}.APP_CGO_ENABLED | default ""{{.Cls}}'
 
 includes:
   common: ./build/Taskfile.yml
