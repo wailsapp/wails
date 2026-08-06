@@ -502,13 +502,18 @@ type ThemeSettings struct {
 type MacBackdrop int
 
 const (
-	// MacBackdropNormal - The default value. The window will have a normal opaque background.
+	// MacBackdropNormal uses AppKit's normal opaque window surface. This is the
+	// appropriate backdrop for standard document windows, including windows
+	// whose edge-to-edge content scrolls underneath an NSToolbar.
 	MacBackdropNormal MacBackdrop = iota
 	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible
 	MacBackdropTransparent
 	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
 	MacBackdropTranslucent
-	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	// MacBackdropLiquidGlass applies a custom whole-window glass backdrop on
+	// macOS 26+ with a translucent fallback. It does not enable toolbar glass:
+	// standard NSToolbar instances adopt the system Liquid Glass appearance
+	// automatically on supported macOS releases.
 	MacBackdropLiquidGlass
 )
 
@@ -527,6 +532,42 @@ const (
 	// MacToolbarStyleUnifiedCompact - Same as MacToolbarStyleUnified, but with reduced margins in the toolbar allowing more focus to be on the contents of the window
 	MacToolbarStyleUnifiedCompact
 )
+
+// MacContentLayout controls whether a window's primary content is laid out
+// below the titlebar and toolbar or extends underneath them. Edge-to-edge
+// layout is the native arrangement required for AppKit's automatic scroll
+// edge effect on macOS 26 and newer.
+type MacContentLayout int
+
+const (
+	// MacContentLayoutAutomatic follows the titlebar's FullSizeContent option:
+	// full-size content is edge-to-edge, otherwise it remains below the toolbar.
+	MacContentLayoutAutomatic MacContentLayout = iota
+	// MacContentLayoutBelowToolbar constrains primary content to the window's
+	// unobscured content layout guide.
+	MacContentLayoutBelowToolbar
+	// MacContentLayoutEdgeToEdge extends primary content beneath the titlebar
+	// and toolbar. Native scroll views preserve their resting inset and, on
+	// macOS 26+, receive AppKit's automatic scroll edge effect while scrolling.
+	MacContentLayoutEdgeToEdge
+)
+
+func validMacContentLayout(layout MacContentLayout) bool {
+	return layout >= MacContentLayoutAutomatic && layout <= MacContentLayoutEdgeToEdge
+}
+
+func resolveMacContentLayout(window MacWindow, pane MacContentLayout) MacContentLayout {
+	if validMacContentLayout(pane) && pane != MacContentLayoutAutomatic {
+		return pane
+	}
+	if validMacContentLayout(window.ContentLayout) && window.ContentLayout != MacContentLayoutAutomatic {
+		return window.ContentLayout
+	}
+	if window.TitleBar.FullSizeContent {
+		return MacContentLayoutEdgeToEdge
+	}
+	return MacContentLayoutBelowToolbar
+}
 
 // MacLiquidGlassStyle defines the style of the Liquid Glass effect
 type MacLiquidGlassStyle int
@@ -616,6 +657,11 @@ type MacWindow struct {
 	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
+	// ContentLayout controls whether the primary WebView is constrained below
+	// the titlebar and toolbar or extends underneath them. Automatic follows
+	// TitleBar.FullSizeContent. A split view's primary WebView pane may override
+	// this value with MacSplitWebviewPane.SetContentLayout.
+	ContentLayout MacContentLayout
 	// Appearance is the appearance type for the window
 	Appearance MacAppearanceType
 	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging
@@ -787,13 +833,19 @@ type MacWebviewPreferences struct {
 
 // MacTitleBar contains options for the Mac titlebar
 type MacTitleBar struct {
-	// AppearsTransparent will make the titlebar transparent
+	// AppearsTransparent prevents AppKit from drawing an opaque titlebar
+	// background. Leave this false for automatic AppKit content-inset and
+	// scroll-edge handling under a standard toolbar. This is independent of
+	// transparent window backdrops.
 	AppearsTransparent bool
 	// Hide will hide the titlebar
 	Hide bool
 	// HideTitle will hide the title
 	HideTitle bool
-	// FullSizeContent will extend the window content to the full size of the window
+	// FullSizeContent extends the window content through the titlebar and toolbar
+	// region. Pair it with MacContentLayoutEdgeToEdge to enable the native
+	// Finder-style arrangement in which scrolling content passes beneath a
+	// standard NSToolbar.
 	FullSizeContent bool
 	// UseToolbar will use a toolbar instead of a titlebar
 	UseToolbar bool

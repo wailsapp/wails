@@ -221,6 +221,29 @@ func TestMacToolbarStyle_Constants(t *testing.T) {
 	}
 }
 
+func TestMacContentLayoutConstantsAndResolution(t *testing.T) {
+	if MacContentLayoutAutomatic != 0 || MacContentLayoutBelowToolbar != 1 || MacContentLayoutEdgeToEdge != 2 {
+		t.Fatalf("unexpected MacContentLayout values: %d, %d, %d",
+			MacContentLayoutAutomatic, MacContentLayoutBelowToolbar, MacContentLayoutEdgeToEdge)
+	}
+
+	window := MacWindow{}
+	if got := resolveMacContentLayout(window, MacContentLayoutAutomatic); got != MacContentLayoutBelowToolbar {
+		t.Fatalf("ordinary automatic layout = %d, want below toolbar", got)
+	}
+	window.TitleBar.FullSizeContent = true
+	if got := resolveMacContentLayout(window, MacContentLayoutAutomatic); got != MacContentLayoutEdgeToEdge {
+		t.Fatalf("full-size automatic layout = %d, want edge-to-edge", got)
+	}
+	window.ContentLayout = MacContentLayoutBelowToolbar
+	if got := resolveMacContentLayout(window, MacContentLayoutAutomatic); got != MacContentLayoutBelowToolbar {
+		t.Fatalf("window override = %d, want below toolbar", got)
+	}
+	if got := resolveMacContentLayout(window, MacContentLayoutEdgeToEdge); got != MacContentLayoutEdgeToEdge {
+		t.Fatalf("pane override = %d, want edge-to-edge", got)
+	}
+}
+
 func TestWebviewGpuPolicy_Constants(t *testing.T) {
 	if WebviewGpuPolicyAlways != 0 {
 		t.Error("WebviewGpuPolicyAlways should be 0")

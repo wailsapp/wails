@@ -227,6 +227,12 @@ type WebviewWindow struct {
 	// once run() creates the window, instead of being silently dropped.
 	toolbar     *MacToolbar
 	toolbarLock sync.RWMutex
+
+	// splitView holds the native split layout requested for this window
+	// (macOS only). It must be configured before the native window exists;
+	// run() installs it before any toolbar is attached.
+	splitView     *MacSplitView
+	splitViewLock sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -870,6 +876,47 @@ func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
 		// shown and therefore never became active.
 		releaseMacToolbarOwnership(previous, w)
 	}
+	return w
+}
+
+// SetSplitView configures the native macOS split-view layout for this window.
+// It must be called before the native window is shown; a late call leaves any
+// installed layout unchanged and reports the error through Window.Error.
+// Passing nil before installation clears a pending layout and releases the
+// split view for use elsewhere.
+//
+// The layout must contain at least two panes and exactly one pane added with
+// AddPrimaryContent. On platforms without AppKit the call validates and
+// stores the layout but the window keeps its ordinary single WebView.
+func (w *WebviewWindow) SetSplitView(split *MacSplitView) Window {
+	if w.impl != nil {
+		reportMacSplitError(w, "SetSplitView: the split view must be configured before the window is created")
+		return w
+	}
+	if split == nil {
+		w.splitViewLock.Lock()
+		previous := w.splitView
+		w.splitView = nil
+		w.splitViewLock.Unlock()
+		releaseMacSplitViewOwnership(previous, w)
+		return w
+	}
+	if err := validateMacSplitView(split); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	if err := claimMacSplitView(split, w); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	w.splitViewLock.Lock()
+	previous := w.splitView
+	w.splitView = split
+	w.splitViewLock.Unlock()
+	if previous != nil && previous != split {
+		releaseMacSplitViewOwnership(previous, w)
+	}
+	split.adoptPendingPrimaryState(w)
 	return w
 }
 
