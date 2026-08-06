@@ -12,6 +12,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"errors"
 	"unsafe"
 )
 
@@ -50,10 +51,13 @@ func (iosManager) Share(jsonPayload string) {
 }
 
 // OpenURL opens the given URL in the system browser (Safari).
-func (iosManager) OpenURL(url string) {
+func (iosManager) OpenURL(url string) error {
 	c, free := cString(url)
 	defer free()
-	C.ios_open_url(c)
+	if message := cStr(C.ios_open_url(c)); message != "" {
+		return errors.New(message)
+	}
+	return nil
 }
 
 // SetKeepAwake disables (true) or restores (false) the idle timer, keeping
