@@ -337,8 +337,8 @@ body.mpress-search-open { overflow: hidden; }
 #menu .lucide { margin: auto; }
 
 .layout { display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0, 1fr); width: 100%; margin: 0; padding: 0; }
-.docs-stage { display: grid; grid-template-columns: minmax(0, var(--layout-content-width)) var(--layout-content-toc-gap) minmax(0, var(--layout-toc-width)); width: min(100%, calc(var(--layout-content-width) + var(--layout-content-toc-gap) + var(--layout-toc-width))); min-width: 0; margin-inline: auto; }
-.docs-page-wide .docs-stage { grid-template-columns: minmax(0, var(--layout-wide-content-width)) var(--layout-content-toc-gap) minmax(0, var(--layout-toc-width)); width: min(100%, calc(var(--layout-wide-content-width) + var(--layout-content-toc-gap) + var(--layout-toc-width))); }
+.docs-stage { display: grid; grid-template-columns: minmax(0, var(--layout-content-width)) minmax(0, var(--layout-toc-width)); column-gap: var(--layout-content-toc-gap); width: min(100%, calc(var(--layout-content-width) + var(--layout-content-toc-gap) + var(--layout-toc-width))); min-width: 0; margin-inline: auto; }
+.docs-page-wide .docs-stage { grid-template-columns: minmax(0, var(--layout-wide-content-width)) minmax(0, var(--layout-toc-width)); width: min(100%, calc(var(--layout-wide-content-width) + var(--layout-content-toc-gap) + var(--layout-toc-width))); }
 .sidebar, .toc { position: sticky; top: 58px; height: calc(100vh - 58px - var(--mpress-devbar-height, 0px)); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; user-select: none; }
 .sidebar { padding: 2rem 1rem 3rem; border-right: 1px solid var(--border); }
 .sidebar a, .sidebar summary, .sidebar .nav-label { display: block; margin: 1px 0; padding: .38rem .55rem; border-radius: 3px; color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 400; line-height: 1.4; text-decoration: none; }
@@ -1097,12 +1097,14 @@ body > footer strong { color: var(--accent); }
   --layout-content-toc-gap: clamp(.75rem, 2.5rem, 6rem);
 }
 .docs-stage {
-  grid-template-columns: minmax(0, clamp(30rem, 45rem, 100rem)) clamp(.75rem, 2.5rem, 6rem) minmax(0, clamp(12rem, 16rem, 25rem));
+  grid-template-columns: minmax(0, clamp(30rem, 45rem, 100rem)) minmax(0, clamp(12rem, 16rem, 25rem));
+  column-gap: clamp(.75rem, 2.5rem, 6rem);
   width: min(100%, calc(clamp(30rem, 45rem, 100rem) + clamp(.75rem, 2.5rem, 6rem) + clamp(12rem, 16rem, 25rem)));
   margin-inline: auto;
 }
 .docs-page-wide .docs-stage {
-  grid-template-columns: minmax(0, clamp(30rem, 64rem, 120rem)) clamp(.75rem, 2.5rem, 6rem) minmax(0, clamp(12rem, 16rem, 25rem));
+  grid-template-columns: minmax(0, clamp(30rem, 64rem, 120rem)) minmax(0, clamp(12rem, 16rem, 25rem));
+  column-gap: clamp(.75rem, 2.5rem, 6rem);
   width: min(100%, calc(clamp(30rem, 64rem, 120rem) + clamp(.75rem, 2.5rem, 6rem) + clamp(12rem, 16rem, 25rem)));
 }
 @media (max-width: 1360px) {
