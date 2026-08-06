@@ -79,7 +79,6 @@ body > header { height: 64px; padding-inline: 24px; background: var(--surface); 
 .sidebar, .toc { top: 64px; height: calc(100vh - 64px - var(--mpress-devbar-height, 0px)); }
 
 .docs-page .layout {
-  grid-template-columns: 300px minmax(0, 710px) minmax(290px, 1fr);
   gap: 0;
   max-width: none;
   margin: 0;
