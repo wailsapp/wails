@@ -95,6 +95,7 @@ func TestCGOBuildCustomization(t *testing.T) {
 		defaultCGO string
 	}{
 		{"windows", "windows:build:native", "0"},
+		{"windows docker", "windows:build:docker", "0"},
 		{"linux", "linux:build:native", "1"},
 		{"darwin", "darwin:build:native", "1"},
 		{"server native", "common:build:server", ""},

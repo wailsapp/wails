@@ -101,7 +101,7 @@ tasks:
       PRODUCTION_TAGS: '{{ list "production" (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_WINDOWS .EXTRA_TAGS | compact | join "," }}'
       PRODUCTION_LDFLAGS: '-w -s -H windowsgui{{with .APP_LDFLAGS}} {{.}}{{end}}'
       BUILD_FLAGS: '-tags {{.PRODUCTION_TAGS | q}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}'
-      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "1"}}{{end}}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
       DOCKER_ARCH: '{{.ARCH | default "amd64"}}'
       # Generate Docker volume mounts: Go module cache + go.mod replace directives
       # Uses wails3 tool docker-mounts for cross-platform compatibility (Windows/Linux/macOS)
