@@ -17,6 +17,8 @@ void ios_window_set_background_color(void* viewController, unsigned char r, unsi
 import "C"
 import (
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 // iosWebviewWindow implements the webviewWindowImpl interface for iOS
@@ -215,6 +217,18 @@ func (w *iosWebviewWindow) run() {
 				w.nativeHandle,
 				C.uchar(rgba.Red), C.uchar(rgba.Green), C.uchar(rgba.Blue), C.uchar(rgba.Alpha),
 			)
+
+			// Unlike every other platform's run() (see e.g.
+			// webview_window_darwin.go), this never told the webview to
+			// actually navigate anywhere — the WKWebView got created (so
+			// the background colour showed) but never loaded options.URL,
+			// leaving it permanently blank regardless of what the asset
+			// server serves. Mirrors macOS's run(): resolve the start URL
+			// and load it right after creating the native handle.
+			startURL, err := assetserver.GetStartURL(w.parent.options.URL)
+			if err == nil {
+				w.setURL(startURL)
+			}
 		}
 	}
 }
