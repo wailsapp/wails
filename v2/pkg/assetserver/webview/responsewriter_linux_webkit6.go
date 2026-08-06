@@ -1,15 +1,13 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 gio-unix-2.0
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo pkg-config: gtk4 webkitgtk-6.0 gio-unix-2.0
 
 #include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
+#include "webkit/webkit.h"
 #include "gio/gunixinputstream.h"
 
 */
