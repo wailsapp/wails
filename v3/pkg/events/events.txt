@@ -26,6 +26,7 @@ common:WindowZoom
 common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
+common:BackButtonPressed
 linux:ApplicationStartup
 linux:SystemDidWake!
 linux:SystemThemeChanged
