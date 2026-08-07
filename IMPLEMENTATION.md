@@ -346,15 +346,34 @@ GTK accelerator strings use format like:
 | `ShiftKey` | `GDK_SHIFT_MASK` |
 | `SuperKey` | `GDK_SUPER_MASK` |
 
-### Phase 10: Testing 📋 PENDING
+### Phase 10: Beta Verification ✅ COMPLETE
 
-TODO:
-- [ ] Test on Ubuntu 24.04 (native GTK4)
-- [ ] Test on Ubuntu 22.04 (backported WebKitGTK 6.0)
-- [ ] Test legacy build on older systems
-- [ ] Performance benchmarks
-- [ ] Verify file dialogs work correctly
-- [ ] Verify message dialogs work correctly
+The Beta verification gate is covered continuously by the v3 CI matrix:
+
+- Ubuntu installs both GTK4 / WebKitGTK 6.0 and legacy GTK3 / WebKit2GTK 4.1.
+- Every v3 example compiles with the default GTK4 stack and again with
+  `BUILD_TAGS=gtk3`.
+- The full Go suite runs under D-Bus and Xvfb for both stacks. The GTK4 service
+  tests that require a real interactive display remain explicitly excluded in
+  CI; their platform-specific behaviour is covered through focused regression
+  work.
+- All supported frontend templates are generated and built on Ubuntu alongside
+  the desktop-platform template matrix.
+
+Recent successful runs of this matrix include
+[PR #5870](https://github.com/wailsapp/wails/actions/runs/30792348092) and
+[PR #5877](https://github.com/wailsapp/wails/actions/runs/30792353185).
+Native dual-stack validation was also performed on Fedora 44 while reproducing
+and fixing [#5845](https://github.com/wailsapp/wails/issues/5845).
+
+Known constraints are documented rather than hidden: GTK4/Wayland window
+positioning is a protocol-level no-op, portal-backed GTK4 dialogs have the
+documented option limitations, and remaining Linux regressions stay in focused
+issues such as [#5838](https://github.com/wailsapp/wails/issues/5838),
+[#5839](https://github.com/wailsapp/wails/issues/5839), and
+[#5465](https://github.com/wailsapp/wails/issues/5465). Performance and
+long-running leak benchmarking are ongoing quality work, not a condition for
+the v3 Beta gate.
 
 ## API Differences: GTK3 vs GTK4
 
