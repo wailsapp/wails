@@ -70,7 +70,7 @@ tasks:
       - yarn install
 
   build:frontend:
-    label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}})
+    label: build:frontend (DEV={{.Opn}}.DEV{{.Cls}} RUNNER={{.Opn}}.PACKAGE_MANAGER{{.Cls}} GOOS={{.Opn}}.GOOS | default OS{{.Cls}} CGO_ENABLED={{.Opn}}.CGO_ENABLED | default ""{{.Cls}})
     summary: Build the frontend project
     # darwin:build:universal runs its per-arch builds as parallel deps, each of
     # which depends on this task. Without run:once the two executions race:
@@ -92,6 +92,10 @@ tasks:
             ref: .BUILD_FLAGS
           OBFUSCATED:
             ref: .OBFUSCATED
+          GOOS:
+            ref: .GOOS
+          CGO_ENABLED:
+            ref: .CGO_ENABLED
     cmds:
       - task: frontend:run
         vars:
@@ -174,6 +178,7 @@ tasks:
 
 
   generate:bindings:
+    label: generate:bindings (GOOS={{.Opn}}.GOOS | default OS{{.Cls}} CGO_ENABLED={{.Opn}}.CGO_ENABLED | default ""{{.Cls}})
     summary: Generates bindings for the frontend
     run: once
     deps:
@@ -189,6 +194,9 @@ tasks:
       - frontend/bindings/**/*
     cmds:
       - wails3 generate bindings -f '{{.Opn}}.BUILD_FLAGS{{.Cls}}' -clean=true{{if not (and .UseInterfaces .Typescript)}} -time-type=Date{{end}}{{.Opn}}if eq .OBFUSCATED "true"{{.Cls}} -obfuscated{{.Opn}}end{{.Cls}}{{if .Typescript}} -ts{{end}}{{if and .UseInterfaces .Typescript}} -i{{end}}
+    env:
+      GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'
+      CGO_ENABLED: '{{.Opn}}.CGO_ENABLED | default ""{{.Cls}}'
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).

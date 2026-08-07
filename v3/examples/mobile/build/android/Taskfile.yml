@@ -42,6 +42,8 @@ tasks:
             ref: .BUILD_FLAGS
           PRODUCTION:
             ref: .PRODUCTION
+          GOOS: android
+          CGO_ENABLED: "0"
     cmds:
       - echo "Building Android app {{.APP_NAME}}..."
       - task: compile:go:shared
@@ -241,23 +243,6 @@ tasks:
       - build/android/gen/main_android.gen.go
     cmds:
       - wails3 android overlay:gen -out build/android/overlay.json -config build/config.yml
-
-  generate:android:bindings:
-    internal: true
-    summary: Generates bindings for Android
-    sources:
-      - "**/*.go"
-      - go.mod
-      - go.sum
-    generates:
-      - frontend/bindings/**/*
-    cmds:
-      # Bindings are generated from the Go AST; CGO is disabled so the NDK
-      # is not required for this step
-      - wails3 generate bindings -f '-tags android' -clean=true
-    env:
-      GOOS: android
-      CGO_ENABLED: 0
 
   ensure-emulator:
     internal: true
