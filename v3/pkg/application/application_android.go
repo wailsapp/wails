@@ -487,6 +487,10 @@ func (a *App) platformRun() {
 	// startup races.
 	applicationEvents <- newApplicationEvent(events.Android.ActivityCreated)
 
+	// Flush any deep links that arrived before the app was ready (cold start).
+	// This runs AFTER the launch event so listeners are wired first.
+	flushAndroidPendingDeepLinks()
+
 	// Block forever - Android manages the app lifecycle via JNI callbacks
 	select {}
 }
@@ -675,6 +679,54 @@ func emitAndroidApplicationEventWithData(event events.ApplicationEventType, json
 	applicationEvents <- evt
 }
 
+// Android deep-link buffering. On cold start, the Java side calls
+// nativeOnDeepLink before the Go app is initialized (globalApp is nil). URLs
+// received in this window are buffered and flushed once the app starts.
+var (
+	androidDeepLinkLock     sync.Mutex
+	androidDeepLinkReady    bool
+	androidPendingDeepLinks []string
+)
+
+// emitAndroidDeepLink forwards a deep link (App Link / custom scheme) URL to the
+// event loop as the cross-platform common:ApplicationLaunchedWithUrl event, so
+// the same Go listener works on desktop and Android. Empty URLs are ignored.
+// If the Go app is not yet initialized, the URL is buffered.
+func emitAndroidDeepLink(url string) {
+	if url == "" {
+		return
+	}
+	androidDeepLinkLock.Lock()
+	if !androidDeepLinkReady {
+		androidPendingDeepLinks = append(androidPendingDeepLinks, url)
+		androidDeepLinkLock.Unlock()
+		return
+	}
+	androidDeepLinkLock.Unlock()
+
+	evt := newApplicationEvent(events.Common.ApplicationLaunchedWithUrl)
+	evt.Context().setURL(url)
+	applicationEvents <- evt
+}
+
+// flushAndroidPendingDeepLinks emits any URLs that arrived before the Go app
+// was initialized, then marks delivery as ready. Pending URLs are emitted
+// before setting ready to preserve FIFO ordering with concurrent calls.
+func flushAndroidPendingDeepLinks() {
+	androidDeepLinkLock.Lock()
+	pending := androidPendingDeepLinks
+	androidPendingDeepLinks = nil
+	// Emit all buffered URLs BEFORE setting ready, so a concurrent
+	// emitAndroidDeepLink cannot overtake the buffered ones.
+	for _, url := range pending {
+		evt := newApplicationEvent(events.Common.ApplicationLaunchedWithUrl)
+		evt.Context().setURL(url)
+		applicationEvents <- evt
+	}
+	androidDeepLinkReady = true
+	androidDeepLinkLock.Unlock()
+}
+
 // JNI Export Functions - Called from Java
 
 //export Java_com_wails_app_WailsBridge_nativeInit
@@ -781,6 +833,20 @@ func Java_com_wails_app_WailsBridge_nativeEmitEvent(env *C.JNIEnv, obj C.jobject
 	C.releaseJString(env, jjson, cJSON)
 
 	emitNativeEventToJS(name, jsonStr)
+}
+
+// Java_com_wails_app_WailsBridge_nativeOnDeepLink is the funnel MainActivity
+// calls when the Activity is launched or resumed via a deep link (App Link or
+// custom-scheme intent). It delivers the URL as the cross-platform
+// common:ApplicationLaunchedWithUrl application event.
+//
+//export Java_com_wails_app_WailsBridge_nativeOnDeepLink
+func Java_com_wails_app_WailsBridge_nativeOnDeepLink(env *C.JNIEnv, obj C.jobject, jurl C.jstring) {
+	cUrl := C.jstringToC(env, jurl)
+	url := C.GoString(cUrl)
+	C.releaseJString(env, jurl, cUrl)
+
+	emitAndroidDeepLink(url)
 }
 
 //export Java_com_wails_app_WailsBridge_nativeOnPageFinished
