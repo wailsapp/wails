@@ -85,6 +85,8 @@ public class WailsBridge {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
+    private SharedPreferences cachedSecurePrefs;
+    private boolean securePrefsResolved = false;
 
     // Phase D state: sensor listeners, speech engine and keyboard watcher are
     // retained so they can be registered and torn down on demand.
@@ -744,8 +746,13 @@ public class WailsBridge {
      * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
      * the Android Keystore). Requires API 23+. Returns null if secure storage
      * cannot be initialized — callers MUST check for null and report the error.
+     * The result is cached after the first call.
      */
     private SharedPreferences securePrefs() {
+        if (securePrefsResolved) {
+            return cachedSecurePrefs;
+        }
+        securePrefsResolved = true;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return null;
         }
@@ -753,12 +760,24 @@ public class WailsBridge {
             MasterKey key = new MasterKey.Builder(activity)
                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                     .build();
-            return EncryptedSharedPreferences.create(activity, "wails_secure", key,
+            cachedSecurePrefs = EncryptedSharedPreferences.create(activity, "wails_secure", key,
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
         } catch (Exception e) {
             Log.e(TAG, "securePrefs initialization failed", e);
-            return null;
+        }
+        return cachedSecurePrefs;
+    }
+
+    /** Build a JSON error envelope, safely handling null messages. */
+    private String secureError(String msg) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("ok", false);
+            o.put("error", msg != null ? msg : "unknown error");
+            return o.toString();
+        } catch (Exception ignored) {
+            return "{\"ok\":false,\"error\":\"unknown error\"}";
         }
     }
 
@@ -780,7 +799,7 @@ public class WailsBridge {
             }
             return "{\"ok\":true}";
         } catch (Exception e) {
-            return "{\"ok\":false,\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+            return secureError(e.getMessage());
         }
     }
 
@@ -805,7 +824,7 @@ public class WailsBridge {
             result.put("value", value);
             return result.toString();
         } catch (Exception e) {
-            return "{\"ok\":false,\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+            return secureError(e.getMessage());
         }
     }
 
@@ -825,7 +844,7 @@ public class WailsBridge {
             }
             return "{\"ok\":true}";
         } catch (Exception e) {
-            return "{\"ok\":false,\"error\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+            return secureError(e.getMessage());
         }
     }
 
