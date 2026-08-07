@@ -162,7 +162,7 @@ func TestDockerBuildCustomizationPropagation(t *testing.T) {
 	} {
 		data, err := buildAssets.ReadFile(platform.path)
 		require.NoError(t, err)
-		content := string(data)
+		content := strings.ReplaceAll(string(data), "\r\n", "\n")
 		for _, expected := range []string{
 			"BUILD_FLAGS:\n            ref: .BUILD_FLAGS",
 			`-e APP_TAGS={{.APP_TAGS | default "" | q}}`,
@@ -187,6 +187,7 @@ func TestDockerBuildCustomizationPropagation(t *testing.T) {
 	fixture := newBuildCustomizationFixture(t)
 	common, err := os.ReadFile(filepath.Join(fixture.projectDir, "build", "Taskfile.yml"))
 	require.NoError(t, err)
+	commonContent := strings.ReplaceAll(string(common), "\r\n", "\n")
 	for _, expected := range []string{
 		"BUILD_FLAGS:\n            ref: .BUILD_FLAGS",
 		`--build-arg CGO_ENABLED={{.EFFECTIVE_CGO_ENABLED | toString | q}}`,
@@ -195,7 +196,7 @@ func TestDockerBuildCustomizationPropagation(t *testing.T) {
 		`--build-arg APP_LDFLAGS={{.APP_LDFLAGS | default "" | q}}`,
 		`--build-arg EXTRA_TAGS={{.EXTRA_TAGS | default "" | q}}`,
 	} {
-		assert.Contains(t, string(common), expected)
+		assert.Contains(t, commonContent, expected)
 	}
 
 	server, err := buildAssets.ReadFile("build_assets/docker/Dockerfile.server")
