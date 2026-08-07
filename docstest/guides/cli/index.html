@@ -1,0 +1,1368 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLI Reference · Wails</title><meta name="description" content="Complete reference for the Wails CLI commands"><meta property="og:title" content="CLI Reference · Wails"><meta property="og:description" content="Complete reference for the Wails CLI commands"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="CLI Reference · Wails"><meta name="twitter:description" content="Complete reference for the Wails CLI commands"><meta name="mpress:repository" content="https://github.com/wailsapp/wails.git"><meta name="mpress:branch" content="master"><meta name="mpress:source" content="content/guides/cli.md"><meta name="mpress:route" content="/guides/cli/"><meta property="og:url" content="https://v3.wails.io/guides/cli/"><link rel="canonical" href="https://v3.wails.io/guides/cli/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/cli/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/cli/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/cli/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><div class="header-group contribution-header"><button class="mpress-contribute-trigger header-contribute" type="button" data-mpress-contribute aria-haspopup="dialog" aria-label="Edit this documentation" title="Edit this documentation"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit this documentation</span></button></div><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/cli/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/cli/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/cli/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><dialog id="mpress-contribute-dialog" class="mpress-contribute-dialog" data-installer-shell="../../mpress-contribute.sh" data-installer-powershell="../../mpress-contribute.ps1" aria-labelledby="mpress-contribute-title"><script type="application/json" id="mpress-quick-edit-data">{"version":1,"source":"content/guides/cli.md","route":"/guides/cli/","revision":"495acf3fbc6cd88843eea743f729d4bc3209f0ef3ad7734d954ca34589cdb442","segments":[{"id":"b0001-text-01","kind":"text","original":"The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.","start":106,"end":226,"sourceHash":"c8d03db4568b24d808757f46b3179e53514e471175eb673827bece795980e68e"},{"id":"b0002-heading-01","kind":"heading","original":"Core Commands","start":231,"end":244,"sourceHash":"8caa74b65da5b5e2ac7ae019875091eed36b1feda68ffdbae2b55998db91f519"},{"id":"b0003-text-01","kind":"text","original":"Core commands are the primary commands used for project creation, development, and building.","start":246,"end":338,"sourceHash":"7890c9c78985a30667cfb0724c67bc096f6f15f8440cfa9453935e5f4ec56055"},{"id":"b0004-text-01","kind":"text","original":"All CLI commands are of the following format:","start":340,"end":385,"sourceHash":"b988942df9394b5f2d2a5f5b11ad95ac016cb140a2967a795850200dc86d2a14"},{"id":"b0005-text-01","kind":"text","original":"Initializes a new Wails project. During this initialization, the","start":418,"end":482,"sourceHash":"b59b07b23b05bf6f0e9e34425e86362feecbec3736d94079b6ace4fefdc1f28a"},{"id":"b0005-text-02","kind":"text","original":"command is run to bring the project packages up to date. This can be bypassed by using the","start":497,"end":587,"sourceHash":"d7b97e7d748b5d6fa8ec97bce88a08e4f9a4705ae33aa34d9f82fe19cedcc7dd"},{"id":"b0005-text-03","kind":"text","original":"flag with the","start":605,"end":618,"sourceHash":"b83182f23c85ed59f50ea0b8c440d912ee691250605fa04e221dbdad4f57b4cc"},{"id":"b0005-text-04","kind":"text","original":"command.","start":626,"end":634,"sourceHash":"4c331678a9bd4d0ac894931ca8c06d8e3fdb4d7d4fcbfe01153da184e1144c4d"},{"id":"b0006-heading-01","kind":"heading","original":"Flags","start":674,"end":679,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0007-text-01","kind":"text","original":"Flag","start":682,"end":686,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0008-text-01","kind":"text","original":"Description","start":706,"end":717,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0009-text-01","kind":"text","original":"Default","start":729,"end":736,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0010-text-01","kind":"text","original":"Go package name","start":858,"end":873,"sourceHash":"830c259833cec85d6b1fbf32590af7f60cbf3d7d8e7851cd788426f58370aa03"},{"id":"b0011-text-01","kind":"text","original":"Template name or URL","start":934,"end":954,"sourceHash":"160ef4acc9e0cd53a6b6f601d7ac0cdadb6219e4f5fec2bbec9f765f8c7927a8"},{"id":"b0012-text-01","kind":"text","original":"Project name","start":1010,"end":1022,"sourceHash":"25498193b898195dca035317a941c506276da563d690c4cccf94af50643dbb44"},{"id":"b0013-text-01","kind":"text","original":"Project directory","start":1086,"end":1103,"sourceHash":"5fefe87e9fcca9d56d65d74c2c489aeb6ed990785f7d48d667b2e493d03c7a08"},{"id":"b0014-text-01","kind":"text","original":"Suppress output","start":1162,"end":1177,"sourceHash":"6a8b60ee12d4c3ec7ff8807e166b4c218e43b140073ab4e28c46e463842d1304"},{"id":"b0015-text-01","kind":"text","original":"List templates","start":1238,"end":1252,"sourceHash":"a249b2df7cba7a384f399eabb2fa6efd4772749536bb66de34c399384afe2fc5"},{"id":"b0016-text-01","kind":"text","original":"Go module path (computed from","start":1314,"end":1343,"sourceHash":"6b4a7dde62c4b78ae48e4896a990e3db9ae890ad2a9bceac0203cb3166d5f1a8"},{"id":"b0016-text-02","kind":"text","original":"if omitted)","start":1351,"end":1362,"sourceHash":"6d35be2a606b522e766d781546c5cd77af7dddfb91b2684d6afc9e93bee2400d"},{"id":"b0017-text-01","kind":"text","original":"Git repository URL","start":1393,"end":1411,"sourceHash":"8b4079e3f24ee61b62917b7334fe2278bdcfbc3f354e431a30e6940c7e702683"},{"id":"b0018-text-01","kind":"text","original":"Skip the warning when using a remote template","start":1469,"end":1514,"sourceHash":"4f3fb8e03c84a43aa6e55062c098b9c90e00ce4c6aa97b8306be9068399b4bb8"},{"id":"b0019-text-01","kind":"text","original":"Product name","start":1556,"end":1568,"sourceHash":"bfa93eb4d4fef9df9cb3bf27e0950171c210d73b8c710a435a5893c5d4f23e13"},{"id":"b0020-text-01","kind":"text","original":"Product description","start":1632,"end":1651,"sourceHash":"a3c5b7d5c7e6d5b291eef2ea22d51ea0b890be456a703171a3f69588207c51bc"},{"id":"b0021-text-01","kind":"text","original":"Product version","start":1708,"end":1723,"sourceHash":"9bb14a0cefac7ad0a3cba10d74b9eb253119df94c6712becec1ed2f1fc19752a"},{"id":"b0022-text-01","kind":"text","original":"Company name","start":1784,"end":1796,"sourceHash":"6dfada13d2f4b97e46847aaec3e20204e45a7718158c4e8c28a2e05f68d6ef23"},{"id":"b0023-text-01","kind":"text","original":"Copyright notice","start":1860,"end":1876,"sourceHash":"ab08f195c8e18afa70d1487d40687f283694ab48af00e760fc58e7642f4ca6bd"},{"id":"b0024-text-01","kind":"text","original":"File comments","start":1937,"end":1950,"sourceHash":"bcc90497a8a8706340f6cd501997f1aaf4341ef45a6361a7c43ccafea40ca68f"},{"id":"b0025-text-01","kind":"text","original":"Product identifier","start":2013,"end":2031,"sourceHash":"bb020a17c514081281ae227438b9e9d2bb15c1f99175a40d23a24fc2b8bf5804"},{"id":"b0026-text-01","kind":"text","original":"Skip go mod tidy","start":2089,"end":2105,"sourceHash":"b692653e01ccd6b599b3821a1c8efab6699e86d5b2d951314cde693e5f2e6035"},{"id":"b0027-text-01","kind":"text","original":"The","start":2141,"end":2144,"sourceHash":"b344d80e24a3679999fa964450b34bc24d1578a35509f934c1418b0a20d21a67"},{"id":"b0027-text-02","kind":"text","original":"flag accepts various Git URL formats:","start":2152,"end":2189,"sourceHash":"e25e9bd15bc5e8a0c8dc9a5fd86a60cf4e8137328b93951b71ad45032c776115"},{"id":"b0028-cell-01","kind":"cell","original":"HTTPS:","start":2192,"end":2198,"sourceHash":"98d8c244f72e7658d2a8fbbc69ffada9a9144b6ba42b40cfd5f984e20404889c"},{"id":"b0029-cell-01","kind":"cell","original":"SSH:","start":2239,"end":2243,"sourceHash":"2057beebaff849ee6007def13a604d549a49a807c13d93d4822146dfb2517fc3"},{"id":"b0029-cell-02","kind":"cell","original":"or","start":2278,"end":2280,"sourceHash":"7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"},{"id":"b0030-cell-01","kind":"cell","original":"Git protocol:","start":2323,"end":2336,"sourceHash":"05f9eea49bf673e85be4cc617527cb53e9d428bd135f5b86613e900bb3f6ca73"},{"id":"b0031-cell-01","kind":"cell","original":"Filesystem:","start":2375,"end":2386,"sourceHash":"2be7c5300c288f9e4ab312a584e76ca33ac5884f159f2bd5111b41a5e55e3b54"},{"id":"b0032-text-01","kind":"text","original":"When provided, this flag will:","start":2418,"end":2448,"sourceHash":"631a89dc97da082b27946a54837f86341770e1314d25a8ea3b38d1149ddb14cb"},{"id":"b0033-cell-01","kind":"cell","original":"Initialize a git repository in the project directory","start":2452,"end":2504,"sourceHash":"14702bfbb4852754f582b8831745b37e2e86001540d2a009c21638106ea78f8e"},{"id":"b0034-cell-01","kind":"cell","original":"Set the specified URL as the remote origin","start":2508,"end":2550,"sourceHash":"c79349fe1139df5a662d1ac7fd37bd117bd564aecf6a5809927a30558c75c656"},{"id":"b0035-cell-01","kind":"cell","original":"Update the module name in","start":2554,"end":2579,"sourceHash":"736f509d356d440ce29367c7c954579a26a841322ae4dda3fff11e997a4540eb"},{"id":"b0035-cell-02","kind":"cell","original":"to match the repository URL","start":2589,"end":2616,"sourceHash":"f035586d0c2c142c99d0e4ce55e0b13b7efd765d968a99bcc0d424b2720f1ca4"},{"id":"b0036-cell-01","kind":"cell","original":"Add all files","start":2620,"end":2633,"sourceHash":"942ce05ac8bc3d234f1ebffc5af060bf29fa7f6a0147078c015c6dab2e86d3e2"},{"id":"b0037-text-01","kind":"text","original":"Runs the application in development mode. This will give you a live view of your frontend code, and you can make changes and see them reflected","start":2645,"end":2788,"sourceHash":"8e883f9ae83462b09e8a4fbe4dc521ccbf718d3e480e39cb437c2ee41280d975"},{"id":"b0037-text-02","kind":"text","original":"in the running application without having to rebuild the entire application. Changes to your Go code will also be detected and the application","start":2789,"end":2931,"sourceHash":"e7a907d14f63c711bebc68cf0695674cdad393d00e99b731d607dbf2d5cf2133"},{"id":"b0037-text-03","kind":"text","original":"will automatically rebuild and relaunch.","start":2932,"end":2972,"sourceHash":"204f2c7384cb5f2e952ea7e95be9deeadfe47d7096369078c18180c01edb17a7"},{"id":"b0038-heading-01","kind":"heading","original":"Flags","start":3011,"end":3016,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0039-text-01","kind":"text","original":"Flag","start":3019,"end":3023,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0040-text-01","kind":"text","original":"Description","start":3031,"end":3042,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0041-text-01","kind":"text","original":"Default","start":3054,"end":3061,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0042-text-01","kind":"text","original":"Config file path","start":3151,"end":3167,"sourceHash":"b47a8cd40bf1fc952844ccab89f9ca65e5ac6ad3cbd36017ccea336dc7aa8cb6"},{"id":"b0043-text-01","kind":"text","original":"Vite dev server port","start":3211,"end":3231,"sourceHash":"907d9301a238b5c21e2c710c07d9a92efcdafbd7ea20f3ff08b714f1596d8fb1"},{"id":"b0044-text-01","kind":"text","original":"Enable HTTPS","start":3271,"end":3283,"sourceHash":"3cdb44660a8242fb59982c10e7bd9d9ec79be9f552a5399de2818148103ef44f"},{"id":"b0045-text-01","kind":"text","original":"This is equivalent to running","start":3339,"end":3368,"sourceHash":"7a5fc8406760f121d6f06e36a426fd41eb38aa4f37326f0b839cfa3c8e3afae2"},{"id":"b0045-text-02","kind":"text","original":"and runs the","start":3387,"end":3399,"sourceHash":"b04560097126092dded0d1c02b8ff6ced6d2fa861f79393cd8204eff9c9773a4"},{"id":"b0045-text-03","kind":"text","original":"task in the project's main Taskfile. You can customise this by editing the","start":3406,"end":3480,"sourceHash":"c020e748423edaaf76bf910482a6166ba5fbc082d8d1d1f437979cbc7d5f2257"},{"id":"b0045-text-04","kind":"text","original":"file.","start":3496,"end":3501,"sourceHash":"eb36be6c06717c3b88700bdc0678576b33b6b4ef76de644a43b56023e9e77cb0"},{"id":"b0046-text-01","kind":"text","original":"Builds a debug version of your application. It defaults to building for the current platform and architecture.","start":3518,"end":3628,"sourceHash":"35a67ab6770d91a2609eb86379ec7f33125968e131248b7d1874e884f9e652bf"},{"id":"b0047-heading-01","kind":"heading","original":"Flags","start":3688,"end":3693,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0048-text-01","kind":"text","original":"Flag","start":3696,"end":3700,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0049-text-01","kind":"text","original":"Description","start":3707,"end":3718,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0050-text-01","kind":"text","original":"Default","start":3766,"end":3773,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0051-text-01","kind":"text","original":"Additional Go build tags (comma-separated)","start":3871,"end":3913,"sourceHash":"4032a941084c257ab23ee012e43508c7d4b90ffc36ab8fb1a3daecfe4c874e1f"},{"id":"b0052-text-01","kind":"text","original":"You can pass CLI variables to customize the build:","start":3941,"end":3991,"sourceHash":"003ef18749ab2d04553b34f7d01f44f09bcf99fca745e325326be4182a627864"},{"id":"b0053-text-01","kind":"text","original":"Use the","start":4051,"end":4058,"sourceHash":"3ffa30fbc4099141cf71265ae1c4347ea77d68bdad70cd7676d1627511dfc816"},{"id":"b0053-text-02","kind":"text","original":"flag to pass custom Go build tags:","start":4067,"end":4101,"sourceHash":"0440664011bdcbe9d78ec9d9ef2e109cd625298a0bf8af46213c40d8a1fcfabd"},{"id":"b0054-text-01","kind":"text","original":"Tags are forwarded as","start":4334,"end":4355,"sourceHash":"d21b3677cc068ae5570e808b7e940f82b8cd338f29a1c9ca320519b8e8593470"},{"id":"b0054-text-02","kind":"text","original":"to the underlying Taskfile.","start":4369,"end":4396,"sourceHash":"12335f69db9246b032dd028c8423cef0bbeefeb5df5e6faf9ac7c8d84b8409fe"},{"id":"b0055-text-01","kind":"text","original":"This is equivalent to running","start":4419,"end":4448,"sourceHash":"7a5fc8406760f121d6f06e36a426fd41eb38aa4f37326f0b839cfa3c8e3afae2"},{"id":"b0055-text-02","kind":"text","original":"which runs the","start":4469,"end":4483,"sourceHash":"490074c1a89eb7ed406b4ca43932e92e42c3eec023561965ca8e1bc61ceaddc2"},{"id":"b0055-text-03","kind":"text","original":"task in the project's main Taskfile. Any CLI variables passed to","start":4492,"end":4556,"sourceHash":"98a03ca3e5688fa41d20abd1877d36e0ab1efd5012036bcbc2fdcd3cd9572b63"},{"id":"b0055-text-04","kind":"text","original":"are forwarded to the underlying task. You can customise the build process by editing the","start":4565,"end":4653,"sourceHash":"035625d75ea2c2a5838738784639345c3802345ac85da735ed8c18e59f336dc5"},{"id":"b0055-text-05","kind":"text","original":"file.","start":4669,"end":4674,"sourceHash":"eb36be6c06717c3b88700bdc0678576b33b6b4ef76de644a43b56023e9e77cb0"},{"id":"b0056-text-01","kind":"text","original":"Creates platform-specific packages for distribution.","start":4694,"end":4746,"sourceHash":"5c9b5424dcd73f38a1a8725da847b782dbfb99d434464e1431f6ce4bab7a6056"},{"id":"b0057-text-01","kind":"text","original":"You can pass CLI variables to customize the packaging:","start":4795,"end":4849,"sourceHash":"5ea75c3deb7b45e1e39b953e6393a668186b30db0e7aa5000e19174aef14aea8"},{"id":"b0058-heading-01","kind":"heading","original":"Package Types","start":4914,"end":4927,"sourceHash":"3e0ca884f22a5d67c0e919974e644bd87f64df6e01a74e90607121be12885119"},{"id":"b0059-text-01","kind":"text","original":"The following package types are available for each platform:","start":4929,"end":4989,"sourceHash":"c1c7893bd0f43ffea236cc0d92cb64eac8f9ff0af19cdb4f62542eecc2e0b6fc"},{"id":"b0060-text-01","kind":"text","original":"Platform","start":4993,"end":5001,"sourceHash":"c78ffe19571018fbc93a78873969046fe1a80c3d21e5d20fbb2ca17c7c53a144"},{"id":"b0061-text-01","kind":"text","original":"Package Type","start":5004,"end":5016,"sourceHash":"f3c88ad9f6338b4fca973c8395a91ca039ae722876324d965938fe0c7295c622"},{"id":"b0062-text-01","kind":"text","original":"Windows","start":5107,"end":5114,"sourceHash":"d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10"},{"id":"b0063-text-01","kind":"text","original":"macOS","start":5164,"end":5169,"sourceHash":"aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7"},{"id":"b0064-text-01","kind":"text","original":"Linux","start":5221,"end":5226,"sourceHash":"4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed"},{"id":"b0065-text-01","kind":"text","original":"This is equivalent to","start":5298,"end":5319,"sourceHash":"714b5168d34b3cd5be381706c46222ab4d3bd931cff0003b78f4ff325d13ce7b"},{"id":"b0065-text-02","kind":"text","original":"which runs the","start":5342,"end":5356,"sourceHash":"490074c1a89eb7ed406b4ca43932e92e42c3eec023561965ca8e1bc61ceaddc2"},{"id":"b0065-text-03","kind":"text","original":"task in the project's main Taskfile. Any CLI variables passed to","start":5367,"end":5431,"sourceHash":"98a03ca3e5688fa41d20abd1877d36e0ab1efd5012036bcbc2fdcd3cd9572b63"},{"id":"b0065-text-04","kind":"text","original":"are forwarded to the underlying task. You can customise the packaging process by editing the","start":5442,"end":5534,"sourceHash":"8c79727929a597bd10bb26c7be540b9e24a5a01f9de3542b4f2ea025db8ac28f"},{"id":"b0065-text-05","kind":"text","original":"file.","start":5550,"end":5555,"sourceHash":"eb36be6c06717c3b88700bdc0678576b33b6b4ef76de644a43b56023e9e77cb0"},{"id":"b0066-text-01","kind":"text","original":"Runs tasks defined in your project's Taskfile.yml. This is an embedded version of","start":5571,"end":5652,"sourceHash":"8a9ec61b1cfa0252dd5916e5f3b7abbf9af373122342a7bf4a9a62282ea9973f"},{"id":"b0066-text-02","kind":"text","original":"Taskfile","start":5654,"end":5662,"sourceHash":"7619b5def96f6fa00be81b09ccb9355574a5f10546b04a45fdcf769d97ab6bf1"},{"id":"b0066-text-03","kind":"text","original":"that allows you to define and run custom build, test, and deployment tasks.","start":5686,"end":5761,"sourceHash":"60a342d14515b13e90d0b61cfa1b5b54b84158ecda6309c0faaf1d77beb27666"},{"id":"b0067-heading-01","kind":"heading","original":"CLI Variables","start":5831,"end":5844,"sourceHash":"f0b2f76c763903bb2c0624b7180497269de43767d2c42d2eb25b9b1e93078a89"},{"id":"b0068-text-01","kind":"text","original":"You can pass variables to tasks in the format","start":5845,"end":5890,"sourceHash":"26e84d0fc4b4f80a69dc7fc258894cd89a640b6874d83e9154e1b9eab34f6b0d"},{"id":"b0069-text-01","kind":"text","original":"These variables can be accessed in your Taskfile.yml using Go template syntax:","start":6013,"end":6091,"sourceHash":"b7b817fd8b6029a5ea347cb79697002411c7db49a351afaee6a7666e65b0bb44"},{"id":"b0070-heading-01","kind":"heading","original":"Flags","start":6250,"end":6255,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0071-text-01","kind":"text","original":"Flag","start":6258,"end":6262,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0072-text-01","kind":"text","original":"Description","start":6273,"end":6284,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0073-text-01","kind":"text","original":"Default","start":6317,"end":6324,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0074-text-01","kind":"text","original":"Shows Task usage","start":6417,"end":6433,"sourceHash":"32831844078cb0dcc6dd5265c64f4b89715a7e7faf3db2cc9911602f67033edf"},{"id":"b0075-text-01","kind":"text","original":"Creates a new Taskfile.yml","start":6489,"end":6515,"sourceHash":"b23c488012fb55685ebd5085ba1c2ec98a60d58788d25b7a557c79d61bdbbfe2"},{"id":"b0076-text-01","kind":"text","original":"Lists tasks with descriptions","start":6561,"end":6590,"sourceHash":"8740e13e068b7af603795d2267e940024c8145825a88887bbc35b39f5f0a427a"},{"id":"b0077-text-01","kind":"text","original":"Lists all tasks (with or without descriptions)","start":6633,"end":6679,"sourceHash":"cd494ef16310100259c5d0b7d720f1bf69735bd2d64597f96750b84df4c9ec5b"},{"id":"b0078-text-01","kind":"text","original":"Formats task list as JSON","start":6710,"end":6735,"sourceHash":"8277f181399ea9c703dabe8b549be820593d645a51d27d29e8bc78b38c404b97"},{"id":"b0079-text-01","kind":"text","original":"Exits with non-zero if task is not up-to-date","start":6782,"end":6827,"sourceHash":"a89740837f90af2ecfc677921866b47c4f70d65861ea7c891b1c6c333acda348"},{"id":"b0080-text-01","kind":"text","original":"Forces execution even when task is up-to-date","start":6858,"end":6903,"sourceHash":"a0cbf79c81a54a8f29c8fdf09773c653497efad8456e1fae4450c907df462aa1"},{"id":"b0081-text-01","kind":"text","original":"Enables watch mode for the given task","start":6934,"end":6971,"sourceHash":"0ae8e9d098e2161948b3bfaeecd8198b11e8a22ce7fa2504874001d62e756fcb"},{"id":"b0082-text-01","kind":"text","original":"Enables verbose mode","start":7006,"end":7026,"sourceHash":"a1c44f2c3aaad628675708e57bbe53d22abbecdc316d9e59e42aa1fd3a2b987a"},{"id":"b0083-text-01","kind":"text","original":"Prints Task version","start":7078,"end":7097,"sourceHash":"026897bfbc0d770115f5552d1c3b35d91e05b081c93a3c20432b21f3310360c0"},{"id":"b0084-text-01","kind":"text","original":"Disables echoing","start":7150,"end":7166,"sourceHash":"e0605bf7fb59bbef5d6b1944dd33e9ffce9493c6bd1c73cf66a0867322c7c782"},{"id":"b0085-text-01","kind":"text","original":"Executes tasks in parallel","start":7222,"end":7248,"sourceHash":"88e52aae1510007879a60f1d1723a4a790b885cf63dd567e6060a37b2a2a62e1"},{"id":"b0086-text-01","kind":"text","original":"Compiles and prints tasks without executing","start":7294,"end":7337,"sourceHash":"d6039c7be4fd5e84bb13796833e310a340047b6a301038ab88df03cc5ea52552"},{"id":"b0087-text-01","kind":"text","original":"Shows summary about a task","start":7368,"end":7394,"sourceHash":"8d7570ddab4aa8e6d59be77022f244527f2b4fc807d49aa1f5e67cadcd2b0d6d"},{"id":"b0088-text-01","kind":"text","original":"Pass-through the exit code of the task","start":7440,"end":7478,"sourceHash":"eeb8c1de215155743b358d75e87ebd286a32e28b249122bf457d73e779342915"},{"id":"b0089-text-01","kind":"text","original":"Sets directory of execution","start":7512,"end":7539,"sourceHash":"d0cf298b788a37c19eeca3bdbf5a272abd9d91bc6980f0a5ad2caa1f17269e23"},{"id":"b0090-text-01","kind":"text","original":"Choose which Taskfile to run","start":7584,"end":7612,"sourceHash":"ea7b0f583b74c8f98d09479e588c9502e401bc9111d484f3e7f8d4ae6792d5f0"},{"id":"b0091-text-01","kind":"text","original":"Sets output style:","start":7656,"end":7674,"sourceHash":"77b39575c933a2e3f6382aeabbdec37ff52501d150db6202d5310d6f5c413414"},{"id":"b0091-text-02","kind":"text","original":"interleaved","start":7676,"end":7687,"sourceHash":"9d729af535bceed479b3167551f2857c9aea3101a758a603a9adc6261edcee23"},{"id":"b0092-text-01","kind":"text","original":"group","start":7688,"end":7693,"sourceHash":"ad936fcbed631fa67e05c3ea03953905221c9d46af0616b70badf105a966fb11"},{"id":"b0093-text-01","kind":"text","original":"Colored output (enabled by default)","start":7734,"end":7769,"sourceHash":"917e77a254952471196f826622c17d82b0d6e284f029656df0df65c71588a4f0"},{"id":"b0094-text-01","kind":"text","original":"Limit number of tasks to run concurrently","start":7806,"end":7847,"sourceHash":"9f51a4f4614eb53f3c40fd38bdcee75274568d38f8154a0439f1821377d42e74"},{"id":"b0095-text-01","kind":"text","original":"Interval to watch for changes (in seconds)","start":7878,"end":7920,"sourceHash":"9777e19f202f45ece14c3a13bb867d9a206cebe4202a54bf9703e6d7efe350bf"},{"id":"b0096-heading-01","kind":"heading","original":"Examples","start":7940,"end":7948,"sourceHash":"e68ee04dff59551b7d1ae07a2f8a00dc61d841628948da3d2781630706a05e92"},{"id":"b0097-text-01","kind":"text","original":"Performs a system check and displays a status report.","start":8295,"end":8348,"sourceHash":"751fb0d976926edcd4a851702c46475dcdb48873ecd34c4579f60c9e4bd88dc8"},{"id":"b0098-heading-01","kind":"heading","original":"Generate Commands","start":8380,"end":8397,"sourceHash":"934a9961e11c36648feef11c60180cc708fbcc8f18112298867fc8fdf61591a7"},{"id":"b0099-text-01","kind":"text","original":"Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command:","start":8399,"end":8534,"sourceHash":"3ec4e84a30d3fd349d058b8c910f2d0cae65f54eb6a6f6aca421090c90076569"},{"id":"b0100-text-01","kind":"text","original":"Generates bindings and models for your Go code.","start":8589,"end":8636,"sourceHash":"853834c5d1d2b05f17d2e1706450d500ad14121024096c4062a7ff561a0be66a"},{"id":"b0101-heading-01","kind":"heading","original":"Flags","start":8703,"end":8708,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0102-text-01","kind":"text","original":"Flag","start":8711,"end":8715,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0103-text-01","kind":"text","original":"Description","start":8725,"end":8736,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0104-text-01","kind":"text","original":"Default","start":8753,"end":8760,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0105-text-01","kind":"text","original":"Additional Go build flags","start":8857,"end":8882,"sourceHash":"fab71d9550f73058154b5ebe78019ff3b40a9b2fb43101f02e9c38a1b7ae4fe4"},{"id":"b0106-text-01","kind":"text","original":"Output directory","start":8923,"end":8939,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0107-text-01","kind":"text","original":"Models filename","start":8989,"end":9004,"sourceHash":"4461d269d5289c9e39af77a88e25daf0a795448a9e959bf1f95a76adb9997ee3"},{"id":"b0108-text-01","kind":"text","original":"Index filename","start":9055,"end":9069,"sourceHash":"cfdae57034d9e4c45fcf3652575378667085872a90e11af05ad4ba311b8d3849"},{"id":"b0109-text-01","kind":"text","original":"Generate TypeScript","start":9121,"end":9140,"sourceHash":"930b8bbd59304e76229b16078e9003fa19d7bead7b9f78fdaf1a48f51011daa7"},{"id":"b0110-text-01","kind":"text","original":"Use TS interfaces","start":9187,"end":9204,"sourceHash":"042d65183556a8432d584147c87800fc8b07ecc162e77f28b7d2aac9900c59e1"},{"id":"b0111-text-01","kind":"text","original":"Use bundled runtime","start":9253,"end":9272,"sourceHash":"a51da0a9e8b722dad3a151d653bd80a32e371c8e8ce32f83f151549120338df5"},{"id":"b0112-text-01","kind":"text","original":"Use names instead of IDs","start":9319,"end":9343,"sourceHash":"9964ab73bf7c7e9c3dc64107ee7e7d5eeea63aceb837112985ae860ffd0364cc"},{"id":"b0113-text-01","kind":"text","original":"Skip index files","start":9385,"end":9401,"sourceHash":"b0d34030009fcb8b605bfb7b612556a5e40f5d5585911835e81614752ffd59ff"},{"id":"b0114-text-01","kind":"text","original":"Skip generating event-related bindings","start":9451,"end":9489,"sourceHash":"839e81d82e9fc8cb02e5fed21b22080fb5032dbef4e70fb1a9964939f5ac30f2"},{"id":"b0115-text-01","kind":"text","original":"Dry run","start":9519,"end":9526,"sourceHash":"d5da154d9f00ca143502673a3d7a3dfb188972ee7a2287cb5ac2d9562f5bf458"},{"id":"b0116-text-01","kind":"text","original":"Silent mode","start":9585,"end":9596,"sourceHash":"85f590c7c15e41f886fb39c192f5048f3d8244ba99e8672726856f173849068a"},{"id":"b0117-text-01","kind":"text","original":"Debug output","start":9651,"end":9663,"sourceHash":"5f623ee6cdd90553a0f68750b567c70d6bf8b9b16009cbcf8633e46bb4cf5be6"},{"id":"b0118-text-01","kind":"text","original":"Clean output directory before generating","start":9717,"end":9757,"sourceHash":"b89683d4dbda08742ca27f3c11e0a87607558c7bb89f785e408df20f2f1f8843"},{"id":"b0119-text-01","kind":"text","original":"Generates build assets for your application.","start":9798,"end":9842,"sourceHash":"646a04b62513d8cca74fe979f155c2d2aafd2dec0d51fce537adce221cd55158"},{"id":"b0120-heading-01","kind":"heading","original":"Flags","start":9899,"end":9904,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0121-text-01","kind":"text","original":"Flag","start":9907,"end":9911,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0122-text-01","kind":"text","original":"Description","start":9924,"end":9935,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0123-text-01","kind":"text","original":"Default","start":9946,"end":9953,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0124-text-01","kind":"text","original":"Project name","start":10048,"end":10060,"sourceHash":"25498193b898195dca035317a941c506276da563d690c4cccf94af50643dbb44"},{"id":"b0125-text-01","kind":"text","original":"Output directory","start":10110,"end":10126,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0126-text-01","kind":"text","original":"Suppress output","start":10172,"end":10187,"sourceHash":"6a8b60ee12d4c3ec7ff8807e166b4c218e43b140073ab4e28c46e463842d1304"},{"id":"b0127-text-01","kind":"text","original":"Company name","start":10234,"end":10246,"sourceHash":"6dfada13d2f4b97e46847aaec3e20204e45a7718158c4e8c28a2e05f68d6ef23"},{"id":"b0128-text-01","kind":"text","original":"Product name","start":10296,"end":10308,"sourceHash":"bfa93eb4d4fef9df9cb3bf27e0950171c210d73b8c710a435a5893c5d4f23e13"},{"id":"b0129-text-01","kind":"text","original":"Product description","start":10358,"end":10377,"sourceHash":"a3c5b7d5c7e6d5b291eef2ea22d51ea0b890be456a703171a3f69588207c51bc"},{"id":"b0130-text-01","kind":"text","original":"Product version","start":10420,"end":10435,"sourceHash":"9bb14a0cefac7ad0a3cba10d74b9eb253119df94c6712becec1ed2f1fc19752a"},{"id":"b0131-text-01","kind":"text","original":"Product identifier","start":10482,"end":10500,"sourceHash":"bb020a17c514081281ae227438b9e9d2bb15c1f99175a40d23a24fc2b8bf5804"},{"id":"b0132-text-01","kind":"text","original":"Copyright notice","start":10544,"end":10560,"sourceHash":"ab08f195c8e18afa70d1487d40687f283694ab48af00e760fc58e7642f4ca6bd"},{"id":"b0133-text-01","kind":"text","original":"File comments","start":10606,"end":10619,"sourceHash":"bcc90497a8a8706340f6cd501997f1aaf4341ef45a6361a7c43ccafea40ca68f"},{"id":"b0134-text-01","kind":"text","original":"Generates application icons.","start":10671,"end":10699,"sourceHash":"13a8cd082ac0a36e2c13239590b686a935984c34869f9179d8c2f9f538391ff4"},{"id":"b0135-heading-01","kind":"heading","original":"Flags","start":10749,"end":10754,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0136-text-01","kind":"text","original":"Flag","start":10757,"end":10761,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0137-text-01","kind":"text","original":"Description","start":10782,"end":10793,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0138-text-01","kind":"text","original":"Default","start":10837,"end":10844,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0139-text-01","kind":"text","original":"Input PNG file","start":10994,"end":11008,"sourceHash":"b0d68944d186acf66fa19908a547221aa3e1844cdcec945b2fe9b53cef146571"},{"id":"b0140-text-01","kind":"text","original":"Required","start":11049,"end":11057,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0141-text-01","kind":"text","original":"Windows output filename","start":11100,"end":11123,"sourceHash":"da10d0951a9ac8e60cf0060cdb6e7e88a8382e1c70c100b4ca825fd904105e83"},{"id":"b0142-text-01","kind":"text","original":"macOS output filename","start":11206,"end":11227,"sourceHash":"9343eacba091881502d88ffb7a16ea2ac5daf7336ef75fe1f9a35e3d0d923ba0"},{"id":"b0143-text-01","kind":"text","original":"Icon sizes (comma-separated)","start":11312,"end":11340,"sourceHash":"854654374de2ca3ddba544b7d2e5dfb73f902c797778df9a056adda6090bab03"},{"id":"b0144-text-01","kind":"text","original":"Generate example icon","start":11418,"end":11439,"sourceHash":"5bd45890d9c6ce06d6bd873c00857ab84d32cb1b72c98c65186d7b7765838e74"},{"id":"b0145-text-01","kind":"text","original":"Input Icon Composer file (","start":11524,"end":11550,"sourceHash":"8d28a87c7e6449ca0d6b13d9878db0916a6af1d55e47c91f4654599b02e290cb"},{"id":"b0146-text-01","kind":"text","original":"Output directory for Mac assets (Assets.car + icns)","start":11630,"end":11681,"sourceHash":"1e342a0dfa01997f1345b95dfb1faa789d7ae7714886c297e66b116ac247a0be"},{"id":"b0147-heading-01","kind":"heading","original":"Icon Composer (macOS)","start":11715,"end":11736,"sourceHash":"ef295a4e8d604d67bc89f25029ac0b5d705b767f348f7585abe099af4dc09f6f"},{"id":"b0148-text-01","kind":"text","original":"On macOS 26+, you can use Icon Composer","start":11738,"end":11777,"sourceHash":"8e445048b71177e6f817045c8f148e1370bcbbbecae604b11a41aa5637d9d1ad"},{"id":"b0148-text-02","kind":"text","original":"files to generate","start":11786,"end":11803,"sourceHash":"7771fcec40d347b8345d941453ff062982501e013baa6204cee485f2f84774ad"},{"id":"b0148-text-03","kind":"text","original":"and","start":11817,"end":11820,"sourceHash":"6201111b83a0cb5b0922cb37cc442b9a40e24e3b1ce100a4bb204f4c63fd2ac0"},{"id":"b0149-text-01","kind":"text","original":"This compiles the","start":11928,"end":11945,"sourceHash":"002c7d8547dc69a22f531f6b56a96271058d95bc04d5c6986d83feaea7111e81"},{"id":"b0149-text-02","kind":"text","original":"file using Apple's","start":11954,"end":11972,"sourceHash":"5e180c275478175d3dba0c40afed847e6cba40ab5ee26ead6bfbe3ce12c7f36a"},{"id":"b0149-text-03","kind":"text","original":"command. Requires Xcode with","start":11982,"end":12010,"sourceHash":"d476c9ce7b43117d78b5f41d442e4f4b98f394d48472216b116c5d46c5ecdc74"},{"id":"b0149-text-04","kind":"text","original":"version 26 or later.","start":12020,"end":12040,"sourceHash":"33f1474f2847afd750e9db5dd1965b57c98c1bcc2626b913f4fdd8cce588af8c"},{"id":"b0150-text-01","kind":"text","original":"When using Icon Composer, set","start":12042,"end":12071,"sourceHash":"e79b1800a9c27daf6b1dc33f4d7d867d8e25a16fab8a648b86f2257a5ffba752"},{"id":"b0150-text-02","kind":"text","original":"in your","start":12091,"end":12098,"sourceHash":"091d153ea240cd30096e339f374d8393c59b1c405b4a838fb108416126620d8e"},{"id":"b0150-text-03","kind":"text","original":"to match the","start":12118,"end":12130,"sourceHash":"61eb001ea54c2081f58a9a72a372056b2e8aaac2aa65332c7fe9926d110962fa"},{"id":"b0150-text-04","kind":"text","original":"filename (without extension):","start":12139,"end":12168,"sourceHash":"1c60bb5a92ecc171cf66bd72db0663d433554897d37ccc06d23762c451c02279"},{"id":"b0151-text-01","kind":"text","original":"If not set and","start":12219,"end":12233,"sourceHash":"ee75390acde36f30055e314fe6042465bf01b47a645c5094e7715446966ac07a"},{"id":"b0151-text-02","kind":"text","original":"exists, this defaults to","start":12247,"end":12271,"sourceHash":"bf251d7222626afc6845caa5869807ce80dafd38fc4e47715bfb35882cd742a6"},{"id":"b0152-text-01","kind":"text","original":"Generates Windows .syso file.","start":12306,"end":12335,"sourceHash":"94ffcdfeacb672f08986c75b4869a1c71f2f3123ac2c4eaec52e2ebf9f4a92fa"},{"id":"b0153-heading-01","kind":"heading","original":"Flags","start":12384,"end":12389,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0154-text-01","kind":"text","original":"Flag","start":12392,"end":12396,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0155-text-01","kind":"text","original":"Description","start":12406,"end":12417,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0156-text-01","kind":"text","original":"Default","start":12434,"end":12441,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0157-text-01","kind":"text","original":"Path to manifest file","start":12552,"end":12573,"sourceHash":"e30faeea719782504dd4b1c1a3e0661116b2471038c96099e7539146761ea2ce"},{"id":"b0158-text-01","kind":"text","original":"Required","start":12580,"end":12588,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0159-text-01","kind":"text","original":"Path to icon file","start":12625,"end":12642,"sourceHash":"601c2a9eada071380927a45e78da447a5df1f5b12680146d058a5dfe6be87dc4"},{"id":"b0160-text-01","kind":"text","original":"Required","start":12653,"end":12661,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0161-text-01","kind":"text","original":"Path to version info file","start":12698,"end":12723,"sourceHash":"83f36f440cd43e902c1b5ebf77631baa7c3b7886de98e6ad584c64b3644592e6"},{"id":"b0162-text-01","kind":"text","original":"Target architecture","start":12771,"end":12790,"sourceHash":"96a255afb3e936532465d5a434cbbda82022a4b9e8c86b919e0fea217b5fcb78"},{"id":"b0163-text-01","kind":"text","original":"Current GOARCH","start":12799,"end":12813,"sourceHash":"91c752ee65df7df8ed4a6476b9220f97ce4fe22dda2ebe688f294e9259237bd6"},{"id":"b0164-text-01","kind":"text","original":"Output filename","start":12844,"end":12859,"sourceHash":"7c051312efe12138d2e98d5283aa563a8de194e3a618190afcb237cbdbd17e3d"},{"id":"b0165-text-01","kind":"text","original":"Generates a Linux .desktop file.","start":12926,"end":12958,"sourceHash":"96a513692729cc3ba76bf17cb40038abc3852d85a5a364705100b9edfcbe9152"},{"id":"b0166-heading-01","kind":"heading","original":"Flags","start":13011,"end":13016,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0167-text-01","kind":"text","original":"Flag","start":13019,"end":13023,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0168-text-01","kind":"text","original":"Description","start":13038,"end":13049,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0169-text-01","kind":"text","original":"Default","start":13066,"end":13073,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0170-text-01","kind":"text","original":"Application name","start":13174,"end":13190,"sourceHash":"09526e9d005a58828a312642eb61505a075408cfd2141ccfe4f0196ba59e1dcf"},{"id":"b0171-text-01","kind":"text","original":"Required","start":13202,"end":13210,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0172-text-01","kind":"text","original":"Executable path","start":13242,"end":13257,"sourceHash":"eb7082ef62f7c1e077d2b13fdd1bb7be6409bbfd0e4a3205f291c8a2d31c0283"},{"id":"b0173-text-01","kind":"text","original":"Required","start":13270,"end":13278,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0174-text-01","kind":"text","original":"Icon path","start":13310,"end":13319,"sourceHash":"79a59ce1fc2ee4197e0bc20fed15085ca5574d7265283c60cae4750cfb2af40b"},{"id":"b0175-text-01","kind":"text","original":"Application categories","start":13378,"end":13400,"sourceHash":"3edfdbf8bda88e591ef76deabc5fc97e0cf4d6d24f79f5785ce735330d436fee"},{"id":"b0176-text-01","kind":"text","original":"Application comment","start":13446,"end":13465,"sourceHash":"f50fd029a378f3c243847daa0ae1e068eb1b2f5c8f03599864360e77c090f43a"},{"id":"b0177-text-01","kind":"text","original":"Run in terminal","start":13514,"end":13529,"sourceHash":"f0b4acbfc1b0525cf148eed5b832796c3f3e6144588a7f2ba43341855d6b26a7"},{"id":"b0178-text-01","kind":"text","original":"Search keywords","start":13582,"end":13597,"sourceHash":"520c45ef94262bff47fd7a94bbbd04aeee6c693c8ca828b6069a6a5ca81b11e4"},{"id":"b0179-text-01","kind":"text","original":"Application version","start":13650,"end":13669,"sourceHash":"f0ad234172fbb9f82ca6554bf14a86134759b196ba0daade612c4f7d41f5c2a8"},{"id":"b0180-text-01","kind":"text","original":"Generic name","start":13718,"end":13730,"sourceHash":"b6c61519a28525201314a0571b9b81876f367aaf3d15262aac45525dbfa877ea"},{"id":"b0181-text-01","kind":"text","original":"Show startup notification","start":13786,"end":13811,"sourceHash":"b9ff8c17feb18d95e4dca37dc4078f4e098b30016947b1ee49f527c6f8c4364b"},{"id":"b0182-text-01","kind":"text","original":"Supported MIME types","start":13854,"end":13874,"sourceHash":"3790534e5ce5df09dfec765a42ebe29a5427d302327be8ea82f778919cfa51d9"},{"id":"b0183-text-01","kind":"text","original":"Output filename","start":13922,"end":13937,"sourceHash":"7c051312efe12138d2e98d5283aa563a8de194e3a618190afcb237cbdbd17e3d"},{"id":"b0184-text-01","kind":"text","original":"Generates the pre-built version of the runtime.","start":13993,"end":14040,"sourceHash":"b2710dc558117e2047e4824204ae6654bf4024e285406e902a0d6869c73ac24f"},{"id":"b0185-text-01","kind":"text","original":"Generates JavaScript constants from Go code.","start":14104,"end":14148,"sourceHash":"f6e6c5a3c3eb5727ce48c4a3cdb2616eda3ab1a6249b5b7f8c777201c554249d"},{"id":"b0186-text-01","kind":"text","original":"Generates a Windows WebView2 bootstrap installer for distribution.","start":14225,"end":14291,"sourceHash":"eed886b8b4f7b51faf1edbc6f126b51ba7c07e63eaf0f3a2962b1aa601aa011a"},{"id":"b0187-text-01","kind":"text","original":"Scaffolds a new project template directory.","start":14375,"end":14418,"sourceHash":"dd24526eddbb7f1b86de61932bf09b295b873aae47707e44ec31b2d3bffea4b8"},{"id":"b0188-text-01","kind":"text","original":"Generates a Linux AppImage.","start":14490,"end":14517,"sourceHash":"20797c9e72ea0ac6789bc8e635bcd846ce32b7978eb70f014fb233350ec71c82"},{"id":"b0189-heading-01","kind":"heading","original":"Flags","start":14570,"end":14575,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0190-text-01","kind":"text","original":"Flag","start":14578,"end":14582,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0191-text-01","kind":"text","original":"Description","start":14592,"end":14603,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0192-text-01","kind":"text","original":"Default","start":14616,"end":14623,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0193-text-01","kind":"text","original":"Path to binary","start":14706,"end":14720,"sourceHash":"d135319ff395d323214d60196970dbbcbb0bd533eb4d25930c897dd26528335d"},{"id":"b0194-text-01","kind":"text","original":"Required","start":14730,"end":14738,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0195-text-01","kind":"text","original":"Path to icon file","start":14763,"end":14780,"sourceHash":"601c2a9eada071380927a45e78da447a5df1f5b12680146d058a5dfe6be87dc4"},{"id":"b0196-text-01","kind":"text","original":"Required","start":14787,"end":14795,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0197-text-01","kind":"text","original":"Path to .desktop file","start":14820,"end":14841,"sourceHash":"41b5a6e22bb0b918cb0bcd69d55938b487b5a29bd5776e64f58491d5edc16b3f"},{"id":"b0198-text-01","kind":"text","original":"Required","start":14844,"end":14852,"sourceHash":"4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"},{"id":"b0199-text-01","kind":"text","original":"Build directory","start":14877,"end":14892,"sourceHash":"32b47ea5b2149a483cad7f469b3861abf14cad3efd4998e5364f68da6f07c6fe"},{"id":"b0200-text-01","kind":"text","original":"Temp directory","start":14901,"end":14915,"sourceHash":"df43be72fa2dea91115dae8f186da09e1cfb262c6f275ad06f5ec0f0ac2bef31"},{"id":"b0201-text-01","kind":"text","original":"Output directory","start":14934,"end":14950,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0202-heading-01","kind":"heading","original":"Service Commands","start":14979,"end":14995,"sourceHash":"1c725c51e5345e9acae682d8136f567392c8df851debc9eb67be32cfe7b7b0f1"},{"id":"b0203-text-01","kind":"text","original":"Service commands help manage Wails services. All service commands use the base command:","start":14997,"end":15084,"sourceHash":"04365a763a517f657ac04903e205be34096d6685736d62f226607eeb429f49aa"},{"id":"b0204-text-01","kind":"text","original":"Initializes a new service.","start":15133,"end":15159,"sourceHash":"256fbeeac13a67416d0fde15c4bcbcbab1f94377b15bdbbbfca166a3b8eab240"},{"id":"b0205-heading-01","kind":"heading","original":"Flags","start":15207,"end":15212,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0206-text-01","kind":"text","original":"Flag","start":15215,"end":15219,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0207-text-01","kind":"text","original":"Description","start":15222,"end":15233,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0208-text-01","kind":"text","original":"Default","start":15244,"end":15251,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0209-text-01","kind":"text","original":"Service name","start":15324,"end":15336,"sourceHash":"1bb8870cc0750b9e08a7a7167fdf3ef5da58ff4b4dcff374457e8af54bc8819b"},{"id":"b0210-text-01","kind":"text","original":"Service description","start":15375,"end":15394,"sourceHash":"7b004f180b6416bc83fbb741166cd1a93fc77bf3d051110264016ccf534f5ebb"},{"id":"b0211-text-01","kind":"text","original":"Package name","start":15426,"end":15438,"sourceHash":"b0b9e734b3cf5f312e698e7187b9497db66969289e62a26b570642df31a39df9"},{"id":"b0212-text-01","kind":"text","original":"Output directory","start":15477,"end":15493,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0213-text-01","kind":"text","original":"Suppress output","start":15528,"end":15543,"sourceHash":"6a8b60ee12d4c3ec7ff8807e166b4c218e43b140073ab4e28c46e463842d1304"},{"id":"b0214-text-01","kind":"text","original":"Author name","start":15579,"end":15590,"sourceHash":"d685a2cb040ed21b08f567b677691f66b65360a21c726a75769adfc5003f5b11"},{"id":"b0215-text-01","kind":"text","original":"Version","start":15630,"end":15637,"sourceHash":"dd167905de0defcaf72de673ee44c07431770d129ccffab286bd2edfdaf62396"},{"id":"b0216-text-01","kind":"text","original":"Website URL","start":15681,"end":15692,"sourceHash":"eb650fa1243ee6cab8fef01ec47950d21268c4a98106dcbdfe8c378078fc25a4"},{"id":"b0217-text-01","kind":"text","original":"Repository URL","start":15732,"end":15746,"sourceHash":"c83db0133850dfccdc6743bb4391c7765e59c5f12e22e9b6ed250e850e0f8c36"},{"id":"b0218-text-01","kind":"text","original":"License","start":15783,"end":15790,"sourceHash":"c011d6097bfbc8e936280addcf2e3e7d06ea2223ffd596973191b800a7035c32"},{"id":"b0219-heading-01","kind":"heading","original":"Tool Commands","start":15829,"end":15842,"sourceHash":"c71c67bf49848aaeac0856372c7d38d95ed4cc5df10e3fd62831991d7acf093c"},{"id":"b0220-text-01","kind":"text","original":"Tool commands provide utilities for development and debugging. All tool commands use the base command:","start":15844,"end":15946,"sourceHash":"16ca6401cc9b1cbbb55d6dec13d64cdfe1b4c6617caebf99b1abc2f94d451517"},{"id":"b0221-text-01","kind":"text","original":"Checks if a port is open. Useful for testing if vite is running.","start":15994,"end":16058,"sourceHash":"4861962bf32612174794f88f4e1a33e3e78bffa0bc2c4f9c4c7654cada03f460"},{"id":"b0222-heading-01","kind":"heading","original":"Flags","start":16108,"end":16113,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0223-text-01","kind":"text","original":"Flag","start":16116,"end":16120,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0224-text-01","kind":"text","original":"Description","start":16126,"end":16137,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0225-text-01","kind":"text","original":"Default","start":16142,"end":16149,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0226-text-01","kind":"text","original":"Port to check","start":16210,"end":16223,"sourceHash":"a577ede8beb6fe95f71f389d2fd8efe42dbf7c22e7c8466b31fb680819fe8dab"},{"id":"b0227-text-01","kind":"text","original":"Host to check","start":16252,"end":16265,"sourceHash":"d5079b00368a151d519b1834666d98e8623f689ccc0aa095a98a0367b879f906"},{"id":"b0228-text-01","kind":"text","original":"Watches files and runs a command when they change.","start":16302,"end":16352,"sourceHash":"14e7b24f80124421c8c4be82be95c3d6c8bce18e550893a56d44d77a923a5ba2"},{"id":"b0229-heading-01","kind":"heading","original":"Flags","start":16400,"end":16405,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0230-text-01","kind":"text","original":"Flag","start":16408,"end":16412,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0231-text-01","kind":"text","original":"Description","start":16421,"end":16432,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0232-text-01","kind":"text","original":"Default","start":16443,"end":16450,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0233-text-01","kind":"text","original":"Config file path","start":16541,"end":16557,"sourceHash":"b47a8cd40bf1fc952844ccab89f9ca65e5ac6ad3cbd36017ccea336dc7aa8cb6"},{"id":"b0234-text-01","kind":"text","original":"Patterns to ignore","start":16601,"end":16619,"sourceHash":"b9ea37ff240bbc54279c53ab0235762d4fa2603ca73ba926fbd47e98f0d868fd"},{"id":"b0235-text-01","kind":"text","original":"Patterns to include","start":16661,"end":16680,"sourceHash":"24f4bee30116bcf4d85035ad6091bc4185efccbc42d246457aa729189072c99a"},{"id":"b0236-text-01","kind":"text","original":"Copies files.","start":16721,"end":16734,"sourceHash":"aa1de7d50b5e650f8dc50facaee4a94b083a5423d26f896949fdfa5949677ea6"},{"id":"b0237-text-01","kind":"text","original":"Shows build information about the application.","start":16785,"end":16831,"sourceHash":"9e7983d890d2278e38af4c857e9de7c9fbca43696c95f6ec816f9cb4518232ea"},{"id":"b0238-text-01","kind":"text","original":"Bumps a semantic version based on the provided flags.","start":16887,"end":16940,"sourceHash":"0a1f161f681e265ce9c055b40f7b13e435a92f8ad86ff1e4ac56f795d3591989"},{"id":"b0239-heading-01","kind":"heading","original":"Flags","start":16988,"end":16993,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0240-text-01","kind":"text","original":"Flag","start":16996,"end":17000,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0241-text-01","kind":"text","original":"Description","start":17012,"end":17023,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0242-text-01","kind":"text","original":"Default","start":17063,"end":17070,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0243-text-01","kind":"text","original":"Current version to bump","start":17170,"end":17193,"sourceHash":"67c935cf5d4b2212022be9c78bcd4722cc6342a281ea10a57b4837e69eeed379"},{"id":"b0244-text-01","kind":"text","original":"Bump major version","start":17249,"end":17267,"sourceHash":"f52efbd7edb8d99d1dce281bbdccb7d78e0578a5177de972152a1762f58fe319"},{"id":"b0245-text-01","kind":"text","original":"Bump minor version","start":17328,"end":17346,"sourceHash":"15255b3532f4fe605f59e31dbe683ceff45b9f7c50502ed3aebfb406d160b6aa"},{"id":"b0246-text-01","kind":"text","original":"Bump patch version","start":17407,"end":17425,"sourceHash":"a4a67267dcc5d2b0b23648686d7979e18be7e9846ed1840ecd5a267015eb9926"},{"id":"b0247-text-01","kind":"text","original":"Bump prerelease version (e.g., alpha.5 to alpha.6)","start":17486,"end":17536,"sourceHash":"1fdb4cc8fa76668b9e90101918e95c369427cea716cf4f243d8d1778324a5c82"},{"id":"b0248-text-01","kind":"text","original":"The command follows the precedence order: major \u003e minor \u003e patch \u003e prerelease. It preserves the \"v\" prefix if present in the input version, as well as any prerelease and metadata components.","start":17550,"end":17739,"sourceHash":"93f1e2e5c49ded29224381887e09273e36677c52faa23be278044997e535b017"},{"id":"b0249-text-01","kind":"text","original":"Example usage:","start":17741,"end":17755,"sourceHash":"21eddf0bab8eb72f66078a107da27d93c6221bf506374c84a693bb4b5f15983c"},{"id":"b0250-text-01","kind":"text","original":"Generates Linux packages (deb, rpm, archlinux).","start":18042,"end":18089,"sourceHash":"91572430a4e8a8dc121257bd13d5eced92e73a9c714af6f9514184790531fd60"},{"id":"b0251-heading-01","kind":"heading","original":"Flags","start":18137,"end":18142,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0252-text-01","kind":"text","original":"Flag","start":18145,"end":18149,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0253-text-01","kind":"text","original":"Description","start":18157,"end":18168,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0254-text-01","kind":"text","original":"Default","start":18196,"end":18203,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0255-text-01","kind":"text","original":"Package format (deb, rpm, archlinux)","start":18283,"end":18319,"sourceHash":"8864c3cc1cfef4a7c448ae1009672e9d623e06709ffd2cfe8396856165c86821"},{"id":"b0256-text-01","kind":"text","original":"Executable name","start":18346,"end":18361,"sourceHash":"c511ca6985f79eea4b1baeb25da039e57e71ed4cc6dc8b0c33d5d788341e46ee"},{"id":"b0257-text-01","kind":"text","original":"Config file path","start":18409,"end":18425,"sourceHash":"b47a8cd40bf1fc952844ccab89f9ca65e5ac6ad3cbd36017ccea336dc7aa8cb6"},{"id":"b0258-text-01","kind":"text","original":"Output directory","start":18472,"end":18488,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0259-text-01","kind":"text","original":"Creates a macOS universal binary by combining architecture-specific binaries.","start":18538,"end":18615,"sourceHash":"f5e5d4ab27a4a4b354f03e8fc4abb9fae064ca3a7c65185069f1d7944e7a139c"},{"id":"b0260-heading-01","kind":"heading","original":"Flags","start":18660,"end":18665,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0261-text-01","kind":"text","original":"Flag","start":18668,"end":18672,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0262-text-01","kind":"text","original":"Description","start":18680,"end":18691,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0263-text-01","kind":"text","original":"Default","start":18718,"end":18725,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0264-text-01","kind":"text","original":"Output binary path","start":18804,"end":18822,"sourceHash":"5c1a3212abd1471126fcaed0acb1709e6de3a890ef3beae8b63659f8cc4cedcc"},{"id":"b0265-text-01","kind":"text","original":"Checks system build capabilities (GTK4/GTK3 availability on Linux).","start":18877,"end":18944,"sourceHash":"4bde5d795a880d7f0a8a75036bdac37851f89c7809cb0200ee01718a410bca7f"},{"id":"b0266-text-01","kind":"text","original":"Generates Docker volume mount flags for cross-compilation. Outputs","start":19009,"end":19075,"sourceHash":"5384b2f9a262224d03a58a9ba44916e8cd387dc86d29a44d455cf392d7d1b056"},{"id":"b0266-text-02","kind":"text","original":"flags for the Go module cache and any local","start":19081,"end":19124,"sourceHash":"a0cce1382ef5f1f0d2aa8bdca950ea6dda2e76146df80a815f9a2132d6826db4"},{"id":"b0266-text-03","kind":"text","original":"directives in","start":19135,"end":19148,"sourceHash":"66e4ec2605d7a394074526cfd92c40a184d147703f117d8597ef17ac902b8ef0"},{"id":"b0266-text-04","kind":"text","original":", for use in Taskfile","start":19157,"end":19178,"sourceHash":"59586db62ff7007fb06d6c621d214d0074187e497bd84eff1a4147d068981b93"},{"id":"b0266-text-05","kind":"text","original":"commands.","start":19192,"end":19201,"sourceHash":"a98c3d845aadbb809126f2454cd6d2975818e91ee5cfc0f792b7cd896308e9a2"},{"id":"b0267-text-01","kind":"text","original":"Checks whether a tool or capability is available, printing","start":19257,"end":19315,"sourceHash":"b8ef5c46c9e906b9b53c55baf32cd2dcf401441361b4e3b119abefd0406a2dd7"},{"id":"b0267-text-02","kind":"text","original":"or","start":19323,"end":19325,"sourceHash":"7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"},{"id":"b0267-text-03","kind":"text","original":"to stdout. Designed for use in Taskfile","start":19334,"end":19373,"sourceHash":"031f1501c4fbb210ac795b1f076ae0bc91e4436a6305d8ba284383e9f7599c15"},{"id":"b0267-text-04","kind":"text","original":"variables as a cross-platform alternative to","start":19380,"end":19424,"sourceHash":"f953264a439117fea721b8676996f96db1c979ab309d44206736998ed43af2b0"},{"id":"b0268-text-01","kind":"text","original":"Use","start":19440,"end":19443,"sourceHash":"c36d819e7bc6d2b7da51394411c733db89c395987885ca6770167a3b9bc45c3c"},{"id":"b0268-text-02","kind":"text","original":"to check for any one of several alternatives.","start":19448,"end":19493,"sourceHash":"86d38d0ee1d801ec13fa7f95ba91b78716c75257b7c7330a40fee1733674a12c"},{"id":"b0269-heading-01","kind":"heading","original":"Examples","start":19536,"end":19544,"sourceHash":"e68ee04dff59551b7d1ae07a2f8a00dc61d841628948da3d2781630706a05e92"},{"id":"b0270-heading-01","kind":"heading","original":"Usage in a Taskfile","start":19699,"end":19718,"sourceHash":"019c3abaec2528525219048f21d16c0777132c2e24c760f7e1feaa1dc95f3e76"},{"id":"b0271-text-01","kind":"text","original":"is deprecated. Update your Taskfile to use","start":19867,"end":19909,"sourceHash":"f58070aad230a230b3c0a2bda38ac6feda8ea8816f12d32c245507594e80e6db"},{"id":"b0271-text-02","kind":"text","original":"instead.","start":19938,"end":19946,"sourceHash":"90b5d13011f6a86532541bbf1ec3c2c9f09d654e267e4e889db77b09b8bbb990"},{"id":"b0272-text-01","kind":"text","original":"A backward-compatible alias for","start":19952,"end":19983,"sourceHash":"96f752a4ea59024cb2a1e375766bfb77818a52c6a7040182f0a93dd6a4645c4d"},{"id":"b0272-text-02","kind":"text","original":". Checks whether","start":20011,"end":20027,"sourceHash":"f9803f98fc631051c46f87b4e497bd365bf4d3a4cd69d747cd66513c46fa2b8a"},{"id":"b0272-text-03","kind":"text","original":"or","start":20034,"end":20036,"sourceHash":"7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"},{"id":"b0272-text-04","kind":"text","original":"is available in PATH and prints","start":20045,"end":20076,"sourceHash":"9d92606769f754024f98e69b9463065cfe714b4324048688e1c2c5a57cc1a053"},{"id":"b0272-text-05","kind":"text","original":"or","start":20084,"end":20086,"sourceHash":"7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"},{"id":"b0273-heading-01","kind":"heading","original":"Update Commands","start":20132,"end":20147,"sourceHash":"228d725fd2c27e6a1dffd9c606702f73656a5111af2048435f9773e6c2281081"},{"id":"b0274-text-01","kind":"text","original":"Update commands help manage and update project assets. All update commands use the base command:","start":20149,"end":20245,"sourceHash":"fcc85b1bd183e61ff1141f623641a4aa479c8bfbdc81265a60d7ac89c443cb5c"},{"id":"b0275-text-01","kind":"text","original":"Updates the Wails CLI to a new version.","start":20291,"end":20330,"sourceHash":"1a7cc4f69800139b6266621cc25c00c3c263ca6f819278e75fd573a39c58d129"},{"id":"b0276-heading-01","kind":"heading","original":"Flags","start":20376,"end":20381,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0277-text-01","kind":"text","original":"Flag","start":20384,"end":20388,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0278-text-01","kind":"text","original":"Description","start":20398,"end":20409,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0279-text-01","kind":"text","original":"Default","start":20432,"end":20439,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0280-text-01","kind":"text","original":"Update to latest pre-release","start":20518,"end":20546,"sourceHash":"ae94c84fe0d6f585eaa9781549fdd55e198053fbff2e89b626e2a573889ef5c8"},{"id":"b0281-text-01","kind":"text","original":"Update to specific version","start":20578,"end":20604,"sourceHash":"b569c872a6f50e3d018eb6812c0b96211e889556df3c9b43326ef9a3943aec38"},{"id":"b0282-text-01","kind":"text","original":"Disable colored output","start":20638,"end":20660,"sourceHash":"e7675c670668af4187513ad7e77f23e7e13aead39522384741260c4c375b8c43"},{"id":"b0283-text-01","kind":"text","original":"The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.","start":20683,"end":20808,"sourceHash":"45a843392a5d388bbeb73fe54785a996569933bca87ba901805f06a7897af773"},{"id":"b0283-text-02","kind":"text","original":"You can use the","start":20809,"end":20824,"sourceHash":"9f58fef9640bc42e6c07a897046f794fd971deb34911ed7dbd3a5278e425542c"},{"id":"b0283-text-03","kind":"text","original":"flag to update to the latest pre-release version, or specify a particular version using the","start":20832,"end":20923,"sourceHash":"6c76010b9acf1e4e526ddc64f4dc9c5fefde399e535c823f5292c576e8c548e4"},{"id":"b0283-text-04","kind":"text","original":"flag.","start":20935,"end":20940,"sourceHash":"0d1f586542022b98a5eca12e207144cd08285aa37fee6c09c6e202ba93c233b4"},{"id":"b0284-text-01","kind":"text","original":"After updating, remember to update your project's go.mod file to use the same version:","start":20942,"end":21028,"sourceHash":"c94e4af1d99ab7d58155f5429cc01e2d49effa6ba7e66fc54a219d44f45151df"},{"id":"b0285-text-01","kind":"text","original":"Updates the build assets using the given config file.","start":21112,"end":21165,"sourceHash":"4d92b163f8f72c5e98cb978e6097f94d0602e85f6a082d3eebf1e8e9c398bd1b"},{"id":"b0286-heading-01","kind":"heading","original":"Flags","start":21220,"end":21225,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0287-text-01","kind":"text","original":"Flag","start":21228,"end":21232,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0288-text-01","kind":"text","original":"Description","start":21245,"end":21256,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0289-text-01","kind":"text","original":"Default","start":21267,"end":21274,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0290-text-01","kind":"text","original":"Config file path","start":21347,"end":21363,"sourceHash":"b47a8cd40bf1fc952844ccab89f9ca65e5ac6ad3cbd36017ccea336dc7aa8cb6"},{"id":"b0291-text-01","kind":"text","original":"Output directory","start":21398,"end":21414,"sourceHash":"c94c0d681c64bb7c28d8a2afb1a426d7fdd0ce00aed508a2218a4f8c6bef788a"},{"id":"b0292-text-01","kind":"text","original":"Suppress output","start":21449,"end":21464,"sourceHash":"6a8b60ee12d4c3ec7ff8807e166b4c218e43b140073ab4e28c46e463842d1304"},{"id":"b0293-text-01","kind":"text","original":"Company name","start":21500,"end":21512,"sourceHash":"6dfada13d2f4b97e46847aaec3e20204e45a7718158c4e8c28a2e05f68d6ef23"},{"id":"b0294-text-01","kind":"text","original":"Product name","start":21551,"end":21563,"sourceHash":"bfa93eb4d4fef9df9cb3bf27e0950171c210d73b8c710a435a5893c5d4f23e13"},{"id":"b0295-text-01","kind":"text","original":"Product description","start":21602,"end":21621,"sourceHash":"a3c5b7d5c7e6d5b291eef2ea22d51ea0b890be456a703171a3f69588207c51bc"},{"id":"b0296-text-01","kind":"text","original":"Product version","start":21653,"end":21668,"sourceHash":"9bb14a0cefac7ad0a3cba10d74b9eb253119df94c6712becec1ed2f1fc19752a"},{"id":"b0297-text-01","kind":"text","original":"Product identifier","start":21704,"end":21722,"sourceHash":"bb020a17c514081281ae227438b9e9d2bb15c1f99175a40d23a24fc2b8bf5804"},{"id":"b0298-text-01","kind":"text","original":"Copyright notice","start":21755,"end":21771,"sourceHash":"ab08f195c8e18afa70d1487d40687f283694ab48af00e760fc58e7642f4ca6bd"},{"id":"b0299-text-01","kind":"text","original":"File comments","start":21806,"end":21819,"sourceHash":"bcc90497a8a8706340f6cd501997f1aaf4341ef45a6361a7c43ccafea40ca68f"},{"id":"b0300-heading-01","kind":"heading","original":"Utility Commands","start":21842,"end":21858,"sourceHash":"d9613d72088a402425a8e7a3b08d1b5ae00667b118b869bde1852ec35d7ca22c"},{"id":"b0301-text-01","kind":"text","original":"Utility commands provide helpful shortcuts for common tasks. Use these commands directly with the base command:","start":21860,"end":21971,"sourceHash":"d61789460e6abe3fd2e4655a82ffdaa8410e31dc25cd1d745d298d19deea937b"},{"id":"b0302-text-01","kind":"text","original":"Opens the Wails documentation in your default browser.","start":22004,"end":22058,"sourceHash":"1227dd577c8ac0e1fcce80a35540451a9d499669ae004e7394a8e7857e0b0b95"},{"id":"b0303-text-01","kind":"text","original":"Shows the release notes for the current or specified version.","start":22104,"end":22165,"sourceHash":"e467075d647d7f1c000087bf14bade4d103f998e3582c0cfd274ec42b76fe3a5"},{"id":"b0304-heading-01","kind":"heading","original":"Flags","start":22213,"end":22218,"sourceHash":"f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"},{"id":"b0305-text-01","kind":"text","original":"Flag","start":22221,"end":22225,"sourceHash":"552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"},{"id":"b0306-text-01","kind":"text","original":"Description","start":22228,"end":22239,"sourceHash":"526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"},{"id":"b0307-text-01","kind":"text","original":"Default","start":22264,"end":22271,"sourceHash":"21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"},{"id":"b0308-text-01","kind":"text","original":"Version to show release notes for","start":22338,"end":22371,"sourceHash":"683df386ac4a2bdfc028a6a9940c297147160998b5bb1c0aa02cbe7b1212fda4"},{"id":"b0309-text-01","kind":"text","original":"Disable colour output","start":22393,"end":22414,"sourceHash":"7043c4f84a60710209a5c4b7e14435f0484fc262fb95e6a063e69486cdcf100c"},{"id":"b0310-text-01","kind":"text","original":"Prints the current version of Wails.","start":22454,"end":22490,"sourceHash":"5b59ffacc318cefaaf0fccf262c3afbeb0213725f4047ff50185971a41ca9e5d"},{"id":"b0311-text-01","kind":"text","original":"Opens the Wails sponsorship page in your default browser.","start":22534,"end":22591,"sourceHash":"2fa3f28b5a60f1c373dab847e4be0d65d8e1ad132356daf769935319621174ac"}]}</script><header><div class="mpress-contribute-heading"><span class="mpress-contribute-mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></span><div><span class="mpress-contribute-eyebrow">Edit documentation</span><h2 id="mpress-contribute-title">Improve this site on your computer</h2></div></div><button type="button" class="mpress-contribute-close" data-contribute-close aria-label="Close contribution instructions"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><p class="mpress-contribute-intro" data-contribute-intro>Edit this page here for a small correction, or move it to your computer for larger changes. Browser drafts stay on this device until you run the contribution command.</p><div class="mpress-contribute-choices" data-contribute-choices><button type="button" data-contribute-quick-edit><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span><strong>Quick edit this page</strong><small>Change text directly and keep a private browser draft.</small></span></button><button type="button" data-contribute-computer><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg><span><strong>Work on your computer</strong><small>Open the exact Markdown page with the full development server.</small></span></button></div><div data-contribute-setup hidden><div class="mpress-contribute-platform"><strong data-contribute-platform-label>Command for macOS and Linux</strong><span>Detected automatically</span></div><div class="mpress-contribute-command"><code data-contribute-command></code></div><button type="button" class="mpress-contribute-copy" data-contribute-copy><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy command</span></button></div><p class="mpress-contribute-status" data-contribute-status aria-live="polite">Nothing is published until you choose to submit your work.</p></dialog><section class="mpress-quick-edit-bar" data-quick-edit-bar hidden aria-label="Quick editing controls"><div class="mpress-quick-edit-state"><span class="mpress-quick-edit-mark" aria-hidden="true">M</span><span><strong>Quick editing</strong><small data-quick-edit-status>Draft saved in this browser</small></span></div><div class="mpress-quick-edit-actions"><button type="button" data-quick-edit-add><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add paragraph</span></button><button type="button" data-quick-edit-discard>Discard</button><button type="button" class="primary" data-quick-edit-contribute>Continue on computer</button></div></section><div class="mpress-quick-edit-format" data-quick-edit-format role="toolbar" aria-label="Text formatting" hidden><button type="button" data-quick-edit-format-command="bold" aria-label="Bold" title="Bold (Ctrl or Command B)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bold" aria-hidden="true"><path d="M14 12a4 4 0 0 0 0-8H6v8"/><path d="M15 20a4 4 0 0 0 0-8H6v8Z"/></svg></button><button type="button" data-quick-edit-format-command="italic" aria-label="Italic" title="Italic (Ctrl or Command I)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-italic" aria-hidden="true"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg></button><button type="button" data-quick-edit-format-command="code" aria-label="Inline code" title="Inline code"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button><button type="button" data-quick-edit-format-command="link" aria-label="Add link" title="Add link (Ctrl or Command K)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button><form class="mpress-quick-edit-link-form" data-quick-edit-link-form hidden><label for="mpress-quick-edit-link">Link address</label><input id="mpress-quick-edit-link" data-quick-edit-link-input type="text" inputmode="url" autocomplete="url" placeholder="https://example.com"><button type="submit">Apply</button><button type="button" data-quick-edit-link-cancel aria-label="Cancel link"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></form></div><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/system/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../tutorials/02-todo-vanilla/">Database Integration</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>CLI Reference</h1><p>The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.</p>
+<h2 id="core-commands">Core Commands</h2>
+<p>Core commands are the primary commands used for project creation, development, and building.</p>
+<p>All CLI commands are of the following format: <code>wails3 &lt;command&gt;</code>.</p>
+<h3 id="init"><code>init</code></h3>
+<p>Initializes a new Wails project. During this initialization, the <code>go mod tidy</code> command is run to bring the project packages up to date. This can be bypassed by using the <code>-skipgomodtidy</code> flag with the <code>init</code> command.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 init [flags]"><code><span class="mpress-cmd">wails3 init [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p</code></td>
+<td>Go package name</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td>Template name or URL</td>
+<td><code>vanilla</code></td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Project name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Project directory</td>
+<td><code>.</code></td>
+</tr>
+<tr>
+<td><code>-q</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td>List templates</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-mod</code></td>
+<td>Go module path (computed from <code>-git</code> if omitted)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-git</code></td>
+<td>Git repository URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Skip the warning when using a remote template</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td><code>My Product</code></td>
+</tr>
+<tr>
+<td><code>-productdescription</code></td>
+<td>Product description</td>
+<td><code>My Product Description</code></td>
+</tr>
+<tr>
+<td><code>-productversion</code></td>
+<td>Product version</td>
+<td><code>0.1.0</code></td>
+</tr>
+<tr>
+<td><code>-productcompany</code></td>
+<td>Company name</td>
+<td><code>My Company</code></td>
+</tr>
+<tr>
+<td><code>-productcopyright</code></td>
+<td>Copyright notice</td>
+<td><code>© now, My Company</code></td>
+</tr>
+<tr>
+<td><code>-productcomments</code></td>
+<td>File comments</td>
+<td><code>This is a comment</code></td>
+</tr>
+<tr>
+<td><code>-productidentifier</code></td>
+<td>Product identifier</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-skipgomodtidy</code></td>
+<td>Skip go mod tidy</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>-git</code> flag accepts various Git URL formats:</p>
+<ul>
+<li>HTTPS: <code>https://github.com/username/project</code></li>
+<li>SSH: <code>git@github.com:username/project</code> or <code>ssh://git@github.com/username/project</code></li>
+<li>Git protocol: <code>git://github.com/username/project</code></li>
+<li>Filesystem: <code>file:///path/to/project.git</code></li>
+</ul>
+<p>When provided, this flag will:</p>
+<ol>
+<li>Initialize a git repository in the project directory</li>
+<li>Set the specified URL as the remote origin</li>
+<li>Update the module name in <code>go.mod</code> to match the repository URL</li>
+<li>Add all files</li>
+</ol>
+<h3 id="dev"><code>dev</code></h3>
+<p>Runs the application in development mode. This will give you a live view of your frontend code, and you can make changes and see them reflected
+in the running application without having to rebuild the entire application. Changes to your Go code will also be detected and the application
+will automatically rebuild and relaunch.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 dev [flags]"><code><span class="mpress-cmd">wails3 dev [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-1">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td><code>./build/config.yml</code></td>
+</tr>
+<tr>
+<td><code>-port</code></td>
+<td>Vite dev server port</td>
+<td><code>9245</code></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Enable HTTPS</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to running <code>wails3 task dev</code> and runs the <code>dev</code> task in the project&rsquo;s main Taskfile. You can customise this by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="build"><code>build</code></h3>
+<p>Builds a debug version of your application. It defaults to building for the current platform and architecture.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build [flags] [CLI variables...]"><code><span class="mpress-cmd">wails3 build [flags] [CLI variables...]</span>
+</code></pre>
+</div>
+<h4 id="flags-2">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-tags</code></td>
+<td>Additional Go build tags (comma-separated)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>You can pass CLI variables to customize the build:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build PLATFORM=linux CONFIG=production"><code><span class="mpress-cmd">wails3 build PLATFORM=linux CONFIG=production</span>
+</code></pre>
+</div>
+<p>Use the <code>-tags</code> flag to pass custom Go build tags:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build -tags gtk3
+wails3 build -tags server
+wails3 build -tags gtk3,customtag"><code><span class="mpress-output"># Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)</span>
+<span class="mpress-cmd">wails3 build -tags gtk3</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Build in server mode (no GUI)</span>
+<span class="mpress-cmd">wails3 build -tags server</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Multiple tags</span>
+<span class="mpress-cmd">wails3 build -tags gtk3,customtag</span>
+</code></pre>
+</div>
+<p>Tags are forwarded as <code>EXTRA_TAGS</code> to the underlying Taskfile.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to running <code>wails3 task build</code> which runs the <code>build</code> task in the project&rsquo;s main Taskfile. Any CLI variables passed to <code>build</code> are forwarded to the underlying task. You can customise the build process by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="package"><code>package</code></h3>
+<p>Creates platform-specific packages for distribution.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 package [CLI variables...]"><code><span class="mpress-cmd">wails3 package [CLI variables...]</span>
+</code></pre>
+</div>
+<p>You can pass CLI variables to customize the packaging:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg"><code><span class="mpress-cmd">wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg</span>
+</code></pre>
+</div>
+<h4 id="package-types">Package Types</h4>
+<p>The following package types are available for each platform:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Package Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td><code>.exe</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>.app</code>,</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td><code>.AppImage</code>, <code>.deb</code>, <code>.rpm</code>, <code>.archlinux</code></td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to <code>wails3 task package</code> which runs the <code>package</code> task in the project&rsquo;s main Taskfile. Any CLI variables passed to <code>package</code> are forwarded to the underlying task. You can customise the packaging process by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="task"><code>task</code></h3>
+<p>Runs tasks defined in your project&rsquo;s Taskfile.yml. This is an embedded version of <a href="https://taskfile.dev">Taskfile</a> that allows you to define and run custom build, test, and deployment tasks.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task [taskname] [CLI variables...] [flags]"><code><span class="mpress-cmd">wails3 task [taskname] [CLI variables...] [flags]</span>
+</code></pre>
+</div>
+<h4 id="cli-variables">CLI Variables</h4>
+<p>You can pass variables to tasks in the format <code>KEY=VALUE</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3"><code><span class="mpress-cmd">wails3 task build PLATFORM=linux CONFIG=production</span>
+<span class="mpress-cmd">wails3 task deploy ENV=staging VERSION=1.2.3</span>
+</code></pre>
+</div>
+<p>These variables can be accessed in your Taskfile.yml using Go template syntax:</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="tasks:&#10;  build:&#10;    cmds:&#10;      - echo &#34;Building for {{.PLATFORM | default &#34;darwin&#34;}}&#34;&#10;      - echo &#34;Config: {{.CONFIG | default &#34;debug&#34;}}&#34;"><code class="language-yaml"><span class="mpress-code-line">tasks<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    cmds<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> echo <span class="mpress-token-string">&#34;Building for {{.PLATFORM | default &#34;</span>darwin<span class="mpress-token-string">&#34;}}&#34;</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> echo <span class="mpress-token-string">&#34;Config: {{.CONFIG | default &#34;</span>debug<span class="mpress-token-string">&#34;}}&#34;</span></span></code></pre></div>
+<h4 id="flags-3">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-h</code></td>
+<td>Shows Task usage</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-i</code></td>
+<td>Creates a new Taskfile.yml</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-list</code></td>
+<td>Lists tasks with descriptions</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-list-all</code></td>
+<td>Lists all tasks (with or without descriptions)</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-json</code></td>
+<td>Formats task list as JSON</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-status</code></td>
+<td>Exits with non-zero if task is not up-to-date</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-f</code></td>
+<td>Forces execution even when task is up-to-date</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-w</code></td>
+<td>Enables watch mode for the given task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Enables verbose mode</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Prints Task version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Disables echoing</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>Executes tasks in parallel</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dry</code></td>
+<td>Compiles and prints tasks without executing</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-summary</code></td>
+<td>Shows summary about a task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-x</code></td>
+<td>Pass-through the exit code of the task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Sets directory of execution</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-taskfile</code></td>
+<td>Choose which Taskfile to run</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Sets output style: [interleaved</td>
+<td>group</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>Colored output (enabled by default)</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>-C</code></td>
+<td>Limit number of tasks to run concurrently</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-interval</code></td>
+<td>Interval to watch for changes (in seconds)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="examples">Examples</h4>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task
+wails3 task test
+wails3 task build PLATFORM=windows ARCH=amd64
+wails3 task --list
+wails3 task -p task1 task2 task3
+wails3 task -w dev"><code><span class="mpress-output"># Run the default task</span>
+<span class="mpress-cmd">wails3 task</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Run a specific task</span>
+<span class="mpress-cmd">wails3 task test</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Run a task with variables</span>
+<span class="mpress-cmd">wails3 task build PLATFORM=windows ARCH=amd64</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># List all available tasks</span>
+<span class="mpress-cmd">wails3 task --list</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Run multiple tasks in parallel</span>
+<span class="mpress-cmd">wails3 task -p task1 task2 task3</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Watch for changes and re-run task</span>
+<span class="mpress-cmd">wails3 task -w dev</span>
+</code></pre>
+</div>
+<h3 id="doctor"><code>doctor</code></h3>
+<p>Performs a system check and displays a status report.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 doctor"><code><span class="mpress-cmd">wails3 doctor</span>
+</code></pre>
+</div>
+<h2 id="generate-commands">Generate Commands</h2>
+<p>Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command: <code>wails3 generate &lt;command&gt;</code>.</p>
+<h3 id="generate-bindings"><code>generate bindings</code></h3>
+<p>Generates bindings and models for your Go code.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings [flags] [patterns...]"><code><span class="mpress-cmd">wails3 generate bindings [flags] [patterns...]</span>
+</code></pre>
+</div>
+<h4 id="flags-4">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-f</code></td>
+<td>Additional Go build flags</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Output directory</td>
+<td><code>frontend/bindings</code></td>
+</tr>
+<tr>
+<td><code>-models</code></td>
+<td>Models filename</td>
+<td><code>models</code></td>
+</tr>
+<tr>
+<td><code>-index</code></td>
+<td>Index filename</td>
+<td><code>index</code></td>
+</tr>
+<tr>
+<td><code>-ts</code></td>
+<td>Generate TypeScript</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-i</code></td>
+<td>Use TS interfaces</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-b</code></td>
+<td>Use bundled runtime</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-names</code></td>
+<td>Use names instead of IDs</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-noindex</code></td>
+<td>Skip index files</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-noevents</code></td>
+<td>Skip generating event-related bindings</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dry</code></td>
+<td>Dry run</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Silent mode</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Debug output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-clean</code></td>
+<td>Clean output directory before generating</td>
+<td><code>true</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-build-assets"><code>generate build-assets</code></h3>
+<p>Generates build assets for your application.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate build-assets [flags]"><code><span class="mpress-cmd">wails3 generate build-assets [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-5">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-name</code></td>
+<td>Project name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Output directory</td>
+<td><code>build</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-company</code></td>
+<td>Company name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-description</code></td>
+<td>Product description</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Product version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-identifier</code></td>
+<td>Product identifier</td>
+<td><code>com.wails.[name]</code></td>
+</tr>
+<tr>
+<td><code>-copyright</code></td>
+<td>Copyright notice</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-comments</code></td>
+<td>File comments</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-icons"><code>generate icons</code></h3>
+<p>Generates application icons.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons [flags]"><code><span class="mpress-cmd">wails3 generate icons [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-6">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-input</code></td>
+<td>Input PNG file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-windowsfilename</code></td>
+<td>Windows output filename</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-macfilename</code></td>
+<td>macOS output filename</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-sizes</code></td>
+<td>Icon sizes (comma-separated)</td>
+<td><code>256,128,64,48,32,16</code></td>
+</tr>
+<tr>
+<td><code>-example</code></td>
+<td>Generate example icon</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-iconcomposerinput</code></td>
+<td>Input Icon Composer file (<code>.icon</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-macassetdir</code></td>
+<td>Output directory for Mac assets (Assets.car + icns)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="icon-composer-macos">Icon Composer (macOS)</h4>
+<p>On macOS 26+, you can use Icon Composer <code>.icon</code> files to generate <code>Assets.car</code> and <code>icons.icns</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build"><code><span class="mpress-cmd">wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build</span>
+</code></pre>
+</div>
+<p>This compiles the <code>.icon</code> file using Apple&rsquo;s <code>actool</code> command. Requires Xcode with <code>actool</code> version 26 or later.</p>
+<p>When using Icon Composer, set <code>cfBundleIconName</code> in your <code>build/config.yml</code> to match the <code>.icon</code> filename (without extension):</p>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="info:&#10;  cfBundleIconName: &#34;appicon&#34;"><code class="language-yaml"><span class="mpress-code-line">info<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  cfBundleIconName<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;appicon&#34;</span></span></code></pre></div>
+<p>If not set and <code>Assets.car</code> exists, this defaults to <code>&quot;appicon&quot;</code>.</p>
+<h3 id="generate-syso"><code>generate syso</code></h3>
+<p>Generates Windows .syso file.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate syso [flags]"><code><span class="mpress-cmd">wails3 generate syso [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-7">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-manifest</code></td>
+<td>Path to manifest file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Path to icon file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-info</code></td>
+<td>Path to version info file</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-arch</code></td>
+<td>Target architecture</td>
+<td>Current GOARCH</td>
+</tr>
+<tr>
+<td><code>-out</code></td>
+<td>Output filename</td>
+<td><code>rsrc_windows_[arch].syso</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-desktop"><code>generate .desktop</code></h3>
+<p>Generates a Linux .desktop file.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate .desktop [flags]"><code><span class="mpress-cmd">wails3 generate .desktop [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-8">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-name</code></td>
+<td>Application name</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-exec</code></td>
+<td>Executable path</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Icon path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-categories</code></td>
+<td>Application categories</td>
+<td><code>Utility</code></td>
+</tr>
+<tr>
+<td><code>-comment</code></td>
+<td>Application comment</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-terminal</code></td>
+<td>Run in terminal</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-keywords</code></td>
+<td>Search keywords</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Application version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-genericname</code></td>
+<td>Generic name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-startupnotify</code></td>
+<td>Show startup notification</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-mimetype</code></td>
+<td>Supported MIME types</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Output filename</td>
+<td><code>[name].desktop</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-runtime"><code>generate runtime</code></h3>
+<p>Generates the pre-built version of the runtime.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate runtime"><code><span class="mpress-cmd">wails3 generate runtime</span>
+</code></pre>
+</div>
+<h3 id="generate-constants"><code>generate constants</code></h3>
+<p>Generates JavaScript constants from Go code.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate constants"><code><span class="mpress-cmd">wails3 generate constants</span>
+</code></pre>
+</div>
+<h3 id="generate-webview2bootstrapper"><code>generate webview2bootstrapper</code></h3>
+<p>Generates a Windows WebView2 bootstrap installer for distribution.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate webview2bootstrapper [flags]"><code><span class="mpress-cmd">wails3 generate webview2bootstrapper [flags]</span>
+</code></pre>
+</div>
+<h3 id="generate-template"><code>generate template</code></h3>
+<p>Scaffolds a new project template directory.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate template [flags]"><code><span class="mpress-cmd">wails3 generate template [flags]</span>
+</code></pre>
+</div>
+<h3 id="generate-appimage"><code>generate appimage</code></h3>
+<p>Generates a Linux AppImage.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate appimage [flags]"><code><span class="mpress-cmd">wails3 generate appimage [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-9">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-binary</code></td>
+<td>Path to binary</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Path to icon file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-desktop</code></td>
+<td>Path to .desktop file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-builddir</code></td>
+<td>Build directory</td>
+<td>Temp directory</td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="service-commands">Service Commands</h2>
+<p>Service commands help manage Wails services. All service commands use the base command: <code>wails3 service &lt;command&gt;</code>.</p>
+<h3 id="service-init"><code>service init</code></h3>
+<p>Initializes a new service.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 service init [flags]"><code><span class="mpress-cmd">wails3 service init [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-10">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-n</code></td>
+<td>Service name</td>
+<td><code>example_service</code></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Service description</td>
+<td><code>Example service</code></td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>Package name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-o</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+<tr>
+<td><code>-q</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-a</code></td>
+<td>Author name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-w</code></td>
+<td>Website URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td>Repository URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td>License</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="tool-commands">Tool Commands</h2>
+<p>Tool commands provide utilities for development and debugging. All tool commands use the base command: <code>wails3 tool &lt;command&gt;</code>.</p>
+<h3 id="tool-checkport"><code>tool checkport</code></h3>
+<p>Checks if a port is open. Useful for testing if vite is running.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool checkport [flags]"><code><span class="mpress-cmd">wails3 tool checkport [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-11">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-port</code></td>
+<td>Port to check</td>
+<td><code>9245</code></td>
+</tr>
+<tr>
+<td><code>-host</code></td>
+<td>Host to check</td>
+<td><code>localhost</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-watcher"><code>tool watcher</code></h3>
+<p>Watches files and runs a command when they change.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool watcher [flags]"><code><span class="mpress-cmd">wails3 tool watcher [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-12">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td><code>./build/config.yml</code></td>
+</tr>
+<tr>
+<td><code>-ignore</code></td>
+<td>Patterns to ignore</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-include</code></td>
+<td>Patterns to include</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-cp"><code>tool cp</code></h3>
+<p>Copies files.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool cp"><code><span class="mpress-cmd">wails3 tool cp</span>
+</code></pre>
+</div>
+<h3 id="tool-buildinfo"><code>tool buildinfo</code></h3>
+<p>Shows build information about the application.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool buildinfo"><code><span class="mpress-cmd">wails3 tool buildinfo</span>
+</code></pre>
+</div>
+<h3 id="tool-version"><code>tool version</code></h3>
+<p>Bumps a semantic version based on the provided flags.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool version [flags]"><code><span class="mpress-cmd">wails3 tool version [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-13">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-v</code></td>
+<td>Current version to bump</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-major</code></td>
+<td>Bump major version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-minor</code></td>
+<td>Bump minor version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-patch</code></td>
+<td>Bump patch version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-prerelease</code></td>
+<td>Bump prerelease version (e.g., alpha.5 to alpha.6)</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The command follows the precedence order: major &gt; minor &gt; patch &gt; prerelease. It preserves the &ldquo;v&rdquo; prefix if present in the input version, as well as any prerelease and metadata components.</p>
+<p>Example usage:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6"><code><span class="mpress-cmd">wails3 tool version -v 1.2.3 -major      # Output: 2.0.0</span>
+<span class="mpress-cmd">wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0</span>
+<span class="mpress-cmd">wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha</span>
+<span class="mpress-cmd">wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6</span>
+</code></pre>
+</div>
+<h3 id="tool-package"><code>tool package</code></h3>
+<p>Generates Linux packages (deb, rpm, archlinux).</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool package [flags]"><code><span class="mpress-cmd">wails3 tool package [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-14">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-format</code></td>
+<td>Package format (deb, rpm, archlinux)</td>
+<td><code>deb</code></td>
+</tr>
+<tr>
+<td><code>-name</code></td>
+<td>Executable name</td>
+<td><code>myapp</code></td>
+</tr>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-out</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-lipo"><code>tool lipo</code></h3>
+<p>Creates a macOS universal binary by combining architecture-specific binaries.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool lipo [flags]"><code><span class="mpress-cmd">wails3 tool lipo [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-15">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-output</code></td>
+<td>Output binary path</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-capabilities"><code>tool capabilities</code></h3>
+<p>Checks system build capabilities (GTK4/GTK3 availability on Linux).</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool capabilities"><code><span class="mpress-cmd">wails3 tool capabilities</span>
+</code></pre>
+</div>
+<h3 id="tool-docker-mounts"><code>tool docker-mounts</code></h3>
+<p>Generates Docker volume mount flags for cross-compilation. Outputs <code>-v</code> flags for the Go module cache and any local <code>replace</code> directives in <code>go.mod</code>, for use in Taskfile <code>docker run</code> commands.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool docker-mounts"><code><span class="mpress-cmd">wails3 tool docker-mounts</span>
+</code></pre>
+</div>
+<h3 id="tool-has"><code>tool has</code></h3>
+<p>Checks whether a tool or capability is available, printing <code>true</code> or <code>false</code> to stdout. Designed for use in Taskfile <code>sh:</code> variables as a cross-platform alternative to <code>command -v</code>.</p>
+<p>Use <code>|</code> to check for any one of several alternatives.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has &lt;tool&gt;"><code><span class="mpress-cmd">wails3 tool has &lt;tool&gt;</span>
+</code></pre>
+</div>
+<h4 id="examples-1">Examples</h4>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has gcc|clang
+wails3 tool has git
+wails3 tool has node"><code><span class="mpress-output"># Check for a C compiler (gcc or clang)</span>
+<span class="mpress-cmd">wails3 tool has gcc|clang</span>
+<span class="mpress-output"></span>
+<span class="mpress-output"># Check for a specific tool</span>
+<span class="mpress-cmd">wails3 tool has git</span>
+<span class="mpress-cmd">wails3 tool has node</span>
+</code></pre>
+</div>
+<h4 id="usage-in-a-taskfile">Usage in a Taskfile</h4>
+<div class="mpress-codeframe"><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button><pre data-code="vars:&#10;  HAS_CC:&#10;    sh: &#39;wails3 tool has gcc|clang&#39;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">HAS_CC</span><span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    sh<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;wails3 tool has gcc|clang&#39;</span></span></code></pre></div>
+<h3 id="tool-has-cc"><code>tool has-cc</code></h3>
+<aside aria-label="Deprecated" class="mpress-admonition mpress-admonition-caution" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> <span>Deprecated</span></p>
+<div class="mpress-admonition-body">
+<p><code>wails3 tool has-cc</code> is deprecated. Update your Taskfile to use <code>wails3 tool has gcc|clang</code> instead.</p>
+</div>
+</aside>
+<p>A backward-compatible alias for <code>wails3 tool has gcc|clang</code>. Checks whether <code>gcc</code> or <code>clang</code> is available in PATH and prints <code>true</code> or <code>false</code>.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has-cc"><code><span class="mpress-cmd">wails3 tool has-cc</span>
+</code></pre>
+</div>
+<h2 id="update-commands">Update Commands</h2>
+<p>Update commands help manage and update project assets. All update commands use the base command: <code>wails3 update &lt;command&gt;</code>.</p>
+<h3 id="update-cli"><code>update cli</code></h3>
+<p>Updates the Wails CLI to a new version.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 update cli [flags]"><code><span class="mpress-cmd">wails3 update cli [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-16">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-pre</code></td>
+<td>Update to latest pre-release</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Update to specific version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-nocolour</code></td>
+<td>Disable colored output</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.
+You can use the <code>-pre</code> flag to update to the latest pre-release version, or specify a particular version using the <code>-version</code> flag.</p>
+<p>After updating, remember to update your project&rsquo;s go.mod file to use the same version:</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="require github.com/wailsapp/wails/v3 v3.x.x"><code><span class="mpress-cmd">require github.com/wailsapp/wails/v3 v3.x.x</span>
+</code></pre>
+</div>
+<h3 id="update-build-assets"><code>update build-assets</code></h3>
+<p>Updates the build assets using the given config file.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 update build-assets [flags]"><code><span class="mpress-cmd">wails3 update build-assets [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-17">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Output directory</td>
+<td><code>build</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-company</code></td>
+<td>Company name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-description</code></td>
+<td>Product description</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Product version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-identifier</code></td>
+<td>Product identifier</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-copyright</code></td>
+<td>Copyright notice</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-comments</code></td>
+<td>File comments</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="utility-commands">Utility Commands</h2>
+<p>Utility commands provide helpful shortcuts for common tasks. Use these commands directly with the base command: <code>wails3 &lt;command&gt;</code>.</p>
+<h3 id="docs"><code>docs</code></h3>
+<p>Opens the Wails documentation in your default browser.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 docs"><code><span class="mpress-cmd">wails3 docs</span>
+</code></pre>
+</div>
+<h3 id="releasenotes"><code>releasenotes</code></h3>
+<p>Shows the release notes for the current or specified version.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 releasenotes [flags]"><code><span class="mpress-cmd">wails3 releasenotes [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-18">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-v</code></td>
+<td>Version to show release notes for</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Disable colour output</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="version"><code>version</code></h3>
+<p>Prints the current version of Wails.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 version"><code><span class="mpress-cmd">wails3 version</span>
+</code></pre>
+</div>
+<h3 id="sponsor"><code>sponsor</code></h3>
+<p>Opens the Wails sponsorship page in your default browser.</p>
+<div class="mpress-terminal mpress-terminal-macos">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 sponsor"><code><span class="mpress-cmd">wails3 sponsor</span>
+</code></pre>
+</div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/cli.md"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-04T12:26:32Z">Aug 4, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#core-commands">Core Commands</a><a class="toc-level-3" href="#init">init</a><a class="toc-level-3" href="#dev">dev</a><a class="toc-level-3" href="#build">build</a><a class="toc-level-3" href="#package">package</a><a class="toc-level-3" href="#task">task</a><a class="toc-level-3" href="#doctor">doctor</a><a class="toc-level-2" href="#generate-commands">Generate Commands</a><a class="toc-level-3" href="#generate-bindings">generate bindings</a><a class="toc-level-3" href="#generate-build-assets">generate build-assets</a><a class="toc-level-3" href="#generate-icons">generate icons</a><a class="toc-level-3" href="#generate-syso">generate syso</a><a class="toc-level-3" href="#generate-desktop">generate .desktop</a><a class="toc-level-3" href="#generate-runtime">generate runtime</a><a class="toc-level-3" href="#generate-constants">generate constants</a><a class="toc-level-3" href="#generate-webview2bootstrapper">generate webview2bootstrapper</a><a class="toc-level-3" href="#generate-template">generate template</a><a class="toc-level-3" href="#generate-appimage">generate appimage</a><a class="toc-level-2" href="#service-commands">Service Commands</a><a class="toc-level-3" href="#service-init">service init</a><a class="toc-level-2" href="#tool-commands">Tool Commands</a><a class="toc-level-3" href="#tool-checkport">tool checkport</a><a class="toc-level-3" href="#tool-watcher">tool watcher</a><a class="toc-level-3" href="#tool-cp">tool cp</a><a class="toc-level-3" href="#tool-buildinfo">tool buildinfo</a><a class="toc-level-3" href="#tool-version">tool version</a><a class="toc-level-3" href="#tool-package">tool package</a><a class="toc-level-3" href="#tool-lipo">tool lipo</a><a class="toc-level-3" href="#tool-capabilities">tool capabilities</a><a class="toc-level-3" href="#tool-docker-mounts">tool docker-mounts</a><a class="toc-level-3" href="#tool-has">tool has</a><a class="toc-level-3" href="#tool-has-cc">tool has-cc</a><a class="toc-level-2" href="#update-commands">Update Commands</a><a class="toc-level-3" href="#update-cli">update cli</a><a class="toc-level-3" href="#update-build-assets">update build-assets</a><a class="toc-level-2" href="#utility-commands">Utility Commands</a><a class="toc-level-3" href="#docs">docs</a><a class="toc-level-3" href="#releasenotes">releasenotes</a><a class="toc-level-3" href="#version">version</a><a class="toc-level-3" href="#sponsor">sponsor</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><button class="mpress-contribute-trigger footer-contribute" type="button" data-mpress-contribute aria-haspopup="dialog" aria-label="Edit this documentation" title="Edit this documentation"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Contribute</span></button><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>
