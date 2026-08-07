@@ -49,16 +49,17 @@ func downloadBootstrapper() (string, error) {
 
 	// Download installer
 	out, err := os.Create(installer)
+	if err != nil {
+		return "", err
+	}
 	defer out.Close()
-	if err != nil {
-		return "", err
-	}
+
 	resp, err := http.Get(bootstrapperURL)
-	defer resp.Body.Close()
 	if err != nil {
-		err = out.Close()
 		return "", err
 	}
+	defer resp.Body.Close()
+
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return "", err
