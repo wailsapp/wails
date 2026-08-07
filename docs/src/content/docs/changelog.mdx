@@ -31,6 +31,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.4 - 2026-08-05
+
+## Changed
+- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
+
+## Fixed
+- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
+- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
+
+## v3.0.0-beta.3 - 2026-08-03
+
+## Added
+- Document Phase 10 beta verification completion in implementation details in [PR](https://github.com/wailsapp/wails/pull/5881) by @leaanthony
+
+## Fixed
+- Pass window handle to Windows dark-mode API and validate arguments in [PR](https://github.com/wailsapp/wails/pull/5877) by @leaanthony
+- Centralize macOS title-bar button state resolution for frameless windows in [PR](https://github.com/wailsapp/wails/pull/5870) by @taliesin-ai
+- Prevent unreadable native menu text when a Windows application requests dark mode while the Windows app theme is light. The menu now uses the matching light native background until Windows can render dark menu text.
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+
+## v3.0.0-beta.2 - 2026-08-02
+
+## Changed
+- Promote v3 from alpha to beta
+- Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.122 - 2026-08-01
+
+## Added
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky
+
+## Changed
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.121 - 2026-07-31
+
+## Added
+- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
+
+## Changed
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+
+## Fixed
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+
+## v3.0.0-alpha2.120 - 2026-07-31
+
+## Added
+- Implement macOS title-bar double-click actions for maximize or minimize in [PR](https://github.com/wailsapp/wails/pull/5853) by @taliesin-ai
+
+## Changed
+- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
+
+## Fixed
+- Keep WKWebView responsive during macOS zoom in [PR](https://github.com/wailsapp/wails/pull/5856) by @leaanthony
+- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
+
+## v3.0.0-alpha2.119 - 2026-07-27
+
+## Fixed
+- Update documentation for multiple languages to include architecture diagrams in [PR](https://github.com/wailsapp/wails/pull/5833) by @taliesin-ai
+
+## v3.0.0-alpha2.118 - 2026-07-26
+
+## Added
+- Provide default paths for icon generation inputs and outputs in [PR](https://github.com/wailsapp/wails/pull/5825) by @taliesin-ai
+- Add source entry modules to runtime package.json sideEffects in [PR](https://github.com/wailsapp/wails/pull/5797) by @savely-krasovsky
+- Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
+
+## Fixed
+- Apply scoped GTK4 frameless CSS to remove border radius in [PR](https://github.com/wailsapp/wails/pull/5800) by @savely-krasovsky
+- Handle cursor position failures gracefully on Windows for popup menus and screen enumeration in [PR](https://github.com/wailsapp/wails/pull/5789) by @wayneforrest
+- macOS open-file dialog filters extensions correctly and validates allowed files by suffix in [PR](https://github.com/wailsapp/wails/pull/5678) by @phergul
+- Guard Windows dark-mode initialization against nil API calls in [PR](https://github.com/wailsapp/wails/pull/5793) by @roachadam
+- Fix 32-bit build failure in the updater: the `maxArchiveTotalSize` constant (2 GiB) overflowed the platform `int` when passed to `fmt.Errorf` on `GOARCH=386`. It is now explicitly typed `int64`.
+- Fix a nil-pointer panic on startup when a window uses a Dark (or system-dark) title bar on Windows builds that do not load the dark-mode uxtheme APIs, such as Windows 10 1809 / Windows Server 2019 (build 17763). The `AllowDarkModeForWindow` calls in the window theme setup are now nil-guarded, matching the guard already used in `w32.SetMenuTheme`.
+
 ## v3.0.0-alpha2.117 - 2026-07-08
 
 ## Added

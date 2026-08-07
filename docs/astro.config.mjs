@@ -48,6 +48,7 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
         { icon: 'discord', label: 'Discord', href: 'https://discord.gg/JDdSxwjhGf' },
+        { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/wails/' },
         { icon: 'x.com', label: 'X', href: 'https://x.com/wailsapp' },
       ],
       head: [
@@ -111,6 +112,7 @@ export default defineConfig({
               'https://github.com/wailsapp/wails',
               'https://x.com/wailsapp',
               'https://discord.gg/JDdSxwjhGf',
+              'https://www.reddit.com/r/wails/',
             ],
           }),
         },
@@ -133,21 +135,16 @@ export default defineConfig({
       ],
       defaultLocale: "root",
       locales: {
-        root:    { label: "English",             lang: "en",    dir: "ltr" },
-        "zh-cn": { label: "简体中文",             lang: "zh-CN", dir: "ltr" },
-        "zh-tw": { label: "繁體中文",             lang: "zh-TW", dir: "ltr" },
-        ja:      { label: "日本語",               lang: "ja",    dir: "ltr" },
-        ko:      { label: "한국어",               lang: "ko",    dir: "ltr" },
-        ru:      { label: "Русский",             lang: "ru",    dir: "ltr" },
-        fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
-        pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
-        de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
-        id:      { label: "Bahasa Indonesia",      lang: "id",    dir: "ltr" },
+        root: { label: "English", lang: "en", dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
+        starlightLinksValidator({
+          errorOnLocalLinks: false,
+          errorOnRelativeLinks: false,
+        }),
         starlightBlog({
-          title: "Wails Blog",
+          title: "Blog",
           authors: authors,
         }),
       ],

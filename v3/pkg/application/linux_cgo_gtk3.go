@@ -1428,6 +1428,14 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew), so there is a
+	// startup window in which w.impl != nil (set at the top of WebviewWindow.Run)
+	// but w.window is still NULL. A window whose widget does not exist yet is, by
+	// definition, not visible; without this guard a visibility poll during that
+	// gap calls gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion.
+	if w.window == nil {
+		return false
+	}
 	if C.gtk_widget_is_visible(w.gtkWidget()) == 1 {
 		return true
 	}
@@ -1463,6 +1471,17 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	c := NewCalloc()
 	defer c.Free()
 	manager := C.webkit_user_content_manager_new()
+	linuxBlobBodyShimSource := C.CString(linuxBlobBodyFetchShimJS)
+	linuxBlobBodyShim := C.webkit_user_script_new(
+		linuxBlobBodyShimSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
+	C.webkit_user_script_unref(linuxBlobBodyShim)
+	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 

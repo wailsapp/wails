@@ -260,10 +260,10 @@ window2.SetSize(1024, 768)
 ```go
 module myapp
 
-go 1.21
+go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-alpha.1
+    github.com/wailsapp/wails/v3 v3.0.0-beta.0
 )
 ```
 
@@ -686,7 +686,9 @@ wails3 generate bindings
 A: Yes, they use different import paths.
 
 **Q: Is v3 production-ready?**  
-A: v3 is in alpha/beta. Test thoroughly before production.
+A: v3 is beta software with a stable desktop API. Applications are running in
+production with it, but test thoroughly before deployment. v2 remains the
+current stable release.
 
 **Q: Will v2 be maintained?**  
 A: Yes, v2 will receive critical updates.

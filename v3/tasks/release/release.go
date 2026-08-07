@@ -52,7 +52,7 @@ func getUnreleasedChangelogTemplate() string {
 	return `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -730,10 +730,31 @@ func applyChangelogUpdates(newVersion, changelogContent string) error {
 	return nil
 }
 
+// releaseChannel derives the human-readable release channel from a version
+// string, e.g. "v3.0.0-beta.3" -> "Beta". It returns an empty string for
+// stable (non-prerelease) versions.
+func releaseChannel(version string) string {
+	switch {
+	case strings.Contains(version, "-beta"):
+		return "Beta"
+	case strings.Contains(version, "-rc"):
+		return "Release Candidate"
+	case strings.Contains(version, "-alpha"):
+		return "Alpha"
+	default:
+		return ""
+	}
+}
+
 func buildReleaseBody(version, changelogContent string) string {
 	trimmed := strings.TrimSpace(changelogContent)
+	channel := releaseChannel(version)
+	heading := fmt.Sprintf("## Wails v3 Release - %s", version)
+	if channel != "" {
+		heading = fmt.Sprintf("## Wails v3 %s Release - %s", channel, version)
+	}
 	sections := []string{
-		fmt.Sprintf("## Wails v3 Alpha Release - %s", version),
+		heading,
 		"",
 		trimmed,
 		"",
@@ -745,8 +766,17 @@ func buildReleaseBody(version, changelogContent string) string {
 		"```bash",
 		fmt.Sprintf("go install github.com/wailsapp/wails/v3/cmd/wails3@%s", version),
 		"```",
-		"",
-		"**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.",
+	}
+	switch channel {
+	case "Alpha":
+		sections = append(sections, "",
+			"**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.")
+	case "Beta":
+		sections = append(sections, "",
+			"**⚠️ Beta Warning:** This is pre-release software. The API is stable, but you may still encounter issues before the final 3.0 release.")
+	case "Release Candidate":
+		sections = append(sections, "",
+			"**⚠️ Release Candidate Warning:** This is pre-release software undergoing final validation before the stable release.")
 	}
 	return strings.Join(sections, "\n")
 }

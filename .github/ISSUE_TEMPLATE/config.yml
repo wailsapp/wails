@@ -1,9 +1,13 @@
 blank_issues_enabled: false
 contact_links:
+  - name: WEP (Wails Enhancement Proposal)
+    url: https://github.com/wailsapp/wails/blob/master/v3/wep/README.md
+    about: Propose new Wails functionality through a draft WEP pull request.
+
   - name: Discord Chat
     url: https://discord.gg/JDdSxwjhGf
     about: Ask questions and discuss with other Wails users in real time.
 
   - name: GitHub Community Discussions
     url: https://github.com/wailsapp/wails/discussions
-    about: If your question is not a feature or a bug, please go to the discussion panel and retrieve if your question already exists before submitting.
+    about: Ask questions or discuss an idea informally before writing a WEP.

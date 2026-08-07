@@ -8,6 +8,7 @@
 **Created**: [YYYY-MM-DD]  
 **Discussion**: [optional link to any prior discussion of the idea]  
 **Implementor**: [who has agreed to implement this, may be the author]
+**Target**: Wails v3
 
 ## Summary
 
@@ -24,6 +25,10 @@ Provide a detailed description of the proposed feature, including:
 - Technical details
 - Implementation steps
 - Potential impact on existing functionality
+
+## Non-Goals
+
+State what this WEP intentionally does not cover.
 
 ## Platform Considerations
 
@@ -43,6 +48,11 @@ Discuss alternative solutions or approaches that were considered.
 ## Backwards Compatibility
 
 Address any potential backward compatibility issues.
+
+## Security and Privacy
+
+Describe relevant security, privacy, permissions, or data-handling effects. If
+there are none, say so.
 
 ## Test Plan
 

@@ -46,8 +46,9 @@ func main() {
 		if strings.HasPrefix(line, "## ") {
 			if strings.Contains(line, "[Unreleased]") {
 				currentSection = "Unreleased"
-			} else if strings.Contains(line, "v3.0.0-alpha") {
-				// Extract version from line like "## v3.0.0-alpha.10 - 2025-07-06"
+			} else if strings.Contains(line, "v3.0.0-") {
+				// Extract version from a released prerelease heading like
+				// "## v3.0.0-alpha.10 - 2025-07-06" or "## v3.0.0-beta.1 - 2026-07-06"
 				parts := strings.Split(strings.TrimSpace(line[3:]), " - ")
 				if len(parts) >= 1 {
 					currentSection = strings.TrimSpace(parts[0])
@@ -129,11 +130,11 @@ func getCurrentCategory(lines []string, lineNum int) string {
 		}
 		if strings.HasPrefix(line, "## ") &&
 			!strings.Contains(line, "[Unreleased]") &&
-			!strings.Contains(line, "v3.0.0-alpha") {
+			!strings.Contains(line, "v3.0.0-") {
 			return strings.TrimSpace(line[3:])
 		}
 		if strings.HasPrefix(line, "## ") &&
-			(strings.Contains(line, "[Unreleased]") || strings.Contains(line, "v3.0.0-alpha")) {
+			(strings.Contains(line, "[Unreleased]") || strings.Contains(line, "v3.0.0-")) {
 			break
 		}
 	}

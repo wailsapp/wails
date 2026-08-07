@@ -23,7 +23,7 @@
           "image-name" : "wails_icon_vector.svg",
           "name" : "wails_icon_vector",
           "position" : {
-            "scale" : 1.5,
+            "scale" : 0.85,
             "translation-in-points" : [
               0.0,
               0.0
