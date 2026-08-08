@@ -555,7 +555,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
 }
 
 // WebView
-GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
+GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop, int spellCheckEnabled, char *spellCheckLanguagesCSV)
 {
     GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
 
@@ -564,6 +564,13 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     // gtk_container_add(GTK_CONTAINER(window), webview);
     WebKitWebContext *context = webkit_web_context_get_default();
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
+    webkit_web_context_set_spell_checking_enabled(context, spellCheckEnabled == 1);
+    if (spellCheckEnabled == 1 && spellCheckLanguagesCSV != NULL && spellCheckLanguagesCSV[0] != '\0')
+    {
+        gchar **languages = g_strsplit(spellCheckLanguagesCSV, ",", -1);
+        webkit_web_context_set_spell_checking_languages(context, (const gchar * const *)languages);
+        g_strfreev(languages);
+    }
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 
     if(disableWebViewDragAndDrop)
