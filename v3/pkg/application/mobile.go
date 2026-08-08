@@ -3,7 +3,7 @@ package application
 // MobileManager is the cross-platform surface common to the iOS and Android
 // native-feature managers. The package-level Mobile singleton implements it,
 // dispatching to the IOS or Android manager on the respective platform and to a
-// no-op stub on desktop builds. This lets cross-platform mobile code call
+// desktop stub on non-mobile builds. This lets cross-platform mobile code call
 // application.Mobile.* without splitting into //go:build ios / //go:build
 // android files of its own.
 //
@@ -18,9 +18,9 @@ package application
 // guarantees the two platform managers keep that method signature-identical: if
 // they ever drift, the platform build fails to compile.
 type MobileManager interface {
-	// One-way actions
+	// Actions
 	Share(jsonPayload string)
-	OpenURL(url string)
+	OpenURL(url string) error
 	SetKeepAwake(enabled bool)
 	SetTorch(enabled bool)
 

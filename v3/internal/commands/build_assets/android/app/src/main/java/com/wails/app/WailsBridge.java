@@ -59,8 +59,12 @@ import androidx.security.crypto.MasterKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.URI;
 import java.util.Locale;
 import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * WailsBridge manages the connection between the Java/Android side and the Go
@@ -451,16 +455,50 @@ public class WailsBridge {
     /**
      * Open a URL in the system browser.
      */
-    public void openURL(final String url) {
-        mainHandler.post(() -> {
+    public String openURL(final String url) {
+        if (url == null || url.trim().isEmpty()) return "URL must not be empty";
+
+        Uri parsed;
+        try {
+            URI validated = new URI(url);
+            if (validated.getScheme() == null || validated.getScheme().isEmpty()) {
+                return "invalid URL: missing scheme";
+            }
+            parsed = Uri.parse(validated.toString());
+        } catch (Exception e) {
+            return "invalid URL: " + e.getMessage();
+        }
+
+        final Uri target = parsed;
+        FutureTask<String> launch = new FutureTask<>(() -> {
             try {
-                Intent view = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                Intent view = new Intent(Intent.ACTION_VIEW, target);
                 view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(view);
+                return "";
             } catch (Exception e) {
-                Log.e(TAG, "openURL failed", e);
+                return e.getClass().getSimpleName() + ": " + e.getMessage();
             }
         });
+
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            launch.run();
+        } else if (!mainHandler.post(launch)) {
+            return "failed to schedule browser launch on the main thread";
+        }
+
+        try {
+            return launch.get(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            launch.cancel(false);
+            Thread.currentThread().interrupt();
+            return "interrupted while launching URL";
+        } catch (TimeoutException e) {
+            launch.cancel(false);
+            return "timed out waiting for browser launch";
+        } catch (Exception e) {
+            return e.getClass().getSimpleName() + ": " + e.getMessage();
+        }
     }
 
     /**
