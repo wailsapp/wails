@@ -175,8 +175,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "v3.0.0-beta.0, beta.1, and beta.2 were published from master on 2026-08-02. The current version file and newest tag are beta.2 while this evidence ledger remains beta.0; release-stage/version approval is not recorded, so this gate remains open.",
-      "updated": "2026-08-03T08:19:00+10:00"
+      "note": "v3.0.0-beta.0, beta.1, and beta.2 were published from master on 2026-08-02. Beta.3, beta.4, and beta.5 were subsequently published from master, but all three immutable releases have zero assets after their Release v3 upload jobs failed. This evidence ledger remains at its beta.0 path, and release-stage/version approval is not recorded, so this gate remains open.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
     "id": "sw-compat",
@@ -220,8 +220,8 @@
       "blocking": true,
       "owner": "lea",
       "status": "open",
-      "note": "Release v3 workflow runs 30747695287 (beta.0) and 30748402783 (beta.1) published Linux amd64/arm64, Windows amd64, macOS amd64/arm64/universal, and SHA256SUMS. The newest published beta.2 release has zero assets and no matching Release v3 run. Reproducibility and the missing current assets are tracked in #5876; this gate remains open.",
-      "updated": "2026-08-03T08:19:00+10:00"
+      "note": "Release v3 workflow runs 30747695287 (beta.0) and 30748402783 (beta.1) published Linux amd64/arm64, Windows amd64, macOS amd64/arm64/universal, and SHA256SUMS. Published beta.2 has zero assets and no matching Release v3 run. Beta.3 Release v3 run 30829708574 built all six desktop binaries, generated SHA256SUMS, and created provenance attestation 38606755, but Publish Release failed with HTTP 422 because the nightly workflow had already published an immutable release. Scheduled Nightly Release v3 run 30926135808 then reached artifact dispatch with an empty tag after the release task skipped for an empty changelog; GitHub rejected the dispatch because required input `tag` was not provided. Published beta.4 and beta.5 are also immutable with zero assets: Release v3 runs 31022027159 and 31192135957 each built the same six binaries, generated SHA256SUMS, and created provenance attestations 39071317 and 39449314 respectively before their uploads failed with HTTP 422 `Cannot upload assets to an immutable release.` The workflow ordering and missing current assets are tracked in #5876; this gate remains open.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
       "id": "sw-signing",
@@ -230,8 +230,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "The beta.1 tag-triggered run 30748399250 failed because Apple signing credentials were absent. Commit 6603cde8e then removed signing/notarization steps and run 30748402783 published unsigned macOS binaries. No explicit evidenced waiver is recorded; tracked in #5876.",
-      "updated": "2026-08-03T08:19:00+10:00"
+      "note": "The beta.1 tag-triggered run 30748399250 failed because Apple signing credentials were absent. Commit 6603cde8e then removed signing/notarization steps and run 30748402783 published unsigned macOS binaries. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 created Sigstore build-provenance attestations 38606755, 39071317, and 39449314 respectively, for six binaries each; provenance is not platform code signing, and all three immutable releases rejected asset uploads. No explicit evidenced macOS signing/notarization waiver is recorded; tracked in #5876.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
       "id": "sw-install",
@@ -240,8 +240,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "No published-channel installation evidence is recorded. The newest beta.2 release has no downloadable assets, so installation cannot be verified from that release until #5876 is resolved.",
-      "updated": "2026-08-03T08:19:00+10:00"
+      "note": "No published-channel installation evidence is recorded. Published beta.2, beta.3, beta.4, and beta.5 have zero downloadable assets. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 built the expected binaries but could not attach them to their immutable releases; the latest failed with HTTP 422 after generating SHA256SUMS and provenance attestation 39449314. Installation cannot be verified from the current Beta channel until #5876 is resolved.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
       "id": "sw-perf",
@@ -454,8 +454,8 @@
       "track": "ops",
       "blocking": true,
       "status": "open",
-      "note": "Three Beta releases were published on 2026-08-02, including an unsigned-macOS fallback and a beta.2 release with no assets. No approved runbook, abort criteria, or waiver evidence is recorded; #5876 tracks the release-health blocker.",
-      "updated": "2026-08-03T08:19:00+10:00"
+      "note": "Beta.0 and beta.1 were published with assets, while beta.2, beta.3, beta.4, and beta.5 have none. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 each built six binaries and provenance, then failed to attach the outputs because the release was already immutable; scheduled run 30926135808 separately attempted an artifact dispatch with no tag after release generation skipped. Scheduled run 31117548329 then failed during runner setup after GitHub returned Service Unavailable while resolving action downloads through two retries; no workflow step ran. No approved launch runbook or abort criteria are recorded, and the artifact failures were not stopped before the releases became immutable. No signing waiver evidence is recorded. #5876 tracks the release-health blocker.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
       "id": "ops-support",
@@ -471,7 +471,9 @@
       "phase": "assure",
       "track": "ops",
       "blocking": true,
-      "status": "open"
+      "status": "open",
+      "note": "The beta.3, beta.4, and beta.5 immutable releases cannot accept the artifacts produced by failed runs 30829708574, 31022027159, and 31192135957. Scheduled recovery run 30926135808 did not identify a releasable tag after the release task skipped; its empty-tag Release v3 dispatch also failed with HTTP 422. Scheduled run 31117548329 provided no recovery evidence because GitHub's action-download service stayed unavailable through runner retries and the job stopped during setup. No successful recovery or replacement path has been rehearsed, and remediation still requires a maintainer decision because automation is not authorised to replace tags or releases. #5876 remains open.",
+      "updated": "2026-08-08T17:05:00+10:00"
     },
     {
       "id": "ops-monitoring",
