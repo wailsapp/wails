@@ -45,7 +45,7 @@ const (
 var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 
 func nameTypeOf(typeOf reflect.Type) string {
-	tname := typeOf.Name()
+	tname := strings.ReplaceAll(typeOf.Name(), "*", "")
 	gidx := strings.IndexRune(tname, '[')
 	if gidx > 0 { // its a generic type
 		rem := strings.SplitN(tname, "[", 2)
@@ -114,7 +114,8 @@ type TypeScriptify struct {
 	fieldTypeOptions map[reflect.Type]TypeOptions
 
 	// throwaway, used when converting
-	alreadyConverted map[string]bool
+	alreadyConverted     map[string]bool
+	alreadyConvertedName map[string]bool
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
@@ -392,6 +393,7 @@ func (t *TypeScriptify) AddEnumValues(typeOf reflect.Type, values interface{}) *
 
 func (t *TypeScriptify) Convert(customCode map[string]string) (string, error) {
 	t.alreadyConverted = make(map[string]bool)
+	t.alreadyConvertedName = make(map[string]bool)
 	depth := 0
 
 	result := ""
@@ -534,9 +536,14 @@ func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []e
 	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
 	}
-	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+	if _, found := t.alreadyConvertedName[entityName]; found { // Already converted
+		return "", nil
+	}
+	t.alreadyConverted[typeOf.String()] = true
+	t.alreadyConvertedName[entityName] = true
+
 	result := "enum " + entityName + " {\n"
 
 	for _, val := range elements {
@@ -634,6 +641,10 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
 	}
+	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+	if _, found := t.alreadyConvertedName[entityName]; found { // Already converted
+		return "", nil
+	}
 	fields := t.deepFields(typeOf)
 	t.logf(depth, "Converting type %s", typeOf.String())
 	if differentNamespaces(t.Namespace, typeOf) {
@@ -641,8 +652,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 	}
 
 	t.alreadyConverted[typeOf.String()] = true
-
-	entityName := t.Prefix + nameTypeOf(typeOf) + t.Suffix
+	t.alreadyConvertedName[entityName] = true
 
 	if typeClashWithReservedKeyword(entityName) {
 		warnAboutTypesClash(entityName)
