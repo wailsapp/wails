@@ -62,6 +62,19 @@ jobs:
           - target_os: windows
             target_arch: amd64
             runner: ubuntu-latest
+          # Mobile targets. These use GitHub-hosted images that already ship the
+          # heavy toolchains, so no custom image or self-hosted runner is needed:
+          #   - Android: ubuntu-latest bundles the Android SDK + NDK (cross-
+          #     compiled from Linux via the NDK, exactly like the desktop targets
+          #     cross-compile from Linux).
+          #   - iOS: macos-latest bundles Xcode + the iOS SDK, which is the only
+          #     toolchain that cannot run on a Linux runner.
+          - target_os: android
+            target_arch: arm64
+            runner: ubuntu-latest
+          - target_os: ios
+            target_arch: arm64
+            runner: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -87,6 +100,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Linux dependencies
+        # Desktop Linux target builds need the host GTK/WebKit dev packages.
+        # Not needed for the Android job (NDK cross-compile) and impossible on
+        # the macOS iOS runner.
+        if: runner.os == 'Linux' && matrix.target_os != 'android'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
@@ -104,15 +121,35 @@ jobs:
           wails3 init -n crosstest -t vanilla
 
       - name: Setup Docker cross-compile image
+        # Only the desktop targets cross-compile through the Wails Docker image.
+        # Mobile builds natively against the runner's preinstalled toolchain.
+        if: matrix.target_os != 'android' && matrix.target_os != 'ios'
         working-directory: test-cross-compile/crosstest
         run: task common:setup:docker
 
-      - name: Fix replace directive for Docker build
+      - name: Point the test project at the local Wails source
         working-directory: test-cross-compile/crosstest
         run: |
-          # Change the replace directive to use absolute path that matches Docker mount
+          # Replace the released dependency with this checkout so the build
+          # exercises the PR's code. For desktop this path also matches the
+          # Docker mount; mobile builds use it natively on the host runner.
           go mod edit -dropreplace github.com/wailsapp/wails/v3
           go mod edit -replace github.com/wailsapp/wails/v3=${{ github.workspace }}/v3
+
+      - name: Setup Android NDK toolchain
+        # ubuntu-latest ships the Android SDK + NDK; just point the build at it.
+        if: matrix.target_os == 'android'
+        run: |
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_ROOT}"
+          echo "ANDROID_NDK_HOME=$NDK" >> "$GITHUB_ENV"
+          echo "Using preinstalled Android NDK: $NDK"
+
+      - name: Show Xcode / iOS SDK
+        # macos-latest ships Xcode + the iOS SDK; nothing to install.
+        if: matrix.target_os == 'ios'
+        run: |
+          xcodebuild -version
+          echo "iPhoneOS SDK: $(xcrun --sdk iphoneos --show-sdk-path)"
 
       - name: Cross-compile for ${{ matrix.target_os }}/${{ matrix.target_arch }}
         working-directory: test-cross-compile/crosstest
@@ -120,7 +157,9 @@ jobs:
           echo "Cross-compiling for ${{ matrix.target_os }}/${{ matrix.target_arch }}..."
           task ${{ matrix.target_os }}:build ARCH=${{ matrix.target_arch }}
           echo "Cross-compilation successful!"
-          ls -la bin/
+          # Desktop emits into bin/; Android emits a .so under jniLibs, iOS a .a.
+          ls -laR bin/ 2>/dev/null || true
+          find build -name '*.so' -o -name '*.a' 2>/dev/null || true
 
   cross_compile_results:
     if: ${{ always() }}
