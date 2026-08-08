@@ -29,8 +29,8 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"wails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
+				`-e OBFUSCATED={{.OBFUSCATED | default "" | q}}`,
+				`-e GARBLE_ARGS={{.GARBLE_ARGS | default "" | q}}`,
 			},
 		},
 		{
@@ -40,8 +40,8 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"wails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
+				`-e OBFUSCATED={{.OBFUSCATED | default "" | q}}`,
+				`-e GARBLE_ARGS={{.GARBLE_ARGS | default "" | q}}`,
 			},
 		},
 		{
@@ -51,8 +51,8 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"wails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
+				`-e OBFUSCATED={{.OBFUSCATED | default "" | q}}`,
+				`-e GARBLE_ARGS={{.GARBLE_ARGS | default "" | q}}`,
 			},
 		},
 		{

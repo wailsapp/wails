@@ -180,7 +180,7 @@ case "${OS}-${ARCH}" in
         ;;
 esac
 
-export CGO_ENABLED=1
+export CGO_ENABLED="${CGO_ENABLED:-1}"
 export CGO_CFLAGS="-w"
 
 # Build frontend if exists and not already built (host may have built it)
@@ -199,7 +199,17 @@ if [ "$GOOS" = "windows" ]; then
     LDFLAGS="-s -w -H windowsgui"
 fi
 
+if [ -n "$APP_LDFLAGS" ]; then
+    LDFLAGS="${LDFLAGS} ${APP_LDFLAGS}"
+fi
+
 TAGS="production"
+if [ -n "$APP_TAGS" ]; then
+    TAGS="${TAGS},${APP_TAGS}"
+fi
+if [ -n "$APP_PLATFORM_TAGS" ]; then
+    TAGS="${TAGS},${APP_PLATFORM_TAGS}"
+fi
 if [ -n "$EXTRA_TAGS" ]; then
     TAGS="${TAGS},${EXTRA_TAGS}"
 fi
@@ -210,7 +220,7 @@ if [ "$OBFUSCATED" = "true" ]; then
     TAGS="${TAGS},wails_obfuscated"
 fi
 
-${COMPILER} -tags "$TAGS" -trimpath -buildvcs=false -ldflags="$LDFLAGS" -o bin/${APP}-${GOOS}-${GOARCH}${EXT} .
+${COMPILER} -tags "$TAGS" -trimpath -buildvcs=false -ldflags="$LDFLAGS" -o "bin/${APP}-${GOOS}-${GOARCH}${EXT}" .
 echo "Built: bin/${APP}-${GOOS}-${GOARCH}${EXT}"
 SCRIPT
 RUN chmod +x /usr/local/bin/build.sh

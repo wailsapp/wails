@@ -162,6 +162,76 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Go build customisation variables
+
+Generated projects expose additive variables for custom Go build tags, linker
+flags, and CGO. Tag values must be comma-separated names, without the `-tags`
+option; Wails combines them with the tags required by the selected build mode
+and platform.
+
+| Variable | Applies to |
+| --- | --- |
+| `APP_TAGS` | Every Taskfile-driven build |
+| `APP_TAGS_LINUX` | Linux builds |
+| `APP_TAGS_DARWIN` | macOS builds |
+| `APP_TAGS_WINDOWS` | Windows builds |
+| `APP_TAGS_ANDROID` | Android builds |
+| `APP_TAGS_IOS` | iOS builds |
+| `APP_TAGS_SERVER` | Server-mode builds |
+| `APP_LDFLAGS` | Additional linker flags for every Taskfile-driven build |
+| `APP_CGO_ENABLED` | Overrides CGO with `0` or `1` for desktop and server builds |
+| `EXTRA_TAGS` | Additional tags for one invocation |
+
+For example:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+Set an `APP_*` value in the root `Taskfile.yml` when it is a persistent project
+default. A `KEY=value` passed with the command has the highest precedence and
+replaces that variable for the invocation. A literal root Taskfile value takes
+precedence over the same-named process environment variable. If the
+self-defaulting expression shown below is retained, the process environment is
+used when no command-line value is supplied. Use `EXTRA_TAGS` when you want to
+add tags for one build without replacing the persistent `APP_TAGS` value.
+
+When `APP_CGO_ENABLED` is empty, Linux and macOS default to `1`, Windows defaults
+to `0`, native server builds keep Go's host default, and server Docker builds
+default to `0`. Android and iOS builds always use CGO and keep `CGO_ENABLED=1`;
+`APP_CGO_ENABLED` does not override those mobile toolchains. Docker-backed
+desktop cross-compilation and server builds receive the same applicable
+`APP_*` values as their native Taskfile counterparts.
+
+:::note[Existing projects]
+The root `Taskfile.yml` is project-owned, so `wails3 update build-assets` does
+not overwrite it. Projects created before these variables were introduced must
+add the following entries to their root `vars` block manually:
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+Replace a self-defaulting expression with a literal value to make it a
+persistent project default.
+:::
+
+These variables are consumed by Taskfile-driven builds. The build phase in the
+generated Xcode project invokes Go directly and is outside this Taskfile
+customisation path, so builds launched from Xcode do not currently consume
+these variables.
+
 ## Common Build Process
 
 Across all platforms, the build process typically includes the following steps:
