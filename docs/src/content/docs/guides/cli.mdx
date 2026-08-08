@@ -272,15 +272,34 @@ wails3 generate icons [flags]
 ```
 
 #### Flags
-| Flag                   | Description                                          | Default               |
-|------------------------|------------------------------------------------------|-----------------------|
-| `-input`               | Input PNG file                                       | Required              |
-| `-windowsfilename`     | Windows output filename                              |                       |
-| `-macfilename`         | macOS output filename                                |                       |
-| `-sizes`               | Icon sizes (comma-separated)                         | `256,128,64,48,32,16` |
-| `-example`             | Generate example icon                                | `false`               |
-| `-iconcomposerinput`   | Input Icon Composer file (`.icon`)                   |                       |
-| `-macassetdir`         | Output directory for Mac assets (Assets.car + icns)  |                       |
+| Flag                   | Description                                           | Default                       |
+|------------------------|-------------------------------------------------------|-------------------------------|
+| `-input`               | Input PNG file                                        | `build/appicon.png`           |
+| `-windowsfilename`     | Windows output filename                               | `build/windows/icon.ico`      |
+| `-macfilename`         | macOS output filename                                 | `build/darwin/icon.icns`      |
+| `-sizes`               | Windows ICO sizes (comma-separated)                   | `256,128,64,48,32,16`         |
+| `-linuxoutputdir`      | Output directory for Linux hicolor PNGs               |                               |
+| `-linuxsizes`          | Linux PNG sizes (comma-separated)                     | `16,32,48,64,128,256,512`     |
+| `-example`             | Generate example icon                                 | `false`                       |
+| `-iconcomposerinput`   | Input Icon Composer file (`.icon`)                    |                               |
+| `-macassetdir`         | Output directory for Mac assets (`Assets.car` + icns) |                               |
+
+#### Linux hicolor icons
+
+Generate a complete Linux desktop icon set without ImageMagick or another external image tool:
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+The command writes files such as `48x48.png` and `128x128.png` to the output directory. Each PNG is an exact square; non-square source images retain their aspect ratio and receive transparent centered padding. Generation is byte-deterministic on every supported build host.
+
+Treat `build/appicon.png` as the canonical source and the Linux output directory as a disposable generated set. The default `generate:icons` task declares every size as an output, so deleting any one of them regenerates the complete set.
+
+The default DEB, RPM, and Arch package configuration references all seven default sizes. If you customize `-linuxsizes` in the generated task, update `build/linux/nfpm/nfpm.yaml` to install the same set.
 
 #### Icon Composer (macOS)
 
