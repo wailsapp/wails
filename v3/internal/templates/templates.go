@@ -70,6 +70,18 @@ func ValidTemplateName(name string) bool {
 	})
 }
 
+// IsRemoteTemplate reports whether name will be resolved as a remote template
+// by Install. Any path lookup error is treated as remote here, matching the
+// local-template lookup in Install; Install remains responsible for validating
+// and fetching the template.
+func IsRemoteTemplate(name string) bool {
+	if ValidTemplateName(name) {
+		return false
+	}
+	_, err := os.Stat(name)
+	return err != nil
+}
+
 func GetDefaultTemplates() []TemplateData {
 	return defaultTemplates
 }

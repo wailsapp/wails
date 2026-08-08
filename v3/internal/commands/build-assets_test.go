@@ -156,6 +156,37 @@ func TestGenerateBuildAssets(t *testing.T) {
 	}
 }
 
+func TestGenerateBuildAssetsPreservesExistingConfig(t *testing.T) {
+	buildDir := filepath.Join(t.TempDir(), "build")
+	if err := os.MkdirAll(buildDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	const templateConfig = "# remote template settings\ndev_mode:\n  debounce: 1000\n"
+	configPath := filepath.Join(buildDir, "config.yml")
+	if err := os.WriteFile(configPath, []byte(templateConfig), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	err := GenerateBuildAssets(&BuildAssetsOptions{
+		Dir:            buildDir,
+		Name:           "PreservedConfig",
+		Silent:         true,
+		PreserveConfig: true,
+	})
+	if err != nil {
+		t.Fatalf("GenerateBuildAssets() error = %v", err)
+	}
+
+	got, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != templateConfig {
+		t.Fatalf("config.yml was overwritten: got %q, want %q", got, templateConfig)
+	}
+}
+
 func TestUpdateBuildAssets(t *testing.T) {
 	// Create a temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "wails-update-assets-test-*")
