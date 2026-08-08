@@ -67,6 +67,34 @@ jobs:
           echo "has_tag=false" >> $GITHUB_OUTPUT
           echo "tag=" >> $GITHUB_OUTPUT
         fi
+
+    - name: Check whether a tagged commit still needs publication
+      id: publication_check
+      env:
+        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        # A release-bookkeeping commit can advance master after the release tag.
+        # Select only active-series tags that are ancestors of this checkout so
+        # a failed publication can still be recovered on the following run.
+        tag=$(git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
+        echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        if [ -z "$tag" ]; then
+          echo "needs_recovery=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        api_status=0
+        response=$(gh api --include --silent "repos/$GITHUB_REPOSITORY/releases/tags/$tag" 2>&1) || api_status=$?
+        if [ "$api_status" -eq 0 ]; then
+          echo "needs_recovery=false" >> "$GITHUB_OUTPUT"
+        elif grep -Eq '^HTTP/[0-9.]+ 404 ' <<< "$response"; then
+          echo "needs_recovery=true" >> "$GITHUB_OUTPUT"
+          echo "Release $tag is missing; the desktop artifact workflow will be re-dispatched."
+        else
+          printf '%s\n' "$response" >&2
+          echo "::error::Unable to check publication state for $tag (gh api exit $api_status)."
+          exit "$api_status"
+        fi
     
     - name: Check for unreleased changelog content
       id: changelog_check
@@ -102,7 +130,7 @@ jobs:
           # Only consider the active release series (alpha2/beta/rc): they
           # outrank legacy alpha tags, and explicit patterns avoid stray tags
           # such as v3.0.0-alpha.98-tui being selected as the baseline.
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
+          LATEST_TAG=$(git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
         fi
 
         if [ -z "$LATEST_TAG" ]; then
@@ -138,6 +166,7 @@ jobs:
     - name: Early exit - No changes detected
       if: |
         steps.quick_check.outputs.should_continue == 'false' && 
+        steps.publication_check.outputs.needs_recovery != 'true' &&
         github.event.inputs.force_release != 'true'
       run: |
         echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
@@ -155,8 +184,9 @@ jobs:
     
     - name: Continue with release process
       if: |
-        steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        (steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'
       run: |
         echo "✅ Proceeding with release process..."
         if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
@@ -166,8 +196,9 @@ jobs:
     - name: Run release script
       id: release
       if: |
-        steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        (steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'
       env:
         # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
         # against the API before pushing anything and falls back to
@@ -182,31 +213,81 @@ jobs:
         if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
           ARGS+=(--dry-run)
         fi
+        # Release v3 must create the GitHub release with its artifacts in the
+        # same operation. Publishing here first makes the release immutable and
+        # prevents the artifact workflow from uploading its outputs.
+        ARGS+=(--defer-github-release)
         go run release.go "${ARGS[@]}"
 
     # Tags created with GITHUB_TOKEN do not emit a push event that can trigger
-    # Release v3. Dispatch it explicitly so each published nightly also gets
-    # the platform binaries, checksums, and provenance attached to its release.
-    - name: Build and attach desktop artifacts
+    # Release v3. Dispatch it explicitly; this workflow is the sole publisher
+    # so the immutable release is created with its platform binaries,
+    # checksums, and provenance already attached.
+    - name: Build and publish release with desktop artifacts
       id: desktop_artifacts
-      if: steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true'
+      if: |
+        github.event.inputs.dry_run != 'true' &&
+        ((steps.release.outputs.release_tag != '' && steps.release.outputs.release_dry_run != 'true') ||
+        steps.publication_check.outputs.needs_recovery == 'true')
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        RELEASE_NOTES: ${{ steps.release.outputs.release_notes }}
+        RELEASE_TAG: ${{ steps.release.outputs.release_tag }}
+        RECOVERY_TAG: ${{ steps.publication_check.outputs.tag }}
       run: |
-        tag="${{ steps.release.outputs.release_tag }}"
+        tag="${RELEASE_TAG:-$RECOVERY_TAG}"
+        if [ -z "$tag" ]; then
+          echo "::error::No release tag was produced or found for recovery."
+          exit 1
+        fi
+        caller="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+        run_title="Release v3 $tag ($caller)"
         pre_release=false
         if [[ "$tag" == *-* ]]; then
           pre_release=true
         fi
 
+        INPUTS=(
+          -f tag="$tag"
+          -f pre_release="$pre_release"
+          -f draft=false
+          -f orchestrator_run="$caller"
+        )
+        if [ -n "$RELEASE_NOTES" ]; then
+          INPUTS+=(-f release_notes="$RELEASE_NOTES")
+        fi
+
         gh workflow run release-v3.yml \
           --repo "${{ github.repository }}" \
           --ref master \
-          -f tag="$tag" \
-          -f pre_release="$pre_release" \
-          -f draft=false
+          "${INPUTS[@]}"
         echo "dispatched=true" >> "$GITHUB_OUTPUT"
-        echo "Dispatched Release v3 for $tag"
+        echo "Dispatched Release v3 to publish $tag with desktop artifacts"
+
+        run_id=""
+        for _ in $(seq 1 30); do
+          run_id=$(gh run list \
+            --repo "${{ github.repository }}" \
+            --workflow release-v3.yml \
+            --event workflow_dispatch \
+            --limit 20 \
+            --json databaseId,displayTitle \
+            --jq ".[] | select(.displayTitle == \"$run_title\") | .databaseId" \
+            | head -n 1)
+          if [ -n "$run_id" ]; then
+            break
+          fi
+          sleep 2
+        done
+        if [ -z "$run_id" ]; then
+          echo "::error::Unable to identify the dispatched Release v3 run for $tag."
+          exit 1
+        fi
+
+        echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+        echo "Waiting for Release v3 run $run_id"
+        gh run watch "$run_id" --repo "${{ github.repository }}" --exit-status
+        echo "published=true" >> "$GITHUB_OUTPUT"
 
     - name: Summary
       if: always()
@@ -226,9 +307,6 @@ jobs:
           if [ -n "${{ steps.release.outputs.release_url }}" ]; then
             echo "- **Release URL:** ${{ steps.release.outputs.release_url }}" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ "${{ steps.desktop_artifacts.outputs.dispatched }}" == "true" ]; then
-            echo "- **Desktop artifacts:** Release v3 dispatched" >> $GITHUB_STEP_SUMMARY
-          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changelog" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
@@ -238,5 +316,10 @@ jobs:
           fi
         else
           echo "- Release script did not run (skipped or failed before execution)." >> $GITHUB_STEP_SUMMARY
+        fi
+        if [ "${{ steps.desktop_artifacts.outputs.published }}" == "true" ]; then
+          echo "- **Publication:** Release v3 completed with desktop artifacts" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ steps.desktop_artifacts.outputs.dispatched }}" == "true" ]; then
+          echo "- **Publication:** Release v3 run ${{ steps.desktop_artifacts.outputs.run_id }} failed or could not be tracked" >> $GITHUB_STEP_SUMMARY
         fi
     

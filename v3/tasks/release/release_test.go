@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -250,6 +251,142 @@ func TestGetUnreleasedChangelogTemplate(t *testing.T) {
 	// Check that template contains example entries
 	if !strings.Contains(template, "Add support for custom window icons") {
 		t.Error("Template missing example entries")
+	}
+}
+
+func TestParseReleaseArgs_DeferGitHubRelease(t *testing.T) {
+	opts, err := parseReleaseArgs([]string{
+		"--defer-github-release",
+		"--branch", "master",
+		"--target", "master",
+		"--version", "v3.0.0-beta.4",
+	})
+	if err != nil {
+		t.Fatalf("parseReleaseArgs() failed: %v", err)
+	}
+
+	if !opts.deferGitHubRelease {
+		t.Fatal("expected GitHub release creation to be deferred")
+	}
+	if opts.dryRun {
+		t.Fatal("defer-github-release must not implicitly enable dry-run")
+	}
+	if opts.version != "v3.0.0-beta.4" {
+		t.Fatalf("version = %q, want v3.0.0-beta.4", opts.version)
+	}
+}
+
+func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
+	workflow, err := os.ReadFile("../../../.github/workflows/nightly-release-v3.yml")
+	if err != nil {
+		t.Fatalf("read nightly release workflow: %v", err)
+	}
+	contents := strings.ReplaceAll(string(workflow), "\r\n", "\n")
+
+	deferFlag := strings.Index(contents, "ARGS+=(--defer-github-release)")
+	dispatch := strings.Index(contents, "gh workflow run release-v3.yml")
+	if deferFlag == -1 {
+		t.Fatal("nightly release must defer GitHub release creation")
+	}
+	if dispatch == -1 {
+		t.Fatal("nightly release must dispatch the desktop artifact workflow")
+	}
+	if deferFlag > dispatch {
+		t.Fatal("nightly release must defer publication before dispatching the artifact workflow")
+	}
+	if !strings.Contains(contents, "release_notes=\"$RELEASE_NOTES\"") {
+		t.Fatal("nightly release must pass curated notes to the artifact workflow")
+	}
+	if !strings.Contains(contents, "gh run watch \"$run_id\"") {
+		t.Fatal("nightly release must wait for the dispatched publication workflow")
+	}
+	if !strings.Contains(contents, "steps.publication_check.outputs.needs_recovery == 'true'") {
+		t.Fatal("nightly release must recover a tagged commit whose publication failed")
+	}
+	if !strings.Contains(contents, "steps.release.outputs.release_tag != ''") {
+		t.Fatal("nightly release must not dispatch publication when the release task produces no tag")
+	}
+	if !strings.Contains(contents, `RECOVERY_TAG: ${{ steps.publication_check.outputs.tag }}`) {
+		t.Fatal("nightly release must dispatch the reachable recovery tag after bookkeeping commits")
+	}
+	newReleaseGate := `(steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true') &&
+        steps.publication_check.outputs.needs_recovery != 'true'`
+	if strings.Count(contents, newReleaseGate) != 2 {
+		t.Fatal("nightly release must recover an unpublished tag before creating a newer tag")
+	}
+	if !strings.Contains(contents, `gh api --include --silent "repos/$GITHUB_REPOSITORY/releases/tags/$tag"`) ||
+		!strings.Contains(contents, `grep -Eq '^HTTP/[0-9.]+ 404 '`) {
+		t.Fatal("publication recovery must distinguish a missing release from API failures")
+	}
+	if !strings.Contains(contents, "github.event.inputs.dry_run != 'true' &&") {
+		t.Fatal("manual dry runs must gate all artifact publication, including recovery")
+	}
+}
+
+func TestNightlyPublicationRecoveryFindsReachableTagAfterBookkeeping(t *testing.T) {
+	workflow, err := os.ReadFile("../../../.github/workflows/nightly-release-v3.yml")
+	if err != nil {
+		t.Fatalf("read nightly release workflow: %v", err)
+	}
+	contents := strings.ReplaceAll(string(workflow), "\r\n", "\n")
+	selector := `git tag --merged HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1`
+	if !strings.Contains(contents, "tag=$("+selector+")") {
+		t.Fatal("publication recovery must select the latest active v3 tag reachable from HEAD")
+	}
+	if strings.Contains(contents, "id: publication_check\n      if: steps.check_tag.outputs.has_tag == 'true'") {
+		t.Fatal("publication recovery must run when bookkeeping commits follow the release tag")
+	}
+
+	repo := t.TempDir()
+	runGit := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repo
+		if output, runErr := cmd.CombinedOutput(); runErr != nil {
+			t.Fatalf("git %s: %v\n%s", strings.Join(args, " "), runErr, output)
+		}
+	}
+
+	runGit("init", "--initial-branch=master")
+	runGit("config", "user.name", "release-test")
+	runGit("config", "user.email", "release-test@example.invalid")
+	runGit("commit", "--allow-empty", "-m", "release commit")
+	runGit("tag", "v3.0.0-beta.3")
+	runGit("checkout", "-b", "unreachable-release")
+	runGit("commit", "--allow-empty", "-m", "unreachable release")
+	runGit("tag", "v3.0.0-rc.9")
+	runGit("checkout", "master")
+	runGit("commit", "--allow-empty", "-m", "release bookkeeping [skip ci]")
+
+	cmd := exec.Command("bash", "-c", selector)
+	cmd.Dir = repo
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("select reachable release tag: %v\n%s", err, output)
+	}
+	if got := strings.TrimSpace(string(output)); got != "v3.0.0-beta.3" {
+		t.Fatalf("reachable release tag = %q, want v3.0.0-beta.3", got)
+	}
+}
+
+func TestWriteGitHubMultilineOutput(t *testing.T) {
+	output := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(output, nil, 0o644); err != nil {
+		t.Fatalf("create output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", output)
+
+	value := "first line\nWAILS_RELEASE_NOTES_EOF\nlast line"
+	writeGitHubMultilineOutput("release_notes", value)
+
+	data, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatalf("read output file: %v", err)
+	}
+	want := "release_notes<<WAILS_RELEASE_NOTES_EOF_X\n" + value + "\nWAILS_RELEASE_NOTES_EOF_X\n"
+	if string(data) != want {
+		t.Fatalf("multiline output = %q, want %q", string(data), want)
 	}
 }
 
@@ -512,9 +649,9 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 // out-ranking the stray tag.
 func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
 	const (
-		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		strayTag     = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
 		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
-		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+		nextTag      = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
 	)
 
 	for _, v := range []string{strayTag, legacyLatest, nextTag} {

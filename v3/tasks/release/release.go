@@ -32,10 +32,11 @@ var (
 )
 
 type releaseOptions struct {
-	version string
-	dryRun  bool
-	branch  string
-	target  string
+	version            string
+	dryRun             bool
+	deferGitHubRelease bool
+	branch             string
+	target             string
 }
 
 var errNoUnreleasedContent = errors.New("No unreleased changelog content found.")
@@ -453,6 +454,7 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 	fs.SetOutput(io.Discard)
 
 	dryRun := fs.Bool("dry-run", false, "simulate the release without pushing changes or creating a GitHub release")
+	deferGitHubRelease := fs.Bool("defer-github-release", false, "push the release commit and tag, but let the artifact workflow create the GitHub release")
 	branch := fs.String("branch", defaultReleaseBranch, "git branch to push release changes to")
 	target := fs.String("target", defaultReleaseTarget, "target reference for the GitHub release (usually the same as branch)")
 	versionFlag := fs.String("version", "", "explicit release version (overrides automatic increment)")
@@ -473,10 +475,11 @@ func parseReleaseArgs(args []string) (releaseOptions, error) {
 	}
 
 	return releaseOptions{
-		version: version,
-		dryRun:  *dryRun,
-		branch:  *branch,
-		target:  *target,
+		version:            version,
+		dryRun:             *dryRun,
+		deferGitHubRelease: *deferGitHubRelease,
+		branch:             *branch,
+		target:             *target,
 	}, nil
 }
 
@@ -562,6 +565,7 @@ func runRelease(opts releaseOptions) error {
 	writeGitHubOutput("release_version", newVersion)
 	writeGitHubOutput("release_tag", newVersion)
 	writeGitHubOutput("release_target", opts.target)
+	writeGitHubMultilineOutput("release_notes", releaseBody)
 
 	if opts.dryRun {
 		writeGitHubOutput("release_dry_run", "true")
@@ -610,6 +614,17 @@ func runRelease(opts releaseOptions) error {
 
 	if err := git.pushTag(newVersion, repoSlug, token); err != nil {
 		return err
+	}
+
+	// The nightly workflow delegates publication to release-v3.yml so that
+	// GitHub receives the binaries, checksums, and provenance before the
+	// release becomes immutable. Publishing here first would leave the
+	// artifact workflow unable to attach anything to the release.
+	if opts.deferGitHubRelease {
+		writeGitHubOutput("release_deferred", "true")
+		writeGitHubOutput("release_outcome", "success")
+		fmt.Println("📦 GitHub release creation deferred to the desktop artifact workflow.")
+		return nil
 	}
 
 	releaseTitle := fmt.Sprintf(defaultReleaseTitle, newVersion)
@@ -1091,6 +1106,28 @@ func writeGitHubOutput(key, value string) {
 	}
 	defer f.Close()
 	if _, err := fmt.Fprintf(f, "%s=%s\n", key, value); err != nil {
+		fmt.Printf("Warning: unable to persist %s to GITHUB_OUTPUT: %v\n", key, err)
+	}
+}
+
+func writeGitHubMultilineOutput(key, value string) {
+	outputPath := strings.TrimSpace(os.Getenv("GITHUB_OUTPUT"))
+	if outputPath == "" || key == "" || value == "" {
+		return
+	}
+
+	delimiter := "WAILS_RELEASE_NOTES_EOF"
+	for strings.Contains(value, delimiter) {
+		delimiter += "_X"
+	}
+
+	f, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		fmt.Printf("Warning: unable to write %s to GITHUB_OUTPUT: %v\n", key, err)
+		return
+	}
+	defer f.Close()
+	if _, err := fmt.Fprintf(f, "%s<<%s\n%s\n%s\n", key, delimiter, value, delimiter); err != nil {
 		fmt.Printf("Warning: unable to persist %s to GITHUB_OUTPUT: %v\n", key, err)
 	}
 }
