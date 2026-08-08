@@ -59,17 +59,27 @@ func main() {
 	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
-	task := app.NewSubCommand("task", "Run and list tasks")
+	Task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
-	task.AddFlags(&taskFlags)
-	task.Action(func() error {
-		return commands.RunTask(&taskFlags, task.OtherArgs())
+	Task.AddFlags(&taskFlags)
+	Task.Action(func() error {
+		return commands.RunTask(&taskFlags, Task.OtherArgs())
 	})
-	task.LongDescription("\nUsage: wails3 task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
+	Task.LongDescription("\nUsage: wails3 task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
 
 	generate := app.NewSubCommand("generate", "Generation tools")
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
-	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
+
+	icons := generate.NewSubCommand("icons", "Generate icons")
+	var iconsFlags flags.GenerateIconsOptions
+	iconsFlags.Input = "build/appicon.png"
+	iconsFlags.WindowsFilename = "build/windows/icon.ico"
+	iconsFlags.MacFilename = "build/darwin/icon.icns"
+	icons.AddFlags(&iconsFlags)
+	icons.Action(func() error {
+		return commands.GenerateIcons(&iconsFlags)
+	})
+
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	generate.NewSubCommandFunction("runtime", "Generate the pre-built version of the runtime", commands.GenerateRuntime)
 	generate.NewSubCommandFunction("webview2bootstrapper", "Generate WebView2 bootstrapper", commands.GenerateWebView2Bootstrapper)
