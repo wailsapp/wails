@@ -1,9 +1,8 @@
-# v3 Alpha
+# Wails v3 Beta
 
 Thanks for wanting to help out with testing/developing Wails v3! This guide will help you get started.
 
 ## Getting Started
 
-All the instructions for getting started are in the v3 documentation directory: `mkdocs-website`. 
-Please read the README.md file in that directory for more information.
-
+Installation, migration, platform support, and feature documentation are in
+[`docs/`](../docs/) and published at [v3.wails.io](https://v3.wails.io/).

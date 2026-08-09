@@ -141,7 +141,19 @@ static void destroyApp(void) {
 // Set the application menu
 static void setApplicationMenu(void *menu) {
 	NSMenu *nsMenu = (__bridge NSMenu *)menu;
-	[NSApp setMainMenu:menu];
+	void (^apply)(void) = ^{
+		[NSApp setMainMenu:nsMenu];
+	};
+
+	// AppKit requires the main menu to be replaced on the main thread. Menu.Set
+	// may be called from Wails event listeners, which execute on worker
+	// goroutines, so marshal the update synchronously. Avoid dispatch_sync when
+	// already on the main thread because that would deadlock.
+	if ([NSThread isMainThread]) {
+		apply();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), apply);
+	}
 }
 
 // Get the application name
@@ -314,7 +326,14 @@ func (m *macosApp) run() error {
 				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-			C.activateIgnoringOtherApps()
+			// Only bring the app to the foreground for a regular (UI) app.
+			// Accessory and Prohibited apps are background/agent processes;
+			// force-activating them steals focus from whatever the user was
+			// using (e.g. the terminal that launched a headless server), which a
+			// background app should never do.
+			if m.parent.options.Mac.ActivationPolicy == ActivationPolicyRegular {
+				C.activateIgnoringOtherApps()
+			}
 			if err := m.processAndCacheScreens(); err != nil {
 				m.parent.handleError(err)
 			}

@@ -1114,13 +1114,15 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
-	var width, height C.int
-	C.gtk_window_get_default_size(w.gtkWindow(), &width, &height)
-	if width <= 0 || height <= 0 {
-		width = C.int(C.gtk_widget_get_width(w.gtkWidget()))
-		height = C.int(C.gtk_widget_get_height(w.gtkWidget()))
+	width := int(C.gtk_widget_get_width(w.gtkWidget()))
+	height := int(C.gtk_widget_get_height(w.gtkWidget()))
+	if width > 0 && height > 0 {
+		return width, height
 	}
-	return int(width), int(height)
+
+	var defaultWidth, defaultHeight C.int
+	C.gtk_window_get_default_size(w.gtkWindow(), &defaultWidth, &defaultHeight)
+	return int(defaultWidth), int(defaultHeight)
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
@@ -1164,6 +1166,17 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew). On GTK4 that only
+	// happens after the application's "activate" signal fires: WebviewWindow.Run
+	// sets w.impl and then blocks in waitForActivation *before* creating the
+	// widget, so there is a startup window in which w.impl != nil but w.window is
+	// still NULL. A window whose widget does not exist yet is, by definition, not
+	// visible; without this guard a visibility poll during that gap calls
+	// gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion and
+	// returns false anyway.
+	if w.window == nil {
+		return false
+	}
 	return C.gtk_widget_is_visible(w.gtkWidget()) != 0
 }
 
@@ -1210,6 +1223,17 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	c := NewCalloc()
 	defer c.Free()
 	manager := C.webkit_user_content_manager_new()
+	linuxBlobBodyShimSource := C.CString(linuxBlobBodyFetchShimJS)
+	linuxBlobBodyShim := C.webkit_user_script_new(
+		linuxBlobBodyShimSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
+	C.webkit_user_script_unref(linuxBlobBodyShim)
+	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
 	// WebKitGTK 6.0: register_script_message_handler signature changed
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"), nil)
 
@@ -1547,8 +1571,8 @@ func handleCloseRequest(window *C.GtkWindow, data C.uintptr_t) C.gboolean {
 	return C.gboolean(1)
 }
 
-//export handleNotifyState
-func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t) {
+//export handleSurfaceSizeChanged
+func handleSurfaceSizeChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
 	windowId := uint(data)
 	window, ok := globalApplication.Window.GetByID(windowId)
 	if !ok || window == nil {
@@ -1560,11 +1584,45 @@ func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t)
 		return
 	}
 
-	if lw.isMaximised() {
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	width := int(C.gdk_surface_get_width(surface))
+	height := int(C.gdk_surface_get_height(surface))
+	if lw.lastWidth == width && lw.lastHeight == height {
+		return
 	}
-	if lw.isFullscreen() {
+	lw.lastWidth = width
+	lw.lastHeight = height
+	lw.resizeDebouncer(func() {
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	})
+}
+
+//export handleSurfaceStateChanged
+func handleSurfaceStateChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
+	windowID := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowID)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	state := C.gdk_toplevel_get_state((*C.GdkToplevel)(unsafe.Pointer(surface)))
+	current := linuxWindowState{
+		minimised:  state&C.GDK_TOPLEVEL_STATE_MINIMIZED != 0,
+		maximised:  state&C.GDK_TOPLEVEL_STATE_MAXIMIZED != 0,
+		fullscreen: state&C.GDK_TOPLEVEL_STATE_FULLSCREEN != 0,
+	}
+	stateEvents := changedLinuxWindowStateEvents(lw.windowState, current, lw.stateObserved)
+	lw.windowState = current
+	lw.stateObserved = true
+
+	for _, eventType := range stateEvents {
+		processWindowEvent(C.uint(data), C.uint(eventType))
 	}
 }
 

@@ -28,11 +28,19 @@ struct WebviewPreferences {
 
 extern void registerListener(unsigned int event);
 
+const char* windowTitlebarDoubleClickPreference(void) {
+	NSString *action = [[NSUserDefaults standardUserDefaults]
+		stringForKey:@"AppleActionOnDoubleClick"];
+	return action == nil ? "" : [action UTF8String];
+}
+
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool squareCorners, double cornerRadius, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
-	if (frameless) {
+	if (frameless && (squareCorners || cornerRadius > 0)) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
+	} else if (frameless) {
+		styleMask |= NSWindowStyleMaskFullSizeContentView;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
@@ -55,11 +63,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if( frameless ) {
+	if (frameless && !squareCorners && cornerRadius > 0) {
 		[view setWantsLayer:YES];
-		view.layer.cornerRadius = 8.0;
+		view.layer.cornerRadius = cornerRadius;
+		view.layer.masksToBounds = YES;
 	}
 	[window setContentView:view];
+	if (frameless && !squareCorners && cornerRadius == 0) {
+		[window setTitlebarAppearsTransparent:YES];
+		[window setTitleVisibility:NSWindowTitleHidden];
+	}
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
@@ -797,6 +810,15 @@ static void windowMinimise(void *window) {
 	[(WebviewWindow*)window miniaturize:nil];
 }
 
+// windowFlash requests user attention so the app's Dock icon bounces, drawing
+// the user back to a window that needs them. NSInformationalRequest bounces the
+// icon once; the request completes on its own, so disabling is a no-op.
+static void windowFlash(void *window, bool enabled) {
+	if (enabled) {
+		[NSApp requestUserAttention:NSInformationalRequest];
+	}
+}
+
 // zoom maximizes the window to the screen dimensions
 static void windowMaximise(void *window) {
 	[(WebviewWindow*)window zoom:nil];
@@ -892,13 +914,29 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 }
 
 // Make the given window frameless
-static void windowSetFrameless(void *window, bool frameless) {
+static void windowSetFrameless(void *window, bool frameless, bool squareCorners, double cornerRadius) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	// set the window style to be frameless
-	if (frameless) {
-		[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
+	if (frameless && (squareCorners || cornerRadius > 0)) {
+		[nsWindow setStyleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable];
+		NSView* view = [nsWindow contentView];
+		if (!squareCorners) {
+			[view setWantsLayer:YES];
+			view.layer.cornerRadius = cornerRadius;
+			view.layer.masksToBounds = YES;
+		} else {
+			view.layer.cornerRadius = 0;
+			view.layer.masksToBounds = NO;
+		}
+	} else if (frameless) {
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable | NSWindowStyleMaskFullSizeContentView];
+		[nsWindow setTitlebarAppearsTransparent:YES];
+		[nsWindow setTitleVisibility:NSWindowTitleHidden];
 	} else {
-		[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+		NSView* view = [nsWindow contentView];
+		view.layer.cornerRadius = 0;
+		view.layer.masksToBounds = NO;
 	}
 }
 
@@ -1075,7 +1113,7 @@ func (w *macosWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *macosWebviewWindow) setFrameless(frameless bool) {
-	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
+	C.windowSetFrameless(w.nsWindow, C.bool(frameless), C.bool(w.parent.options.Mac.CornerType == MacWindowCornerTypeSquare), C.double(w.parent.options.Mac.CornerRadius))
 	if frameless {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(true))
 		C.windowSetHideTitle(w.nsWindow, C.bool(true))
@@ -1085,6 +1123,12 @@ func (w *macosWebviewWindow) setFrameless(frameless bool) {
 		hideTitle := macOptions.TitleBar.HideTitle
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(appearsTransparent))
 		C.windowSetHideTitle(w.nsWindow, C.bool(hideTitle))
+	}
+	// Native-default frameless windows retain the AppKit frame, so their title-bar
+	// buttons must be hidden explicitly and restored when the frame is shown again.
+	// True borderless square and custom-radius windows do not need this handling.
+	if usesNativeMacFramelessFrame(w.parent.options.Mac) {
+		w.applyWindowButtonStates()
 	}
 }
 
@@ -1137,6 +1181,10 @@ func (w *macosWebviewWindow) maximise() {
 
 func (w *macosWebviewWindow) minimise() {
 	C.windowMinimise(w.nsWindow)
+}
+
+func platformTitlebarDoubleClickPreference() string {
+	return C.GoString(C.windowTitlebarDoubleClickPreference())
 }
 
 func (w *macosWebviewWindow) on(eventID uint) {
@@ -1296,8 +1344,8 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *macosWebviewWindow) flash(_ bool) {
-	// Not supported on macOS
+func (w *macosWebviewWindow) flash(enabled bool) {
+	C.windowFlash(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) setSize(width, height int) {
@@ -1452,6 +1500,8 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
+			C.bool(macOptions.CornerType == MacWindowCornerTypeSquare),
+			C.double(macOptions.CornerRadius),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
 			appName,
@@ -1502,16 +1552,9 @@ func (w *macosWebviewWindow) run() {
 		}
 		w.setTabbingMode(macOptions.TabbingMode)
 
-		// Initialise the window buttons
-		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setCloseButtonState(options.CloseButtonState)
-		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
-		// Apply the more restrictive state to prevent one from silently overriding the other.
-		zoomState := options.MaximiseButtonState
-		if options.FullscreenButtonState > zoomState {
-			zoomState = options.FullscreenButtonState
-		}
-		w.setMaximiseButtonState(zoomState)
+		// Initialise the window buttons, including the hidden state required when
+		// native AppKit corners are retained for a frameless window.
+		w.applyWindowButtonStates()
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1745,6 +1788,13 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) applyWindowButtonStates() {
+	states := effectiveMacWindowButtonStates(w.parent.options)
+	w.setMinimiseButtonState(states.minimise)
+	w.setCloseButtonState(states.close)
+	w.setMaximiseButtonState(states.zoom)
 }
 
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {

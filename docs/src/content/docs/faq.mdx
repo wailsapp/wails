@@ -15,7 +15,7 @@ Wails is a framework for building desktop applications with Go and web technolog
 
 | Platform | Requirements |
 |----------|--------------|
-| Windows | Windows 10 and 11, AMD64 and ARM64. Uses WebView2, which ships with Windows 10/11 ([standalone installer](https://developer.microsoft.com/microsoft-edge/webview2/) for unusual setups). |
+| Windows | AMD64 and ARM64. Uses the [WebView2 runtime](https://developer.microsoft.com/microsoft-edge/webview2/). |
 | macOS | 10.15+ on Intel (applications can target 10.13+), 11.0+ on Apple Silicon. Universal binaries are supported. |
 | Linux | AMD64 and ARM64. The default stack is GTK4 with WebKitGTK 6.0 (Ubuntu 24.04+, Debian 13+, Fedora 40+ and similar). Distributions that only ship WebKit2GTK 4.1, such as Ubuntu 22.04, Debian 12 and RHEL 9, are supported via the legacy `-tags gtk3` build (available until v3.1). Distributions with only WebKit2GTK 4.0 are not supported. See the [Linux build guide](/guides/build/linux). |
 | iOS and Android | Experimental. See the [mobile guides](/guides/mobile/). |
@@ -34,7 +34,11 @@ Run `wails3 doctor` at any time to check your system and get platform-specific i
 
 ### Is Wails v3 production-ready?
 
-Wails v3 is in active pre-release. The API is stable and real applications are being built and shipped with it, but expect occasional rough edges while we finish the remaining polish. See the [project status page](/status) for the current picture. Wails v2 is the current stable release and continues to receive fixes.
+Wails v3 is beta software with a stable desktop API. Applications are running in
+production with it, but you should test thoroughly before deployment while we
+complete the final polish for 3.0. See the [project status page](/status) for
+the current picture. Wails v2 is the current stable release and continues to
+receive fixes.
 
 ## Development
 
@@ -230,7 +234,7 @@ Yes. The CLIs are separate binaries (`wails` and `wails3`) and the modules have 
 
 ### How do I contribute?
 
-See the [Contributing Guide](/contributing). Enhancements are discussed on Discord first; bug fixes are welcome any time.
+See the [Contributing Guide](/contributing). Bug fixes are welcome any time; new functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) draft PR. Informal discussion on Discord or GitHub Discussions is optional.
 
 ### Where can I find examples?
 

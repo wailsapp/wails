@@ -86,8 +86,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 ### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-it before creating an enhancement request.
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). New functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](v3/wep/README.md), submitted as a draft pull request rather than a feature-request issue.
 
 ## Getting Started
 
@@ -96,7 +95,7 @@ Wails has two active versions:
 | Version | Status | Install | Docs |
 |---|---|---|---|
 | v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+| v3 | Beta | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
 
 Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
 
