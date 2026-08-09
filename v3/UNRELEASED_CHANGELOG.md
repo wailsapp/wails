@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
