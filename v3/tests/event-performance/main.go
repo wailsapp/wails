@@ -386,12 +386,22 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 				case <-done:
 					return
 				case <-ticker.C:
-					seq := sc.nextSeq()
-					ev := &application.CustomEvent{
-						Name: "perf",
-						Data: perfPayload{Seq: seq, TMS: h.nowMS(), Pad: pad},
-					}
-					application.InvokeAsync(func() { win.DispatchWailsEvent(ev) })
+					// The sequence number must be taken inside the callback,
+					// at the moment DispatchWailsEvent is actually called.
+					// Taking it out here and deferring the dispatch would make
+					// seq order differ from call order by construction, and
+					// every reorder the JS side counted would be this loop's
+					// own race rather than anything the framework did.
+					application.InvokeAsync(func() {
+						sc.emitMu.Lock()
+						seq := sc.nextSeq()
+						ev := &application.CustomEvent{
+							Name: "perf",
+							Data: perfPayload{Seq: seq, TMS: h.nowMS(), Pad: pad},
+						}
+						win.DispatchWailsEvent(ev)
+						sc.emitMu.Unlock()
+					})
 				}
 			}
 		}()
@@ -421,6 +431,9 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 				n := int(credit)
 				credit -= float64(n)
 				for i := 0; i < n; i++ {
+					if sc.MixedSource {
+						sc.emitMu.Lock()
+					}
 					seq := sc.nextSeq()
 					body := pad
 					if seq%2 == 1 {
@@ -432,6 +445,9 @@ func (h *harness) startEmitter(win *application.WebviewWindow, sc Scenario) func
 					}
 					t := time.Now()
 					win.DispatchWailsEvent(ev)
+					if sc.MixedSource {
+						sc.emitMu.Unlock()
+					}
 					us := float64(time.Since(t).Nanoseconds()) / 1e3
 
 					h.mu.Lock()
