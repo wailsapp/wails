@@ -15,11 +15,6 @@ on:
         required: false
         default: true
         type: boolean
-      allow_unsigned_macos:
-        description: 'Publish unsigned, un-notarized macOS binaries (only if the Apple secrets are not configured yet)'
-        required: false
-        default: false
-        type: boolean
       draft:
         description: 'Create the release as a draft (use this to rehearse the release without publishing anything)'
         required: false
@@ -37,18 +32,15 @@ permissions:
 jobs:
   # ── Preflight: fail in seconds, not ten minutes into a build ─────────────────
   #
-  # Everything here is a condition that would otherwise surface late and
-  # confusingly: a missing Apple secret shows up as an opaque `security import`
-  # error after three platforms have already built, and a version.txt that
-  # disagrees with the tag ships a binary that misreports itself with no error
-  # at all.
+  # This catches a version mismatch before a multi-platform build. The version
+  # file is embedded into the CLI, so a mismatch would publish a binary that
+  # misreports its version.
   preflight:
     name: Preflight
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
       pre_release: ${{ steps.meta.outputs.pre_release }}
-      sign_macos: ${{ steps.signing.outputs.sign_macos }}
     steps:
       - name: Resolve tag and pre-release flag
         id: meta
@@ -83,38 +75,6 @@ jobs:
           fi
           echo "version.txt matches the tag: $FILE_VERSION"
 
-      - name: Apple signing credentials present
-        id: signing
-        env:
-          APPLE_SIGNING_CERT: ${{ secrets.APPLE_SIGNING_CERT }}
-          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_NOTARIZE_USER: ${{ secrets.APPLE_NOTARIZE_USER }}
-          APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          MISSING=()
-          for name in APPLE_SIGNING_CERT APPLE_CERT_PASSWORD APPLE_SIGNING_IDENTITY \
-                      APPLE_NOTARIZE_USER APPLE_NOTARIZE_PASSWORD APPLE_TEAM_ID; do
-            [[ -z "${!name}" ]] && MISSING+=("$name")
-          done
-
-          if [[ ${#MISSING[@]} -eq 0 ]]; then
-            echo "sign_macos=true" >> "$GITHUB_OUTPUT"
-            echo "All Apple signing secrets are configured."
-            exit 0
-          fi
-
-          if [[ "${{ inputs.allow_unsigned_macos }}" == "true" ]]; then
-            echo "sign_macos=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Missing Apple secrets (${MISSING[*]}). Publishing UNSIGNED macOS binaries because allow_unsigned_macos was set."
-            exit 0
-          fi
-
-          echo "::error::Missing repository secrets: ${MISSING[*]}"
-          echo "::error::macOS binaries cannot be signed or notarized without them. Configure them,"
-          echo "::error::or re-run with allow_unsigned_macos=true to publish unsigned macOS binaries."
-          exit 1
   # ── Linux binaries (native runners, CGO_ENABLED=0 for static binaries) ──────
   build-linux:
     name: Build Linux / ${{ matrix.arch }}
@@ -192,9 +152,9 @@ jobs:
           path: v3/wails3-windows-amd64.exe
           retention-days: 1
 
-  # ── macOS: build amd64 + arm64, create universal binary, sign, notarize ──────
+  # ── macOS: build amd64 + arm64 and create a universal binary ─────────────────
   build-sign-macos:
-    name: Build, Sign & Notarize macOS
+    name: Build macOS
     needs: preflight
     runs-on: macos-latest
     steps:
@@ -229,63 +189,6 @@ jobs:
       - name: Create universal binary
         working-directory: v3
         run: lipo -create -output wails3-darwin-universal wails3-darwin-amd64 wails3-darwin-arm64
-
-      - name: Import signing certificate
-        if: needs.preflight.outputs.sign_macos == 'true'
-        env:
-          APPLE_SIGNING_CERT: ${{ secrets.APPLE_SIGNING_CERT }}
-          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-        run: |
-          KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
-          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
-
-          # macos-latest ships BSD base64, which has no --decode; -D is the BSD
-          # decode flag. (GNU's -d is unavailable here.)
-          echo "$APPLE_SIGNING_CERT" | base64 -D > "$RUNNER_TEMP/cert.p12"
-
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$RUNNER_TEMP/cert.p12" \
-            -P "$APPLE_CERT_PASSWORD" \
-            -A -t cert -f pkcs12 \
-            -k "$KEYCHAIN_PATH"
-          security set-key-partition-list \
-            -S apple-tool:,apple: \
-            -k "$KEYCHAIN_PASSWORD" \
-            "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
-
-      - name: Sign binaries
-        if: needs.preflight.outputs.sign_macos == 'true'
-        env:
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-        run: |
-          for bin in v3/wails3-darwin-amd64 v3/wails3-darwin-arm64 v3/wails3-darwin-universal; do
-            codesign \
-              --options=runtime \
-              --timestamp \
-              --sign "$APPLE_SIGNING_IDENTITY" \
-              "$bin"
-            codesign --verify --verbose "$bin"
-          done
-
-      - name: Notarize macOS binaries
-        if: needs.preflight.outputs.sign_macos == 'true'
-        env:
-          APPLE_NOTARIZE_USER: ${{ secrets.APPLE_NOTARIZE_USER }}
-          APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          for bin in v3/wails3-darwin-amd64 v3/wails3-darwin-arm64 v3/wails3-darwin-universal; do
-            zip -j "${bin}.zip" "$bin"
-            xcrun notarytool submit "${bin}.zip" \
-              --apple-id "$APPLE_NOTARIZE_USER" \
-              --password "$APPLE_NOTARIZE_PASSWORD" \
-              --team-id "$APPLE_TEAM_ID" \
-              --wait
-            rm "${bin}.zip"
-          done
 
       - uses: actions/upload-artifact@v4
         with:

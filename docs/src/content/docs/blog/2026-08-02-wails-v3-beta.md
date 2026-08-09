@@ -23,15 +23,23 @@ before deploying. We are using the beta period to catch the final compatibility
 and workflow issues with the community. Wails v2 remains the current stable
 release and will continue to receive fixes.
 
-## At a glance
+### Documentation during beta
 
-- Explicit application and window APIs
-- First-class multi-window applications
-- Services with richer, statically generated TypeScript bindings
-- Service-provided frontend assets and scripts - groundwork for richer plugins
-- Inspectable Taskfile-based builds
-- Guided `wails3 setup` and project creation
-- Modern desktop support across macOS, Windows, and Linux
+During beta, we are maintaining the English documentation as the source of
+truth while the API and workflows receive their final validation. We are not
+accepting translation PRs at this stage. Translation work will resume before
+general availability, once the documentation is stable enough for translators
+to work without repeated churn.
+
+## What is in v3
+
+- An explicit application and window API, including first-class multi-window support
+- Go services with static source analysis that generates richer TypeScript bindings, preserving comments and meaningful parameter names
+- Services that can bundle frontend assets and scripts with their backend API - the foundation for installable, richer plugins
+- A visible, Taskfile-based build system you can inspect, extend, and debug
+- Server builds for running the same application and services without a native desktop window
+- Modern desktop support for macOS, Windows, and Linux on Intel, Apple Silicon, amd64, and arm64 where supported
+- Experimental mobile support for iOS and Android, available for exploration but outside the desktop beta compatibility promise
 
 ## Why v3
 
@@ -155,6 +163,10 @@ behaviour and new capabilities. We will continue to improve the roadmap and
 review the project’s governance as Wails grows. The aim is a project that feels
 easier to rely on and easier to contribute to - not one that is harder to move.
 
+We are also relaunching the [Wails subreddit](https://www.reddit.com/r/wails/)
+and will actively maintain it as another place for practical discussion,
+questions, and feedback as v3 moves toward general availability.
+
 ## Install and try the beta
 
 Once the release is published, install the latest v3 CLI with:
@@ -182,6 +194,7 @@ wails3 init
 
 - Documentation: <https://v3.wails.io/>
 - Migration guide: <https://v3.wails.io/migration/v2-to-v3/>
+- Reddit: <https://www.reddit.com/r/wails/>
 - Release notes: [VERSION PLACEHOLDER](https://github.com/wailsapp/wails/releases)
 
 If you find a reproducible bug, please report it with the output of `wails3

@@ -153,6 +153,10 @@ behaviour and new capabilities. We will continue to improve the roadmap and
 review the project’s governance as Wails grows. The aim is a project that feels
 easier to rely on and easier to contribute to - not one that is harder to move.
 
+We are also relaunching the [Wails subreddit](https://www.reddit.com/r/wails/)
+and will actively maintain it as another place for practical discussion,
+questions, and feedback as v3 moves toward general availability.
+
 ## Install and try the beta
 
 Once the release is published, install the latest v3 CLI with:
@@ -173,6 +177,7 @@ wails3 init
 
 - Documentation: <https://v3.wails.io/>
 - Migration guide: <https://v3.wails.io/migration/v2-to-v3/>
+- Reddit: <https://www.reddit.com/r/wails/>
 - Release notes: [VERSION PLACEHOLDER](https://github.com/wailsapp/wails/releases)
 
 If you find a reproducible bug, please report it with the output of `wails3

@@ -270,6 +270,12 @@ func (w *WebviewWindow) markAsDestroyed() {
 	w.destroyedLock.Lock()
 	defer w.destroyedLock.Unlock()
 	w.destroyed = true
+
+	// Anything parked for this window will never be fetched now. TTL would
+	// eventually reclaim it, but the window is gone, so release immediately.
+	if globalApplication != nil && globalApplication.eventPayloads != nil {
+		globalApplication.eventPayloads.dropWindow(w.id)
+	}
 }
 
 func (w *WebviewWindow) setupEventMapping() {
@@ -700,7 +706,8 @@ func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
 }
 
 // Flash flashes the window's taskbar button/icon.
-// Useful to indicate that attention is required. Windows only.
+// Useful to indicate that attention is required. On Windows this flashes the
+// taskbar button; on macOS it bounces the app's Dock icon (Linux: no-op).
 func (w *WebviewWindow) Flash(enabled bool) {
 	if w.impl == nil || w.isDestroyed() {
 		return
@@ -1369,15 +1376,64 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 	return w
 }
 
+// Event delivery templates.
+//
+// All three keep the existing guard against the runtime not being mounted yet
+// (during page reload WindowLoadFinished can fire before dispatchWailsEvent
+// exists), and all three call the same public dispatchWailsEvent entry point,
+// so no runtime JS or third-party page code has to change.
+// Whether an event can be delivered synchronously depends on whether an
+// earlier event for the same window is still being fetched. That decision is
+// made in JavaScript rather than in Go, deliberately: evals execute serially on
+// the UI thread in the order they were enqueued, so `w.__eq` is observed in
+// delivery order and needs no locking. Deciding it in Go would require holding
+// a lock across the ExecJS main-thread hop, which is the same shape as the
+// deadlock documented in transport_event_ipc.go.
+//
+// Both templates terminate the chain with a catch. Without it a single throwing
+// listener would leave `w.__eq` permanently rejected and silently stop every
+// later event for that window.
+const (
+	// inline: small enough to splice directly. Dispatches synchronously unless
+	// a fetch is already outstanding, in which case it queues behind it so it
+	// cannot overtake.
+	inlineEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"if(w.__eq){w.__eq=w.__eq.then(function(){w.dispatchWailsEvent(%s);}).catch(function(){});}" +
+		"else{w.dispatchWailsEvent(%[1]s);}}"
+
+	// ref: the payload is parked host-side; fetch it over the asset server
+	// rather than passing it through evaluateJavaScript. Creating w.__eq is
+	// what makes every subsequent event for this window queue behind it.
+	refEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"w.__eq=(w.__eq||Promise.resolve()).then(function(){" +
+		"return fetch(%q,{cache:'no-store'}).then(function(r){return r.json();})" +
+		".then(function(e){w.dispatchWailsEvent(e);});}).catch(function(){});}"
+)
+
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	// Guard against race condition where event fires before runtime is initialized
-	// This can happen during page reload when WindowLoadFinished fires before
-	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
-	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
-	w.ExecJS(msg)
+
+	payload := event.ToJSON()
+
+	// Large payloads are delivered by reference. Splicing them into the eval
+	// source makes WebKit transfer them out-of-line via shared memory, and the
+	// host process retains ownership of those regions while the app keeps
+	// emitting — 100 ev/s of 1 MB events reached 11.5 GB before this change.
+	// See event_payload_store.go for the measurements.
+	if len(payload) > maxInlineEventPayload {
+		if store := globalApplication.eventPayloads; store != nil {
+			if id, ok := store.put(w.id, []byte(payload)); ok {
+				w.ExecJS(fmt.Sprintf(refEventJS, eventPayloadPath+id))
+				return
+			}
+		}
+		// Store unavailable, full, or shutting down: fall back to inline. This
+		// event pays the out-of-line retention cost, which beats dropping it.
+	}
+
+	w.ExecJS(fmt.Sprintf(inlineEventJS, payload))
 }
 
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {

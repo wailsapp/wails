@@ -810,6 +810,15 @@ static void windowMinimise(void *window) {
 	[(WebviewWindow*)window miniaturize:nil];
 }
 
+// windowFlash requests user attention so the app's Dock icon bounces, drawing
+// the user back to a window that needs them. NSInformationalRequest bounces the
+// icon once; the request completes on its own, so disabling is a no-op.
+static void windowFlash(void *window, bool enabled) {
+	if (enabled) {
+		[NSApp requestUserAttention:NSInformationalRequest];
+	}
+}
+
 // zoom maximizes the window to the screen dimensions
 static void windowMaximise(void *window) {
 	[(WebviewWindow*)window zoom:nil];
@@ -1115,6 +1124,12 @@ func (w *macosWebviewWindow) setFrameless(frameless bool) {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(appearsTransparent))
 		C.windowSetHideTitle(w.nsWindow, C.bool(hideTitle))
 	}
+	// Native-default frameless windows retain the AppKit frame, so their title-bar
+	// buttons must be hidden explicitly and restored when the frame is shown again.
+	// True borderless square and custom-radius windows do not need this handling.
+	if usesNativeMacFramelessFrame(w.parent.options.Mac) {
+		w.applyWindowButtonStates()
+	}
 }
 
 func (w *macosWebviewWindow) setHasShadow(hasShadow bool) {
@@ -1329,8 +1344,8 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *macosWebviewWindow) flash(_ bool) {
-	// Not supported on macOS
+func (w *macosWebviewWindow) flash(enabled bool) {
+	C.windowFlash(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) setSize(width, height int) {
@@ -1537,21 +1552,9 @@ func (w *macosWebviewWindow) run() {
 		}
 		w.setTabbingMode(macOptions.TabbingMode)
 
-		// Initialise the window buttons
-		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setCloseButtonState(options.CloseButtonState)
-		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
-		// Apply the more restrictive state to prevent one from silently overriding the other.
-		zoomState := options.MaximiseButtonState
-		if options.FullscreenButtonState > zoomState {
-			zoomState = options.FullscreenButtonState
-		}
-		w.setMaximiseButtonState(zoomState)
-		if options.Frameless && macOptions.CornerType == MacWindowCornerTypeRounded && macOptions.CornerRadius == 0 {
-			w.setMinimiseButtonState(ButtonHidden)
-			w.setCloseButtonState(ButtonHidden)
-			w.setMaximiseButtonState(ButtonHidden)
-		}
+		// Initialise the window buttons, including the hidden state required when
+		// native AppKit corners are retained for a frameless window.
+		w.applyWindowButtonStates()
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1785,6 +1788,13 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) applyWindowButtonStates() {
+	states := effectiveMacWindowButtonStates(w.parent.options)
+	w.setMinimiseButtonState(states.minimise)
+	w.setCloseButtonState(states.close)
+	w.setMaximiseButtonState(states.zoom)
 }
 
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
