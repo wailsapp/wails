@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Asset server preserves content-type sniffer errors and unwritten prefixes during flushing in [PR](https://github.com/wailsapp/wails/pull/5931) by @leaanthony
 - Prevent macOS applications from crashing when replacing the application menu from a Wails callback
 - Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
 - Fix `w32.GetStockObject` calling `GetDeviceCaps` instead of `GetStockObject`, which made it return 0 for every stock object.
