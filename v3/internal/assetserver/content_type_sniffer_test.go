@@ -173,7 +173,8 @@ func TestContentTypeSnifferFlushWriteFailureIsSurfacedLater(t *testing.T) {
 	}
 }
 
-// A short write during the prefix flush must retain only the unsent remainder.
+// A short write during the prefix flush must retain only the unsent remainder,
+// and the accompanying error must reach the caller afterwards.
 func TestContentTypeSnifferShortWriteKeepsRemainder(t *testing.T) {
 	rec := httptest.NewRecorder()
 	sw := &shortWriter{ResponseWriter: rec, limit: 3}
@@ -185,22 +186,34 @@ func TestContentTypeSnifferShortWriteKeepsRemainder(t *testing.T) {
 	}
 	rw.Flush()
 
+	if got := rec.Body.String(); got != "abc" {
+		t.Errorf("wrote %q, want the accepted prefix %q", got, "abc")
+	}
 	if got := string(rw.prefix); got != "def" {
 		t.Errorf("remaining prefix = %q, want %q", got, "def")
 	}
+	if _, err := io.WriteString(rw, "more"); !errors.Is(err, io.ErrShortWrite) {
+		t.Errorf("later Write error = %v, want io.ErrShortWrite", err)
+	}
 }
 
-// shortWriter accepts at most limit bytes per write, without reporting an error.
+// shortWriter accepts at most limit bytes per write. io.Writer requires a
+// non-nil error whenever fewer bytes are accepted than were offered, so it
+// reports io.ErrShortWrite rather than a bare short count.
 type shortWriter struct {
 	http.ResponseWriter
 	limit int
 }
 
 func (w *shortWriter) Write(b []byte) (int, error) {
-	if len(b) > w.limit {
-		b = b[:w.limit]
+	if len(b) <= w.limit {
+		return w.ResponseWriter.Write(b)
 	}
-	return w.ResponseWriter.Write(b)
+	n, err := w.ResponseWriter.Write(b[:w.limit])
+	if err != nil {
+		return n, err
+	}
+	return n, io.ErrShortWrite
 }
 
 func (w *shortWriter) Flush() {}
