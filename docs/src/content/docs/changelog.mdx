@@ -31,6 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.6 - 2026-08-09
+
+## Added
+- Implement bounded host-side storage for oversized events and ordered JavaScript delivery in [PR](https://github.com/wailsapp/wails/pull/5930) by @leaanthony
+- Implement macOS Dock bounce for window flashing in [PR](https://github.com/wailsapp/wails/pull/5921) by @julianstorer
+
+## Fixed
+- Asset server preserves content-type sniffer errors and unwritten prefixes during flushing in [PR](https://github.com/wailsapp/wails/pull/5931) by @leaanthony
+- Prevent macOS applications from crashing when replacing the application menu from a Wails callback
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+- Fix `w32.GetStockObject` calling `GetDeviceCaps` instead of `GetStockObject`, which made it return 0 for every stock object.
+- Improve WebView2 bootstrapper download error handling and reporting in [PR](https://github.com/wailsapp/wails/pull/5924) by @jannskiee
+
 ## v3.0.0-beta.5 - 2026-08-07
 
 ## Fixed
