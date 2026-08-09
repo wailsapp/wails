@@ -20,6 +20,12 @@ import (
 //   - Ubuntu 26.04 / WebKitGTK 2.52.3: the mirror image — the host stays flat
 //     and the WEB process grows instead, reaching 6.2 GB on the same scenario.
 //     Its switchover sits higher, between 64 KB and 128 KB.
+//   - Windows 11 / WebView2 151: not affected. The host holds flat at 65-77 MB
+//     and the content process sawtooths under V8 GC in patched and unpatched
+//     builds alike, so there is no transport retention to avoid. Routing large
+//     payloads off the eval path still helps there — it delivers more bytes per
+//     second while putting roughly half the pressure on the content process,
+//     since an eval materialises both the source string and the parsed object.
 //
 // Instead, the payload is parked here under an unguessable id and the webview
 // is told to fetch it from the asset server, which delivers via a URL scheme
@@ -27,10 +33,11 @@ import (
 const (
 	// maxInlineEventPayload is the largest marshalled event JSON that may be
 	// spliced directly into an eval. 8192 is the largest size measured at 0%
-	// retention on macOS, whose knee (8-16 KB) is the lower of the two measured
-	// platforms; WebKitGTK's is 64-128 KB, so this is correct there too, just
-	// conservative. WebView2 is unmeasured — run the iso-* scenarios in
-	// v3/tests/event-performance before assuming this value transfers.
+	// retention on macOS, which has the lowest knee of the three engines
+	// (8-16 KB vs WebKitGTK's 64-128 KB; WebView2 has none). A single value is
+	// therefore correct everywhere, just conservative off macOS: on Linux it
+	// routes 8-128 KB payloads through HTTP that could have stayed inline,
+	// costing a round trip rather than correctness.
 	maxInlineEventPayload = 8192
 
 	// eventPayloadTTL bounds how long an unfetched payload is held. A page
