@@ -53,6 +53,9 @@ type MainInfo struct {
 
 	// RunStmt is the statement containing the wails.Run(...) call.
 	RunStmt ast.Stmt
+	// RunIf is set when RunStmt is an if statement of the form
+	// `if err := wails.Run(...); err != nil { ... }`.
+	RunIf *ast.IfStmt
 	// RunCall is the wails.Run call expression itself.
 	RunCall *ast.CallExpr
 	// AppLit is the &options.App{...} composite literal passed to wails.Run,

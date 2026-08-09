@@ -9,7 +9,7 @@ import (
 
 // minGoVersion is the minimum Go directive required by wails v3 projects
 // (matches the version in the v3 project template).
-const minGoVersion = "1.24"
+const minGoVersion = "1.25"
 
 // TransformGoMod rewrites the project's go.mod for v3: the wails/v2 require
 // is dropped, wails/v3 is added at the given version and the go directive is

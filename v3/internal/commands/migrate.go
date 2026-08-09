@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
+	"gopkg.in/yaml.v3"
 )
 
 // Migrate converts a Wails v2 project into a Wails v3 project:
@@ -53,6 +54,9 @@ func Migrate(options *flags.Migrate) error {
 	}
 	if isSubPath(proj.Dir, outDir) {
 		return fmt.Errorf("the output directory must not be inside the v2 project directory")
+	}
+	if isSubPath(outDir, proj.Dir) {
+		return fmt.Errorf("the output directory must not contain the v2 project directory")
 	}
 	if entries, err := os.ReadDir(outDir); err == nil && len(entries) > 0 && !options.Force {
 		return fmt.Errorf("output directory %s is not empty (use -f to write into it anyway)", outDir)
@@ -103,8 +107,8 @@ func Migrate(options *flags.Migrate) error {
 		return err
 	}
 
-	// Frontend: copy, regenerate wailsjs as a compatibility layer, add the
-	// @wailsio/runtime dependency.
+	// Frontend: copy the source tree without v2-generated wailsjs output and add
+	// the @wailsio/runtime dependency.
 	if err := migrate.MigrateFrontend(proj, outDir); err != nil {
 		return err
 	}
@@ -345,6 +349,16 @@ func isTypescriptFrontend(frontendDir string) bool {
 
 var fileAssociationsRe = regexp.MustCompile(`(?m)^fileAssociations:\s*$`)
 
+// yamlString renders a value as a valid YAML scalar, including values that
+// contain YAML punctuation or would otherwise be interpreted as a type.
+func yamlString(value string) string {
+	data, err := yaml.Marshal(value)
+	if err != nil {
+		return fmt.Sprintf("%q", value)
+	}
+	return strings.TrimSpace(string(data))
+}
+
 // appendAssociations writes the v2 file associations and protocols into the
 // generated build/config.yml.
 func appendAssociations(proj *V2ProjectAlias, outDir string) error {
@@ -359,11 +373,13 @@ func appendAssociations(proj *V2ProjectAlias, outDir string) error {
 		var sb strings.Builder
 		sb.WriteString("fileAssociations:\n")
 		for _, fa := range fas {
-			sb.WriteString(fmt.Sprintf("  - ext: %s\n", fa.Ext))
-			sb.WriteString(fmt.Sprintf("    name: %s\n", fa.Name))
-			sb.WriteString(fmt.Sprintf("    description: %s\n", fa.Description))
-			sb.WriteString(fmt.Sprintf("    iconName: %s\n", fa.IconName))
-			sb.WriteString(fmt.Sprintf("    role: %s\n", fa.Role))
+			sb.WriteString(fmt.Sprintf("  - ext: %s\n", yamlString(fa.Ext)))
+			sb.WriteString(fmt.Sprintf("    name: %s\n", yamlString(fa.Name)))
+			if fa.Description != "" {
+				sb.WriteString(fmt.Sprintf("    description: %s\n", yamlString(fa.Description)))
+			}
+			sb.WriteString(fmt.Sprintf("    iconName: %s\n", yamlString(fa.IconName)))
+			sb.WriteString(fmt.Sprintf("    role: %s\n", yamlString(fa.Role)))
 		}
 		if fileAssociationsRe.MatchString(content) {
 			content = fileAssociationsRe.ReplaceAllString(content, strings.TrimSuffix(sb.String(), "\n"))
@@ -377,9 +393,9 @@ func appendAssociations(proj *V2ProjectAlias, outDir string) error {
 		var sb strings.Builder
 		sb.WriteString("\nprotocols:\n")
 		for _, p := range protos {
-			sb.WriteString(fmt.Sprintf("  - scheme: %s\n", p.Scheme))
+			sb.WriteString(fmt.Sprintf("  - scheme: %s\n", yamlString(p.Scheme)))
 			if p.Description != "" {
-				sb.WriteString(fmt.Sprintf("    description: %s\n", p.Description))
+				sb.WriteString(fmt.Sprintf("    description: %s\n", yamlString(p.Description)))
 			}
 		}
 		content += sb.String()

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/migrate"
+	"gopkg.in/yaml.v3"
 )
 
 func writeV2Fixture(t *testing.T) string {
@@ -231,6 +233,57 @@ func TestMigrateRefusesNestedOutput(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), "must not be inside") {
 		t.Fatalf("expected nested-output error, got %v", err)
+	}
+
+	err = Migrate(&flags.Migrate{
+		V2Dir:         v2Dir,
+		OutputDir:     filepath.Dir(v2Dir),
+		Force:         true,
+		Quiet:         true,
+		SkipGoModTidy: true,
+	})
+	if err == nil || !strings.Contains(err.Error(), "must not contain") {
+		t.Fatalf("expected containing-output error, got %v", err)
+	}
+}
+
+func TestAppendAssociationsEscapesYAML(t *testing.T) {
+	outDir := t.TempDir()
+	buildDir := filepath.Join(outDir, "build")
+	if err := os.MkdirAll(buildDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	configPath := filepath.Join(buildDir, "config.yml")
+	if err := os.WriteFile(configPath, []byte("fileAssociations:\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	proj := &V2ProjectAlias{Config: migrate.V2Config{}, Report: migrate.NewReport()}
+	proj.Config.Info.FileAssociations = []migrate.V2FileAssociation{{
+		Ext:         `a:b#c`,
+		Name:        `- app`,
+		Description: `say "hello"`,
+		IconName:    `icon`,
+		Role:        `Editor`,
+	}}
+	proj.Config.Info.Protocols = []migrate.V2Protocol{{Scheme: `my:scheme#1`}}
+	if err := appendAssociations(proj, outDir); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var config map[string]any
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		t.Fatalf("generated config.yml is invalid: %v\n%s", err, data)
+	}
+	protocols, ok := config["protocols"].([]any)
+	if !ok || len(protocols) != 1 {
+		t.Fatalf("protocols were not emitted: %#v", config["protocols"])
+	}
+	protocol, ok := protocols[0].(map[string]any)
+	if !ok || protocol["scheme"] != "my:scheme#1" {
+		t.Fatalf("protocol scalar changed during YAML round-trip: %#v", protocols[0])
 	}
 }
 

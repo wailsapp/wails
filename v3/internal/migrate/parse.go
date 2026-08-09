@@ -3,6 +3,7 @@ package migrate
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/parser"
 	"go/printer"
 	"go/token"
@@ -58,6 +59,7 @@ func ParseV2Project(dir string) (*V2Project, error) {
 	// Parse all Go files in the module (excluding frontend, build dir and
 	// hidden/vendor directories).
 	fset := token.NewFileSet()
+	buildContext := build.Default
 	files := map[string]*ast.File{} // abs path -> file
 	err = filepath.WalkDir(absDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -65,7 +67,7 @@ func ParseV2Project(dir string) (*V2Project, error) {
 		}
 		if d.IsDir() {
 			name := d.Name()
-			if path != absDir && (strings.HasPrefix(name, ".") || name == "vendor" || name == "node_modules") {
+			if path != absDir && (strings.HasPrefix(name, ".") || name == "vendor" || name == "node_modules" || name == "testdata") {
 				return filepath.SkipDir
 			}
 			if path == proj.FrontendDir || path == filepath.Join(absDir, cfg.BuildDir) {
@@ -74,6 +76,13 @@ func ParseV2Project(dir string) (*V2Project, error) {
 			return nil
 		}
 		if !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		matched, merr := buildContext.MatchFile(filepath.Dir(path), d.Name())
+		if merr != nil {
+			return fmt.Errorf("could not evaluate build constraints for %s: %w", path, merr)
+		}
+		if !matched {
 			return nil
 		}
 		file, perr := parser.ParseFile(fset, path, nil, parser.ParseComments|parser.SkipObjectResolution)
@@ -97,14 +106,16 @@ func ParseV2Project(dir string) (*V2Project, error) {
 
 	// Locate the wails.Run call.
 	for path, file := range files {
-		info := findRunCall(fset, path, file)
-		if info == nil {
-			continue
+		candidates, ferr := findRunCalls(fset, path, file)
+		if ferr != nil {
+			return nil, ferr
 		}
-		if proj.Main != nil {
-			return nil, fmt.Errorf("found more than one wails.Run call (%s and %s); cannot migrate automatically", proj.Main.Path, path)
+		for _, info := range candidates {
+			if proj.Main != nil {
+				return nil, fmt.Errorf("found more than one wails.Run call (%s and %s); cannot migrate automatically", proj.Main.Path, path)
+			}
+			proj.Main = info
 		}
-		proj.Main = info
 	}
 	if proj.Main == nil {
 		return nil, fmt.Errorf("could not find a wails.Run(&options.App{...}) call in %s", absDir)
@@ -119,6 +130,7 @@ func ParseV2Project(dir string) (*V2Project, error) {
 			proj.GoFiles = append(proj.GoFiles, path)
 		}
 	}
+	sort.Strings(proj.GoFiles)
 
 	// Resolve bound types from the Bind field, if present.
 	if proj.Main.AppLit != nil {
@@ -145,15 +157,11 @@ func requiresWailsV2(mod *modfile.File) bool {
 	return false
 }
 
-// findRunCall looks for a statement of the form
-//
-//	err := wails.Run(&options.App{...})
-//	err = wails.Run(...)
-//	wails.Run(...)
-//	if err := wails.Run(...); err != nil { ... }
-//
-// where "wails" is the local name of the github.com/wailsapp/wails/v2 import.
-func findRunCall(fset *token.FileSet, path string, file *ast.File) *MainInfo {
+// findRunCalls returns every rewriteable wails.Run call in a file. Calls
+// must be direct expression statements, assignments, or the supported
+// `if err := wails.Run(...); err != nil { ... }` form so GenerateMain can
+// replace a complete statement without leaving invalid Go behind.
+func findRunCalls(fset *token.FileSet, path string, file *ast.File) ([]*MainInfo, error) {
 	imports := importMap(file)
 	wailsName := ""
 	for name, ipath := range imports {
@@ -162,10 +170,8 @@ func findRunCall(fset *token.FileSet, path string, file *ast.File) *MainInfo {
 		}
 	}
 	if wailsName == "" {
-		return nil
+		return nil, nil
 	}
-
-	info := &MainInfo{Path: path, File: file, Fset: fset, Imports: imports}
 
 	isRunCall := func(n ast.Node) *ast.CallExpr {
 		call, ok := n.(*ast.CallExpr)
@@ -183,59 +189,121 @@ func findRunCall(fset *token.FileSet, path string, file *ast.File) *MainInfo {
 		return call
 	}
 
-	ast.Inspect(file, func(n ast.Node) bool {
-		if info.RunCall != nil {
+	isDirectAssignment := func(stmt *ast.AssignStmt, call *ast.CallExpr) bool {
+		return len(stmt.Lhs) == 1 && len(stmt.Rhs) == 1 && stmt.Rhs[0] == call
+	}
+	isErrorCondition := func(ifStmt *ast.IfStmt, errName string) bool {
+		cond, ok := ifStmt.Cond.(*ast.BinaryExpr)
+		if !ok || cond.Op != token.NEQ {
 			return false
 		}
-		stmt, ok := n.(ast.Stmt)
-		if !ok {
-			return true
+		matches := func(left, right ast.Expr) bool {
+			ident, lok := left.(*ast.Ident)
+			nilIdent, rok := right.(*ast.Ident)
+			return lok && rok && ident.Name == errName && nilIdent.Name == "nil"
 		}
-		switch s := stmt.(type) {
-		case *ast.AssignStmt:
-			if len(s.Rhs) != 1 {
-				return true
-			}
-			call := isRunCall(s.Rhs[0])
-			if call == nil {
-				return true
-			}
-			info.RunStmt = s
-			info.RunCall = call
-			if len(s.Lhs) == 1 {
-				if ident, ok := s.Lhs[0].(*ast.Ident); ok {
-					info.ErrIdent = ident.Name
-					info.AssignTok = s.Tok
+		return matches(cond.X, cond.Y) || matches(cond.Y, cond.X)
+	}
+
+	var candidates []*MainInfo
+	var stack []ast.Node
+	var walkErr error
+	ast.Inspect(file, func(n ast.Node) bool {
+		if walkErr != nil {
+			return false
+		}
+		if n == nil {
+			stack = stack[:len(stack)-1]
+			return false
+		}
+		call := isRunCall(n)
+		if call != nil {
+			var runStmt ast.Stmt
+			var runIf *ast.IfStmt
+			errIdent := ""
+			assignTok := token.ILLEGAL
+
+			for i := len(stack) - 1; i >= 0; i-- {
+				switch parent := stack[i].(type) {
+				case *ast.IfStmt:
+					assign, ok := parent.Init.(*ast.AssignStmt)
+					if !ok || !isDirectAssignment(assign, call) {
+						continue
+					}
+					ident, ok := assign.Lhs[0].(*ast.Ident)
+					if !ok || !isErrorCondition(parent, ident.Name) {
+						walkErr = fmt.Errorf("unsupported wails.Run context at %s:%d; expected `if err := wails.Run(...); err != nil`", path, fset.Position(call.Pos()).Line)
+						return false
+					}
+					runStmt = parent
+					runIf = parent
+					errIdent = ident.Name
+					assignTok = assign.Tok
+				case *ast.AssignStmt:
+					if i > 0 {
+						if parentIf, ok := stack[i-1].(*ast.IfStmt); ok && parentIf.Init == parent {
+							continue
+						}
+					}
+					if !isDirectAssignment(parent, call) {
+						continue
+					}
+					ident, ok := parent.Lhs[0].(*ast.Ident)
+					if !ok {
+						walkErr = fmt.Errorf("unsupported wails.Run assignment at %s:%d", path, fset.Position(call.Pos()).Line)
+						return false
+					}
+					runStmt = parent
+					errIdent = ident.Name
+					assignTok = parent.Tok
+				case *ast.ExprStmt:
+					if parent.X != call {
+						continue
+					}
+					runStmt = parent
+				}
+				if runStmt != nil {
+					break
 				}
 			}
-			return false
-		case *ast.ExprStmt:
-			call := isRunCall(s.X)
-			if call == nil {
-				return true
+
+			if runStmt == nil {
+				walkErr = fmt.Errorf("unsupported wails.Run context at %s:%d; use a direct call, assignment, or `if err := wails.Run(...); err != nil`", path, fset.Position(call.Pos()).Line)
+				return false
 			}
-			info.RunStmt = s
-			info.RunCall = call
-			return false
+			info := &MainInfo{
+				Path: path, File: file, Fset: fset, Imports: imports,
+				RunStmt: runStmt, RunIf: runIf, RunCall: call,
+				ErrIdent: errIdent, AssignTok: assignTok,
+			}
+			if len(call.Args) == 1 {
+				arg := call.Args[0]
+				if unary, ok := arg.(*ast.UnaryExpr); ok && unary.Op == token.AND {
+					arg = unary.X
+				}
+				if lit, ok := arg.(*ast.CompositeLit); ok {
+					info.AppLit = lit
+				}
+			}
+			candidates = append(candidates, info)
 		}
+		stack = append(stack, n)
 		return true
 	})
+	if walkErr != nil {
+		return nil, walkErr
+	}
+	return candidates, nil
+}
 
-	if info.RunCall == nil {
+// findRunCall is kept as a small compatibility wrapper for package-local
+// callers that only need the first candidate.
+func findRunCall(fset *token.FileSet, path string, file *ast.File) *MainInfo {
+	candidates, err := findRunCalls(fset, path, file)
+	if err != nil || len(candidates) == 0 {
 		return nil
 	}
-
-	// Extract the &options.App{...} literal.
-	if len(info.RunCall.Args) == 1 {
-		arg := info.RunCall.Args[0]
-		if unary, ok := arg.(*ast.UnaryExpr); ok && unary.Op == token.AND {
-			arg = unary.X
-		}
-		if lit, ok := arg.(*ast.CompositeLit); ok {
-			info.AppLit = lit
-		}
-	}
-	return info
+	return candidates[0]
 }
 
 func importMap(file *ast.File) map[string]string {
@@ -249,17 +317,7 @@ func importMap(file *ast.File) map[string]string {
 		if imp.Name != nil {
 			name = imp.Name.Name
 		} else {
-			// Default local name: last path element, with major-version
-			// suffixes (vN) resolved to the element before them. This is a
-			// heuristic (the true name is the package clause), but it is
-			// correct for the packages the migrator cares about.
-			name = path[strings.LastIndex(path, "/")+1:]
-			if len(name) > 1 && name[0] == 'v' {
-				if _, err := strconv.Atoi(name[1:]); err == nil {
-					trimmed := path[:strings.LastIndex(path, "/")]
-					name = trimmed[strings.LastIndex(trimmed, "/")+1:]
-				}
-			}
+			name = defaultImportName(path)
 		}
 		if name == "_" || name == "." {
 			continue
@@ -315,28 +373,242 @@ func resolveBoundTypes(fset *token.FileSet, files map[string]*ast.File, proj *V2
 		return nil
 	}
 
-	mainFile := files[proj.Main.Path]
 	var result []*BoundType
 	for _, elt := range lit.Elts {
 		expr := printExpr(fset, elt)
-		typeName := resolveElementType(fset, files, mainFile, elt)
-		bt := &BoundType{Expr: expr, Name: typeName}
-		if typeName == "" {
+		resolved := resolveElementInfo(fset, files, proj, proj.Main, elt)
+		bt := &BoundType{Expr: expr, Name: resolved.Name, PkgName: resolved.PkgName}
+		if resolved.Name == "" {
 			proj.Report.Manual("Bind: "+expr,
 				"Could not statically determine the struct type of this Bind entry. It is still registered as a v3 service, but no frontend/wailsjs shim was generated for it.")
 			result = append(result, bt)
 			continue
 		}
-		pkgName, pkgPath, methods := collectMethods(fset, files, proj, typeName)
-		bt.PkgName = pkgName
-		bt.PkgPath = pkgPath
-		bt.Methods = methods
-		if len(methods) == 0 {
-			proj.Report.Note("Bind: " + expr + " (" + typeName + ") has no exported methods that could be discovered; no frontend/wailsjs shim was generated for it.")
+		bt.PkgPath = resolved.PkgPath
+		bt.Methods = collectMethods(fset, files, proj, resolved.PkgDir, resolved.PkgName, resolved.Name)
+		if len(bt.Methods) == 0 {
+			proj.Report.Note("Bind: " + expr + " (" + resolved.Name + ") has no exported methods that could be discovered; no frontend/wailsjs shim was generated for it.")
 		}
 		result = append(result, bt)
 	}
 	return result
+}
+
+type resolvedElement struct {
+	Name    string
+	PkgName string
+	PkgDir  string
+	PkgPath string
+}
+
+func resolveElementInfo(fset *token.FileSet, files map[string]*ast.File, proj *V2Project, main *MainInfo, expr ast.Expr) resolvedElement {
+	return resolveElementInfoAt(fset, files, proj, main.File, main.RunCall.Pos(), expr, map[string]bool{})
+}
+
+func resolveElementInfoAt(fset *token.FileSet, files map[string]*ast.File, proj *V2Project, mainFile *ast.File, target token.Pos, expr ast.Expr, seen map[string]bool) resolvedElement {
+	packageName := mainFile.Name.Name
+	packageDir := filepath.Dir(proj.Main.Path)
+	pkgPath := packagePath(proj, proj.Main.Path, packageName)
+	fromPackage := resolvedElement{PkgName: packageName, PkgDir: packageDir, PkgPath: pkgPath}
+	imports := importMap(mainFile)
+
+	resolveType := func(name string) resolvedElement {
+		return resolvedElement{Name: name, PkgName: packageName, PkgDir: packageDir, PkgPath: pkgPath}
+	}
+	switch e := expr.(type) {
+	case *ast.UnaryExpr:
+		if e.Op == token.AND {
+			if lit, ok := e.X.(*ast.CompositeLit); ok {
+				if ident, ok := lit.Type.(*ast.Ident); ok {
+					return resolveType(ident.Name)
+				}
+			}
+		}
+	case *ast.CompositeLit:
+		if ident, ok := e.Type.(*ast.Ident); ok {
+			return resolveType(ident.Name)
+		}
+	case *ast.CallExpr:
+		switch fun := e.Fun.(type) {
+		case *ast.Ident:
+			return constructorReturnTypeInPackage(files, packageDir, packageName, fun.Name, resolveType)
+		case *ast.SelectorExpr:
+			if pkgIdent, ok := fun.X.(*ast.Ident); ok {
+				if importedPath, ok := imports[pkgIdent.Name]; ok {
+					for path, file := range files {
+						if packagePath(proj, path, file.Name.Name) != importedPath {
+							continue
+						}
+						return constructorReturnTypeInPackage(files, filepath.Dir(path), file.Name.Name, fun.Sel.Name, func(name string) resolvedElement {
+							return resolvedElement{Name: name, PkgName: file.Name.Name, PkgDir: filepath.Dir(path), PkgPath: importedPath}
+						})
+					}
+				}
+			}
+		}
+	case *ast.Ident:
+		if seen[e.Name] {
+			return resolvedElement{}
+		}
+		seen[e.Name] = true
+		declaration := findLexicalValue(mainFile, e.Name, target)
+		if declaration == nil {
+			declaration = findPackageValue(files, packageDir, packageName, e.Name)
+		}
+		if declaration != nil {
+			return resolveElementInfoAt(fset, files, proj, mainFile, target, declaration, seen)
+		}
+		return resolvedElement{}
+	}
+	return fromPackage
+}
+
+func constructorReturnTypeInPackage(files map[string]*ast.File, packageDir, packageName, name string, makeType func(string) resolvedElement) resolvedElement {
+	paths := sortedFilePaths(files)
+	for _, path := range paths {
+		file := files[path]
+		if filepath.Dir(path) != packageDir || file.Name.Name != packageName {
+			continue
+		}
+		for _, decl := range file.Decls {
+			fn, ok := decl.(*ast.FuncDecl)
+			if !ok || fn.Recv != nil || fn.Name.Name != name || fn.Type.Results == nil || len(fn.Type.Results.List) == 0 {
+				continue
+			}
+			if resultName := typeName(fn.Type.Results.List[0].Type); resultName != "" {
+				return makeType(resultName)
+			}
+		}
+	}
+	return resolvedElement{}
+}
+
+func typeName(expr ast.Expr) string {
+	if star, ok := expr.(*ast.StarExpr); ok {
+		expr = star.X
+	}
+	switch value := expr.(type) {
+	case *ast.Ident:
+		return value.Name
+	case *ast.SelectorExpr:
+		return value.Sel.Name
+	}
+	return ""
+}
+
+func sortedFilePaths(files map[string]*ast.File) []string {
+	paths := make([]string, 0, len(files))
+	for path := range files {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	return paths
+}
+
+func findLexicalValue(file *ast.File, name string, target token.Pos) ast.Expr {
+	var blocks []*ast.BlockStmt
+	ast.Inspect(file, func(node ast.Node) bool {
+		if block, ok := node.(*ast.BlockStmt); ok && block.Pos() <= target && target <= block.End() {
+			blocks = append(blocks, block)
+		}
+		return true
+	})
+	for i := len(blocks) - 1; i >= 0; i-- {
+		if value := findValueInBlock(blocks[i], name, target); value != nil {
+			return value
+		}
+	}
+	if fn := enclosingFunc(file, target); fn != nil {
+		for _, field := range fn.Type.Params.List {
+			for _, param := range field.Names {
+				if param.Name == name {
+					return nil
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func enclosingFunc(file *ast.File, target token.Pos) *ast.FuncDecl {
+	var result *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		fn, ok := node.(*ast.FuncDecl)
+		if ok && fn.Body.Pos() <= target && target <= fn.Body.End() {
+			result = fn
+		}
+		return true
+	})
+	return result
+}
+
+func findValueInBlock(block *ast.BlockStmt, name string, target token.Pos) ast.Expr {
+	var result ast.Expr
+	for _, stmt := range block.List {
+		if stmt.Pos() >= target {
+			break
+		}
+		switch statement := stmt.(type) {
+		case *ast.DeclStmt:
+			if decl, ok := statement.Decl.(*ast.GenDecl); ok && decl.Tok == token.VAR {
+				for _, spec := range decl.Specs {
+					valueSpec := spec.(*ast.ValueSpec)
+					if value := valueForName(valueSpec, name); value != nil {
+						result = value
+					}
+				}
+			}
+		case *ast.AssignStmt:
+			if statement.Tok != token.DEFINE {
+				continue
+			}
+			for i, lhs := range statement.Lhs {
+				ident, ok := lhs.(*ast.Ident)
+				if ok && ident.Name == name && i < len(statement.Rhs) {
+					result = statement.Rhs[i]
+				} else if ok && ident.Name == name && len(statement.Rhs) == 1 {
+					result = statement.Rhs[0]
+				}
+			}
+		}
+	}
+	return result
+}
+
+func findPackageValue(files map[string]*ast.File, packageDir, packageName, name string) ast.Expr {
+	for _, path := range sortedFilePaths(files) {
+		file := files[path]
+		if filepath.Dir(path) != packageDir || file.Name.Name != packageName {
+			continue
+		}
+		for _, decl := range file.Decls {
+			gen, ok := decl.(*ast.GenDecl)
+			if !ok || gen.Tok != token.VAR {
+				continue
+			}
+			for _, spec := range gen.Specs {
+				if value := valueForName(spec.(*ast.ValueSpec), name); value != nil {
+					return value
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func valueForName(spec *ast.ValueSpec, name string) ast.Expr {
+	for i, ident := range spec.Names {
+		if ident.Name != name {
+			continue
+		}
+		if i < len(spec.Values) {
+			return spec.Values[i]
+		}
+		if len(spec.Values) == 1 {
+			return spec.Values[0]
+		}
+	}
+	return nil
 }
 
 // resolveElementType attempts to resolve a Bind element expression to a
@@ -347,45 +619,14 @@ func resolveBoundTypes(fset *token.FileSet, files map[string]*ast.File, proj *V2
 //	app                -> declaration of app in the same file (app := NewApp(),
 //	                      app := &App{}, var app = ...)
 func resolveElementType(fset *token.FileSet, files map[string]*ast.File, mainFile *ast.File, expr ast.Expr) string {
-	switch e := expr.(type) {
-	case *ast.UnaryExpr:
-		if e.Op == token.AND {
-			if lit, ok := e.X.(*ast.CompositeLit); ok {
-				if ident, ok := lit.Type.(*ast.Ident); ok {
-					return ident.Name
-				}
-			}
-		}
-	case *ast.CallExpr:
-		if ident, ok := e.Fun.(*ast.Ident); ok {
-			return constructorReturnType(files, ident.Name)
-		}
-	case *ast.Ident:
-		var typeName string
-		ast.Inspect(mainFile, func(n ast.Node) bool {
-			if typeName != "" {
-				return false
-			}
-			assign, ok := n.(*ast.AssignStmt)
-			if !ok || len(assign.Lhs) != 1 || len(assign.Rhs) != 1 {
-				return true
-			}
-			lhs, ok := assign.Lhs[0].(*ast.Ident)
-			if !ok || lhs.Name != e.Name {
-				return true
-			}
-			typeName = resolveElementType(fset, files, mainFile, assign.Rhs[0])
-			return false
-		})
-		return typeName
-	}
-	return ""
+	return resolveElementInfoAt(fset, files, &V2Project{Main: &MainInfo{Path: "main.go"}}, mainFile, expr.Pos(), expr, map[string]bool{}).Name
 }
 
 // constructorReturnType finds `func Name(...) *T` in the parsed files and
 // returns T.
 func constructorReturnType(files map[string]*ast.File, name string) string {
-	for _, file := range files {
+	for _, path := range sortedFilePaths(files) {
+		file := files[path]
 		for _, decl := range file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
 			if !ok || fn.Recv != nil || fn.Name.Name != name {
@@ -408,16 +649,12 @@ func constructorReturnType(files map[string]*ast.File, name string) string {
 
 // collectMethods gathers the exported methods declared on *typeName or
 // typeName across the parsed files.
-func collectMethods(fset *token.FileSet, files map[string]*ast.File, proj *V2Project, typeName string) (pkgName, pkgPath string, methods []*BoundMethod) {
-	// Sort file paths for deterministic method order across map iteration.
-	paths := make([]string, 0, len(files))
-	for path := range files {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-
-	for _, path := range paths {
+func collectMethods(fset *token.FileSet, files map[string]*ast.File, proj *V2Project, packageDir, packageName, typeName string) (methods []*BoundMethod) {
+	for _, path := range sortedFilePaths(files) {
 		file := files[path]
+		if filepath.Dir(path) != packageDir || file.Name.Name != packageName {
+			continue
+		}
 		for _, decl := range file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
 			if !ok || fn.Recv == nil || len(fn.Recv.List) != 1 {
@@ -434,10 +671,6 @@ func collectMethods(fset *token.FileSet, files map[string]*ast.File, proj *V2Pro
 			if !fn.Name.IsExported() {
 				continue
 			}
-			if pkgName == "" {
-				pkgName = file.Name.Name
-				pkgPath = packagePath(proj, path, pkgName)
-			}
 			methods = append(methods, &BoundMethod{
 				Name:    fn.Name.Name,
 				Params:  fieldListParams(fset, fn.Type.Params),
@@ -445,7 +678,7 @@ func collectMethods(fset *token.FileSet, files map[string]*ast.File, proj *V2Pro
 			})
 		}
 	}
-	return pkgName, pkgPath, methods
+	return methods
 }
 
 // packagePath computes the binding FQN package path for a file: "main" for

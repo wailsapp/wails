@@ -58,15 +58,22 @@ func (r *Report) Markdown() string {
 	sb.WriteString("> by opening an issue at https://github.com/wailsapp/wails/issues with the\n")
 	sb.WriteString("> details. Pull requests are very welcome.\n\n")
 	sb.WriteString("## Next steps\n\n")
-	sb.WriteString("1. Run `wails3 doctor` to check your environment.\n")
-	sb.WriteString("2. Port the call sites listed below to the v3 API. The compiler will point at\n")
-	sb.WriteString("   them: the project intentionally does not build until they are ported.\n")
-	sb.WriteString("   Do not run `go mod tidy` before this is done - it would re-add the v2\n")
-	sb.WriteString("   dependency and make the old calls compile, but they cannot work inside a\n")
-	sb.WriteString("   v3 application and will fail at runtime.\n")
-	sb.WriteString("3. Run `go mod tidy`, then `wails3 generate bindings` for the frontend bindings.\n")
-	sb.WriteString("4. Run `wails3 dev` to build and run the migrated app.\n")
-	sb.WriteString("5. Work through the *Manual steps* below, if any.\n")
+	step := 1
+	sb.WriteString(fmt.Sprintf("%d. Run `wails3 doctor` to check your environment.\n", step))
+	if len(r.callSites) > 0 {
+		step++
+		sb.WriteString(fmt.Sprintf("%d. Port the call sites listed below to the v3 API. The compiler will point at\n", step))
+		sb.WriteString("   them: the project intentionally does not build until they are ported.\n")
+		sb.WriteString("   Do not run `go mod tidy` before this is done - it would re-add the v2\n")
+		sb.WriteString("   dependency and make the old calls compile, but they cannot work inside a\n")
+		sb.WriteString("   v3 application and will fail at runtime.\n")
+	}
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Run `go mod tidy`, then `wails3 generate bindings` for the frontend bindings.\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Run `wails3 dev` to build and run the migrated app.\n", step))
+	step++
+	sb.WriteString(fmt.Sprintf("%d. Work through the *Manual steps* below, if any.\n", step))
 	sb.WriteString("   See https://v3.wails.io/migration/v2-to-v3/ for the full guide.\n\n")
 
 	if len(r.callSites) > 0 {
@@ -76,7 +83,9 @@ func (r *Report) Markdown() string {
 		sb.WriteString("The migrator does not rewrite these call sites for you - a half-migrated\n")
 		sb.WriteString("file is worse than a clear list - so each one is enumerated here:\n\n")
 		sb.WriteString("| Location | v2 API | v3 replacement |\n|---|---|---|\n")
-		for _, cs := range r.callSites {
+		callSites := append([]string(nil), r.callSites...)
+		sort.Strings(callSites)
+		for _, cs := range callSites {
 			sb.WriteString(cs + "\n")
 		}
 		sb.WriteString("\n")

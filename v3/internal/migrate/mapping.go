@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"sort"
@@ -133,6 +134,22 @@ func (m *mapper) manual(v2Name, instructions string) {
 
 // note is a shorthand for adding a note to the report.
 func (m *mapper) note(s string) { m.proj.Report.Note(s) }
+
+// setField keeps generated struct literals valid when multiple v2 options
+// map to the same v3 field. The later option wins, matching the source order.
+func (m *mapper) setField(dst *[]GenField, field GenField) {
+	for i, existing := range *dst {
+		if existing.Name != field.Name {
+			continue
+		}
+		if existing.Expr != field.Expr {
+			m.note(fmt.Sprintf("The v3 field `%s` was set more than once; the later value replaced the earlier one.", field.Name))
+		}
+		(*dst)[i] = field
+		return
+	}
+	*dst = append(*dst, field)
+}
 
 // compositeLit unwraps &T{...} / T{...} values to the composite literal, or
 // nil when the value has another shape.
@@ -281,7 +298,7 @@ func (m *mapper) mapAppField(name string, value ast.Expr) {
 		if isTrue(value) {
 			out.Win = append(out.Win, GenField{"StartState", "application.WindowStateFullscreen"})
 			m.proj.Report.Mapped("options.App.Fullscreen", "WebviewWindowOptions.StartState")
-		} else {
+		} else if ident, ok := value.(*ast.Ident); !ok || ident.Name != "false" {
 			m.manual("Fullscreen", "Non-constant Fullscreen value; set `WebviewWindowOptions.StartState` to `application.WindowStateFullscreen` as needed.")
 		}
 	case "WindowStartState":
@@ -297,10 +314,10 @@ func (m *mapper) mapAppField(name string, value ast.Expr) {
 		m.mapAssetServer(value)
 	case "Assets":
 		// Deprecated v2 field: Assets fs.FS.
-		out.App = append(out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\tHandler: application.AssetFileServerFS(" + m.src(value) + "),\n\t\t}"})
+		m.setField(&out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\tHandler: application.AssetFileServerFS(" + m.src(value) + "),\n\t\t}"})
 		m.proj.Report.Mapped("options.App.Assets", "application.Options.Assets")
 	case "AssetsHandler":
-		out.App = append(out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\tHandler: " + m.src(value) + ",\n\t\t}"})
+		m.setField(&out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\tHandler: " + m.src(value) + ",\n\t\t}"})
 		m.proj.Report.Mapped("options.App.AssetsHandler", "application.Options.Assets.Handler")
 	case "Menu":
 		m.manual("Menu", "v3 menus use a different API: create the menu with `app.NewMenu()` and assign it with `app.Menu.SetApplicationMenu(menu)`. See https://v3.wails.io/learn/menus/.")
@@ -426,7 +443,7 @@ func (m *mapper) mapAssetServer(value ast.Expr) {
 		}
 	}
 	if len(gen) > 0 {
-		m.out.App = append(m.out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\t" + strings.Join(gen, "\n\t\t\t") + "\n\t\t}"})
+		m.setField(&m.out.App, GenField{"Assets", "application.AssetOptions{\n\t\t\t" + strings.Join(gen, "\n\t\t\t") + "\n\t\t}"})
 	}
 }
 
@@ -459,12 +476,12 @@ func (m *mapper) mapWindowsOptions(value ast.Expr) {
 		switch name {
 		case "WebviewIsTransparent":
 			if isTrue(v) {
-				m.out.Win = append(m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTransparent"})
+				m.setField(&m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTransparent"})
 				m.proj.Report.Mapped("options.App."+prefix, "WebviewWindowOptions.BackgroundType")
 			}
 		case "WindowIsTranslucent":
 			if isTrue(v) {
-				m.out.Win = append(m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTranslucent"})
+				m.setField(&m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTranslucent"})
 				m.proj.Report.Mapped("options.App."+prefix, "WebviewWindowOptions.BackgroundType")
 			}
 		case "DisableWindowIcon":
@@ -544,7 +561,7 @@ func (m *mapper) mapMacOptions(value ast.Expr) {
 			}
 		case "WebviewIsTransparent":
 			if isTrue(v) {
-				m.out.Win = append(m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTransparent"})
+				m.setField(&m.out.Win, GenField{"BackgroundType", "application.BackgroundTypeTransparent"})
 				m.proj.Report.Mapped("options.App."+prefix, "WebviewWindowOptions.BackgroundType")
 			}
 		case "WindowIsTranslucent":

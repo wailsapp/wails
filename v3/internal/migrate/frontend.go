@@ -1,9 +1,10 @@
 package migrate
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -66,10 +67,9 @@ func MigrateFrontend(proj *V2Project, outDir string) error {
 	return nil
 }
 
-var dependenciesRe = regexp.MustCompile(`("dependencies"\s*:\s*\{)`)
-
 // addRuntimeDependency inserts "@wailsio/runtime" into the frontend
-// package.json dependencies, preserving the file's formatting.
+// package.json dependencies as structured JSON so empty objects and files
+// remain valid JSON.
 func addRuntimeDependency(proj *V2Project, frontendDir string) error {
 	path := filepath.Join(frontendDir, "package.json")
 	data, err := os.ReadFile(path)
@@ -81,21 +81,32 @@ func addRuntimeDependency(proj *V2Project, frontendDir string) error {
 		}
 		return err
 	}
-	content := string(data)
-	if strings.Contains(content, `"@wailsio/runtime"`) {
-		return nil
+	var packageJSON map[string]any
+	if err := json.Unmarshal(data, &packageJSON); err != nil {
+		return fmt.Errorf("could not parse frontend/package.json: %w", err)
 	}
 
-	if dependenciesRe.MatchString(content) {
-		content = dependenciesRe.ReplaceAllString(content, "$1\n    \"@wailsio/runtime\": \"latest\",")
-	} else if idx := strings.Index(content, "{"); idx >= 0 {
-		content = content[:idx+1] + "\n  \"dependencies\": {\n    \"@wailsio/runtime\": \"latest\"\n  }," + content[idx+1:]
-	} else {
-		proj.Report.Manual("frontend/package.json", "Could not add the `@wailsio/runtime` dependency automatically; add it and run your package manager's install.")
+	deps := map[string]any{}
+	if raw, ok := packageJSON["dependencies"]; ok {
+		var valid bool
+		deps, valid = raw.(map[string]any)
+		if !valid {
+			proj.Report.Manual("frontend/package.json", "The dependencies field is not a JSON object; add `@wailsio/runtime` manually and run your package manager's install.")
+			return nil
+		}
+	}
+	if _, ok := deps["@wailsio/runtime"]; ok {
 		return nil
 	}
+	deps["@wailsio/runtime"] = "latest"
+	packageJSON["dependencies"] = deps
+	updated, err := json.MarshalIndent(packageJSON, "", "  ")
+	if err != nil {
+		return fmt.Errorf("could not encode frontend/package.json: %w", err)
+	}
+	updated = append(updated, '\n')
 
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(path, updated, 0o644); err != nil {
 		return err
 	}
 	proj.Report.Note("Added `@wailsio/runtime` to frontend/package.json; run your package manager's install (or let the Taskfile do it on first build).")

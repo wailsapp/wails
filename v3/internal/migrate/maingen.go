@@ -87,9 +87,28 @@ func pickIdent(file *ast.File, candidates ...string) string {
 }
 
 func writeFields(sb *strings.Builder, fields []GenField, indent string) {
+	written := make(map[string]bool, len(fields))
 	for _, f := range fields {
+		if written[f.Name] {
+			continue
+		}
+		written[f.Name] = true
 		sb.WriteString(indent + f.Name + ": " + f.Expr + ",\n")
 	}
+}
+
+// defaultImportName returns the conventional local name for an import path.
+// Go module major-version suffixes are part of the module path, not normally
+// part of the package name (for example, /foo/v2 is usually imported as foo).
+func defaultImportName(path string) string {
+	name := path[strings.LastIndex(path, "/")+1:]
+	if len(name) > 1 && name[0] == 'v' {
+		if _, err := strconv.Atoi(name[1:]); err == nil {
+			parent := path[:strings.LastIndex(path, "/")]
+			name = parent[strings.LastIndex(parent, "/")+1:]
+		}
+	}
+	return name
 }
 
 // buildV3Block renders the replacement for the wails.Run statement.
@@ -180,6 +199,13 @@ func buildV3Block(proj *V2Project, opts *V3Options, appVar, winVar string) strin
 	// Preserve the original error-handling shape.
 	main := proj.Main
 	switch {
+	case main.RunIf != nil:
+		sb.WriteString("if " + main.ErrIdent + " := " + appVar + ".Run(); " + main.ErrIdent + " != nil ")
+		sb.WriteString(exprText(main.Fset, main.Source, main.RunIf.Body))
+		if main.RunIf.Else != nil {
+			sb.WriteString(" else ")
+			sb.WriteString(exprText(main.Fset, main.Source, main.RunIf.Else))
+		}
 	case main.ErrIdent != "" && main.AssignTok == token.DEFINE:
 		sb.WriteString(main.ErrIdent + " := " + appVar + ".Run()")
 	case main.ErrIdent != "":
@@ -281,7 +307,7 @@ func pruneAndFormat(src []byte) ([]byte, error) {
 			if imp.Name != nil {
 				name = imp.Name.Name
 			} else {
-				name = path[strings.LastIndex(path, "/")+1:]
+				name = defaultImportName(path)
 			}
 			if !used[name] {
 				removals = append(removals, span{

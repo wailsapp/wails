@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -111,9 +112,15 @@ var windowRuntimeAdvice = map[string]string{
 func adviseGoRuntimeCalls(fset *token.FileSet, files map[string]*ast.File, proj *V2Project) {
 	for path, file := range files {
 		localName := ""
-		for name, ipath := range importMap(file) {
-			if ipath == V2RuntimeImport {
-				localName = name
+		for _, imp := range file.Imports {
+			ipath, err := strconv.Unquote(imp.Path.Value)
+			if err != nil || ipath != V2RuntimeImport {
+				continue
+			}
+			if imp.Name != nil {
+				localName = imp.Name.Name
+			} else {
+				localName = defaultImportName(ipath)
 			}
 		}
 		if localName == "" {
@@ -124,6 +131,29 @@ func adviseGoRuntimeCalls(fset *token.FileSet, files map[string]*ast.File, proj 
 			rel = path
 		}
 		ast.Inspect(file, func(n ast.Node) bool {
+			if localName == "." {
+				call, ok := n.(*ast.CallExpr)
+				if !ok {
+					return true
+				}
+				ident, ok := call.Fun.(*ast.Ident)
+				if !ok {
+					return true
+				}
+				advice, ok := goRuntimeAdvice[ident.Name]
+				if !ok {
+					advice, ok = windowRuntimeAdvice[ident.Name]
+					if ok {
+						advice += " - get the window with `app.Window.Current()` or keep a reference to the one you create"
+					}
+				}
+				if !ok {
+					advice = "see the v3 application API and https://v3.wails.io/migration/v2-to-v3/"
+				}
+				pos := fset.Position(ident.Pos())
+				proj.Report.CallSite(fmt.Sprintf("%s:%d", rel, pos.Line), "`runtime."+ident.Name+"`", advice)
+				return true
+			}
 			sel, ok := n.(*ast.SelectorExpr)
 			if !ok {
 				return true
@@ -152,7 +182,7 @@ func adviseGoRuntimeCalls(fset *token.FileSet, files map[string]*ast.File, proj 
 	}
 }
 
-var wailsjsImportRe = regexp.MustCompile(`(?:from\s*|require\s*\(\s*)['"]([^'"]*wailsjs/(runtime|go)/[^'"]*)['"]`)
+var wailsjsImportRe = regexp.MustCompile(`(?:from\s*|require\s*\(\s*|import\s*(?:\(\s*)?)['"]([^'"]*wailsjs/(runtime|go)/[^'"]*)['"]`)
 
 // frontendSourceExts are the file types scanned for wailsjs imports.
 var frontendSourceExts = map[string]bool{
@@ -192,19 +222,19 @@ func adviseFrontendImports(proj *V2Project) error {
 		}
 		scanner := bufio.NewScanner(f)
 		lineNo := 0
+		scanner.Buffer(make([]byte, 64*1024), 1024*1024)
 		for scanner.Scan() {
 			lineNo++
-			m := wailsjsImportRe.FindStringSubmatch(scanner.Text())
-			if m == nil {
-				continue
+			matches := wailsjsImportRe.FindAllStringSubmatch(scanner.Text(), -1)
+			for _, m := range matches {
+				var advice string
+				if m[2] == "runtime" {
+					advice = "import from `@wailsio/runtime` instead: `import {Events, Window, Dialogs, ...} from '@wailsio/runtime'`. Function names change, e.g. `EventsOn(name, cb)` -> `Events.On(name, cb)` (the callback receives an event object; your payload is `event.data`), `WindowSetTitle` -> `Window.SetTitle`, `Quit` -> `Application.Quit`."
+				} else {
+					advice = "run `wails3 generate bindings`, then import the service from `frontend/bindings`: `import {" + importedServiceName(m[1]) + "} from './bindings/" + proj.ModulePath + "'` and call methods on it"
+				}
+				proj.Report.CallSite(fmt.Sprintf("%s:%d", rel, lineNo), "`"+m[1]+"`", advice)
 			}
-			var advice string
-			if m[2] == "runtime" {
-				advice = "import from `@wailsio/runtime` instead: `import {Events, Window, Dialogs, ...} from '@wailsio/runtime'`. Function names change, e.g. `EventsOn(name, cb)` -> `Events.On(name, cb)` (the callback receives an event object; your payload is `event.data`), `WindowSetTitle` -> `Window.SetTitle`, `Quit` -> `Application.Quit`."
-			} else {
-				advice = "run `wails3 generate bindings`, then import the service from `frontend/bindings`: `import {" + importedServiceName(m[1]) + "} from './bindings/" + proj.ModulePath + "'` and call methods on it"
-			}
-			proj.Report.CallSite(fmt.Sprintf("%s:%d", rel, lineNo), "`"+m[1]+"`", advice)
 		}
 		return scanner.Err()
 	})

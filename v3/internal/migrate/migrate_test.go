@@ -1,6 +1,8 @@
 package migrate
 
 import (
+	"bytes"
+	"encoding/json"
 	"go/parser"
 	"go/token"
 	"os"
@@ -322,7 +324,7 @@ import (
 func main() {
 	wails.Run(&options.App{Title: "bare"})
 }
-`
+	`
 	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -343,6 +345,123 @@ func main() {
 	}
 }
 
+func TestGenerateMainIfRunForm(t *testing.T) {
+	dir := writeFixture(t)
+	main := `package main
+
+import (
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+)
+
+func main() {
+	if err := wails.Run(&options.App{Title: "if form"}); err != nil {
+		println("Error:", err.Error())
+	}
+}
+`
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	proj, err := ParseV2Project(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if proj.Main.RunIf == nil {
+		t.Fatal("expected if statement run context")
+	}
+	out, err := GenerateMain(proj, MapOptions(proj))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(out), "if err := app.Run(); err != nil") {
+		t.Fatalf("error handling was not preserved:\n%s", out)
+	}
+	if _, err := parser.ParseFile(token.NewFileSet(), "main.go", out, parser.SkipObjectResolution); err != nil {
+		t.Fatalf("generated main.go does not parse: %v\n%s", err, out)
+	}
+}
+
+func TestParseRejectsMultipleRunCalls(t *testing.T) {
+	dir := writeFixture(t)
+	main := `package main
+
+import (
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+)
+
+func main() {
+	wails.Run(&options.App{Title: "one"})
+	wails.Run(&options.App{Title: "two"})
+}
+`
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseV2Project(dir); err == nil || !strings.Contains(err.Error(), "more than one") {
+		t.Fatalf("expected multiple-run error, got %v", err)
+	}
+}
+
+func TestParseHonoursBuildConstraintsAndTestdata(t *testing.T) {
+	dir := writeFixture(t)
+	if err := os.WriteFile(filepath.Join(dir, "disabled_windows.go"), []byte("//go:build windows\n\npackage main\n\nimport \"github.com/wailsapp/wails/v2\"\n\nfunc disabled() { wails.Run(nil) }\n"), 0o644); err != nil {
+
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "testdata"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "testdata", "invalid.go"), []byte("not Go"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseV2Project(dir); err != nil {
+		t.Fatalf("build constraints should exclude disabled files: %v", err)
+	}
+}
+
+func TestResolveBindUsesLexicalAndPackageScope(t *testing.T) {
+	dir := writeFixture(t)
+	mainPath := filepath.Join(dir, "main.go")
+	mainSrc, err := os.ReadFile(mainPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "app.go"), []byte(fixtureAppGo+"\n\ntype PackageApp struct{}\nfunc (a *PackageApp) Wrong() {}\n\nvar app = &PackageApp{}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "other"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "other", "other.go"), []byte("package other\n\ntype App struct{}\nfunc (a *App) Wrong() {}\nfunc NewApp() *App { return &App{} }\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	proj, err := ParseV2Project(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(proj.BoundTypes) != 1 || proj.BoundTypes[0].Name != "App" {
+		t.Fatalf("unexpected bound types: %+v", proj.BoundTypes)
+	}
+	for _, method := range proj.BoundTypes[0].Methods {
+		if method.Name == "Wrong" {
+			t.Fatal("method from duplicate PackageApp receiver was included")
+		}
+	}
+	if err := os.WriteFile(mainPath, bytes.Replace(mainSrc, []byte("app := NewApp()"), nil, 1), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	proj, err = ParseV2Project(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(proj.BoundTypes) != 1 || proj.BoundTypes[0].Name != "PackageApp" {
+		t.Fatalf("package-level Bind declaration was not resolved: %+v", proj.BoundTypes)
+	}
+}
+
 func TestTransformGoMod(t *testing.T) {
 	proj := parseFixture(t)
 	out, err := TransformGoMod(proj, "v3.0.0-alpha2.114")
@@ -356,7 +475,7 @@ func TestTransformGoMod(t *testing.T) {
 	if !strings.Contains(src, "github.com/wailsapp/wails/v3 v3.0.0-alpha2.114") {
 		t.Errorf("v3 require missing:\n%s", src)
 	}
-	if !strings.Contains(src, "go 1.24") {
+	if !strings.Contains(src, "go 1.25") {
 		t.Errorf("go directive not raised:\n%s", src)
 	}
 }
@@ -423,5 +542,37 @@ func TestMigrateFrontend(t *testing.T) {
 	}
 	if !strings.Contains(string(pkgJSON), `"@wailsio/runtime"`) {
 		t.Errorf("package.json missing runtime dep:\n%s", pkgJSON)
+	}
+}
+
+func TestAddRuntimeDependencyUsesStructuredJSON(t *testing.T) {
+	for _, input := range []string{
+		`{}`,
+		`{"dependencies": {}}`,
+		`{"scripts": {"note": "@wailsio/runtime"}}`,
+	} {
+		t.Run(input, func(t *testing.T) {
+			dir := t.TempDir()
+			path := filepath.Join(dir, "package.json")
+			if err := os.WriteFile(path, []byte(input), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			proj := &V2Project{Report: NewReport()}
+			if err := addRuntimeDependency(proj, dir); err != nil {
+				t.Fatal(err)
+			}
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var packageJSON map[string]any
+			if err := json.Unmarshal(data, &packageJSON); err != nil {
+				t.Fatalf("invalid package.json: %v\n%s", err, data)
+			}
+			deps, ok := packageJSON["dependencies"].(map[string]any)
+			if !ok || deps["@wailsio/runtime"] != "latest" {
+				t.Fatalf("runtime dependency missing: %#v", packageJSON["dependencies"])
+			}
+		})
 	}
 }
