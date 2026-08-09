@@ -321,5 +321,7 @@ jobs:
           echo "- **Publication:** Release v3 completed with desktop artifacts" >> $GITHUB_STEP_SUMMARY
         elif [ "${{ steps.desktop_artifacts.outputs.dispatched }}" == "true" ]; then
           echo "- **Publication:** Release v3 run ${{ steps.desktop_artifacts.outputs.run_id }} failed or could not be tracked" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ steps.desktop_artifacts.outcome }}" == "failure" ]; then
+          echo "- **Publication:** Release v3 dispatch failed before a run could be recorded" >> $GITHUB_STEP_SUMMARY
         fi
     

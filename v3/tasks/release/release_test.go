@@ -322,6 +322,9 @@ func TestNightlyDefersPublicationToArtifactWorkflow(t *testing.T) {
 	if !strings.Contains(contents, "github.event.inputs.dry_run != 'true' &&") {
 		t.Fatal("manual dry runs must gate all artifact publication, including recovery")
 	}
+	if !strings.Contains(contents, `steps.desktop_artifacts.outcome }}" == "failure"`) {
+		t.Fatal("nightly summary must report a Release v3 dispatch failure before outputs are available")
+	}
 }
 
 func TestNightlyPublicationRecoveryFindsReachableTagAfterBookkeeping(t *testing.T) {
