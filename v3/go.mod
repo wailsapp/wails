@@ -23,6 +23,7 @@ require (
 	github.com/konoui/lipo v0.10.0
 	github.com/leaanthony/clir v1.7.0
 	github.com/leaanthony/dmg v0.0.0-20260731074841-5c28840cf819
+	github.com/leaanthony/u v1.1.1
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.1
 	github.com/mattn/go-colorable v0.1.14

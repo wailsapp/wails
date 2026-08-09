@@ -15,6 +15,24 @@ type _IStreamVtbl struct {
 	_IUnknownVtbl
 	Read  ComProc
 	Write ComProc
+	Seek  ComProc
+}
+
+const streamSeekSet uint32 = 0
+
+// Seek repositions the read/write cursor in the COM stream.
+func (i *IStream) Seek(offset int64, origin uint32) (int64, error) {
+	var position int64
+	hr, _, _ := i.vtbl.Seek.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(offset),
+		uintptr(origin),
+		uintptr(unsafe.Pointer(&position)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return 0, syscall.Errno(hr)
+	}
+	return position, nil
 }
 
 type IStream struct {

@@ -252,6 +252,8 @@ github.com/leaanthony/clir v1.7.0 h1:xiAnhl7ryPwuH3ERwPWZp/pCHk8wTeiwuAOt6MiNyAw
 github.com/leaanthony/clir v1.7.0/go.mod h1:k/RBkdkFl18xkkACMCLt09bhiZnrGORoxmomeMvDpE0=
 github.com/leaanthony/dmg v0.0.0-20260731074841-5c28840cf819 h1:XuDsI+4yv48FxBG5TetpcqLkIsvJP4G94BNbfQB8G0s=
 github.com/leaanthony/dmg v0.0.0-20260731074841-5c28840cf819/go.mod h1:gL114o+2XWHHI50xydocqXc4sBntbpiyaLyarUH0VA4=
+github.com/leaanthony/u v1.1.1 h1:TUFjwDGlNX+WuwVEzDqQwC2lOv0P4uhTQw7CMFdiK7M=
+github.com/leaanthony/u v1.1.1/go.mod h1:9+o6hejoRljvZ3BzdYlVL0JYCwtnAsVuN9pVTQcaRfI=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=
 github.com/lithammer/fuzzysearch v1.1.8 h1:/HIuJnjHuXS8bKaiTMeeDlW2/AyIWk2brx1V8LFgLN4=

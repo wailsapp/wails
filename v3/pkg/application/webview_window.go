@@ -3,6 +3,7 @@ package application
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"runtime"
 	"slices"
 	"strings"
@@ -205,6 +206,9 @@ type WebviewWindow struct {
 	savedMaxWidth    int
 	savedMaxHeight   int
 	constraintsSaved bool
+
+	childViews     []ChildView
+	childViewsLock sync.RWMutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -335,6 +339,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		atomic.StoreUint32(&result.unconditionallyClose, 1)
+		result.detachChildViews()
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
 		globalApplication.Window.Remove(result.id)
@@ -467,6 +472,83 @@ func (w *WebviewWindow) Run() {
 	}
 
 	InvokeSync(w.impl.run)
+	w.attachChildViews()
+}
+
+// AddChildView registers a native child view with this window. If the window is
+// already running the view is attached immediately; otherwise it attaches when
+// Run creates the native window.
+func (w *WebviewWindow) AddChildView(view ChildView) {
+	if view == nil || w.isDestroyed() {
+		return
+	}
+	w.childViewsLock.Lock()
+	for _, existing := range w.childViews {
+		if sameChildView(existing, view) {
+			w.childViewsLock.Unlock()
+			return
+		}
+	}
+	w.childViews = append(w.childViews, view)
+	w.childViewsLock.Unlock()
+	if w.impl != nil && w.NativeWindow() != nil {
+		view.Attach(w)
+	}
+}
+
+// RemoveChildView detaches a registered native child view and stops the window
+// from attaching it again during future lifecycle transitions.
+func (w *WebviewWindow) RemoveChildView(view ChildView) {
+	if view == nil {
+		return
+	}
+	w.childViewsLock.Lock()
+	removed := false
+	for i, existing := range w.childViews {
+		if sameChildView(existing, view) {
+			w.childViews = append(w.childViews[:i], w.childViews[i+1:]...)
+			removed = true
+			break
+		}
+	}
+	w.childViewsLock.Unlock()
+	if removed {
+		view.Detach()
+	}
+}
+
+func sameChildView(left, right ChildView) bool {
+	if left == nil || right == nil || reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return false
+	}
+	value := reflect.ValueOf(left)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.Slice, reflect.UnsafePointer:
+		return value.Pointer() == reflect.ValueOf(right).Pointer()
+	default:
+		// Child views are normally pointers. Treat non-pointer implementations as
+		// distinct rather than risking an interface equality panic for a
+		// non-comparable value type.
+		return false
+	}
+}
+
+func (w *WebviewWindow) attachChildViews() {
+	w.childViewsLock.RLock()
+	views := append([]ChildView(nil), w.childViews...)
+	w.childViewsLock.RUnlock()
+	for _, view := range views {
+		view.Attach(w)
+	}
+}
+
+func (w *WebviewWindow) detachChildViews() {
+	w.childViewsLock.RLock()
+	views := append([]ChildView(nil), w.childViews...)
+	w.childViewsLock.RUnlock()
+	for _, view := range views {
+		view.Detach()
+	}
 }
 
 // SetAlwaysOnTop sets the window to be always on top.

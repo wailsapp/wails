@@ -70,6 +70,71 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 
 **Decision**: No changes needed - system tray is already GTK-agnostic.
 
+### Decision 6: Native Child-Webview Composition (2026-08-09)
+
+**Context**: A secondary native browser cannot be represented by the host webview's DOM. GTK windows also accept one content child, so placing an independently-sized `WebKitWebView` beside the existing host layout would either replace the host or make its bounds participate in the host layout.
+
+**Decision**: The native window root is a `GtkOverlay`: the existing Wails `GtkBox` remains its main child, while each registered `ChildView` is a directly positioned `GtkOverlay` child. `WebviewWindow.AddChildView` and `RemoveChildView` own attach/detach timing; `WebContentsView` defers GTK/WebKit allocation until the application has activated.
+
+**Rationale**:
+- Preserves the host webview and menu layout unchanged.
+- Gives product code a Go-owned, window-managed lifecycle with deterministic teardown.
+- Avoids the GTK activation crash caused by constructing a `WebKitWebView` before the application is active.
+- Keeps the default GTK4 path and the supported `-tags gtk3` legacy path source-compatible.
+- Does not install a full-window `GtkFixed` input layer above the host webview; host controls in the uncovered area remain clickable while the child browser continues to receive its own input.
+
+**Current scope**: GTK4/WebKitGTK 6 provides embedding, bounds, navigation/back, snapshots, and JavaScript execution. GTK3 retains basic embedding/navigation/script execution for the final legacy cycle.
+
+### Decision 7: Deferred Native Browser Allocation (2026-08-09)
+
+**Context**: Constructing a GTK `WebKitWebView` before GTK activation segfaults, and the imported macOS tests documented the equivalent risk of constructing `WKWebView` before an `NSApplication`/window runloop exists. WebView2 also rejects controller operations before its asynchronous initialization completes.
+
+**Decision**: `NewWebContentsView` only records configuration on every desktop platform. Native allocation is deferred to the window-managed `Attach` lifecycle; queued navigation/script work is applied after a platform view becomes ready. Windows reads source/history through readiness-guarded native WebView2 calls.
+
+**Rationale**:
+- Makes pre-`App.Run` registration through `WebviewWindow.AddChildView` safe and deterministic.
+- Uses the existing Wails main-thread dispatch rather than asking product code to reproduce platform timing rules.
+- Removes a startup crash class while preserving the imported API surface.
+
+### Decision 8: Keep the Upstream Primitive Secure and Narrow (2026-08-09)
+
+**Context**: The draft's macOS backend used private KVC keys to relax file/CORS restrictions and change WebKit background behavior.
+
+**Decision**: The native panel primitive keeps standard platform web security enabled and does not use those private KVC switches.
+
+**Rationale**:
+- Avoids unstable private APIs and does not silently weaken browser isolation for normal Wails applications.
+
+### Decision 9: Native Child Visibility Is Explicit (2026-08-09)
+
+**Context**: A `WebContentsView` is an OS-native surface layered above the host Wails webview. DOM z-index and a zero-sized frontend placeholder do not provide dependable visual hiding, especially while a browser view has intrinsic native content.
+
+**Decision**: The cross-platform primitive provides explicit `Show` and `Hide` operations. They preserve the attached native browser and session; permanent removal is still owned by `WebviewWindow.RemoveChildView`.
+
+**Rationale**:
+- Keeps React/frontend layout state from being mistaken for native visibility state.
+- Makes browser panels reliable for tabs, modals, and workspace switching on GTK4, GTK3 legacy, WebView2, and WKWebView.
+- Avoids recreating a browser session merely to temporarily reveal frontend UI.
+
+`RemoveChildView` is reversible. `WebContentsView.Destroy` is the explicit
+permanent release operation and must follow removal from the owning window.
+
+### Decision 10: Serialize Native View Operations (2026-08-09)
+
+**Context**: Application bindings may issue navigation, resizing, screenshot,
+and lifecycle operations from separate Go goroutines. The platform-native
+browser objects and their pending-script state are not safe for overlapping
+access.
+
+**Decision**: `WebContentsView` protects configuration with a state mutex and
+serializes every native operation through a separate operation mutex. Platform
+backends read immutable option snapshots during attachment instead of reading
+mutable state directly.
+
+**Rationale**:
+- Prevents native WebKit/WebView2/GTK object access from racing destruction or another UI operation.
+- Keeps late URL/bounds/visibility changes deterministic while native allocation is deferred.
+
 ## Implementation Progress
 
 ### Phase 1: Build Infrastructure ✅ COMPLETE
@@ -455,6 +520,30 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-08-09
+- Added window-managed native child-view lifecycle (`ChildView`, `AddChildView`, `RemoveChildView`) for the imported `WebContentsView` API.
+- Made the GTK window root a `GtkOverlay`, with each embedded browser positioned as a direct overlay child so empty regions continue to route input to the host webview.
+- Ported the default Linux implementation to GTK4 + WebKitGTK 6.0 and deferred native view allocation until application activation.
+- Added WebKitGTK snapshots and focused regression coverage.
+- Restored equivalent basic embed support for the legacy `-tags gtk3` GTK3/WebKit2GTK 4.1 path.
+- Deferred macOS `WKWebView` construction until a native host window attaches; the headless macOS API test now verifies that `NewWebContentsView` does not allocate a WebKit view.
+- Replaced the Windows draft's cached URL and JavaScript history fallback with readiness-guarded native WebView2 source/history calls.
+- Made native attachment idempotent across the desktop backends; a hidden Windows child view is shown and re-bounded when it is re-added to its host window.
+- Implemented the draft API's previously inert inline-HTML source mode across GTK4, GTK3, Windows, and macOS; `SetURL` and `SetHTML` now replace one another deterministically.
+- Implemented native WebView2 PNG snapshots with callback-held COM stream ownership.
+- Added explicit Show/Hide control for native browser surfaces across GTK4, GTK3 legacy, WebView2, and WKWebView; documented that DOM overlays cannot render above an attached native child view.
+- Added `v3/test/manual/webcontentsview`, a native desktop smoke application covering lifecycle, movement, visibility, source switching, JavaScript, snapshots, and remove/re-add behavior for runtime verification on each platform.
+- Exposed `webcontentsview.Enabled` and `webcontentsview.Disabled` preference helpers and corrected the browser-view guide so documented `WebPreferences` literals compile.
+- Retained each GTK child widget independently of its temporary `GtkFixed` parent, making `RemoveChildView` followed by `AddChildView` safe rather than leaving a dangling native pointer.
+- Added permanent native disposal through `WebContentsView.Destroy`; after removal from its owner, GTK releases the retained widget, WebView2 closes/releases its controller, and WKWebView is removed and released.
+- Serialized mutable view state and native operations, with a race-regression test covering concurrent application-style calls.
+- Added an explicit no-op `-tags server` WebContentsView backend so server builds preserve the API without claiming a native browser surface.
+- Removed private macOS KVC switches that disabled file/CORS restrictions or changed WebKit drawing behavior.
+- Verified focused `pkg/application` and `pkg/webcontentsview` suites on both default GTK4 and legacy GTK3; a real GTK4 probe loaded a native child view and captured a snapshot.
+- Files: `v3/pkg/application/linux_cgo.go`, `v3/pkg/application/linux_cgo_gtk3.go`,
+  `v3/pkg/application/webview_window.go`, `v3/pkg/application/webview_window_linux.go`,
+  `v3/pkg/application/child_view.go`, and `v3/pkg/webcontentsview/` Linux backends.
 
 ### 2026-07-26
 - Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.

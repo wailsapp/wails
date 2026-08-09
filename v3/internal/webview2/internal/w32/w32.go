@@ -152,8 +152,12 @@ func Utf16PtrToString(p *uint16) string {
 }
 
 func SHCreateMemStream(data []byte) (uintptr, error) {
+	var dataPointer uintptr
+	if len(data) > 0 {
+		dataPointer = uintptr(unsafe.Pointer(&data[0]))
+	}
 	ret, _, err := shlwapiSHCreateMemStream.Call(
-		uintptr(unsafe.Pointer(&data[0])),
+		dataPointer,
 		uintptr(len(data)),
 	)
 	if ret == 0 {

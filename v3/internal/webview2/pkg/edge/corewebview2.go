@@ -4,6 +4,7 @@
 package edge
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"runtime"
@@ -46,6 +47,13 @@ const (
 	CoreWebView2PermissionStateDefault CoreWebView2PermissionState = iota
 	CoreWebView2PermissionStateAllow
 	CoreWebView2PermissionStateDeny
+)
+
+type CoreWebView2CapturePreviewImageFormat uint32
+
+const (
+	CoreWebView2CapturePreviewImageFormatPNG CoreWebView2CapturePreviewImageFormat = iota
+	CoreWebView2CapturePreviewImageFormatJPEG
 )
 
 // ComProc stores a COM procedure.
@@ -323,6 +331,22 @@ func (i *ICoreWebView2) ExecuteScript(javascript string, handler *iCoreWebView2E
 	return nil
 }
 
+func (i *ICoreWebView2) CapturePreview(format CoreWebView2CapturePreviewImageFormat, stream *IStream, handler *iCoreWebView2CapturePreviewCompletedHandler) error {
+	if stream == nil {
+		return errors.New("capture preview stream is nil")
+	}
+	hr, _, _ := i.vtbl.CapturePreview.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(format),
+		uintptr(unsafe.Pointer(stream)),
+		uintptr(unsafe.Pointer(handler)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+	return nil
+}
+
 func (i *ICoreWebView2) GetSettings() (*ICoreWebViewSettings, error) {
 
 	var settings *ICoreWebViewSettings
@@ -348,6 +372,29 @@ func (i *ICoreWebView2) GetSource() (string, error) {
 	source := windows.UTF16PtrToString(_source)
 	windows.CoTaskMemFree(unsafe.Pointer(_source))
 	return source, nil
+}
+
+// CanGoBack reports whether the WebView2 history has an entry before the
+// current document.
+func (i *ICoreWebView2) CanGoBack() (bool, error) {
+	var result int32
+	hr, _, _ := i.vtbl.GetCanGoBack.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&result)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return false, windows.Errno(hr)
+	}
+	return result != 0, nil
+}
+
+// GoBack navigates to the previous history entry.
+func (i *ICoreWebView2) GoBack() error {
+	hr, _, _ := i.vtbl.GoBack.Call(uintptr(unsafe.Pointer(i)))
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+	return nil
 }
 
 func (i *ICoreWebView2) GetContainsFullScreenElement() (bool, error) {

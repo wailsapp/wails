@@ -1188,7 +1188,7 @@ func (w *linuxWebviewWindow) minimise() {
 	C.gtk_window_minimize(w.gtkWindow())
 }
 
-func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
+func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox, overlay pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 
@@ -1200,7 +1200,9 @@ func windowNew(application pointer, menu pointer, menuStyle LinuxMenuStyle, wind
 	defer C.free(unsafe.Pointer(name))
 	C.gtk_widget_set_name((*C.GtkWidget)(vbox), name)
 
-	C.gtk_window_set_child((*C.GtkWindow)(window), (*C.GtkWidget)(vbox))
+	overlay = pointer(C.gtk_overlay_new())
+	C.gtk_overlay_set_child((*C.GtkOverlay)(overlay), (*C.GtkWidget)(vbox))
+	C.gtk_window_set_child((*C.GtkWindow)(window), (*C.GtkWidget)(overlay))
 
 	if menu != nil {
 		switch menuStyle {

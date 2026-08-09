@@ -6,11 +6,13 @@ package edge
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -108,6 +110,9 @@ type Chromium struct {
 	// Resize debouncing
 	lastBounds  *w32.Rect
 	resizeTimer *time.Timer
+
+	previewCallbacksMu sync.Mutex
+	previewCallbacks   map[*capturePreviewCallback]struct{}
 }
 
 func NewChromium() *Chromium {
@@ -158,6 +163,42 @@ func NewChromium() *Chromium {
 
 func (e *Chromium) ShuttingDown() {
 	e.shuttingDown = true
+}
+
+// Close permanently releases the native WebView2 controller. It must run on
+// the UI thread and is intentionally not reusable: create a new Chromium for
+// another browser surface.
+func (e *Chromium) Close() {
+	if e == nil {
+		return
+	}
+	e.shuttingDown = true
+	if e.resizeTimer != nil {
+		e.resizeTimer.Stop()
+		e.resizeTimer = nil
+	}
+	if e.webview != nil {
+		e.webview.Release()
+		e.webview = nil
+	}
+	if e.compositionController != nil {
+		e.releaseCompositionController()
+		if e.controller != nil {
+			e.controller.Release()
+			e.controller = nil
+		}
+	} else if e.controller != nil {
+		_ = e.controller.Close()
+		e.controller.Release()
+		e.controller = nil
+	}
+	e.releaseCompositionHost()
+	if e.environment != nil {
+		e.environment.Release()
+		e.environment = nil
+	}
+	e.hwnd = 0
+	atomic.StoreUintptr(&e.inited, 0)
 }
 
 func (e *Chromium) errorCallback(err error) {
@@ -291,6 +332,26 @@ func (e *Chromium) NavigateToString(content string) {
 	}
 }
 
+// Source returns the URL currently committed by WebView2.
+func (e *Chromium) Source() (string, error) {
+	if !e.IsReady() || e.webview == nil {
+		return "", errors.New("WebView2 is not ready")
+	}
+	return e.webview.GetSource()
+}
+
+// GoBack navigates through the native WebView2 history when possible.
+func (e *Chromium) GoBack() error {
+	if !e.IsReady() || e.webview == nil {
+		return errors.New("WebView2 is not ready")
+	}
+	canGoBack, err := e.webview.CanGoBack()
+	if err != nil || !canGoBack {
+		return err
+	}
+	return e.webview.GoBack()
+}
+
 func (e *Chromium) Init(script string) {
 	err := e.webview.AddScriptToExecuteOnDocumentCreated(script, nil)
 	if err != nil {
@@ -313,6 +374,75 @@ func (e *Chromium) Eval(script string) {
 		// process (errorCallback) is not.
 		log.Printf("[WebView2] Eval failed: %v", err)
 	}
+}
+
+// CapturePreview captures the current WebView2 viewport as PNG bytes. The
+// callback is invoked from WebView2's asynchronous completion handler.
+func (e *Chromium) CapturePreview(callback func([]byte, error)) error {
+	if !e.IsReady() || e.webview == nil {
+		return errors.New("WebView2 is not ready")
+	}
+	if callback == nil {
+		return errors.New("WebView2 preview callback is nil")
+	}
+
+	streamPointer, err := w32.SHCreateMemStream(nil)
+	if err != nil {
+		return fmt.Errorf("create WebView2 preview stream: %w", err)
+	}
+	stream := (*IStream)(unsafe.Pointer(streamPointer))
+	request := &capturePreviewCallback{owner: e, stream: stream, callback: callback}
+	request.handler = newICoreWebView2CapturePreviewCompletedHandler(request)
+
+	e.previewCallbacksMu.Lock()
+	if e.previewCallbacks == nil {
+		e.previewCallbacks = make(map[*capturePreviewCallback]struct{})
+	}
+	e.previewCallbacks[request] = struct{}{}
+	e.previewCallbacksMu.Unlock()
+
+	if err := e.webview.CapturePreview(CoreWebView2CapturePreviewImageFormatPNG, stream, request.handler); err != nil {
+		e.previewCallbacksMu.Lock()
+		delete(e.previewCallbacks, request)
+		e.previewCallbacksMu.Unlock()
+		_ = stream.Release()
+		return err
+	}
+	return nil
+}
+
+type capturePreviewCallback struct {
+	owner    *Chromium
+	stream   *IStream
+	handler  *iCoreWebView2CapturePreviewCompletedHandler
+	callback func([]byte, error)
+}
+
+func (c *capturePreviewCallback) QueryInterface(_, _ uintptr) uintptr { return 0 }
+func (c *capturePreviewCallback) AddRef() uintptr                     { return 1 }
+func (c *capturePreviewCallback) Release() uintptr                    { return 1 }
+
+func (c *capturePreviewCallback) CapturePreviewCompleted(errorCode uintptr) uintptr {
+	c.owner.previewCallbacksMu.Lock()
+	delete(c.owner.previewCallbacks, c)
+	c.owner.previewCallbacksMu.Unlock()
+	defer c.stream.Release()
+
+	if errorCode != 0 {
+		c.callback(nil, fmt.Errorf("WebView2 CapturePreview failed: HRESULT 0x%08x", uint32(errorCode)))
+		return 0
+	}
+	if _, err := c.stream.Seek(0, streamSeekSet); err != nil {
+		c.callback(nil, fmt.Errorf("rewind WebView2 preview stream: %w", err))
+		return 0
+	}
+	preview, err := io.ReadAll(c.stream)
+	if err != nil {
+		c.callback(nil, fmt.Errorf("read WebView2 preview stream: %w", err))
+		return 0
+	}
+	c.callback(preview, nil)
+	return 0
 }
 
 func (e *Chromium) Show() error {
@@ -360,7 +490,7 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 		}
 	}
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("create WebView2 controller: %w", err))
 	}
 	return 0
 }
@@ -479,7 +609,7 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 		if !e.CompositionControllerEnabled {
 			// Use raw pixels mode for better performance during resize.
 			if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
-				e.errorCallback(err)
+				e.errorCallback(fmt.Errorf("initialise WebView2 controller: enable raw-pixel bounds: %w", err))
 			}
 
 			// ShouldDetectMonitorScaleChanges is deliberately left at its default
@@ -498,53 +628,53 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: get CoreWebView2: %w", err))
 	}
 
 	e.webview.AddRef()
 	if e.NonClientRegionSupportEnabled {
 		if err := e.PutIsNonClientRegionSupportEnabled(true); err != nil {
 			if !errors.Is(err, UnsupportedCapabilityError) {
-				e.errorCallback(err)
+				e.errorCallback(fmt.Errorf("initialise WebView2 controller: enable non-client regions: %w", err))
 			}
 		}
 	}
 	err = e.webview.AddWebMessageReceived(e.webMessageReceived, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register web-message handler: %w", err))
 	}
 	err = e.webview.AddPermissionRequested(e.permissionRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register permission handler: %w", err))
 	}
 	err = e.webview.AddWebResourceRequested(e.webResourceRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register resource handler: %w", err))
 	}
 	err = e.webview.AddNavigationStarting(e.navigationStarting, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register navigation-starting handler: %w", err))
 	}
 	err = e.webview.AddNavigationCompleted(e.navigationCompleted, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register navigation-completed handler: %w", err))
 	}
 	err = e.webview.AddProcessFailed(e.processFailed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register process-failed handler: %w", err))
 	}
 	err = e.webview.AddContainsFullScreenElementChanged(e.containsFullScreenElementChanged, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register fullscreen handler: %w", err))
 	}
 	err = e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		e.errorCallback(fmt.Errorf("initialise WebView2 controller: register accelerator-key handler: %w", err))
 	}
 	if e.compositionController != nil {
 		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
 		if err != nil {
-			e.errorCallback(err)
+			e.errorCallback(fmt.Errorf("initialise WebView2 controller: register cursor handler: %w", err))
 		}
 	}
 
