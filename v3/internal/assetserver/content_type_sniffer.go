@@ -19,6 +19,12 @@ type contentTypeSniffer struct {
 	status          int
 	headerCommitted bool
 	headerWritten   bool
+
+	// err is sticky. complete may fail partway through emitting the sniffing
+	// prefix, and http.Flusher has no way to report that, so the failure is
+	// recorded here and surfaced from the next Write or complete instead of
+	// being lost.
+	err error
 }
 
 // Unwrap returns the wrapped [http.ResponseWriter] for use with [http.ResponseController].
@@ -31,6 +37,10 @@ func (rw *contentTypeSniffer) Header() http.Header {
 }
 
 func (rw *contentTypeSniffer) Write(chunk []byte) (int, error) {
+	if rw.err != nil {
+		return 0, rw.err
+	}
+
 	if !rw.headerCommitted {
 		rw.WriteHeader(http.StatusOK)
 	}
@@ -108,11 +118,29 @@ func (rw *contentTypeSniffer) sniff() {
 // Whoever creates a contentTypeSniffer instance
 // is responsible for calling complete after the nested handler has returned.
 func (rw *contentTypeSniffer) complete() (n int, err error) {
+	if rw.err != nil {
+		return 0, rw.err
+	}
+
 	rw.sniff()
 
 	if rw.headerWritten && len(rw.prefix) > 0 {
 		n, err = rw.rw.Write(rw.prefix)
-		rw.prefix = nil
+
+		// Drop only what actually went out. Clearing the whole prefix on a
+		// short or failed write would discard bytes that were never sent, and
+		// the caller would have no way to retry them.
+		if n < 0 {
+			n = 0
+		}
+		if n > len(rw.prefix) {
+			n = len(rw.prefix)
+		}
+		rw.prefix = rw.prefix[n:]
+
+		if err != nil {
+			rw.err = err
+		}
 	}
 
 	return
@@ -135,7 +163,22 @@ func (rw *contentTypeSniffer) closeClient() {
 }
 
 // Flush implements the http.Flusher interface.
+//
+// The prefix has to be resolved first. Until 512 bytes have been seen the
+// sniffer is deliberately holding the body back so it can detect a
+// Content-Type, so delegating straight to the wrapped writer would flush
+// nothing at all — the caller asks for a flush, gets no error, and no bytes
+// reach the client. That silently breaks any response that emits less than
+// 512 bytes and then waits, which is every streaming format.
+//
+// Completing here means the Content-Type is sniffed from a short prefix
+// instead of a full one. That is the right trade: an explicit flush is the
+// caller stating that what has been written so far should be sent now.
 func (rw *contentTypeSniffer) Flush() {
+	// Errors are dropped deliberately: http.Flusher cannot report one, and the
+	// same write error will surface from the next Write or from complete.
+	_, _ = rw.complete()
+
 	if f, ok := rw.rw.(http.Flusher); ok {
 		f.Flush()
 	}

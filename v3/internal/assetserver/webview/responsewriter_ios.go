@@ -118,6 +118,12 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 	return contentLen, nil
 }
 
+// Flush implements the http.Flusher interface.
+//
+// As on macOS, Write pushes each chunk to the URL scheme task immediately,
+// so there is nothing to flush.
+func (rw *responseWriter) Flush() {}
+
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.code = code
 	if rw.wroteHeader || rw.finished {
