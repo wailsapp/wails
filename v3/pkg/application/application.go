@@ -72,6 +72,7 @@ func New(appOptions Options) *App {
 	result.logPlatformInfo()
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
+	result.eventPayloads = newEventPayloadStore()
 
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
@@ -113,6 +114,12 @@ func New(appOptions Options) *App {
 		func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				path := req.URL.Path
+				// Oversized events are parked host-side and fetched here rather
+				// than being spliced into an evaluateJavaScript source string.
+				if strings.HasPrefix(path, eventPayloadPath) {
+					result.serveEventPayload(rw, req)
+					return
+				}
 				switch path {
 				case "/wails/runtime.js":
 					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
@@ -281,6 +288,41 @@ func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTa
 
 var _ webview.Request = &webViewAssetRequest{}
 
+// serveEventPayload delivers an oversized event body that was parked by
+// DispatchWailsEvent. Payloads are one-shot and bound to the window they were
+// dispatched to, so a stale or cross-window id simply 404s.
+func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
+	if a.eventPayloads == nil {
+		http.NotFound(rw, req)
+		return
+	}
+
+	id := strings.TrimPrefix(req.URL.Path, eventPayloadPath)
+	if id == "" || strings.Contains(id, "/") {
+		http.NotFound(rw, req)
+		return
+	}
+
+	// Bind to the requesting window where the platform tags the request.
+	var windowID uint
+	if raw := req.Header.Get(webViewRequestHeaderWindowId); raw != "" {
+		if parsed, err := strconv.ParseUint(raw, 10, 64); err == nil {
+			windowID = uint(parsed)
+		}
+	}
+
+	data, ok := a.eventPayloads.take(id, windowID)
+	if !ok {
+		http.NotFound(rw, req)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.Header().Set("Cache-Control", "no-store")
+	rw.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	_, _ = rw.Write(data)
+}
+
 const webViewRequestHeaderWindowId = "x-wails-window-id"
 const webViewRequestHeaderWindowName = "x-wails-window-name"
 
@@ -398,6 +440,10 @@ type App struct {
 	contextMenusLock sync.RWMutex
 
 	assets   *assetserver.AssetServer
+
+	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
+	// fetch from the webview, keeping them out of evaluateJavaScript source.
+	eventPayloads *eventPayloadStore
 	startURL string
 
 	// Hooks

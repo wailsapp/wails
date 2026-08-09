@@ -189,6 +189,11 @@ type WebviewWindow struct {
 	menuBindings     map[string]*MenuItem
 	menuBindingsLock sync.RWMutex
 
+	// Set once an event has been delivered by reference to this window. From
+	// then on every event is appended to the same JS promise chain, so a small
+	// event cannot overtake a large one that is still being fetched.
+	eventRefMode atomic.Bool
+
 	// Indicates that the window is destroyed
 	destroyed     bool
 	destroyedLock sync.RWMutex
@@ -270,6 +275,12 @@ func (w *WebviewWindow) markAsDestroyed() {
 	w.destroyedLock.Lock()
 	defer w.destroyedLock.Unlock()
 	w.destroyed = true
+
+	// Anything parked for this window will never be fetched now. TTL would
+	// eventually reclaim it, but the window is gone, so release immediately.
+	if globalApplication != nil && globalApplication.eventPayloads != nil {
+		globalApplication.eventPayloads.dropWindow(w.id)
+	}
 }
 
 func (w *WebviewWindow) setupEventMapping() {
@@ -1369,15 +1380,64 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 	return w
 }
 
+// Event delivery templates.
+//
+// All three keep the existing guard against the runtime not being mounted yet
+// (during page reload WindowLoadFinished can fire before dispatchWailsEvent
+// exists), and all three call the same public dispatchWailsEvent entry point,
+// so no runtime JS or third-party page code has to change.
+const (
+	// inline: the payload is small enough to splice directly. Synchronous, and
+	// byte-for-byte the historical behaviour.
+	inlineEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}"
+
+	// chained: same as inline but appended to the window's delivery chain.
+	// Used once a window has sent an out-of-line event, so that small events
+	// cannot overtake a large one still being fetched.
+	chainedEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"w.__eq=(w.__eq||Promise.resolve()).then(function(){w.dispatchWailsEvent(%s);});}"
+
+	// ref: the payload is parked host-side; fetch it over the asset server
+	// rather than passing it through evaluateJavaScript.
+	refEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"w.__eq=(w.__eq||Promise.resolve()).then(function(){" +
+		"return fetch(%q,{cache:'no-store'}).then(function(r){return r.json();})" +
+		".then(function(e){w.dispatchWailsEvent(e);});}).catch(function(){});}"
+)
+
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	// Guard against race condition where event fires before runtime is initialized
-	// This can happen during page reload when WindowLoadFinished fires before
-	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
-	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
-	w.ExecJS(msg)
+
+	payload := event.ToJSON()
+
+	// Large payloads are delivered by reference. Splicing them into the eval
+	// source makes WebKit transfer them out-of-line via shared memory, and the
+	// host process retains ownership of those regions while the app keeps
+	// emitting — 100 ev/s of 1 MB events reached 11.5 GB before this change.
+	// See event_payload_store.go for the measurements.
+	if len(payload) > maxInlineEventPayload {
+		if store := globalApplication.eventPayloads; store != nil {
+			if id, ok := store.put(w.id, []byte(payload)); ok {
+				// Every subsequent event for this window goes through the same
+				// promise chain. Once one event is in flight asynchronously,
+				// letting later small events dispatch synchronously would
+				// reorder them past it.
+				w.eventRefMode.Store(true)
+				w.ExecJS(fmt.Sprintf(refEventJS, eventPayloadPath+id))
+				return
+			}
+		}
+		// Store unavailable or full: fall back to inline. This event pays the
+		// out-of-line retention cost, which beats dropping it.
+	}
+
+	if w.eventRefMode.Load() {
+		w.ExecJS(fmt.Sprintf(chainedEventJS, payload))
+		return
+	}
+	w.ExecJS(fmt.Sprintf(inlineEventJS, payload))
 }
 
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {
