@@ -706,7 +706,8 @@ func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
 }
 
 // Flash flashes the window's taskbar button/icon.
-// Useful to indicate that attention is required. Windows only.
+// Useful to indicate that attention is required. On Windows this flashes the
+// taskbar button; on macOS it bounces the app's Dock icon (Linux: no-op).
 func (w *WebviewWindow) Flash(enabled bool) {
 	if w.impl == nil || w.isDestroyed() {
 		return
