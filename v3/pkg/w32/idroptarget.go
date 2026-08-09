@@ -33,26 +33,8 @@ func init() {
 	)
 }
 
-func _iDropTargetDragEnter(
-	this uintptr,
-	dataObject *IDataObject,
-	grfKeyState DWORD,
-	point POINT,
-	pdfEffect *DWORD,
-) uintptr {
-	return combridge.Resolve[iDropTarget](this).DragEnter(dataObject, grfKeyState, point, pdfEffect)
-}
-
-func _iDropTargetDragOver(this uintptr, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
-	return combridge.Resolve[iDropTarget](this).DragOver(grfKeyState, point, pdfEffect)
-}
-
 func _iDropTargetDragLeave(this uintptr) uintptr {
 	return combridge.Resolve[iDropTarget](this).DragLeave()
-}
-
-func _iDropTargetDrop(this uintptr, dataObject *IDataObject, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
-	return combridge.Resolve[iDropTarget](this).Drop(dataObject, grfKeyState, point, pdfEffect)
 }
 
 type iDropTarget interface {
