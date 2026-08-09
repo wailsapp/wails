@@ -4,8 +4,9 @@ package main
 
 import "errors"
 
-// Memory metrics are unsupported off darwin, but the timing and ordering half
-// of the harness still runs so engines can be compared later.
+// Fallback for platforms with no sampler of their own — darwin, linux and
+// windows each have one. Memory metrics are unavailable here, but the timing
+// and ordering half of the harness still runs, so engines can be compared.
 
 const samplerSupported = false
 
