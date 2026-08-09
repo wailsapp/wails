@@ -107,10 +107,19 @@ func main() {
 	// Snapshot WebContent pids BEFORE anything WebKit-related exists, so the
 	// differential later attributes only our own content process.
 	h.basePids = map[int]bool{}
-	for _, p := range webContentPids() {
-		h.basePids[p] = true
+	if samplerSupported {
+		pids, err := webContentPids()
+		if err != nil {
+			// A failed pre-launch enumeration would classify every pre-existing
+			// content process as ours, so refuse to run rather than report
+			// someone else's memory.
+			log.Fatalf("pre-launch process enumeration failed: %v", err)
+		}
+		for _, p := range pids {
+			h.basePids[p] = true
+		}
+		log.Printf("pre-launch content processes on this machine: %d", len(h.basePids))
 	}
-	log.Printf("pre-launch WebContent processes on this machine: %d", len(h.basePids))
 
 	app := application.New(application.Options{
 		Name:        "eventperf",
@@ -462,8 +471,12 @@ func (h *harness) webFootprint() (uint64, bool) {
 // discoverWebContent diffs the current WebContent pid set against the
 // pre-launch snapshot. An empty diff is a hard error, never a silent fallback.
 func (h *harness) discoverWebContent() error {
+	pids, err := webContentPids()
+	if err != nil {
+		return fmt.Errorf("process enumeration failed: %w", err)
+	}
 	var ours []int
-	for _, p := range webContentPids() {
+	for _, p := range pids {
 		if !h.basePids[p] {
 			ours = append(ours, p)
 		}

@@ -73,13 +73,13 @@ type scenarioResult struct {
 	HostRiseBytes      int64   `json:"host_rise_bytes"`
 	ByteRatePerSec     float64 `json:"emitted_byte_rate_per_sec"`
 	GoHeapSysPeakBytes int64   `json:"go_heap_sys_peak_bytes"`
-	AchievedRate  float64 `json:"achieved_rate_per_sec"`
-	EmitP50us     float64 `json:"emit_p50_us"`
-	EmitP99us     float64 `json:"emit_p99_us"`
-	LatP50ms      float64 `json:"delivery_p50_ms"`
-	LatP99ms      float64 `json:"delivery_p99_ms"`
-	Valid         bool    `json:"valid"`
-	Verdict       string  `json:"verdict"`
+	AchievedRate       float64 `json:"achieved_rate_per_sec"`
+	EmitP50us          float64 `json:"emit_p50_us"`
+	EmitP99us          float64 `json:"emit_p99_us"`
+	LatP50ms           float64 `json:"delivery_p50_ms"`
+	LatP99ms           float64 `json:"delivery_p99_ms"`
+	Valid              bool    `json:"valid"`
+	Verdict            string  `json:"verdict"`
 }
 
 func (r *scenarioResult) finalise() {
@@ -172,7 +172,14 @@ func (r *scenarioResult) finalise() {
 		}
 	}
 	if secs > 0 {
-		r.ByteRatePerSec = float64(r.Sent) * float64(r.Payload) / secs
+		// interleave alternates two payload sizes, so a single-size figure
+		// would understate its byte rate by ~32x and mislead the attribution
+		// column, which is the main signal in REPORT.md.
+		avg := float64(r.Payload)
+		if alt := sc.AltPayloadBytes; alt > 0 {
+			avg = (float64(r.Payload) + float64(alt)) / 2
+		}
+		r.ByteRatePerSec = float64(r.Sent) * avg / secs
 	}
 
 	// Clock domains differ but both are monotonic, so a constant offset cancels:
@@ -213,8 +220,8 @@ func (r *scenarioResult) applyVerdict(baselineBps float64) {
 	// baseline AND an absolute magnitude, so a short window full of sawtooth
 	// cannot produce a leak verdict on its own.
 	const (
-		leakBps      = 50 * 1024  // 50 KB/s sustained floor rise
-		leakAbsBytes = 4 << 20    // and at least 4 MB of it
+		leakBps      = 50 * 1024 // 50 KB/s sustained floor rise
+		leakAbsBytes = 4 << 20   // and at least 4 MB of it
 		elevBps      = 25 * 1024
 		elevAbsBytes = 1 << 20
 	)

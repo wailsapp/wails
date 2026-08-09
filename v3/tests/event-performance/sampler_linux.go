@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,10 +19,10 @@ const webContentProcName = "WebKitWebProcess"
 // webContentPids enumerates every WebKitGTK web process on the machine.
 // Callers diff against a pre-launch snapshot; summing all of them would fold
 // in any other GTK/WebKit app running here.
-func webContentPids() []int {
+func webContentPids() ([]int, error) {
 	entries, err := os.ReadDir("/proc")
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("read /proc: %w", err)
 	}
 
 	var out []int
@@ -45,7 +46,7 @@ func webContentPids() []int {
 			out = append(out, pid)
 		}
 	}
-	return out
+	return out, nil
 }
 
 // footprint reports Pss for pid — the closest Linux analogue to macOS

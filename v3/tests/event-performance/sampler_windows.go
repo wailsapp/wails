@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"unsafe"
@@ -45,17 +46,17 @@ var (
 // webContentPids enumerates every WebView2 process on the machine. Callers
 // diff against a pre-launch snapshot; a dev box typically has a dozen of these
 // already running for other apps.
-func webContentPids() []int {
+func webContentPids() ([]int, error) {
 	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("CreateToolhelp32Snapshot: %w", err)
 	}
 	defer windows.CloseHandle(snap)
 
 	var entry windows.ProcessEntry32
 	entry.Size = uint32(unsafe.Sizeof(entry))
 	if err := windows.Process32First(snap, &entry); err != nil {
-		return nil
+		return nil, fmt.Errorf("Process32First: %w", err)
 	}
 
 	var out []int
@@ -68,7 +69,7 @@ func webContentPids() []int {
 			break // ERROR_NO_MORE_FILES
 		}
 	}
-	return out
+	return out, nil
 }
 
 // footprint reports PrivateUsage for pid. ok=false means the process is gone or

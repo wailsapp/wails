@@ -300,8 +300,17 @@ func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Read-only endpoint; anything else is not something we serve.
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		rw.Header().Set("Allow", "GET, HEAD")
+		http.Error(rw, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Ids are always 32 hex chars. Checking the shape first keeps a stream of
+	// junk requests from doing map work on arbitrarily long keys.
 	id := strings.TrimPrefix(req.URL.Path, eventPayloadPath)
-	if id == "" || strings.Contains(id, "/") {
+	if len(id) != eventPayloadIDLen || !isHexString(id) {
 		http.NotFound(rw, req)
 		return
 	}

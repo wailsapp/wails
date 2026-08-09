@@ -57,7 +57,22 @@ const (
 	eventPayloadStoreMaxBytes = 64 * 1024 * 1024
 
 	eventPayloadPath = "/wails/eventpayload/"
+
+	// eventPayloadIDLen is the hex length of an id: 16 random bytes.
+	eventPayloadIDLen = 32
 )
+
+// isHexString reports whether s is entirely lowercase hex, the shape produced
+// by hex.EncodeToString in put.
+func isHexString(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') {
+			return false
+		}
+	}
+	return true
+}
 
 type parkedEventPayload struct {
 	data     []byte
@@ -71,7 +86,9 @@ type eventPayloadStore struct {
 	mu      sync.Mutex
 	items   map[string]parkedEventPayload
 	bytes   int
+	closed  bool // guarded by mu; put refuses once shutdown has begun
 	janitor sync.Once
+	once    sync.Once // guards close of stop, so repeated close is safe
 	stop    chan struct{}
 }
 
@@ -94,6 +111,11 @@ func (s *eventPayloadStore) put(windowID uint, data []byte) (id string, ok bool)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// Refuse once shutdown has begun. Storing here afterwards would strand the
+	// payload: the reaper is gone, so nothing would ever expire it.
+	if s.closed {
+		return "", false
+	}
 	if s.bytes+len(data) > eventPayloadStoreMaxBytes {
 		return "", false
 	}
@@ -156,11 +178,15 @@ func (s *eventPayloadStore) reap() {
 	}
 }
 
+// close stops the reaper and refuses further payloads. Safe to call more than
+// once and concurrently with put.
 func (s *eventPayloadStore) close() {
-	s.janitor.Do(func() {}) // ensure reap is never started after close
-	select {
-	case <-s.stop:
-	default:
-		close(s.stop)
-	}
+	s.mu.Lock()
+	s.closed = true
+	s.items = map[string]parkedEventPayload{}
+	s.bytes = 0
+	s.mu.Unlock()
+
+	s.janitor.Do(func() {}) // consume the Once so reap can never start later
+	s.once.Do(func() { close(s.stop) })
 }

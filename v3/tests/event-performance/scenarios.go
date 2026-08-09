@@ -11,9 +11,9 @@ import (
 // growth on the size sweep implicates payload retention.
 type Scenario struct {
 	Name         string
-	Rate         int    // events/sec; 0 = idle
-	PayloadBytes int    // bytes of filler per event
-	Burst        int    // if >0, deliver the mean rate in bursts of this size
+	Rate         int // events/sec; 0 = idle
+	PayloadBytes int // bytes of filler per event
+	Burst        int // if >0, deliver the mean rate in bursts of this size
 	Duration     time.Duration
 	Note         string
 
@@ -33,9 +33,9 @@ type Scenario struct {
 	counter *atomic.Int64 // shared across copies of the struct
 }
 
-func (s Scenario) nextSeq() int64    { return s.counter.Add(1) - 1 }
-func (s Scenario) sentSoFar() int64  { return s.counter.Load() }
-func (s Scenario) resetCounter()     { s.counter.Store(0) }
+func (s Scenario) nextSeq() int64   { return s.counter.Add(1) - 1 }
+func (s Scenario) sentSoFar() int64 { return s.counter.Load() }
+func (s Scenario) resetCounter()    { s.counter.Store(0) }
 
 func newScenario(s Scenario) Scenario {
 	s.counter = &atomic.Int64{}

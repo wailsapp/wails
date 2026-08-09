@@ -36,7 +36,7 @@ static unsigned long long hp_footprint(int pid, int *ok) {
 */
 import "C"
 
-import "unsafe"
+import "fmt"
 
 const samplerSupported = true
 
@@ -45,14 +45,17 @@ const webContentProcName = "com.apple.WebKit.WebContent"
 // webContentPids enumerates every WebContent process on the machine. Callers
 // must diff against a pre-launch snapshot — summing all of them would fold in
 // other applications' Safari tabs.
-func webContentPids() []int {
-	const maxPids = 16384
+//
+// proc_listallpids returns the number of PIDS written, not a byte count.
+// (Verified: 907 returned against 907 pids present.) Dividing by sizeof(int)
+// here would scan only a quarter of the table and could miss our own process.
+func webContentPids() ([]int, error) {
+	const maxPids = 32768
 	buf := make([]C.int, maxPids)
-	nbytes := C.hp_listpids(&buf[0], C.int(maxPids))
-	if nbytes <= 0 {
-		return nil
+	n := int(C.hp_listpids(&buf[0], C.int(maxPids)))
+	if n <= 0 {
+		return nil, fmt.Errorf("proc_listallpids failed (returned %d)", n)
 	}
-	n := int(nbytes) / int(unsafe.Sizeof(C.int(0)))
 	if n > maxPids {
 		n = maxPids
 	}
@@ -71,7 +74,7 @@ func webContentPids() []int {
 			out = append(out, pid)
 		}
 	}
-	return out
+	return out, nil
 }
 
 // footprint returns ri_phys_footprint for pid. ok=false means the process is

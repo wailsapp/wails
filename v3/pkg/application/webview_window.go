@@ -189,11 +189,6 @@ type WebviewWindow struct {
 	menuBindings     map[string]*MenuItem
 	menuBindingsLock sync.RWMutex
 
-	// Set once an event has been delivered by reference to this window. From
-	// then on every event is appended to the same JS promise chain, so a small
-	// event cannot overtake a large one that is still being fetched.
-	eventRefMode atomic.Bool
-
 	// Indicates that the window is destroyed
 	destroyed     bool
 	destroyedLock sync.RWMutex
@@ -1386,19 +1381,28 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 // (during page reload WindowLoadFinished can fire before dispatchWailsEvent
 // exists), and all three call the same public dispatchWailsEvent entry point,
 // so no runtime JS or third-party page code has to change.
+// Whether an event can be delivered synchronously depends on whether an
+// earlier event for the same window is still being fetched. That decision is
+// made in JavaScript rather than in Go, deliberately: evals execute serially on
+// the UI thread in the order they were enqueued, so `w.__eq` is observed in
+// delivery order and needs no locking. Deciding it in Go would require holding
+// a lock across the ExecJS main-thread hop, which is the same shape as the
+// deadlock documented in transport_event_ipc.go.
+//
+// Both templates terminate the chain with a catch. Without it a single throwing
+// listener would leave `w.__eq` permanently rejected and silently stop every
+// later event for that window.
 const (
-	// inline: the payload is small enough to splice directly. Synchronous, and
-	// byte-for-byte the historical behaviour.
-	inlineEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}"
-
-	// chained: same as inline but appended to the window's delivery chain.
-	// Used once a window has sent an out-of-line event, so that small events
-	// cannot overtake a large one still being fetched.
-	chainedEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
-		"w.__eq=(w.__eq||Promise.resolve()).then(function(){w.dispatchWailsEvent(%s);});}"
+	// inline: small enough to splice directly. Dispatches synchronously unless
+	// a fetch is already outstanding, in which case it queues behind it so it
+	// cannot overtake.
+	inlineEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"if(w.__eq){w.__eq=w.__eq.then(function(){w.dispatchWailsEvent(%s);}).catch(function(){});}" +
+		"else{w.dispatchWailsEvent(%[1]s);}}"
 
 	// ref: the payload is parked host-side; fetch it over the asset server
-	// rather than passing it through evaluateJavaScript.
+	// rather than passing it through evaluateJavaScript. Creating w.__eq is
+	// what makes every subsequent event for this window queue behind it.
 	refEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
 		"w.__eq=(w.__eq||Promise.resolve()).then(function(){" +
 		"return fetch(%q,{cache:'no-store'}).then(function(r){return r.json();})" +
@@ -1420,23 +1424,14 @@ func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	if len(payload) > maxInlineEventPayload {
 		if store := globalApplication.eventPayloads; store != nil {
 			if id, ok := store.put(w.id, []byte(payload)); ok {
-				// Every subsequent event for this window goes through the same
-				// promise chain. Once one event is in flight asynchronously,
-				// letting later small events dispatch synchronously would
-				// reorder them past it.
-				w.eventRefMode.Store(true)
 				w.ExecJS(fmt.Sprintf(refEventJS, eventPayloadPath+id))
 				return
 			}
 		}
-		// Store unavailable or full: fall back to inline. This event pays the
-		// out-of-line retention cost, which beats dropping it.
+		// Store unavailable, full, or shutting down: fall back to inline. This
+		// event pays the out-of-line retention cost, which beats dropping it.
 	}
 
-	if w.eventRefMode.Load() {
-		w.ExecJS(fmt.Sprintf(chainedEventJS, payload))
-		return
-	}
 	w.ExecJS(fmt.Sprintf(inlineEventJS, payload))
 }
 
