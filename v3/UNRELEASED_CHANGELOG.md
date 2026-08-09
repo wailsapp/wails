@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Implement bounded host-side storage for oversized events and ordered JavaScript delivery in [PR](https://github.com/wailsapp/wails/pull/5930) by @leaanthony
 - Implement macOS Dock bounce for window flashing in [PR](https://github.com/wailsapp/wails/pull/5921) by @julianstorer
 
 ## Changed
