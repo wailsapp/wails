@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Improve WebView2 bootstrapper download error handling and reporting in [PR](https://github.com/wailsapp/wails/pull/5924) by @jannskiee
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
