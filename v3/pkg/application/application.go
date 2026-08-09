@@ -73,6 +73,9 @@ func New(appOptions Options) *App {
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 	result.eventPayloads = newEventPayloadStore()
+	// The store owns a reaper goroutine; window close only drops that window's
+	// entries, so the store itself has to be shut down with the app.
+	result.OnShutdown(result.eventPayloads.close)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
@@ -304,9 +307,10 @@ func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	// Bind to the requesting window where the platform tags the request.
+	// Parsed at uint width so the conversion cannot truncate on 32-bit builds.
 	var windowID uint
 	if raw := req.Header.Get(webViewRequestHeaderWindowId); raw != "" {
-		if parsed, err := strconv.ParseUint(raw, 10, 64); err == nil {
+		if parsed, err := strconv.ParseUint(raw, 10, strconv.IntSize); err == nil {
 			windowID = uint(parsed)
 		}
 	}

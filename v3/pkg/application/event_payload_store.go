@@ -38,6 +38,11 @@ const (
 	// strand it forever — which would just move the leak into Go.
 	eventPayloadTTL = 30 * time.Second
 
+	// eventPayloadSweep is deliberately shorter than the TTL. Sweeping once per
+	// TTL would let an entry created just after a sweep survive until the one
+	// after that, holding it for nearly twice the documented bound.
+	eventPayloadSweep = eventPayloadTTL / 4
+
 	// eventPayloadStoreMaxBytes caps total parked bytes. On overflow the caller
 	// falls back to inline delivery: that event then pays the out-of-line
 	// retention cost, which is strictly better than dropping it or letting the
@@ -124,7 +129,7 @@ func (s *eventPayloadStore) dropWindow(windowID uint) {
 }
 
 func (s *eventPayloadStore) reap() {
-	ticker := time.NewTicker(eventPayloadTTL)
+	ticker := time.NewTicker(eventPayloadSweep)
 	defer ticker.Stop()
 	for {
 		select {
@@ -133,7 +138,8 @@ func (s *eventPayloadStore) reap() {
 		case now := <-ticker.C:
 			s.mu.Lock()
 			for id, item := range s.items {
-				if now.Sub(item.created) > eventPayloadTTL {
+				// Expired once the deadline is reached, not strictly past it.
+				if !item.created.Add(eventPayloadTTL).After(now) {
 					delete(s.items, id)
 					s.bytes -= len(item.data)
 				}
