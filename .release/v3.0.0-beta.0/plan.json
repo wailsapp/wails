@@ -454,8 +454,8 @@
       "track": "ops",
       "blocking": true,
       "status": "open",
-      "note": "Beta.0 and beta.1 were published with assets, while beta.2, beta.3, beta.4, and beta.5 have none. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 each built six binaries and provenance, then failed to attach the outputs because the release was already immutable; scheduled run 30926135808 separately attempted an artifact dispatch with no tag after release generation skipped. Scheduled run 31117548329 then failed during runner setup after GitHub returned Service Unavailable while resolving action downloads through two retries; no workflow step ran. No approved launch runbook or abort criteria are recorded, and the artifact failures were not stopped before the releases became immutable. No signing waiver evidence is recorded. #5876 tracks the release-health blocker.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "Beta.0 and beta.1 were published with assets, while beta.2, beta.3, beta.4, and beta.5 have none. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 each built six binaries and provenance, then failed to attach the outputs because the release was already immutable. Scheduled runs 30926135808 and 31263736047 separately attempted Release v3 dispatches with no tag after release generation skipped for an empty changelog; GitHub rejected both with HTTP 422 because required input `tag` was absent. Scheduled run 31117548329 failed earlier during runner setup after GitHub returned Service Unavailable while resolving action downloads through two retries. No approved launch runbook or abort criteria are recorded, and the workflow did not stop before invalid artifact dispatch or immutable release publication. No signing waiver evidence is recorded. #5876 tracks the release-health blocker.",
+      "updated": "2026-08-09T17:10:31+10:00"
     },
     {
       "id": "ops-support",
@@ -472,8 +472,8 @@
       "track": "ops",
       "blocking": true,
       "status": "open",
-      "note": "The beta.3, beta.4, and beta.5 immutable releases cannot accept the artifacts produced by failed runs 30829708574, 31022027159, and 31192135957. Scheduled recovery run 30926135808 did not identify a releasable tag after the release task skipped; its empty-tag Release v3 dispatch also failed with HTTP 422. Scheduled run 31117548329 provided no recovery evidence because GitHub's action-download service stayed unavailable through runner retries and the job stopped during setup. No successful recovery or replacement path has been rehearsed, and remediation still requires a maintainer decision because automation is not authorised to replace tags or releases. #5876 remains open.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "The beta.3, beta.4, and beta.5 immutable releases cannot accept the artifacts produced by failed runs 30829708574, 31022027159, and 31192135957. Scheduled recovery runs 30926135808 and 31263736047 did not identify a releasable tag after the release task skipped for an empty changelog; both empty-tag Release v3 dispatches failed with HTTP 422. Scheduled run 31117548329 provided no recovery evidence because GitHub's action-download service stayed unavailable through runner retries and the job stopped during setup. No successful recovery or replacement path has been rehearsed, and remediation still requires a maintainer decision because automation is not authorised to replace tags or releases. #5876 remains open.",
+      "updated": "2026-08-09T17:10:31+10:00"
     },
     {
       "id": "ops-monitoring",
