@@ -6,18 +6,16 @@ sidebar:
 ---
 
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import systrayMenuMacOS from "../../../../assets/screenshots/systray-menu-macos.png";
 
 ## System Tray Menus
 
 Wails provides **unified system tray APIs** that work across all platforms. Create tray icons with menus, attach windows, and handle clicks with native platform behaviour for background applications, services, and quick-access utilities.
-{/* VISUAL PLACEHOLDER: System Tray Comparison
-Description: Three screenshots showing the same Wails system tray icon on:
-1. Windows - Notification area (bottom-right)
-2. macOS - Menu bar (top-right) with label
-3. Linux (GNOME) - Top bar
-All showing the same icon and menu structure
-Style: Clean screenshots with arrows pointing to tray icon, menu expanded
-*/}
+
+<Image src={systrayMenuMacOS} alt="A Wails system tray menu, opened from the macOS menu bar" style="max-width: 360px; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+On macOS, a Wails system tray item appears in the menu bar and opens a native menu. The example includes disabled, checkbox, radio, submenu, and action items.
 
 ## Quick Start
 
@@ -182,16 +180,30 @@ systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Quick Access",
-    Width:  300,
-    Height: 400,
-    Frameless: true,  // No title bar
-    AlwaysOnTop: true,  // Stay on top
+    Title:           "Quick Access",
+    Width:           300,
+    Height:          400,
+    Frameless:       true, // No title bar
+    AlwaysOnTop:     true, // Stay on top
+    HideOnFocusLost: true, // Dismiss when another window receives focus
+    HideOnEscape:    true, // Dismiss when the user presses Escape
 })
 
 systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
+
+`HideOnFocusLost` is useful for tray popups on Windows, macOS, and
+click-to-focus Linux desktops. Wails disables that behaviour on Linux
+focus-follows-mouse environments (including common Hyprland, Sway, and i3
+setups), where leaving the popup could otherwise hide it before it can be used.
+`HideOnEscape` remains available in those environments.
+
+The left- and right-click behaviours above are smart defaults. An explicit
+`OnClick` or `OnRightClick` handler replaces the corresponding default. For
+platform checks and edge cases, see the
+[manual systray suite](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)
+and the [systray stress example](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
 
 ## Click Handlers
 
@@ -700,10 +712,10 @@ menu.Update()  // Add this!
     [Learn More →](/features/menus/context)
   </Card>
 
-  <Card title="System Tray Tutorial" icon="open-book">
-    Build a complete system tray application.
+  <Card title="System Tray Example" icon="open-book">
+    Explore a complete system tray application.
     
-    [Learn More →](/tutorials/system-tray)
+    [Learn More →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
   </Card>
 </CardGrid>
 

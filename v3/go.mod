@@ -32,9 +32,9 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
 	github.com/zalando/go-keyring v0.2.6
-	golang.org/x/sys v0.43.0
-	golang.org/x/term v0.42.0
-	golang.org/x/tools v0.44.0
+	golang.org/x/sys v0.46.0
+	golang.org/x/term v0.44.0
+	golang.org/x/tools v0.47.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.44.3
 )
@@ -53,7 +53,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.4.0 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/go-git/go-git/v5 v5.19.1 // indirect
+	github.com/go-git/go-git/v5 v5.19.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/konoui/go-qsort v0.1.0 // indirect
 	github.com/lmittmann/tint v1.1.3 // indirect
@@ -145,14 +145,14 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260112195511-716be5621a96
-	golang.org/x/image v0.40.0
-	golang.org/x/mod v0.35.0
-	golang.org/x/net v0.53.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/image v0.41.0
+	golang.org/x/mod v0.37.0
+	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9

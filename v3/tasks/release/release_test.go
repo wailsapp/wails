@@ -565,6 +565,11 @@ func TestUpdateVersion(t *testing.T) {
 			expectedVersion: "v3.0.0-beta.6",
 		},
 		{
+			name:            "First beta from staged beta.0",
+			currentVersion:  "v3.0.0-beta.0",
+			expectedVersion: "v3.0.0-beta.1",
+		},
+		{
 			name:            "RC version increment",
 			currentVersion:  "v2.5.0-rc.1",
 			expectedVersion: "v2.5.0-rc.2",
@@ -1102,5 +1107,68 @@ func TestCleanupWorkflow_ErrorHandling(t *testing.T) {
 
 	if string(content) != testContent {
 		t.Error("Original content was not restored after error")
+	}
+}
+
+// TestReleaseChannel verifies the channel label derived from a version string,
+// which drives the release-notes heading and warning wording.
+func TestReleaseChannel(t *testing.T) {
+	tests := []struct {
+		version string
+		want    string
+	}{
+		{"v3.0.0-alpha.40", "Alpha"},
+		{"v3.0.0-alpha2.114", "Alpha"},
+		{"v3.0.0-beta.1", "Beta"},
+		{"v3.0.0-rc.1", "Release Candidate"},
+		{"v3.0.0", ""},
+	}
+	for _, tt := range tests {
+		if got := releaseChannel(tt.version); got != tt.want {
+			t.Errorf("releaseChannel(%q) = %q, want %q", tt.version, got, tt.want)
+		}
+	}
+}
+
+// TestBuildReleaseBody verifies the release notes adapt their heading and
+// warning to the release channel encoded in the version string.
+func TestBuildReleaseBody(t *testing.T) {
+	changelog := "### Added\n- something new"
+
+	t.Run("alpha", func(t *testing.T) {
+		body := buildReleaseBody("v3.0.0-alpha2.115", changelog)
+		if !strings.Contains(body, "## Wails v3 Alpha Release - v3.0.0-alpha2.115") {
+			t.Errorf("alpha body missing Alpha heading:\n%s", body)
+		}
+		if !strings.Contains(body, "**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.") {
+			t.Errorf("alpha body missing Alpha warning:\n%s", body)
+		}
+		if strings.Contains(body, "Beta") {
+			t.Errorf("alpha body unexpectedly mentions Beta:\n%s", body)
+		}
+	})
+
+	t.Run("beta", func(t *testing.T) {
+		body := buildReleaseBody("v3.0.0-beta.1", changelog)
+		if !strings.Contains(body, "## Wails v3 Beta Release - v3.0.0-beta.1") {
+			t.Errorf("beta body missing Beta heading:\n%s", body)
+		}
+		if !strings.Contains(body, "**⚠️ Beta Warning:**") {
+			t.Errorf("beta body missing Beta warning:\n%s", body)
+		}
+		if strings.Contains(body, "Alpha") {
+			t.Errorf("beta body unexpectedly mentions Alpha:\n%s", body)
+		}
+		if !strings.Contains(body, "go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.1") {
+			t.Errorf("beta body missing install command:\n%s", body)
+		}
+	})
+}
+
+// TestFirstBetaIncrement pins the beta staging contract: version.txt is staged
+// at v3.0.0-beta.0 so the first released beta becomes v3.0.0-beta.1.
+func TestFirstBetaIncrement(t *testing.T) {
+	if got := computeNextVersion("v3.0.0-beta.0"); got != "v3.0.0-beta.1" {
+		t.Errorf("computeNextVersion(v3.0.0-beta.0) = %q, want v3.0.0-beta.1", got)
 	}
 }

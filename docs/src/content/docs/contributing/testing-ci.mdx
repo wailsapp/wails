@@ -59,9 +59,26 @@ Recommendations:
 
 * Use [`stretchr/testify`](https://github.com/stretchr/testify) — already in
   `go.mod`.
-* Follow **table-driven** style for branches.
+* Prefer **table-driven** tests whenever several inputs, edge cases, or
+  expected outcomes exercise the same behaviour. Give every case a descriptive
+  name.
 * Stub platform quirks behind build tags (`foo_windows_test.go`,
   `foo_darwin_test.go`, …) when needed.
+
+### Coverage expectation
+
+New and changed logic is expected to have 100% Go statement coverage. Measure
+the package you changed rather than relying on a repository-wide percentage:
+
+```bash
+go test ./pkg/application -coverprofile=coverage.out
+go tool cover -func=coverage.out
+```
+
+Some paths are reasonably untestable in a normal test environment—for example,
+platform-only failures, hardware-dependent behaviour, or a defensive fallback
+that cannot be induced safely. Keep those exceptions narrow and explain each
+uncovered path in the PR description.
 
 ### Running Locally
 
@@ -92,9 +109,8 @@ task precommit           # what you should run before pushing
 across darwin / windows / linux (including Docker-based GTK3 / GTK4 matrices on
 Linux).
 
-> The `v3/examples/` directory referenced by older docs has been removed from
-> this working tree; the public examples live in the upstream repository's
-> `v3/examples/` folder on GitHub.
+> Runnable examples live in `v3/examples/`. The test targets select and build
+> the examples appropriate to the host platform or CI matrix.
 
 Run the host-platform smoke suite with:
 

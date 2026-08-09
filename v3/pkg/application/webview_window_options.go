@@ -33,6 +33,43 @@ func effectiveZoomButtonState(a, b ButtonState) ButtonState {
 	return a
 }
 
+// useDarkNativeWindowsMenu reports whether Windows can draw a dark native menu
+// for a dark application window. A menu background can be selected per window,
+// but Windows selects native menu text from its process-level colour policy. If
+// the system policy is light, retaining a dark background makes the text
+// unreadable, so callers must fall back to the matching light menu instead.
+func useDarkNativeWindowsMenu(windowIsDark bool, systemAppsUseDarkMode func() bool) bool {
+	return windowIsDark && (systemAppsUseDarkMode == nil || systemAppsUseDarkMode())
+}
+
+type macWindowButtonStates struct {
+	minimise ButtonState
+	close    ButtonState
+	zoom     ButtonState
+}
+
+// usesNativeMacFramelessFrame reports whether frameless windows retain the
+// standard AppKit frame to preserve its native rounded corners.
+func usesNativeMacFramelessFrame(options MacWindow) bool {
+	return options.CornerType == MacWindowCornerTypeRounded && options.CornerRadius == 0
+}
+
+// effectiveMacWindowButtonStates returns the configured macOS title-bar button
+// states, hiding all controls while the native AppKit frame is used frameless.
+func effectiveMacWindowButtonStates(options WebviewWindowOptions) macWindowButtonStates {
+	result := macWindowButtonStates{
+		minimise: options.MinimiseButtonState,
+		close:    options.CloseButtonState,
+		zoom:     effectiveZoomButtonState(options.MaximiseButtonState, options.FullscreenButtonState),
+	}
+	if options.Frameless && usesNativeMacFramelessFrame(options.Mac) {
+		result.minimise = ButtonHidden
+		result.close = ButtonHidden
+		result.zoom = ButtonHidden
+	}
+	return result
+}
+
 type WindowStartPosition int
 
 const (
@@ -552,12 +589,31 @@ type MacLiquidGlass struct {
 	GroupSpacing float64
 }
 
+// MacWindowCornerType controls the corner shape of a frameless macOS window.
+type MacWindowCornerType int
+
+const (
+	// MacWindowCornerTypeRounded preserves the standard AppKit window corners by
+	// default. Set CornerRadius to use a custom rounded radius.
+	MacWindowCornerTypeRounded MacWindowCornerType = iota
+	// MacWindowCornerTypeSquare creates a true borderless window with square
+	// corners. CornerRadius is ignored.
+	MacWindowCornerTypeSquare
+)
+
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
 	// Backdrop is the backdrop type for the window
 	Backdrop MacBackdrop
 	// DisableShadow will disable the window shadow
 	DisableShadow bool
+	// CornerType controls the corner shape of a frameless window.
+	// Default: MacWindowCornerTypeRounded.
+	CornerType MacWindowCornerType
+	// CornerRadius controls the custom corner radius, in points, of a rounded
+	// frameless window. A value of 0 (the default) preserves AppKit's standard
+	// rounded corners. Ignored when CornerType is MacWindowCornerTypeSquare.
+	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
 	// Appearance is the appearance type for the window

@@ -6,11 +6,17 @@ sidebar:
 ---
 
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
 import wailsAppRegionVideo from "../../../../assets/windows-native-non-client-regions/wails-app-region.mp4";
+import framelessV3NativeCornersMacOS from "../../../../assets/screenshots/frameless-v3-native-corners-macos.png";
 
 ## Frameless Windows
 
 Wails provides **frameless window support** with CSS-based drag regions and platform-native behaviour. Remove the platform-native title bar for complete control over window chrome, custom designs, and unique user experiences whilst maintaining essential functionality like dragging, resizing, and system controls.
+
+<Image src={framelessV3NativeCornersMacOS} alt="The default Wails v3 TypeScript starter app running as a frameless window with native macOS corners" style="max-width: 768px; width: 100%; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+The example above is the default Wails v3 TypeScript starter app with `Frameless: true` enabled.
 
 ## Quick Start
 
@@ -49,6 +55,30 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **That's it!** You have a custom title bar.
 
 ## Creating Frameless Windows
+
+### Corner Radius (macOS)
+
+Frameless windows preserve AppKit's standard rounded macOS corners by default. Set `Mac.CornerRadius` to use a custom radius (in points):
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Mac: application.MacWindow{
+        CornerRadius: 16,
+    },
+})
+```
+
+Set `Mac.CornerType` to `MacWindowCornerTypeSquare` for square corners. This ignores `CornerRadius`:
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Frameless: true,
+    Mac: application.MacWindow{
+        CornerType: application.MacWindowCornerTypeSquare,
+    },
+})
+```
 
 ### Basic Frameless Window
 
