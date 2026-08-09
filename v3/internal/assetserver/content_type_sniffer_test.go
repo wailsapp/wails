@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +45,9 @@ func TestContentTypeSnifferWritesPassThroughAfterFlush(t *testing.T) {
 	rw := newContentTypeSniffer(rec)
 
 	rw.WriteHeader(http.StatusOK)
-	_, _ = io.WriteString(rw, "one")
+	if _, err := io.WriteString(rw, "one"); err != nil {
+		t.Fatalf("write: %v", err)
+	}
 	rw.Flush()
 
 	if _, err := io.WriteString(rw, "two"); err != nil {
@@ -75,7 +78,9 @@ func TestContentTypeSnifferFlushWithExplicitContentType(t *testing.T) {
 
 	rw.Header().Set(HeaderContentType, "text/event-stream")
 	rw.WriteHeader(http.StatusOK)
-	_, _ = io.WriteString(rw, "data: x\n\n")
+	if _, err := io.WriteString(rw, "data: x\n\n"); err != nil {
+		t.Fatalf("write: %v", err)
+	}
 	rw.Flush()
 
 	if got := rec.Header().Get(HeaderContentType); got != "text/event-stream" {
@@ -112,7 +117,9 @@ func TestContentTypeSnifferSupportsResponseController(t *testing.T) {
 	rw := newContentTypeSniffer(rec)
 
 	rw.WriteHeader(http.StatusOK)
-	_, _ = io.WriteString(rw, "chunk")
+	if _, err := io.WriteString(rw, "chunk"); err != nil {
+		t.Fatalf("write: %v", err)
+	}
 
 	if err := http.NewResponseController(rw).Flush(); err != nil {
 		t.Fatalf("ResponseController.Flush: %v", err)
@@ -121,3 +128,79 @@ func TestContentTypeSnifferSupportsResponseController(t *testing.T) {
 		t.Errorf("body = %q, want %q", got, "chunk")
 	}
 }
+
+// failingWriter fails the nth write (1-based) and succeeds otherwise, so a
+// test can target exactly the write that Flush triggers.
+type failingWriter struct {
+	http.ResponseWriter
+	failOn int
+	writes int
+}
+
+func (w *failingWriter) Write(b []byte) (int, error) {
+	w.writes++
+	if w.writes == w.failOn {
+		return 0, errors.New("write failed")
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *failingWriter) Flush() {}
+
+// http.Flusher cannot report an error, so a failure while emitting the prefix
+// must be remembered and surfaced from the next Write. The unwritten prefix
+// must also survive rather than being silently dropped.
+func TestContentTypeSnifferFlushWriteFailureIsSurfacedLater(t *testing.T) {
+	fw := &failingWriter{ResponseWriter: httptest.NewRecorder(), failOn: 1}
+	rw := newContentTypeSniffer(fw)
+
+	rw.WriteHeader(http.StatusOK)
+	if _, err := io.WriteString(rw, "held back"); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	rw.Flush() // triggers the prefix write, which fails
+
+	if len(rw.prefix) == 0 {
+		t.Error("prefix was dropped even though the write failed")
+	}
+
+	if _, err := io.WriteString(rw, "next"); err == nil {
+		t.Error("the flush-time failure was swallowed; later Write reported success")
+	}
+	if _, err := rw.complete(); err == nil {
+		t.Error("the flush-time failure was swallowed; complete reported success")
+	}
+}
+
+// A short write during the prefix flush must retain only the unsent remainder.
+func TestContentTypeSnifferShortWriteKeepsRemainder(t *testing.T) {
+	rec := httptest.NewRecorder()
+	sw := &shortWriter{ResponseWriter: rec, limit: 3}
+	rw := newContentTypeSniffer(sw)
+
+	rw.WriteHeader(http.StatusOK)
+	if _, err := io.WriteString(rw, "abcdef"); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	rw.Flush()
+
+	if got := string(rw.prefix); got != "def" {
+		t.Errorf("remaining prefix = %q, want %q", got, "def")
+	}
+}
+
+// shortWriter accepts at most limit bytes per write, without reporting an error.
+type shortWriter struct {
+	http.ResponseWriter
+	limit int
+}
+
+func (w *shortWriter) Write(b []byte) (int, error) {
+	if len(b) > w.limit {
+		b = b[:w.limit]
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *shortWriter) Flush() {}
