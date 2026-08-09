@@ -279,8 +279,9 @@ func GetObject(hgdiobj HGDIOBJ, cbBuffer uintptr, lpvObject unsafe.Pointer) int 
 	return int(ret)
 }
 
+// GetStockObject retrieves a handle to one of the predefined stock GDI objects.
 func GetStockObject(fnObject int) HGDIOBJ {
-	ret, _, _ := procGetDeviceCaps.Call(
+	ret, _, _ := procGetStockObject.Call(
 		uintptr(fnObject))
 
 	return HGDIOBJ(ret)
