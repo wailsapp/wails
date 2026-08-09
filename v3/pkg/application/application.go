@@ -452,12 +452,12 @@ type App struct {
 	contextMenus     map[string]*ContextMenu
 	contextMenusLock sync.RWMutex
 
-	assets   *assetserver.AssetServer
+	assets *assetserver.AssetServer
 
 	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
 	// fetch from the webview, keeping them out of evaluateJavaScript source.
 	eventPayloads *eventPayloadStore
-	startURL string
+	startURL      string
 
 	// Hooks
 	windowCreatedCallbacks []func(window Window)
@@ -661,13 +661,12 @@ func (a *App) Run() error {
 			a.options.Services = services[:i+1]
 		}
 
-
-	// Start the MCP server when the application is built with -tags mcp.
-	// All configuration is read from environment variables (WAILS_MCP_HOST,
-	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
-	if err := startMCPServer(a); err != nil {
-		return fmt.Errorf("mcp: %w", err)
-	}
+		// Start the MCP server when the application is built with -tags mcp.
+		// All configuration is read from environment variables (WAILS_MCP_HOST,
+		// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+		if err := startMCPServer(a); err != nil {
+			return fmt.Errorf("mcp: %w", err)
+		}
 
 		go func() {
 			for {
