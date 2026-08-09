@@ -4,7 +4,7 @@ v2-only:
       - any-glob-to-any-file:
           - 'v2/**/*'
 
-v3-alpha:
+v3:
   - changed-files:
       - any-glob-to-any-file:
           - 'v3/**/*'
