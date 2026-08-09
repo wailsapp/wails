@@ -9,11 +9,13 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -61,6 +63,9 @@ func MCP(options *MCPOptions) error {
 	if options == nil {
 		options = &MCPOptions{}
 	}
+	if options.HTTP && options.Stdio {
+		return errors.New("choose at most one of --http and --stdio")
+	}
 	// MCP owns stdout for JSON-RPC. Never let the normal CLI footer or a
 	// terminal renderer corrupt the protocol stream.
 	DisableFooter = true
@@ -82,9 +87,6 @@ func MCP(options *MCPOptions) error {
 	serverCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	server := &mcpServer{root: root, token: token, jobs: newMCPJobs(), ctx: serverCtx}
-	if options.HTTP && options.Stdio {
-		return errors.New("choose at most one of --http and --stdio")
-	}
 	useHTTP := options.HTTP || (!options.Stdio && terminalMCPMode())
 	if useHTTP {
 		return server.runHTTP(serverCtx, token, options.Port)
@@ -137,7 +139,18 @@ func (s *mcpServer) runHTTP(ctx context.Context, token string, port int) error {
 		}
 		return &auth.TokenInfo{Expiration: time.Now().Add(24 * time.Hour)}, nil
 	}
-	httpServer := &http.Server{Handler: auth.RequireBearerToken(verifier, nil)(handler), ReadHeaderTimeout: 10 * time.Second}
+	protectedHandler := auth.RequireBearerToken(verifier, nil)(handler)
+	httpServer := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !mcpRequestIsLoopback(r) {
+				http.Error(w, "MCP HTTP requests must use loopback Host and Origin headers", http.StatusForbidden)
+				return
+			}
+			protectedHandler.ServeHTTP(w, r)
+		}),
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       30 * time.Second,
+	}
 	go func() {
 		<-ctx.Done()
 		_ = httpServer.Shutdown(context.Background())
@@ -148,6 +161,34 @@ func (s *mcpServer) runHTTP(ctx context.Context, token string, port int) error {
 		return nil
 	}
 	return err
+}
+
+func mcpHostIsLoopback(hostport string) bool {
+	if hostport == "" {
+		return false
+	}
+	host := hostport
+	if parsedHost, _, err := net.SplitHostPort(hostport); err == nil {
+		host = parsedHost
+	}
+	host = strings.Trim(host, "[]")
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+func mcpRequestIsLoopback(r *http.Request) bool {
+	if !mcpHostIsLoopback(r.Host) {
+		return false
+	}
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	u, err := url.Parse(origin)
+	return err == nil && u.Scheme == "http" && u.User == nil && u.Host != "" && mcpHostIsLoopback(u.Host)
 }
 
 func resolveMCPRoot(input string) (string, error) {
@@ -408,7 +449,7 @@ func (s *mcpServer) doctor(ctx context.Context, _ *mcp.CallToolRequest, in mcpRe
 	if err != nil {
 		return nil, nil, fmt.Errorf("doctor: %w: %s", err, result)
 	}
-	return nil, map[string]any{"root": s.root, "report": result}, nil
+	return nil, map[string]any{"root": s.root, "report": decodeMCPJSON(result)}, nil
 }
 
 func (s *mcpServer) taskList(ctx context.Context, _ *mcp.CallToolRequest, in mcpReadPathInput) (*mcp.CallToolResult, map[string]any, error) {
@@ -420,66 +461,55 @@ func (s *mcpServer) taskList(ctx context.Context, _ *mcp.CallToolRequest, in mcp
 	if err != nil {
 		return nil, nil, fmt.Errorf("list tasks: %w: %s", err, result)
 	}
-	return nil, map[string]any{"path": path, "tasks": result}, nil
+	return nil, map[string]any{"path": path, "tasks": decodeMCPJSON(result)}, nil
+}
+
+func decodeMCPJSON(result string) any {
+	var decoded any
+	if err := json.Unmarshal([]byte(result), &decoded); err == nil {
+		return decoded
+	}
+	return result
 }
 
 func (s *mcpServer) build(ctx context.Context, _ *mcp.CallToolRequest, in mcpCommandInput) (*mcp.CallToolResult, mcpJobOutput, error) {
-	if err := s.authorize(in.Token); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	path, err := s.projectPath(in.Path)
-	if err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	if err := s.validateMCPArgs(path, in.Args); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	return s.startJob(ctx, path, append([]string{"build"}, in.Args...))
+	return s.startCommandJob(ctx, in.Token, in.Path, in.Args, []string{"build"}, nil)
 }
 
 func (s *mcpServer) dev(ctx context.Context, _ *mcp.CallToolRequest, in mcpCommandInput) (*mcp.CallToolResult, mcpJobOutput, error) {
-	if err := s.authorize(in.Token); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	path, err := s.projectPath(in.Path)
-	if err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	if err := s.validateMCPArgs(path, in.Args); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	return s.startJob(ctx, path, append([]string{"dev"}, in.Args...))
+	return s.startCommandJob(ctx, in.Token, in.Path, in.Args, []string{"dev"}, nil)
 }
 
 func (s *mcpServer) bindings(ctx context.Context, _ *mcp.CallToolRequest, in mcpCommandInput) (*mcp.CallToolResult, mcpJobOutput, error) {
-	if err := s.authorize(in.Token); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	path, err := s.projectPath(in.Path)
-	if err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	if err := s.validateMCPArgs(path, in.Args); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
-	return s.startJob(ctx, path, append([]string{"generate", "bindings"}, in.Args...))
+	return s.startCommandJob(ctx, in.Token, in.Path, in.Args, []string{"generate", "bindings"}, nil)
 }
 
 func (s *mcpServer) task(ctx context.Context, _ *mcp.CallToolRequest, in mcpTaskInput) (*mcp.CallToolResult, mcpJobOutput, error) {
-	if err := s.authorize(in.Token); err != nil {
+	return s.startCommandJob(ctx, in.Token, in.Path, in.Args, []string{"task", in.Task}, func() error {
+		if strings.TrimSpace(in.Task) == "" || strings.ContainsAny(in.Task, "\r\n") {
+			return errors.New("task is required and may not contain newlines")
+		}
+		return nil
+	})
+}
+
+func (s *mcpServer) startCommandJob(ctx context.Context, token, inputPath string, args, command []string, validate func() error) (*mcp.CallToolResult, mcpJobOutput, error) {
+	if err := s.authorize(token); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	if strings.TrimSpace(in.Task) == "" || strings.ContainsAny(in.Task, "\r\n") {
-		return nil, mcpJobOutput{}, errors.New("task is required and may not contain newlines")
+	if validate != nil {
+		if err := validate(); err != nil {
+			return nil, mcpJobOutput{}, err
+		}
 	}
-	path, err := s.projectPath(in.Path)
+	path, err := s.projectPath(inputPath)
 	if err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	if err := s.validateMCPArgs(path, in.Args); err != nil {
+	if err := s.validateMCPArgs(path, args); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	return s.startJob(ctx, path, append([]string{"task", in.Task}, in.Args...))
+	return s.startJob(ctx, path, append(command, args...))
 }
 
 func (s *mcpServer) status(ctx context.Context, _ *mcp.CallToolRequest, in mcpJobReadInput) (*mcp.CallToolResult, mcpJobOutput, error) {
@@ -569,7 +599,7 @@ type mcpJob struct {
 	id         string
 	path       string
 	state      string
-	output     string
+	output     []byte
 	cancel     context.CancelFunc
 	finishedAt time.Time
 }
@@ -589,7 +619,7 @@ func (j *mcpJob) Write(p []byte) (int, error) {
 		if len(p) < n {
 			n = len(p)
 		}
-		j.output += string(p[:n])
+		j.output = append(j.output, p[:n]...)
 	}
 	return len(p), nil
 }
@@ -617,7 +647,7 @@ func (j *mcpJob) finish(err error) {
 func (j *mcpJob) snapshot() mcpJobOutput {
 	j.mu.Lock()
 	defer j.mu.Unlock()
-	return mcpJobOutput{JobID: j.id, State: j.state, Path: j.path, Output: j.output}
+	return mcpJobOutput{JobID: j.id, State: j.state, Path: j.path, Output: string(j.output)}
 }
 
 func (j *mcpJob) finishedAtValue() (time.Time, bool) {

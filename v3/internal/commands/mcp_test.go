@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,7 +50,7 @@ func TestMCPProjectPathRejectsSymlinkedParentOfMissingChild(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestMCPAuthorizeUsesExactConstantTimeToken(t *testing.T) {
+func TestMCPAuthorizeRequiresExactToken(t *testing.T) {
 	server := &mcpServer{token: "correct-token"}
 	require.NoError(t, server.authorize("correct-token"))
 	require.Error(t, server.authorize("correct-token-extra"))
@@ -90,6 +91,42 @@ func TestMCPJobStopReportsStopping(t *testing.T) {
 
 	job.requestStop()
 	require.Equal(t, "stopping", job.snapshot().State)
+}
+
+func TestDecodeMCPJSON(t *testing.T) {
+	require.Equal(t, map[string]any{"ok": true}, decodeMCPJSON(`{"ok":true}`))
+	require.Equal(t, "not json", decodeMCPJSON("not json"))
+}
+
+func TestMCPRequestIsLoopback(t *testing.T) {
+	tests := []struct {
+		name   string
+		host   string
+		origin string
+		want   bool
+	}{
+		{name: "ipv4", host: "127.0.0.1:1234", origin: "http://127.0.0.1:1234", want: true},
+		{name: "ipv6", host: "[::1]:1234", origin: "http://localhost:1234", want: true},
+		{name: "missing origin", host: "localhost:1234", want: true},
+		{name: "non-loopback host", host: "192.0.2.1:1234", origin: "http://192.0.2.1:1234", want: false},
+		{name: "non-loopback origin", host: "127.0.0.1:1234", origin: "http://example.com:1234", want: false},
+		{name: "https origin", host: "127.0.0.1:1234", origin: "https://127.0.0.1:1234", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://127.0.0.1:1234/mcp", nil)
+			r.Host = tt.host
+			if tt.origin != "" {
+				r.Header.Set("Origin", tt.origin)
+			}
+			require.Equal(t, tt.want, mcpRequestIsLoopback(r))
+		})
+	}
+}
+
+func TestMCPRejectsConflictingTransportsBeforeRootResolution(t *testing.T) {
+	err := MCP(&MCPOptions{HTTP: true, Stdio: true, Root: filepath.Join(t.TempDir(), "missing")})
+	require.EqualError(t, err, "choose at most one of --http and --stdio")
 }
 
 func TestMCPJobsReapFinishedJobs(t *testing.T) {
