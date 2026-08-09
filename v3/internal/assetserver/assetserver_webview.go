@@ -16,8 +16,22 @@ type assetServerWebView struct {
 	// ExpectedWebViewHost is checked against the Request Host of every WebViewRequest, other hosts won't be processed.
 	ExpectedWebViewHost string
 
-	dispatchInit    sync.Once
-	dispatchReqC    chan<- webview.Request
+	dispatchInit sync.Once
+	dispatchReqC chan<- webview.Request
+
+	// dispatchWorkers must stay 0, which is why nothing assigns it.
+	//
+	// At 0 every request gets its own goroutine. Any positive value switches
+	// ServeWebViewRequest to a fixed worker pool, and a request that is
+	// long-lived by design - a streaming response, or anything that blocks
+	// waiting on the frontend - occupies its worker for its whole lifetime.
+	// Enough of those and the pool is starved: later requests, including the
+	// page's own assets, queue behind them and the app appears to hang during
+	// startup with no error anywhere.
+	//
+	// The field is kept because the pooled path is still useful for a
+	// request-heavy workload known to be short-lived, but it needs a bound on
+	// request lifetime before it can be turned on.
 	dispatchWorkers int
 }
 
