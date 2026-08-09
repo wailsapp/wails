@@ -272,13 +272,26 @@ func (s *mcpServer) projectPath(input string) (string, error) {
 	if input == "" {
 		return s.root, nil
 	}
-	p, err := filepath.Abs(filepath.Join(s.root, input))
+	return s.resolveMCPPath(s.root, input)
+}
+
+func isMCPPathWithin(root, path string) bool {
+	rel, err := filepath.Rel(filepath.Clean(root), filepath.Clean(path))
+	return err == nil && rel != ".." && !filepath.IsAbs(rel) && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+func (s *mcpServer) resolveMCPPath(base, input string) (string, error) {
+	p := input
+	if !filepath.IsAbs(p) {
+		p = filepath.Join(base, p)
+	}
+	p, err := filepath.Abs(p)
 	if err != nil {
 		return "", err
 	}
 	cleanRoot := filepath.Clean(s.root)
 	cleanPath := filepath.Clean(p)
-	if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(filepath.Separator)) {
+	if !isMCPPathWithin(cleanRoot, cleanPath) {
 		return "", fmt.Errorf("path %q is outside the allowed MCP root", input)
 	}
 	// Resolve symlinks on the longest existing prefix to catch cases where an
@@ -288,7 +301,7 @@ func (s *mcpServer) projectPath(input string) (string, error) {
 	for check != filepath.Dir(check) {
 		if _, err := os.Lstat(check); err == nil {
 			realPath, err := filepath.EvalSymlinks(check)
-			if err != nil || (realPath != cleanRoot && !strings.HasPrefix(realPath, cleanRoot+string(filepath.Separator))) {
+			if err != nil || !isMCPPathWithin(cleanRoot, realPath) {
 				return "", fmt.Errorf("path %q resolves outside the allowed MCP root", input)
 			}
 			break
@@ -335,16 +348,17 @@ func (s *mcpServer) inspect(ctx context.Context, _ *mcp.CallToolRequest, in mcpR
 		} else {
 			out.Truncated = true
 		}
-		if rel == "Taskfile.yml" || rel == "Taskfile.yaml" {
+		slashRel := filepath.ToSlash(rel)
+		if slashRel == "Taskfile.yml" || slashRel == "Taskfile.yaml" {
 			out.Taskfile = true
 		}
-		if rel == "build/config.yml" {
+		if slashRel == "build/config.yml" {
 			out.Config = true
 		}
-		if rel == "go.mod" {
+		if slashRel == "go.mod" {
 			out.GoModule = true
 		}
-		if rel == "frontend/package.json" {
+		if slashRel == "frontend/package.json" {
 			out.Frontend = true
 		}
 		return nil
@@ -417,7 +431,7 @@ func (s *mcpServer) build(ctx context.Context, _ *mcp.CallToolRequest, in mcpCom
 	if err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	if err := validateMCPArgs(in.Args); err != nil {
+	if err := s.validateMCPArgs(path, in.Args); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
 	return s.startJob(ctx, path, append([]string{"build"}, in.Args...))
@@ -431,7 +445,7 @@ func (s *mcpServer) dev(ctx context.Context, _ *mcp.CallToolRequest, in mcpComma
 	if err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	if err := validateMCPArgs(in.Args); err != nil {
+	if err := s.validateMCPArgs(path, in.Args); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
 	return s.startJob(ctx, path, append([]string{"dev"}, in.Args...))
@@ -445,7 +459,7 @@ func (s *mcpServer) bindings(ctx context.Context, _ *mcp.CallToolRequest, in mcp
 	if err != nil {
 		return nil, mcpJobOutput{}, err
 	}
-	if err := validateMCPArgs(in.Args); err != nil {
+	if err := s.validateMCPArgs(path, in.Args); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
 	return s.startJob(ctx, path, append([]string{"generate", "bindings"}, in.Args...))
@@ -458,11 +472,11 @@ func (s *mcpServer) task(ctx context.Context, _ *mcp.CallToolRequest, in mcpTask
 	if strings.TrimSpace(in.Task) == "" || strings.ContainsAny(in.Task, "\r\n") {
 		return nil, mcpJobOutput{}, errors.New("task is required and may not contain newlines")
 	}
-	if err := validateMCPArgs(in.Args); err != nil {
-		return nil, mcpJobOutput{}, err
-	}
 	path, err := s.projectPath(in.Path)
 	if err != nil {
+		return nil, mcpJobOutput{}, err
+	}
+	if err := s.validateMCPArgs(path, in.Args); err != nil {
 		return nil, mcpJobOutput{}, err
 	}
 	return s.startJob(ctx, path, append([]string{"task", in.Task}, in.Args...))
@@ -484,7 +498,7 @@ func (s *mcpServer) stop(ctx context.Context, _ *mcp.CallToolRequest, in mcpJobI
 	if !ok {
 		return nil, mcpJobOutput{}, errors.New("unknown job")
 	}
-	job.cancel()
+	job.requestStop()
 	return nil, job.snapshot(), nil
 }
 
@@ -551,9 +565,13 @@ func (b *cappedBuffer) Write(p []byte) (int, error) {
 func (b *cappedBuffer) String() string { b.mu.Lock(); defer b.mu.Unlock(); return string(b.b) }
 
 type mcpJob struct {
-	mu                      sync.Mutex
-	id, path, state, output string
-	cancel                  context.CancelFunc
+	mu         sync.Mutex
+	id         string
+	path       string
+	state      string
+	output     string
+	cancel     context.CancelFunc
+	finishedAt time.Time
 }
 
 func newMCPJob(path string, cancel context.CancelFunc) (*mcpJob, error) {
@@ -575,21 +593,37 @@ func (j *mcpJob) Write(p []byte) (int, error) {
 	}
 	return len(p), nil
 }
+func (j *mcpJob) requestStop() {
+	j.mu.Lock()
+	if j.state == "running" {
+		j.state = "stopping"
+	}
+	cancel := j.cancel
+	j.mu.Unlock()
+	cancel()
+}
 func (j *mcpJob) finish(err error) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
-	if errors.Is(err, context.Canceled) {
+	if j.state == "stopping" || errors.Is(err, context.Canceled) {
 		j.state = "stopped"
 	} else if err != nil {
 		j.state = "failed"
 	} else {
 		j.state = "completed"
 	}
+	j.finishedAt = time.Now()
 }
 func (j *mcpJob) snapshot() mcpJobOutput {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 	return mcpJobOutput{JobID: j.id, State: j.state, Path: j.path, Output: j.output}
+}
+
+func (j *mcpJob) finishedAtValue() (time.Time, bool) {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	return j.finishedAt, !j.finishedAt.IsZero()
 }
 
 type mcpJobs struct {
@@ -601,10 +635,43 @@ func newMCPJobs() *mcpJobs { return &mcpJobs{jobs: make(map[string]*mcpJob)} }
 func (j *mcpJobs) add(job *mcpJob) bool {
 	j.mu.Lock()
 	defer j.mu.Unlock()
-	if len(j.jobs) >= maxMCPJobs {
+	if j.activeCountLocked() >= maxMCPJobs {
 		return false
 	}
+	for len(j.jobs) >= maxMCPJobs {
+		if !j.reapOldestFinishedLocked() {
+			return false
+		}
+	}
 	j.jobs[job.id] = job
+	return true
+}
+
+func (j *mcpJobs) activeCountLocked() int {
+	active := 0
+	for _, job := range j.jobs {
+		if _, finished := job.finishedAtValue(); !finished {
+			active++
+		}
+	}
+	return active
+}
+
+func (j *mcpJobs) reapOldestFinishedLocked() bool {
+	var oldestID string
+	var oldest time.Time
+	for id, job := range j.jobs {
+		finishedAt, finished := job.finishedAtValue()
+		if !finished || (oldestID != "" && !finishedAt.Before(oldest)) {
+			continue
+		}
+		oldestID = id
+		oldest = finishedAt
+	}
+	if oldestID == "" {
+		return false
+	}
+	delete(j.jobs, oldestID)
 	return true
 }
 func (j *mcpJobs) get(id string) (*mcpJob, bool) {
@@ -614,34 +681,63 @@ func (j *mcpJobs) get(id string) (*mcpJob, bool) {
 	return job, ok
 }
 
-func validateMCPArgs(args []string) error {
+var mcpPathFlags = []string{
+	"-d", "--d",
+	"-dir", "--dir",
+	"-taskfile", "--taskfile",
+	"-config", "--config",
+	"-obfuscated-output", "--obfuscated-output",
+}
+
+func splitMCPPathFlag(arg string) (flag, value string, hasValue bool, ok bool) {
+	for _, candidate := range mcpPathFlags {
+		if arg == candidate {
+			return candidate, "", false, true
+		}
+		if strings.HasPrefix(arg, candidate+"=") {
+			return candidate, strings.TrimPrefix(arg, candidate+"="), true, true
+		}
+	}
+	return "", "", false, false
+}
+
+func (s *mcpServer) validateMCPArgs(base string, args []string) error {
 	if len(args) > maxMCPArgs {
 		return fmt.Errorf("too many command arguments: maximum is %d", maxMCPArgs)
 	}
-	// Flags that accept path arguments and could be used to write files outside
-	// the allowed root. Reject any use of these flags; the MCP tools already
-	// pin the working directory to a validated project path.
-	pathFlags := map[string]bool{
-		"-d": true, "--dir": true,
-		"-o": true, "--output": true,
-		"--config": true,
-	}
-	for i, arg := range args {
+	validateArg := func(arg string) error {
 		if strings.IndexByte(arg, 0) >= 0 {
 			return errors.New("command arguments may not contain NUL bytes")
 		}
 		if len(arg) > 4096 {
 			return errors.New("command arguments may not exceed 4096 bytes")
 		}
-		// Block path-valued flags that could redirect output outside the root.
-		if pathFlags[arg] {
-			return fmt.Errorf("flag %q is not permitted in MCP tool arguments; use the path parameter instead", arg)
+		return nil
+	}
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if err := validateArg(arg); err != nil {
+			return err
 		}
-		// Also handle --flag=value forms.
-		for flag := range pathFlags {
-			if strings.HasPrefix(arg, flag+"=") {
-				return fmt.Errorf("flag %q is not permitted in MCP tool arguments; use the path parameter instead", arg[:len(flag)])
+		flag, value, hasValue, ok := splitMCPPathFlag(arg)
+		if !ok {
+			continue
+		}
+		if !hasValue {
+			if i+1 >= len(args) {
+				return fmt.Errorf("flag %q requires a path value", flag)
 			}
+			i++
+			value = args[i]
+			if err := validateArg(value); err != nil {
+				return err
+			}
+		}
+		if value == "" || strings.HasPrefix(value, "-") {
+			return fmt.Errorf("flag %q requires a path value", flag)
+		}
+		if _, err := s.resolveMCPPath(base, value); err != nil {
+			return fmt.Errorf("flag %q path %q is outside the allowed MCP root: %w", flag, value, err)
 		}
 	}
 	return nil

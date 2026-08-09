@@ -224,18 +224,18 @@ Transport is selected automatically:
 - When run interactively in a terminal, the server uses **Streamable HTTP** on
   `127.0.0.1` and asks the operating system for a free port.
 
-Use `-stdio` or `-http` to select a transport explicitly. Use `-port 0` to choose a
+Use `--stdio` or `--http` to select a transport explicitly. Use `--port 0` to choose a
 free loopback port in HTTP mode.
 
 #### MCP flags
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-root` | Allowed project root. Paths and symlinks outside it are rejected. | Current directory |
-| `-token` | Session/bearer token for mutating and process-control tools. | Generated securely |
-| `-stdio` | Force stdio transport. | Automatic |
-| `-http` | Force Streamable HTTP transport. | Automatic |
-| `-port` | HTTP port; `0` selects a free loopback port. | `0` |
+| `--root` | Allowed project root. Paths and symlinks outside it are rejected. | Current directory |
+| `--token` | Session/bearer token for mutating and process-control tools. Falls back to `WAILS_MCP_TOKEN`. | Generated securely |
+| `--stdio` | Force stdio transport. | Automatic |
+| `--http` | Force Streamable HTTP transport. | Automatic |
+| `--port` | HTTP port; `0` selects a free loopback port. | `0` |
 
 In HTTP mode, Wails prints the endpoint and bearer token to stderr. In stdio mode,
 the token is included in the MCP initialization instructions. The server does not

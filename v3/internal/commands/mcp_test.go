@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,15 +20,32 @@ func TestResolveMCPRootDefaultsToWorkingDirectory(t *testing.T) {
 }
 
 func TestMCPProjectPathRejectsEscapes(t *testing.T) {
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
 	server := &mcpServer{root: root, token: "test"}
 
-	_, err := server.projectPath("../outside")
+	inside := filepath.Join(root, "inside")
+	require.NoError(t, os.Mkdir(inside, 0o755))
+	got, err := server.projectPath("inside")
+	require.NoError(t, err)
+	require.Equal(t, inside, got)
+
+	_, err = server.projectPath("../outside")
 	require.Error(t, err)
 
 	link := filepath.Join(root, "link")
 	require.NoError(t, os.Symlink(t.TempDir(), link))
 	_, err = server.projectPath("link")
+	require.Error(t, err)
+}
+
+func TestMCPProjectPathRejectsSymlinkedParentOfMissingChild(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
+	server := &mcpServer{root: root, token: "test"}
+	require.NoError(t, os.Symlink(t.TempDir(), filepath.Join(root, "link")))
+
+	_, err = server.projectPath("link/new-project")
 	require.Error(t, err)
 }
 
@@ -51,10 +69,47 @@ func TestNewMCPTokenHasSufficientEntropyAndIsURLSafe(t *testing.T) {
 }
 
 func TestValidateMCPArgsBoundsInput(t *testing.T) {
-	require.NoError(t, validateMCPArgs([]string{"--tags", "mcp"}))
-	require.Error(t, validateMCPArgs(make([]string, maxMCPArgs+1)))
-	require.Error(t, validateMCPArgs([]string{"bad\x00arg"}))
-	require.Error(t, validateMCPArgs([]string{string(make([]byte, 4097))}))
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
+	server := &mcpServer{root: root, token: "test"}
+	require.NoError(t, server.validateMCPArgs(root, []string{"--tags", "mcp"}))
+	require.NoError(t, server.validateMCPArgs(root, []string{"--output", "group"}))
+	require.NoError(t, server.validateMCPArgs(root, []string{"--config", "build/config.yml"}))
+	require.Error(t, server.validateMCPArgs(root, make([]string, maxMCPArgs+1)))
+	require.Error(t, server.validateMCPArgs(root, []string{"bad\x00arg"}))
+	require.Error(t, server.validateMCPArgs(root, []string{strings.Repeat("a", 4097)}))
+	require.Error(t, server.validateMCPArgs(root, []string{"--taskfile", "../outside/Taskfile.yml"}))
+	require.Error(t, server.validateMCPArgs(root, []string{"--obfuscated-output=../outside"}))
+	require.Error(t, server.validateMCPArgs(root, []string{"--config="}))
+	require.Error(t, server.validateMCPArgs(root, []string{"--config", ""}))
+}
+
+func TestMCPJobStopReportsStopping(t *testing.T) {
+	job, err := newMCPJob(t.TempDir(), func() {})
+	require.NoError(t, err)
+
+	job.requestStop()
+	require.Equal(t, "stopping", job.snapshot().State)
+}
+
+func TestMCPJobsReapFinishedJobs(t *testing.T) {
+	jobs := newMCPJobs()
+	all := make([]*mcpJob, 0, maxMCPJobs)
+	for range maxMCPJobs {
+		job, err := newMCPJob(t.TempDir(), func() {})
+		require.NoError(t, err)
+		require.True(t, jobs.add(job))
+		all = append(all, job)
+	}
+
+	blocked, err := newMCPJob(t.TempDir(), func() {})
+	require.NoError(t, err)
+	require.False(t, jobs.add(blocked))
+
+	all[0].finish(nil)
+	require.True(t, jobs.add(blocked))
+	_, ok := jobs.get(all[0].id)
+	require.False(t, ok)
 }
 
 func TestMCPInitRequiresExplicitExternalApproval(t *testing.T) {

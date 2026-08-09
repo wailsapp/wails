@@ -44,8 +44,9 @@ Example agent configuration:
 
 Available tools include project inspection and initialization, diagnostics, task
 listing and execution, builds, development-mode startup, binding generation, and
-bounded job status/log/stop operations. The server does not expose arbitrary shell
-execution. Remote templates and Git remotes require `allowExternal=true`; signing,
+the `wails_job_status` and `wails_job_stop` tools; status returns bounded output.
+The server does not expose arbitrary shell execution. Remote templates and Git
+remotes require `allowExternal=true`; signing,
 publishing, and deployment are not exposed and should be approved explicitly by the
 user when added in a future capability.
 
