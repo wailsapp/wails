@@ -193,16 +193,20 @@ A generated project imports `@wailsio/runtime` from **npm**, not from the bundle
 `node_modules`, so an app built against a published runtime will not see client-side
 additions made on a branch.
 
-While streams are unreleased, point a test app at the branch's package:
+While streams are unreleased, point a test app at this checkout's package:
 
 ```bash
-npm install file:/path/to/wails/v3/internal/runtime/desktop/@wailsio/runtime
+task v3:install-runtime -- ./path/to/your-app/frontend
 ```
 
-That package ships `dist/`, which is built by `npx tsc` in its directory — separate from
-the esbuild step that produces `bundledassets/runtime.js` for the webview. Both need
-rebuilding after a change to `stream.ts`: `task build:assets` for the bundle, `npx tsc` for
-the npm package.
+That rebuilds `dist/` first, so it always installs current sources. Undo it with
+`npm install @wailsio/runtime@latest` in the same directory.
+
+Note there are **two** client build outputs and it is easy to rebuild one and not the
+other: `task v3:runtime:build:package` produces the npm package's `dist/` (what an app's
+frontend imports), while `task v3:runtime:build:assets` produces
+`bundledassets/runtime.js` (what the webview loads from the asset server). A change to
+`stream.ts` needs both.
 
 ## Testing
 
