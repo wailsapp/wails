@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Streams Demo</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 20px; }
+  #log { height: 200px; overflow-y: auto; border: 1px solid #ccc;
+         padding: 8px; margin-top: 10px; font-family: ui-monospace, monospace; font-size: 12px; }
+  input { width: 240px; padding: 4px; }
+</style>
+</head>
+<body>
+
+<h3>Streams Demo</h3>
+<p>Go sends the time every second. Anything you send is echoed back.</p>
+
+<input id="msg" placeholder="type something" autofocus>
+<button id="send">Send</button>
+
+<div id="log"></div>
+
+<script type="module">
+import { Stream } from "/wails/runtime.js";
+
+const decoder = new TextDecoder();
+const log = (text) => {
+    document.getElementById("log").insertAdjacentHTML("afterbegin", `<div>${text}</div>`);
+};
+
+// Connects in the background; returns immediately, like `new WebSocket(url)`.
+const stream = Stream("hello");
+
+stream.onopen = () => log("connected");
+stream.onclose = () => log("disconnected");
+
+// Frames arrive as an ArrayBuffer, never a string — decode before use.
+stream.onmessage = (ev) => log(decoder.decode(ev.data));
+
+const send = () => {
+    const input = document.getElementById("msg");
+    if (input.value && stream.readyState === stream.OPEN) {
+        stream.send(input.value);   // strings are encoded as UTF-8
+        input.value = "";
+    }
+};
+
+document.getElementById("send").addEventListener("click", send);
+document.getElementById("msg").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
+});
+</script>
+
+</body>
+</html>
