@@ -21,26 +21,28 @@
 <div id="log"></div>
 
 <script type="module">
-import { Stream } from "/wails/runtime.js";
+import { JSONStream } from "/wails/runtime.js";
 
-const decoder = new TextDecoder();
 const log = (text) => {
     document.getElementById("log").insertAdjacentHTML("afterbegin", `<div>${text}</div>`);
 };
 
 // Connects in the background; returns immediately, like `new WebSocket(url)`.
-const stream = Stream("hello");
+// JSONStream is Stream with the encoding done for you: send objects, receive
+// objects. Use Stream directly when you want the raw bytes.
+const stream = JSONStream("hello");
 
 stream.onopen = () => log("connected");
 stream.onclose = () => log("disconnected");
 
-// Frames arrive as an ArrayBuffer, never a string — decode before use.
-stream.onmessage = (ev) => log(decoder.decode(ev.data));
+// With JSONStream, ev.data is the parsed object. A plain Stream would give an
+// ArrayBuffer here, which must be decoded before use.
+stream.onmessage = (ev) => log(JSON.stringify(ev.data));
 
 const send = () => {
     const input = document.getElementById("msg");
     if (input.value && stream.readyState === stream.OPEN) {
-        stream.send(input.value);   // strings are encoded as UTF-8
+        stream.send({ text: input.value });   // stringified for you
         input.value = "";
     }
 };

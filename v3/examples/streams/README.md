@@ -4,7 +4,8 @@ The smallest useful demonstration of a [stream](https://v3.wails.io/guides/strea
 named, ordered, bidirectional byte channel between Go and the frontend, with the same
 programming model as a WebSocket and **no listening socket**.
 
-Go sends the time once a second, and echoes anything the frontend sends back.
+Go sends the time once a second, and echoes anything the frontend sends back — as objects,
+using the JSON convenience on both sides.
 
 ## Running the example
 
@@ -23,11 +24,12 @@ comes back prefixed with `echo:`. The Go side logs what it receives.
 app.HandleStream("hello", func(c *application.StreamConn) {
     defer c.Close()
     for {
-        frame, err := c.Receive()   // blocks until a frame arrives
-        if err != nil {
+        var msg map[string]any
+        if err := c.ReceiveJSON(&msg); err != nil {
             return                  // page reloaded, window closed, or app shutting down
         }
-        c.Send([]byte("echo: " + string(frame)))
+        msg["echoed"] = true
+        c.SendJSON(msg)
     }
 })
 ```
@@ -39,17 +41,28 @@ the ticking, and exits when `c.Context()` is cancelled.
 **`assets/index.html`** — the frontend object implements the `WebSocket` interface:
 
 ```js
-const stream = Stream("hello");        // synchronous, like new WebSocket(url)
-stream.onmessage = (ev) => log(decoder.decode(ev.data));
-stream.send("anything");
+const stream = JSONStream("hello");    // synchronous, like new WebSocket(url)
+stream.onmessage = (ev) => log(JSON.stringify(ev.data));   // already an object
+stream.send({ text: "anything" });                         // stringified for you
 ```
 
-Two things worth noticing, because they are the ones people trip over:
+## If you want bytes instead
 
-- **`ev.data` is always an `ArrayBuffer`, never a string.** Decode it before use. Calling
-  `JSON.parse(ev.data)` will not throw — it will parse `"[object ArrayBuffer]"`.
-- **Sending a string works unchanged**; it is encoded as UTF-8. Only the receive path
-  needs the decoder.
+`JSONStream` is `Stream` with the encoding done at the boundary — the wire carries bytes
+either way, and a Go handler cannot tell which the frontend used. Swap in `Stream` and
+`Send`/`Receive` when you want to control the encoding yourself: protobuf, CBOR, or any
+binary format.
+
+One thing to know if you do: **`ev.data` is then an `ArrayBuffer`, never a string.**
+`JSON.parse(ev.data)` will not throw — it will parse `"[object ArrayBuffer]"`. Decode it
+first:
+
+```js
+const decoder = new TextDecoder();
+stream.onmessage = (ev) => JSON.parse(decoder.decode(ev.data));
+```
+
+Sending a string needs no change; it is encoded as UTF-8 for you.
 
 ## Try this
 

@@ -51,6 +51,29 @@ history/
 - Preserves planning history for archeological research
 - Reduces noise when browsing the project
 
+## Frontend Runtime: Two Build Outputs
+
+The TypeScript runtime in `v3/internal/runtime/desktop/@wailsio/runtime` produces **two**
+independent artifacts, and rebuilding one but not the other is a common and confusing
+mistake:
+
+| task | output | consumed by |
+|---|---|---|
+| `task v3:runtime:build:assets` | `v3/internal/assetserver/bundledassets/runtime.js` (+ `.debug.js`) | the webview, served at `/wails/runtime.js` |
+| `task v3:runtime:build:package` | `dist/` in the package directory | an app's frontend, via `node_modules` |
+
+After changing anything under `src/`, rebuild **both**. CI verifies the committed bundles
+match `build:assets` output exactly, so the bundles must be committed with the change.
+
+An application imports `@wailsio/runtime` from npm, so it will not see runtime changes made
+in this checkout. To test an app against the working tree:
+
+```bash
+task v3:install-runtime -- ./path/to/your-app/frontend
+```
+
+Undo with `npm install @wailsio/runtime@latest` in the same directory.
+
 ## Subsystem References
 
 Some subsystems have a dedicated internals page written for agents. Read the relevant one

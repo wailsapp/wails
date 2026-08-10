@@ -36,7 +36,8 @@ func main() {
 			for {
 				select {
 				case <-ticker.C:
-					if err := c.Send([]byte("tick " + time.Now().Format("15:04:05"))); err != nil {
+					err := c.SendJSON(map[string]any{"time": time.Now().Format("15:04:05")})
+					if err != nil {
 						return // frontend is gone
 					}
 				case <-c.Context().Done():
@@ -46,14 +47,17 @@ func main() {
 		}()
 
 		// JS -> Go: read frames until the connection closes, echoing each one.
+		// ReceiveJSON/SendJSON are conveniences over Receive/Send; the wire
+		// still carries bytes, so a raw Stream on the frontend would work too.
 		for {
-			frame, err := c.Receive()
-			if err != nil {
+			var msg map[string]any
+			if err := c.ReceiveJSON(&msg); err != nil {
 				log.Println("[Go] frontend disconnected")
 				return
 			}
-			log.Printf("[Go] received: %s", frame)
-			if err := c.Send([]byte("echo: " + string(frame))); err != nil {
+			log.Printf("[Go] received: %v", msg)
+			msg["echoed"] = true
+			if err := c.SendJSON(msg); err != nil {
 				return
 			}
 		}
