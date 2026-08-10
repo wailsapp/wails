@@ -209,11 +209,6 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	s := a.sessionFor(rw, req, true)
-	if s == nil {
-		return
-	}
-
 	connID64, err := strconv.ParseUint(req.Header.Get(streamHeaderConn), 10, 32)
 	if err != nil {
 		http.Error(rw, "bad connection id", http.StatusBadRequest)
@@ -224,6 +219,16 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	kind64, err := strconv.ParseUint(req.Header.Get(streamHeaderKind), 10, 8)
 	if err != nil {
 		http.Error(rw, "bad frame kind", http.StatusBadRequest)
+		return
+	}
+
+	// Only an open frame may bring a session into being. A data or close frame
+	// for a session that no longer exists used to silently create a fresh one:
+	// Go then held a live session with no connections while the page believed
+	// its streams were open, and every later send succeeded into the void. The
+	// client is told the session is gone instead, so it surfaces a close.
+	s := a.sessionFor(rw, req, uint8(kind64) == frameOpen)
+	if s == nil {
 		return
 	}
 
