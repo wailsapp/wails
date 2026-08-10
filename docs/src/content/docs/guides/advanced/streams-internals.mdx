@@ -1,0 +1,210 @@
+---
+title: Streams — internals
+description: How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished
+sidebar:
+    order: 54
+---
+
+Reference for anyone — human or agent — changing the stream transport. The user-facing API
+is in [Streams](/guides/streams/); this page is about the machinery underneath and the
+reasoning behind it, because several decisions look arbitrary until you know what they are
+avoiding.
+
+## Files
+
+| file | role |
+|---|---|
+| `v3/pkg/application/stream.go` | public API, `StreamConn`, `streamSink`, the manager and its registry |
+| `v3/pkg/application/stream_session.go` | one page load in one window: the outbound queue, frame kinds, connection table |
+| `v3/pkg/application/stream_transport.go` | the two HTTP endpoints, binary framing, chunk reassembly, runtime prelude |
+| `v3/pkg/application/stream_server.go` | `-tags server` only: real WebSocket sink |
+| `v3/pkg/application/stream_prelude_{server,desktop}.go` | picks the client transport at bundle-serve time |
+| `v3/internal/runtime/desktop/@wailsio/runtime/src/stream.ts` | the `WebSocket`-shaped client |
+| `v3/tests/stream-performance/` | load harness (`-upload`, `-reloads`, scenario sweeps) |
+
+## The shape
+
+Go→JS and JS→Go use different mechanisms, and that asymmetry is the whole design.
+
+```
+Go                                  webview
+──                                  ───────
+Send() ─► per-window queue ─────────► GET  /wails/stream/poll   (held open)
+                                      └─ one held request per window,
+                                         carrying frames for every connection
+
+Receive() ◄─ per-conn inbox ◄──────── POST /wails/stream/send   (one per frame)
+```
+
+**Go→JS is a held poll.** The request parks until there is something to deliver. There is
+no polling interval and nothing adaptive, deliberately: the server holds until a frame
+exists, so delivery latency is already ~0, and any client-side interval could only add to
+it. Frames that arrive while a response is in flight accumulate and ride the next one,
+which makes the round trip itself the batching window — it widens as load rises without
+anything measuring it. Measured: 1.0 frames per response at 100/s, still 1.0 at 5,000/s,
+3.4 at 20,000/s, and p99 latency *falls* as the rate climbs.
+
+**JS→Go is an ordinary POST per frame.** Sends are serialised per connection with a promise
+chain, because concurrent `fetch` calls do not preserve order and Go relies on send order
+being the order it observes. Go appends to the connection's inbox *before* responding, so
+the client cannot issue the next send until the previous one is queued.
+
+**One poll in flight per window, multiplexing every connection.** This is what makes
+ordering correct by construction — one queue, one drainer, no second delivery path that
+could overtake the first. It also sidesteps the HTTP/1.1 six-connections-per-host limit on
+Windows, where these are real Chromium network requests against `http://wails.localhost`.
+
+## Why these specific decisions
+
+Each of these is a scar from the event-transport work. Removing one re-opens a measured bug.
+
+**Nothing in the Go→JS path touches the main thread.** `Send` appends under a mutex and
+returns. Events used to run their eval inline when emitted from the main thread while an
+earlier goroutine emit was still queued — 4.4% of events inverted, on all three platforms.
+A single queue with a single drainer cannot do that.
+
+**Nothing touches `evaluateJavaScript`, at any size.** Splicing payload into eval source
+retains host memory above a platform-specific knee: 11.6 GB on macOS and 6.2 GB on
+WebKitGTK at 100 × 1 MB/sec. Streams never go near it, which is why the constant-byte-rate
+sweep is flat at every frame size.
+
+**Control data travels in headers, never the body or query string.** WebKitGTK 6.0 can
+deliver POST bodies as query params for custom URI schemes (`transport_http.go` carries a
+fallback for exactly that), and WebView2 caps body delivery around 2 MB.
+
+**The poll response is binary, not JSON.** Frames are `[]byte`; base64 inside a JSON
+envelope would cost 33% on every frame plus a parse on the UI thread.
+
+```
+magic "WS1\0" | flags u8 | count u32 | count × ( connID u32 | kind u8 | len u32 | payload )
+```
+
+`kind` is data / open / close / error. There is no sequence number and no ack: a WebSocket
+does not replay, and a connection that drops loses what was in flight. Emulating that is
+simpler and more honest than a cursor the bounded buffer could not always satisfy.
+
+**Holding a request is safe** because every webview request already gets its own goroutine.
+`dispatchWorkers` in `assetserver_webview.go` is pinned at 0 with a comment naming exactly
+this case; turning that pool on would need a request-lifetime bound first.
+
+## Buffer constants
+
+All in `stream.go`. **They are compile-time constants, not options** — there is no
+`Options.Streams` and no per-stream setting. Changing them means editing the file.
+
+| constant | value | what it bounds |
+|---|---:|---|
+| `streamOutQueueBytes` | 8 MB | bytes buffered per window awaiting collection |
+| `streamOutQueueDepth` | 256 | frames buffered per window |
+| `streamMaxResponseBytes` | 1 MB | one poll response |
+| `streamHoldTimeout` | 20 s | how long an empty poll parks |
+| `streamSessionTTL` | 60 s | no poll for this long ⇒ session is dead |
+| `streamMaxSendBytes` | 64 MB | one JS→Go frame |
+
+### How to pick them
+
+**`streamOutQueueDepth` is deliberately not `eventQueueCapacity` (64).** That constant was
+measured for a queue drained one eval at a time, where depth bought nothing but tail
+latency. A poll drains in batches, so depth here has to cover one round trip of
+production — at 5,000 frames/s and a 5 ms round trip, ~25 frames. 256 leaves room for a
+burst without stalling the producer.
+
+**`streamOutQueueBytes` is the bound that actually matters**, because 256 frames of 1 MB is
+256 MB. It is the backstop on host memory when a frontend stops collecting.
+
+Two rules interact here, and the second is easy to break by accident:
+
+- The depth and byte caps bound *accumulation*.
+- **An empty queue always accepts one frame, however large.** Enforcing the byte cap
+  unconditionally made a frame larger than the cap impossible to send at all — the wait
+  condition could never become true, so `Send` blocked forever and `TrySend` reported full
+  permanently. Frame size is not always the caller's choice; a struct with a `[]byte` field
+  marshals to whatever it marshals to.
+
+**`streamMaxResponseBytes` exists because of Windows.** The WebView2 response writer
+accumulates the entire body in memory and only hands it over in `Finish`, so an unbounded
+response is an unbounded allocation there. Raising it does *not* buy Windows throughput —
+measured, the Windows bottleneck is per-byte, not per-response: responses/s varies 4×
+across the frame sweep while MB/s stays flat at ~90.
+
+**`streamSessionTTL` must stay comfortably above `streamHoldTimeout`**, or a session would
+be reaped while its own poll is legitimately parked.
+
+If you are tuning for a workload of many small messages, the depth cap binds first; for
+large payloads, the byte cap does. Neither needs changing for a typical app — on macOS the
+defaults sustain 634,000 frames/s and 2.1 GB/s.
+
+## Connection and session lifecycle
+
+A **session** is one page load in one window, keyed by a client-generated id (like the
+runtime's `clientId`). Sessions are created lazily by whichever request arrives first.
+
+Three mechanisms close things, in order of how quickly they notice:
+
+1. **A new session for a window supersedes the old one.** A reload gives the page a new
+   session id; the previous session's connections close immediately. Measured over six
+   reloads: 7 connects, 6 disconnects, never more than one live at a time, and the old
+   connection closes *before* its replacement appears.
+2. **Window destroy** drops every session for that window, like `eventPayloadStore.dropWindow`.
+3. **TTL reaping** catches anything else — a crashed renderer, a machine asleep.
+
+**The platform layer does not report a cancelled request.** The webview request context is
+`context.Background()` with a deferred cancel (`assetserver_webview.go`), so a poll
+belonging to a page that has navigated away stays parked until the hold expires. Rule 1
+means the *connection* closes promptly regardless; it is the parked request that lingers.
+Plumbing `stopURLSchemeTask` (and its Linux/Windows equivalents) through to a
+`context.CancelFunc` would fix that, and it is the single most valuable outstanding item.
+Note the same cancellation surfaces three different ways: a caught ObjC exception on macOS,
+`EPIPE` on Linux, and nothing at all until `Finish` on Windows.
+
+## Transport selection
+
+`Stream(name)` consults `window._wails.streamFactory`. Server builds install one that
+returns a real `WebSocket`; webview builds leave it unset and get the poll client.
+
+The factory **must** be installed before any module body runs, because generated bindings
+will create streams at module scope. `custom.js` cannot do it — `loadOptionalScript` does a
+HEAD request and then appends a `<script>` tag, so it lands far too late. Instead the
+factory is prepended to the runtime bundle as it is served (`stream_prelude_server.go`),
+which is synchronous by construction: ES module dependencies evaluate before their
+importers.
+
+If you add a third transport, put it in the prelude too. Do not be tempted back to
+`custom.js`.
+
+## What is not finished
+
+| | status |
+|---|---|
+| Request cancellation from the platform layer | **not done** — the highest-value item; see above |
+| Buffer constants as options | not done; compile-time only |
+| Typed streams | not done, deliberately — frames are `[]byte` by decision |
+| Pipelining (a second poll in flight) | not done; would need ordered reassembly in JS |
+| Per-connection fairness | not done — connections in a window share one queue, so a flooding connection slows its neighbours |
+| JS→Go frame coalescing | not done — every frame is its own POST, which is why small-frame upload rate is ~100× below the downward rate |
+| Windows throughput | ~100 MB/s, bounded by `WebResourceRequested` marshalling. Shared buffers (`PostSharedBufferToScript`) are the candidate fix; bindings exist under `internal/webview2/pkg/webview2/` but are not wired into `pkg/edge` |
+| `wails3 dev` / Vite | untested with a dev server in front of the asset server |
+| Multi-window | untested under load, though sessions are window-scoped by construction |
+
+## Testing
+
+```bash
+go test ./pkg/application/ -run TestStream -race        # protocol, ordering, backpressure
+go test -tags server ./pkg/application/ -run TestServerMode
+```
+
+The ordering test is the one that matters: eight goroutines send concurrently against a
+counter handed out under the queue lock, and the drained order must match the accepted
+order exactly. If it ever fails, the single-drainer invariant has been broken.
+
+Load harness:
+
+```bash
+go run ./tests/stream-performance -duration 20s              # full sweep
+go run ./tests/stream-performance -upload -duration 10s      # JS→Go matrix
+go run ./tests/stream-performance -reloads 6                 # connection lifecycle
+```
+
+On Windows it must run in the interactive console session — a plain SSH invocation dies in
+session 0 with zero-length output — and the binary must be staged somewhere both the SSH
+account and the console account can read, since `C:\Users\<user>` is ACL'd to its owner.

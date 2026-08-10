@@ -51,6 +51,17 @@ history/
 - Preserves planning history for archeological research
 - Reduces noise when browsing the project
 
+## Subsystem References
+
+Some subsystems have a dedicated internals page written for agents. Read the relevant one
+before changing that code — several of its decisions look arbitrary until you know which
+measured bug they prevent.
+
+- **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
+  `docs/src/content/docs/guides/advanced/streams-internals.mdx`. Covers the held-poll
+  design, the buffer constants and how to pick them, session and connection lifecycle,
+  transport selection, and what is unfinished.
+
 ## Implementation Tracking (IMPLEMENTATION.md)
 
 **IMPORTANT**: The `IMPLEMENTATION.md` file at the repository root is a **persistent tracking document** for the GTK4 / WebKitGTK 6.0 / GTK3-legacy implementation work. It is NOT an ephemeral planning document.
