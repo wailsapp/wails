@@ -39,12 +39,6 @@ const (
 	streamHeaderChunkIndex = "x-wails-stream-chunk-index"
 	streamHeaderChunkTotal = "x-wails-stream-chunk-total"
 
-	// Several data frames for one connection carried in a single POST. Each
-	// request costs a scheme-handler round trip - about eleven cgo calls on
-	// macOS - so batching divides that fixed cost by the batch size. Body
-	// layout: count u32, then count x ( len u32 | payload ).
-	streamHeaderBatch = "x-wails-stream-batch"
-
 	streamMaxSendBytes  = 64 << 20
 	streamMaxChunkTotal = 4096
 
@@ -228,35 +222,6 @@ var streamRespBufs = sync.Pool{
 	},
 }
 
-// decodeStreamBatch splits a batched send body into its frames. The payloads
-// alias body rather than being copied: body is freshly read per request and is
-// not retained anywhere else.
-func decodeStreamBatch(body []byte) ([][]byte, error) {
-	if len(body) < 4 {
-		return nil, errStreamBadBody
-	}
-	count := binary.BigEndian.Uint32(body[:4])
-	if count == 0 || count > streamMaxChunkTotal {
-		return nil, errStreamBadBody
-	}
-
-	frames := make([][]byte, 0, count)
-	off := 4
-	for i := uint32(0); i < count; i++ {
-		if off+4 > len(body) {
-			return nil, errStreamBadBody
-		}
-		n := int(binary.BigEndian.Uint32(body[off : off+4]))
-		off += 4
-		if n < 0 || off+n > len(body) {
-			return nil, errStreamBadBody
-		}
-		frames = append(frames, body[off:off+n])
-		off += n
-	}
-	return frames, nil
-}
-
 func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		rw.Header().Set("Allow", "POST")
@@ -294,37 +259,6 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	}
 	if !complete {
 		// A chunk landed; the frame is not whole yet.
-		rw.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	// A batch is several data frames for one connection in one body. Splitting
-	// here keeps the rest of the path identical to a single frame.
-	if req.Header.Get(streamHeaderBatch) != "" && uint8(kind64) == frameData {
-		c := s.conn(connID)
-		if c == nil {
-			http.Error(rw, "unknown connection", http.StatusGone)
-			return
-		}
-		frames, err := decodeStreamBatch(body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-		for i, f := range frames {
-			switch err := c.deliver(f); {
-			case errors.Is(err, ErrStreamFull):
-				// Partial acceptance: tell the client how many landed so it can
-				// resend only the remainder, preserving order.
-				rw.Header().Set(streamHeaderBatch, strconv.Itoa(i))
-				rw.Header().Set("Retry-After", "0")
-				http.Error(rw, "receiver is behind", http.StatusTooManyRequests)
-				return
-			case err != nil:
-				http.Error(rw, "connection closed", http.StatusGone)
-				return
-			}
-		}
 		rw.WriteHeader(http.StatusNoContent)
 		return
 	}

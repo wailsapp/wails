@@ -40,7 +40,6 @@ const HDR_NAME = "x-wails-stream-name";
 const HDR_CHUNK = "x-wails-stream-chunk";
 const HDR_CHUNK_INDEX = "x-wails-stream-chunk-index";
 const HDR_CHUNK_TOTAL = "x-wails-stream-chunk-total";
-const HDR_BATCH = "x-wails-stream-batch";
 
 const KIND_DATA = 0;
 const KIND_OPEN = 1;
@@ -122,8 +121,6 @@ export class WailsSocket extends EventTarget {
     // Sends are serialised per connection: concurrent fetch() POSTs do not
     // preserve order, and Go relies on send order being the order it observes.
     private _chain: Promise<void> = Promise.resolve();
-    private _pending: Promise<Uint8Array>[] = [];
-    private _flushing = false;
 
     /** Bytes queued by send() that have not yet reached Go. */
     get bufferedAmount(): number {
@@ -172,33 +169,15 @@ export class WailsSocket extends EventTarget {
         // handed to send().
         const snapshot = toBytes(data);
 
-        // Queue rather than post. Whatever accumulates while a request is in
-        // flight goes out together in the next one, so the per-request cost —
-        // a scheme-handler round trip, about eleven cgo calls on macOS — is
-        // divided across the batch. Under light load a batch is one frame and
-        // this behaves exactly as before; the batching only appears when the
-        // sender is outrunning the transport, which is when it is needed.
-        this._pending.push(snapshot);
-        if (this._flushing) return;
-        this._flushing = true;
-
         this._chain = this._chain.then(async () => {
+            const bytes = await snapshot;
+            this._buffered += bytes.byteLength;
             try {
-                while (this._pending.length > 0) {
-                    const batch = await Promise.all(this._pending.splice(0));
-                    const total = batch.reduce((n, b) => n + b.byteLength, 0);
-                    this._buffered += total;
-                    try {
-                        await postBatch(this._id, batch);
-                    } finally {
-                        this._buffered -= total;
-                    }
-                }
+                await postFrame(this._id, KIND_DATA, bytes);
             } finally {
-                this._flushing = false;
+                this._buffered -= bytes.byteLength;
             }
         }).catch((err) => {
-            this._flushing = false;
             this._fail(err);
         });
     }
@@ -405,62 +384,6 @@ async function postWithRetry(headers: Record<string, string>, body: Uint8Array):
         await sleep(wait);
         wait = Math.min(wait * 2, 50);
     }
-}
-
-// postBatch sends several data frames for one connection in a single request.
-// Body: count u32, then count x ( len u32 | payload ). A frame past the chunk
-// threshold is sent on its own, since it has to be split anyway.
-async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
-    if (frames.length === 1 || frames.some((f) => f.byteLength > CHUNK_THRESHOLD)) {
-        for (const f of frames) {
-            await postFrame(connID, KIND_DATA, f);
-        }
-        return;
-    }
-
-    let body = buildBatch(frames);
-    let sent = 0;
-    let wait = 1;
-    for (;;) {
-        const resp = await fetch(streamURL("send"), {
-            method: "POST",
-            headers: {
-                [HDR_SESSION]: sessionID,
-                [HDR_CONN]: String(connID),
-                [HDR_KIND]: String(KIND_DATA),
-                [HDR_BATCH]: String(frames.length - sent),
-                "Content-Type": "application/octet-stream",
-            },
-            body: body as BodyInit,
-        });
-        if (resp.ok) return;
-        if (resp.status !== 429) {
-            throw new Error(await resp.text());
-        }
-        // The receiver took a prefix of the batch. Resend only what is left,
-        // which keeps ordering without re-delivering anything.
-        const accepted = Number(resp.headers.get(HDR_BATCH) ?? 0);
-        sent += accepted;
-        body = buildBatch(frames.slice(sent));
-        await sleep(wait);
-        wait = Math.min(wait * 2, 50);
-    }
-}
-
-function buildBatch(frames: Uint8Array[]): Uint8Array {
-    let size = 4;
-    for (const f of frames) size += 4 + f.byteLength;
-    const out = new Uint8Array(size);
-    const view = new DataView(out.buffer);
-    view.setUint32(0, frames.length);
-    let off = 4;
-    for (const f of frames) {
-        view.setUint32(off, f.byteLength);
-        off += 4;
-        out.set(f, off);
-        off += f.byteLength;
-    }
-    return out;
 }
 
 function startPolling(): void {
