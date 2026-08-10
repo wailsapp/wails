@@ -111,23 +111,39 @@ func TestGenerationCounter_StaleCallbacksDiscarded(t *testing.T) {
 	// block the instant it fires.
 	d.mu.Lock()
 
-	// Step 3: wait long enough for the timer to have fired (it will block on Lock).
+	// Step 3: give the timer a chance to fire and block on Lock. This is a nudge
+	// rather than a requirement: if it has not fired yet, the generation bump
+	// below still discards it when it does, so either ordering exercises the
+	// same guarantee.
 	time.Sleep(10 * time.Millisecond)
 
-	// Step 4: bump the generation by calling add directly while holding the lock.
-	// add() tries to Lock too — we hold it, so we call the internals manually
-	// to simulate what add() does under the lock.
-	d.generation++ // stale gen ≠ new gen → the blocked goroutine will bail
+	// Step 4: bump the generation while holding the lock, simulating what add()
+	// does, so the pending callback is stale.
+	d.generation++
 
-	// Step 5: release; the blocked timer goroutine now acquires the lock, checks
+	// Step 5: release; the blocked timer goroutine acquires the lock, sees the
 	// generation mismatch, and returns without calling fn1.
 	d.mu.Unlock()
 
-	// Now schedule fn2 normally.
-	d.add(func() { atomic.AddInt64(&fn2Called, 1) })
+	// Now schedule fn2 normally, and wait for it rather than for a clock. The
+	// previous version slept 30ms and asserted fn2 had run, which is a bet that
+	// a 2ms timer gets scheduled within 30ms — false often enough on a loaded
+	// CI runner to fail the build.
+	fired := make(chan struct{})
+	d.add(func() {
+		atomic.AddInt64(&fn2Called, 1)
+		close(fired)
+	})
 
-	time.Sleep(30 * time.Millisecond)
+	select {
+	case <-fired:
+	case <-time.After(5 * time.Second):
+		t.Fatal("fn2 was never called")
+	}
 
+	// fn1's timer was armed earlier and with the same delay, so by the time fn2
+	// has run a stale fn1 would have run too. Checking here is deterministic
+	// where a fixed sleep was not.
 	if got := atomic.LoadInt64(&fn1Called); got != 0 {
 		t.Errorf("stale fn1 should not have been called, got %d", got)
 	}
@@ -144,11 +160,20 @@ func TestZeroDuration(t *testing.T) {
 	debounced := New(0)
 
 	var count int64
+	fired := make(chan struct{})
 	debounced(func() {
 		atomic.AddInt64(&count, 1)
+		close(fired)
 	})
 
-	time.Sleep(10 * time.Millisecond)
+	// Wait for the callback rather than for a clock. Even a zero-delay timer
+	// still goes through the scheduler, and giving it a fixed 10ms was the same
+	// bet that made the stale-callback test flaky on CI.
+	select {
+	case <-fired:
+	case <-time.After(5 * time.Second):
+		t.Fatal("callback was never called with zero duration")
+	}
 
 	if got := atomic.LoadInt64(&count); got != 1 {
 		t.Errorf("expected 1 call with zero duration, got %d", got)
