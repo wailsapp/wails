@@ -1438,7 +1438,14 @@ func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	if len(payload) > maxInlineEventPayload {
 		if store := globalApplication.eventPayloads; store != nil {
 			if id, ok := store.put(w.id, []byte(payload)); ok {
-				w.enqueueEventJS(fmt.Sprintf(refEventJS, eventPayloadPath+id))
+				if w.enqueueEventJS(fmt.Sprintf(refEventJS, eventPayloadPath+id)) {
+					return
+				}
+				// The window closed between put and enqueue, so nothing will
+				// ever fetch this. dropWindow has already run by then and
+				// cannot see it, so reclaim it here rather than leaving it for
+				// the TTL sweep.
+				store.take(id, w.id)
 				return
 			}
 		}
@@ -1480,13 +1487,16 @@ const eventQueueCapacity = 64
 // already on the UI thread. Without a queue, an event emitted from the UI
 // thread executes its eval immediately while an event emitted moments earlier
 // from a goroutine is still sitting in the dispatch queue, so the later event
-// overtakes the earlier one. Measured at roughly 4.4% of events inverted under
-// two concurrent emitters, on all three platforms.
+// overtakes the earlier one. TestEventFromMainThreadDoesNotOvertakeQueuedEvent
+// reproduces it deterministically.
 //
 // Appending under a mutex makes the queue the single ordering authority: the
 // order events are added is the order one drainer emits them, whichever thread
 // each came from.
-func (w *WebviewWindow) enqueueEventJS(js string) {
+//
+// Returns false when the queue has been closed because the window is going
+// away, so a caller that has already parked a payload can reclaim it.
+func (w *WebviewWindow) enqueueEventJS(js string) bool {
 	// Whether we are on the UI thread decides if we may block below, so it must
 	// be read before taking the queue lock.
 	onMainThread := globalApplication != nil &&
@@ -1507,7 +1517,7 @@ func (w *WebviewWindow) enqueueEventJS(js string) {
 	}
 	if w.eventQueueClosed {
 		w.eventQueueMu.Unlock()
-		return
+		return false
 	}
 
 	w.eventQueue = append(w.eventQueue, js)
@@ -1526,6 +1536,7 @@ func (w *WebviewWindow) enqueueEventJS(js string) {
 		// main-thread emitter make progress past the bound.
 		InvokeAsync(w.drainEventQueue)
 	}
+	return true
 }
 
 // drainEventQueue empties the queue in order. It always runs on the UI thread,
@@ -1539,7 +1550,7 @@ func (w *WebviewWindow) drainEventQueue() {
 			return
 		}
 		// Take the whole batch rather than popping one at a time: repeatedly
-		// resliceing the front would keep the original backing array alive.
+		// reslicing the front would keep the original backing array alive.
 		batch := w.eventQueue
 		w.eventQueue = nil
 		w.eventQueueCond.Broadcast() // space is available again
@@ -1565,9 +1576,9 @@ func (w *WebviewWindow) closeEventQueue() {
 	w.eventQueueMu.Unlock()
 }
 
-// EventQueueHighWater reports the deepest the window's event queue has been.
-// Intended for diagnostics in tests.
-func (w *WebviewWindow) EventQueueHighWater() int {
+// eventQueueHighWater reports the deepest the window's event queue has been.
+// Diagnostics for tests; deliberately unexported so it is not public API.
+func (w *WebviewWindow) eventQueueHighWater() int {
 	w.eventQueueMu.Lock()
 	defer w.eventQueueMu.Unlock()
 	return w.eventQueueHigh

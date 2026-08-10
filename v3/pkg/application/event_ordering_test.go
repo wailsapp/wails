@@ -263,7 +263,7 @@ func TestEventQueueDoesNotBlockMainThreadWhenFull(t *testing.T) {
 	}
 
 	// Draining inline is what keeps the UI thread from ever waiting.
-	if high := win.EventQueueHighWater(); high > eventQueueCapacity {
+	if high := win.eventQueueHighWater(); high > eventQueueCapacity {
 		t.Errorf("high water = %d; a main-thread emitter should drain inline, not accumulate", high)
 	}
 }
@@ -281,11 +281,34 @@ func TestEventQueueCloseReleasesBlockedProducer(t *testing.T) {
 		win.enqueueEventJS(fmt.Sprintf("e%d", i))
 	}
 
+	// Wait until the producer is genuinely parked before closing, otherwise
+	// close can win the race and the test passes without ever exercising the
+	// Broadcast that is the thing under test.
 	blocked := make(chan struct{})
 	go func() {
 		defer close(blocked)
 		win.enqueueEventJS("waits for space")
 	}()
+
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		win.eventQueueMu.Lock()
+		waiting := len(win.eventQueue) >= eventQueueCapacity
+		win.eventQueueMu.Unlock()
+
+		select {
+		case <-blocked:
+			t.Fatal("the producer returned without waiting; the queue was not full")
+		default:
+		}
+		if waiting && time.Now().After(deadline.Add(-4900*time.Millisecond)) {
+			break // queue is full and the producer has had a chance to park
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("producer never reached the full queue")
+		}
+		time.Sleep(2 * time.Millisecond)
+	}
 
 	win.closeEventQueue()
 
@@ -293,5 +316,36 @@ func TestEventQueueCloseReleasesBlockedProducer(t *testing.T) {
 	case <-blocked:
 	case <-time.After(10 * time.Second):
 		t.Fatal("closing the queue did not wake the blocked emitter")
+	}
+}
+
+// A payload parked just as the window goes away must not be stranded. The
+// dispatcher can pass the destroyed check, markAsDestroyed can then close the
+// queue and run dropWindow, and only then does put succeed — so dropWindow
+// cannot see it and the queue refuses the event that would have fetched it.
+func TestOrphanedPayloadIsReclaimedWhenQueueRefuses(t *testing.T) {
+	probe, win, restore := newOrderingProbe(t)
+	defer restore()
+	probe.onMain.Store(false)
+
+	store := newEventPayloadStore()
+	globalApplication.eventPayloads = store
+
+	// Simulate the interleaving: the queue is already closed by the time the
+	// dispatcher reaches it.
+	win.closeEventQueue()
+
+	big := make([]byte, maxInlineEventPayload+1)
+	for i := range big {
+		big[i] = 'x'
+	}
+	win.DispatchWailsEvent(&CustomEvent{Name: "big", Data: string(big)})
+
+	store.mu.Lock()
+	parked, bytes := len(store.items), store.bytes
+	store.mu.Unlock()
+
+	if parked != 0 || bytes != 0 {
+		t.Errorf("payload left stranded in the store: %d entries, %d bytes", parked, bytes)
 	}
 }
