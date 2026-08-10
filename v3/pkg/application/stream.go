@@ -85,13 +85,17 @@ const (
 	streamSessionSweep = streamHoldTimeout
 
 	// streamInQueueDepth and streamInQueueBytes bound frames received from the
-	// frontend and not yet taken by Receive. Without them a handler that is slow
-	// to call Receive lets the frontend grow host memory without limit: the send
-	// endpoint responds as soon as it has queued a frame, so the client is free
-	// to post the next one immediately. Blocking the delivering goroutine is
-	// what turns that into backpressure — on the desktop the client's fetch
-	// simply does not resolve; in server mode the socket read pump stalls and
-	// TCP does the rest.
+	// frontend and not yet taken by Receive. Without them a handler slow to call
+	// Receive lets the frontend grow host memory without limit, since the send
+	// endpoint responds as soon as it has queued and the client is then free to
+	// post again.
+	//
+	// Fullness is signalled, not waited out — the desktop endpoint answers 429
+	// and the client retries the same frame. Blocking instead holds a request
+	// open, and the held request is this transport's scarce resource: enough
+	// stalled sends starve the window's single poll until its session TTL
+	// expires. Measured at 25-32% of upload throughput plus outright failure of
+	// multi-connection uploads.
 	streamInQueueDepth = 256
 	streamInQueueBytes = 8 << 20
 )
@@ -251,9 +255,17 @@ func (c *StreamConn) shutdown() {
 	c.sink.wake()
 }
 
-// deliver queues an inbound frame and wakes a waiting Receive. It blocks while
-// the connection's inbox is full, which is what applies backpressure to the
-// frontend, and returns ErrStreamClosed once the connection is gone.
+// deliver queues an inbound frame and wakes a waiting Receive. It returns
+// ErrStreamFull when the inbox has no room, and ErrStreamClosed once the
+// connection is gone.
+//
+// It does not block, deliberately. Blocking here bounds memory but holds the
+// request open while it waits, and on this transport the held request is the
+// scarce resource: enough stalled sends starve the window's single poll, which
+// then misses its session TTL and the whole session is reaped. Measured, that
+// cost 25-32% of upload throughput and broke multi-connection uploads outright.
+// The caller signals fullness to the client instead, which retries — bounded
+// memory without occupying a slot to achieve it.
 //
 // An empty inbox always accepts one frame however large, for the same reason
 // the outbound queue does: the caller does not choose the frame size, so a
@@ -262,15 +274,12 @@ func (c *StreamConn) deliver(data []byte) error {
 	c.inMu.Lock()
 	defer c.inMu.Unlock()
 
-	for {
-		if c.ctx.Err() != nil {
-			return ErrStreamClosed
-		}
-		if len(c.in) < streamInQueueDepth &&
-			(len(c.in) == 0 || c.inBytes+len(data) <= streamInQueueBytes) {
-			break
-		}
-		c.inCond.Wait()
+	if c.ctx.Err() != nil {
+		return ErrStreamClosed
+	}
+	if len(c.in) >= streamInQueueDepth ||
+		(len(c.in) > 0 && c.inBytes+len(data) > streamInQueueBytes) {
+		return ErrStreamFull
 	}
 
 	c.in = append(c.in, data)

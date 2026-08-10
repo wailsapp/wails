@@ -4,8 +4,10 @@ package application
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/coder/websocket"
 )
@@ -199,10 +201,22 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				return
 			}
-			// Blocks while the handler is behind, which stalls this read pump
-			// and lets TCP apply backpressure to the peer.
-			if err := c.deliver(data); err != nil {
-				return
+			// A socket has no retry channel, so here the read pump waits for
+			// room and lets TCP apply the backpressure to the peer. Unlike the
+			// desktop transport there is no request slot being held.
+			for {
+				err := c.deliver(data)
+				if err == nil {
+					break
+				}
+				if !errors.Is(err, ErrStreamFull) {
+					return
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Millisecond):
+				}
 			}
 		}
 	}()

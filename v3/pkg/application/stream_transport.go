@@ -3,6 +3,7 @@ package application
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -254,9 +255,17 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		}
 		// Queue before responding. The client does not issue its next send
 		// until this response lands, so append-then-respond is what makes
-		// frontend send order the order the handler observes — and blocking
-		// here while the handler is behind is what applies backpressure.
-		if err := c.deliver(body); err != nil {
+		// frontend send order the order the handler observes.
+		switch err := c.deliver(body); {
+		case errors.Is(err, ErrStreamFull):
+			// Backpressure, signalled rather than held. Waiting here would
+			// occupy a request slot and starve the window's poll; the client
+			// retries this same frame instead, so order is preserved and the
+			// inbox stays bounded.
+			rw.Header().Set("Retry-After", "0")
+			http.Error(rw, "receiver is behind", http.StatusTooManyRequests)
+			return
+		case err != nil:
 			http.Error(rw, "connection closed", http.StatusGone)
 			return
 		}

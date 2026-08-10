@@ -708,49 +708,28 @@ func TestStreamInboundQueueBounded(t *testing.T) {
 		}
 	}
 
-	blocked := make(chan error, 1)
-	go func() { blocked <- c.deliver([]byte("y")) }()
-
-	select {
-	case err := <-blocked:
-		t.Fatalf("deliver past the bound returned early: %v", err)
-	case <-time.After(50 * time.Millisecond):
+	// Signalled, not waited out: blocking here would hold a request slot and
+	// starve the window's poll.
+	if err := c.deliver([]byte("y")); err != ErrStreamFull {
+		t.Fatalf("deliver past the bound = %v, want ErrStreamFull", err)
 	}
 
 	if _, err := c.Receive(); err != nil {
 		t.Fatalf("Receive: %v", err)
 	}
 
-	select {
-	case err := <-blocked:
-		if err != nil {
-			t.Fatalf("deliver after Receive freed space: %v", err)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("deliver never woke after Receive made room")
+	if err := c.deliver([]byte("y")); err != nil {
+		t.Fatalf("deliver after Receive freed space: %v", err)
 	}
 }
 
-func TestStreamInboundUnblocksOnClose(t *testing.T) {
+func TestStreamInboundRejectsOnceClosed(t *testing.T) {
 	_, s := newTestSession(t)
 	c := newTestConn(s, 1)
 
-	for i := 0; i < streamInQueueDepth; i++ {
-		_ = c.deliver([]byte("x"))
-	}
-	blocked := make(chan error, 1)
-	go func() { blocked <- c.deliver([]byte("y")) }()
-
-	time.Sleep(50 * time.Millisecond)
 	c.shutdown()
-
-	select {
-	case err := <-blocked:
-		if err != ErrStreamClosed {
-			t.Fatalf("blocked deliver = %v, want ErrStreamClosed", err)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("blocked deliver never unblocked on close")
+	if err := c.deliver([]byte("x")); err != ErrStreamClosed {
+		t.Fatalf("deliver on a closed connection = %v, want ErrStreamClosed", err)
 	}
 }
 

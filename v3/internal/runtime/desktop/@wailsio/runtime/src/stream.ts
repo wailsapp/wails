@@ -344,10 +344,7 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
     }
 
     if (body.byteLength <= CHUNK_THRESHOLD) {
-        const resp = await fetch(streamURL("send"), { method: "POST", headers, body: body as BodyInit });
-        if (!resp.ok) {
-            throw new Error(await resp.text());
-        }
+        await postWithRetry(headers, body);
         return;
     }
 
@@ -356,19 +353,30 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
     const total = Math.ceil(body.byteLength / CHUNK_THRESHOLD);
     for (let i = 0; i < total; i++) {
         const slice = body.subarray(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD);
-        const resp = await fetch(streamURL("send"), {
-            method: "POST",
-            headers: {
-                ...headers,
-                [HDR_CHUNK]: chunkID,
-                [HDR_CHUNK_INDEX]: String(i),
-                [HDR_CHUNK_TOTAL]: String(total),
-            },
-            body: slice as BodyInit,
-        });
-        if (!resp.ok) {
+        await postWithRetry({
+            ...headers,
+            [HDR_CHUNK]: chunkID,
+            [HDR_CHUNK_INDEX]: String(i),
+            [HDR_CHUNK_TOTAL]: String(total),
+        }, slice);
+    }
+}
+
+// A 429 means the Go handler has not taken delivery of what is already queued.
+// Retrying the same frame keeps ordering (the send chain has not moved on) and
+// leaves the request slot free, which is what stops a backed-up connection from
+// starving the window's poll.
+async function postWithRetry(headers: Record<string, string>, body: Uint8Array): Promise<void> {
+    let wait = 0;
+    for (;;) {
+        const resp = await fetch(streamURL("send"), { method: "POST", headers, body: body as BodyInit });
+        if (resp.ok) return;
+        if (resp.status !== 429) {
             throw new Error(await resp.text());
         }
+        // Yield, then ramp gently: the receiver is behind, not broken.
+        await sleep(wait);
+        wait = wait === 0 ? 1 : Math.min(wait * 2, 50);
     }
 }
 
