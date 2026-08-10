@@ -22,7 +22,9 @@ After processing, the content will be moved to the main changelog and this file 
   `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
   which returns a `WebSocket`-shaped object. Go→JS is carried by one held poll per
   window over the asset server, JS→Go by a normal POST; nothing binds a TCP port and
-  nothing goes through `evaluateJavaScript`. by @leaanthony
+  nothing goes through `evaluateJavaScript`. In server builds (`-tags server`) the same
+  handler is served over a real WebSocket instead, so application code is identical
+  across builds. by @leaanthony
 - Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
 
 ## Changed
