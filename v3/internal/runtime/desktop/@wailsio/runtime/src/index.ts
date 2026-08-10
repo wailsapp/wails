@@ -35,7 +35,7 @@ import * as Android from "./android.js";
 import * as Updater from "./updater.js";
 import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./window.js";
 import * as WML from "./wml.js";
-import { Stream, WailsSocket } from "./stream.js";
+import { Stream, JSONStream, WailsSocket } from "./stream.js";
 
 export {
     Application,
@@ -53,6 +53,7 @@ export {
     Window,
     WML,
     Stream,
+    JSONStream,
     WailsSocket
 };
 

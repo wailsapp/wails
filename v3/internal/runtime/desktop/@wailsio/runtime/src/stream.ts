@@ -99,6 +99,9 @@ export class WailsSocket extends EventTarget {
     binaryType: "arraybuffer" | "blob" = "arraybuffer";
     readyState: number = WailsSocket.CONNECTING;
 
+    // Declared for the type; the constructor replaces each with an accessor
+    // that registers a real listener. Calling them directly instead would make
+    // any wrapper (see JSONStream) receive both the raw and the decoded event.
     onopen: ((ev: Event) => void) | null = null;
     onmessage: ((ev: MessageEvent) => void) | null = null;
     onclose: ((ev: CloseEvent) => void) | null = null;
@@ -120,6 +123,10 @@ export class WailsSocket extends EventTarget {
         this.name = name;
         this._id = nextConnID++;
         this.url = hasDOM ? streamURL("poll") + "#" + encodeURIComponent(name) : "";
+
+        for (const type of ["open", "message", "close", "error"]) {
+            defineHandlerProperty(this, type);
+        }
 
         connections.set(this._id, this);
 
@@ -179,25 +186,19 @@ export class WailsSocket extends EventTarget {
     _opened(): void {
         if (this.readyState !== WailsSocket.CONNECTING) return;
         this.readyState = WailsSocket.OPEN;
-        const ev = new Event("open");
-        this.onopen?.(ev);
-        this.dispatchEvent(ev);
+        this.dispatchEvent(new Event("open"));
     }
 
     /** @internal Called for each data frame addressed to this connection. */
     _message(payload: ArrayBuffer): void {
         if (this.readyState !== WailsSocket.OPEN) return;
         const data = this.binaryType === "blob" ? new Blob([payload]) : payload;
-        const ev = new MessageEvent("message", { data });
-        this.onmessage?.(ev);
-        this.dispatchEvent(ev);
+        this.dispatchEvent(new MessageEvent("message", { data }));
     }
 
     /** @internal */
     _fail(err: unknown): void {
-        const ev = new Event("error");
-        this.onerror?.(ev);
-        this.dispatchEvent(ev);
+        this.dispatchEvent(new Event("error"));
         // 1006: closed abnormally, no close frame. Same code a real WebSocket
         // reports when the connection drops without a handshake.
         this._closed(1006, err instanceof Error ? err.message : String(err), false);
@@ -212,7 +213,6 @@ export class WailsSocket extends EventTarget {
         const ev = typeof CloseEvent === "function"
             ? new CloseEvent("close", { code, reason, wasClean })
             : Object.assign(new Event("close"), { code, reason, wasClean }) as CloseEvent;
-        this.onclose?.(ev);
         this.dispatchEvent(ev);
     }
 }
@@ -235,6 +235,72 @@ export function Stream(name: string): WailsSocket | WebSocket {
         }
     }
     return new WailsSocket(name);
+}
+
+// Defines an `on<type>` property that registers and unregisters a real event
+// listener, the way the DOM defines them. Assigning replaces the previous
+// handler; reading returns it.
+function defineHandlerProperty(target: EventTarget, type: string): void {
+    let current: ((ev: any) => void) | null = null;
+    Object.defineProperty(target, "on" + type, {
+        get: () => current,
+        set(fn: ((ev: any) => void) | null) {
+            if (current) target.removeEventListener(type, current);
+            current = typeof fn === "function" ? fn : null;
+            if (current) target.addEventListener(type, current);
+        },
+        configurable: true,
+        enumerable: true,
+    });
+}
+
+/**
+ * A {@link Stream} that speaks objects instead of bytes.
+ *
+ * `send(value)` marshals with `JSON.stringify`, and `ev.data` in an `onmessage`
+ * handler is the parsed object rather than an `ArrayBuffer`. Pairs with
+ * `StreamConn.SendJSON` / `ReceiveJSON` on the Go side.
+ *
+ * ```js
+ * const s = JSONStream("telemetry");
+ * s.onmessage = (ev) => console.log(ev.data.temperature);
+ * s.onopen    = () => s.send({ subscribe: "sensors" });
+ * ```
+ *
+ * A frame that is not valid JSON raises an `error` event and is dropped, rather
+ * than throwing from the poll loop and taking the connection down with it.
+ */
+export function JSONStream(name: string): WailsSocket | WebSocket {
+    const socket = Stream(name);
+    const decoder = new TextDecoder();
+
+    // Take ownership of onmessage before the caller can assign to it, so the
+    // handler only ever sees decoded objects.
+    let handler: ((ev: MessageEvent) => void) | null = null;
+    Object.defineProperty(socket, "onmessage", {
+        get: () => handler,
+        set(fn) { handler = typeof fn === "function" ? fn : null; },
+        configurable: true,
+        enumerable: true,
+    });
+
+    socket.addEventListener("message", (ev: Event) => {
+        if (!handler) return;
+        const raw = (ev as MessageEvent).data;
+        let value: unknown;
+        try {
+            value = JSON.parse(typeof raw === "string" ? raw : decoder.decode(raw));
+        } catch {
+            socket.dispatchEvent(new Event("error"));
+            return;
+        }
+        handler(new MessageEvent("message", { data: value }));
+    });
+
+    const send = socket.send.bind(socket);
+    (socket as any).send = (value: unknown) => send(JSON.stringify(value));
+
+    return socket;
 }
 
 async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {

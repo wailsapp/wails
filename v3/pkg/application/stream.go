@@ -29,6 +29,7 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"sync"
 	"time"
@@ -155,6 +156,28 @@ func (c *StreamConn) Send(data []byte) error {
 // waiting for the frontend to catch up.
 func (c *StreamConn) TrySend(data []byte) error {
 	return c.sink.enqueue(c, c.id, frameData, data, false)
+}
+
+// SendJSON marshals v and sends it as a single frame. A convenience over Send
+// for the common case; the wire carries the marshalled bytes and nothing else,
+// so the frontend can read it with JSON.parse or with JSONStream.
+func (c *StreamConn) SendJSON(v any) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return c.Send(data)
+}
+
+// ReceiveJSON blocks for the next frame and unmarshals it into v. A malformed
+// frame returns the unmarshal error and consumes the frame — it does not close
+// the connection, so a handler can log and carry on.
+func (c *StreamConn) ReceiveJSON(v any) error {
+	frame, err := c.Receive()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(frame, v)
 }
 
 // Receive returns the next frame from the frontend, blocking until one arrives

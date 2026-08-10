@@ -64,6 +64,44 @@ A frame is a **message, not a byte stream**: it arrives whole or not at all, and
 travels with it. Neither side needs to know the size in advance, so a struct with a
 `[]byte` field marshals to whatever it marshals to and is sent as one frame.
 
+## Sending objects
+
+Frames are bytes, but you rarely want to think in bytes. Both sides have a JSON
+convenience that pairs up:
+
+```go
+type Reading struct {
+    Sensor string  `json:"sensor"`
+    Value  float64 `json:"value"`
+}
+
+app.HandleStream("telemetry", func(c *application.StreamConn) {
+    defer c.Close()
+
+    var cmd map[string]any
+    if err := c.ReceiveJSON(&cmd); err != nil {
+        return
+    }
+
+    _ = c.SendJSON(Reading{Sensor: "cpu", Value: 42.5})
+})
+```
+
+```js
+import { JSONStream } from "@wailsio/runtime";
+
+const s = JSONStream("telemetry");
+s.onopen    = () => s.send({ subscribe: "cpu" });   // stringified for you
+s.onmessage = (ev) => console.log(ev.data.value);   // already an object
+```
+
+`JSONStream` is the same object as `Stream` with the encoding done at the boundary — there
+is no separate protocol, and a Go handler cannot tell the difference. A frame that is not
+valid JSON raises an `error` event and is dropped rather than taking the connection down.
+
+Use plain `Stream` when you want the bytes: protobuf, CBOR, binary formats, or anything
+where you would rather encode yourself.
+
 ## The Go API
 
 ```go
@@ -74,6 +112,8 @@ func (a *App) HandleStream(name string, handler StreamHandler)
 func (c *StreamConn) Send(data []byte) error        // blocks when the buffer is full
 func (c *StreamConn) TrySend(data []byte) error     // ErrStreamFull instead of blocking
 func (c *StreamConn) Receive() ([]byte, error)      // blocks until a frame or close
+func (c *StreamConn) SendJSON(v any) error          // marshal and send as one frame
+func (c *StreamConn) ReceiveJSON(v any) error       // receive one frame and unmarshal
 func (c *StreamConn) Context() context.Context      // cancelled on disconnect
 func (c *StreamConn) Window() Window                // nil in server mode
 func (c *StreamConn) Name() string
@@ -95,6 +135,7 @@ Errors are `ErrStreamClosed` (the peer is gone) and `ErrStreamFull` (from `TrySe
 | `readyState` + `CONNECTING`/`OPEN`/`CLOSING`/`CLOSED` | |
 | `onopen`, `onmessage`, `onclose`, `onerror` | plus `addEventListener` |
 | `send(data)` | string, `ArrayBuffer`, typed array, or `Blob` |
+| `JSONStream(name)` | same object, objects in and out |
 | `close(code, reason)` | |
 | `binaryType` | **defaults to `"arraybuffer"`**, not `"blob"` |
 | `bufferedAmount` | bytes queued by `send` that have not reached Go |

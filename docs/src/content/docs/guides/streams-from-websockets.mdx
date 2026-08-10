@@ -90,7 +90,21 @@ const dec = new TextDecoder();
 s.onmessage = (ev) => { const msg = JSON.parse(dec.decode(ev.data)); ... };
 ```
 
-Or wrap once and leave every handler untouched — see [the compatibility shim](#compatibility-shim).
+Or, if your traffic is JSON — which it usually is — use `JSONStream` instead of `Stream`
+and skip the problem entirely:
+
+```js
+import { JSONStream } from "@wailsio/runtime";
+
+const s = JSONStream("feed");
+s.onmessage = (ev) => dispatch(ev.data);   // already an object
+s.send({ hello: true });                   // stringified for you
+```
+
+That is the shortest migration for a JSON WebSocket: swap the constructor, drop the
+`JSON.parse` and `JSON.stringify` calls, and the rest of the handler is unchanged. For
+non-JSON traffic, wrap once and leave every handler untouched — see
+[the compatibility shim](#compatibility-shim).
 
 ### 2. Sending is compatible; receiving is not
 
