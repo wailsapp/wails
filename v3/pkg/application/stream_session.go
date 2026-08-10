@@ -98,7 +98,13 @@ func (s *streamSession) wake() {
 // consequence of multiplexing: connections in one window share one pipe, so a
 // connection that floods it does slow its neighbours. Per-connection fairness
 // would need a scheduler, and there is no evidence yet that it is needed.
-func (s *streamSession) enqueue(c *StreamConn, kind uint8, data []byte, block bool) error {
+// The connection id is passed explicitly rather than read from c, so a frame
+// can be addressed to a connection that was never created — the refusal path,
+// where there is no StreamConn to carry the id. Deriving it from c and patching
+// the frame afterwards would need a second acquisition of s.mu, and a poll
+// draining in between would either send the frame with id 0 (leaving the
+// frontend stuck in CONNECTING with no error) or retag an unrelated frame.
+func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -120,11 +126,7 @@ func (s *streamSession) enqueue(c *StreamConn, kind uint8, data []byte, block bo
 		s.space.Wait()
 	}
 
-	var id uint32
-	if c != nil {
-		id = c.id
-	}
-	s.out = append(s.out, outFrame{connID: id, kind: kind, data: data})
+	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
 	s.outBytes += len(data)
 	s.wake()
 	return nil
@@ -210,9 +212,7 @@ func (s *streamSession) drainLocked(maxBytes int) (frames []outFrame, more bool)
 func (s *streamSession) open(connID uint32, name string) {
 	handler, ok := s.mgr.handler(name)
 	if !ok {
-		_ = s.enqueue(nil, frameError, []byte("no handler registered for stream "+name), false)
-		// enqueue with a nil conn carries connID 0, so tag it explicitly.
-		s.retagLast(connID)
+		_ = s.enqueue(nil, connID, frameError, []byte("no handler registered for stream "+name), false)
 		return
 	}
 
@@ -221,7 +221,7 @@ func (s *streamSession) open(connID uint32, name string) {
 		id:       connID,
 		name:     name,
 		windowID: s.windowID,
-		session:  s,
+		sink:     s,
 		ctx:      ctx,
 		cancel:   cancel,
 	}
@@ -243,23 +243,13 @@ func (s *streamSession) open(connID uint32, name string) {
 	s.conns[connID] = c
 	s.mu.Unlock()
 
-	_ = s.enqueue(c, frameOpen, nil, false)
+	_ = s.enqueue(c, connID, frameOpen, nil, false)
 
 	go func() {
 		defer handlePanic()
 		defer c.shutdown()
 		handler(c)
 	}()
-}
-
-// retagLast fixes up the connection id of the frame just appended, for the
-// refusal path where there is no StreamConn to carry it.
-func (s *streamSession) retagLast(connID uint32) {
-	s.mu.Lock()
-	if n := len(s.out); n > 0 {
-		s.out[n-1].connID = connID
-	}
-	s.mu.Unlock()
 }
 
 func (s *streamSession) conn(connID uint32) *StreamConn {

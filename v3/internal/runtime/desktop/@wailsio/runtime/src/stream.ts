@@ -224,7 +224,16 @@ export class WailsSocket extends EventTarget {
  * just call {@link WailsSocket.send} once open. Creating a connection at module
  * scope is supported and is the intended shape for generated bindings.
  */
-export function Stream(name: string): WailsSocket {
+export function Stream(name: string): WailsSocket | WebSocket {
+    // Server builds install a factory returning a real WebSocket, since there
+    // is a listener there to upgrade on and nothing to emulate. Both objects
+    // present the same interface, so nothing above this line cares which it is.
+    if (hasDOM) {
+        const factory = (window as any)._wails?.streamFactory;
+        if (typeof factory === "function") {
+            return factory(name);
+        }
+    }
     return new WailsSocket(name);
 }
 
@@ -320,7 +329,16 @@ async function pollLoop(): Promise<void> {
 
             backoff = 0;
             if (resp.status !== 204) {
-                deliver(await resp.arrayBuffer());
+                const buf = await resp.arrayBuffer();
+                if (!validFraming(buf)) {
+                    // A framing mismatch means a stale cached runtime against a
+                    // newer Go side. Retrying cannot fix that, and letting it
+                    // fall into the backoff below would spin silently forever,
+                    // so fail every connection with a reason instead.
+                    closeAll(1002, "unrecognised stream framing");
+                    break;
+                }
+                deliver(buf);
             }
             // Re-poll immediately, on data and on an expired hold alike.
         } catch (err) {
@@ -337,16 +355,15 @@ async function pollLoop(): Promise<void> {
     }
 }
 
+function validFraming(buf: ArrayBuffer): boolean {
+    if (buf.byteLength < 9) return false;
+    const dv = new DataView(buf);
+    return dv.getUint8(0) === 0x57 && dv.getUint8(1) === 0x53 &&
+           dv.getUint8(2) === 0x31 && dv.getUint8(3) === 0x00;
+}
+
 function deliver(buf: ArrayBuffer): void {
     const dv = new DataView(buf);
-    if (buf.byteLength < 9 ||
-        dv.getUint8(0) !== 0x57 || dv.getUint8(1) !== 0x53 ||
-        dv.getUint8(2) !== 0x31 || dv.getUint8(3) !== 0x00) {
-        // Framing mismatch means a stale cached runtime against a newer Go
-        // side. Fail loudly rather than misparsing bytes as frames.
-        throw new Error("wails: unrecognised stream framing");
-    }
-
     const count = dv.getUint32(5);
     let off = 9;
 

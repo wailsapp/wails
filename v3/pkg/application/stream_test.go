@@ -23,7 +23,7 @@ func newTestSession(t *testing.T) (*streamManager, *streamSession) {
 
 func newTestConn(s *streamSession, id uint32) *StreamConn {
 	ctx, cancel := context.WithCancel(context.Background())
-	c := &StreamConn{id: id, name: "test", session: s, ctx: ctx, cancel: cancel}
+	c := &StreamConn{id: id, name: "test", sink: s, ctx: ctx, cancel: cancel}
 	c.inCond = sync.NewCond(&c.inMu)
 	s.mu.Lock()
 	s.conns[id] = c
@@ -100,7 +100,7 @@ func TestStreamOrderingUnderConcurrentSenders(t *testing.T) {
 				seq := next
 				next++
 				payload := []byte(fmt.Sprintf("%d", seq))
-				if err := s.enqueue(c, frameData, payload, true); err != nil {
+				if err := s.enqueue(c, 1, frameData, payload, true); err != nil {
 					mu.Unlock()
 					t.Errorf("enqueue: %v", err)
 					return
@@ -149,18 +149,18 @@ func TestStreamTrySendReportsFullAndSendBlocks(t *testing.T) {
 	c := newTestConn(s, 1)
 
 	for i := 0; i < streamOutQueueDepth; i++ {
-		if err := s.enqueue(c, frameData, []byte("x"), false); err != nil {
+		if err := s.enqueue(c, 1, frameData, []byte("x"), false); err != nil {
 			t.Fatalf("fill %d: %v", i, err)
 		}
 	}
 
-	if err := s.enqueue(c, frameData, []byte("x"), false); err != ErrStreamFull {
+	if err := s.enqueue(c, 1, frameData, []byte("x"), false); err != ErrStreamFull {
 		t.Fatalf("TrySend on a full queue = %v, want ErrStreamFull", err)
 	}
 
 	// A blocking send waits for room rather than failing.
 	blocked := make(chan error, 1)
-	go func() { blocked <- s.enqueue(c, frameData, []byte("y"), true) }()
+	go func() { blocked <- s.enqueue(c, 1, frameData, []byte("y"), true) }()
 
 	select {
 	case err := <-blocked:
@@ -189,11 +189,11 @@ func TestStreamByteCapBindsBeforeDepth(t *testing.T) {
 	// Frames big enough that the byte cap is reached well before the depth cap.
 	big := make([]byte, streamOutQueueBytes/4)
 	for i := 0; i < 4; i++ {
-		if err := s.enqueue(c, frameData, big, false); err != nil {
+		if err := s.enqueue(c, 1, frameData, big, false); err != nil {
 			t.Fatalf("enqueue %d: %v", i, err)
 		}
 	}
-	if err := s.enqueue(c, frameData, big, false); err != ErrStreamFull {
+	if err := s.enqueue(c, 1, frameData, big, false); err != ErrStreamFull {
 		t.Fatalf("over byte cap = %v, want ErrStreamFull", err)
 	}
 
@@ -212,7 +212,7 @@ func TestStreamDrainAlwaysTakesOneFrame(t *testing.T) {
 	c := newTestConn(s, 1)
 
 	oversized := make([]byte, streamMaxResponseBytes*2)
-	if err := s.enqueue(c, frameData, oversized, false); err != nil {
+	if err := s.enqueue(c, 1, frameData, oversized, false); err != nil {
 		t.Fatalf("enqueue: %v", err)
 	}
 
@@ -238,7 +238,7 @@ func TestStreamDrainRespectsResponseCap(t *testing.T) {
 	// Sized so exactly three fit once each frame's 9-byte header is counted.
 	chunk := make([]byte, streamMaxResponseBytes/3-streamFrameHeaderBytes)
 	for i := 0; i < 5; i++ {
-		if err := s.enqueue(c, frameData, chunk, false); err != nil {
+		if err := s.enqueue(c, 1, frameData, chunk, false); err != nil {
 			t.Fatalf("enqueue %d: %v", i, err)
 		}
 	}
@@ -318,10 +318,10 @@ func TestStreamSessionCloseUnblocksHandlers(t *testing.T) {
 	}()
 
 	for i := 0; i < streamOutQueueDepth; i++ {
-		_ = s.enqueue(c, frameData, []byte("x"), false)
+		_ = s.enqueue(c, 1, frameData, []byte("x"), false)
 	}
 	sendErr := make(chan error, 1)
-	go func() { sendErr <- s.enqueue(c, frameData, []byte("y"), true) }()
+	go func() { sendErr <- s.enqueue(c, 1, frameData, []byte("y"), true) }()
 
 	time.Sleep(50 * time.Millisecond)
 	s.close()
@@ -409,6 +409,83 @@ func TestStreamOpenRefusedWithoutHandler(t *testing.T) {
 	}
 	if frames[0].connID != 42 {
 		t.Fatalf("error frame carried connID %d, want 42", frames[0].connID)
+	}
+}
+
+// The refusal frame must carry the right connection id even when a poll drains
+// between it being queued and anything else happening. The id used to be
+// patched onto the last queued frame under a second lock acquisition, so a
+// drain in between either shipped the frame with id 0 — leaving the frontend in
+// CONNECTING with no error — or retagged an unrelated connection's frame.
+func TestStreamOpenRefusalTaggedUnderConcurrentDrain(t *testing.T) {
+	for attempt := 0; attempt < 200; attempt++ {
+		_, s := newTestSession(t)
+
+		drained := make(chan []outFrame, 1)
+		go func() {
+			frames, _, _ := s.awaitFrames(context.Background(), 2*time.Second, streamMaxResponseBytes)
+			drained <- frames
+		}()
+
+		s.open(77, "nosuchstream")
+
+		select {
+		case frames := <-drained:
+			if len(frames) != 1 {
+				t.Fatalf("attempt %d: drained %d frames, want 1", attempt, len(frames))
+			}
+			if frames[0].kind != frameError {
+				t.Fatalf("attempt %d: kind = %d, want frameError", attempt, frames[0].kind)
+			}
+			if frames[0].connID != 77 {
+				t.Fatalf("attempt %d: refusal addressed to conn %d, want 77", attempt, frames[0].connID)
+			}
+		case <-time.After(3 * time.Second):
+			t.Fatalf("attempt %d: refusal never delivered", attempt)
+		}
+	}
+}
+
+// A reload gives the window a new session id. The previous page is gone, so its
+// session must go with it rather than surviving to the TTL sweep - which would
+// leave the app holding two live connections to the same stream for
+// streamSessionTTL + streamSessionSweep.
+func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	first := mgr.session("page-1", 1)
+	if first == nil {
+		t.Fatal("first session not created")
+	}
+	first.open(1, "s")
+	c := first.conn(1)
+	if c == nil {
+		t.Fatal("connection not registered on the first session")
+	}
+
+	// Another window's session must be untouched by the reload below.
+	other := mgr.session("other-window", 2)
+	other.open(1, "s")
+	otherConn := other.conn(1)
+
+	second := mgr.session("page-2", 1)
+	if second == first {
+		t.Fatal("reload reused the previous session")
+	}
+
+	if c.ctx.Err() == nil {
+		t.Fatal("previous page's connection is still live after reload")
+	}
+	if mgr.existingSession("page-1") != nil {
+		t.Fatal("previous session still registered after reload")
+	}
+	if otherConn.ctx.Err() != nil {
+		t.Fatal("reload in one window closed another window's connection")
+	}
+	if mgr.existingSession("other-window") == nil {
+		t.Fatal("reload in one window removed another window's session")
 	}
 }
 

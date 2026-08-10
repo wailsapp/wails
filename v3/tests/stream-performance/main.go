@@ -48,6 +48,7 @@ var (
 	flagOut      = flag.String("out", "", "output directory (default: ./streamperf-results)")
 	flagOnly     = flag.String("only", "", "comma-separated scenario names to run (default: all)")
 	flagSample   = flag.Duration("sample", 250*time.Millisecond, "footprint sample interval")
+	flagReloads  = flag.Int("reloads", 0, "instead of the sweep, reload the page N times and report connection lifecycle")
 )
 
 // Frame layout on the wire, chosen so neither side pays a JSON parse per frame
@@ -87,11 +88,17 @@ type harness struct {
 	sendUS   []float64
 	epoch    int
 
-	connMu sync.Mutex
-	conn   *application.StreamConn
+	win    *application.WebviewWindow
 	connCh chan *application.StreamConn
 
 	echoes atomic.Int64
+
+	// Connection lifecycle, for the reload check: a reload must close the
+	// previous page's connection, not leave it live alongside the new one.
+	connects    atomic.Int64
+	disconnects atomic.Int64
+	live        atomic.Int64
+	maxLive     atomic.Int64
 
 	results []*scenarioResult
 }
@@ -137,10 +144,21 @@ func main() {
 	// The stream under test. The handler holds the connection open for the
 	// whole run; the emitter goroutine below does the sending.
 	app.HandleStream("perf", func(c *application.StreamConn) {
-		log.Printf("stream connected: %s", c.Name())
-		h.connCh <- c
+		h.connects.Add(1)
+		if n := h.live.Add(1); n > h.maxLive.Load() {
+			h.maxLive.Store(n)
+		}
+		log.Printf("stream connected: %s (live=%d)", c.Name(), h.live.Load())
+
+		select {
+		case h.connCh <- c:
+		default: // reload mode does not consume connections
+		}
+
 		<-c.Context().Done()
-		log.Printf("stream disconnected")
+		h.live.Add(-1)
+		h.disconnects.Add(1)
+		log.Printf("stream disconnected (live=%d)", h.live.Load())
 	})
 
 	// A second stream, used only to exercise the JS→Go direction: the frontend
@@ -159,7 +177,7 @@ func main() {
 		}
 	})
 
-	win := app.Window.NewWithOptions(application.WebviewWindowOptions{
+	h.win = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:   "streamperf",
 		Title:  "streamperf",
 		Width:  560,
@@ -167,6 +185,7 @@ func main() {
 		URL:    "/",
 	})
 
+	win := h.win
 	var once sync.Once
 	win.OnWindowEvent(events.Common.WindowRuntimeReady, func(*application.WindowEvent) {
 		once.Do(func() { go h.runAll(app) })
@@ -213,6 +232,11 @@ func (h *harness) runAll(app *application.App) {
 		}
 		app.Quit()
 	}()
+
+	if *flagReloads > 0 {
+		h.runReloadCheck()
+		return
+	}
 
 	// Wait for the page to connect its stream before doing anything else.
 	var conn *application.StreamConn
@@ -262,6 +286,35 @@ func (h *harness) runAll(app *application.App) {
 	}
 	fmt.Printf("\nResults written to %s\n", abs)
 	fmt.Println(renderConsoleTable(h.results))
+}
+
+// runReloadCheck reloads the page repeatedly and reports what Go observed.
+//
+// A reload is the closest thing this transport has to a socket closing, and
+// there is no cancellation from the platform layer to signal it. The page comes
+// back with a new session id, and the previous session has to be superseded, or
+// the app holds two live connections to the same stream until the TTL sweep -
+// up to streamSessionTTL + streamSessionSweep. This measures which happens, and
+// it also checks the assumption the fix rests on: that a reloaded page presents
+// the same window id.
+func (h *harness) runReloadCheck() {
+	log.Printf("reload check: %d reloads", *flagReloads)
+
+	for i := 0; i < *flagReloads; i++ {
+		time.Sleep(2 * time.Second)
+		log.Printf("  reload %d/%d (live=%d)", i+1, *flagReloads, h.live.Load())
+		h.win.ExecJS("location.reload()")
+	}
+
+	// Let the last page settle.
+	time.Sleep(3 * time.Second)
+
+	log.Printf("reload check complete: connects=%d disconnects=%d live=%d maxLive=%d",
+		h.connects.Load(), h.disconnects.Load(), h.live.Load(), h.maxLive.Load())
+	if h.maxLive.Load() > 1 {
+		log.Printf("  NOTE: %d connections were live at once - a reload did not close its predecessor promptly",
+			h.maxLive.Load())
+	}
 }
 
 func (h *harness) runScenario(conn *application.StreamConn, sc Scenario) *scenarioResult {

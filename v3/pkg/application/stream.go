@@ -90,6 +90,16 @@ const (
 // for as long as it wants the connection open.
 type StreamHandler func(*StreamConn)
 
+// streamSink is where a connection's outbound frames go. On the desktop it is
+// the window's held-poll session; in server mode it is a real WebSocket. The
+// handler code above the sink is identical either way, which is the whole point
+// of mirroring the WebSocket model rather than inventing an API.
+type streamSink interface {
+	enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error
+	removeConn(connID uint32)
+	wake()
+}
+
 // StreamConn is one connection to a named stream. It is the moral equivalent of
 // a *websocket.Conn: Send blocks like a socket write, Receive blocks like a
 // socket read, and both fail once the peer is gone.
@@ -97,7 +107,7 @@ type StreamConn struct {
 	id       uint32
 	name     string
 	windowID uint
-	session  *streamSession
+	sink     streamSink
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -138,13 +148,13 @@ func (c *StreamConn) Window() Window {
 //
 // It never touches the main thread, and never reaches evaluateJavaScript.
 func (c *StreamConn) Send(data []byte) error {
-	return c.session.enqueue(c, frameData, data, true)
+	return c.sink.enqueue(c, c.id, frameData, data, true)
 }
 
 // TrySend is Send without the blocking: it returns ErrStreamFull rather than
 // waiting for the frontend to catch up.
 func (c *StreamConn) TrySend(data []byte) error {
-	return c.session.enqueue(c, frameData, data, false)
+	return c.sink.enqueue(c, c.id, frameData, data, false)
 }
 
 // Receive returns the next frame from the frontend, blocking until one arrives
@@ -175,7 +185,7 @@ func (c *StreamConn) Close() error {
 		// Best-effort notification: if the buffer is full or the session is
 		// already gone the frontend finds out via the session going away
 		// instead, so this must not block.
-		_ = c.session.enqueue(c, frameClose, nil, false)
+		_ = c.sink.enqueue(c, c.id, frameClose, nil, false)
 		c.shutdown()
 	})
 	return nil
@@ -185,14 +195,14 @@ func (c *StreamConn) Close() error {
 // the frontend is the one that went away.
 func (c *StreamConn) shutdown() {
 	c.cancel()
-	c.session.removeConn(c.id)
+	c.sink.removeConn(c.id)
 
 	// Wake anyone blocked in Receive so it can observe the cancelled context,
 	// and anyone blocked in Send on a full buffer.
 	c.inMu.Lock()
 	c.inCond.Broadcast()
 	c.inMu.Unlock()
-	c.session.wake()
+	c.sink.wake()
 }
 
 // deliver queues an inbound frame and wakes a waiting Receive.
@@ -267,16 +277,49 @@ func (m *streamManager) handler(name string) (StreamHandler, bool) {
 // first; the frontend does not perform a separate handshake.
 func (m *streamManager) session(id string, windowID uint) *streamSession {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.closed {
+		m.mu.Unlock()
 		return nil
 	}
+
 	s, ok := m.sessions[id]
+	var superseded []*streamSession
 	if !ok {
+		// A new session id in a window that already has one means that window
+		// navigated or reloaded: the previous page is gone. Without this, the
+		// old session survives until the TTL sweep — up to
+		// streamSessionTTL + streamSessionSweep, 60-80s at the current values —
+		// during which the app holds two live connections to the same stream
+		// and a handler that owns a per-connection resource has two of them.
+		// A WebSocket closes on unload; this is the closest portable equivalent
+		// until the platform layer reports a cancelled request.
+		//
+		// Keyed on the window, not the client, so several runtimes under one
+		// window id (an iframe loading /wails/runtime.js gets the same id and
+		// its own session) would collide. Superseding is still correct there:
+		// the reload that replaces the top-level document replaces its frames
+		// too. What it does not survive is a frame reloading independently of
+		// its parent, which would close the parent's session; if that ever
+		// needs supporting it wants a per-document key, not a per-window one.
+		for otherID, other := range m.sessions {
+			if other.windowID == windowID {
+				superseded = append(superseded, other)
+				delete(m.sessions, otherID)
+			}
+		}
+
 		s = newStreamSession(id, windowID, m)
 		m.sessions[id] = s
 		m.janitor.Do(func() { go m.reap() })
 	}
+	m.mu.Unlock()
+
+	// Outside the lock: close() takes each session's own lock and shuts down
+	// its connections.
+	for _, old := range superseded {
+		old.close()
+	}
+
 	s.touch()
 	return s
 }
