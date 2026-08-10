@@ -1,6 +1,7 @@
 package application
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -158,20 +159,11 @@ func (a *App) serveStreamPoll(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	bufp := streamRespBufs.Get().(*[]byte)
-	body := encodeStreamFrames((*bufp)[:0], frames, more)
-
+	body := encodeStreamFrames(frames, more)
 	rw.Header().Set("Content-Type", "application/octet-stream")
 	rw.Header().Set("Cache-Control", "no-store")
 	rw.Header().Set("Content-Length", strconv.Itoa(len(body)))
-	// Write copies into the platform response before returning, so the buffer
-	// is free to reuse immediately afterwards.
 	_, _ = rw.Write(body)
-
-	if cap(body) <= streamMaxResponseBytes {
-		*bufp = body
-		streamRespBufs.Put(bufp)
-	}
 }
 
 // encodeStreamFrames lays out a poll response:
@@ -181,45 +173,33 @@ func (a *App) serveStreamPoll(rw http.ResponseWriter, req *http.Request) {
 // Binary rather than JSON because frames are []byte: base64 inside a JSON
 // envelope would cost 33% on every frame, and a megabyte of JSON also costs a
 // parse on the UI thread.
-// encodeStreamFrames appends the response into dst and returns it. Callers pass
-// a pooled buffer: a response is up to streamMaxResponseBytes and there are
-// thousands per second under load, so allocating one per poll was among the
-// largest sources of garbage in the transport.
-func encodeStreamFrames(dst []byte, frames []outFrame, more bool) []byte {
+func encodeStreamFrames(frames []outFrame, more bool) []byte {
 	size := len(streamMagic) + 1 + 4
 	for _, f := range frames {
 		size += streamFrameHeaderBytes + len(f.data)
 	}
-	if cap(dst) < size {
-		dst = make([]byte, 0, size)
-	}
-	buf := dst[:0]
 
-	buf = append(buf, streamMagic[:]...)
+	buf := bytes.NewBuffer(make([]byte, 0, size))
+	buf.Write(streamMagic[:])
 	var flags byte
 	if more {
 		flags |= 1
 	}
-	buf = append(buf, flags)
-	buf = binary.BigEndian.AppendUint32(buf, uint32(len(frames)))
+	buf.WriteByte(flags)
+
+	var scratch [4]byte
+	binary.BigEndian.PutUint32(scratch[:], uint32(len(frames)))
+	buf.Write(scratch[:])
 
 	for _, f := range frames {
-		buf = binary.BigEndian.AppendUint32(buf, f.connID)
-		buf = append(buf, f.kind)
-		buf = binary.BigEndian.AppendUint32(buf, uint32(len(f.data)))
-		buf = append(buf, f.data...)
+		binary.BigEndian.PutUint32(scratch[:], f.connID)
+		buf.Write(scratch[:])
+		buf.WriteByte(f.kind)
+		binary.BigEndian.PutUint32(scratch[:], uint32(len(f.data)))
+		buf.Write(scratch[:])
+		buf.Write(f.data)
 	}
-	return buf
-}
-
-// streamRespBufs recycles poll response buffers. Buffers that grew past the
-// response cap (a single oversized frame) are not returned, so one huge frame
-// cannot pin megabytes in the pool for the life of the process.
-var streamRespBufs = sync.Pool{
-	New: func() any {
-		b := make([]byte, 0, 64<<10)
-		return &b
-	},
+	return buf.Bytes()
 }
 
 func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
