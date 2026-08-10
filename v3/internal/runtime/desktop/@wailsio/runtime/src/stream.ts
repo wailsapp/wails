@@ -27,20 +27,32 @@ The electron alternative for Go
 import { nanoid } from "./nanoid.js";
 import { hasDOM } from "./environment.js";
 
-// One session per page load, like the runtime's clientId. A reload gets a new
-// one, which is what makes a reload look like a closed socket to Go. nanoid is
-// backed by crypto.getRandomValues, which matters in server mode where there is
-// no window-id header to bind the session against.
-// Stored on window rather than in module scope. The runtime can be instantiated
-// more than once in a page — the platform injects a copy and the app may import
-// it as well — and a per-module id gave each instance its own session. Since a
-// new session id for a window supersedes the previous one, the two instances
-// then tore down each other's connections in turn, which killed live streams
-// mid-run. One id per page is the invariant that matters.
-const sessionID: string = hasDOM
-    ? ((window as any)._wails = (window as any)._wails || {},
-       (window as any)._wails.__streamSession ||= nanoid())
-    : nanoid();
+// Every piece of state that two runtime instances must agree on lives here, on
+// window, not in module scope. The runtime can be evaluated more than once in a
+// page — the platform injects a copy and an app may import it too — and a
+// per-module registry meant both instances allocated connection id 1, ran
+// competing polls against one session, and discarded frames addressed to ids
+// only the other instance knew about. The session id alone was not enough.
+interface StreamGlobals {
+    session: string;
+    nextConnID: number;
+    connections: Map<number, WailsSocket>;
+    polling: boolean;
+}
+
+function streamGlobals(): StreamGlobals {
+    const fresh = (): StreamGlobals => ({
+        session: nanoid(),
+        nextConnID: 1,
+        connections: new Map<number, WailsSocket>(),
+        polling: false,
+    });
+    if (!hasDOM) return fresh();
+    const w = (window as any)._wails = (window as any)._wails || {};
+    return (w.__stream = w.__stream || fresh());
+}
+
+const G = streamGlobals();
 
 const HDR_SESSION = "x-wails-stream-session";
 const HDR_CONN = "x-wails-stream-conn";
@@ -71,9 +83,6 @@ function streamURL(endpoint: string): string {
     return window.location.origin + "/wails/stream/" + endpoint;
 }
 
-let nextConnID = 1;
-const connections = new Map<number, WailsSocket>();
-let pollRunning = false;
 
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -131,7 +140,7 @@ export class WailsSocket extends EventTarget {
     // Sends are serialised per connection: concurrent fetch() POSTs do not
     // preserve order, and Go relies on send order being the order it observes.
     private _chain: Promise<void> = Promise.resolve();
-    private _pending: Promise<Uint8Array>[] = [];
+    private _pending: { bytes: Promise<Uint8Array>; counted: number }[] = [];
     private _flushing = false;
 
     /** Bytes queued by send() that have not yet reached Go. */
@@ -142,14 +151,14 @@ export class WailsSocket extends EventTarget {
     constructor(name: string) {
         super();
         this.name = name;
-        this._id = nextConnID++;
+        this._id = G.nextConnID++;
         this.url = hasDOM ? streamURL("poll") + "#" + encodeURIComponent(name) : "";
 
         for (const type of ["open", "message", "close", "error"]) {
             defineHandlerProperty(this, type);
         }
 
-        connections.set(this._id, this);
+        G.connections.set(this._id, this);
 
         // Fire and forget: the ack arrives as an open frame on the poll, which
         // is what moves readyState to OPEN.
@@ -179,7 +188,17 @@ export class WailsSocket extends EventTarget {
         // a typed array is captured at its current identity. The bytes are not
         // copied — see toBytes — so a caller must not mutate a buffer it has
         // handed to send().
-        const snapshot = toBytes(data);
+        const immediate = toBytesSync(data);
+        const snapshot = immediate ? Promise.resolve(immediate) : toBytes(data);
+
+        // Account for the bytes now, not when the chain reaches them. Reporting
+        // zero while frames wait behind an in-flight batch would tell an
+        // application using bufferedAmount for backpressure that it may keep
+        // sending.
+        if (immediate) {
+            this._buffered += immediate.byteLength;
+        }
+        this._pending.push({ bytes: snapshot, counted: immediate ? immediate.byteLength : 0 });
 
         // Queue rather than post. Whatever accumulates while a request is in
         // flight goes out together in the next one, so the per-request cost —
@@ -187,16 +206,20 @@ export class WailsSocket extends EventTarget {
         // divided across the batch. Under light load a batch is one frame and
         // this behaves exactly as before; the batching only appears when the
         // sender is outrunning the transport, which is when it is needed.
-        this._pending.push(snapshot);
         if (this._flushing) return;
         this._flushing = true;
 
         this._chain = this._chain.then(async () => {
             try {
                 while (this._pending.length > 0) {
-                    const batch = await Promise.all(this._pending.splice(0));
+                    const queued = this._pending.splice(0);
+                    const batch = await Promise.all(queued.map((q) => q.bytes));
+
                     const total = batch.reduce((n, b) => n + b.byteLength, 0);
-                    this._buffered += total;
+                    const already = queued.reduce((n, q) => n + q.counted, 0);
+                    // Sized frames were counted at the send() boundary; a Blob,
+                    // whose length was unknown then, is added now.
+                    this._buffered += total - already;
                     try {
                         await postBatch(this._id, batch);
                     } finally {
@@ -262,7 +285,7 @@ export class WailsSocket extends EventTarget {
     _closed(code: number, reason: string, wasClean: boolean): void {
         if (this.readyState === WailsSocket.CLOSED) return;
         this.readyState = WailsSocket.CLOSED;
-        connections.delete(this._id);
+        G.connections.delete(this._id);
 
         const ev = typeof CloseEvent === "function"
             ? new CloseEvent("close", { code, reason, wasClean })
@@ -334,17 +357,85 @@ export interface JSONSocket extends Omit<WailsSocket, "send" | "onmessage"> {
  * than throwing from the poll loop and taking the connection down with it.
  */
 export function JSONStream(name: string): JSONSocket {
-    const socket = Stream(name) as WailsSocket;
+    const socket = Stream(name);
     const decoder = new TextDecoder();
+    const parse = (payload: ArrayBuffer | string) =>
+        JSON.parse(typeof payload === "string" ? payload : decoder.decode(payload));
 
-    // Decoding here rather than by wrapping onmessage means addEventListener
-    // listeners see the parsed object too.
-    socket._decode = (payload) => JSON.parse(decoder.decode(payload));
+    if (socket instanceof WailsSocket) {
+        // Decoding through the hook rather than by wrapping onmessage means
+        // addEventListener listeners see the parsed object too.
+        socket._decode = (payload) => parse(payload);
+    } else {
+        // Server builds get a native WebSocket, whose dispatch never consults
+        // _decode. Patch both listener styles on this instance so JSONStream
+        // means the same thing on either transport, which is the point of the
+        // shared API.
+        const native = socket as WebSocket;
+        native.binaryType = "arraybuffer";
+
+        const wrapped = new WeakMap<object, EventListener>();
+        const add = native.addEventListener.bind(native);
+        const remove = native.removeEventListener.bind(native);
+
+        const decode = (listener: any): EventListener => {
+            const fn: EventListener = (ev) => {
+                let value: unknown;
+                try {
+                    value = parse((ev as MessageEvent).data);
+                } catch {
+                    native.dispatchEvent(new Event("error"));
+                    return;
+                }
+                const decoded = new MessageEvent("message", { data: value });
+                if (typeof listener === "function") listener.call(native, decoded);
+                else listener.handleEvent(decoded);
+            };
+            wrapped.set(listener as object, fn);
+            return fn;
+        };
+
+        native.addEventListener = ((type: string, listener: any, opts?: any) => {
+            add(type, type === "message" && listener ? decode(listener) : listener, opts);
+        }) as typeof native.addEventListener;
+
+        native.removeEventListener = ((type: string, listener: any, opts?: any) => {
+            const fn = type === "message" && listener ? wrapped.get(listener) : undefined;
+            remove(type, fn ?? listener, opts);
+        }) as typeof native.removeEventListener;
+
+        let handler: ((ev: MessageEvent) => void) | null = null;
+        Object.defineProperty(native, "onmessage", {
+            get: () => handler,
+            set(fn) {
+                if (handler) native.removeEventListener("message", handler as EventListener);
+                handler = typeof fn === "function" ? fn : null;
+                if (handler) native.addEventListener("message", handler as EventListener);
+            },
+            configurable: true,
+            enumerable: true,
+        });
+    }
 
     const send = socket.send.bind(socket);
     (socket as unknown as JSONSocket).send = (value: unknown) => send(JSON.stringify(value));
 
     return socket as unknown as JSONSocket;
+}
+
+// Synchronous conversion for everything but a Blob. Avoids a promise per send
+// and, more importantly, lets bufferedAmount be exact the moment send() returns.
+function toBytesSync(data: string | ArrayBufferLike | ArrayBufferView | Blob): Uint8Array | null {
+    if (typeof data === "string") {
+        return new TextEncoder().encode(data);
+    }
+    if (typeof Blob !== "undefined" && data instanceof Blob) {
+        return null;
+    }
+    if (ArrayBuffer.isView(data)) {
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    }
+    return new Uint8Array(data as ArrayBufferLike);
 }
 
 async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {
@@ -367,7 +458,7 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
 
 async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {
     const headers: Record<string, string> = {
-        [HDR_SESSION]: sessionID,
+        [HDR_SESSION]: G.session,
         [HDR_CONN]: String(connID),
         [HDR_KIND]: String(kind),
         "Content-Type": "application/octet-stream",
@@ -434,7 +525,7 @@ async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
         const resp = await fetch(streamURL("send"), {
             method: "POST",
             headers: {
-                [HDR_SESSION]: sessionID,
+                [HDR_SESSION]: G.session,
                 [HDR_CONN]: String(connID),
                 [HDR_KIND]: String(KIND_DATA),
                 [HDR_BATCH]: String(frames.length - sent),
@@ -473,8 +564,8 @@ function buildBatch(frames: Uint8Array[]): Uint8Array {
 }
 
 function startPolling(): void {
-    if (pollRunning || !hasDOM) return;
-    pollRunning = true;
+    if (G.polling || !hasDOM) return;
+    G.polling = true;
     void pollLoop();
 }
 
@@ -491,11 +582,11 @@ function startPolling(): void {
 async function pollLoop(): Promise<void> {
     let backoff = 0;
 
-    while (connections.size > 0) {
+    while (G.connections.size > 0) {
         try {
             const resp = await fetch(streamURL("poll"), {
                 method: "GET",
-                headers: { [HDR_SESSION]: sessionID },
+                headers: { [HDR_SESSION]: G.session },
                 cache: "no-store",
             });
 
@@ -529,10 +620,10 @@ async function pollLoop(): Promise<void> {
         }
     }
 
-    pollRunning = false;
+    G.polling = false;
 
     // A connection opened while we were winding down: pick the loop back up.
-    if (connections.size > 0) {
+    if (G.connections.size > 0) {
         startPolling();
     }
 }
@@ -555,7 +646,7 @@ function deliver(buf: ArrayBuffer): void {
         const len = dv.getUint32(off); off += 4;
         const payload = buf.slice(off, off + len); off += len;
 
-        const conn = connections.get(connID);
+        const conn = G.connections.get(connID);
         if (!conn) continue;
 
         switch (kind) {
@@ -576,7 +667,7 @@ function deliver(buf: ArrayBuffer): void {
 }
 
 function closeAll(code: number, reason: string): void {
-    for (const conn of [...connections.values()]) {
+    for (const conn of [...G.connections.values()]) {
         conn._closed(code, reason, false);
     }
 }

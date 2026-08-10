@@ -378,7 +378,12 @@ func (m *streamManager) session(id string, windowID uint, maySupersede bool) *st
 
 	s, ok := m.sessions[id]
 	var superseded []*streamSession
-	if !ok && maySupersede {
+	// Supersede on any poll, not only when this session is new. The client
+	// starts its open POST and its first poll concurrently, so the POST can
+	// create the session first — and then the poll would find ok already true
+	// and skip the sweep, leaving the previous page's session and handlers
+	// alive for the whole live-connection grace period.
+	if maySupersede {
 		// A new session id in a window that already has one means that window
 		// navigated or reloaded: the previous page is gone. Without this, the
 		// old session survives until the TTL sweep — up to
@@ -396,7 +401,9 @@ func (m *streamManager) session(id string, windowID uint, maySupersede bool) *st
 		// its parent, which would close the parent's session; if that ever
 		// needs supporting it wants a per-document key, not a per-window one.
 		for otherID, other := range m.sessions {
-			if other.windowID == windowID {
+			// Never the session being polled for — this loop now runs on every
+			// poll, not only on creation, so it must skip itself.
+			if otherID != id && other.windowID == windowID {
 				superseded = append(superseded, other)
 				delete(m.sessions, otherID)
 			}

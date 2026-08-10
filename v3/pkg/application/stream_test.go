@@ -755,3 +755,44 @@ func TestStreamChunkRejectionIsReportedAndAccounted(t *testing.T) {
 		t.Fatal("inconsistent set was not discarded")
 	}
 }
+
+// Codex review: the client starts its open POST and its first poll
+// concurrently, so the POST can create the session first. Supersede used to run
+// only when the poll created the session, so in that ordering the previous
+// page's session survived the whole live-connection grace.
+func TestStreamPollSupersedesWhenOpenWonTheRace(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	old := mgr.session("page-1", 1, true)
+	old.open(1, "s")
+	victim := old.conn(1)
+	if victim == nil {
+		t.Fatal("first session has no connection")
+	}
+
+	// The new page's open POST lands first: creates the session, no supersede.
+	fresh := mgr.session("page-2", 1, false)
+	if fresh == nil {
+		t.Fatal("send did not create the session")
+	}
+	if victim.ctx.Err() != nil {
+		t.Fatal("a send superseded the previous session; only a poll should")
+	}
+
+	// Its poll follows, and must retire the previous page even though the
+	// session already exists.
+	if got := mgr.session("page-2", 1, true); got != fresh {
+		t.Fatal("poll did not resolve to the session the send created")
+	}
+	if victim.ctx.Err() == nil {
+		t.Fatal("previous page still live after the new page polled")
+	}
+	if mgr.existingSession("page-1") != nil {
+		t.Fatal("previous session still registered")
+	}
+	if mgr.existingSession("page-2") == nil {
+		t.Fatal("poll superseded the session doing the polling")
+	}
+}
