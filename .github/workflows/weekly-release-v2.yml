@@ -203,7 +203,7 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
-        NEW_VERSION="${NEW_VERSION}"
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
 
         INSTALLATION_NOTES=$(cat <<EOF
 ## Installation
