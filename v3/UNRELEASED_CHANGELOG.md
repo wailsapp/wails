@@ -31,7 +31,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5943) by @leaanthony
+- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5946) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
