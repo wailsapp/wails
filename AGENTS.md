@@ -60,7 +60,9 @@ measured bug they prevent.
 - **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
   `docs/src/content/docs/guides/advanced/streams-internals.mdx`. Covers the held-poll
   design, the buffer constants and how to pick them, session and connection lifecycle,
-  transport selection, and what is unfinished.
+  transport selection, and what is unfinished. To convert an existing WebSocket
+  implementation, follow `docs/src/content/docs/guides/streams-from-websockets.mdx` —
+  a mechanical checklist, including the differences that break silently.
 
 ## Implementation Tracking (IMPLEMENTATION.md)
 

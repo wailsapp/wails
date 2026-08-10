@@ -15,6 +15,10 @@ and a token to be safe, and visible to every firewall and endpoint-security prod
 users run. Streams avoid all of that: they ride the asset server your app already serves,
 which is already origin-bound.
 
+Migrating an existing WebSocket implementation? Follow
+[Migrating a WebSocket to Streams](/guides/streams-from-websockets/) — it is written to be
+applied mechanically, and it leads with the three differences that break silently.
+
 ## Quick start
 
 Declare a stream in Go. The handler runs once per connection, on its own goroutine:
