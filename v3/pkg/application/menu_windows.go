@@ -154,10 +154,14 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 			// The append above passed the submenu HMENU as uIDNewItem, so this
 			// item currently has no command ID. Restore it, otherwise runtime
 			// updates to the submenu item itself are silently dropped.
-			assignCommandID(parentMenu, w32.GetMenuItemCount(parentMenu)-1, menuItemImpl.id)
+			if !assignCommandID(parentMenu, w32.GetMenuItemCount(parentMenu)-1, menuItemImpl.id) {
+				return fmt.Errorf("assigning a command ID failed for %q: %v", thisText, syscall.GetLastError())
+			}
 		}
 		if item.bitmap != nil {
-			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			// Address the row by its command ID: itemID holds the child HMENU
+			// for submenu items, and SetMenuIcons looks up by MF_BYCOMMAND.
+			handles, err := w32.SetMenuIcons(parentMenu, menuItemImpl.id, item.bitmap, nil)
 			if err != nil {
 				return fmt.Errorf("SetMenuIcons failed for %q: %w", thisText, err)
 			}
