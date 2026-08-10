@@ -87,7 +87,7 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 		InsecureSkipVerify: true,
 	})
 	if err != nil {
-		a.error("stream websocket accept failed", "error", err)
+		a.error("stream websocket accept failed: %w", err)
 		return
 	}
 
