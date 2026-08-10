@@ -191,6 +191,16 @@ export class WailsSocket extends EventTarget {
         const immediate = toBytesSync(data);
         const snapshot = immediate ? Promise.resolve(immediate) : toBytes(data);
 
+        // A Blob cannot be converted synchronously, but Blob.size is available
+        // now, so its bytes are still counted the moment send() returns. Waiting
+        // for arrayBuffer() to resolve let a large Blob slip past code using
+        // bufferedAmount for backpressure.
+        const blobSize =
+            !immediate && typeof Blob !== "undefined" && data instanceof Blob ? data.size : 0;
+        if (blobSize) {
+            this._buffered += blobSize;
+        }
+
         // Account for the bytes now, not when the chain reaches them. Reporting
         // zero while frames wait behind an in-flight batch would tell an
         // application using bufferedAmount for backpressure that it may keep
@@ -198,7 +208,7 @@ export class WailsSocket extends EventTarget {
         if (immediate) {
             this._buffered += immediate.byteLength;
         }
-        this._pending.push({ bytes: snapshot, counted: immediate ? immediate.byteLength : 0 });
+        this._pending.push({ bytes: snapshot, counted: immediate ? immediate.byteLength : blobSize });
 
         // Queue rather than post. Whatever accumulates while a request is in
         // flight goes out together in the next one, so the per-request cost —
