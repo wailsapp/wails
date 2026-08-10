@@ -281,6 +281,20 @@ func (s *streamSession) open(connID uint32, name string) {
 	}()
 }
 
+// connCount reports how many connections the session still has.
+func (s *streamSession) connCount() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.conns)
+}
+
+// wakeProducers releases anything parked in enqueue waiting for room.
+func (s *streamSession) wakeProducers() {
+	s.mu.Lock()
+	s.space.Broadcast()
+	s.mu.Unlock()
+}
+
 func (s *streamSession) conn(connID uint32) *StreamConn {
 	s.mu.Lock()
 	defer s.mu.Unlock()

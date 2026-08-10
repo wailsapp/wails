@@ -140,6 +140,12 @@ func (w *wsStreamSink) removeConn(uint32) {
 
 func (w *wsStreamSink) wake() {}
 
+func (w *wsStreamSink) wakeProducers() {
+	w.mu.Lock()
+	w.cond.Broadcast()
+	w.mu.Unlock()
+}
+
 // serveStreamWS upgrades a request and runs the registered handler for the
 // stream named in the query string. The handler runs on this goroutine, so the
 // request lives exactly as long as the connection — the same relationship the

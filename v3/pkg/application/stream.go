@@ -84,6 +84,12 @@ const (
 
 	streamSessionSweep = streamHoldTimeout
 
+	// streamSessionGrace applies to a session that still has connections. It is
+	// deliberately long: the cost of reaping a live session is losing an app's
+	// streams mid-flight, while the cost of keeping a dead one is a little
+	// memory until the window closes.
+	streamSessionGrace = 10 * time.Minute
+
 	// streamInQueueDepth and streamInQueueBytes bound frames received from the
 	// frontend and not yet taken by Receive. Without them a handler slow to call
 	// Receive lets the frontend grow host memory without limit, since the send
@@ -114,6 +120,9 @@ type streamSink interface {
 	enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error
 	removeConn(connID uint32)
 	wake()
+	// wakeProducers releases anything blocked waiting for queue space, so a
+	// closing connection cannot leave a Send parked indefinitely.
+	wakeProducers()
 }
 
 // StreamConn is one connection to a named stream. It is the moral equivalent of
@@ -254,10 +263,14 @@ func (c *StreamConn) shutdown() {
 	c.sink.removeConn(c.id)
 
 	// Wake anyone blocked in Receive so it can observe the cancelled context,
-	// and anyone blocked in Send on a full buffer.
+	// and anyone blocked in Send waiting for queue space. The comment always
+	// claimed the latter; only wake() was called, which nudges the poll and not
+	// the producers, so a Send blocked on a full queue stayed blocked forever
+	// after its connection closed.
 	c.inMu.Lock()
 	c.inCond.Broadcast()
 	c.inMu.Unlock()
+	c.sink.wakeProducers()
 	c.sink.wake()
 }
 
@@ -455,7 +468,20 @@ func (m *streamManager) reap() {
 			m.mu.Lock()
 			var doomed []*streamSession
 			for id, s := range m.sessions {
-				if now.Sub(s.lastSeenAt()) > streamSessionTTL {
+				// A session with live connections is owned by running handlers,
+				// and under saturation the page can be busy dispatching a large
+				// response for longer than the TTL before it issues the next
+				// poll. Reaping on that basis killed streams mid-run at full
+				// load — measured, after 230,077 frames. Idle time alone is only
+				// trustworthy once nothing is connected; a page that really has
+				// gone is caught by window destroy or by the next page's poll
+				// superseding it, and the long grace below is the backstop for a
+				// renderer that died without either.
+				ttl := streamSessionTTL
+				if s.connCount() > 0 {
+					ttl = streamSessionGrace
+				}
+				if now.Sub(s.lastSeenAt()) > ttl {
 					doomed = append(doomed, s)
 					delete(m.sessions, id)
 				}

@@ -557,6 +557,7 @@ func (h *harness) startEmitterCounted(conn *application.StreamConn, sc Scenario)
 			err := conn.Send(frame)
 			local = append(local, float64(time.Since(t0).Microseconds()))
 			if err != nil {
+				log.Printf("EMITDBG send failed after %d frames: %v", count.Load(), err)
 				return
 			}
 			count.Add(1)
