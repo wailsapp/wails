@@ -31,7 +31,16 @@ import { hasDOM } from "./environment.js";
 // one, which is what makes a reload look like a closed socket to Go. nanoid is
 // backed by crypto.getRandomValues, which matters in server mode where there is
 // no window-id header to bind the session against.
-const sessionID = nanoid();
+// Stored on window rather than in module scope. The runtime can be instantiated
+// more than once in a page — the platform injects a copy and the app may import
+// it as well — and a per-module id gave each instance its own session. Since a
+// new session id for a window supersedes the previous one, the two instances
+// then tore down each other's connections in turn, which killed live streams
+// mid-run. One id per page is the invariant that matters.
+const sessionID: string = hasDOM
+    ? ((window as any)._wails = (window as any)._wails || {},
+       (window as any)._wails.__streamSession ||= nanoid())
+    : nanoid();
 
 const HDR_SESSION = "x-wails-stream-session";
 const HDR_CONN = "x-wails-stream-conn";

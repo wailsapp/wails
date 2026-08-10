@@ -356,7 +356,7 @@ func (m *streamManager) handler(name string) (StreamHandler, bool) {
 // session returns the session for id, creating it if this is the first request
 // from that page. Sessions are created by whichever of poll or send arrives
 // first; the frontend does not perform a separate handshake.
-func (m *streamManager) session(id string, windowID uint) *streamSession {
+func (m *streamManager) session(id string, windowID uint, maySupersede bool) *streamSession {
 	m.mu.Lock()
 	if m.closed {
 		m.mu.Unlock()
@@ -365,7 +365,7 @@ func (m *streamManager) session(id string, windowID uint) *streamSession {
 
 	s, ok := m.sessions[id]
 	var superseded []*streamSession
-	if !ok {
+	if !ok && maySupersede {
 		// A new session id in a window that already has one means that window
 		// navigated or reloaded: the previous page is gone. Without this, the
 		// old session survives until the TTL sweep — up to
@@ -389,6 +389,8 @@ func (m *streamManager) session(id string, windowID uint) *streamSession {
 			}
 		}
 
+	}
+	if !ok {
 		s = newStreamSession(id, windowID, m)
 		m.sessions[id] = s
 		m.janitor.Do(func() { go m.reap() })

@@ -495,7 +495,7 @@ func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
 	t.Cleanup(mgr.close)
 	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
 
-	first := mgr.session("page-1", 1)
+	first := mgr.session("page-1", 1, true)
 	if first == nil {
 		t.Fatal("first session not created")
 	}
@@ -506,11 +506,11 @@ func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
 	}
 
 	// Another window's session must be untouched by the reload below.
-	other := mgr.session("other-window", 2)
+	other := mgr.session("other-window", 2, true)
 	other.open(1, "s")
 	otherConn := other.conn(1)
 
-	second := mgr.session("page-2", 1)
+	second := mgr.session("page-2", 1, true)
 	if second == first {
 		t.Fatal("reload reused the previous session")
 	}
