@@ -203,26 +203,26 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
-        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        NEW_VERSION="${NEW_VERSION}"
 
-        {
-          echo "## Installation"
-          echo ""
-          echo '```bash'
-          echo "go install github.com/wailsapp/wails/v2/cmd/wails@${NEW_VERSION}"
-          echo '```'
-          echo ""
-          echo "## Changes"
-          echo ""
-          cat /tmp/unreleased_changelog.md
-        } > /tmp/release_notes.md
+        INSTALLATION_NOTES=$(cat <<EOF
+## Installation
+
+```bash
+go install github.com/wailsapp/wails/v2/cmd/wails@${NEW_VERSION}
+```
+EOF
+        )
 
         gh release create "${NEW_VERSION}" \
           --repo wailsapp/wails \
           --title "Wails ${NEW_VERSION}" \
-          --notes-file /tmp/release_notes.md \
+          --notes "${INSTALLATION_NOTES}" \
+          --generate-notes \
+          --notes-start-tag "${{ steps.commit_check.outputs.latest_tag }}" \
+          --verify-tag \
+          --fail-on-no-commits \
           --latest
-
     - name: Dry run summary
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run == 'true'
       run: |
