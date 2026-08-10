@@ -123,7 +123,8 @@ jobs:
         # UNRELEASED_CHANGELOG.md after the release has already completed.
         # That is not a new release input and must not create another nightly
         # release on its own.
-        if CURRENT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null); then
+        CURRENT_TAG=$(git tag --points-at HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
+        if [ -n "$CURRENT_TAG" ]; then
           LATEST_TAG="$CURRENT_TAG"
           echo "Current commit has release tag: $LATEST_TAG"
         else

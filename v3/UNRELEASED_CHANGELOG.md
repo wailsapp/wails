@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -24,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Prevent nightly releases from becoming immutable before desktop binaries, checksums, and provenance are attached (#5876)
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

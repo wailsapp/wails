@@ -373,6 +373,45 @@ func TestNightlyPublicationRecoveryFindsReachableTagAfterBookkeeping(t *testing.
 	}
 }
 
+func TestNightlyQuickCheckIgnoresStrayExactHeadTag(t *testing.T) {
+	workflow, err := os.ReadFile("../../../.github/workflows/nightly-release-v3.yml")
+	if err != nil {
+		t.Fatalf("read nightly release workflow: %v", err)
+	}
+	contents := strings.ReplaceAll(string(workflow), "\r\n", "\n")
+	selector := `git tag --points-at HEAD --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1`
+	if !strings.Contains(contents, "CURRENT_TAG=$("+selector+")") {
+		t.Fatal("quick change detection must restrict exact-HEAD tags to the active release series")
+	}
+
+	repo := t.TempDir()
+	runGit := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repo
+		if output, runErr := cmd.CombinedOutput(); runErr != nil {
+			t.Fatalf("git %s: %v\n%s", strings.Join(args, " "), runErr, output)
+		}
+	}
+
+	runGit("init", "--initial-branch=master")
+	runGit("config", "user.name", "release-test")
+	runGit("config", "user.email", "release-test@example.invalid")
+	runGit("commit", "--allow-empty", "-m", "release commit")
+	runGit("tag", "v3.0.0-beta.3")
+	runGit("tag", "v3.0.0-alpha.98-tui")
+
+	cmd := exec.Command("bash", "-c", selector)
+	cmd.Dir = repo
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("select active exact-HEAD tag: %v\n%s", err, output)
+	}
+	if got := strings.TrimSpace(string(output)); got != "v3.0.0-beta.3" {
+		t.Fatalf("active exact-HEAD release tag = %q, want v3.0.0-beta.3", got)
+	}
+}
+
 func TestWriteGitHubMultilineOutput(t *testing.T) {
 	output := filepath.Join(t.TempDir(), "github-output")
 	if err := os.WriteFile(output, nil, 0o644); err != nil {
