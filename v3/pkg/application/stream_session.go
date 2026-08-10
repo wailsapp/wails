@@ -117,7 +117,17 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		if kind != frameClose && kind != frameError && c != nil && c.ctx.Err() != nil {
 			return ErrStreamClosed
 		}
-		if len(s.out) < streamOutQueueDepth && s.outBytes+len(data) <= streamOutQueueBytes {
+		// An empty queue always accepts one frame, however large. Enforcing the
+		// byte cap unconditionally would make a frame bigger than the cap
+		// impossible to send at all: the condition could never come true, so a
+		// blocking Send would wait forever and TrySend would report full
+		// permanently. Frame size is not something the caller necessarily
+		// controls — a struct with a []byte field marshals to whatever it
+		// marshals to — so the cap governs how much may accumulate, not how
+		// large any single frame may be. Same principle as drainLocked always
+		// taking at least one frame.
+		if len(s.out) < streamOutQueueDepth &&
+			(len(s.out) == 0 || s.outBytes+len(data) <= streamOutQueueBytes) {
 			break
 		}
 		if !block {

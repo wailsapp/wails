@@ -39,9 +39,35 @@ var allScenarios = []Scenario{
 	{Name: "iso-64KB", Rate: 64, Size: 64 * 1024},
 	{Name: "iso-1MB", Rate: 4, Size: 1024 * 1024},
 
-	// Throughput ceiling and the blocking path.
+	// Throughput ceiling and the blocking path. Swept across frame size
+	// because the ceiling is set by different things at each end: per-frame
+	// allocation at small sizes, memory bandwidth at large ones.
 	{Name: "unthrottled-256B", Rate: 0, Size: 256},
+	{Name: "unthrottled-4KB", Rate: 0, Size: 4 * 1024},
 	{Name: "unthrottled-64KB", Rate: 0, Size: 64 * 1024},
+	{Name: "unthrottled-256KB", Rate: 0, Size: 256 * 1024},
+	{Name: "unthrottled-1MB", Rate: 0, Size: 1024 * 1024},
+	{Name: "unthrottled-4MB", Rate: 0, Size: 4 * 1024 * 1024},
+}
+
+// uploadVariant is one JS→Go throughput measurement. Connection count matters
+// there in a way it does not Go→JS: the client serialises sends per connection,
+// so one connection can have only one frame in flight and its ceiling is
+// frameSize/roundTrip. Concurrency is the only way past that.
+type uploadVariant struct {
+	Name  string
+	Size  int
+	Conns int
+}
+
+var uploadVariants = []uploadVariant{
+	{Name: "up-1KB-x1", Size: 1024, Conns: 1},
+	{Name: "up-64KB-x1", Size: 64 * 1024, Conns: 1},
+	{Name: "up-512KB-x1", Size: 512 * 1024, Conns: 1},
+	{Name: "up-4MB-x1", Size: 4 * 1024 * 1024, Conns: 1},
+	{Name: "up-64KB-x4", Size: 64 * 1024, Conns: 4},
+	{Name: "up-512KB-x4", Size: 512 * 1024, Conns: 4},
+	{Name: "up-512KB-x8", Size: 512 * 1024, Conns: 8},
 }
 
 func selectedScenarios(only string) []Scenario {

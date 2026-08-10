@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
@@ -138,7 +137,10 @@ func New(appOptions Options) *App {
 				}
 				switch path {
 				case "/wails/runtime.js":
-					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					// The prelude, where there is one, picks the stream
+					// transport before any module body runs. It cannot be
+					// deferred to custom.js — see stream_prelude_server.go.
+					err := assetserver.ServeFile(rw, path, runtimeJSWithPrelude())
 					if err != nil {
 						result.fatal("unable to serve runtime.js: %w", err)
 					}

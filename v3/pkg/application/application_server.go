@@ -167,22 +167,6 @@ func (h *serverApp) run() error {
 // Events FROM frontend TO backend use the existing HTTP transport.
 // This WebSocket is only for receiving broadcast events FROM backend TO all frontends.
 const customJS = `(function() {
-	// Streams: hand the runtime a factory that returns a real WebSocket, so
-	// Stream(name) in server mode is the genuine article rather than the poll
-	// polyfill. The runtime falls back to the poll when this is absent, which
-	// is what a stream created at module scope gets — custom.js is injected
-	// asynchronously and may land after such a stream has already connected.
-	// Both transports work here; only the first connection of an eagerly
-	// created stream misses the upgrade.
-	window._wails = window._wails || {};
-	window._wails.streamFactory = function(name) {
-		var p = location.protocol === 'https:' ? 'wss:' : 'ws:';
-		var sock = new WebSocket(p + '//' + location.host + '/wails/stream/ws?name=' + encodeURIComponent(name));
-		sock.binaryType = 'arraybuffer';
-		return sock;
-	};
-})();
-(function() {
 	var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
 	var clientId = window._wails && window._wails.clientId ? window._wails.clientId : '';
 	var wsUrl = protocol + '//' + location.host + '/wails/events' + (clientId ? '?clientId=' + encodeURIComponent(clientId) : '');

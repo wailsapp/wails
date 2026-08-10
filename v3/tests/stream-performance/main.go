@@ -31,6 +31,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -49,6 +50,7 @@ var (
 	flagOnly     = flag.String("only", "", "comma-separated scenario names to run (default: all)")
 	flagSample   = flag.Duration("sample", 250*time.Millisecond, "footprint sample interval")
 	flagReloads  = flag.Int("reloads", 0, "instead of the sweep, reload the page N times and report connection lifecycle")
+	flagUpload   = flag.Bool("upload", false, "instead of the sweep, measure JS→Go throughput across frame sizes and connection counts")
 )
 
 // Frame layout on the wire, chosen so neither side pays a JSON parse per frame
@@ -90,6 +92,11 @@ type harness struct {
 
 	win    *application.WebviewWindow
 	connCh chan *application.StreamConn
+	ctlCh  chan *application.StreamConn
+
+	// JS→Go throughput counters, filled by the sink stream.
+	sinkBytes  atomic.Int64
+	sinkFrames atomic.Int64
 
 	echoes atomic.Int64
 
@@ -115,6 +122,7 @@ func main() {
 		start:   time.Now(),
 		hostPid: os.Getpid(),
 		connCh:  make(chan *application.StreamConn, 4),
+		ctlCh:   make(chan *application.StreamConn, 4),
 	}
 
 	h.basePids = map[int]bool{}
@@ -174,6 +182,31 @@ func main() {
 			if err := c.Send(frame); err != nil {
 				return
 			}
+		}
+	})
+
+	// Control channel: Go tells the page what upload to run. Using a stream for
+	// this also exercises several simultaneous streams on one window, which is
+	// the multiplexing the design rests on.
+	app.HandleStream("ctl", func(c *application.StreamConn) {
+		select {
+		case h.ctlCh <- c:
+		default:
+		}
+		<-c.Context().Done()
+	})
+
+	// Upload sink: counts what the frontend sends and discards it, so the
+	// measurement is of the transport rather than of anything Go does with the
+	// bytes afterwards.
+	app.HandleStream("sink", func(c *application.StreamConn) {
+		for {
+			frame, err := c.Receive()
+			if err != nil {
+				return
+			}
+			h.sinkFrames.Add(1)
+			h.sinkBytes.Add(int64(len(frame)))
 		}
 	})
 
@@ -238,6 +271,11 @@ func (h *harness) runAll(app *application.App) {
 		return
 	}
 
+	if *flagUpload {
+		h.runUploadCheck()
+		return
+	}
+
 	// Wait for the page to connect its stream before doing anything else.
 	var conn *application.StreamConn
 	select {
@@ -286,6 +324,61 @@ func (h *harness) runAll(app *application.App) {
 	}
 	fmt.Printf("\nResults written to %s\n", abs)
 	fmt.Println(renderConsoleTable(h.results))
+}
+
+// runUploadCheck measures JS→Go throughput across frame sizes and connection
+// counts.
+//
+// The shape to expect is different from Go→JS. The client serialises sends per
+// connection, because concurrent fetch POSTs do not preserve order, so one
+// connection can only have one frame in flight: its ceiling is
+// frameSize/roundTrip regardless of how fast either side can move bytes. More
+// connections is the only way past that, which is why the matrix has a
+// connection axis at all.
+func (h *harness) runUploadCheck() {
+	var ctl *application.StreamConn
+	select {
+	case ctl = <-h.ctlCh:
+	case <-time.After(15 * time.Second):
+		log.Printf("FATAL: frontend never connected the 'ctl' stream")
+		return
+	}
+
+	dur := *flagDuration
+	log.Printf("upload check: %d variants, %s each", len(uploadVariants), dur)
+	fmt.Printf("\n%-14s %10s %8s %12s %12s %10s\n",
+		"variant", "frameKB", "conns", "frames", "frames/s", "MB/s")
+	fmt.Println(strings.Repeat("-", 72))
+
+	for _, v := range uploadVariants {
+		cmd, _ := json.Marshal(map[string]any{"cmd": "upload", "size": v.Size, "conns": v.Conns})
+		if err := ctl.Send(cmd); err != nil {
+			log.Printf("  %s: ctl send failed: %v", v.Name, err)
+			continue
+		}
+
+		// Settle: let the uploaders reach steady state, then zero the counters
+		// so the measured window excludes ramp-up.
+		time.Sleep(*flagSettle)
+		h.sinkBytes.Store(0)
+		h.sinkFrames.Store(0)
+
+		start := time.Now()
+		time.Sleep(dur)
+		elapsed := time.Since(start).Seconds()
+		bytes := h.sinkBytes.Load()
+		frames := h.sinkFrames.Load()
+
+		stop, _ := json.Marshal(map[string]any{"cmd": "stop"})
+		_ = ctl.Send(stop)
+		time.Sleep(1500 * time.Millisecond)
+
+		fmt.Printf("%-14s %10.0f %8d %12d %12.1f %10.1f\n",
+			v.Name, float64(v.Size)/1024, v.Conns, frames,
+			float64(frames)/elapsed,
+			float64(bytes)/elapsed/(1024*1024))
+	}
+	fmt.Println()
 }
 
 // runReloadCheck reloads the page repeatedly and reports what Go observed.

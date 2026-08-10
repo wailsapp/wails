@@ -136,6 +136,67 @@ echo.onopen = () => {
 };
 
 // ---------------------------------------------------------------------------
+// JS -> Go throughput, driven from Go over a control stream.
+//
+// Each uploader keeps at most a couple of frames queued: send() chains
+// internally, so pushing without a gate would grow bufferedAmount without
+// bound and measure the queue rather than the transport.
+// ---------------------------------------------------------------------------
+
+// setTimeout(0) is clamped to ~4ms once nested, which would cap small-frame
+// uploads at ~250/s and measure the timer instead of the transport. A
+// MessageChannel round trip is an unclamped macrotask, so the pump yields to
+// the event loop — letting fetch completions run — without adding delay.
+// Waiters are a FIFO, not a single slot: with several uploaders pumping at
+// once, one slot would be overwritten and every pump but the last would wait
+// forever — which reads as "concurrency makes it slower" rather than as a bug.
+const tickChannel = new MessageChannel();
+const tickWaiters = [];
+tickChannel.port1.onmessage = () => { const r = tickWaiters.shift(); if (r) r(); };
+function tick() {
+  return new Promise((resolve) => { tickWaiters.push(resolve); tickChannel.port2.postMessage(0); });
+}
+
+const ctl = Stream("ctl");
+let uploaders = [];
+
+ctl.onmessage = (ev) => {
+  const cmd = JSON.parse(new TextDecoder().decode(ev.data));
+  if (cmd.cmd === "upload") startUpload(cmd.size, cmd.conns);
+  else if (cmd.cmd === "stop") stopUpload();
+};
+
+function stopUpload() {
+  for (const u of uploaders) {
+    u.running = false;
+    try { u.sock.close(); } catch (e) { /* already gone */ }
+  }
+  uploaders = [];
+}
+
+function startUpload(size, conns) {
+  stopUpload();
+  const payload = new ArrayBuffer(size);
+
+  for (let i = 0; i < conns; i++) {
+    const sock = Stream("sink");
+    const u = { sock, running: true };
+    uploaders.push(u);
+
+    sock.onopen = async () => {
+      while (u.running && sock.readyState === 1) {
+        if (sock.bufferedAmount > size * 2) {
+          await tick();
+          continue;
+        }
+        try { sock.send(payload); } catch (e) { break; }
+        await tick();
+      }
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 function pct(sorted, p) {
   if (!sorted.length) return 0;

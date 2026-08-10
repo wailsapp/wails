@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 )
 
 // The desktop transport. Two endpoints on the asset server the app already
@@ -47,6 +49,20 @@ const (
 // streamMagic identifies the framing version. A page that has been served a
 // stale cached runtime will fail the check loudly instead of misparsing.
 var streamMagic = [4]byte{'W', 'S', '1', 0}
+
+// runtimeJSWithPrelude returns the runtime bundle with the build's stream
+// prelude in front of it, assembled once. Serving it this way is what makes the
+// transport choice available to a stream created at module scope, which is the
+// shape generated bindings use.
+var runtimeJSWithPrelude = sync.OnceValue(func() []byte {
+	prelude := streamPrelude()
+	if len(prelude) == 0 {
+		return bundledassets.RuntimeJS
+	}
+	out := make([]byte, 0, len(prelude)+len(bundledassets.RuntimeJS))
+	out = append(out, prelude...)
+	return append(out, bundledassets.RuntimeJS...)
+})
 
 // serveStream routes the two stream endpoints. Registered in the asset server
 // middleware chain next to the event payload endpoint.

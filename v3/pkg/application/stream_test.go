@@ -205,6 +205,46 @@ func TestStreamByteCapBindsBeforeDepth(t *testing.T) {
 	}
 }
 
+// A frame larger than the per-window byte cap must still be sendable. Frame
+// size is not always the caller's choice — a struct with a []byte field
+// marshals to whatever it marshals to — so enforcing the cap unconditionally
+// made a large frame impossible to send at all rather than merely slow: the
+// wait condition could never come true.
+func TestStreamSingleFrameLargerThanByteCap(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	huge := make([]byte, streamOutQueueBytes*2) // 16 MB against an 8 MB cap
+
+	done := make(chan error, 1)
+	go func() { done <- s.enqueue(c, 1, frameData, huge, true) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("blocking send of an oversized frame: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("blocking send of a frame larger than the byte cap never returned")
+	}
+
+	// It occupies the queue, so the next frame waits behind it as normal.
+	if err := s.enqueue(c, 1, frameData, []byte("x"), false); err != ErrStreamFull {
+		t.Fatalf("send behind an oversized frame = %v, want ErrStreamFull", err)
+	}
+
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if len(frames) != 1 || len(frames[0].data) != len(huge) {
+		t.Fatalf("oversized frame not delivered intact")
+	}
+
+	// And a non-blocking send succeeds again once it has drained.
+	if err := s.enqueue(c, 1, frameData, []byte("x"), false); err != nil {
+		t.Fatalf("send after drain: %v", err)
+	}
+}
+
 // A frame larger than the response cap must still be delivered, or it would
 // wedge the queue forever.
 func TestStreamDrainAlwaysTakesOneFrame(t *testing.T) {
