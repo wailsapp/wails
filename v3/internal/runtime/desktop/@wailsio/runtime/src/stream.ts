@@ -163,10 +163,10 @@ export class WailsSocket extends EventTarget {
             return;
         }
 
-        // Snapshot now, not inside the chain: conversion deferred until the
-        // send actually runs would read the caller's buffer later, so reusing
-        // a typed array right after send() could change a frame already
-        // queued — or make several queued sends share one final value.
+        // Resolved now rather than inside the chain, so a Blob is read once and
+        // a typed array is captured at its current identity. The bytes are not
+        // copied — see toBytes — so a caller must not mutate a buffer it has
+        // handed to send().
         const snapshot = toBytes(data);
 
         this._chain = this._chain.then(async () => {
@@ -324,12 +324,15 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
     if (typeof Blob !== "undefined" && data instanceof Blob) {
         return new Uint8Array(await data.arrayBuffer());
     }
-    // Copy rather than view: the caller may reuse or mutate the buffer as soon
-    // as send() returns, and the frame must not change under it.
+    // A view, not a copy. Copying every frame costs a full memcpy per send,
+    // which at several hundred MB/s is enough allocation churn to dominate the
+    // transport and destabilise the page. The ownership rule is documented
+    // instead: do not mutate a buffer you have passed to send() until the
+    // send has been issued.
     if (ArrayBuffer.isView(data)) {
-        return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
     }
-    return new Uint8Array((data as ArrayBuffer).slice(0));
+    return new Uint8Array(data as ArrayBufferLike);
 }
 
 async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {
@@ -367,16 +370,19 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
 // leaves the request slot free, which is what stops a backed-up connection from
 // starving the window's poll.
 async function postWithRetry(headers: Record<string, string>, body: Uint8Array): Promise<void> {
-    let wait = 0;
+    // Never retry with zero delay. The receiver being behind is a condition
+    // that takes time to clear, and an immediate retry is a busy loop of
+    // fetches — each one a scheme-handler round trip, and on the host a cgo
+    // call. Start at 1 ms and ramp.
+    let wait = 1;
     for (;;) {
         const resp = await fetch(streamURL("send"), { method: "POST", headers, body: body as BodyInit });
         if (resp.ok) return;
         if (resp.status !== 429) {
             throw new Error(await resp.text());
         }
-        // Yield, then ramp gently: the receiver is behind, not broken.
         await sleep(wait);
-        wait = wait === 0 ? 1 : Math.min(wait * 2, 50);
+        wait = Math.min(wait * 2, 50);
     }
 }
 

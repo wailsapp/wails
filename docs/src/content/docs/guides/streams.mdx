@@ -134,7 +134,7 @@ Errors are `ErrStreamClosed` (the peer is gone) and `ErrStreamFull` (from `TrySe
 |---|---|
 | `readyState` + `CONNECTING`/`OPEN`/`CLOSING`/`CLOSED` | |
 | `onopen`, `onmessage`, `onclose`, `onerror` | plus `addEventListener` |
-| `send(data)` | string, `ArrayBuffer`, typed array, or `Blob` |
+| `send(data)` | string, `ArrayBuffer`, typed array, or `Blob` — see ownership below |
 | `JSONStream(name)` | same object, objects in and out |
 | `close(code, reason)` | |
 | `binaryType` | **defaults to `"arraybuffer"`**, not `"blob"` |
@@ -147,6 +147,12 @@ always binary, and a `Blob` would force an extra async hop to read every message
 
 Many connections to the same stream name are allowed, from one window or several. Each
 gets its own `StreamConn` and its own handler goroutine.
+
+**Buffer ownership.** `send()` does not copy. A frame is queued behind any sends already
+in flight, and the bytes are read when the request is issued, so do not mutate or reuse a
+buffer you have passed to `send()` until it has gone out. Copying every frame was measured
+to cost more than it was worth: at several hundred MB/s the allocation churn dominates the
+transport. Pass a fresh buffer, or a string, if you want to reuse storage.
 
 ## Lifecycle
 
