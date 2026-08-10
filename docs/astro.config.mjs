@@ -326,7 +326,7 @@ export default defineConfig({
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
                 { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
-                { label: "Testing", link: "/guides/dev/testing" },
+                { label: "Testing", link: "/guides/testing" },
               ],
             },
             {
@@ -349,9 +349,9 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "In-App Updater", link: "/guides/updater" },
-                { label: "File Associations", link: "/guides/distribution/file-associations" },
+                { label: "File Associations", link: "/guides/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
-                { label: "Single Instance", link: "/guides/distribution/single-instance" },
+                { label: "Single Instance", link: "/guides/single-instance" },
               ],
             },
             {
@@ -359,8 +359,8 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "Frontend Routing", link: "/guides/routing" },
-                { label: "Using Gin Router", link: "/guides/patterns/gin-routing" },
-                { label: "Gin Services", link: "/guides/patterns/gin-services" },
+                { label: "Using Gin Router", link: "/guides/gin-routing" },
+                { label: "Gin Services", link: "/guides/gin-services" },
                 { label: "Database Integration", link: "/guides/patterns/database" },
                 { label: "REST APIs", link: "/guides/patterns/rest-api" },
               ],
@@ -372,8 +372,8 @@ export default defineConfig({
                 { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
-                { label: "Panic Handling", link: "/guides/advanced/panic-handling" },
-                { label: "Security Best Practices", link: "/guides/advanced/security" },
+                { label: "Panic Handling", link: "/guides/panic-handling" },
+                { label: "Security Best Practices", link: "/guides/security" },
               ],
             },
           ],
