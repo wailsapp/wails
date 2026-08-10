@@ -23,7 +23,7 @@ import (
 // Pending message dialogs keyed by callback ID
 var (
 	iosDialogsLock    sync.Mutex
-	iosPendingDialogs = make(map[uint]*MessageDialog)
+	iosPendingDialogs      = make(map[uint]*MessageDialog)
 	iosNextDialogID   uint = 1
 )
 

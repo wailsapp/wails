@@ -148,11 +148,12 @@ always binary, and a `Blob` would force an extra async hop to read every message
 Many connections to the same stream name are allowed, from one window or several. Each
 gets its own `StreamConn` and its own handler goroutine.
 
-**Buffer ownership.** `send()` does not copy. A frame is queued behind any sends already
-in flight, and the bytes are read when the request is issued, so do not mutate or reuse a
-buffer you have passed to `send()` until it has gone out. Copying every frame was measured
-to cost more than it was worth: at several hundred MB/s the allocation churn dominates the
-transport. Pass a fresh buffer, or a string, if you want to reuse storage.
+**Buffer ownership — neither side copies.** `Send` queues your slice and `send()` queues
+your buffer; the bytes are read when the frame is written. Do not mutate or reuse either
+until the frame has gone out. A real WebSocket copies on send, and this deliberately does
+not: matching the API shape is the goal, and a memcpy per frame is the single largest cost
+at these rates — removing it took JS→Go from 1,568 to 2,793 MB/s. Hand over a fresh buffer,
+or a string, if you want to reuse storage.
 
 ## Lifecycle
 
@@ -199,7 +200,7 @@ Measured with `v3/tests/stream-performance`, unthrottled, 0 drops and 0 reorders
 
 | | Go→JS peak | JS→Go peak |
 |---|---:|---:|
-| macOS / WebKit-Cocoa | **2,141 MB/s** | 1,507 MB/s |
+| macOS / WebKit-Cocoa | **3,117 MB/s** | 2,793 MB/s |
 | Linux / WebKitGTK | 226 MB/s | 727 MB/s |
 | Windows / WebView2 | 100 MB/s | 99 MB/s |
 

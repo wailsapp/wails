@@ -7,8 +7,8 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 type nonClientHitTestState struct {

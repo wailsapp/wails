@@ -119,13 +119,13 @@ func TestRect_Contains(t *testing.T) {
 		point    Point
 		expected bool
 	}{
-		{Point{X: 10, Y: 20}, true},   // top-left corner
-		{Point{X: 50, Y: 100}, true},  // inside
-		{Point{X: 109, Y: 219}, true}, // inside corner
+		{Point{X: 10, Y: 20}, true},    // top-left corner
+		{Point{X: 50, Y: 100}, true},   // inside
+		{Point{X: 109, Y: 219}, true},  // inside corner
 		{Point{X: 110, Y: 220}, false}, // corner (exclusive)
-		{Point{X: 0, Y: 0}, false},    // outside
-		{Point{X: 9, Y: 20}, false},   // left of rect
-		{Point{X: 10, Y: 19}, false},  // above rect
+		{Point{X: 0, Y: 0}, false},     // outside
+		{Point{X: 9, Y: 20}, false},    // left of rect
+		{Point{X: 10, Y: 19}, false},   // above rect
 		{Point{X: 111, Y: 100}, false}, // right of rect
 		{Point{X: 50, Y: 221}, false},  // below rect
 	}
@@ -268,10 +268,10 @@ func TestScreen_scale(t *testing.T) {
 		toDip    bool
 		expected int
 	}{
-		{100, true, 50},    // to DIP: 100 / 2 = 50
-		{100, false, 200},  // to physical: 100 * 2 = 200
-		{101, true, 51},    // to DIP: ceil(101 / 2) = 51
-		{101, false, 202},  // to physical: floor(101 * 2) = 202
+		{100, true, 50},   // to DIP: 100 / 2 = 50
+		{100, false, 200}, // to physical: 100 * 2 = 200
+		{101, true, 51},   // to DIP: ceil(101 / 2) = 51
+		{101, false, 202}, // to physical: floor(101 * 2) = 202
 		{0, true, 0},
 		{0, false, 0},
 	}
@@ -292,10 +292,10 @@ func TestScreen_scale_1_5(t *testing.T) {
 		toDip    bool
 		expected int
 	}{
-		{150, true, 100},   // to DIP: ceil(150 / 1.5) = 100
-		{100, false, 150},  // to physical: floor(100 * 1.5) = 150
-		{100, true, 67},    // to DIP: ceil(100 / 1.5) = 67
-		{67, false, 100},   // to physical: floor(67 * 1.5) = 100
+		{150, true, 100},  // to DIP: ceil(150 / 1.5) = 100
+		{100, false, 150}, // to physical: floor(100 * 1.5) = 150
+		{100, true, 67},   // to DIP: ceil(100 / 1.5) = 67
+		{67, false, 100},  // to physical: floor(67 * 1.5) = 100
 	}
 
 	for _, tt := range tests {

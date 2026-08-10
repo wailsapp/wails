@@ -18,7 +18,7 @@ import (
 // Pending message dialogs keyed by callback ID
 var (
 	androidDialogsLock    sync.Mutex
-	androidPendingDialogs = make(map[uint]*MessageDialog)
+	androidPendingDialogs      = make(map[uint]*MessageDialog)
 	androidNextDialogID   uint = 1
 )
 

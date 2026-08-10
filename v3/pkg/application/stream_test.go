@@ -672,9 +672,10 @@ func TestStreamControlFramesBypassFullQueue(t *testing.T) {
 	}
 }
 
-// Copilot review: Send reports acceptance before a poll encodes the frame, so
-// the queue must not alias the caller's buffer.
-func TestStreamSendCopiesPayload(t *testing.T) {
+// Send queues the caller's slice rather than copying it. The ownership rule is
+// documented on Send; this pins the behaviour so a copy is not reintroduced for
+// tidiness, since at these rates a memcpy per frame is the dominant cost.
+func TestStreamSendDoesNotCopyPayload(t *testing.T) {
 	_, s := newTestSession(t)
 	c := newTestConn(s, 1)
 
@@ -682,17 +683,15 @@ func TestStreamSendCopiesPayload(t *testing.T) {
 	if err := c.Send(buf); err != nil {
 		t.Fatalf("Send: %v", err)
 	}
-	copy(buf, "MUTATED!")
 
 	s.mu.Lock()
 	frames, _ := s.drainLocked(streamMaxResponseBytes)
 	s.mu.Unlock()
-
 	if len(frames) != 1 {
 		t.Fatalf("got %d frames", len(frames))
 	}
-	if string(frames[0].data) != "original" {
-		t.Fatalf("frame changed under the caller: %q", frames[0].data)
+	if &frames[0].data[0] != &buf[0] {
+		t.Fatal("frame does not alias the caller's slice; a copy was reintroduced")
 	}
 }
 

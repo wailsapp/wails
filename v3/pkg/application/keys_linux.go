@@ -15,7 +15,7 @@ var VirtualKeyCodes = map[uint]string{
 	0xffff: "delete",
 	0xff50: "home",
 	0xff51: "left",
-	
+
 	0xffe1: "lshift",
 	0xffe2: "rshift",
 	0xffe3: "lcontrol",
@@ -50,7 +50,6 @@ var VirtualKeyCodes = map[uint]string{
 	0xff56: "pagedown",
 	0xff57: "end",
 	0xff58: "begin",
-
 
 	// Alphabet
 	0x41: "a",
@@ -160,6 +159,4 @@ var VirtualKeyCodes = map[uint]string{
 	0xffd3: "f22",
 	0xffd4: "f23",
 	0xffd5: "f24",
-
-
 }

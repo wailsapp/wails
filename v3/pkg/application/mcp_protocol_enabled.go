@@ -40,9 +40,9 @@ type mcpJSONRPCError struct {
 }
 
 type mcpJSONRPCResponse struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      json.RawMessage `json:"id"`
-	Result  any             `json:"result,omitempty"`
+	JSONRPC string           `json:"jsonrpc"`
+	ID      json.RawMessage  `json:"id"`
+	Result  any              `json:"result,omitempty"`
 	Error   *mcpJSONRPCError `json:"error,omitempty"`
 }
 

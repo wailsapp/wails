@@ -145,18 +145,13 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		s.space.Wait()
 	}
 
-	// Copy: Send reports acceptance before a poll encodes the frame, so
-	// retaining the caller's slice would let a reused or pooled buffer alter a
-	// frame already acknowledged. Go's convention is that a writer does not
-	// retain what it is given.
-	var payload []byte
-	if len(data) > 0 {
-		payload = make([]byte, len(data))
-		copy(payload, data)
-	}
-
-	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: payload})
-	s.outBytes += len(payload)
+	// The frame retains the caller's slice. Copying here would be a full memcpy
+	// per frame, and at gigabytes per second that dominates the transport for
+	// no benefit that callers cannot get themselves: almost every caller hands
+	// over freshly marshalled bytes. The ownership rule is documented on Send
+	// instead — do not mutate a slice after passing it.
+	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
+	s.outBytes += len(data)
 	s.wake()
 	return nil
 }

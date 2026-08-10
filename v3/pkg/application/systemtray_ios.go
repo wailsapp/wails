@@ -15,7 +15,6 @@ func (t *SystemTray) close() {
 	// iOS doesn't have system tray
 }
 
-
 func (t *SystemTray) attachWindow(window *WebviewWindow) {
 	// iOS doesn't have system tray
 }

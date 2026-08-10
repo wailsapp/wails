@@ -114,12 +114,12 @@ func TestWindowsAutostartDisableNoOp(t *testing.T) {
 
 func TestParseWindowsCommandExe(t *testing.T) {
 	cases := map[string]string{
-		`C:\app\foo.exe`:                  `c:\app\foo.exe`,
-		`"C:\Program Files\foo\foo.exe"`:  `c:\program files\foo\foo.exe`,
-		`C:\app\foo.exe --flag`:           `c:\app\foo.exe`,
-		`"C:\app\foo.exe" --flag`:         `c:\app\foo.exe`,
-		``:                                ``,
-		`  C:\app\foo.exe`:                `c:\app\foo.exe`,
+		`C:\app\foo.exe`:                 `c:\app\foo.exe`,
+		`"C:\Program Files\foo\foo.exe"`: `c:\program files\foo\foo.exe`,
+		`C:\app\foo.exe --flag`:          `c:\app\foo.exe`,
+		`"C:\app\foo.exe" --flag`:        `c:\app\foo.exe`,
+		``:                               ``,
+		`  C:\app\foo.exe`:               `c:\app\foo.exe`,
 	}
 	for in, want := range cases {
 		if got := parseWindowsCommandExe(in); got != want {
@@ -130,16 +130,16 @@ func TestParseWindowsCommandExe(t *testing.T) {
 
 func TestQuoteWindowsArg(t *testing.T) {
 	cases := map[string]string{
-		`foo`:               `foo`,
-		``:                  `""`,
-		`hello world`:       `"hello world"`,
-		`C:\Program Files`:  `"C:\Program Files"`,
-		`a"b`:               `"a\"b"`,
-		`a\b`:               `a\b`,
-		`a\"b`:              `"a\\\"b"`,
-		`a\\"b`:             `"a\\\\\"b"`,
-		`trailing\`:         `trailing\`,
-		`with space\`:       `"with space\\"`,
+		`foo`:              `foo`,
+		``:                 `""`,
+		`hello world`:      `"hello world"`,
+		`C:\Program Files`: `"C:\Program Files"`,
+		`a"b`:              `"a\"b"`,
+		`a\b`:              `a\b`,
+		`a\"b`:             `"a\\\"b"`,
+		`a\\"b`:            `"a\\\\\"b"`,
+		`trailing\`:        `trailing\`,
+		`with space\`:      `"with space\\"`,
 	}
 	for in, want := range cases {
 		if got := quoteWindowsArg(in); got != want {

@@ -13,8 +13,8 @@ import (
 // EventIPCTransport.DispatchWailsEvent, so the placeholders never run.
 type lockProbeWindow struct {
 	Window
-	app                *App
-	acquiredWriteLock  bool
+	app               *App
+	acquiredWriteLock bool
 }
 
 func (w *lockProbeWindow) DispatchWailsEvent(_ *CustomEvent) {

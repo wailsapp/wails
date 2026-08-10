@@ -163,6 +163,12 @@ func (c *StreamConn) Window() Window {
 // window's outbound buffer is full, the way a socket write blocks on a full
 // send buffer, and returns ErrStreamClosed once the connection is gone.
 //
+// The frame is queued, not copied. Do not mutate or reuse data after passing it
+// to Send; hand over a slice the transport can own until it is delivered. This
+// deviates from a real WebSocket, which copies on send — matching the API shape
+// is the goal, and a memcpy per frame costs more than it is worth at the rates
+// this sustains.
+//
 // It never touches the main thread, and never reaches evaluateJavaScript.
 func (c *StreamConn) Send(data []byte) error {
 	return c.sink.enqueue(c, c.id, frameData, data, true)

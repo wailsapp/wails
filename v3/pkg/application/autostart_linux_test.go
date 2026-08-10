@@ -80,10 +80,10 @@ func TestLinuxAutostartCustomIdentifier(t *testing.T) {
 
 func TestLinuxQuoteExec(t *testing.T) {
 	cases := map[string]string{
-		"/usr/bin/foo":            "/usr/bin/foo",
-		"/path with spaces/foo":   `"/path with spaces/foo"`,
-		`/has"quote`:              `"/has\"quote"`,
-		`/has\back`:               `"/has\\back"`,
+		"/usr/bin/foo":          "/usr/bin/foo",
+		"/path with spaces/foo": `"/path with spaces/foo"`,
+		`/has"quote`:            `"/has\"quote"`,
+		`/has\back`:             `"/has\\back"`,
 	}
 	for in, want := range cases {
 		if got := quoteExec(in); got != want {
@@ -94,11 +94,11 @@ func TestLinuxQuoteExec(t *testing.T) {
 
 func TestDesktopExecPath(t *testing.T) {
 	cases := map[string]string{
-		"Exec=/usr/bin/foo\n":                   "/usr/bin/foo",
-		"Exec=/usr/bin/foo --flag\n":            "/usr/bin/foo",
-		`Exec="/path with spaces/foo" --flag` + "\n":          "/path with spaces/foo",
-		`[Desktop Entry]` + "\nExec=/x/y\n":     "/x/y",
-		"NoExec=/x\n":                          "",
+		"Exec=/usr/bin/foo\n":                        "/usr/bin/foo",
+		"Exec=/usr/bin/foo --flag\n":                 "/usr/bin/foo",
+		`Exec="/path with spaces/foo" --flag` + "\n": "/path with spaces/foo",
+		`[Desktop Entry]` + "\nExec=/x/y\n":          "/x/y",
+		"NoExec=/x\n":                                "",
 	}
 	for in, want := range cases {
 		if got := desktopExecPath(in); got != want {

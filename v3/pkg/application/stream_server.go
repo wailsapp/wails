@@ -72,16 +72,10 @@ func (w *wsStreamSink) enqueue(c *StreamConn, connID uint32, kind uint8, data []
 		return ErrStreamClosed
 	}
 
-	// Copy for the same reason the desktop sink does: acceptance is reported
-	// before the bytes are written.
-	var payload []byte
-	if len(data) > 0 {
-		payload = make([]byte, len(data))
-		copy(payload, data)
-	}
-
-	w.out = append(w.out, outFrame{connID: connID, kind: kind, data: payload})
-	w.bytes += len(payload)
+	// No copy, as on the desktop: the caller owns the slice until the frame is
+	// written. See StreamConn.Send.
+	w.out = append(w.out, outFrame{connID: connID, kind: kind, data: data})
+	w.bytes += len(data)
 	w.cond.Broadcast()
 	return nil
 }

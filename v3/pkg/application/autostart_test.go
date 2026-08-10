@@ -8,17 +8,17 @@ import (
 
 func TestAutostartSlug(t *testing.T) {
 	cases := map[string]string{
-		"Simple":             "simple",
-		"My App":             "my-app",
-		"My  Cool   App":     "my--cool---app",
-		"Foo/Bar":            "foobar",
-		"  trim me  ":        "trim-me",
-		"All Punc!@#$":       "all-punc",
-		"":                   "wails-app",
-		"héllo":              "hllo",
-		"v1.2.3":             "v1.2.3",
-		"___leading_under":   "leading_under",
-		"...":                "wails-app",
+		"Simple":           "simple",
+		"My App":           "my-app",
+		"My  Cool   App":   "my--cool---app",
+		"Foo/Bar":          "foobar",
+		"  trim me  ":      "trim-me",
+		"All Punc!@#$":     "all-punc",
+		"":                 "wails-app",
+		"héllo":            "hllo",
+		"v1.2.3":           "v1.2.3",
+		"___leading_under": "leading_under",
+		"...":              "wails-app",
 	}
 	for in, want := range cases {
 		t.Run(in, func(t *testing.T) {

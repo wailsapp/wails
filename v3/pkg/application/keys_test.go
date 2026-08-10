@@ -80,11 +80,11 @@ func TestParseKey_Valid(t *testing.T) {
 
 func TestParseKey_Invalid(t *testing.T) {
 	tests := []string{
-		"abc",       // multiple chars
-		"",          // empty
-		"notakey",   // not a named key
-		"ctrl+a",    // shortcut syntax
-		"backspac",  // misspelled
+		"abc",      // multiple chars
+		"",         // empty
+		"notakey",  // not a named key
+		"ctrl+a",   // shortcut syntax
+		"backspac", // misspelled
 	}
 
 	for _, tt := range tests {
@@ -97,9 +97,9 @@ func TestParseKey_Invalid(t *testing.T) {
 
 func TestParseAccelerator_Valid(t *testing.T) {
 	tests := []struct {
-		input      string
-		key        string
-		modCount   int
+		input    string
+		key      string
+		modCount int
 	}{
 		{"a", "a", 0},
 		{"Ctrl+A", "a", 1},
