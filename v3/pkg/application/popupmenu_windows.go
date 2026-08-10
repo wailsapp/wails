@@ -191,6 +191,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		if !ok {
 			return fmt.Errorf("AppendMenu failed for %q: %v", menuText, syscall.GetLastError())
 		}
+		if item.submenu != nil {
+			// The append above passed the submenu HMENU as uIDNewItem, so this
+			// item currently has no command ID. Restore it, otherwise runtime
+			// updates to the submenu item itself are silently dropped.
+			assignCommandID(parentMenu, w32.GetMenuItemCount(parentMenu)-1, menuItemImpl.id)
+		}
 		if item.bitmap != nil {
 			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {

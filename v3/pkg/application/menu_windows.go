@@ -126,6 +126,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 				return err
 			}
 			itemID = int(newSubmenu)
+			menuItemImpl.submenu = newSubmenu
 		}
 
 		thisText := item.Label()
@@ -148,6 +149,12 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		if ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText); !ok {
 			return fmt.Errorf("AppendMenu failed for %q: %v", thisText, syscall.GetLastError())
+		}
+		if item.submenu != nil {
+			// The append above passed the submenu HMENU as uIDNewItem, so this
+			// item currently has no command ID. Restore it, otherwise runtime
+			// updates to the submenu item itself are silently dropped.
+			assignCommandID(parentMenu, w32.GetMenuItemCount(parentMenu)-1, menuItemImpl.id)
 		}
 		if item.bitmap != nil {
 			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)

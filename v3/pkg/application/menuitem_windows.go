@@ -67,6 +67,15 @@ func (m *windowsMenuItem) Enabled() bool {
 	return !m.disabled
 }
 
+// assignCommandID gives an already-appended menu item an explicit command ID.
+func assignCommandID(parentMenu w32.HMENU, position int, id int) bool {
+	var mii w32.MENUITEMINFO
+	mii.CbSize = uint32(unsafe.Sizeof(mii))
+	mii.FMask = w32.MIIM_ID
+	mii.WID = uint32(id)
+	return w32.SetMenuItemInfo(parentMenu, uint32(position), true, &mii)
+}
+
 func (m *windowsMenuItem) update() {
 	w32.SetMenuItemInfo(m.hMenu, uint32(m.id), false, m.getMenuInfo())
 }
