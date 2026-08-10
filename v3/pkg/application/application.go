@@ -77,6 +77,11 @@ func New(appOptions Options) *App {
 	// entries, so the store itself has to be shut down with the app.
 	result.OnShutdown(result.eventPayloads.close)
 
+	// Streams own session state and handler goroutines, so like the payload
+	// store they are shut down with the app rather than per window.
+	result.streams = newStreamManager(result)
+	result.OnShutdown(result.streams.close)
+
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
 
@@ -121,6 +126,14 @@ func New(appOptions Options) *App {
 				// than being spliced into an evaluateJavaScript source string.
 				if strings.HasPrefix(path, eventPayloadPath) {
 					result.serveEventPayload(rw, req)
+					return
+				}
+				// GoStream: the poll is held here for as long as the frontend
+				// has nothing to collect. Safe because every webview request
+				// gets its own goroutine (see the dispatchWorkers note in
+				// assetserver_webview.go).
+				if strings.HasPrefix(path, streamPath) {
+					result.serveStream(rw, req)
 					return
 				}
 				switch path {
@@ -457,7 +470,12 @@ type App struct {
 	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
 	// fetch from the webview, keeping them out of evaluateJavaScript source.
 	eventPayloads *eventPayloadStore
-	startURL      string
+
+	// streams holds registered stream handlers and the per-page sessions that
+	// carry their connections. See stream.go.
+	streams *streamManager
+
+	startURL string
 
 	// Hooks
 	windowCreatedCallbacks []func(window Window)
