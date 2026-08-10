@@ -288,6 +288,31 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusNoContent)
 }
 
+// readStreamFrameBody reads the whole body in one allocation.
+//
+// io.ReadAll starts at 512 bytes and doubles, so a 512 KB frame costs about
+// eleven allocations and a megabyte of copying — on the hottest path there is,
+// once per frame. The webview gives us Content-Length, so size the buffer
+// exactly and read straight into it.
+func readStreamFrameBody(req *http.Request) ([]byte, error) {
+	if n := req.ContentLength; n > 0 {
+		if n > streamMaxSendBytes {
+			return nil, errStreamBadBody
+		}
+		buf := make([]byte, n)
+		if _, err := io.ReadFull(req.Body, buf); err != nil {
+			return nil, errStreamBadBody
+		}
+		return buf, nil
+	}
+	// No Content-Length (some platforms omit it): fall back to growing.
+	data, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, errStreamBadBody
+	}
+	return data, nil
+}
+
 // readStreamBody returns the frame body, reassembling it first if the client
 // split it. complete is false when this request carried a non-final chunk.
 func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete bool, err error) {
@@ -295,9 +320,9 @@ func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete 
 
 	chunkID := req.Header.Get(streamHeaderChunkID)
 	if chunkID == "" {
-		data, err := io.ReadAll(req.Body)
+		data, err := readStreamFrameBody(req)
 		if err != nil {
-			return nil, false, errStreamBadBody
+			return nil, false, err
 		}
 		return data, true, nil
 	}
@@ -311,9 +336,9 @@ func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete 
 		return nil, false, errStreamBadChunk
 	}
 
-	data, err := io.ReadAll(req.Body)
+	data, err := readStreamFrameBody(req)
 	if err != nil {
-		return nil, false, errStreamBadBody
+		return nil, false, err
 	}
 
 	assembled, done, err := s.chunks().add(chunkID, index, total, data)
