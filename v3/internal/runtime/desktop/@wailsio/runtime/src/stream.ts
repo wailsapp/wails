@@ -27,8 +27,10 @@ The electron alternative for Go
 import { nanoid } from "./nanoid.js";
 import { hasDOM } from "./environment.js";
 
-// One session per page load, exactly like the runtime's clientId. A reload gets
-// a new one, which is what makes a reload look like a closed socket to Go.
+// One session per page load, like the runtime's clientId. A reload gets a new
+// one, which is what makes a reload look like a closed socket to Go. nanoid is
+// backed by crypto.getRandomValues, which matters in server mode where there is
+// no window-id header to bind the session against.
 const sessionID = nanoid();
 
 const HDR_SESSION = "x-wails-stream-session";
@@ -107,6 +109,13 @@ export class WailsSocket extends EventTarget {
     onclose: ((ev: CloseEvent) => void) | null = null;
     onerror: ((ev: Event) => void) | null = null;
 
+    /**
+     * @internal Applied to every inbound payload before dispatch. JSONStream
+     * replaces it, so `onmessage` and `addEventListener("message", …)` see the
+     * same decoded value — intercepting only `onmessage` made the two disagree.
+     */
+    _decode: (payload: ArrayBuffer) => unknown = (payload) => payload;
+
     /** @internal */ readonly _id: number;
     private _buffered = 0;
     // Sends are serialised per connection: concurrent fetch() POSTs do not
@@ -154,8 +163,14 @@ export class WailsSocket extends EventTarget {
             return;
         }
 
+        // Snapshot now, not inside the chain: conversion deferred until the
+        // send actually runs would read the caller's buffer later, so reusing
+        // a typed array right after send() could change a frame already
+        // queued — or make several queued sends share one final value.
+        const snapshot = toBytes(data);
+
         this._chain = this._chain.then(async () => {
-            const bytes = await toBytes(data);
+            const bytes = await snapshot;
             this._buffered += bytes.byteLength;
             try {
                 await postFrame(this._id, KIND_DATA, bytes);
@@ -192,7 +207,16 @@ export class WailsSocket extends EventTarget {
     /** @internal Called for each data frame addressed to this connection. */
     _message(payload: ArrayBuffer): void {
         if (this.readyState !== WailsSocket.OPEN) return;
-        const data = this.binaryType === "blob" ? new Blob([payload]) : payload;
+        let data: unknown;
+        try {
+            data = this._decode(payload);
+        } catch {
+            this.dispatchEvent(new Event("error"));
+            return;
+        }
+        if (data === payload && this.binaryType === "blob") {
+            data = new Blob([payload]);
+        }
         this.dispatchEvent(new MessageEvent("message", { data }));
     }
 
@@ -255,6 +279,15 @@ function defineHandlerProperty(target: EventTarget, type: string): void {
 }
 
 /**
+ * The object-shaped view of a stream returned by {@link JSONStream}: `send`
+ * takes a value to stringify, and `ev.data` on a message is the parsed result.
+ */
+export interface JSONSocket extends Omit<WailsSocket, "send" | "onmessage"> {
+    send(value: unknown): void;
+    onmessage: ((ev: MessageEvent<any>) => void) | null;
+}
+
+/**
  * A {@link Stream} that speaks objects instead of bytes.
  *
  * `send(value)` marshals with `JSON.stringify`, and `ev.data` in an `onmessage`
@@ -270,37 +303,18 @@ function defineHandlerProperty(target: EventTarget, type: string): void {
  * A frame that is not valid JSON raises an `error` event and is dropped, rather
  * than throwing from the poll loop and taking the connection down with it.
  */
-export function JSONStream(name: string): WailsSocket | WebSocket {
-    const socket = Stream(name);
+export function JSONStream(name: string): JSONSocket {
+    const socket = Stream(name) as WailsSocket;
     const decoder = new TextDecoder();
 
-    // Take ownership of onmessage before the caller can assign to it, so the
-    // handler only ever sees decoded objects.
-    let handler: ((ev: MessageEvent) => void) | null = null;
-    Object.defineProperty(socket, "onmessage", {
-        get: () => handler,
-        set(fn) { handler = typeof fn === "function" ? fn : null; },
-        configurable: true,
-        enumerable: true,
-    });
-
-    socket.addEventListener("message", (ev: Event) => {
-        if (!handler) return;
-        const raw = (ev as MessageEvent).data;
-        let value: unknown;
-        try {
-            value = JSON.parse(typeof raw === "string" ? raw : decoder.decode(raw));
-        } catch {
-            socket.dispatchEvent(new Event("error"));
-            return;
-        }
-        handler(new MessageEvent("message", { data: value }));
-    });
+    // Decoding here rather than by wrapping onmessage means addEventListener
+    // listeners see the parsed object too.
+    socket._decode = (payload) => JSON.parse(decoder.decode(payload));
 
     const send = socket.send.bind(socket);
-    (socket as any).send = (value: unknown) => send(JSON.stringify(value));
+    (socket as unknown as JSONSocket).send = (value: unknown) => send(JSON.stringify(value));
 
-    return socket;
+    return socket as unknown as JSONSocket;
 }
 
 async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {
@@ -310,10 +324,12 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
     if (typeof Blob !== "undefined" && data instanceof Blob) {
         return new Uint8Array(await data.arrayBuffer());
     }
+    // Copy rather than view: the caller may reuse or mutate the buffer as soon
+    // as send() returns, and the frame must not change under it.
     if (ArrayBuffer.isView(data)) {
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
     }
-    return new Uint8Array(data as ArrayBufferLike);
+    return new Uint8Array((data as ArrayBuffer).slice(0));
 }
 
 async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {

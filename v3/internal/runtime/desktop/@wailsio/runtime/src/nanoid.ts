@@ -30,13 +30,34 @@
 const urlAlphabet =
     'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
+// MODIFIED FOR WAILS: the upstream implementation draws from Math.random(),
+// which is not a cryptographic source. These ids are used for the runtime
+// client id, binding call ids and stream session ids, and at least one of those
+// (a stream session in server mode, where no window-id header exists to bind
+// against) is reachable by anything that can reach the port. Predictable ids
+// there would be guessable. The alphabet is 64 characters, so masking a random
+// byte with 63 is uniform — no rejection sampling needed.
 export function nanoid(size: number = 21): string {
-    let id = ''
-    // A compact alternative for `for (var i = 0; i < step; i++)`.
-    let i = size | 0
-    while (i--) {
-        // `| 0` is more compact and faster than `Math.floor()`.
-        id += urlAlphabet[(Math.random() * 64) | 0]
+    const source = typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function"
+        ? crypto
+        : null;
+
+    if (source) {
+        const bytes = new Uint8Array(size);
+        source.getRandomValues(bytes);
+        let id = '';
+        for (let i = 0; i < size; i++) {
+            id += urlAlphabet[bytes[i] & 63];
+        }
+        return id;
     }
-    return id
+
+    // Fallback for environments without Web Crypto (very old engines, some
+    // server-side rendering contexts). Ids remain unique but not unguessable.
+    let id = '';
+    let i = size | 0;
+    while (i--) {
+        id += urlAlphabet[(Math.random() * 64) | 0];
+    }
+    return id;
 }

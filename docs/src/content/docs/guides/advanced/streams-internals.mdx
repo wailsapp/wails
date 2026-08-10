@@ -100,6 +100,7 @@ All in `stream.go`. **They are compile-time constants, not options** — there i
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
 | `streamSessionTTL` | 60 s | no poll for this long ⇒ session is dead |
 | `streamMaxSendBytes` | 64 MB | one JS→Go frame |
+| `streamInQueueDepth` / `streamInQueueBytes` | 256 / 8 MB | frames received and not yet taken by `Receive` |
 
 ### How to pick them
 
@@ -126,6 +127,20 @@ accumulates the entire body in memory and only hands it over in `Finish`, so an 
 response is an unbounded allocation there. Raising it does *not* buy Windows throughput —
 measured, the Windows bottleneck is per-byte, not per-response: responses/s varies 4×
 across the frame sweep while MB/s stays flat at ~90.
+
+**The inbound bound is what makes the frontend wait.** `deliver` blocks while a
+connection's inbox is full, which on the desktop leaves the client's `fetch` unresolved so
+it cannot post again, and in server mode stalls the socket read pump so TCP does the rest.
+Without it a handler slow to call `Receive` let the frontend grow host memory without
+limit.
+
+**Control frames bypass every cap.** Losing a data frame under backpressure is a
+slow-down; losing an open ack leaves the frontend in `CONNECTING` forever, and losing a
+close leaves it believing a dead connection is live.
+
+**Frames are copied on the way in.** `Send` reports acceptance before a poll encodes the
+frame, so retaining the caller's slice would let a pooled or reused buffer alter a frame
+already acknowledged. The client snapshots at its `send()` boundary for the same reason.
 
 **`streamSessionTTL` must stay comfortably above `streamHoldTimeout`**, or a session would
 be reaped while its own poll is legitimately parked.

@@ -582,13 +582,13 @@ func TestStreamChunkAssembly(t *testing.T) {
 	parts := [][]byte{[]byte("one "), []byte("two "), []byte("three")}
 	// Deliver out of order: only the last arrival completes the frame, and the
 	// result must still be in index order.
-	if got, done := store.add("c1", 2, 3, parts[2]); done || got != nil {
+	if got, done, _ := store.add("c1", 2, 3, parts[2]); done || got != nil {
 		t.Fatal("completed early on the first chunk")
 	}
-	if _, done := store.add("c1", 0, 3, parts[0]); done {
+	if _, done, _ := store.add("c1", 0, 3, parts[0]); done {
 		t.Fatal("completed early on the second chunk")
 	}
-	got, done := store.add("c1", 1, 3, parts[1])
+	got, done, _ := store.add("c1", 1, 3, parts[1])
 	if !done {
 		t.Fatal("did not complete on the final chunk")
 	}
@@ -603,11 +603,175 @@ func TestStreamChunkAssembly(t *testing.T) {
 func TestStreamChunkRejectsInconsistentTotal(t *testing.T) {
 	store := &streamChunkStore{items: make(map[string]*streamChunkSet)}
 
-	if _, done := store.add("c1", 0, 3, []byte("a")); done {
+	if _, done, _ := store.add("c1", 0, 3, []byte("a")); done {
 		t.Fatal("completed on the first of three chunks")
 	}
-	if _, done := store.add("c1", 1, 4, []byte("b")); done {
+	if _, done, err := store.add("c1", 1, 4, []byte("b")); done || err == nil {
 		t.Fatal("accepted a chunk claiming a different total")
+	}
+	if len(store.items) != 0 {
+		t.Fatal("inconsistent set was not discarded")
+	}
+}
+
+// Copilot review: a handler that simply returns must tell the frontend. The
+// wrapper used to defer shutdown(), which cancels the connection but queues no
+// close frame, so the browser socket stayed open and onclose never fired.
+func TestStreamHandlerReturnNotifiesFrontend(t *testing.T) {
+	mgr, s := newTestSession(t)
+	done := make(chan struct{})
+	mgr.handlers["brief"] = func(c *StreamConn) { close(done) }
+
+	s.open(3, "brief")
+	<-done
+	time.Sleep(50 * time.Millisecond)
+
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+
+	var sawClose bool
+	for _, f := range frames {
+		if f.kind == frameClose && f.connID == 3 {
+			sawClose = true
+		}
+	}
+	if !sawClose {
+		t.Fatalf("no close frame after the handler returned; frames=%+v", frames)
+	}
+}
+
+// Copilot review: control frames must not be dropped by data backpressure. A
+// lost open ack leaves the frontend in CONNECTING forever.
+func TestStreamControlFramesBypassFullQueue(t *testing.T) {
+	mgr, s := newTestSession(t)
+	mgr.handlers["late"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	filler := newTestConn(s, 99)
+	for i := 0; i < streamOutQueueDepth; i++ {
+		if err := s.enqueue(filler, 99, frameData, []byte("x"), false); err != nil {
+			t.Fatalf("fill %d: %v", i, err)
+		}
+	}
+	if err := s.enqueue(filler, 99, frameData, []byte("x"), false); err != ErrStreamFull {
+		t.Fatalf("queue not full: %v", err)
+	}
+
+	s.open(7, "late")
+
+	s.mu.Lock()
+	var sawOpen bool
+	for _, f := range s.out {
+		if f.kind == frameOpen && f.connID == 7 {
+			sawOpen = true
+		}
+	}
+	s.mu.Unlock()
+	if !sawOpen {
+		t.Fatal("open ack dropped because data frames had filled the queue")
+	}
+}
+
+// Copilot review: Send reports acceptance before a poll encodes the frame, so
+// the queue must not alias the caller's buffer.
+func TestStreamSendCopiesPayload(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	buf := []byte("original")
+	if err := c.Send(buf); err != nil {
+		t.Fatalf("Send: %v", err)
+	}
+	copy(buf, "MUTATED!")
+
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+
+	if len(frames) != 1 {
+		t.Fatalf("got %d frames", len(frames))
+	}
+	if string(frames[0].data) != "original" {
+		t.Fatalf("frame changed under the caller: %q", frames[0].data)
+	}
+}
+
+// Copilot review: the inbound queue was unbounded, so a frontend could grow
+// host memory without limit against a handler that is slow to Receive.
+func TestStreamInboundQueueBounded(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	for i := 0; i < streamInQueueDepth; i++ {
+		if err := c.deliver([]byte("x")); err != nil {
+			t.Fatalf("fill %d: %v", i, err)
+		}
+	}
+
+	blocked := make(chan error, 1)
+	go func() { blocked <- c.deliver([]byte("y")) }()
+
+	select {
+	case err := <-blocked:
+		t.Fatalf("deliver past the bound returned early: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	if _, err := c.Receive(); err != nil {
+		t.Fatalf("Receive: %v", err)
+	}
+
+	select {
+	case err := <-blocked:
+		if err != nil {
+			t.Fatalf("deliver after Receive freed space: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("deliver never woke after Receive made room")
+	}
+}
+
+func TestStreamInboundUnblocksOnClose(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	for i := 0; i < streamInQueueDepth; i++ {
+		_ = c.deliver([]byte("x"))
+	}
+	blocked := make(chan error, 1)
+	go func() { blocked <- c.deliver([]byte("y")) }()
+
+	time.Sleep(50 * time.Millisecond)
+	c.shutdown()
+
+	select {
+	case err := <-blocked:
+		if err != ErrStreamClosed {
+			t.Fatalf("blocked deliver = %v, want ErrStreamClosed", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("blocked deliver never unblocked on close")
+	}
+}
+
+// Copilot review: a rejected chunk set answered 204, so the client believed the
+// frame had been sent, and an inconsistent total leaked its bytes forever.
+func TestStreamChunkRejectionIsReportedAndAccounted(t *testing.T) {
+	store := &streamChunkStore{items: make(map[string]*streamChunkSet)}
+
+	if _, done, err := store.add("c1", 0, 3, []byte("abc")); done || err != nil {
+		t.Fatalf("first chunk: done=%v err=%v", done, err)
+	}
+	if store.bytes != 3 {
+		t.Fatalf("bytes = %d, want 3", store.bytes)
+	}
+
+	_, done, err := store.add("c1", 1, 4, []byte("d"))
+	if done || err == nil {
+		t.Fatalf("conflicting total: done=%v err=%v, want an error", done, err)
+	}
+	if store.bytes != 0 {
+		t.Fatalf("bytes = %d after discarding the set, want 0", store.bytes)
 	}
 	if len(store.items) != 0 {
 		t.Fatal("inconsistent set was not discarded")

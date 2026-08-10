@@ -108,14 +108,23 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// Control frames bypass the caps. They are a handful of bytes, and dropping
+	// one is not a slow-down but a protocol failure: a lost open ack leaves the
+	// frontend in CONNECTING forever, and a lost close leaves it believing an
+	// ended connection is live. Data frames alone are subject to backpressure.
+	control := kind != frameData
+
 	for {
 		if s.closed {
 			return ErrStreamClosed
 		}
 		// A closed connection may still emit its own close frame — that is how
 		// the frontend learns — but nothing else.
-		if kind != frameClose && kind != frameError && c != nil && c.ctx.Err() != nil {
+		if !control && c != nil && c.ctx.Err() != nil {
 			return ErrStreamClosed
+		}
+		if control {
+			break
 		}
 		// An empty queue always accepts one frame, however large. Enforcing the
 		// byte cap unconditionally would make a frame bigger than the cap
@@ -136,8 +145,18 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		s.space.Wait()
 	}
 
-	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
-	s.outBytes += len(data)
+	// Copy: Send reports acceptance before a poll encodes the frame, so
+	// retaining the caller's slice would let a reused or pooled buffer alter a
+	// frame already acknowledged. Go's convention is that a writer does not
+	// retain what it is given.
+	var payload []byte
+	if len(data) > 0 {
+		payload = make([]byte, len(data))
+		copy(payload, data)
+	}
+
+	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: payload})
+	s.outBytes += len(payload)
 	s.wake()
 	return nil
 }
@@ -257,7 +276,12 @@ func (s *streamSession) open(connID uint32, name string) {
 
 	go func() {
 		defer handlePanic()
-		defer c.shutdown()
+		// Close, not shutdown: the API says returning from the handler closes
+		// the connection, and the frontend has to be told or its socket stays
+		// open with onclose never firing. Close is idempotent, so a handler
+		// that closed explicitly pays nothing here, and a connection the peer
+		// already closed has had the once consumed by closedByPeer.
+		defer c.Close()
 		handler(c)
 	}()
 }

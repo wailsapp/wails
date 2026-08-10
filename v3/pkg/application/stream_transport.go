@@ -132,8 +132,11 @@ func (a *App) sessionFor(rw http.ResponseWriter, req *http.Request, create bool)
 }
 
 func (a *App) serveStreamPoll(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet && req.Method != http.MethodHead {
-		rw.Header().Set("Allow", "GET, HEAD")
+	// GET only. A HEAD would run the same drain and then have its body
+	// suppressed by net/http, so the frames would be consumed and never
+	// delivered. This is a protocol endpoint, not a resource to probe.
+	if req.Method != http.MethodGet {
+		rw.Header().Set("Allow", "GET")
 		http.Error(rw, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -251,12 +254,16 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		}
 		// Queue before responding. The client does not issue its next send
 		// until this response lands, so append-then-respond is what makes
-		// frontend send order the order the handler observes.
-		c.deliver(body)
+		// frontend send order the order the handler observes — and blocking
+		// here while the handler is behind is what applies backpressure.
+		if err := c.deliver(body); err != nil {
+			http.Error(rw, "connection closed", http.StatusGone)
+			return
+		}
 
 	case frameClose:
 		if c := s.conn(connID); c != nil {
-			c.shutdown()
+			c.closedByPeer()
 		}
 
 	default:
@@ -295,7 +302,10 @@ func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete 
 		return nil, false, errStreamBadBody
 	}
 
-	assembled, done := s.chunks().add(chunkID, index, total, data)
+	assembled, done, err := s.chunks().add(chunkID, index, total, data)
+	if err != nil {
+		return nil, false, err
+	}
 	if !done {
 		return nil, false, nil
 	}
@@ -307,8 +317,11 @@ type streamError string
 func (e streamError) Error() string { return string(e) }
 
 const (
-	errStreamBadBody  streamError = "unable to read frame body"
-	errStreamBadChunk streamError = "invalid chunk headers"
+	errStreamBadBody       streamError = "unable to read frame body"
+	errStreamBadChunk      streamError = "invalid chunk headers"
+	errStreamChunkTooBig   streamError = "assembled frame too large"
+	errStreamChunkConflict streamError = "conflicting chunk total"
+	errStreamChunkDup      streamError = "duplicate chunk index"
 )
 
 // ---------------------------------------------------------------------------
@@ -339,7 +352,12 @@ func (s *streamSession) chunks() *streamChunkStore {
 }
 
 // add stores one chunk and returns the assembled frame once the last one lands.
-func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte, bool) {
+//
+// A rejection is reported as an error rather than as "not done yet". Returning
+// the same not-done signal for both made the endpoint answer 204, so the
+// client's send chain completed successfully while the frame was silently
+// dropped.
+func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte, bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -358,16 +376,19 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 		c.items[id] = set
 	}
 	if set.total != total {
+		// Discard the set, and give back what it was holding — not doing so
+		// consumed that capacity for the life of the session.
+		c.bytes -= set.size
 		delete(c.items, id)
-		return nil, false
+		return nil, false, errStreamChunkConflict
 	}
 	if _, dup := set.parts[index]; dup {
-		return nil, false
+		return nil, false, errStreamChunkDup
 	}
 	if c.bytes+len(data) > streamMaxSendBytes {
 		c.bytes -= set.size
 		delete(c.items, id)
-		return nil, false
+		return nil, false, errStreamChunkTooBig
 	}
 
 	set.parts[index] = data
@@ -375,7 +396,7 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 	c.bytes += len(data)
 
 	if len(set.parts) < total {
-		return nil, false
+		return nil, false, nil
 	}
 
 	assembled := make([]byte, 0, set.size)
@@ -384,5 +405,5 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 	}
 	c.bytes -= set.size
 	delete(c.items, id)
-	return assembled, true
+	return assembled, true, nil
 }

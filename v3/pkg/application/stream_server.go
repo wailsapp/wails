@@ -19,50 +19,130 @@ import (
 // mounted at "/"), so a client that has not installed the WebSocket factory
 // still works, just over the poll.
 
-// wsStreamSink writes a connection's frames straight to a socket.
+// wsStreamSink writes a connection's frames to a socket through a bounded
+// queue drained by a single writer goroutine.
 //
-// There is no outbound buffer and the block flag is ignored, deliberately:
-// websocket.Conn.Write blocks until the frame is written, so the socket's own
-// send buffer already provides exactly the backpressure that the desktop
-// build's bounded queue exists to imitate.
+// Writing inline would be simpler, but websocket.Conn.Write blocks until the
+// peer makes progress, which would make TrySend block in server mode while it
+// does not on the desktop — and the fan-out and broker-callback patterns in the
+// migration guide pick TrySend precisely to avoid stalling their producer. The
+// queue keeps one contract across both transports.
 type wsStreamSink struct {
 	conn *websocket.Conn
 	ctx  context.Context
 
-	// websocket.Conn does not permit concurrent writes.
 	mu     sync.Mutex
+	cond   *sync.Cond
+	out    []outFrame
+	bytes  int
 	closed bool
+}
+
+func newWSStreamSink(ctx context.Context, conn *websocket.Conn) *wsStreamSink {
+	w := &wsStreamSink{conn: conn, ctx: ctx}
+	w.cond = sync.NewCond(&w.mu)
+	go w.pump()
+	return w
 }
 
 func (w *wsStreamSink) enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
+	// Control frames bypass the cap, as on the desktop: losing one is a
+	// protocol failure rather than a slow-down.
+	control := kind != frameData
+
+	for !control {
+		if w.closed {
+			return ErrStreamClosed
+		}
+		if len(w.out) < streamOutQueueDepth &&
+			(len(w.out) == 0 || w.bytes+len(data) <= streamOutQueueBytes) {
+			break
+		}
+		if !block {
+			return ErrStreamFull
+		}
+		w.cond.Wait()
+	}
 	if w.closed {
 		return ErrStreamClosed
 	}
 
-	switch kind {
-	case frameData:
-		if err := w.conn.Write(w.ctx, websocket.MessageBinary, data); err != nil {
-			return ErrStreamClosed
-		}
-	case frameClose:
-		w.closed = true
-		_ = w.conn.Close(websocket.StatusNormalClosure, "")
-	case frameError:
-		w.closed = true
-		_ = w.conn.Close(websocket.StatusInternalError, string(data))
-	case frameOpen:
-		// The handshake is the acknowledgement; there is nothing to send.
+	// Copy for the same reason the desktop sink does: acceptance is reported
+	// before the bytes are written.
+	var payload []byte
+	if len(data) > 0 {
+		payload = make([]byte, len(data))
+		copy(payload, data)
 	}
+
+	w.out = append(w.out, outFrame{connID: connID, kind: kind, data: payload})
+	w.bytes += len(payload)
+	w.cond.Broadcast()
 	return nil
 }
 
-// The connection table and the poll wake-up are session concepts. A socket is
-// its own connection, so both are no-ops here.
-func (w *wsStreamSink) removeConn(uint32) {}
-func (w *wsStreamSink) wake()             {}
+// pump is the single writer. websocket.Conn does not permit concurrent writes,
+// and serialising here also preserves the order frames were accepted in.
+func (w *wsStreamSink) pump() {
+	for {
+		w.mu.Lock()
+		for len(w.out) == 0 && !w.closed {
+			w.cond.Wait()
+		}
+		if w.closed && len(w.out) == 0 {
+			w.mu.Unlock()
+			return
+		}
+		frame := w.out[0]
+		w.out[0] = outFrame{}
+		w.out = w.out[1:]
+		w.bytes -= len(frame.data)
+		w.cond.Broadcast()
+		w.mu.Unlock()
+
+		switch frame.kind {
+		case frameData:
+			if err := w.conn.Write(w.ctx, websocket.MessageBinary, frame.data); err != nil {
+				w.shut(websocket.StatusNormalClosure, "")
+				return
+			}
+		case frameClose:
+			w.shut(websocket.StatusNormalClosure, "")
+			return
+		case frameError:
+			w.shut(websocket.StatusInternalError, string(frame.data))
+			return
+		case frameOpen:
+			// The handshake is the acknowledgement; there is nothing to send.
+		}
+	}
+}
+
+func (w *wsStreamSink) shut(code websocket.StatusCode, reason string) {
+	w.mu.Lock()
+	if w.closed {
+		w.mu.Unlock()
+		return
+	}
+	w.closed = true
+	w.cond.Broadcast()
+	w.mu.Unlock()
+	_ = w.conn.Close(code, reason)
+}
+
+// The connection table is a session concept; a socket is its own connection.
+// removeConn releases the writer so a closing connection cannot leave it parked.
+func (w *wsStreamSink) removeConn(uint32) {
+	w.mu.Lock()
+	w.closed = true
+	w.cond.Broadcast()
+	w.mu.Unlock()
+}
+
+func (w *wsStreamSink) wake() {}
 
 // serveStreamWS upgrades a request and runs the registered handler for the
 // stream named in the query string. The handler runs on this goroutine, so the
@@ -91,10 +171,15 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// coder/websocket defaults to a 32 KiB read limit, which would close the
+	// connection on any frontend frame past that — well below the 64 MB this
+	// transport documents.
+	conn.SetReadLimit(streamMaxSendBytes)
+
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
 
-	sink := &wsStreamSink{conn: conn, ctx: ctx}
+	sink := newWSStreamSink(ctx, conn)
 	c := &StreamConn{
 		name: name,
 		sink: sink,
@@ -114,7 +199,11 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				return
 			}
-			c.deliver(data)
+			// Blocks while the handler is behind, which stalls this read pump
+			// and lets TCP apply backpressure to the peer.
+			if err := c.deliver(data); err != nil {
+				return
+			}
 		}
 	}()
 

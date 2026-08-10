@@ -83,6 +83,17 @@ const (
 	streamSessionTTL = 3 * streamHoldTimeout
 
 	streamSessionSweep = streamHoldTimeout
+
+	// streamInQueueDepth and streamInQueueBytes bound frames received from the
+	// frontend and not yet taken by Receive. Without them a handler that is slow
+	// to call Receive lets the frontend grow host memory without limit: the send
+	// endpoint responds as soon as it has queued a frame, so the client is free
+	// to post the next one immediately. Blocking the delivering goroutine is
+	// what turns that into backpressure — on the desktop the client's fetch
+	// simply does not resolve; in server mode the socket read pump stalls and
+	// TCP does the rest.
+	streamInQueueDepth = 256
+	streamInQueueBytes = 8 << 20
 )
 
 // StreamHandler is invoked once per connection, on its own goroutine. The
@@ -116,9 +127,10 @@ type StreamConn struct {
 	// Inbound frames from the frontend. Ordering is guaranteed by the client
 	// serialising its sends and by handleSend appending before it responds, so
 	// the next send cannot be issued until this one is queued.
-	inMu   sync.Mutex
-	inCond *sync.Cond
-	in     [][]byte
+	inMu    sync.Mutex
+	inCond  *sync.Cond
+	in      [][]byte
+	inBytes int
 
 	closeOnce sync.Once
 }
@@ -192,6 +204,9 @@ func (c *StreamConn) Receive() ([]byte, error) {
 			// frame for as long as the slice header lives.
 			c.in[0] = nil
 			c.in = c.in[1:]
+			c.inBytes -= len(frame)
+			// Wake a delivering goroutine waiting for room.
+			c.inCond.Broadcast()
 			return frame, nil
 		}
 		if c.ctx.Err() != nil {
@@ -214,6 +229,14 @@ func (c *StreamConn) Close() error {
 	return nil
 }
 
+// closedByPeer marks the connection as already closed from the other end, so a
+// later Close() does not queue a close frame to a peer that has gone. It
+// consumes the same sync.Once that Close() uses.
+func (c *StreamConn) closedByPeer() {
+	c.closeOnce.Do(func() {})
+	c.shutdown()
+}
+
 // shutdown tears down the local end without notifying the frontend. Used when
 // the frontend is the one that went away.
 func (c *StreamConn) shutdown() {
@@ -228,12 +251,32 @@ func (c *StreamConn) shutdown() {
 	c.sink.wake()
 }
 
-// deliver queues an inbound frame and wakes a waiting Receive.
-func (c *StreamConn) deliver(data []byte) {
+// deliver queues an inbound frame and wakes a waiting Receive. It blocks while
+// the connection's inbox is full, which is what applies backpressure to the
+// frontend, and returns ErrStreamClosed once the connection is gone.
+//
+// An empty inbox always accepts one frame however large, for the same reason
+// the outbound queue does: the caller does not choose the frame size, so a
+// frame bigger than the cap must not become impossible to deliver.
+func (c *StreamConn) deliver(data []byte) error {
 	c.inMu.Lock()
+	defer c.inMu.Unlock()
+
+	for {
+		if c.ctx.Err() != nil {
+			return ErrStreamClosed
+		}
+		if len(c.in) < streamInQueueDepth &&
+			(len(c.in) == 0 || c.inBytes+len(data) <= streamInQueueBytes) {
+			break
+		}
+		c.inCond.Wait()
+	}
+
 	c.in = append(c.in, data)
-	c.inCond.Signal()
-	c.inMu.Unlock()
+	c.inBytes += len(data)
+	c.inCond.Broadcast()
+	return nil
 }
 
 // ---------------------------------------------------------------------------
