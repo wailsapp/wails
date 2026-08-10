@@ -39,7 +39,7 @@ func TestStreamFrameRoundTrip(t *testing.T) {
 		{connID: 7, kind: frameClose, data: nil},
 	}
 
-	body := encodeStreamFrames(frames, true)
+	body := encodeStreamFrames(nil, frames, true)
 
 	if got := string(body[:4]); got != "WS1\x00" {
 		t.Fatalf("magic = %q, want WS1\\0", got)
