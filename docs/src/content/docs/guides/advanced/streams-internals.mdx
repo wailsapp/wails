@@ -183,8 +183,26 @@ If you add a third transport, put it in the prelude too. Do not be tempted back 
 | Per-connection fairness | not done — connections in a window share one queue, so a flooding connection slows its neighbours |
 | JS→Go frame coalescing | not done — every frame is its own POST, which is why small-frame upload rate is ~100× below the downward rate |
 | Windows throughput | ~100 MB/s, bounded by `WebResourceRequested` marshalling. Shared buffers (`PostSharedBufferToScript`) are the candidate fix; bindings exist under `internal/webview2/pkg/webview2/` but are not wired into `pkg/edge` |
-| `wails3 dev` / Vite | untested with a dev server in front of the asset server |
+| `wails3 dev` / Vite | **works** — verified with a generated `vanilla-js` project: the Vite dev server proxies at `/`, and `/wails/stream/*` is matched by the asset server middleware before the proxy, so streams are unaffected |
 | Multi-window | untested under load, though sessions are window-scoped by construction |
+
+## The frontend package in dev mode
+
+A generated project imports `@wailsio/runtime` from **npm**, not from the bundled
+`/wails/runtime.js` that the asset server serves. Under `wails3 dev`, Vite resolves it from
+`node_modules`, so an app built against a published runtime will not see client-side
+additions made on a branch.
+
+While streams are unreleased, point a test app at the branch's package:
+
+```bash
+npm install file:/path/to/wails/v3/internal/runtime/desktop/@wailsio/runtime
+```
+
+That package ships `dist/`, which is built by `npx tsc` in its directory — separate from
+the esbuild step that produces `bundledassets/runtime.js` for the webview. Both need
+rebuilding after a change to `stream.ts`: `task build:assets` for the bundle, `npx tsc` for
+the npm package.
 
 ## Testing
 
