@@ -13,6 +13,62 @@ for a firewall or endpoint-security product to object to. The API is close enoug
 frontend code is untouched — but **three differences break silently**, and they are listed
 first because they are the ones that will cost you an afternoon.
 
+## The common case: a local HTTP server as a workaround
+
+The usual reason a Wails app has a WebSocket is that there was no other way to push a
+continuous feed to the frontend, so the app stands up its own `http.Server` on a local
+port and the frontend connects back to it. If that is your shape, this migration deletes
+the server outright — and several things you built *around* it go with it.
+
+**The port discovery mechanism goes.** Something has to tell the frontend which port to
+connect to: a bound `GetServerPort()`, a fixed port with a fallback when it is taken, an
+injected global, or a value stashed in `localStorage`. All of it disappears — a stream is
+addressed by name, and the name is a compile-time constant on both sides.
+
+```go
+// BEFORE
+ln, _ := net.Listen("tcp", "127.0.0.1:0")
+go http.Serve(ln, mux)
+port := ln.Addr().(*net.TCPAddr).Port     // ...and a binding to hand `port` to the frontend
+
+// AFTER
+app.HandleStream("feed", handler)         // that is the entire replacement
+```
+
+**CORS configuration goes.** The webview's origin is `wails://` or
+`http://wails.localhost` depending on platform, so a local server needs `CheckOrigin`, an
+`Access-Control-Allow-Origin` header, or both. Streams ride the asset server the page was
+loaded from, so there is no cross-origin request to permit.
+
+**Any auth token you invented goes.** A port bound on localhost is reachable by every
+process on the machine, so a careful implementation adds a token or a nonce to stop other
+software connecting. There is no port to reach any more.
+
+**Non-WebSocket endpoints move to asset server middleware.** These servers rarely stay
+pure — a file download, an image endpoint, a health check tend to accumulate alongside the
+socket. Streams do not replace those, but you do not need a second server for them either.
+Mount the same handlers on the asset server:
+
+```go
+app := application.New(application.Options{
+    Assets: application.AssetOptions{
+        Handler: yourFrontendAssets,
+        Middleware: func(next http.Handler) http.Handler {
+            return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                if strings.HasPrefix(r.URL.Path, "/api/") {
+                    yourExistingMux.ServeHTTP(w, r)   // the handlers you already wrote
+                    return
+                }
+                next.ServeHTTP(w, r)
+            })
+        },
+    },
+})
+```
+
+The frontend then calls `/api/...` as a same-origin relative URL — no host, no port, no
+CORS. Between streams and this, the local server has nothing left to do.
+
 ## Read this before you start
 
 ### 1. `ev.data` is an `ArrayBuffer`, never a string
@@ -207,11 +263,12 @@ app.HandleStream("feed", func(c *application.StreamConn) {
 Two rules worth keeping: release the lock before sending, and prefer `TrySend` in a
 fan-out so a single slow consumer cannot stall every other client.
 
-## If your WebSocket talks to an external service (NATS, MQTT, a broker)
+## The other case: the frontend talks to a broker directly
 
-If the frontend currently opens a WebSocket **to a broker rather than to your app** — for
-example `nats.ws` connecting to a NATS server — a stream is not a drop-in, because a
-stream connects the frontend to *your Go code*, not to a third party.
+Less common in a Wails app, but worth knowing. If the frontend opens a WebSocket **to a
+broker rather than to your app** — `nats.ws` to a NATS server, MQTT over WebSocket — a
+stream is not a drop-in, because a stream connects the frontend to *your Go code*, not to a
+third party.
 
 The migration is an architecture change, and usually a good one:
 
