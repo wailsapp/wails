@@ -19,11 +19,12 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleVibrant = 3
 };
 
-static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
-
 @interface WebviewWindow ()
 
 @property (retain) NSTimer* zoomAnimationTimer;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+@property (retain) CADisplayLink* zoomDisplayLink;
+#endif
 @property NSRect zoomAnimationStartFrame;
 @property NSRect zoomAnimationTargetFrame;
 @property CFTimeInterval zoomAnimationStartTime;
@@ -33,6 +34,11 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 @property BOOL applyingZoomAnimationFrame;
 @property NSRect zoomRestoreFrame;
 @property BOOL hasZoomRestoreFrame;
+
+- (void)stepZoomAnimationAtTime:(CFTimeInterval)time;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+- (void)stepZoomAnimationFromDisplayLink:(CADisplayLink*)displayLink API_AVAILABLE(macos(14.0));
+#endif
 
 @end
 
@@ -219,12 +225,25 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 - (void)cancelZoomAnimation {
     [self.zoomAnimationTimer invalidate];
     self.zoomAnimationTimer = nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        [self.zoomDisplayLink invalidate];
+        self.zoomDisplayLink = nil;
+    }
+#endif
+}
+- (BOOL)zoomAnimationIsRunning {
+    BOOL isRunning = self.zoomAnimationTimer != nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    isRunning = isRunning || self.zoomDisplayLink != nil;
+#endif
+    return isRunning;
 }
 - (BOOL)shouldReduceZoomMotion {
     return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
 }
 - (BOOL)isZoomed {
-    if (self.zoomAnimationTimer) {
+    if ([self zoomAnimationIsRunning]) {
         return self.zoomAnimationTargetIsZoomed;
     }
     return [super isZoomed];
@@ -236,7 +255,7 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     return [super animationResizeTime:newFrame];
 }
 - (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag {
-    if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
+    if ([self zoomAnimationIsRunning] && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
     NSSize oldSize = self.frame.size;
@@ -251,7 +270,7 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     [super setFrame:frameRect display:displayFlag];
 }
 - (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag animate:(BOOL)animateFlag {
-    if (self.zoomAnimationTimer && !self.applyingZoomAnimationFrame) {
+    if ([self zoomAnimationIsRunning] && !self.applyingZoomAnimationFrame) {
         [self cancelZoomAnimation];
     }
     NSSize oldSize = self.frame.size;
@@ -265,11 +284,60 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     }
     [super setFrame:frameRect display:displayFlag animate:animateFlag];
 }
-- (void)stepZoomAnimation:(NSTimer*)timer {
+- (void)startZoomAnimationDriver {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        if (self.screen != nil) {
+            CADisplayLink *displayLink = [self displayLinkWithTarget:self
+                                                            selector:@selector(stepZoomAnimationFromDisplayLink:)];
+            NSInteger maximumFramesPerSecond = self.screen.maximumFramesPerSecond;
+            if (maximumFramesPerSecond > 0) {
+                displayLink.preferredFrameRateRange = CAFrameRateRangeMake(
+                    MIN(60, maximumFramesPerSecond),
+                    maximumFramesPerSecond,
+                    maximumFramesPerSecond);
+            }
+            self.zoomDisplayLink = displayLink;
+            [displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+            return;
+        }
+    }
+#endif
+
+    NSInteger framesPerSecond = 60;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
+    if (@available(macOS 12.0, *)) {
+        NSInteger maximumFramesPerSecond = self.screen.maximumFramesPerSecond;
+        if (maximumFramesPerSecond > 0) {
+            framesPerSecond = maximumFramesPerSecond;
+        }
+    }
+#endif
+    NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 / framesPerSecond
+        target:self
+        selector:@selector(stepZoomAnimationFromTimer:)
+        userInfo:nil
+        repeats:YES];
+    self.zoomAnimationTimer = timer;
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+}
+- (void)stepZoomAnimationFromTimer:(NSTimer*)timer {
     if (timer != self.zoomAnimationTimer) {
         [timer invalidate];
         return;
     }
+    [self stepZoomAnimationAtTime:CACurrentMediaTime()];
+}
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+- (void)stepZoomAnimationFromDisplayLink:(CADisplayLink*)displayLink API_AVAILABLE(macos(14.0)) {
+    if (displayLink != self.zoomDisplayLink) {
+        [displayLink invalidate];
+        return;
+    }
+    [self stepZoomAnimationAtTime:displayLink.targetTimestamp];
+}
+#endif
+- (void)stepZoomAnimationAtTime:(CFTimeInterval)time {
 
     if ([self shouldReduceZoomMotion]) {
         self.applyingZoomAnimationFrame = YES;
@@ -282,9 +350,15 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
         return;
     }
 
-    double progress = (CACurrentMediaTime() - self.zoomAnimationStartTime) / self.zoomAnimationDuration;
+    double progress = (time - self.zoomAnimationStartTime) / self.zoomAnimationDuration;
     progress = MIN(1.0, MAX(0.0, progress));
-    double easedProgress = progress * progress * (3.0 - (2.0 * progress));
+    double easedProgress;
+    if (progress < 0.5) {
+        easedProgress = 4.0 * progress * progress * progress;
+    } else {
+        double remaining = -2.0 * progress + 2.0;
+        easedProgress = 1.0 - (remaining * remaining * remaining) / 2.0;
+    }
 
     NSRect start = self.zoomAnimationStartFrame;
     NSRect target = self.zoomAnimationTargetFrame;
@@ -309,7 +383,7 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
 - (void)zoom:(id)sender {
     NSRect startFrame = self.frame;
     BOOL startIsZoomed = [super isZoomed];
-    BOOL interruptedAnimation = self.zoomAnimationTimer != nil;
+    BOOL interruptedAnimation = [self zoomAnimationIsRunning];
     NSRect previousTargetFrame = self.zoomAnimationTargetFrame;
     [self cancelZoomAnimation];
 
@@ -385,13 +459,7 @@ static const NSTimeInterval MacZoomAnimationFrameInterval = 1.0 / 60.0;
     self.zoomAnimationDuration = duration;
     self.zoomAnimationTargetIsZoomed = targetIsZoomed;
 
-    NSTimer *timer = [NSTimer timerWithTimeInterval:MacZoomAnimationFrameInterval
-        target:self
-        selector:@selector(stepZoomAnimation:)
-        userInfo:nil
-        repeats:YES];
-    self.zoomAnimationTimer = timer;
-    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    [self startZoomAnimationDriver];
 }
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
