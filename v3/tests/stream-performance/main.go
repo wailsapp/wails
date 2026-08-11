@@ -553,12 +553,9 @@ func (h *harness) startEmitterCounted(conn *application.StreamConn, sc Scenario)
 			binary.BigEndian.PutUint64(frame[8:16], math.Float64bits(h.nowMS()))
 			copy(frame[frameHeaderBytes:], pad)
 
-			// Blocking Send: it parks until the frontend drains and wakes
-			// exactly when space frees, which is markedly faster than spinning
-			// on TrySend against the same consumer (measured 46k vs 432k
-			// frames/s at 4 KB). The stop function below refuses to wait
-			// forever for this goroutine, so a producer parked in Send cannot
-			// hang the run the way it did before.
+			// Blocking Send exercises the production backpressure path: it parks
+			// until the frontend drains and wakes when space frees. The stop
+			// function below refuses to wait forever for a parked producer.
 			t0 := time.Now()
 			err := conn.Send(frame)
 			local = append(local, float64(time.Since(t0).Microseconds()))
