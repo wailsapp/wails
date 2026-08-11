@@ -1,6 +1,9 @@
 import type { StarlightBlogUserConfig } from "starlight-blog";
 
-type Authors = NonNullable<StarlightBlogUserConfig>["authors"];
+// starlight-blog v0.28 accepts either one blog config or an array of them.
+// Authors live on a single config, so narrow the union before indexing it.
+type BlogConfig = Exclude<NonNullable<StarlightBlogUserConfig>, readonly unknown[]>;
+type Authors = BlogConfig["authors"];
 export const authors: Authors = {
   leaanthony: {
     name: "Lea Anthony",
