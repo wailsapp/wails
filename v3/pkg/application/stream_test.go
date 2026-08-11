@@ -1074,6 +1074,107 @@ func TestStreamInboundRejectsOnceClosed(t *testing.T) {
 	}
 }
 
+func TestStreamBlockingInboundDeliveryWakesOnReceive(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	for i := 0; i < streamInQueueDepth; i++ {
+		if err := c.deliver([]byte{byte(i)}); err != nil {
+			t.Fatalf("fill %d: %v", i, err)
+		}
+	}
+
+	delivered := make(chan error, 1)
+	go func() { delivered <- c.deliverBlocking([]byte("after-space")) }()
+	select {
+	case err := <-delivered:
+		t.Fatalf("blocking delivery returned before Receive freed space: %v", err)
+	case <-time.After(20 * time.Millisecond):
+	}
+
+	if _, err := c.Receive(); err != nil {
+		t.Fatalf("Receive: %v", err)
+	}
+	select {
+	case err := <-delivered:
+		if err != nil {
+			t.Fatalf("blocking delivery after Receive: %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("blocking delivery did not wake after Receive freed space")
+	}
+}
+
+func TestStreamBlockingInboundDeliveryWakesOnClose(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+
+	for i := 0; i < streamInQueueDepth; i++ {
+		if err := c.deliver([]byte("full")); err != nil {
+			t.Fatalf("fill %d: %v", i, err)
+		}
+	}
+
+	delivered := make(chan error, 1)
+	go func() { delivered <- c.deliverBlocking([]byte("blocked")) }()
+	select {
+	case err := <-delivered:
+		t.Fatalf("blocking delivery returned before close: %v", err)
+	case <-time.After(20 * time.Millisecond):
+	}
+
+	c.shutdown()
+	select {
+	case err := <-delivered:
+		if !errors.Is(err, ErrStreamClosed) {
+			t.Fatalf("blocking delivery after close = %v, want ErrStreamClosed", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("blocking delivery did not wake after close")
+	}
+}
+
+func TestStreamSustainedBlockingInboundRemainsBoundedAndOrdered(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+	const frames = streamInQueueDepth * 4
+
+	producer := make(chan error, 1)
+	go func() {
+		for i := 0; i < frames; i++ {
+			payload := binary.BigEndian.AppendUint32(nil, uint32(i))
+			if err := c.deliverBlocking(payload); err != nil {
+				producer <- err
+				return
+			}
+			c.inMu.Lock()
+			if len(c.in) > streamInQueueDepth || c.inBytes > streamInQueueBytes {
+				c.inMu.Unlock()
+				producer <- fmt.Errorf("inbox exceeded bound: %d frames, %d bytes", len(c.in), c.inBytes)
+				return
+			}
+			c.inMu.Unlock()
+		}
+		producer <- nil
+	}()
+
+	for want := 0; want < frames; want++ {
+		payload, err := c.Receive()
+		if err != nil {
+			t.Fatalf("Receive %d: %v", want, err)
+		}
+		if got := int(binary.BigEndian.Uint32(payload)); got != want {
+			t.Fatalf("frame %d carried sequence %d", want, got)
+		}
+		if want%32 == 0 {
+			time.Sleep(time.Millisecond)
+		}
+	}
+	if err := <-producer; err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Copilot review: a rejected chunk set answered 204, so the client believed the
 // frame had been sent, and an inconsistent total leaked its bytes forever.
 func TestStreamChunkRejectionIsReportedAndAccounted(t *testing.T) {

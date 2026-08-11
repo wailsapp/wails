@@ -307,15 +307,33 @@ func (c *StreamConn) shutdown() {
 // the outbound queue does: the caller does not choose the frame size, so a
 // frame bigger than the cap must not become impossible to deliver.
 func (c *StreamConn) deliver(data []byte) error {
+	return c.deliverWithBackpressure(data, false)
+}
+
+// deliverBlocking is the socket-transport form of deliver. A real WebSocket
+// has no HTTP response on which to signal retry, so its single read pump waits
+// here and lets TCP backpressure reach the peer. Receive and shutdown broadcast
+// on inCond, making this event-driven rather than a millisecond retry loop.
+func (c *StreamConn) deliverBlocking(data []byte) error {
+	return c.deliverWithBackpressure(data, true)
+}
+
+func (c *StreamConn) deliverWithBackpressure(data []byte, block bool) error {
 	c.inMu.Lock()
 	defer c.inMu.Unlock()
 
-	if c.ctx.Err() != nil {
-		return ErrStreamClosed
-	}
-	if len(c.in) >= streamInQueueDepth ||
-		(len(c.in) > 0 && c.inBytes+len(data) > streamInQueueBytes) {
-		return ErrStreamFull
+	for {
+		if c.ctx.Err() != nil {
+			return ErrStreamClosed
+		}
+		if len(c.in) < streamInQueueDepth &&
+			(len(c.in) == 0 || c.inBytes+len(data) <= streamInQueueBytes) {
+			break
+		}
+		if !block {
+			return ErrStreamFull
+		}
+		c.inCond.Wait()
 	}
 
 	c.in = append(c.in, data)

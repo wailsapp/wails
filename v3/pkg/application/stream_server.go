@@ -4,7 +4,6 @@ package application
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"sync"
 	"time"
@@ -235,22 +234,11 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				return
 			}
-			// A socket has no retry channel, so here the read pump waits for
-			// room and lets TCP apply the backpressure to the peer. Unlike the
-			// desktop transport there is no request slot being held.
-			for {
-				err := c.deliver(data)
-				if err == nil {
-					break
-				}
-				if !errors.Is(err, ErrStreamFull) {
-					return
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(time.Millisecond):
-				}
+			// A socket has no retry channel, so the read pump waits on the
+			// connection's inbox condition and lets TCP apply backpressure to the
+			// peer. Receive and shutdown wake it without polling.
+			if err := c.deliverBlocking(data); err != nil {
+				return
 			}
 		}
 	}()
