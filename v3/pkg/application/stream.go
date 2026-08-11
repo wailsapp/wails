@@ -117,6 +117,15 @@ const (
 	// below, so a burst of bad opens cannot consume the space required to tell
 	// already accepted peers that their connections ended.
 	streamOutControlDepth = streamMaxConnections
+
+	// Open POSTs may arrive before a page's first poll. Bound the number of
+	// independent session ids they can create so varying that header cannot
+	// multiply every per-session allowance without limit. The per-window limit
+	// is intentionally well above the expected top-level page plus embedded
+	// frames; the global cap also covers transports where the platform cannot
+	// tag a request with a window id.
+	streamMaxSessionsPerWindow = 16
+	streamMaxSessions          = 1024
 )
 
 // StreamHandler is invoked once per connection, on its own goroutine. The
@@ -410,10 +419,19 @@ func (m *streamManager) handler(name string) (StreamHandler, bool) {
 // from that page. Sessions are created by whichever of poll or send arrives
 // first; the frontend does not perform a separate handshake.
 func (m *streamManager) session(id string, windowID uint, generation uint64, maySupersede bool) *streamSession {
+	s, _ := m.sessionWithAdmission(id, windowID, generation, maySupersede)
+	return s
+}
+
+// sessionWithAdmission is session plus the one distinction the HTTP boundary
+// needs: a fresh id rejected by a resource bound is retryable, whereas a
+// retired generation or closed manager is terminal. Keeping that distinction
+// out of session preserves the small manager API used by non-HTTP tests.
+func (m *streamManager) sessionWithAdmission(id string, windowID uint, generation uint64, maySupersede bool) (*streamSession, bool) {
 	m.mu.Lock()
 	if m.closed {
 		m.mu.Unlock()
-		return nil
+		return nil, false
 	}
 	s, ok := m.sessions[id]
 	// Resolve an existing id only within the window that owns it. sessionFor
@@ -422,14 +440,14 @@ func (m *streamManager) session(id string, windowID uint, generation uint64, may
 	// generation and retire legitimate sessions in the requesting window.
 	if ok && windowID != 0 && s.windowID != windowID {
 		m.mu.Unlock()
-		return s
+		return s, false
 	}
 	// The same rule applies to a generation mismatch. sessionFor reports 403,
 	// but an invalid poll must not use the generation stored on the colliding
 	// session id to retire other valid sessions before that rejection.
 	if ok && s.generation != generation {
 		m.mu.Unlock()
-		return s
+		return s, false
 	}
 	if !ok {
 		// Once a page generation has finished, no delayed request from that page
@@ -437,7 +455,26 @@ func (m *streamManager) session(id string, windowID uint, generation uint64, may
 		// allocate the old session again after its replacement retired it.
 		if generation <= m.retiredThrough[windowID] {
 			m.mu.Unlock()
-			return nil
+			return nil, false
+		}
+		// A current page poll may replace older sessions in its own window even
+		// when a buggy predecessor filled the allowance. The supersede loop below
+		// removes those older sessions before this lock is released, so allowing
+		// that one replacement does not relax the steady-state bounds.
+		replacesOlder := false
+		windowSessions := 0
+		for _, existing := range m.sessions {
+			if existing.windowID == windowID {
+				windowSessions++
+				if maySupersede && existing.generation < generation {
+					replacesOlder = true
+				}
+			}
+		}
+		if (windowID != 0 && windowSessions >= streamMaxSessionsPerWindow && !replacesOlder) ||
+			(len(m.sessions) >= streamMaxSessions && !replacesOlder) {
+			m.mu.Unlock()
+			return nil, true
 		}
 		s = newStreamSession(id, windowID, m)
 		s.generation = generation
@@ -492,7 +529,7 @@ func (m *streamManager) session(id string, windowID uint, generation uint64, may
 	}
 
 	s.touch()
-	return s
+	return s, false
 }
 
 // existingSession is session lookup without creation, for requests that must

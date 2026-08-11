@@ -652,6 +652,140 @@ func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
 	}
 }
 
+func TestStreamManagerBoundsSessionsCreatedWithoutPoll(t *testing.T) {
+	t.Run("per window", func(t *testing.T) {
+		mgr := newStreamManager(nil)
+		t.Cleanup(mgr.close)
+		for generation := uint64(1); generation <= streamMaxSessionsPerWindow; generation++ {
+			id := fmt.Sprintf("page-%d", generation)
+			if got := mgr.session(id, 7, generation, false); got == nil {
+				t.Fatalf("session %d refused before the per-window bound", generation)
+			}
+		}
+		if got := mgr.session("one-too-many", 7, streamMaxSessionsPerWindow+1, false); got != nil {
+			t.Fatal("open POST created a session past the per-window bound")
+		}
+	})
+
+	t.Run("global windowless fallback", func(t *testing.T) {
+		mgr := newStreamManager(nil)
+		t.Cleanup(mgr.close)
+		for generation := uint64(1); generation <= streamMaxSessions; generation++ {
+			id := fmt.Sprintf("fallback-%d", generation)
+			if got := mgr.session(id, 0, generation, false); got == nil {
+				t.Fatalf("session %d refused before the global bound", generation)
+			}
+		}
+		if got := mgr.session("one-too-many", 0, streamMaxSessions+1, false); got != nil {
+			t.Fatal("windowless request created a session past the global bound")
+		}
+	})
+}
+
+func TestStreamCurrentPollCanReplaceSessionsAtAdmissionBound(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	for generation := uint64(1); generation <= streamMaxSessionsPerWindow; generation++ {
+		id := fmt.Sprintf("stale-%d", generation)
+		if got := mgr.session(id, 7, generation, false); got == nil {
+			t.Fatalf("create stale session %d", generation)
+		}
+	}
+	other := mgr.session("other-window", 8, 1, false)
+	if other == nil {
+		t.Fatal("create other-window session")
+	}
+
+	replacement := mgr.session("current", 7, streamMaxSessionsPerWindow+1, true)
+	if replacement == nil {
+		t.Fatal("current poll could not replace stale sessions at the bound")
+	}
+	mgr.mu.Lock()
+	windowCount := 0
+	for _, session := range mgr.sessions {
+		if session.windowID == 7 {
+			windowCount++
+		}
+	}
+	otherStillPresent := mgr.sessions["other-window"] == other
+	mgr.mu.Unlock()
+	if windowCount != 1 {
+		t.Fatalf("replacement left %d sessions in its window, want 1", windowCount)
+	}
+	if !otherStillPresent {
+		t.Fatal("replacement removed another window's session")
+	}
+}
+
+func TestStreamSessionAdmissionBoundAtHTTPBoundary(t *testing.T) {
+	request := func(method, id string, windowID uint, generation uint64) *http.Request {
+		req := httptest.NewRequest(method, streamPathSend, nil)
+		req.Header.Set(streamHeaderSession, id)
+		req.Header.Set(streamHeaderGeneration, strconv.FormatUint(generation, 10))
+		if windowID != 0 {
+			req.Header.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(windowID), 10))
+		}
+		return req
+	}
+
+	t.Run("open retries until current poll supersedes stale pages", func(t *testing.T) {
+		mgr := newStreamManager(nil)
+		t.Cleanup(mgr.close)
+		a := &App{streams: mgr}
+		for generation := uint64(1); generation <= streamMaxSessionsPerWindow; generation++ {
+			if got := mgr.session(fmt.Sprintf("stale-%d", generation), 7, generation, false); got == nil {
+				t.Fatalf("create stale session %d", generation)
+			}
+		}
+		other := mgr.session("other-window", 8, 1, false)
+		if other == nil {
+			t.Fatal("create other-window session")
+		}
+
+		generation := uint64(streamMaxSessionsPerWindow + 1)
+		rw := httptest.NewRecorder()
+		if got := a.sessionFor(rw, request(http.MethodPost, "current", 7, generation), true, false); got != nil {
+			t.Fatal("open request bypassed the per-window admission bound")
+		}
+		if rw.Code != http.StatusTooManyRequests || rw.Header().Get("Retry-After") == "" {
+			t.Fatalf("full-session response = %d Retry-After=%q, want retryable 429", rw.Code, rw.Header().Get("Retry-After"))
+		}
+
+		pollResponse := httptest.NewRecorder()
+		current := a.sessionFor(pollResponse, request(http.MethodGet, "current", 7, generation), true, true)
+		if current == nil {
+			t.Fatalf("current poll could not replace stale pages: status %d body %q", pollResponse.Code, pollResponse.Body.String())
+		}
+
+		retryResponse := httptest.NewRecorder()
+		if got := a.sessionFor(retryResponse, request(http.MethodPost, "current", 7, generation), true, false); got != current {
+			t.Fatalf("retried open did not resolve replacement session: status %d", retryResponse.Code)
+		}
+		if mgr.existingSession("other-window") != other {
+			t.Fatal("replacement disturbed another window")
+		}
+	})
+
+	t.Run("windowless sessions obey the global bound", func(t *testing.T) {
+		mgr := newStreamManager(nil)
+		t.Cleanup(mgr.close)
+		a := &App{streams: mgr}
+		for generation := uint64(1); generation <= streamMaxSessions; generation++ {
+			if got := mgr.session(fmt.Sprintf("fallback-%d", generation), 0, generation, false); got == nil {
+				t.Fatalf("create windowless session %d", generation)
+			}
+		}
+
+		rw := httptest.NewRecorder()
+		if got := a.sessionFor(rw, request(http.MethodPost, "one-too-many", 0, streamMaxSessions+1), true, false); got != nil {
+			t.Fatal("windowless request bypassed the global admission bound")
+		}
+		if rw.Code != http.StatusTooManyRequests || rw.Header().Get("Retry-After") == "" {
+			t.Fatalf("global-bound response = %d Retry-After=%q, want retryable 429", rw.Code, rw.Header().Get("Retry-After"))
+		}
+	})
+}
+
 func TestStreamOpenAckPrecedesHandlerOutput(t *testing.T) {
 	mgr, s := newTestSession(t)
 

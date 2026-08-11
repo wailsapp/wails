@@ -141,12 +141,21 @@ func (a *App) sessionFor(rw http.ResponseWriter, req *http.Request, create, mayS
 	}
 
 	var s *streamSession
+	atCapacity := false
 	if create {
-		s = a.streams.session(id, windowID, generation, maySupersede)
+		s, atCapacity = a.streams.sessionWithAdmission(id, windowID, generation, maySupersede)
 	} else {
 		s = a.streams.existingSession(id)
 	}
 	if s == nil {
+		if atCapacity {
+			// A poll from the current page can supersede older generations and
+			// free this allowance. Make an open that raced ahead of that poll
+			// retry instead of permanently closing the new socket.
+			rw.Header().Set("Retry-After", "0")
+			http.Error(rw, "stream session capacity reached", http.StatusTooManyRequests)
+			return nil
+		}
 		// Gone rather than NotFound: it tells the client to stop polling and
 		// surface a close, instead of retrying forever.
 		http.Error(rw, "session closed", http.StatusGone)
