@@ -97,11 +97,15 @@ All in `stream.go`. **They are compile-time constants, not options** — there i
 |---|---:|---|
 | `streamOutQueueBytes` | 8 MB | bytes buffered per window awaiting collection |
 | `streamOutQueueDepth` | 256 | frames buffered per window |
+| `streamOutQueueBytesGlobal` / `streamOutQueueDepthGlobal` | 256 MB / 8,192 | outbound data buffered across the application |
+| `streamInQueueBytesGlobal` / `streamInQueueDepthGlobal` | 256 MB / 8,192 | inbound data awaiting `Receive` across the application |
+| `streamMaxConnectionsGlobal` | 4,096 | live connections plus undelivered close notifications across the application |
 | `streamMaxResponseBytes` | 1 MB | one poll response |
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
 | `streamSessionTTL` | 60 s | no poll for this long and no live connections ⇒ session is dead |
 | `streamSessionGrace` | 10 min | no poll for this long with live connections ⇒ session is dead |
-| `streamMaxSendBytes` | 64 MB | one JS→Go frame |
+| `streamMaxFrameBytes` | 64 MB | one frame in either direction |
+| `streamMaxNameLen` | 256 bytes | one registered or requested stream name |
 | `streamInQueueDepth` / `streamInQueueBytes` | 256 / 8 MB | frames received and not yet taken by `Receive` |
 
 ### How to pick them
@@ -137,15 +141,52 @@ handler catches up. In server mode the socket read pump waits and lets TCP apply
 backpressure. Without the bound, a handler slow to call `Receive` could grow host memory
 without limit.
 
-**Control frames bypass every cap.** Losing a data frame under backpressure is a
-slow-down; losing an open ack leaves the frontend in `CONNECTING` forever, and losing a
-close leaves it believing a dead connection is live.
+**Control frames bypass the data caps, but have independent lifecycle bounds.** Losing a
+data frame under backpressure is a slow-down; losing an open ack leaves the frontend in
+`CONNECTING` forever, and losing a close leaves it believing a dead connection is live.
+Non-close controls therefore have their own bounded queue, while connection admission
+reserves one close slot per accepted connection. When that capacity is occupied, a new
+open receives retryable backpressure before it is registered.
+
+**Per-session bounds also have application-wide counterparts.** Without them, every
+admitted session or connection could retain its full local allowance at once. Outbound
+and inbound data therefore share separate 256 MiB / 8,192-frame budgets across desktop
+and server transports. Live connections and pending close notifications share a 4,096
+entry lifecycle budget. Reaching a shared allowance applies the same blocking `Send` or
+non-blocking `TrySend` behaviour as reaching a local allowance, and every drain, receive,
+close, failed write, and shutdown path returns its reservation.
 
 **Go frames transfer ownership; JavaScript frames are snapshotted.** Go `Send` retains the
 caller's slice until the transport writes it, so callers must not mutate or reuse that
 storage after a successful call. JavaScript `send()` copies mutable binary inputs before it
 returns, matching native WebSocket ownership semantics. The asymmetric rule avoids a
 second full-frame copy inside Go while keeping the browser-facing API unsurprising.
+
+**JavaScript sending follows the WebSocket buffering contract.** `send()` cannot block, so
+an application can queue data faster than the desktop request channel accepts it, just as
+it can outrun a native WebSocket. `bufferedAmount` includes every byte retained by that
+socket and is the caller's backpressure signal; the host-side queues remain independently
+bounded by the limits above. A terminal failure, peer close, or local `close()` releases
+the retained payloads. Local close also cancels an open or data request waiting on `429`
+before it posts the reserved close control, so admission or receiver backpressure cannot
+leave the socket stuck in `CLOSING`.
+
+**Chunk reassembly has a shared host-memory allowance.** Each session may assemble a
+single frame up to 64 MiB, but that allowance must not be multiplied by every admitted
+session. Incomplete and retryable chunk sets therefore also share a 256 MiB
+application-wide budget. Retained parts also share a 4,096-entry metadata allowance, so
+tiny or empty chunks cannot grow maps and slice bookkeeping without approaching the byte
+limit. A request that would cross either allowance receives retryable backpressure;
+delivery, rejection, expiry, or session shutdown returns both bytes and part entries to
+the shared budgets.
+
+**Polling retries only recoverable failures.** Network errors, request-timeout responses
+(`408`), early-data responses (`425`), backpressure (`429`), and server errors (`5xx`)
+use exponential backoff from 250 ms up to 5 seconds. Other `4xx` responses are protocol
+or ownership failures and close the page's Streams immediately; `410` is the clean
+terminal signal for a retired session. Closing the last connection aborts an in-flight
+poll or backoff timer, while a connection opened during that wind-down starts one
+replacement poll loop.
 
 **`streamSessionTTL` must stay comfortably above `streamHoldTimeout`**, or a session would
 be reaped while its own poll is legitimately parked.
@@ -158,6 +199,10 @@ defaults sustain 634,000 frames/s and 2.1 GB/s.
 
 A **session** is one page load in one window, keyed by a client-generated id (like the
 runtime's `clientId`). Sessions are created lazily by whichever request arrives first.
+When a platform cannot identify the requesting window (`windowID == 0`), session ids are
+still globally bounded but their generations are deliberately not compared: they may
+belong to independent browser clients with unrelated generation counters. Those sessions
+expire through close or TTL rather than superseding one another.
 
 Three mechanisms close things, in order of how quickly they notice:
 

@@ -39,6 +39,7 @@ interface StreamGlobals {
     nextConnID: number;
     connections: Map<number, WailsSocket>;
     polling: boolean;
+    pollAbort?: AbortController;
 }
 
 const GENERATION_KEY = "__wails_stream_generation";
@@ -157,8 +158,28 @@ function streamURL(endpoint: string): string {
 }
 
 
-function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+class StreamRequestCancelled extends Error {
+    constructor() {
+        super("stream request cancelled");
+        this.name = "AbortError";
+    }
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+    if (!signal) return new Promise((resolve) => setTimeout(resolve, ms));
+    if (signal.aborted) return Promise.reject(new StreamRequestCancelled());
+
+    return new Promise((resolve, reject) => {
+        const onAbort = () => {
+            clearTimeout(timer);
+            reject(new StreamRequestCancelled());
+        };
+        const timer = setTimeout(() => {
+            signal.removeEventListener("abort", onAbort);
+            resolve();
+        }, ms);
+        signal.addEventListener("abort", onAbort, { once: true });
+    });
 }
 
 /**
@@ -215,6 +236,8 @@ export class WailsSocket extends EventTarget {
     private _chain: Promise<void> = Promise.resolve();
     private _pending: Promise<Uint8Array>[] = [];
     private _flushing = false;
+    private _openAbort = new AbortController();
+    private _sendAbort = new AbortController();
 
     /** Bytes queued by send() that have not yet reached Go. */
     get bufferedAmount(): number {
@@ -236,7 +259,7 @@ export class WailsSocket extends EventTarget {
         // Fire and forget: the ack arrives as an open frame on the poll, which
         // is what moves readyState to OPEN.
         this._chain = this._chain.then(() =>
-            postFrame(this._id, KIND_OPEN, new Uint8Array(0), name)
+            postFrame(this._id, KIND_OPEN, new Uint8Array(0), name, this._openAbort.signal)
         ).catch((err) => {
             this._fail(err);
         });
@@ -262,7 +285,14 @@ export class WailsSocket extends EventTarget {
         // WebSocket, even when a batch waits behind an in-flight request. A
         // Blob is immutable and is therefore safe to read asynchronously once.
         const immediate = toBytesSync(data);
-        const snapshot = immediate ? Promise.resolve(immediate) : toBytes(data);
+        const snapshot = immediate
+            ? Promise.resolve(immediate)
+            : toBytes(data, this._sendAbort.signal);
+        // close() may discard this promise before the flush has dequeued it.
+        // Attach a rejection observer immediately so cancelling an asynchronous
+        // Blob read cannot become an unhandled rejection; Promise.all still
+        // observes the original rejection when the flush already owns it.
+        void snapshot.catch(() => {});
 
         // A Blob cannot be converted synchronously, but Blob.size is available
         // now, so its bytes are still counted the moment send() returns. Waiting
@@ -309,7 +339,7 @@ export class WailsSocket extends EventTarget {
 
                     const total = batch.reduce((n, b) => n + b.byteLength, 0);
                     try {
-                        await postBatch(this._id, batch);
+                        await postBatch(this._id, batch, this._sendAbort.signal);
                     } finally {
                         // _closed resets the counter immediately. A request
                         // already in flight may finish afterwards, and must
@@ -332,6 +362,15 @@ export class WailsSocket extends EventTarget {
             return;
         }
         this.readyState = WailsSocket.CLOSING;
+        this._pending.length = 0;
+        this._buffered = 0;
+        this._openAbort.abort();
+
+        // A data frame waiting for receiver capacity must not prevent the
+        // reserved close control from ever reaching Go. Cancel only the data
+        // retry path; the chain below still orders the close after that path
+        // has unwound, preserving normal send-before-close ordering.
+        this._sendAbort.abort();
         this._chain = this._chain.then(() =>
             postFrame(this._id, KIND_CLOSE, new Uint8Array(0))
         ).catch(() => {
@@ -369,7 +408,7 @@ export class WailsSocket extends EventTarget {
         // An in-flight send can reject after a clean close has already arrived.
         // The socket's lifecycle is complete then: emitting error after close
         // reverses the WebSocket event order and reports a false failure.
-        if (this.readyState === WailsSocket.CLOSED) return;
+        if (this.readyState === WailsSocket.CLOSED || this.readyState === WailsSocket.CLOSING) return;
         this.dispatchEvent(new Event("error"));
         // 1006: closed abnormally, no close frame. Same code a real WebSocket
         // reports when the connection drops without a handshake.
@@ -380,7 +419,10 @@ export class WailsSocket extends EventTarget {
     _closed(code: number, reason: string, wasClean: boolean): void {
         if (this.readyState === WailsSocket.CLOSED) return;
         this.readyState = WailsSocket.CLOSED;
+        this._openAbort.abort();
+        this._sendAbort.abort();
         G.connections.delete(this._id);
+        if (G.connections.size === 0) G.pollAbort?.abort();
         this._pending.length = 0;
         this._buffered = 0;
 
@@ -567,12 +609,35 @@ function toBytesSync(data: string | ArrayBufferLike | ArrayBufferView | Blob): U
     return new Uint8Array(data as ArrayBufferLike).slice();
 }
 
-async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {
+function abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (!signal) return promise;
+    if (signal.aborted) return Promise.reject(new StreamRequestCancelled());
+
+    return new Promise((resolve, reject) => {
+        const onAbort = () => reject(new StreamRequestCancelled());
+        signal.addEventListener("abort", onAbort, { once: true });
+        promise.then(
+            (value) => {
+                signal.removeEventListener("abort", onAbort);
+                resolve(value);
+            },
+            (err) => {
+                signal.removeEventListener("abort", onAbort);
+                reject(err);
+            },
+        );
+    });
+}
+
+async function toBytes(
+    data: string | ArrayBufferLike | ArrayBufferView | Blob,
+    signal?: AbortSignal,
+): Promise<Uint8Array> {
     if (typeof data === "string") {
         return textEncoder.encode(data);
     }
     if (typeof Blob !== "undefined" && data instanceof Blob) {
-        return new Uint8Array(await data.arrayBuffer());
+        return new Uint8Array(await abortable(data.arrayBuffer(), signal));
     }
     if (ArrayBuffer.isView(data)) {
         return new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice();
@@ -580,7 +645,7 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
     return new Uint8Array(data as ArrayBufferLike).slice();
 }
 
-async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {
+async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string, signal?: AbortSignal): Promise<void> {
     const headers: Record<string, string> = {
         [HDR_SESSION]: G.session,
         [HDR_GENERATION]: String(G.generation),
@@ -593,7 +658,7 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
     }
 
     if (body.byteLength <= CHUNK_THRESHOLD) {
-        await postWithRetry(headers, body);
+        await postWithRetry(headers, body, signal);
         return;
     }
 
@@ -607,7 +672,7 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
             [HDR_CHUNK]: chunkID,
             [HDR_CHUNK_INDEX]: String(i),
             [HDR_CHUNK_TOTAL]: String(total),
-        }, slice);
+        }, slice, signal);
     }
 }
 
@@ -615,19 +680,25 @@ async function postFrame(connID: number, kind: number, body: Uint8Array, name?: 
 // Retrying the same frame keeps ordering (the send chain has not moved on) and
 // leaves the request slot free, which is what stops a backed-up connection from
 // starving the window's poll.
-async function postWithRetry(headers: Record<string, string>, body: Uint8Array): Promise<void> {
+async function postWithRetry(headers: Record<string, string>, body: Uint8Array, signal?: AbortSignal): Promise<void> {
     // Never retry with zero delay. The receiver being behind is a condition
     // that takes time to clear, and an immediate retry is a busy loop of
     // fetches — each one a scheme-handler round trip, and on the host a cgo
     // call. Start at 1 ms and ramp.
     let wait = 1;
     for (;;) {
-        const resp = await fetch(streamURL("send"), { method: "POST", headers, body: body as BodyInit });
+        if (signal?.aborted) throw new StreamRequestCancelled();
+        const resp = await fetch(streamURL("send"), {
+            method: "POST",
+            headers,
+            body: body as BodyInit,
+            signal,
+        });
         if (resp.ok) return;
         if (resp.status !== 429) {
             throw new Error(await resp.text());
         }
-        await sleep(wait);
+        await sleep(wait, signal);
         wait = Math.min(wait * 2, 50);
     }
 }
@@ -636,11 +707,11 @@ async function postWithRetry(headers: Record<string, string>, body: Uint8Array):
 // Body: count u32, then count x ( len u32 | payload ). The combined body stays
 // within CHUNK_THRESHOLD: several individually small frames must not recreate
 // the WebView2 body-size problem that chunking single large frames avoids.
-async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
+async function postBatch(connID: number, frames: Uint8Array[], signal?: AbortSignal): Promise<void> {
     let start = 0;
     while (start < frames.length) {
         if (frames[start].byteLength > CHUNK_THRESHOLD) {
-            await postFrame(connID, KIND_DATA, frames[start]);
+            await postFrame(connID, KIND_DATA, frames[start], undefined, signal);
             start++;
             continue;
         }
@@ -659,22 +730,22 @@ async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
         // A near-threshold frame fits as a normal POST body but not inside a
         // batch once its count and length headers are included.
         if (end === start) {
-            await postFrame(connID, KIND_DATA, frames[start]);
+            await postFrame(connID, KIND_DATA, frames[start], undefined, signal);
             start++;
             continue;
         }
 
         const group = frames.slice(start, end);
         if (group.length === 1) {
-            await postFrame(connID, KIND_DATA, group[0]);
+            await postFrame(connID, KIND_DATA, group[0], undefined, signal);
         } else {
-            await postBatchGroup(connID, group);
+            await postBatchGroup(connID, group, signal);
         }
         start = end;
     }
 }
 
-async function postBatchGroup(connID: number, frames: Uint8Array[]): Promise<void> {
+async function postBatchGroup(connID: number, frames: Uint8Array[], signal?: AbortSignal): Promise<void> {
     if (frames.length === 0 || frames.length > MAX_BATCH_FRAMES) {
         throw new Error("invalid stream batch size");
     }
@@ -683,6 +754,7 @@ async function postBatchGroup(connID: number, frames: Uint8Array[]): Promise<voi
     let sent = 0;
     let wait = 1;
     for (;;) {
+        if (signal?.aborted) throw new StreamRequestCancelled();
         const resp = await fetch(streamURL("send"), {
             method: "POST",
             headers: {
@@ -694,6 +766,7 @@ async function postBatchGroup(connID: number, frames: Uint8Array[]): Promise<voi
                 "Content-Type": "application/octet-stream",
             },
             body: body as BodyInit,
+            signal,
         });
         if (resp.ok) return;
         if (resp.status !== 429) {
@@ -710,7 +783,7 @@ async function postBatchGroup(connID: number, frames: Uint8Array[]): Promise<voi
         }
         sent += accepted;
         body = buildBatch(frames.slice(sent));
-        await sleep(wait);
+        await sleep(wait, signal);
         wait = Math.min(wait * 2, 50);
     }
 }
@@ -749,6 +822,8 @@ function startPolling(): void {
  */
 async function pollLoop(): Promise<void> {
     let backoff = 0;
+    const abort = new AbortController();
+    G.pollAbort = abort;
 
     while (G.connections.size > 0) {
         try {
@@ -759,6 +834,7 @@ async function pollLoop(): Promise<void> {
                     [HDR_GENERATION]: String(G.generation),
                 },
                 cache: "no-store",
+                signal: abort.signal,
             });
 
             if (resp.status === 410) {
@@ -768,12 +844,26 @@ async function pollLoop(): Promise<void> {
                 break;
             }
             if (!resp.ok && resp.status !== 204) {
-                throw new Error("stream poll failed: " + resp.status);
+                if (!isRetryablePollStatus(resp.status)) {
+                    failAll("stream poll failed: " + resp.status);
+                    break;
+                }
+                throw new Error("retryable stream poll failure: " + resp.status);
             }
 
             backoff = 0;
             if (resp.status !== 204) {
-                const buf = await resp.arrayBuffer();
+                let buf: ArrayBuffer;
+                try {
+                    buf = await resp.arrayBuffer();
+                } catch {
+                    // The Go queue was consumed when the successful response
+                    // was produced. Retrying cannot recover a body that was
+                    // interrupted after that point, so surface the loss and
+                    // stop instead of silently continuing with missing frames.
+                    failAll("stream poll response body failed");
+                    break;
+                }
                 const frames = decodeFrames(buf);
                 if (frames === null) {
                     // A framing mismatch means a stale cached runtime against a
@@ -787,17 +877,27 @@ async function pollLoop(): Promise<void> {
             }
             // Re-poll immediately, on data and on an expired hold alike.
         } catch (err) {
+            if (abort.signal.aborted || G.connections.size === 0) break;
             backoff = backoff ? Math.min(backoff * 2, BACKOFF_MAX) : BACKOFF_MIN;
-            await sleep(backoff);
+            try {
+                await sleep(backoff, abort.signal);
+            } catch {
+                break;
+            }
         }
     }
 
+    if (G.pollAbort === abort) G.pollAbort = undefined;
     G.polling = false;
 
     // A connection opened while we were winding down: pick the loop back up.
     if (G.connections.size > 0) {
         startPolling();
     }
+}
+
+function isRetryablePollStatus(status: number): boolean {
+    return status === 408 || status === 425 || status === 429 || (status >= 500 && status <= 599);
 }
 
 interface InFrame {
@@ -864,5 +964,11 @@ function deliver(frames: InFrame[]): void {
 function closeAll(code: number, reason: string): void {
     for (const conn of [...G.connections.values()]) {
         conn._closed(code, reason, false);
+    }
+}
+
+function failAll(reason: string): void {
+    for (const conn of [...G.connections.values()]) {
+        conn._fail(new Error(reason));
     }
 }

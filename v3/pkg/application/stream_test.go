@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -29,7 +30,7 @@ func newTestSession(t *testing.T) (*streamManager, *streamSession) {
 
 func newTestConn(s *streamSession, id uint32) *StreamConn {
 	ctx, cancel := context.WithCancel(context.Background())
-	c := &StreamConn{id: id, name: "test", sink: s, ctx: ctx, cancel: cancel}
+	c := &StreamConn{id: id, name: "test", sink: s, ctx: ctx, cancel: cancel, manager: s.mgr}
 	c.inCond = sync.NewCond(&c.inMu)
 	s.mu.Lock()
 	s.conns[id] = c
@@ -134,6 +135,38 @@ func TestStreamBatchRejectsTrailingBytes(t *testing.T) {
 	}
 }
 
+func TestStreamBatchRejectsLengthBeyondRemainingBody(t *testing.T) {
+	body := binary.BigEndian.AppendUint32(nil, 1)
+	body = binary.BigEndian.AppendUint32(body, ^uint32(0))
+
+	if _, err := decodeStreamBatch(body); err == nil {
+		t.Fatal("batch with an overflowing declared length was accepted")
+	}
+}
+
+func TestStreamRejectsOversizedOutboundFrame(t *testing.T) {
+	_, s := newTestSession(t)
+	c := newTestConn(s, 1)
+	payload := make([]byte, streamMaxFrameBytes+1)
+
+	if err := c.TrySend(payload); !errors.Is(err, ErrStreamTooLarge) {
+		t.Fatalf("oversized TrySend = %v, want ErrStreamTooLarge", err)
+	}
+	if err := c.Send(payload); !errors.Is(err, ErrStreamTooLarge) {
+		t.Fatalf("oversized Send = %v, want ErrStreamTooLarge", err)
+	}
+	if err := c.TrySend(payload[:streamMaxFrameBytes]); err != nil {
+		t.Fatalf("maximum-size TrySend = %v", err)
+	}
+
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if len(frames) != 1 || len(frames[0].data) != streamMaxFrameBytes {
+		t.Fatalf("queued %d frames with first length %d, want one %d-byte frame", len(frames), len(frames[0].data), streamMaxFrameBytes)
+	}
+}
+
 func TestStreamSendRejectsChunkedBatch(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
 	req.Header.Set(streamHeaderConn, "1")
@@ -146,6 +179,58 @@ func TestStreamSendRejectsChunkedBatch(t *testing.T) {
 
 	if rw.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", rw.Code, http.StatusBadRequest)
+	}
+}
+
+func TestStreamOpenRejectsOversizedNameBeforeSessionAdmission(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	a := &App{streams: mgr}
+	req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
+	req.Header.Set(streamHeaderSession, "unadmitted")
+	req.Header.Set(streamHeaderGeneration, "1")
+	req.Header.Set(streamHeaderConn, "1")
+	req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameOpen)))
+	req.Header.Set(streamHeaderName, strings.Repeat("n", streamMaxNameLen+1))
+	rw := httptest.NewRecorder()
+
+	a.serveStreamSend(rw, req)
+
+	if rw.Code != http.StatusBadRequest {
+		t.Fatalf("oversized name status = %d, want 400", rw.Code)
+	}
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+	if len(mgr.sessions) != 0 {
+		t.Fatalf("oversized name admitted %d sessions", len(mgr.sessions))
+	}
+}
+
+func TestHandleStreamNameLimit(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	a := &App{streams: mgr}
+	handler := func(*StreamConn) {}
+	maximum := strings.Repeat("m", streamMaxNameLen)
+	oversized := maximum + "x"
+
+	a.HandleStream(maximum, handler)
+	a.HandleStream(oversized, handler)
+
+	if _, ok := mgr.handler(maximum); !ok {
+		t.Fatal("maximum-length stream name was not registered")
+	}
+	if _, ok := mgr.handler(oversized); ok {
+		t.Fatal("oversized stream name was registered")
+	}
+
+	s := newStreamSession("maximum-name", 1, mgr)
+	mgr.sessions[s.id] = s
+	if err := s.open(1, maximum); err != nil {
+		t.Fatalf("maximum-length stream name was not accepted: %v", err)
+	}
+	if c := s.conn(1); c == nil || c.Name() != maximum {
+		t.Fatal("maximum-length stream name did not reach its connection")
 	}
 }
 
@@ -680,6 +765,39 @@ func TestStreamManagerBoundsSessionsCreatedWithoutPoll(t *testing.T) {
 			t.Fatal("windowless request created a session past the global bound")
 		}
 	})
+}
+
+func TestStreamWindowlessSessionsDoNotSupersedeEachOther(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	// A missing platform window id means the requests may belong to unrelated
+	// browser clients. Their page generations come from independent browsing
+	// contexts and therefore cannot be ordered against one another.
+	first := mgr.session("client-a", 0, 1, true)
+	if first == nil {
+		t.Fatal("first windowless session was not created")
+	}
+	if err := first.open(1, "s"); err != nil {
+		t.Fatalf("open first windowless stream: %v", err)
+	}
+	firstConn := first.conn(1)
+
+	second := mgr.session("client-b", 0, 2, true)
+	if second == nil {
+		t.Fatal("second windowless session was not created")
+	}
+	if mgr.existingSession("client-a") != first || firstConn.ctx.Err() != nil {
+		t.Fatal("one windowless client's poll superseded another client")
+	}
+
+	// A third independent context may legitimately start at the same generation
+	// as the first. No shared retired watermark may reject it.
+	third := mgr.session("client-c", 0, 1, true)
+	if third == nil {
+		t.Fatal("shared windowless generation watermark rejected an independent client")
+	}
 }
 
 func TestStreamCurrentPollCanReplaceSessionsAtAdmissionBound(t *testing.T) {
@@ -1318,16 +1436,16 @@ func TestStreamChunkRejectionIsReportedAndAccounted(t *testing.T) {
 	if _, done, err := store.add("c1", 0, 3, []byte("abc")); done || err != nil {
 		t.Fatalf("first chunk: done=%v err=%v", done, err)
 	}
-	if store.bytes != 3 {
-		t.Fatalf("bytes = %d, want 3", store.bytes)
+	if store.bytes != 3 || store.parts != 1 {
+		t.Fatalf("store = %d bytes, %d parts; want 3 bytes, 1 part", store.bytes, store.parts)
 	}
 
 	_, done, err := store.add("c1", 1, 4, []byte("d"))
 	if done || err == nil {
 		t.Fatalf("conflicting total: done=%v err=%v, want an error", done, err)
 	}
-	if store.bytes != 0 {
-		t.Fatalf("bytes = %d after discarding the set, want 0", store.bytes)
+	if store.bytes != 0 || store.parts != 0 {
+		t.Fatalf("store after discarding the set = %d bytes, %d parts; want zero", store.bytes, store.parts)
 	}
 	if len(store.items) != 0 {
 		t.Fatal("inconsistent set was not discarded")
@@ -1365,8 +1483,11 @@ func TestStreamChunkRejectionsReturnBadRequestAndReleaseAccounting(t *testing.T)
 		if got := sendChunk(t, a, s, "duplicate", 0, 2, "a").Code; got != http.StatusBadRequest {
 			t.Fatalf("duplicate status = %d, want 400", got)
 		}
-		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
-			t.Fatalf("duplicate retained %d bytes in %d sets", store.bytes, len(store.items))
+		if store := s.chunks(); store.bytes != 0 || store.parts != 0 || len(store.items) != 0 {
+			t.Fatalf("duplicate retained %d bytes and %d parts in %d sets", store.bytes, store.parts, len(store.items))
+		}
+		if s.mgr.chunkBytes != 0 || s.mgr.chunkParts != 0 {
+			t.Fatalf("duplicate retained %d shared bytes and %d parts", s.mgr.chunkBytes, s.mgr.chunkParts)
 		}
 	})
 
@@ -1378,8 +1499,11 @@ func TestStreamChunkRejectionsReturnBadRequestAndReleaseAccounting(t *testing.T)
 		if got := sendChunk(t, a, s, "conflict", 1, 3, "b").Code; got != http.StatusBadRequest {
 			t.Fatalf("conflict status = %d, want 400", got)
 		}
-		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
-			t.Fatalf("conflict retained %d bytes in %d sets", store.bytes, len(store.items))
+		if store := s.chunks(); store.bytes != 0 || store.parts != 0 || len(store.items) != 0 {
+			t.Fatalf("conflict retained %d bytes and %d parts in %d sets", store.bytes, store.parts, len(store.items))
+		}
+		if s.mgr.chunkBytes != 0 || s.mgr.chunkParts != 0 {
+			t.Fatalf("conflict retained %d shared bytes and %d parts", s.mgr.chunkBytes, s.mgr.chunkParts)
 		}
 	})
 
@@ -1387,17 +1511,19 @@ func TestStreamChunkRejectionsReturnBadRequestAndReleaseAccounting(t *testing.T)
 		a, s := newEndpoint(t)
 		store := s.chunks()
 		store.items["overflow"] = &streamChunkSet{
-			parts:   map[int][]byte{0: nil},
-			total:   2,
-			size:    streamMaxSendBytes,
-			created: time.Now(),
+			parts:     map[int][]byte{0: nil},
+			total:     2,
+			size:      streamMaxFrameBytes,
+			partCount: 1,
+			created:   time.Now(),
 		}
-		store.bytes = streamMaxSendBytes
+		store.bytes = streamMaxFrameBytes
+		store.parts = 1
 		if got := sendChunk(t, a, s, "overflow", 1, 2, "x").Code; got != http.StatusBadRequest {
 			t.Fatalf("overflow status = %d, want 400", got)
 		}
-		if store.bytes != 0 || len(store.items) != 0 {
-			t.Fatalf("overflow retained %d bytes in %d sets", store.bytes, len(store.items))
+		if store.bytes != 0 || store.parts != 0 || len(store.items) != 0 {
+			t.Fatalf("overflow retained %d bytes and %d parts in %d sets", store.bytes, store.parts, len(store.items))
 		}
 	})
 
@@ -1418,24 +1544,34 @@ func TestStreamChunkRejectionsReturnBadRequestAndReleaseAccounting(t *testing.T)
 		if got := sendChunk(t, a, s, "completed", 1, 2, "changed").Code; got != http.StatusBadRequest {
 			t.Fatalf("changed retry status = %d, want 400", got)
 		}
-		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
-			t.Fatalf("invalid retry retained %d bytes in %d sets", store.bytes, len(store.items))
+		if store := s.chunks(); store.bytes != 0 || store.parts != 0 || len(store.items) != 0 {
+			t.Fatalf("invalid retry retained %d bytes and %d parts in %d sets", store.bytes, store.parts, len(store.items))
+		}
+		if s.mgr.chunkBytes != 0 || s.mgr.chunkParts != 0 {
+			t.Fatalf("invalid retry retained %d shared bytes and %d parts", s.mgr.chunkBytes, s.mgr.chunkParts)
 		}
 	})
 }
 
 func TestStreamChunkStoreReapsExpiredIncompleteSets(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
 	store := &streamChunkStore{
 		items: map[string]*streamChunkSet{
 			"expired": {
-				parts:   map[int][]byte{0: []byte("old")},
-				total:   2,
-				size:    3,
-				created: time.Now().Add(-streamHoldTimeout - time.Second),
+				parts:     map[int][]byte{0: []byte("old")},
+				total:     2,
+				size:      3,
+				partCount: 1,
+				created:   time.Now().Add(-streamHoldTimeout - time.Second),
 			},
 		},
 		bytes: 3,
+		parts: 1,
+		mgr:   mgr,
 	}
+	mgr.chunkBytes = 3
+	mgr.chunkParts = 1
 
 	if _, done, err := store.add("fresh", 0, 2, []byte("new")); done || err != nil {
 		t.Fatalf("fresh chunk: done=%v err=%v", done, err)
@@ -1443,8 +1579,11 @@ func TestStreamChunkStoreReapsExpiredIncompleteSets(t *testing.T) {
 	if _, ok := store.items["expired"]; ok {
 		t.Fatal("expired chunk set was not removed")
 	}
-	if store.bytes != 3 {
-		t.Fatalf("bytes after reap = %d, want only the 3 fresh bytes", store.bytes)
+	if store.bytes != 3 || store.parts != 1 {
+		t.Fatalf("store after reap = %d bytes, %d parts; want only the fresh part", store.bytes, store.parts)
+	}
+	if mgr.chunkBytes != 3 || mgr.chunkParts != 1 {
+		t.Fatalf("shared accounting after reap = %d bytes, %d parts; want only the fresh part", mgr.chunkBytes, mgr.chunkParts)
 	}
 }
 
@@ -1461,8 +1600,158 @@ func TestStreamChunkStoreBoundsZeroByteIncompleteSets(t *testing.T) {
 	if _, done, err := store.add("one-too-many", 0, 2, nil); done || !errors.Is(err, ErrStreamFull) {
 		t.Fatalf("add past item bound: done=%v err=%v, want ErrStreamFull", done, err)
 	}
-	if len(store.items) != desiredMaxSets || store.bytes != 0 {
-		t.Fatalf("store after overflow = %d sets, %d bytes", len(store.items), store.bytes)
+	if len(store.items) != desiredMaxSets || store.bytes != 0 || store.parts != desiredMaxSets {
+		t.Fatalf("store after overflow = %d sets, %d bytes, %d parts", len(store.items), store.bytes, store.parts)
+	}
+}
+
+func TestStreamChunkStoresShareGlobalByteBudget(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	// Simulate other sessions retaining all but one byte of the manager-wide
+	// allowance. This store's two-byte chunk must receive retryable
+	// backpressure rather than multiplying the per-session allowance.
+	mgr.chunkBytes = streamMaxChunkBytesGlobal - 1
+	store := &streamChunkStore{items: make(map[string]*streamChunkSet), mgr: mgr}
+	if _, done, err := store.add("over-global-budget", 0, 2, []byte("xx")); done || !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("add beyond global chunk budget: done=%v err=%v, want ErrStreamFull", done, err)
+	}
+	if len(store.items) != 0 || store.bytes != 0 {
+		t.Fatalf("rejected chunk retained %d sets and %d bytes", len(store.items), store.bytes)
+	}
+
+	// Existing partial uploads survive transient global backpressure and can
+	// resume without losing or duplicating their prefix once another store frees
+	// capacity. Removal must return all accounting to the manager.
+	mgr.chunkBytes = streamMaxChunkBytesGlobal - 2
+	if _, done, err := store.add("resume", 0, 2, []byte("a")); done || err != nil {
+		t.Fatalf("add prefix: done=%v err=%v", done, err)
+	}
+	if _, done, err := store.add("resume", 1, 2, []byte("bc")); done || !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("add blocked suffix: done=%v err=%v, want ErrStreamFull", done, err)
+	}
+	if got := len(store.items["resume"].parts); got != 1 {
+		t.Fatalf("blocked suffix discarded the %d-part prefix", got)
+	}
+	mgr.releaseChunkResources(streamMaxChunkBytesGlobal-2, 0)
+	assembled, done, err := store.add("resume", 1, 2, []byte("bc"))
+	if !done || err != nil || string(assembled) != "abc" {
+		t.Fatalf("retry after shared capacity freed: data=%q done=%v err=%v", assembled, done, err)
+	}
+	store.remove("resume")
+	if mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+		t.Fatalf("delivered chunk set retained %d shared bytes and %d parts", mgr.chunkBytes, mgr.chunkParts)
+	}
+
+	// Session shutdown is the other ordinary release path.
+	if _, done, err := store.add("close", 0, 2, []byte("held")); done || err != nil {
+		t.Fatalf("add before close: done=%v err=%v", done, err)
+	}
+	store.close()
+	if mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+		t.Fatalf("closed chunk store retained %d shared bytes and %d parts", mgr.chunkBytes, mgr.chunkParts)
+	}
+}
+
+func TestStreamChunkGlobalBudgetIsAtomicAcrossSessions(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	const chunkSize = 1 << 20
+	const storeCount = streamMaxChunkBytesGlobal/chunkSize + 32
+	payload := make([]byte, chunkSize)
+	stores := make([]*streamChunkStore, storeCount)
+	var accepted int64
+	var wg sync.WaitGroup
+
+	for i := range stores {
+		store := &streamChunkStore{items: make(map[string]*streamChunkSet), mgr: mgr}
+		stores[i] = store
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, done, err := store.add("partial", 0, 2, payload)
+			switch {
+			case done:
+				t.Errorf("incomplete chunk unexpectedly assembled")
+			case err == nil:
+				atomic.AddInt64(&accepted, 1)
+			case !errors.Is(err, ErrStreamFull):
+				t.Errorf("add = %v, want ErrStreamFull", err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	wantAccepted := int64(streamMaxChunkBytesGlobal / chunkSize)
+	if accepted != wantAccepted {
+		t.Fatalf("accepted %d concurrent stores, want %d", accepted, wantAccepted)
+	}
+	mgr.mu.Lock()
+	gotBytes := mgr.chunkBytes
+	gotParts := mgr.chunkParts
+	mgr.mu.Unlock()
+	if gotBytes != streamMaxChunkBytesGlobal {
+		t.Fatalf("shared accounting = %d, want %d", gotBytes, streamMaxChunkBytesGlobal)
+	}
+	if gotParts != int(accepted) {
+		t.Fatalf("shared part accounting = %d, want %d", gotParts, accepted)
+	}
+
+	for _, store := range stores {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			store.close()
+		}()
+	}
+	wg.Wait()
+	mgr.mu.Lock()
+	gotBytes = mgr.chunkBytes
+	gotParts = mgr.chunkParts
+	mgr.mu.Unlock()
+	if gotBytes != 0 || gotParts != 0 {
+		t.Fatalf("concurrent shutdown retained %d shared bytes and %d parts", gotBytes, gotParts)
+	}
+}
+
+func TestStreamChunkStoresShareGlobalMetadataBudget(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	storeCount := streamMaxChunkPartsGlobal/streamMaxChunkSets + 1
+	stores := make([]*streamChunkStore, storeCount)
+	for i := range stores {
+		stores[i] = &streamChunkStore{items: make(map[string]*streamChunkSet), mgr: mgr}
+	}
+
+	for i := 0; i < streamMaxChunkPartsGlobal; i++ {
+		store := stores[i/streamMaxChunkSets]
+		if _, done, err := store.add(fmt.Sprintf("partial-%d", i), 0, 2, nil); done || err != nil {
+			t.Fatalf("add metadata part %d: done=%v err=%v", i, done, err)
+		}
+	}
+	last := stores[len(stores)-1]
+	if _, done, err := last.add("over-metadata-budget", 0, 2, nil); done || !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("add beyond metadata budget: done=%v err=%v, want ErrStreamFull", done, err)
+	}
+	if len(last.items) != 0 {
+		t.Fatalf("rejected metadata chunk retained %d sets", len(last.items))
+	}
+	if mgr.chunkBytes != 0 || mgr.chunkParts != streamMaxChunkPartsGlobal {
+		t.Fatalf("shared accounting at capacity = %d bytes, %d parts", mgr.chunkBytes, mgr.chunkParts)
+	}
+
+	stores[0].close()
+	if _, done, err := last.add("after-release", 0, 2, nil); done || err != nil {
+		t.Fatalf("add after metadata release: done=%v err=%v", done, err)
+	}
+	for _, store := range stores[1:] {
+		store.close()
+	}
+	if mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+		t.Fatalf("shutdown retained %d shared bytes and %d parts", mgr.chunkBytes, mgr.chunkParts)
 	}
 }
 
@@ -1474,8 +1763,8 @@ func TestStreamSessionCloseReleasesChunkAccounting(t *testing.T) {
 	}
 
 	s.close()
-	if len(store.items) != 0 || store.bytes != 0 {
-		t.Fatalf("closed session retained %d sets and %d bytes", len(store.items), store.bytes)
+	if len(store.items) != 0 || store.bytes != 0 || store.parts != 0 {
+		t.Fatalf("closed session retained %d sets, %d bytes, and %d parts", len(store.items), store.bytes, store.parts)
 	}
 	if _, _, err := store.add("late", 0, 2, []byte("late")); !errors.Is(err, ErrStreamClosed) {
 		t.Fatalf("add after session close = %v, want ErrStreamClosed", err)
@@ -1885,5 +2174,243 @@ func TestStreamGenerationMismatchCannotSupersedeOtherSessions(t *testing.T) {
 	}
 	if got := mgr.existingSession("other"); got != other {
 		t.Fatal("generation-mismatched poll retired another valid session")
+	}
+}
+
+func TestStreamOutboundBytesAreBoundedAcrossSessions(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	payload := make([]byte, 1<<20)
+	var sessions []*streamSession
+
+	for sessionIndex := 0; sessionIndex < streamOutQueueBytesGlobal/(8<<20); sessionIndex++ {
+		s := newStreamSession(fmt.Sprintf("session-%d", sessionIndex), uint(sessionIndex+1), mgr)
+		mgr.sessions[s.id] = s
+		sessions = append(sessions, s)
+		c := newTestConn(s, 1)
+		for frame := 0; frame < 8; frame++ {
+			if err := c.TrySend(payload); err != nil {
+				t.Fatalf("session %d frame %d: %v", sessionIndex, frame, err)
+			}
+		}
+	}
+
+	overflow := newStreamSession("overflow", 999, mgr)
+	mgr.sessions[overflow.id] = overflow
+	sessions = append(sessions, overflow)
+	if err := newTestConn(overflow, 1).TrySend(payload); err != ErrStreamFull {
+		t.Fatalf("TrySend beyond application byte budget = %v, want ErrStreamFull", err)
+	}
+	if got := mgr.outBytes.Load(); got != streamOutQueueBytesGlobal {
+		t.Fatalf("outbound bytes = %d, want %d", got, streamOutQueueBytesGlobal)
+	}
+
+	for _, s := range sessions {
+		s.close()
+	}
+	if got := mgr.outBytes.Load(); got != 0 {
+		t.Fatalf("outbound bytes after cleanup = %d, want 0", got)
+	}
+	if got := mgr.outFrames.Load(); got != 0 {
+		t.Fatalf("outbound frames after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamOutboundFramesAreBoundedAcrossSessions(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	var sessions []*streamSession
+
+	for sessionIndex := 0; sessionIndex < streamOutQueueDepthGlobal/streamOutQueueDepth; sessionIndex++ {
+		s := newStreamSession(fmt.Sprintf("session-%d", sessionIndex), uint(sessionIndex+1), mgr)
+		mgr.sessions[s.id] = s
+		sessions = append(sessions, s)
+		c := newTestConn(s, 1)
+		for frame := 0; frame < streamOutQueueDepth; frame++ {
+			if err := c.TrySend(nil); err != nil {
+				t.Fatalf("session %d frame %d: %v", sessionIndex, frame, err)
+			}
+		}
+	}
+
+	overflow := newStreamSession("overflow", 999, mgr)
+	mgr.sessions[overflow.id] = overflow
+	sessions = append(sessions, overflow)
+	if err := newTestConn(overflow, 1).TrySend(nil); err != ErrStreamFull {
+		t.Fatalf("TrySend beyond application frame budget = %v, want ErrStreamFull", err)
+	}
+	if got := mgr.outFrames.Load(); got != streamOutQueueDepthGlobal {
+		t.Fatalf("outbound frames = %d, want %d", got, streamOutQueueDepthGlobal)
+	}
+
+	for _, s := range sessions {
+		s.close()
+	}
+	if got := mgr.outFrames.Load(); got != 0 {
+		t.Fatalf("outbound frames after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamInboundBytesAreBoundedAcrossConnections(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	payload := make([]byte, 1<<20)
+	var conns []*StreamConn
+
+	for sessionIndex := 0; sessionIndex < streamInQueueBytesGlobal/(8<<20); sessionIndex++ {
+		s := newStreamSession(fmt.Sprintf("session-%d", sessionIndex), uint(sessionIndex+1), mgr)
+		mgr.sessions[s.id] = s
+		c := newTestConn(s, 1)
+		conns = append(conns, c)
+		for frame := 0; frame < 8; frame++ {
+			if err := c.deliver(payload); err != nil {
+				t.Fatalf("connection %d frame %d: %v", sessionIndex, frame, err)
+			}
+		}
+	}
+
+	overflowSession := newStreamSession("overflow", 999, mgr)
+	mgr.sessions[overflowSession.id] = overflowSession
+	overflow := newTestConn(overflowSession, 1)
+	conns = append(conns, overflow)
+	if err := overflow.deliver(payload); err != ErrStreamFull {
+		t.Fatalf("deliver beyond application byte budget = %v, want ErrStreamFull", err)
+	}
+	if got := mgr.inBytes.Load(); got != streamInQueueBytesGlobal {
+		t.Fatalf("inbound bytes = %d, want %d", got, streamInQueueBytesGlobal)
+	}
+
+	for _, c := range conns {
+		c.shutdown()
+	}
+	if got := mgr.inBytes.Load(); got != 0 {
+		t.Fatalf("inbound bytes after cleanup = %d, want 0", got)
+	}
+	if got := mgr.inFrames.Load(); got != 0 {
+		t.Fatalf("inbound frames after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamInboundFramesAreBoundedAcrossConnections(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	var conns []*StreamConn
+
+	for sessionIndex := 0; sessionIndex < streamInQueueDepthGlobal/streamInQueueDepth; sessionIndex++ {
+		s := newStreamSession(fmt.Sprintf("session-%d", sessionIndex), uint(sessionIndex+1), mgr)
+		mgr.sessions[s.id] = s
+		c := newTestConn(s, 1)
+		conns = append(conns, c)
+		for frame := 0; frame < streamInQueueDepth; frame++ {
+			if err := c.deliver(nil); err != nil {
+				t.Fatalf("connection %d frame %d: %v", sessionIndex, frame, err)
+			}
+		}
+	}
+
+	overflowSession := newStreamSession("overflow", 999, mgr)
+	mgr.sessions[overflowSession.id] = overflowSession
+	overflow := newTestConn(overflowSession, 1)
+	conns = append(conns, overflow)
+	if err := overflow.deliver(nil); err != ErrStreamFull {
+		t.Fatalf("deliver beyond application frame budget = %v, want ErrStreamFull", err)
+	}
+	if got := mgr.inFrames.Load(); got != streamInQueueDepthGlobal {
+		t.Fatalf("inbound frames = %d, want %d", got, streamInQueueDepthGlobal)
+	}
+
+	for _, c := range conns {
+		c.shutdown()
+	}
+	if got := mgr.inFrames.Load(); got != 0 {
+		t.Fatalf("inbound frames after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamGlobalConnectionAdmissionCoversDesktopOpen(t *testing.T) {
+	mgr, s := newTestSession(t)
+	mgr.handlers["hold"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	for i := 0; i < streamMaxConnectionsGlobal-1; i++ {
+		if !mgr.reserveOpen() {
+			t.Fatalf("reserve open %d unexpectedly failed", i)
+		}
+	}
+	if err := s.open(1, "hold"); err != nil {
+		t.Fatalf("last globally admitted open: %v", err)
+	}
+	if err := s.open(2, "hold"); err != ErrStreamFull {
+		t.Fatalf("open beyond global lifecycle budget = %v, want ErrStreamFull", err)
+	}
+
+	s.close()
+	for i := 0; i < streamMaxConnectionsGlobal-1; i++ {
+		mgr.releaseOpenReservation()
+	}
+	if got := mgr.lifecycles.Load(); got != 0 {
+		t.Fatalf("lifecycles after cleanup = %d, want 0", got)
+	}
+	if got := mgr.outControls.Load(); got != 0 {
+		t.Fatalf("controls after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamBlockedOnGlobalBudgetWakesWhenConnectionCloses(t *testing.T) {
+	mgr, s := newTestSession(t)
+	c := newTestConn(s, 1)
+	if !reserveCounter(&mgr.outBytes, streamOutQueueBytesGlobal, streamOutQueueBytesGlobal) {
+		t.Fatal("failed to fill global byte budget")
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- c.Send([]byte("blocked")) }()
+	select {
+	case err := <-done:
+		t.Fatalf("Send returned before capacity or cancellation: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	c.shutdown()
+	select {
+	case err := <-done:
+		if err != ErrStreamClosed {
+			t.Fatalf("blocked Send after close = %v, want ErrStreamClosed", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("blocked Send did not wake after connection close")
+	}
+	releaseCounter(&mgr.outBytes, streamOutQueueBytesGlobal)
+}
+
+func TestStreamManagerCloseWakesEveryGlobalBudgetWaiter(t *testing.T) {
+	mgr := newStreamManager(nil)
+	if !reserveCounter(&mgr.outBytes, streamOutQueueBytesGlobal, streamOutQueueBytesGlobal) {
+		t.Fatal("failed to fill global byte budget")
+	}
+
+	const waiters = 16
+	done := make(chan error, waiters)
+	for i := 0; i < waiters; i++ {
+		s := newStreamSession(fmt.Sprintf("waiter-%d", i), uint(i+1), mgr)
+		mgr.sessions[s.id] = s
+		c := newTestConn(s, 1)
+		go func() { done <- c.Send([]byte("blocked")) }()
+	}
+	select {
+	case err := <-done:
+		t.Fatalf("Send returned before manager close: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	mgr.close()
+	for i := 0; i < waiters; i++ {
+		select {
+		case err := <-done:
+			if err != ErrStreamClosed {
+				t.Fatalf("waiter %d after manager close = %v, want ErrStreamClosed", i, err)
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("waiter %d did not wake after manager close", i)
+		}
 	}
 }

@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -44,6 +45,11 @@ var (
 	// ErrStreamFull is returned by TrySend when the window's outbound buffer
 	// has no room. Send blocks in the same situation.
 	ErrStreamFull = errors.New("wails: stream send buffer full")
+
+	// ErrStreamTooLarge is returned when one frame exceeds the transport's
+	// maximum wire size. The same limit applies in both directions and in both
+	// desktop and server transports.
+	ErrStreamTooLarge = errors.New("wails: stream frame too large")
 )
 
 const (
@@ -126,6 +132,21 @@ const (
 	// tag a request with a window id.
 	streamMaxSessionsPerWindow = 16
 	streamMaxSessions          = 1024
+
+	// Per-session and per-connection queue limits still multiply unless the
+	// manager applies an application-wide ceiling. These allowances support a
+	// substantial burst across independent windows while preventing admitted
+	// sessions from turning nominal 8 MiB bounds into multi-gigabyte retention.
+	streamOutQueueBytesGlobal = 256 << 20
+	streamOutQueueDepthGlobal = 8192
+	streamInQueueBytesGlobal  = 256 << 20
+	streamInQueueDepthGlobal  = 8192
+
+	// Live desktop connections and their queued close notifications share this
+	// lifecycle allowance. Non-close controls have a separate cap so refused
+	// opens cannot consume the slots reserved for accepted connections to end.
+	streamMaxConnectionsGlobal  = 4096
+	streamOutControlDepthGlobal = streamMaxConnectionsGlobal
 )
 
 // StreamHandler is invoked once per connection, on its own goroutine. The
@@ -167,7 +188,11 @@ type StreamConn struct {
 	in      [][]byte
 	inBytes int
 
-	closeOnce sync.Once
+	closeOnce    sync.Once
+	shutdownOnce sync.Once
+	manager      *streamManager
+	lifecycle    bool
+	closeQueued  atomic.Bool
 }
 
 // Name is the stream name this connection was opened against.
@@ -202,12 +227,18 @@ func (c *StreamConn) Window() Window {
 //
 // It never touches the main thread, and never reaches evaluateJavaScript.
 func (c *StreamConn) Send(data []byte) error {
+	if len(data) > streamMaxFrameBytes {
+		return ErrStreamTooLarge
+	}
 	return c.sink.enqueue(c, c.id, frameData, data, true)
 }
 
 // TrySend is Send without the blocking: it returns ErrStreamFull rather than
 // waiting for the frontend to catch up.
 func (c *StreamConn) TrySend(data []byte) error {
+	if len(data) > streamMaxFrameBytes {
+		return ErrStreamTooLarge
+	}
 	return c.sink.enqueue(c, c.id, frameData, data, false)
 }
 
@@ -237,7 +268,6 @@ func (c *StreamConn) ReceiveJSON(v any) error {
 // or the connection closes.
 func (c *StreamConn) Receive() ([]byte, error) {
 	c.inMu.Lock()
-	defer c.inMu.Unlock()
 	for {
 		if len(c.in) > 0 {
 			frame := c.in[0]
@@ -246,11 +276,15 @@ func (c *StreamConn) Receive() ([]byte, error) {
 			c.in[0] = nil
 			c.in = c.in[1:]
 			c.inBytes -= len(frame)
-			// Wake a delivering goroutine waiting for room.
 			c.inCond.Broadcast()
+			c.inMu.Unlock()
+			if c.manager != nil {
+				c.manager.releaseInbound(len(frame), 1)
+			}
 			return frame, nil
 		}
 		if c.ctx.Err() != nil {
+			c.inMu.Unlock()
 			return nil, ErrStreamClosed
 		}
 		c.inCond.Wait()
@@ -268,7 +302,10 @@ func (c *StreamConn) Close() error {
 		// Best-effort notification: if the buffer is full or the session is
 		// already gone the frontend finds out via the session going away
 		// instead, so this must not block.
-		_ = c.sink.enqueue(c, c.id, frameClose, nil, false)
+		c.closeQueued.Store(true)
+		if err := c.sink.enqueue(c, c.id, frameClose, nil, false); err != nil {
+			c.closeQueued.Store(false)
+		}
 		c.shutdown()
 	})
 	return nil
@@ -285,19 +322,30 @@ func (c *StreamConn) closedByPeer() {
 // shutdown tears down the local end without notifying the frontend. Used when
 // the frontend is the one that went away.
 func (c *StreamConn) shutdown() {
-	c.cancel()
-	c.sink.removeConn(c.id)
+	c.shutdownOnce.Do(func() {
+		c.cancel()
+		c.sink.removeConn(c.id)
 
-	// Wake anyone blocked in Receive so it can observe the cancelled context,
-	// and anyone blocked in Send waiting for queue space. The comment always
-	// claimed the latter; only wake() was called, which nudges the poll and not
-	// the producers, so a Send blocked on a full queue stayed blocked forever
-	// after its connection closed.
-	c.inMu.Lock()
-	c.inCond.Broadcast()
-	c.inMu.Unlock()
-	c.sink.wakeProducers()
-	c.sink.wake()
+		c.inMu.Lock()
+		releasedBytes := c.inBytes
+		releasedFrames := len(c.in)
+		for i := range c.in {
+			c.in[i] = nil
+		}
+		c.in = nil
+		c.inBytes = 0
+		c.inCond.Broadcast()
+		c.inMu.Unlock()
+		if c.manager != nil {
+			c.manager.releaseInbound(releasedBytes, releasedFrames)
+			if c.lifecycle && !c.closeQueued.Load() {
+				c.manager.releaseLifecycle()
+			}
+			c.manager.signalBudget()
+		}
+		c.sink.wakeProducers()
+		c.sink.wake()
+	})
 }
 
 // deliver queues an inbound frame and wakes a waiting Receive. It returns
@@ -328,27 +376,45 @@ func (c *StreamConn) deliverBlocking(data []byte) error {
 }
 
 func (c *StreamConn) deliverWithBackpressure(data []byte, block bool) error {
-	c.inMu.Lock()
-	defer c.inMu.Unlock()
-
 	for {
+		c.inMu.Lock()
 		if c.ctx.Err() != nil {
+			c.inMu.Unlock()
 			return ErrStreamClosed
 		}
 		if len(c.in) < streamInQueueDepth &&
 			(len(c.in) == 0 || c.inBytes+len(data) <= streamInQueueBytes) {
-			break
+			c.inMu.Unlock()
+		} else {
+			if !block {
+				c.inMu.Unlock()
+				return ErrStreamFull
+			}
+			c.inCond.Wait()
+			c.inMu.Unlock()
+			continue
 		}
-		if !block {
-			return ErrStreamFull
-		}
-		c.inCond.Wait()
-	}
 
-	c.in = append(c.in, data)
-	c.inBytes += len(data)
-	c.inCond.Broadcast()
-	return nil
+		if c.manager != nil {
+			if err := c.manager.reserveInbound(len(data), block, c.ctx); err != nil {
+				return err
+			}
+		}
+
+		c.inMu.Lock()
+		if c.ctx.Err() == nil && len(c.in) < streamInQueueDepth &&
+			(len(c.in) == 0 || c.inBytes+len(data) <= streamInQueueBytes) {
+			c.in = append(c.in, data)
+			c.inBytes += len(data)
+			c.inCond.Broadcast()
+			c.inMu.Unlock()
+			return nil
+		}
+		c.inMu.Unlock()
+		if c.manager != nil {
+			c.manager.releaseInbound(len(data), 1)
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -365,21 +431,257 @@ type streamManager struct {
 	// window. Keeping a watermark rather than every retired session id prevents
 	// reloads from growing manager memory for the lifetime of the application.
 	retiredThrough map[uint]uint64
-	closed         bool
+	// chunkBytes and chunkParts account for incomplete and retryable chunk sets
+	// across every session. Per-session accounting alone can be multiplied by
+	// the global session allowance into an impractical host-memory bound.
+	chunkBytes int
+	chunkParts int
+	closed     bool
+	closedFlag atomic.Bool
+
+	outBytes    atomic.Int64
+	outFrames   atomic.Int64
+	outControls atomic.Int64
+	lifecycles  atomic.Int64
+	inBytes     atomic.Int64
+	inFrames    atomic.Int64
+	budgetMu    sync.Mutex
+	budgetCond  *sync.Cond
 
 	janitor sync.Once
 	once    sync.Once
 	stop    chan struct{}
 }
 
+func (m *streamManager) reserveChunkResources(bytes, parts int) bool {
+	if bytes < 0 || parts < 0 {
+		return false
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.closed || bytes > streamMaxChunkBytesGlobal-m.chunkBytes ||
+		parts > streamMaxChunkPartsGlobal-m.chunkParts {
+		return false
+	}
+	m.chunkBytes += bytes
+	m.chunkParts += parts
+	return true
+}
+
+func (m *streamManager) releaseChunkResources(bytes, parts int) {
+	if bytes <= 0 && parts <= 0 {
+		return
+	}
+	m.mu.Lock()
+	// All mutations are internal and balanced, but do not let a defensive
+	// cleanup path turn an accounting defect into a negative allowance.
+	if bytes >= m.chunkBytes {
+		m.chunkBytes = 0
+	} else {
+		m.chunkBytes -= bytes
+	}
+	if parts >= m.chunkParts {
+		m.chunkParts = 0
+	} else {
+		m.chunkParts -= parts
+	}
+	m.mu.Unlock()
+}
+
 func newStreamManager(app *App) *streamManager {
-	return &streamManager{
+	m := &streamManager{
 		app:            app,
 		handlers:       make(map[string]StreamHandler),
 		sessions:       make(map[string]*streamSession),
 		retiredThrough: make(map[uint]uint64),
 		stop:           make(chan struct{}),
 	}
+	m.budgetCond = sync.NewCond(&m.budgetMu)
+	return m
+}
+
+func reserveCounter(counter *atomic.Int64, amount, limit int64) bool {
+	if amount < 0 || amount > limit {
+		return false
+	}
+	for {
+		current := counter.Load()
+		if amount > limit-current {
+			return false
+		}
+		if counter.CompareAndSwap(current, current+amount) {
+			return true
+		}
+	}
+}
+
+func releaseCounter(counter *atomic.Int64, amount int64) {
+	if amount <= 0 {
+		return
+	}
+	for {
+		current := counter.Load()
+		next := current - amount
+		if next < 0 {
+			next = 0
+		}
+		if counter.CompareAndSwap(current, next) {
+			return
+		}
+	}
+}
+
+func (m *streamManager) signalBudget() {
+	m.budgetMu.Lock()
+	m.budgetCond.Broadcast()
+	m.budgetMu.Unlock()
+}
+
+// waitForBudget waits with budgetMu held. Every cancellation path calls
+// signalBudget, so the condition can be checked without a polling timer.
+func (m *streamManager) waitForBudget(ctx context.Context) error {
+	if m.closedFlag.Load() {
+		return ErrStreamClosed
+	}
+	if ctx != nil && ctx.Err() != nil {
+		return ErrStreamClosed
+	}
+	m.budgetCond.Wait()
+	return nil
+}
+
+func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx context.Context) error {
+	m.budgetMu.Lock()
+	defer m.budgetMu.Unlock()
+	for {
+		if m.closedFlag.Load() || (ctx != nil && ctx.Err() != nil) {
+			return ErrStreamClosed
+		}
+		var reserved bool
+		switch kind {
+		case frameData:
+			reserved = reserveCounter(&m.outBytes, int64(bytes), streamOutQueueBytesGlobal)
+			if reserved && !reserveCounter(&m.outFrames, 1, streamOutQueueDepthGlobal) {
+				releaseCounter(&m.outBytes, int64(bytes))
+				reserved = false
+			}
+		case frameClose:
+			// The lifecycle slot reserved by open transfers from the live
+			// connection to this close notification; no new slot is needed.
+			return nil
+		default:
+			reserved = reserveCounter(&m.outControls, 1, streamOutControlDepthGlobal)
+		}
+		if reserved {
+			if m.closedFlag.Load() || (ctx != nil && ctx.Err() != nil) {
+				switch kind {
+				case frameData:
+					releaseCounter(&m.outBytes, int64(bytes))
+					releaseCounter(&m.outFrames, 1)
+				case frameClose:
+					releaseCounter(&m.lifecycles, 1)
+				default:
+					releaseCounter(&m.outControls, 1)
+				}
+				return ErrStreamClosed
+			}
+			return nil
+		}
+		if !block {
+			return ErrStreamFull
+		}
+		if err := m.waitForBudget(ctx); err != nil {
+			return err
+		}
+	}
+}
+
+func (m *streamManager) releaseOutbound(kind uint8, bytes int) {
+	switch kind {
+	case frameData:
+		releaseCounter(&m.outBytes, int64(bytes))
+		releaseCounter(&m.outFrames, 1)
+	case frameClose:
+		releaseCounter(&m.lifecycles, 1)
+	default:
+		releaseCounter(&m.outControls, 1)
+	}
+	m.signalBudget()
+}
+
+func (m *streamManager) reserveOpen() bool {
+	m.budgetMu.Lock()
+	defer m.budgetMu.Unlock()
+	if m.closedFlag.Load() ||
+		!reserveCounter(&m.lifecycles, 1, streamMaxConnectionsGlobal) {
+		return false
+	}
+	if m.closedFlag.Load() ||
+		!reserveCounter(&m.outControls, 1, streamOutControlDepthGlobal) {
+		releaseCounter(&m.lifecycles, 1)
+		return false
+	}
+	return true
+}
+
+func (m *streamManager) releaseOpenReservation() {
+	releaseCounter(&m.lifecycles, 1)
+	releaseCounter(&m.outControls, 1)
+	m.signalBudget()
+}
+
+func (m *streamManager) releaseLifecycle() {
+	releaseCounter(&m.lifecycles, 1)
+	m.signalBudget()
+}
+
+func (m *streamManager) reserveLifecycle() bool {
+	m.budgetMu.Lock()
+	defer m.budgetMu.Unlock()
+	if m.closedFlag.Load() ||
+		!reserveCounter(&m.lifecycles, 1, streamMaxConnectionsGlobal) {
+		return false
+	}
+	if m.closedFlag.Load() {
+		releaseCounter(&m.lifecycles, 1)
+		return false
+	}
+	return true
+}
+
+func (m *streamManager) reserveInbound(bytes int, block bool, ctx context.Context) error {
+	m.budgetMu.Lock()
+	defer m.budgetMu.Unlock()
+	for {
+		if m.closedFlag.Load() || (ctx != nil && ctx.Err() != nil) {
+			return ErrStreamClosed
+		}
+		reserved := reserveCounter(&m.inBytes, int64(bytes), streamInQueueBytesGlobal)
+		if reserved && !reserveCounter(&m.inFrames, 1, streamInQueueDepthGlobal) {
+			releaseCounter(&m.inBytes, int64(bytes))
+			reserved = false
+		}
+		if reserved {
+			if m.closedFlag.Load() || (ctx != nil && ctx.Err() != nil) {
+				releaseCounter(&m.inBytes, int64(bytes))
+				releaseCounter(&m.inFrames, 1)
+				return ErrStreamClosed
+			}
+			return nil
+		}
+		if !block {
+			return ErrStreamFull
+		}
+		if err := m.waitForBudget(ctx); err != nil {
+			return err
+		}
+	}
+}
+
+func (m *streamManager) releaseInbound(bytes, frames int) {
+	releaseCounter(&m.inBytes, int64(bytes))
+	releaseCounter(&m.inFrames, int64(frames))
+	m.signalBudget()
 }
 
 // HandleStream registers a handler for a named stream. The frontend connects to
@@ -400,7 +702,7 @@ func newStreamManager(app *App) *streamManager {
 // Registering the same name twice replaces the handler; connections already
 // open keep the handler they started with.
 func (a *App) HandleStream(name string, handler StreamHandler) {
-	if a.streams == nil || name == "" || handler == nil {
+	if a.streams == nil || name == "" || len(name) > streamMaxNameLen || handler == nil {
 		return
 	}
 	a.streams.mu.Lock()
@@ -449,11 +751,16 @@ func (m *streamManager) sessionWithAdmission(id string, windowID uint, generatio
 		m.mu.Unlock()
 		return s, false
 	}
+	// Zero means the platform could not identify a window. Such requests can
+	// come from independent browser clients, whose generation counters have no
+	// ordering relationship. Keep them globally bounded, but never let one
+	// retire another or advance a shared generation watermark.
+	scopedSupersede := maySupersede && windowID != 0
 	if !ok {
 		// Once a page generation has finished, no delayed request from that page
 		// may recreate it. Without this watermark, a late open POST could
 		// allocate the old session again after its replacement retired it.
-		if generation <= m.retiredThrough[windowID] {
+		if windowID != 0 && generation <= m.retiredThrough[windowID] {
 			m.mu.Unlock()
 			return nil, false
 		}
@@ -466,7 +773,7 @@ func (m *streamManager) sessionWithAdmission(id string, windowID uint, generatio
 		for _, existing := range m.sessions {
 			if existing.windowID == windowID {
 				windowSessions++
-				if maySupersede && existing.generation < generation {
+				if scopedSupersede && existing.generation < generation {
 					replacesOlder = true
 				}
 			}
@@ -487,7 +794,7 @@ func (m *streamManager) sessionWithAdmission(id string, windowID uint, generatio
 	// the new session gives it a generation; when its poll arrives it retires
 	// only older sessions. A late poll from the old page sees the newer
 	// generation and leaves it alone.
-	if maySupersede {
+	if scopedSupersede {
 		// A poll proves that this is the current page generation for the window.
 		// Retire the entire lower generation range, not just sessions that happen
 		// to exist already: an older page may have dispatched its first request
@@ -629,6 +936,7 @@ func (m *streamManager) reapStale(now time.Time) {
 func (m *streamManager) close() {
 	m.mu.Lock()
 	m.closed = true
+	m.closedFlag.Store(true)
 	doomed := make([]*streamSession, 0, len(m.sessions))
 	for _, s := range m.sessions {
 		doomed = append(doomed, s)
@@ -636,6 +944,7 @@ func (m *streamManager) close() {
 	m.sessions = map[string]*streamSession{}
 	m.retiredThrough = map[uint]uint64{}
 	m.mu.Unlock()
+	m.signalBudget()
 
 	for _, s := range doomed {
 		s.close()

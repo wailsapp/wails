@@ -223,9 +223,12 @@ feature.
 | | limit |
 |---|---|
 | Buffered per window, awaiting collection | 8 MB or 256 frames, whichever first |
+| Buffered across the application, awaiting collection/write | 256 MB or 8,192 data frames, whichever first |
 | Received per connection, awaiting `Receive` | 8 MB or 256 frames — the frontend is then made to wait |
-| A single frame, Go→JS | no limit — an empty buffer accepts any size |
-| A single frame, JS→Go | 64 MB |
+| Received across the application, awaiting `Receive` | 256 MB or 8,192 frames, whichever first |
+| Live connections across the application | 4,096 |
+| A single frame, either direction | 64 MB |
+| A stream name | 256 UTF-8 bytes |
 | Idle poll hold | 20 s |
 
 These are compile-time constants today, not options. See the internals guide if you need to

@@ -41,11 +41,77 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     delete window._wails;
 });
 
 describe("WailsSocket protocol handling", () => {
+    it("can close while its open request is under backpressure", async () => {
+        const poll = deferred();
+        let openPosts = 0;
+        let closePosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            switch (init.headers?.["x-wails-stream-kind"]) {
+                case "1":
+                    openPosts++;
+                    return Promise.resolve(response(429));
+                case "2":
+                    closePosts++;
+                    return Promise.resolve(response(204));
+                default:
+                    return Promise.resolve(response(204));
+            }
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await vi.waitFor(() => expect(openPosts).toBeGreaterThanOrEqual(2), { interval: 1, timeout: 100 });
+
+        socket.close();
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+    });
+
+    it("can close while its open request is stalled", async () => {
+        const poll = deferred();
+        let openPosts = 0;
+        let openAborts = 0;
+        let closePosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            switch (init.headers?.["x-wails-stream-kind"]) {
+                case "1":
+                    openPosts++;
+                    return new Promise((resolve, reject) => {
+                        const onAbort = () => {
+                            openAborts++;
+                            reject(new DOMException("aborted", "AbortError"));
+                        };
+                        if (init.signal?.aborted) onAbort();
+                        else init.signal?.addEventListener("abort", onAbort, { once: true });
+                    });
+                case "2":
+                    closePosts++;
+                    return Promise.resolve(response(204));
+                default:
+                    return Promise.resolve(response(204));
+            }
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await vi.waitFor(() => expect(openPosts).toBe(1), { interval: 1, timeout: 100 });
+
+        socket.close();
+        await vi.waitFor(() => expect(openAborts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+    });
+
     it("advances the page generation across a reload", async () => {
         const generations = [];
         const fetch = vi.fn((input, init = {}) => {
@@ -193,6 +259,180 @@ describe("WailsSocket protocol handling", () => {
         expect(fetch.mock.calls.filter(([url]) => String(url).endsWith("/poll"))).toHaveLength(1);
     });
 
+    it.each([400, 401, 403, 404, 405, 409, 422, 451])("treats permanent poll response %i as terminal", async (status) => {
+        vi.useFakeTimers();
+        let pollCalls = 0;
+        const fetch = vi.fn((input) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollCalls++;
+            return Promise.resolve(response(status));
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+
+        await vi.advanceTimersByTimeAsync(10_000);
+
+        expect(pollCalls).toBe(1);
+        expect(events).toEqual(["error", "close"]);
+        expect(socket.readyState).toBe(WailsSocket.CLOSED);
+    });
+
+    it("treats a retired session as a clean terminal poll response", async () => {
+        vi.useFakeTimers();
+        let pollCalls = 0;
+        const fetch = vi.fn((input) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollCalls++;
+            return Promise.resolve(response(410));
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+        await vi.advanceTimersByTimeAsync(10_000);
+
+        expect(pollCalls).toBe(1);
+        expect(events).toEqual(["close"]);
+        expect(socket.readyState).toBe(WailsSocket.CLOSED);
+    });
+
+    it("stops after a successful poll response body cannot be read", async () => {
+        vi.useFakeTimers();
+        let pollCalls = 0;
+        const fetch = vi.fn((input) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollCalls++;
+            const failed = response(200);
+            failed.arrayBuffer = () => Promise.reject(new TypeError("response body interrupted"));
+            return Promise.resolve(failed);
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+        await vi.advanceTimersByTimeAsync(10_000);
+
+        expect(pollCalls).toBe(1);
+        expect(events).toEqual(["error", "close"]);
+        expect(socket.readyState).toBe(WailsSocket.CLOSED);
+    });
+
+    it("backs off recoverable poll failures and stops after the last connection closes", async () => {
+        vi.useFakeTimers();
+        const finalPoll = deferred();
+        const pollTimes = [];
+        let pollCalls = 0;
+        let pollAborts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollTimes.push(Date.now());
+            pollCalls++;
+            if (pollCalls === 1) return Promise.reject(new TypeError("network unavailable"));
+            const retryableStatuses = [408, 425, 429, 500, 503, 599];
+            if (pollCalls <= retryableStatuses.length + 1) {
+                return Promise.resolve(response(retryableStatuses[pollCalls - 2]));
+            }
+            return new Promise((resolve, reject) => {
+                const onAbort = () => {
+                    pollAborts++;
+                    reject(new DOMException("aborted", "AbortError"));
+                };
+                if (init.signal?.aborted) onAbort();
+                else init.signal?.addEventListener("abort", onAbort, { once: true });
+                finalPoll.promise.then(resolve, reject);
+            });
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await vi.advanceTimersByTimeAsync(0);
+        expect(pollCalls).toBe(1);
+        const delays = [250, 500, 1000, 2000, 4000, 5000, 5000];
+        for (let i = 0; i < delays.length; i++) {
+            await vi.advanceTimersByTimeAsync(delays[i] - 1);
+            expect(pollCalls).toBe(i + 1);
+            await vi.advanceTimersByTimeAsync(1);
+            expect(pollCalls).toBe(i + 2);
+        }
+        expect(pollTimes.map((time) => time - pollTimes[0])).toEqual([
+            0, 250, 750, 1750, 3750, 7750, 12750, 17750,
+        ]);
+
+        socket._closed(1000, "peer closed", true);
+        await vi.advanceTimersByTimeAsync(10_000);
+        expect(pollCalls).toBe(8);
+        expect(pollAborts).toBe(1);
+    });
+
+    it("cancels a recoverable poll retry timer after the last connection closes", async () => {
+        vi.useFakeTimers();
+        let pollCalls = 0;
+        const fetch = vi.fn((input) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollCalls++;
+            return Promise.reject(new TypeError("network unavailable"));
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await vi.advanceTimersByTimeAsync(0);
+        expect(pollCalls).toBe(1);
+        expect(vi.getTimerCount()).toBe(1);
+
+        socket._closed(1000, "peer closed", true);
+        await vi.advanceTimersByTimeAsync(30_000);
+        expect(pollCalls).toBe(1);
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("keeps the shared poll for remaining connections and restarts after wind-down", async () => {
+        let pollCalls = 0;
+        let pollAborts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (!String(input).endsWith("/poll")) return Promise.resolve(response(204));
+            pollCalls++;
+            return new Promise((resolve, reject) => {
+                const onAbort = () => {
+                    pollAborts++;
+                    reject(new DOMException("aborted", "AbortError"));
+                };
+                if (init.signal?.aborted) onAbort();
+                else init.signal?.addEventListener("abort", onAbort, { once: true });
+            });
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const first = new WailsSocket("first");
+        const second = new WailsSocket("second");
+        await vi.waitFor(() => expect(pollCalls).toBe(1), { interval: 1, timeout: 100 });
+
+        first._closed(1000, "peer closed", true);
+        await Promise.resolve();
+        expect(pollAborts).toBe(0);
+
+        second._closed(1000, "peer closed", true);
+        const replacement = new WailsSocket("replacement");
+        await vi.waitFor(() => expect(pollAborts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(pollCalls).toBe(2), { interval: 1, timeout: 100 });
+
+        replacement._closed(1000, "peer closed", true);
+        await vi.waitFor(() => expect(pollAborts).toBe(2), { interval: 1, timeout: 100 });
+    });
+
     it("clears bufferedAmount when the peer closes during an in-flight send", async () => {
         const poll = deferred();
         const dataPost = deferred();
@@ -248,6 +488,233 @@ describe("WailsSocket protocol handling", () => {
         await Promise.resolve();
 
         expect(events).toEqual(["close"]);
+    });
+
+    it("can close while an outbound data frame is under backpressure", async () => {
+        const poll = deferred();
+        let dataPosts = 0;
+        let closePosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            switch (init.headers?.["x-wails-stream-kind"]) {
+                case "0":
+                    dataPosts++;
+                    return Promise.resolve(response(429));
+                case "2":
+                    closePosts++;
+                    return Promise.resolve(response(204));
+                default:
+                    return Promise.resolve(response(204));
+            }
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await Promise.resolve();
+        socket._opened();
+
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+        socket.send(new Uint8Array(8));
+        await vi.waitFor(() => expect(dataPosts).toBeGreaterThanOrEqual(2), { interval: 1, timeout: 100 });
+
+        socket.close();
+        expect(socket.bufferedAmount).toBe(0);
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+
+        expect(socket.bufferedAmount).toBe(0);
+        expect(events).toEqual(["close"]);
+    });
+
+    it("can close while an outbound data request is stalled", async () => {
+        const poll = deferred();
+        let dataPosts = 0;
+        let closePosts = 0;
+        let dataAborts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            switch (init.headers?.["x-wails-stream-kind"]) {
+                case "0":
+                    dataPosts++;
+                    return new Promise((resolve, reject) => {
+                        const onAbort = () => {
+                            dataAborts++;
+                            reject(new DOMException("aborted", "AbortError"));
+                        };
+                        if (init.signal?.aborted) onAbort();
+                        else init.signal?.addEventListener("abort", onAbort, { once: true });
+                    });
+                case "2":
+                    closePosts++;
+                    return Promise.resolve(response(204));
+                default:
+                    return Promise.resolve(response(204));
+            }
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await Promise.resolve();
+        socket._opened();
+
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+        socket.send(new Uint8Array(8));
+        await vi.waitFor(() => expect(dataPosts).toBe(1), { interval: 1, timeout: 100 });
+
+        socket.close();
+        expect(socket.bufferedAmount).toBe(0);
+        await vi.waitFor(() => expect(dataAborts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+
+        expect(socket.bufferedAmount).toBe(0);
+        expect(events).toEqual(["close"]);
+    });
+
+    it("can close while an outbound Blob conversion is stalled", async () => {
+        const poll = deferred();
+        const conversion = deferred();
+        let conversionStarted = 0;
+        let dataPosts = 0;
+        let closePosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            switch (init.headers?.["x-wails-stream-kind"]) {
+                case "0":
+                    dataPosts++;
+                    return Promise.resolve(response(204));
+                case "2":
+                    closePosts++;
+                    return Promise.resolve(response(204));
+                default:
+                    return Promise.resolve(response(204));
+            }
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await Promise.resolve();
+        socket._opened();
+
+        const blob = new Blob([new Uint8Array(8)]);
+        Object.defineProperty(blob, "arrayBuffer", {
+            value: () => {
+                conversionStarted++;
+                return conversion.promise;
+            },
+        });
+        socket.send(blob);
+        expect(socket.bufferedAmount).toBe(8);
+        await vi.waitFor(() => expect(conversionStarted).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket._pending).toHaveLength(0), { interval: 1, timeout: 100 });
+
+        socket.close();
+        expect(socket.bufferedAmount).toBe(0);
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+        expect(dataPosts).toBe(0);
+    });
+
+    it("can discard a queued Blob conversion before the flush starts", async () => {
+        const poll = deferred();
+        const conversion = deferred();
+        let closePosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            if (init.headers?.["x-wails-stream-kind"] === "2") closePosts++;
+            return Promise.resolve(response(204));
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        socket._opened();
+
+        const blob = new Blob([new Uint8Array(8)]);
+        Object.defineProperty(blob, "arrayBuffer", { value: () => conversion.promise });
+        socket.send(blob);
+        socket.close();
+
+        await vi.waitFor(() => expect(closePosts).toBe(1), { interval: 1, timeout: 100 });
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+        await Promise.resolve();
+        expect(socket.bufferedAmount).toBe(0);
+    });
+
+    it("accounts for and releases a sustained pending send burst", async () => {
+        const poll = deferred();
+        let dataStarted = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            if (init.headers?.["x-wails-stream-kind"] !== "0") {
+                return Promise.resolve(response(204));
+            }
+            dataStarted++;
+            return new Promise((resolve, reject) => {
+                const onAbort = () => reject(new DOMException("aborted", "AbortError"));
+                if (init.signal?.aborted) onAbort();
+                else init.signal?.addEventListener("abort", onAbort, { once: true });
+            });
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await Promise.resolve();
+        socket._opened();
+
+        const frameBytes = 1024;
+        const frames = 256;
+        for (let i = 0; i < frames; i++) socket.send(new Uint8Array(frameBytes));
+        expect(socket.bufferedAmount).toBe(frames * frameBytes);
+        await vi.waitFor(() => expect(dataStarted).toBe(1), { interval: 1, timeout: 100 });
+
+        socket._closed(1000, "peer closed", true);
+        expect(socket.bufferedAmount).toBe(0);
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(socket.bufferedAmount).toBe(0);
+        expect(dataStarted).toBe(1);
+    });
+
+    it("releases every pending byte after a terminal send failure", async () => {
+        const poll = deferred();
+        const dataPost = deferred();
+        let dataPosts = 0;
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return poll.promise;
+            if (init.headers?.["x-wails-stream-kind"] !== "0") {
+                return Promise.resolve(response(204));
+            }
+            dataPosts++;
+            return dataPost.promise;
+        });
+        vi.stubGlobal("fetch", fetch);
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        await Promise.resolve();
+        socket._opened();
+
+        const events = [];
+        socket.addEventListener("error", () => events.push("error"));
+        socket.addEventListener("close", () => events.push("close"));
+        for (let i = 0; i < 32; i++) socket.send(new Uint8Array(2048));
+        expect(socket.bufferedAmount).toBe(32 * 2048);
+        await vi.waitFor(() => expect(dataPosts).toBe(1), { interval: 1, timeout: 100 });
+
+        dataPost.resolve(response(500));
+        await vi.waitFor(() => expect(socket.readyState).toBe(WailsSocket.CLOSED), { interval: 1, timeout: 100 });
+        expect(socket.bufferedAmount).toBe(0);
+        expect(events).toEqual(["error", "close"]);
+        expect(dataPosts).toBe(1);
     });
 
     it("keeps every accumulated batch within the webview request limit", async () => {

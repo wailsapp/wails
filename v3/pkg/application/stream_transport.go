@@ -47,10 +47,26 @@ const (
 	// layout: count u32, then count x ( len u32 | payload ).
 	streamHeaderBatch = "x-wails-stream-batch"
 
-	streamMaxSendBytes  = 64 << 20
+	streamMaxFrameBytes = 64 << 20
 	streamMaxChunkTotal = 4096
 	streamMaxChunkSets  = 256
 	streamMaxChunkIDLen = 64
+	streamMaxNameLen    = 256
+
+	// Chunk reassembly is bounded both per session and across the application.
+	// A per-session 64 MiB cap alone can be multiplied by every admitted
+	// session, retaining tens of gigabytes before any individual store reports
+	// backpressure. The shared allowance supports four simultaneous maximum-size
+	// uploads while keeping total retained host memory defensible.
+	streamMaxChunkBytesGlobal = 4 * streamMaxFrameBytes
+
+	// Payload bytes do not account for maps, slice headers, identifiers, and
+	// per-part bookkeeping. Tiny or empty chunks could otherwise multiply that
+	// metadata across every admitted session without approaching the byte cap.
+	// The runtime emits at most 128 parts for a maximum-size frame, so this still
+	// permits substantially more concurrent legitimate uploads than the byte
+	// allowance can hold.
+	streamMaxChunkPartsGlobal = 4096
 
 	// Frame header on the wire: connID(4) + kind(1) + length(4).
 	streamFrameHeaderBytes = 9
@@ -278,12 +294,12 @@ func decodeStreamBatch(body []byte) ([][]byte, error) {
 	frames := make([][]byte, 0, count)
 	off := 4
 	for i := uint32(0); i < count; i++ {
-		if off+4 > len(body) {
+		if len(body)-off < 4 {
 			return nil, errStreamBadBody
 		}
 		n := int(binary.BigEndian.Uint32(body[off : off+4]))
 		off += 4
-		if n < 0 || off+n > len(body) {
+		if n < 0 || n > len(body)-off {
 			return nil, errStreamBadBody
 		}
 		frames = append(frames, body[off:off+n])
@@ -320,6 +336,11 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		// therefore are never chunked. Combining both retry protocols would make
 		// a partial-batch acknowledgement ambiguous on a final-chunk retry.
 		http.Error(rw, "invalid batched frame", http.StatusBadRequest)
+		return
+	}
+	name := req.Header.Get(streamHeaderName)
+	if uint8(kind64) == frameOpen && (name == "" || len(name) > streamMaxNameLen) {
+		http.Error(rw, "invalid stream name", http.StatusBadRequest)
 		return
 	}
 
@@ -398,11 +419,6 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 
 	switch uint8(kind64) {
 	case frameOpen:
-		name := req.Header.Get(streamHeaderName)
-		if name == "" {
-			http.Error(rw, "missing stream name", http.StatusBadRequest)
-			return
-		}
 		switch err := s.open(connID, name); {
 		case errors.Is(err, ErrStreamFull):
 			rw.Header().Set("Retry-After", "0")
@@ -464,7 +480,7 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 // exactly and read straight into it.
 func readStreamFrameBody(req *http.Request) ([]byte, error) {
 	if n := req.ContentLength; n > 0 {
-		if n > streamMaxSendBytes {
+		if n > streamMaxFrameBytes {
 			return nil, errStreamBadBody
 		}
 		buf := make([]byte, n)
@@ -484,7 +500,7 @@ func readStreamFrameBody(req *http.Request) ([]byte, error) {
 // readStreamBody returns the frame body, reassembling it first if the client
 // split it. complete is false when this request carried a non-final chunk.
 func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete bool, err error) {
-	req.Body = http.MaxBytesReader(nil, req.Body, streamMaxSendBytes)
+	req.Body = http.MaxBytesReader(nil, req.Body, streamMaxFrameBytes)
 
 	chunkID := req.Header.Get(streamHeaderChunkID)
 	if chunkID == "" {
@@ -542,13 +558,16 @@ type streamChunkStore struct {
 	mu     sync.Mutex
 	items  map[string]*streamChunkSet
 	bytes  int
+	parts  int
 	closed bool
+	mgr    *streamManager
 }
 
 type streamChunkSet struct {
 	parts      map[int][]byte
 	total      int
 	size       int
+	partCount  int
 	created    time.Time
 	assembled  []byte
 	retryIndex int
@@ -559,7 +578,11 @@ func (s *streamSession) chunks() *streamChunkStore {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.chunkStore == nil {
-		s.chunkStore = &streamChunkStore{items: make(map[string]*streamChunkSet), closed: s.closed}
+		s.chunkStore = &streamChunkStore{
+			items:  make(map[string]*streamChunkSet),
+			closed: s.closed,
+			mgr:    s.mgr,
+		}
 	}
 	return s.chunkStore
 }
@@ -582,11 +605,14 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 	for k, v := range c.items {
 		if now.Sub(v.created) > streamHoldTimeout {
 			c.bytes -= v.size
+			c.parts -= v.partCount
+			c.releaseResources(v.size, v.partCount)
 			delete(c.items, k)
 		}
 	}
 
 	set, ok := c.items[id]
+	createdSet := !ok
 	if !ok {
 		if len(c.items) >= streamMaxChunkSets {
 			return nil, false, ErrStreamFull
@@ -598,6 +624,8 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 		// Discard the set, and give back what it was holding — not doing so
 		// consumed that capacity for the life of the session.
 		c.bytes -= set.size
+		c.parts -= set.partCount
+		c.releaseResources(set.size, set.partCount)
 		delete(c.items, id)
 		return nil, false, errStreamChunkConflict
 	}
@@ -610,23 +638,40 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 			return set.assembled, true, nil
 		}
 		c.bytes -= set.size
+		c.parts -= set.partCount
+		c.releaseResources(set.size, set.partCount)
 		delete(c.items, id)
 		return nil, false, errStreamChunkDup
 	}
 	if _, dup := set.parts[index]; dup {
 		c.bytes -= set.size
+		c.parts -= set.partCount
+		c.releaseResources(set.size, set.partCount)
 		delete(c.items, id)
 		return nil, false, errStreamChunkDup
 	}
-	if c.bytes+len(data) > streamMaxSendBytes {
+	if c.bytes+len(data) > streamMaxFrameBytes {
 		c.bytes -= set.size
+		c.parts -= set.partCount
+		c.releaseResources(set.size, set.partCount)
 		delete(c.items, id)
 		return nil, false, errStreamChunkTooBig
+	}
+	if c.mgr != nil && !c.mgr.reserveChunkResources(len(data), 1) {
+		// The shared allowance is transient backpressure. Keep an existing
+		// partial set so the client can retry this exact chunk once another
+		// session releases capacity; do not retain a newly-created empty set.
+		if createdSet {
+			delete(c.items, id)
+		}
+		return nil, false, ErrStreamFull
 	}
 
 	set.parts[index] = data
 	set.size += len(data)
+	set.partCount++
 	c.bytes += len(data)
+	c.parts++
 
 	if len(set.parts) < total {
 		return nil, false, nil
@@ -657,8 +702,12 @@ func (c *streamChunkStore) close() {
 	c.mu.Lock()
 	c.closed = true
 	c.items = make(map[string]*streamChunkSet)
+	released := c.bytes
+	releasedParts := c.parts
 	c.bytes = 0
+	c.parts = 0
 	c.mu.Unlock()
+	c.releaseResources(released, releasedParts)
 }
 
 // remove acknowledges a completed set after its frame has been accepted by
@@ -666,9 +715,21 @@ func (c *streamChunkStore) close() {
 // backpressure).
 func (c *streamChunkStore) remove(id string) {
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	var released int
+	var releasedParts int
 	if set, ok := c.items[id]; ok {
 		c.bytes -= set.size
+		c.parts -= set.partCount
+		released = set.size
+		releasedParts = set.partCount
 		delete(c.items, id)
+	}
+	c.mu.Unlock()
+	c.releaseResources(released, releasedParts)
+}
+
+func (c *streamChunkStore) releaseResources(bytes, parts int) {
+	if c.mgr != nil {
+		c.mgr.releaseChunkResources(bytes, parts)
 	}
 }

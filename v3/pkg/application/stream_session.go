@@ -119,9 +119,6 @@ func (s *streamSession) wake() {
 // draining in between would either send the frame with id 0 (leaving the
 // frontend stuck in CONNECTING with no error) or retag an unrelated frame.
 func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	// Control frames bypass the data caps, but not their own bounds. Dropping one
 	// is a protocol failure: a lost open ack leaves the frontend in CONNECTING
 	// forever, and a lost close leaves it believing an ended connection is live.
@@ -130,57 +127,89 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 	control := kind != frameData
 
 	for {
+		s.mu.Lock()
 		if s.closed {
+			s.mu.Unlock()
 			return ErrStreamClosed
 		}
 		// A closed connection may still emit its own close frame — that is how
 		// the frontend learns — but nothing else.
 		if !control && c != nil && c.ctx.Err() != nil {
+			s.mu.Unlock()
+			return ErrStreamClosed
+		}
+
+		localRoom := false
+		if control {
+			if kind == frameClose {
+				localRoom = s.outCloses < streamMaxConnections
+			} else {
+				localRoom = s.outControls < streamOutControlDepth
+			}
+		} else if s.outDataFrames < streamOutQueueDepth &&
+			(s.outDataFrames == 0 || s.outBytes+len(data) <= streamOutQueueBytes) {
+			localRoom = true
+		}
+
+		if !localRoom {
+			if !block {
+				s.mu.Unlock()
+				return ErrStreamFull
+			}
+			s.space.Wait()
+			s.mu.Unlock()
+			continue
+		}
+		s.mu.Unlock()
+
+		var ctx context.Context
+		if !control && c != nil {
+			ctx = c.ctx
+		}
+		if err := s.mgr.reserveOutbound(kind, len(data), block, ctx); err != nil {
+			return err
+		}
+
+		// Local and global capacity are protected independently. Recheck the
+		// session after reserving the shared allowance: another producer may have
+		// filled it while this producer was contending for global room.
+		s.mu.Lock()
+		if s.closed || (!control && c != nil && c.ctx.Err() != nil) {
+			s.mu.Unlock()
+			s.mgr.releaseOutbound(kind, len(data))
 			return ErrStreamClosed
 		}
 		if control {
 			if kind == frameClose {
-				if s.outCloses < streamMaxConnections {
-					break
-				}
-			} else if s.outControls < streamOutControlDepth {
-				break
+				localRoom = s.outCloses < streamMaxConnections
+			} else {
+				localRoom = s.outControls < streamOutControlDepth
 			}
+		} else {
+			localRoom = s.outDataFrames < streamOutQueueDepth &&
+				(s.outDataFrames == 0 || s.outBytes+len(data) <= streamOutQueueBytes)
+		}
+		if !localRoom {
+			s.mu.Unlock()
+			s.mgr.releaseOutbound(kind, len(data))
 			if !block {
 				return ErrStreamFull
 			}
-			s.space.Wait()
 			continue
 		}
-		// An empty queue always accepts one frame, however large. Enforcing the
-		// byte cap unconditionally would make a frame bigger than the cap
-		// impossible to send at all: the condition could never come true, so a
-		// blocking Send would wait forever and TrySend would report full
-		// permanently. Frame size is not something the caller necessarily
-		// controls — a struct with a []byte field marshals to whatever it
-		// marshals to — so the cap governs how much may accumulate, not how
-		// large any single frame may be. Same principle as drainLocked always
-		// taking at least one frame.
-		if s.outDataFrames < streamOutQueueDepth &&
-			(s.outDataFrames == 0 || s.outBytes+len(data) <= streamOutQueueBytes) {
-			break
-		}
-		if !block {
-			return ErrStreamFull
-		}
-		s.space.Wait()
-	}
 
-	// The frame retains the caller's slice. Copying here would be a full memcpy
-	// per frame, and at gigabytes per second that dominates the transport for
-	// no benefit that callers cannot get themselves: almost every caller hands
-	// over freshly marshalled bytes. The ownership rule is documented on Send
-	// instead — do not mutate a slice after passing it.
-	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
-	s.outBytes += len(data)
-	s.countQueued(kind, 1)
-	s.wake()
-	return nil
+		// The frame retains the caller's slice. Copying here would be a full memcpy
+		// per frame, and at gigabytes per second that dominates the transport for
+		// no benefit that callers cannot get themselves: almost every caller hands
+		// over freshly marshalled bytes. The ownership rule is documented on Send
+		// instead — do not mutate a slice after passing it.
+		s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
+		s.outBytes += len(data)
+		s.countQueued(kind, 1)
+		s.mu.Unlock()
+		s.wake()
+		return nil
+	}
 }
 
 func (s *streamSession) countQueued(kind uint8, delta int) {
@@ -257,6 +286,7 @@ func (s *streamSession) drainLocked(maxBytes int) (frames []outFrame, more bool)
 	frames = make([]outFrame, n)
 	copy(frames, s.out[:n])
 	for i := 0; i < n; i++ {
+		s.mgr.releaseOutbound(s.out[i].kind, len(s.out[i].data))
 		s.outBytes -= len(s.out[i].data)
 		s.countQueued(s.out[i].kind, -1)
 		s.out[i] = outFrame{}
@@ -277,15 +307,20 @@ func (s *streamSession) open(connID uint32, name string) error {
 	if !ok {
 		return s.enqueue(nil, connID, frameError, []byte("no handler registered for stream "+name), false)
 	}
+	if !s.mgr.reserveOpen() {
+		return ErrStreamFull
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c := &StreamConn{
-		id:       connID,
-		name:     name,
-		windowID: s.windowID,
-		sink:     s,
-		ctx:      ctx,
-		cancel:   cancel,
+		id:        connID,
+		name:      name,
+		windowID:  s.windowID,
+		sink:      s,
+		ctx:       ctx,
+		cancel:    cancel,
+		manager:   s.mgr,
+		lifecycle: true,
 	}
 	c.inCond = sync.NewCond(&c.inMu)
 
@@ -293,6 +328,7 @@ func (s *streamSession) open(connID uint32, name string) error {
 	if s.closed {
 		s.mu.Unlock()
 		cancel()
+		s.mgr.releaseOpenReservation()
 		return ErrStreamClosed
 	}
 	if _, exists := s.conns[connID]; exists {
@@ -300,6 +336,7 @@ func (s *streamSession) open(connID uint32, name string) error {
 		// hostile client. Refuse rather than replacing a live connection.
 		s.mu.Unlock()
 		cancel()
+		s.mgr.releaseOpenReservation()
 		return errStreamDuplicateConnection
 	}
 	// A queued close still owns its connection slot until the frontend drains
@@ -308,6 +345,7 @@ func (s *streamSession) open(connID uint32, name string) error {
 	if len(s.conns)+s.outCloses >= streamMaxConnections || s.outControls >= streamOutControlDepth {
 		s.mu.Unlock()
 		cancel()
+		s.mgr.releaseOpenReservation()
 		return ErrStreamFull
 	}
 	s.conns[connID] = c
@@ -371,7 +409,12 @@ func (s *streamSession) close() {
 	for _, c := range s.conns {
 		conns = append(conns, c)
 	}
-	// Release buffered payloads immediately; nothing will ever poll for them.
+	// Release buffered payloads and their application-wide reservations
+	// immediately; nothing will ever poll for them.
+	for i := range s.out {
+		s.mgr.releaseOutbound(s.out[i].kind, len(s.out[i].data))
+		s.out[i] = outFrame{}
+	}
 	s.out = nil
 	s.outBytes = 0
 	s.outDataFrames = 0

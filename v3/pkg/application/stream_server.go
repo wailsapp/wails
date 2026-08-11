@@ -30,6 +30,7 @@ import (
 // queue keeps one contract across both transports.
 type wsStreamSink struct {
 	conn     *websocket.Conn
+	mgr      *streamManager
 	ioCtx    context.Context
 	cancelIO context.CancelFunc
 	done     chan struct{}
@@ -42,7 +43,7 @@ type wsStreamSink struct {
 	closed bool
 }
 
-func newWSStreamSink(conn *websocket.Conn, parent context.Context) *wsStreamSink {
+func newWSStreamSink(conn *websocket.Conn, parent context.Context, mgr *streamManager) *wsStreamSink {
 	// Accepted writes must outlive the handler context long enough to drain.
 	// StreamConn.Close cancels that context immediately after enqueueing the
 	// close frame, so using it for writes loses any data queued just before a
@@ -54,6 +55,7 @@ func newWSStreamSink(conn *websocket.Conn, parent context.Context) *wsStreamSink
 	ioCtx, cancelIO := context.WithCancel(parent)
 	w := &wsStreamSink{
 		conn:     conn,
+		mgr:      mgr,
 		ioCtx:    ioCtx,
 		cancelIO: cancelIO,
 		done:     make(chan struct{}),
@@ -64,39 +66,73 @@ func newWSStreamSink(conn *websocket.Conn, parent context.Context) *wsStreamSink
 }
 
 func (w *wsStreamSink) enqueue(c *StreamConn, connID uint32, kind uint8, data []byte, block bool) error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	// Control frames bypass the cap, as on the desktop: losing one is a
 	// protocol failure rather than a slow-down.
 	control := kind != frameData
 
-	for !control {
+	for {
+		w.mu.Lock()
 		if w.closed {
+			w.mu.Unlock()
 			return ErrStreamClosed
 		}
 		if c != nil && c.ctx.Err() != nil {
+			w.mu.Unlock()
 			return ErrStreamClosed
 		}
-		if len(w.out) < streamOutQueueDepth &&
-			(len(w.out) == 0 || w.bytes+len(data) <= streamOutQueueBytes) {
-			break
+		localRoom := control || (len(w.out) < streamOutQueueDepth &&
+			(len(w.out) == 0 || w.bytes+len(data) <= streamOutQueueBytes))
+		if localRoom {
+			w.mu.Unlock()
+		} else {
+			if !block {
+				w.mu.Unlock()
+				return ErrStreamFull
+			}
+			w.cond.Wait()
+			w.mu.Unlock()
+			continue
 		}
-		if !block {
-			return ErrStreamFull
-		}
-		w.cond.Wait()
-	}
-	if w.closed {
-		return ErrStreamClosed
-	}
 
-	// No copy, as on the desktop: the caller owns the slice until the frame is
-	// written. See StreamConn.Send.
-	w.out = append(w.out, outFrame{connID: connID, kind: kind, data: data})
-	w.bytes += len(data)
-	w.cond.Broadcast()
-	return nil
+		if !control && w.mgr != nil {
+			var ctx context.Context
+			if c != nil {
+				ctx = c.ctx
+			}
+			if err := w.mgr.reserveOutbound(frameData, len(data), block, ctx); err != nil {
+				return err
+			}
+		}
+
+		w.mu.Lock()
+		localRoom = control || (len(w.out) < streamOutQueueDepth &&
+			(len(w.out) == 0 || w.bytes+len(data) <= streamOutQueueBytes))
+		if w.closed || (c != nil && c.ctx.Err() != nil) {
+			w.mu.Unlock()
+			if !control && w.mgr != nil {
+				w.mgr.releaseOutbound(frameData, len(data))
+			}
+			return ErrStreamClosed
+		}
+		if !localRoom {
+			w.mu.Unlock()
+			if !control && w.mgr != nil {
+				w.mgr.releaseOutbound(frameData, len(data))
+			}
+			if !block {
+				return ErrStreamFull
+			}
+			continue
+		}
+
+		// No copy, as on the desktop: the caller owns the slice until the frame is
+		// written. See StreamConn.Send.
+		w.out = append(w.out, outFrame{connID: connID, kind: kind, data: data})
+		w.bytes += len(data)
+		w.cond.Broadcast()
+		w.mu.Unlock()
+		return nil
+	}
 }
 
 // pump is the single writer. websocket.Conn does not permit concurrent writes,
@@ -120,12 +156,10 @@ func (w *wsStreamSink) pump() {
 		w.cond.Broadcast()
 		w.mu.Unlock()
 
+		var writeErr error
 		switch frame.kind {
 		case frameData:
-			if err := w.conn.Write(w.ioCtx, websocket.MessageBinary, frame.data); err != nil {
-				w.shut(websocket.StatusNormalClosure, "")
-				return
-			}
+			writeErr = w.conn.Write(w.ioCtx, websocket.MessageBinary, frame.data)
 		case frameClose:
 			w.shut(websocket.StatusNormalClosure, "")
 			return
@@ -134,6 +168,29 @@ func (w *wsStreamSink) pump() {
 			return
 		case frameOpen:
 			// The handshake is the acknowledgement; there is nothing to send.
+		}
+		if frame.kind == frameData && w.mgr != nil {
+			w.mgr.releaseOutbound(frameData, len(frame.data))
+		}
+		if writeErr != nil {
+			w.shut(websocket.StatusNormalClosure, "")
+			return
+		}
+	}
+}
+
+func (w *wsStreamSink) releaseQueued() {
+	w.mu.Lock()
+	queued := w.out
+	w.out = nil
+	w.bytes = 0
+	w.cond.Broadcast()
+	w.mu.Unlock()
+	if w.mgr != nil {
+		for i := range queued {
+			if queued[i].kind == frameData {
+				w.mgr.releaseOutbound(frameData, len(queued[i].data))
+			}
 		}
 	}
 }
@@ -146,6 +203,7 @@ func (w *wsStreamSink) shut(code websocket.StatusCode, reason string) {
 		w.mu.Unlock()
 		_ = w.conn.Close(code, reason)
 		w.cancelIO()
+		w.releaseQueued()
 	})
 }
 
@@ -156,6 +214,7 @@ func (w *wsStreamSink) abort() {
 	w.closed = true
 	w.cond.Broadcast()
 	w.mu.Unlock()
+	w.releaseQueued()
 }
 
 // The connection table is a session concept; a socket is its own connection.
@@ -186,11 +245,20 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	name := req.URL.Query().Get("name")
+	if name == "" || len(name) > streamMaxNameLen {
+		http.Error(rw, "invalid stream name", http.StatusBadRequest)
+		return
+	}
 	handler, ok := a.streams.handler(name)
 	if !ok {
 		http.Error(rw, "no handler registered for stream "+name, http.StatusNotFound)
 		return
 	}
+	if !a.streams.reserveLifecycle() {
+		http.Error(rw, "stream connection capacity reached", http.StatusServiceUnavailable)
+		return
+	}
+	defer a.streams.releaseLifecycle()
 
 	conn, err := websocket.Accept(rw, req, &websocket.AcceptOptions{
 		// Matches the events broadcaster: server mode serves whatever origin
@@ -205,16 +273,17 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 	// coder/websocket defaults to a 32 KiB read limit, which would close the
 	// connection on any frontend frame past that — well below the 64 MB this
 	// transport documents.
-	conn.SetReadLimit(streamMaxSendBytes)
+	conn.SetReadLimit(streamMaxFrameBytes)
 
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
 
-	sink := newWSStreamSink(conn, a.ctx)
+	sink := newWSStreamSink(conn, a.ctx, a.streams)
 	c := &StreamConn{
-		name: name,
-		sink: sink,
-		ctx:  ctx,
+		name:    name,
+		sink:    sink,
+		ctx:     ctx,
+		manager: a.streams,
 		// windowID stays 0: server mode has no windows, and StreamConn.Window
 		// already reports nil for it.
 		cancel: cancel,

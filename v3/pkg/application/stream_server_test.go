@@ -120,7 +120,7 @@ func TestServerModeCarriesLargeFrames(t *testing.T) {
 }
 
 // coder/websocket defaults to a 32 KiB inbound limit. The Stream endpoint
-// promises streamMaxSendBytes, so exercise the client-to-Go direction over a
+// promises streamMaxFrameBytes, so exercise the client-to-Go direction over a
 // real socket rather than relying on the independent Go-to-client test above.
 func TestServerModeAcceptsLargeInboundFrame(t *testing.T) {
 	a := newServerTestApp(t)
@@ -167,6 +167,144 @@ func TestServerModeAcceptsLargeInboundFrame(t *testing.T) {
 			t.Fatalf("payload differs at byte %d", i)
 		}
 	}
+}
+
+func TestServerModeRejectsOversizedStreamName(t *testing.T) {
+	a := &App{streams: newStreamManager(nil)}
+	t.Cleanup(a.streams.close)
+	req := httptest.NewRequest(http.MethodGet, "/wails/stream?name="+strings.Repeat("n", streamMaxNameLen+1), nil)
+	rw := httptest.NewRecorder()
+
+	a.serveStreamWS(rw, req)
+
+	if rw.Code != http.StatusBadRequest {
+		t.Fatalf("oversized name status = %d, want 400", rw.Code)
+	}
+}
+
+func TestServerModeAcceptsMaximumLengthStreamName(t *testing.T) {
+	a := newServerTestApp(t)
+	maximum := strings.Repeat("m", streamMaxNameLen)
+	a.HandleStream(maximum, func(c *StreamConn) {})
+	srv := httptest.NewServer(http.HandlerFunc(a.serveStreamWS))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, _, err := websocket.Dial(ctx, wsURL(srv.URL)+"?name="+maximum, nil)
+	if err != nil {
+		t.Fatalf("dial maximum-length stream name: %v", err)
+	}
+	defer conn.CloseNow()
+}
+
+func TestServerModeRejectsConnectionBeyondGlobalLifecycleBudget(t *testing.T) {
+	a := newServerTestApp(t)
+	a.HandleStream("hold", func(c *StreamConn) { <-c.Context().Done() })
+	for i := 0; i < streamMaxConnectionsGlobal; i++ {
+		if !a.streams.reserveLifecycle() {
+			t.Fatalf("reserve lifecycle %d unexpectedly failed", i)
+		}
+	}
+	defer func() {
+		for i := 0; i < streamMaxConnectionsGlobal; i++ {
+			a.streams.releaseLifecycle()
+		}
+	}()
+
+	req := httptest.NewRequest(http.MethodGet, "/wails/stream?name=hold", nil)
+	rw := httptest.NewRecorder()
+	a.serveStreamWS(rw, req)
+	if rw.Code != http.StatusServiceUnavailable {
+		t.Fatalf("connection beyond global lifecycle budget status = %d, want 503", rw.Code)
+	}
+}
+
+func TestServerModeSinkUsesApplicationWideOutboundBudget(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	if !reserveCounter(&mgr.outBytes, streamOutQueueBytesGlobal, streamOutQueueBytesGlobal) {
+		t.Fatal("failed to fill global outbound byte budget")
+	}
+	defer releaseCounter(&mgr.outBytes, streamOutQueueBytesGlobal)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sink := &wsStreamSink{mgr: mgr}
+	sink.cond = sync.NewCond(&sink.mu)
+	c := &StreamConn{sink: sink, ctx: ctx, cancel: cancel, manager: mgr}
+	c.inCond = sync.NewCond(&c.inMu)
+
+	if err := c.TrySend([]byte("overflow")); err != ErrStreamFull {
+		t.Fatalf("server TrySend beyond global byte budget = %v, want ErrStreamFull", err)
+	}
+}
+
+func TestServerModeBlockedGlobalProducerWakesOnCapacity(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	if !reserveCounter(&mgr.outBytes, streamOutQueueBytesGlobal, streamOutQueueBytesGlobal) {
+		t.Fatal("failed to fill global outbound byte budget")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sink := &wsStreamSink{mgr: mgr}
+	sink.cond = sync.NewCond(&sink.mu)
+	c := &StreamConn{sink: sink, ctx: ctx, cancel: cancel, manager: mgr}
+	c.inCond = sync.NewCond(&c.inMu)
+
+	done := make(chan error, 1)
+	go func() { done <- c.Send([]byte("released")) }()
+	select {
+	case err := <-done:
+		t.Fatalf("Send returned before capacity was released: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+	releaseCounter(&mgr.outBytes, streamOutQueueBytesGlobal)
+	mgr.signalBudget()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("Send after capacity release: %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("blocked server Send did not wake after capacity release")
+	}
+	sink.releaseQueued()
+	if got := mgr.outBytes.Load(); got != 0 {
+		t.Fatalf("outbound bytes after queue cleanup = %d, want 0", got)
+	}
+}
+
+func TestServerModeBlockedGlobalProducerWakesOnShutdown(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	if !reserveCounter(&mgr.outBytes, streamOutQueueBytesGlobal, streamOutQueueBytesGlobal) {
+		t.Fatal("failed to fill global outbound byte budget")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	sink := &wsStreamSink{mgr: mgr}
+	sink.cond = sync.NewCond(&sink.mu)
+	c := &StreamConn{sink: sink, ctx: ctx, cancel: cancel, manager: mgr}
+	c.inCond = sync.NewCond(&c.inMu)
+
+	done := make(chan error, 1)
+	go func() { done <- c.Send([]byte("blocked")) }()
+	select {
+	case err := <-done:
+		t.Fatalf("Send returned before shutdown: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+	c.shutdown()
+	select {
+	case err := <-done:
+		if err != ErrStreamClosed {
+			t.Fatalf("Send after shutdown = %v, want ErrStreamClosed", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("blocked server Send did not wake after shutdown")
+	}
+	releaseCounter(&mgr.outBytes, streamOutQueueBytesGlobal)
 }
 
 // TrySend is documented as non-blocking in both transports. Pin the
