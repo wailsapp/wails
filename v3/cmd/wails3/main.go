@@ -50,7 +50,12 @@ func main() {
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
-	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	doctorCmd := app.NewSubCommand("doctor", "System status report")
+	var doctorFlags flags.Doctor
+	doctorCmd.AddFlags(&doctorFlags)
+	doctorCmd.Action(func() error {
+		return commands.Doctor(&doctorFlags)
+	})
 	app.NewSubCommandFunction("doctor-ng", "System status report (new TUI)", commands.DoctorNg)
 	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
@@ -98,7 +103,8 @@ func main() {
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
-	tool.NewSubCommandFunction("has-cc", "Check if a C compiler (gcc or clang) is available in PATH", commands.ToolHasCC)
+	tool.NewSubCommandFunction("has", "Check if a tool is available in PATH (e.g. wails3 tool has git, wails3 tool has gcc|clang)", commands.ToolHas)
+	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has gcc|clang' instead", commands.ToolHasCC)
 
 	// Low-level sign tool (used by Taskfiles)
 	toolSign := tool.NewSubCommand("sign", "Sign a binary or package directly")
@@ -109,7 +115,7 @@ func main() {
 	})
 
 	// Setup commands
-	setup := app.NewSubCommand("setup", "Project setup wizards")
+	setup := app.NewSubCommandFunction("setup", "Project setup wizards", commands.Setup)
 	setupSigning := setup.NewSubCommand("signing", "Configure code signing")
 	var setupSigningFlags flags.SigningSetup
 	setupSigning.AddFlags(&setupSigningFlags)
@@ -132,10 +138,33 @@ func main() {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
 
+	// Updater publishing tools (the Wails Update Manifest protocol)
+	updaterCmd := app.NewSubCommand("updater", "Self-update publishing tools (keys, signing, manifests)")
+	updaterCmd.NewSubCommandFunction("genkey", "Generate an Ed25519 signing keypair for updates", commands.UpdaterGenKey)
+	updaterSign := updaterCmd.NewSubCommand("sign", "Compute digests and signatures for artifact files")
+	var updaterSignFlags commands.UpdaterSignOptions
+	updaterSign.AddFlags(&updaterSignFlags)
+	updaterSign.Action(func() error {
+		return commands.UpdaterSign(&updaterSignFlags, updaterSign.OtherArgs())
+	})
+	updaterSign.LongDescription("\nUsage: wails3 updater sign -key <private key> <files...>")
+	updaterManifest := updaterCmd.NewSubCommand("manifest", "Generate an update manifest for artifact files")
+	var updaterManifestFlags commands.UpdaterManifestOptions
+	updaterManifest.AddFlags(&updaterManifestFlags)
+	updaterManifest.Action(func() error {
+		return commands.UpdaterManifest(&updaterManifestFlags, updaterManifest.OtherArgs())
+	})
+	updaterManifest.LongDescription("\nUsage: wails3 updater manifest -version <version> [flags] <files or directories...>\n\nDigests every artifact, signs it when -key is given, infers platform/arch\nfrom the filenames and writes a Wails Update Manifest ready to upload\nalongside the artifacts.")
+	updaterCmd.NewSubCommandFunction("verify", "Verify a manifest against the artifact files and public key", commands.UpdaterVerify)
+
 	// iOS tools
 	ios := app.NewSubCommand("ios", "iOS tooling")
 	ios.NewSubCommandFunction("overlay:gen", "Generate Go overlay for iOS bridge shim", commands.IOSOverlayGen)
 	ios.NewSubCommandFunction("xcode:gen", "Generate Xcode project in output directory", commands.IOSXcodeGen)
+
+	// Android tools
+	android := app.NewSubCommand("android", "Android tooling")
+	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

@@ -19,15 +19,28 @@ struct WebviewPreferences {
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
     bool *AllowsBackForwardNavigationGestures;
+    bool *AllowsMagnification;
+    bool *AllowsAirPlayForMediaPlayback;
+    bool *JavaScriptCanOpenWindowsAutomatically;
+    double *MinimumFontSize;
+    bool *EnableAutoplayWithoutUserAction;
 };
 
 extern void registerListener(unsigned int event);
 
+const char* windowTitlebarDoubleClickPreference(void) {
+	NSString *action = [[NSUserDefaults standardUserDefaults]
+		stringForKey:@"AppleActionOnDoubleClick"];
+	return action == nil ? "" : [action UTF8String];
+}
+
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool squareCorners, double cornerRadius, bool enableDragAndDrop, struct WebviewPreferences preferences, const char* applicationNameForUserAgent) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
-	if (frameless) {
+	if (frameless && (squareCorners || cornerRadius > 0)) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable;
+	} else if (frameless) {
+		styleMask |= NSWindowStyleMaskFullSizeContentView;
 	}
 	WebviewWindow* window = [[WebviewWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:styleMask
@@ -50,11 +63,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[view autorelease];
 
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	if( frameless ) {
+	if (frameless && !squareCorners && cornerRadius > 0) {
 		[view setWantsLayer:YES];
-		view.layer.cornerRadius = 8.0;
+		view.layer.cornerRadius = cornerRadius;
+		view.layer.masksToBounds = YES;
 	}
 	[window setContentView:view];
+	if (frameless && !squareCorners && cornerRadius == 0) {
+		[window setTitlebarAppearsTransparent:YES];
+		[window setTitleVisibility:NSWindowTitleHidden];
+	}
 
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
@@ -82,8 +100,24 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
      }
 #endif
 
+	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
+		config.allowsAirPlayForMediaPlayback = *preferences.AllowsAirPlayForMediaPlayback;
+	}
+	if (preferences.EnableAutoplayWithoutUserAction != NULL && *preferences.EnableAutoplayWithoutUserAction) {
+		config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+	}
+	if (preferences.JavaScriptCanOpenWindowsAutomatically != NULL) {
+		config.preferences.javaScriptCanOpenWindowsAutomatically = *preferences.JavaScriptCanOpenWindowsAutomatically;
+	}
+	if (preferences.MinimumFontSize != NULL) {
+		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
+	}
 	config.suppressesIncrementalRendering = true;
-    config.applicationNameForUserAgent = @"wails.io";
+	if (applicationNameForUserAgent != NULL && applicationNameForUserAgent[0] != '\0') {
+		config.applicationNameForUserAgent = [NSString stringWithUTF8String:applicationNameForUserAgent];
+	} else {
+		config.applicationNameForUserAgent = @"wails.io";
+	}
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
@@ -102,10 +136,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    // Set allowsBackForwardNavigationGestures if specified
     if (preferences.AllowsBackForwardNavigationGestures != NULL) {
         webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
     }
+	if (preferences.AllowsMagnification != NULL) {
+		webView.allowsMagnification = *preferences.AllowsMagnification;
+	}
 
 	[view addSubview:webView];
 
@@ -120,7 +156,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 		[dragView autorelease];
 
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		// The mask must be on the drag view itself: it was previously set on
+		// the content view (a no-op), leaving the drag overlay frozen at its
+		// creation size — files dragged over any area gained by resizing the
+		// window were rejected (#3743).
+		[dragView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[view addSubview:dragView];
 		dragView.windowId = id;
 	}
@@ -248,6 +288,16 @@ void windowSetCollectionBehavior(void* nsWindow, int behavior) {
 	}
 }
 
+// Set NSWindow tabbing mode (macOS 10.12+)
+void windowSetTabbingMode(void* nsWindow, int mode) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
+	if (@available(macOS 10.12, *)) {
+		[window setTabbingMode:mode];
+	}
+#endif
+}
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -329,6 +379,18 @@ void windowZoomOut(void* nsWindow) {
 	} else {
 		[window.webView setMagnification:1.0];
 	}
+}
+
+// windowReload reloads the current page using the cached version.
+void windowReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reload];
+}
+
+// windowForceReload reloads the current page bypassing the cache.
+void windowForceReload(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView reloadFromOrigin];
 }
 
 // createModalWindow presents a modal window as a sheet attached to the parent window
@@ -597,19 +659,25 @@ int windowGetHeight(void* nsWindow) {
 	return [(WebviewWindow*)nsWindow frame].size.height;
 }
 
-// Get window position
+// Get the window position relative to its screen's NSScreen frame origin:
+// X from the screen's left edge, Y from the screen's top edge (Y-down).
+// Uses NSScreen frame (full extent, including menu bar/dock) rather than
+// visibleFrame. Must mirror windowSetRelativePosition exactly so Get/Set
+// round-trip on every screen: previously X was returned absolute (missing
+// the screenFrame.origin.x subtraction) and Y omitted screenFrame.origin.y,
+// so each axis was wrong only on screens whose corresponding NSScreen
+// frame.origin component is non-zero (issue #5408).
 void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSRect frame = [window frame];
-	*x = frame.origin.x;
 
-	// Translate to screen coordinates so Y=0 is the top of the screen
 	NSScreen* screen = [window screen];
 	if( screen == NULL ) {
 		screen = [NSScreen mainScreen];
 	}
 	NSRect screenFrame = [screen frame];
-	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
+	*x = frame.origin.x - screenFrame.origin.x;
+	*y = (screenFrame.origin.y + screenFrame.size.height) - frame.origin.y - frame.size.height;
 }
 
 // Get absolute window position in the canonical Wails coordinate space:
@@ -742,6 +810,15 @@ static void windowMinimise(void *window) {
 	[(WebviewWindow*)window miniaturize:nil];
 }
 
+// windowFlash requests user attention so the app's Dock icon bounces, drawing
+// the user back to a window that needs them. NSInformationalRequest bounces the
+// icon once; the request completes on its own, so disabling is a no-op.
+static void windowFlash(void *window, bool enabled) {
+	if (enabled) {
+		[NSApp requestUserAttention:NSInformationalRequest];
+	}
+}
+
 // zoom maximizes the window to the screen dimensions
 static void windowMaximise(void *window) {
 	[(WebviewWindow*)window zoom:nil];
@@ -837,13 +914,29 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 }
 
 // Make the given window frameless
-static void windowSetFrameless(void *window, bool frameless) {
+static void windowSetFrameless(void *window, bool frameless, bool squareCorners, double cornerRadius) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	// set the window style to be frameless
-	if (frameless) {
-		[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
+	if (frameless && (squareCorners || cornerRadius > 0)) {
+		[nsWindow setStyleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable];
+		NSView* view = [nsWindow contentView];
+		if (!squareCorners) {
+			[view setWantsLayer:YES];
+			view.layer.cornerRadius = cornerRadius;
+			view.layer.masksToBounds = YES;
+		} else {
+			view.layer.cornerRadius = 0;
+			view.layer.masksToBounds = NO;
+		}
+	} else if (frameless) {
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable | NSWindowStyleMaskFullSizeContentView];
+		[nsWindow setTitlebarAppearsTransparent:YES];
+		[nsWindow setTitleVisibility:NSWindowTitleHidden];
 	} else {
-		[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
+		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+		NSView* view = [nsWindow contentView];
+		view.layer.cornerRadius = 0;
+		view.layer.masksToBounds = NO;
 	}
 }
 
@@ -1020,7 +1113,7 @@ func (w *macosWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *macosWebviewWindow) setFrameless(frameless bool) {
-	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
+	C.windowSetFrameless(w.nsWindow, C.bool(frameless), C.bool(w.parent.options.Mac.CornerType == MacWindowCornerTypeSquare), C.double(w.parent.options.Mac.CornerRadius))
 	if frameless {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(true))
 		C.windowSetHideTitle(w.nsWindow, C.bool(true))
@@ -1030,6 +1123,12 @@ func (w *macosWebviewWindow) setFrameless(frameless bool) {
 		hideTitle := macOptions.TitleBar.HideTitle
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(appearsTransparent))
 		C.windowSetHideTitle(w.nsWindow, C.bool(hideTitle))
+	}
+	// Native-default frameless windows retain the AppKit frame, so their title-bar
+	// buttons must be hidden explicitly and restored when the frame is shown again.
+	// True borderless square and custom-radius windows do not need this handling.
+	if usesNativeMacFramelessFrame(w.parent.options.Mac) {
+		w.applyWindowButtonStates()
 	}
 }
 
@@ -1084,6 +1183,10 @@ func (w *macosWebviewWindow) minimise() {
 	C.windowMinimise(w.nsWindow)
 }
 
+func platformTitlebarDoubleClickPreference() string {
+	return C.GoString(C.windowTitlebarDoubleClickPreference())
+}
+
 func (w *macosWebviewWindow) on(eventID uint) {
 	//C.registerListener(C.uint(eventID))
 }
@@ -1118,13 +1221,17 @@ func (w *macosWebviewWindow) zoomReset() {
 }
 
 func (w *macosWebviewWindow) reload() {
-	//TODO: Implement
 	globalApplication.debug("reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) forceReload() {
-	//TODO: Implement
 	globalApplication.debug("force reload called on WebviewWindow", "parentID", w.parent.id)
+	InvokeAsync(func() {
+		C.windowForceReload(w.nsWindow)
+	})
 }
 
 func (w *macosWebviewWindow) center() {
@@ -1237,8 +1344,8 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *macosWebviewWindow) flash(_ bool) {
-	// Not supported on macOS
+func (w *macosWebviewWindow) flash(enabled bool) {
+	C.windowFlash(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) setSize(width, height int) {
@@ -1297,6 +1404,19 @@ func (w *macosWebviewWindow) setCollectionBehavior(behavior MacWindowCollectionB
 	C.windowSetCollectionBehavior(w.nsWindow, C.int(behavior))
 }
 
+func (w *macosWebviewWindow) setTabbingMode(mode MacWindowTabbingMode) {
+	if mode == MacWindowTabbingModeDefault {
+		mode = MacWindowTabbingModeDisallowed
+	}
+
+	// Our iota values are offset by 1 from NSWindowTabbingMode:
+	//   MacWindowTabbingModeAutomatic(1) -> NSWindowTabbingModeAutomatic(0)
+	//   MacWindowTabbingModePreferred(2) -> NSWindowTabbingModePreferred(1)
+	//   MacWindowTabbingModeDisallowed(3) -> NSWindowTabbingModeDisallowed(2)
+	// https://developer.apple.com/documentation/appkit/nswindow/tabbingmode-swift.enum
+	C.windowSetTabbingMode(w.nsWindow, C.int(mode-1))
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1342,6 +1462,22 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
 		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
 	}
+	if wvprefs.AllowsMagnification.IsSet() {
+		result.AllowsMagnification = bool2CboolPtr(wvprefs.AllowsMagnification.Get())
+	}
+	if wvprefs.AllowsAirPlayForMediaPlayback.IsSet() {
+		result.AllowsAirPlayForMediaPlayback = bool2CboolPtr(wvprefs.AllowsAirPlayForMediaPlayback.Get())
+	}
+	if wvprefs.JavaScriptCanOpenWindowsAutomatically.IsSet() {
+		result.JavaScriptCanOpenWindowsAutomatically = bool2CboolPtr(wvprefs.JavaScriptCanOpenWindowsAutomatically.Get())
+	}
+	if wvprefs.MinimumFontSize.IsSet() {
+		v := C.double(wvprefs.MinimumFontSize.Get())
+		result.MinimumFontSize = &v
+	}
+	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
+		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
+	}
 
 	return result
 }
@@ -1354,13 +1490,21 @@ func (w *macosWebviewWindow) run() {
 		options := w.parent.options
 		macOptions := options.Mac
 
+		var appName *C.char
+		if s := macOptions.WebviewPreferences.ApplicationNameForUserAgent; s != "" {
+			appName = C.CString(s)
+			defer C.free(unsafe.Pointer(appName))
+		}
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
+			C.bool(macOptions.CornerType == MacWindowCornerTypeSquare),
+			C.double(macOptions.CornerRadius),
 			C.bool(options.EnableFileDrop),
 			w.getWebviewPreferences(),
+			appName,
 		)
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
@@ -1401,16 +1545,16 @@ func (w *macosWebviewWindow) run() {
 		// Set collection behavior (defaults to FullScreenPrimary for backwards compatibility)
 		w.setCollectionBehavior(macOptions.CollectionBehavior)
 
-		// Initialise the window buttons
-		w.setMinimiseButtonState(options.MinimiseButtonState)
-		w.setCloseButtonState(options.CloseButtonState)
-		// On macOS, MaximiseButtonState and FullscreenButtonState both control NSWindowZoomButton.
-		// Apply the more restrictive state to prevent one from silently overriding the other.
-		zoomState := options.MaximiseButtonState
-		if options.FullscreenButtonState > zoomState {
-			zoomState = options.FullscreenButtonState
+		// Set tabbing mode (macOS 10.12+)
+		// Default to disallowed unless explicitly configured.
+		if macOptions.TabbingMode == MacWindowTabbingModeDefault {
+			macOptions.TabbingMode = MacWindowTabbingModeDisallowed
 		}
-		w.setMaximiseButtonState(zoomState)
+		w.setTabbingMode(macOptions.TabbingMode)
+
+		// Initialise the window buttons, including the hidden state required when
+		// native AppKit corners are retained for a frameless window.
+		w.applyWindowButtonStates()
 
 		// Ignore mouse events if requested
 		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
@@ -1646,6 +1790,13 @@ func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
 }
 
+func (w *macosWebviewWindow) applyWindowButtonStates() {
+	states := effectiveMacWindowButtonStates(w.parent.options)
+	w.setMinimiseButtonState(states.minimise)
+	w.setCloseButtonState(states.close)
+	w.setMaximiseButtonState(states.zoom)
+}
+
 func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 	return bool(C.isIgnoreMouseEvents(w.nsWindow))
 }
@@ -1656,6 +1807,9 @@ func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 
 func (w *macosWebviewWindow) setContentProtection(enabled bool) {
 	C.setContentProtection(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
 }
 
 func (w *macosWebviewWindow) attachModal(modalWindow *WebviewWindow) {

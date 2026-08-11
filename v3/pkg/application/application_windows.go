@@ -14,7 +14,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/wailsapp/wails/webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
@@ -257,6 +257,13 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+	case w32.WM_HOTKEY:
+		// A global shortcut fired. wParam holds the id we passed to
+		// RegisterHotKey. Route it to the global shortcut manager.
+		if app := globalApplication; app != nil && app.GlobalShortcut != nil {
+			app.GlobalShortcut.dispatch(int(wParam))
+		}
+		return 0
 	case wmTaskbarCreated:
 		if m.restartingTaskbar.Load() {
 			break
@@ -401,6 +408,18 @@ func setupDPIAwareness() error {
 }
 
 func newPlatformApp(app *App) *windowsApp {
+
+	// Force WebView2 visual hosting before any WebView2 environment is
+	// initialised. This is the documented Microsoft workaround for the
+	// "DPI-context-change hang" — most commonly seen when the Microsoft
+	// Remote Desktop iOS client provisions a Retina-optimised virtual
+	// monitor mid-session and every subsequent WebView2 controller call
+	// blocks the UI thread for ~2 s on synchronous DComp re-marshal.
+	// See WindowsOptions.UseVisualHosting for the full rationale.
+	if app.options.Windows.UseVisualHosting {
+		_ = os.Setenv("COREWEBVIEW2_FORCED_HOSTING_MODE",
+			"COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL")
+	}
 
 	err := setupDPIAwareness()
 	if err != nil {

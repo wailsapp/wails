@@ -1,0 +1,729 @@
+---
+title: API Menu
+description: Referensi lengkap untuk API Menu
+sidebar:
+  order: 3
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Gambaran Umum
+
+API Menu menyediakan metode untuk membuat dan mengelola menu aplikasi, menu konteks, dan menu system tray.
+
+**Jenis Menu:**
+- **Menu Aplikasi** - Menu bar atas (File, Edit, dll.)
+- **Menu Konteks** - Menu klik kanan
+- **Menu System Tray** - Menu di system tray/notification area
+
+## Membuat Menu
+
+### NewMenu()
+
+Membuat menu baru.
+
+```go
+func (a *App) NewMenu() *Menu
+```
+
+**Contoh:**
+```go
+menu := app.NewMenu()
+```
+
+## Metode Menu
+
+### Add()
+
+Menambahkan item menu ke menu.
+
+```go
+func (m *Menu) Add(label string) *MenuItem
+```
+
+**Parameter:**
+- `label` - Teks yang ditampilkan untuk item menu
+
+**Mengembalikan:** Item menu yang dibuat
+
+**Contoh:**
+```go
+item := menu.Add("Open File")
+item.OnClick(func(ctx *application.Context) {
+    // Tangani klik
+})
+```
+
+### AddSubmenu()
+
+Menambahkan submenu ke menu.
+
+```go
+func (m *Menu) AddSubmenu(label string) *Menu
+```
+
+**Parameter:**
+- `label` - Label submenu
+
+**Mengembalikan:** Submenu yang dibuat
+
+**Contoh:**
+```go
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New")
+fileMenu.Add("Open")
+fileMenu.Add("Save")
+```
+
+### AddSeparator()
+
+Menambahkan garis pemisah visual antar item menu.
+
+```go
+func (m *Menu) AddSeparator()
+```
+
+**Contoh:**
+```go
+menu.Add("Copy")
+menu.Add("Paste")
+menu.AddSeparator()
+menu.Add("Select All")
+```
+
+**Praktik terbaik:** Gunakan pemisah untuk mengelompokkan item menu terkait.
+
+### AddCheckbox()
+
+Menambahkan item menu yang dapat dicentang.
+
+```go
+func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
+```
+
+**Parameter:**
+- `label` - Label checkbox
+- `checked` - Status tercentang awal
+
+**Contoh:**
+```go
+darkMode := menu.AddCheckbox("Dark Mode", false)
+darkMode.OnClick(func(ctx *application.Context) {
+    isChecked := darkMode.Checked()
+    // Toggle dark mode
+})
+```
+
+### AddRadio()
+
+Menambahkan item menu radio (grup saling eksklusif).
+
+```go
+func (m *Menu) AddRadio(label string, checked bool) *MenuItem
+```
+
+**Parameter:**
+- `label` - Label tombol radio
+- `checked` - Status tercentang awal
+
+**Contoh:**
+```go
+// Buat grup radio untuk mode tampilan
+viewMenu := menu.AddSubmenu("View")
+listView := viewMenu.AddRadio("List View", true)
+gridView := viewMenu.AddRadio("Grid View", false)
+treeView := viewMenu.AddRadio("Tree View", false)
+
+listView.OnClick(func(ctx *application.Context) {
+    setViewMode("list")
+})
+gridView.OnClick(func(ctx *application.Context) {
+    setViewMode("grid")
+})
+```
+
+### Update()
+
+Memperbarui menu untuk mencerminkan perubahan yang dibuat pada item menu.
+
+```go
+func (m *Menu) Update()
+```
+
+**Contoh:**
+```go
+item.SetEnabled(false)
+menu.Update()  // Harus dipanggil untuk menerapkan perubahan
+```
+
+**Penting:** Selalu panggil `Update()` setelah memodifikasi properti item menu.
+
+## Metode Menu Item
+
+### OnClick()
+
+Mendaftarkan handler klik untuk item menu.
+
+```go
+func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
+```
+
+**Parameter:**
+- `callback` - Fungsi yang dipanggil saat item diklik
+
+**Mengembalikan:** Item menu (untuk chaining)
+
+**Contoh:**
+```go
+item.OnClick(func(ctx *application.Context) {
+    fmt.Println("Menu item clicked")
+    app.Logger.Info("User clicked menu item")
+})
+```
+
+### SetLabel()
+
+Mengubah label item menu.
+
+```go
+func (mi *MenuItem) SetLabel(label string) *MenuItem
+```
+
+**Contoh:**
+```go
+item.SetLabel("Save As...")
+menu.Update()
+```
+
+### SetEnabled()
+
+Mengaktifkan atau menonaktifkan item menu.
+
+```go
+func (mi *MenuItem) SetEnabled(enabled bool) *MenuItem
+```
+
+**Contoh:**
+```go
+// Nonaktifkan simpan saat tidak ada dokumen terbuka
+saveItem.SetEnabled(hasOpenDocument)
+menu.Update()
+```
+
+**Pola umum:**
+```go
+// Perbarui status menu berdasarkan status aplikasi
+func updateMenuState() {
+    saveItem.SetEnabled(hasUnsavedChanges)
+    undoItem.SetEnabled(canUndo)
+    redoItem.SetEnabled(canRedo)
+    menu.Update()
+}
+```
+
+### SetChecked()
+
+Mengatur status tercentang untuk item menu checkbox/radio.
+
+```go
+func (mi *MenuItem) SetChecked(checked bool) *MenuItem
+```
+
+**Contoh:**
+```go
+darkModeItem.SetChecked(isDarkModeEnabled)
+menu.Update()
+```
+
+### Checked()
+
+Mengembalikan status tercentang saat ini.
+
+```go
+func (mi *MenuItem) Checked() bool
+```
+
+**Contoh:**
+```go
+if darkModeItem.Checked() {
+    // Dark mode diaktifkan
+}
+```
+
+### SetAccelerator()
+
+Mengatur pintasan keyboard untuk item menu.
+
+```go
+func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
+```
+
+**Parameter:**
+- `accelerator` - Pintasan keyboard (mis., "Ctrl+S", "Cmd+Q")
+
+**Format accelerator:**
+- **Modifier:** `Ctrl`, `Cmd`, `Alt`, `Shift`
+- **Tombol:** `A-Z`, `0-9`, `F1-F12`, `Enter`, `Backspace`, dll.
+- **Platform:** Gunakan `Cmd` di macOS, `Ctrl` di Windows/Linux
+
+**Contoh:**
+```go
+saveItem.SetAccelerator("Ctrl+S")
+quitItem.SetAccelerator("Ctrl+Q")
+newItem.SetAccelerator("Ctrl+N")
+```
+
+**Contoh sadar platform:**
+```go
+import "runtime"
+
+var quitShortcut string
+if runtime.GOOS == "darwin" {
+    quitShortcut = "Cmd+Q"
+} else {
+    quitShortcut = "Ctrl+Q"
+}
+quitItem.SetAccelerator(quitShortcut)
+```
+
+### SetTooltip()
+
+Mengatur tooltip yang muncul saat mengarahkan kursor ke item menu.
+
+```go
+func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
+```
+
+**Contoh:**
+```go
+item.SetTooltip("Opens a file from disk")
+```
+
+### SetHidden()
+
+Menampilkan atau menyembunyikan item menu.
+
+```go
+func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
+```
+
+**Contoh:**
+```go
+// Sembunyikan menu debug di produksi
+debugItem.SetHidden(!isDevelopment)
+menu.Update()
+```
+
+## Menu Aplikasi
+
+### app.Menu.Set()
+
+Mengatur menu bar utama aplikasi.
+
+```go
+func (mm *MenuManager) Set(menu *Menu)
+```
+
+**Contoh:**
+```go
+menu := app.NewMenu()
+
+// Menu File
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").SetAccelerator("Ctrl+N").OnClick(newFile)
+fileMenu.Add("Open").SetAccelerator("Ctrl+O").OnClick(openFile)
+fileMenu.Add("Save").SetAccelerator("Ctrl+S").OnClick(saveFile)
+fileMenu.AddSeparator()
+fileMenu.Add("Exit").SetAccelerator("Ctrl+Q").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+// Menu Edit
+editMenu := menu.AddSubmenu("Edit")
+editMenu.Add("Undo").SetAccelerator("Ctrl+Z").OnClick(undo)
+editMenu.Add("Redo").SetAccelerator("Ctrl+Y").OnClick(redo)
+editMenu.AddSeparator()
+editMenu.Add("Cut").SetAccelerator("Ctrl+X").OnClick(cut)
+editMenu.Add("Copy").SetAccelerator("Ctrl+C").OnClick(copy)
+editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
+
+app.Menu.Set(menu)
+```
+
+**Catatan platform:**
+- **macOS:** Menu muncul di menu bar atas
+- **Windows/Linux:** Menu muncul di title bar window
+- **macOS:** Secara otomatis menambahkan menu aplikasi dengan nama aplikasi
+
+## Menu Konteks
+
+### app.ContextMenu.New() / app.ContextMenu.Add()
+
+Buat `*ContextMenu` melalui manajer dan daftarkan di bawah nama. `ContextMenuManager.Add` menerima `*ContextMenu` — **bukan** `*Menu`, dan **tidak ada** metode `app.RegisterContextMenu`.
+
+```go
+func (cm *ContextMenuManager) New() *ContextMenu
+func (cm *ContextMenuManager) Add(name string, menu *ContextMenu)
+func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
+func (cm *ContextMenuManager) Remove(name string)
+```
+
+Alternatifnya, `application.NewContextMenu(name string) *ContextMenu` tingkat paket membuat dan mendaftarkan menu konteks dalam satu langkah.
+
+**Go:**
+
+```go
+// Buat menu konteks melalui manajer
+contextMenu := app.ContextMenu.New()
+contextMenu.Add("Cut").OnClick(cut)
+contextMenu.Add("Copy").OnClick(copy)
+contextMenu.Add("Paste").OnClick(paste)
+contextMenu.AddSeparator()
+contextMenu.Add("Select All").OnClick(selectAll)
+
+// Daftarkan di bawah nama; HTML memilihnya melalui properti CSS kustom di bawah.
+app.ContextMenu.Add("editor", contextMenu)
+```
+
+**HTML / CSS:**
+
+Runtime memicu menu konteks terdaftar saat target klik kanan (atau ancestor mana pun) memiliki properti CSS kustom `--custom-contextmenu` diatur ke nama tersebut. Properti opsional `--custom-contextmenu-data` diteruskan ke callback Go melalui `ctx.ContextMenuData()`. Untuk menekan menu konteks browser default, atur `--default-contextmenu: hide` (atau `auto`/`show`).
+
+```html
+<!-- Picu menu konteks saat klik kanan -->
+<div style="--custom-contextmenu: editor; --default-contextmenu: hide">
+    Right-click here for context menu
+</div>
+```
+
+Tidak ada atribut `data-wails-context-menu="..."` — itu tidak pernah dihubungkan di runtime.
+
+**Menu konteks dinamis:**
+```go
+// Perbarui menu konteks berdasarkan seleksi
+func updateContextMenu() {
+    contextMenu := app.ContextMenu.New()
+
+    if hasSelection {
+        contextMenu.Add("Cut").OnClick(cut)
+        contextMenu.Add("Copy").OnClick(copy)
+    }
+
+    contextMenu.Add("Paste").SetEnabled(hasClipboardContent).OnClick(paste)
+
+    app.ContextMenu.Add("editor", contextMenu)
+}
+```
+
+## Menu System Tray
+
+### app.SystemTray.New()
+
+Membuat ikon system tray baru.
+
+```go
+func (sm *SystemTrayManager) New() *SystemTray
+```
+
+**Contoh:**
+```go
+tray := app.SystemTray.New()
+```
+
+### SetIcon()
+
+Mengatur ikon system tray.
+
+```go
+func (st *SystemTray) SetIcon(icon []byte) *SystemTray
+```
+
+**Contoh:**
+```go
+iconData, _ := os.ReadFile("icon.png")
+tray.SetIcon(iconData)
+```
+
+### SetMenu()
+
+Mengatur menu untuk system tray.
+
+```go
+func (st *SystemTray) SetMenu(menu *Menu) *SystemTray
+```
+
+**Contoh:**
+```go
+trayMenu := app.NewMenu()
+trayMenu.Add("Show Window").OnClick(func(ctx *application.Context) {
+    window.Show()
+    window.Focus()
+})
+trayMenu.Add("Settings").OnClick(openSettings)
+trayMenu.AddSeparator()
+trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+
+tray.SetMenu(trayMenu)
+```
+
+### SetTooltip()
+
+Mengatur tooltip yang ditampilkan saat mengarahkan kursor ke ikon tray. Tidak mengembalikan nilai.
+
+```go
+func (st *SystemTray) SetTooltip(tooltip string)
+```
+
+**Contoh:**
+```go
+tray.SetTooltip("My Application - Running")
+```
+
+### OnClick()
+
+Menangani klik kiri pada ikon tray.
+
+```go
+func (st *SystemTray) OnClick(callback func()) *SystemTray
+```
+
+**Contoh:**
+```go
+tray.OnClick(func() {
+    if window.IsVisible() {
+        window.Hide()
+    } else {
+        window.Show()
+        window.Focus()
+    }
+})
+```
+
+## Contoh Lengkap
+
+### Menu Aplikasi Standar
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func createMenu(app *application.App) *application.Menu {
+    menu := app.NewMenu()
+
+    // Menu File
+    fileMenu := menu.AddSubmenu("File")
+    fileMenu.Add("New").
+        SetAccelerator("Ctrl+N").
+        OnClick(func(ctx *application.Context) {
+            // Buat dokumen baru
+        })
+    fileMenu.Add("Open").
+        SetAccelerator("Ctrl+O").
+        OnClick(func(ctx *application.Context) {
+            // Buka dialog file
+        })
+    fileMenu.Add("Save").
+        SetAccelerator("Ctrl+S").
+        OnClick(func(ctx *application.Context) {
+            // Simpan dokumen
+        })
+    fileMenu.AddSeparator()
+    fileMenu.Add("Exit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    // Menu Edit
+    editMenu := menu.AddSubmenu("Edit")
+    editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    editMenu.AddSeparator()
+    editMenu.Add("Cut").SetAccelerator("Ctrl+X")
+    editMenu.Add("Copy").SetAccelerator("Ctrl+C")
+    editMenu.Add("Paste").SetAccelerator("Ctrl+V")
+
+    // Menu View
+    viewMenu := menu.AddSubmenu("View")
+    darkMode := viewMenu.AddCheckbox("Dark Mode", false)
+    darkMode.OnClick(func(ctx *application.Context) {
+        // Toggle dark mode
+        isChecked := darkMode.Checked()
+        app.Logger.Info("Dark mode", "enabled", isChecked)
+    })
+    viewMenu.AddSeparator()
+    viewMenu.AddRadio("List View", true)
+    viewMenu.AddRadio("Grid View", false)
+    viewMenu.AddRadio("Detail View", false)
+
+    // Menu Help
+    helpMenu := menu.AddSubmenu("Help")
+    helpMenu.Add("Documentation").OnClick(func(ctx *application.Context) {
+        // Buka dokumentasi
+    })
+    helpMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Tampilkan dialog about
+    })
+
+    return menu
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    menu := createMenu(app)
+    app.Menu.Set(menu)
+
+    window := app.Window.New()
+    window.Show()
+
+    app.Run()
+}
+```
+
+### Aplikasi System Tray
+
+```go
+func setupSystemTray(app *application.App, window application.Window) {
+    // Buat system tray
+    tray := app.SystemTray.New()
+
+    // Atur ikon
+    iconData, _ := os.ReadFile("icon.png")
+    tray.SetIcon(iconData)
+    tray.SetTooltip("My App - Running")
+
+    // Tangani klik kiri pada ikon tray
+    tray.OnClick(func() {
+        if window.IsVisible() {
+            window.Hide()
+        } else {
+            window.Show()
+            window.Focus()
+        }
+    })
+
+    // Buat menu tray
+    trayMenu := app.NewMenu()
+
+    showItem := trayMenu.Add("Show Window")
+    showItem.OnClick(func(ctx *application.Context) {
+        window.Show()
+        window.Focus()
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+        // Buka window pengaturan
+    })
+
+    trayMenu.Add("About").OnClick(func(ctx *application.Context) {
+        // Tampilkan dialog about
+    })
+
+    trayMenu.AddSeparator()
+
+    trayMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+
+    tray.SetMenu(trayMenu)
+}
+```
+
+### Pembaruan Menu Dinamis
+
+```go
+type Editor struct {
+    app         *application.App
+    menu        *application.Menu
+    undoItem    *application.MenuItem
+    redoItem    *application.MenuItem
+    saveItem    *application.MenuItem
+    undoStack   []string
+    redoStack   []string
+    hasChanges  bool
+}
+
+func (e *Editor) createMenu() {
+    e.menu = e.app.NewMenu()
+
+    fileMenu := e.menu.AddSubmenu("File")
+    e.saveItem = fileMenu.Add("Save").SetAccelerator("Ctrl+S")
+    e.saveItem.OnClick(func(ctx *application.Context) {
+        e.save()
+    })
+
+    editMenu := e.menu.AddSubmenu("Edit")
+    e.undoItem = editMenu.Add("Undo").SetAccelerator("Ctrl+Z")
+    e.undoItem.OnClick(func(ctx *application.Context) {
+        e.undo()
+    })
+
+    e.redoItem = editMenu.Add("Redo").SetAccelerator("Ctrl+Y")
+    e.redoItem.OnClick(func(ctx *application.Context) {
+        e.redo()
+    })
+
+    e.updateMenuState()
+    e.app.Menu.Set(e.menu)
+}
+
+func (e *Editor) updateMenuState() {
+    // Perbarui item menu berdasarkan status saat ini
+    e.saveItem.SetEnabled(e.hasChanges)
+    e.undoItem.SetEnabled(len(e.undoStack) > 0)
+    e.redoItem.SetEnabled(len(e.redoStack) > 0)
+    e.menu.Update()
+}
+
+func (e *Editor) onChange() {
+    e.hasChanges = true
+    e.updateMenuState()
+}
+
+func (e *Editor) save() {
+    // Logika simpan
+    e.hasChanges = false
+    e.updateMenuState()
+}
+```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- **Gunakan accelerator standar** - Ikuti konvensi platform (Ctrl+C untuk copy, dll.)
+- **Panggil Update() setelah perubahan** - Menu tidak akan mencerminkan perubahan jika tidak
+- **Kelompokkan item terkait** - Gunakan pemisah untuk mengorganisir item menu
+- **Nonaktifkan aksi yang tidak tersedia** - Jangan sembunyikan, nonaktifkan dengan SetEnabled(false)
+- **Gunakan label yang jelas** - Ringkas dan deskriptif
+- **Ikuti konvensi platform** - Pola menu macOS vs Windows/Linux
+
+### ❌ Jangan
+
+- **Jangan lupa Update()** - Kesalahan paling umum
+- **Jangan nest terlalu dalam** - Batasi menu maksimal 2-3 level
+- **Jangan gunakan label ambigu** - "Process" vs "Process Document"
+- **Jangan terlalu rumit** - Jaga menu sederhana dan fokus
+- **Jangan campur metafora** - Penamaan dan organisasi yang konsisten
+
+## Catatan Khusus Platform
+
+### macOS
+
+- Menu aplikasi ditambahkan otomatis dengan nama aplikasi
+- Gunakan `Cmd` alih-alih `Ctrl` untuk accelerator
+- "About", "Preferences", dan "Quit" di menu aplikasi secara default
+
+### Windows/Linux
+
+- Tidak ada menu aplikasi otomatis
+- Gunakan `Ctrl` untuk accelerator
+- "Exit" biasanya di menu File

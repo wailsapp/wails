@@ -3,10 +3,6 @@ title: Créditos
 description: Reconheça os contribuidores e projetos por trás do Wails
 ---
 
-{/* Import the auto-generated contributors file */}
-
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - Proprietário do projeto, desenvolvedor principal
 - [Stffabi](https://github.com/stffabi) - Líder técnico, desenvolvedor e mantenedor
 - [Travis McLane](https://github.com/tmclane) - Trabalho de compilação cruzada, testes no MacOS
@@ -24,11 +20,15 @@ import Contributors from "../../../assets/contributors.html";
         alt="ZSA"
     />
 </a>
-<img
-  src="https://wails.io/img/sponsors.svg"
-  style={{ margin: "auto", width: "100%", "max-width": "1600px;" }}
-  alt="Sponsors"
-/>
+{/* object (not img) so the per-sponsor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/sponsors.svg"
+  aria-label="Sponsors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/sponsors.svg" alt="Sponsors" style={{ width: "100%" }} />
+</object>
 Agradecimentos especiais:
 <img
   src="/sponsors/jetbrains-grayscale.webp"
@@ -38,7 +38,15 @@ Agradecimentos especiais:
 
 ## Contribuidores
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## Menções Especiais
 

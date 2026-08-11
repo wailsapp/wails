@@ -12,6 +12,7 @@ type GenerateBindingsOptions struct {
 	OutputDirectory   string `name:"d" description:"The output directory" default:"frontend/bindings"`
 	ModelsFilename    string `name:"models" description:"File name for exported JS/TS models (excluding the extension)" default:"models"`
 	IndexFilename     string `name:"index" description:"File name for JS/TS package indexes (excluding the extension)" default:"index"`
+	TimeType          string `name:"time-type" description:"The JS type to use for time.Time values. Must be either 'string' or 'Date'." default:"string"`
 	TS                bool   `name:"ts" description:"Generate Typescript bindings"`
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`

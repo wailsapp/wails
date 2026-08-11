@@ -1,0 +1,223 @@
+---
+title: Packaging Linux
+description: Package aplikasi Wails Anda untuk distribusi Linux
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Format Package
+
+Package aplikasi Anda untuk distribusi Linux:
+
+```bash
+wails3 package GOOS=linux
+```
+
+Ini membuat beberapa format di direktori `bin/`:
+- **AppImage**: Portable, berjalan di distribusi Linux mana pun
+- **DEB**: Untuk Debian, Ubuntu, dan turunannya
+- **RPM**: Untuk Fedora, RHEL, dan turunannya
+- **Arch**: Untuk Arch Linux dan turunannya
+
+### Format Individual
+
+Build format tertentu:
+
+```bash
+wails3 task linux:create:appimage
+wails3 task linux:create:deb
+wails3 task linux:create:rpm
+wails3 task linux:create:aur
+```
+
+## Kustomisasi Package
+
+### Desktop Entry
+
+File `.desktop` mengontrol bagaimana aplikasi Anda muncul di menu aplikasi. Dihasilkan dari nilai di `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  APP_NAME: 'MyApp'
+  EXEC: 'MyApp'
+  ICON: 'MyApp'
+  CATEGORIES: 'Development;'
+```
+
+### Metadata Package
+
+Edit `build/linux/nfpm/nfpm.yaml` untuk menyesuaikan package DEB dan RPM:
+
+```yaml
+name: myapp
+version: 1.0.0
+maintainer: Your Name <you@example.com>
+description: My awesome Wails application
+homepage: https://example.com
+license: MIT
+```
+
+### AppImage
+
+Konfigurasi AppImage ada di `build/linux/appimage/`. Ikon aplikasi berasal dari `build/appicon.png`.
+
+## Menandatangani Package
+
+Tandatangani package DEB dan RPM dengan kunci PGP:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=linux
+
+# Or using tasks directly
+wails3 task linux:sign:deb
+wails3 task linux:sign:rpm
+wails3 task linux:sign:packages  # Both
+```
+
+Konfigurasi signing di `build/linux/Taskfile.yml`:
+
+```yaml
+vars:
+  PGP_KEY: "path/to/signing-key.asc"
+  SIGN_ROLE: "builder"  # origin, maint, archive, or builder
+```
+
+Simpan password kunci Anda:
+
+```bash
+wails3 setup signing
+```
+
+Lihat [Menandatangani Aplikasi](/id/guides/build/signing) untuk detail.
+
+## Build untuk ARM
+
+```bash
+wails3 build GOOS=linux GOARCH=arm64
+wails3 package GOOS=linux GOARCH=arm64
+```
+
+<Aside type="note">
+Build ARM64 dari host x86_64 menggunakan Docker untuk cross-compilation CGO.
+</Aside>
+
+## Dukungan Legacy GTK3
+
+Wails v3 build pada **GTK4 dengan WebKitGTK 6.0** secara default. Path legacy GTK3 / WebKit2GTK 4.1 masih tersedia untuk distribusi yang belum menyediakan WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). Path legacy opt-in via build tag dan dijadwalkan dihapus di v3.1.
+
+<Aside type="caution" title="Path legacy">
+Path GTK3 / WebKit2GTK 4.1 didukung melalui line v3.0.x. Rencanakan migrasi ke GTK4 sesuai ketersediaan GTK4 / WebKitGTK 6.0 di distribusi target — `-tags gtk3` akan dihapus di v3.1.
+</Aside>
+
+### Dependensi
+
+Instal library development GTK3 dan WebKit2GTK 4.1:
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
+
+# Fedora
+sudo dnf install gtk3-devel webkit2gtk4.1-devel
+
+# Arch
+sudo pacman -S gtk3 webkit2gtk-4.1
+```
+
+Paket pkg-config yang diperlukan adalah `gtk+-3.0` dan `webkit2gtk-4.1`.
+
+### Build dengan GTK3
+
+Gunakan flag `-tags gtk3`:
+
+```bash
+wails3 build -tags gtk3
+```
+
+Atau langsung dengan Go:
+
+```bash
+go build -tags gtk3 -o myapp .
+```
+
+### Perbedaan Diketahui dari GTK4
+
+- **Dialog file**: GTK4 menggunakan `xdg-desktop-portal` untuk dialog file (default), sehingga beberapa opsi dialog (seperti direktori default, tampilan filter kustom) berperilaku berbeda dari GTK3. Lihat [Referensi Dialog - Perilaku Dialog Linux](/id/reference/dialogs#linux-dialog-behavior) untuk detail.
+- **Gaya menu**: GTK4 mendukung opsi `LinuxMenuStylePrimaryMenu` yang menampilkan tombol hamburger (☰) di header bar, mengikuti GNOME HIG. Opsi ini tidak berpengaruh pada build `-tags gtk3`. Lihat [API Window - Linux MenuStyle](/id/reference/window#linux).
+- **Scaling DPI**: GTK4 menggunakan `gdk_monitor_get_scale` (GTK 4.14+) untuk dukungan fractional scaling.
+
+### Memeriksa Build Anda
+
+Jalankan `wails3 doctor` untuk memverifikasi setup. Tanpa flag, ini memeriksa GTK4 / WebKitGTK 6.0 (default). Paket legacy GTK3 / WebKit2GTK 4.1 tercantum sebagai opsional.
+
+## Troubleshooting
+
+### AppImage tidak berjalan
+
+Buat executable:
+
+```bash
+chmod +x MyApp-x86_64.AppImage
+```
+
+### Dependensi hilang
+
+Jika aplikasi gagal start, periksa dependensi WebKit yang hilang:
+
+```bash
+# Debian/Ubuntu
+sudo apt install libwebkit2gtk-4.1-0
+
+# Fedora
+sudo dnf install webkit2gtk4.1
+
+# Arch
+sudo pacman -S webkit2gtk-4.1
+```
+
+### C compiler tidak ditemukan
+
+Sistem build memerlukan GCC atau Clang untuk CGO:
+
+```bash
+# Debian/Ubuntu
+sudo apt install build-essential
+
+# Fedora
+sudo dnf install gcc
+
+# Arch
+sudo pacman -S base-devel
+```
+
+Alternatifnya, jalankan `wails3 task setup:docker` dan sistem build akan menggunakan Docker otomatis.
+
+### Window kosong atau putih di GPU NVIDIA
+
+Di Linux dengan driver proprietary NVIDIA, aplikasi Wails dapat menampilkan window kosong atau putih saat startup. Ini disebabkan bug WebKitGTK di mana renderer DMA-BUF gagal dengan `gbm_bo_map()` terhadap driver proprietary NVIDIA (memengaruhi X11 dan Wayland, versi driver 377–580+, GPU dari seri 10 dan GT 710 yang lebih lama).
+
+**Wails menerapkan `WEBKIT_DISABLE_DMABUF_RENDERER=1` otomatis** saat mendeteksi modul kernel NVIDIA (`/sys/module/nvidia`), sehingga sebagian besar pengguna tidak perlu melakukan apa pun.
+
+Jika Anda masih melihat window kosong (misalnya di container di mana path modul tidak terlihat), set variabel environment secara manual sebelum meluncurkan aplikasi:
+
+```bash
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
+```
+
+Bug upstream terkait: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=262607), [WebKit #180739](https://bugs.webkit.org/show_bug.cgi?id=180739).
+
+### Kompatibilitas strip AppImage
+
+Di distribusi Linux modern (Arch Linux, Fedora 39+, Ubuntu 24.04+), library sistem dikompilasi dengan section ELF `.relr.dyn` untuk relocasi lebih efisien. Alat `linuxdeploy` yang digunakan membuat AppImage membundel binary `strip` lama yang tidak dapat memproses section modern ini.
+
+Wails mendeteksi situasi ini otomatis dengan memeriksa library GTK sistem sebelum build AppImage. Saat terdeteksi, stripping dinonaktifkan (`NO_STRIP=1`) untuk memastikan kompatibilitas.
+
+**Artinya:**
+- AppImage akan sedikit lebih besar (~20-40%) di sistem yang terpengaruh
+- Fungsionalitas aplikasi tidak terpengaruh
+- Ditangani otomatis — tidak perlu tindakan
+
+Jika Anda memerlukan AppImage lebih kecil di sistem modern, instal binary `strip` yang lebih baru dan konfigurasi `linuxdeploy` untuk menggunakannya.

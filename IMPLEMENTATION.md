@@ -134,9 +134,11 @@ GTK4 replaces direct signal handlers with `GtkEventController` objects:
 - `GtkEventControllerFocus` for focus in/out events
 - `GtkGestureClick` for button press/release events
 - `GtkEventControllerKey` for keyboard events
-- Window signals: `close-request`, `notify::maximized`, `notify::fullscreened`
+- Window signal: `close-request`
+- `GdkSurface` notifications for configured width, height, and toplevel state
 
 New C function `setupWindowEventControllers()` sets up all event controllers.
+The realised window surface now emits the common resize, minimise, maximise, and fullscreen events used by the other desktop backends.
 
 #### 3.2 Window Drag and Resize
 GTK4 uses `GdkToplevel` API instead of GTK3's `gtk_window_begin_move_drag`:
@@ -344,15 +346,34 @@ GTK accelerator strings use format like:
 | `ShiftKey` | `GDK_SHIFT_MASK` |
 | `SuperKey` | `GDK_SUPER_MASK` |
 
-### Phase 10: Testing 📋 PENDING
+### Phase 10: Beta Verification ✅ COMPLETE
 
-TODO:
-- [ ] Test on Ubuntu 24.04 (native GTK4)
-- [ ] Test on Ubuntu 22.04 (backported WebKitGTK 6.0)
-- [ ] Test legacy build on older systems
-- [ ] Performance benchmarks
-- [ ] Verify file dialogs work correctly
-- [ ] Verify message dialogs work correctly
+The Beta verification gate is covered continuously by the v3 CI matrix:
+
+- Ubuntu installs both GTK4 / WebKitGTK 6.0 and legacy GTK3 / WebKit2GTK 4.1.
+- Every v3 example compiles with the default GTK4 stack and again with
+  `BUILD_TAGS=gtk3`.
+- The full Go suite runs under D-Bus and Xvfb for both stacks. The GTK4 service
+  tests that require a real interactive display remain explicitly excluded in
+  CI; their platform-specific behaviour is covered through focused regression
+  work.
+- All supported frontend templates are generated and built on Ubuntu alongside
+  the desktop-platform template matrix.
+
+Recent successful runs of this matrix include
+[PR #5870](https://github.com/wailsapp/wails/actions/runs/30792348092) and
+[PR #5877](https://github.com/wailsapp/wails/actions/runs/30792353185).
+Native dual-stack validation was also performed on Fedora 44 while reproducing
+and fixing [#5845](https://github.com/wailsapp/wails/issues/5845).
+
+Known constraints are documented rather than hidden: GTK4/Wayland window
+positioning is a protocol-level no-op, portal-backed GTK4 dialogs have the
+documented option limitations, and remaining Linux regressions stay in focused
+issues such as [#5838](https://github.com/wailsapp/wails/issues/5838),
+[#5839](https://github.com/wailsapp/wails/issues/5839), and
+[#5465](https://github.com/wailsapp/wails/issues/5465). Performance and
+long-running leak benchmarking are ongoing quality work, not a condition for
+the v3 Beta gate.
 
 ## API Differences: GTK3 vs GTK4
 
@@ -367,6 +388,8 @@ TODO:
 | Menu Bar | `GtkMenuBar` | `GtkPopoverMenuBar` |
 | Window Move | `gtk_window_move()` | NO-OP on Wayland |
 | Window Position | `gtk_window_get_position()` | Not available on Wayland |
+| Window Size | Configure event dimensions | Live `GdkSurface` width/height properties |
+| Window State Events | Configure/window-state events | `GdkToplevel:state` notifications |
 | Destroy | `gtk_widget_destroy()` | `gtk_window_destroy()` |
 | Drag Start | `gtk_window_begin_move_drag()` | `gtk_native_get_surface()` + surface drag |
 
@@ -432,6 +455,14 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-07-26
+- Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.
+- Added GTK4 `GdkSurface` resize and toplevel-state notifications, including common maximise, minimise, and fullscreen events.
+- Added regression coverage for Linux state-event transitions.
+- Files: `v3/pkg/application/linux_cgo.c`, `v3/pkg/application/linux_cgo.h`,
+  `v3/pkg/application/linux_cgo.go`, `v3/pkg/application/webview_window_linux.go`,
+  and `v3/pkg/application/webview_window_linux_test.go`.
 
 ### 2026-01-07 (Session 11)
 - Fixed GTK4 dialog system bugs

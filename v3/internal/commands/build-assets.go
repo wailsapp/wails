@@ -43,6 +43,7 @@ type BuildAssetsOptions struct {
 	ProductComments       string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	CFBundleIconName      string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion         string `description:"Minimum iOS version for the generated Info.plist" default:"15.0"`
 	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
 	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
 	ExecutablePath        string `description:"Path to executable for MSIX package"`
@@ -51,11 +52,18 @@ type BuildAssetsOptions struct {
 	CertificatePath       string `description:"Certificate path for MSIX package"`
 	Silent                bool   `description:"Suppress output to console"`
 	Typescript            bool   `description:"Use typescript" default:"false"`
+	UseInterfaces         bool   `description:"Generate TypeScript interfaces instead of classes"`
 }
 
 type TemplateEnrichment struct {
 	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
 	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+	// BackgroundModes feeds the iOS Info.plist template's UIBackgroundModes block.
+	// It's populated by the iOS Xcode generator from ios.backgroundModes in
+	// build/config.yml; the generic build-assets path leaves it empty (like
+	// MinIOSVersion there, it doesn't read the ios: section), so no
+	// UIBackgroundModes key is emitted unless configured.
+	BackgroundModes []string `yaml:"-"`
 }
 
 // BuildConfig defines the configuration for generating build assets.
@@ -79,6 +87,7 @@ type UpdateBuildAssetsOptions struct {
 	ProductComments    string `description:"Comments to add to the generated files"              default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	CFBundleIconName   string `description:"The macOS icon name (for Assets.car icon bundles)"`
+	MinIOSVersion      string `description:"Minimum iOS version for the generated Info.plist"     default:"15.0"`
 	Config             string `description:"The path to the config file"`
 	Silent             bool   `description:"Suppress output to console"`
 }

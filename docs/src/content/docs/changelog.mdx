@@ -31,6 +31,380 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+
+### Added
+
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky and @DevLumuz
+## v3.0.0-beta.6 - 2026-08-09
+
+## Added
+- Implement bounded host-side storage for oversized events and ordered JavaScript delivery in [PR](https://github.com/wailsapp/wails/pull/5930) by @leaanthony
+- Implement macOS Dock bounce for window flashing in [PR](https://github.com/wailsapp/wails/pull/5921) by @julianstorer
+
+## Fixed
+- Asset server preserves content-type sniffer errors and unwritten prefixes during flushing in [PR](https://github.com/wailsapp/wails/pull/5931) by @leaanthony
+- Prevent macOS applications from crashing when replacing the application menu from a Wails callback
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+- Fix `w32.GetStockObject` calling `GetDeviceCaps` instead of `GetStockObject`, which made it return 0 for every stock object.
+- Improve WebView2 bootstrapper download error handling and reporting in [PR](https://github.com/wailsapp/wails/pull/5924) by @jannskiee
+
+## v3.0.0-beta.5 - 2026-08-07
+
+## Fixed
+- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
+- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
+- Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
+
+## v3.0.0-beta.4 - 2026-08-05
+
+## Changed
+- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
+
+## Fixed
+- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
+- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
+
+## v3.0.0-beta.3 - 2026-08-03
+
+## Added
+- Document Phase 10 beta verification completion in implementation details in [PR](https://github.com/wailsapp/wails/pull/5881) by @leaanthony
+
+## Fixed
+- Pass window handle to Windows dark-mode API and validate arguments in [PR](https://github.com/wailsapp/wails/pull/5877) by @leaanthony
+- Centralize macOS title-bar button state resolution for frameless windows in [PR](https://github.com/wailsapp/wails/pull/5870) by @taliesin-ai
+- Prevent unreadable native menu text when a Windows application requests dark mode while the Windows app theme is light. The menu now uses the matching light native background until Windows can render dark menu text.
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+
+## v3.0.0-beta.2 - 2026-08-02
+
+## Changed
+- Promote v3 from alpha to beta
+- Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.122 - 2026-08-01
+
+## Added
+
+## Changed
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.121 - 2026-07-31
+
+## Added
+- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
+
+## Changed
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+
+## Fixed
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+
+## v3.0.0-alpha2.120 - 2026-07-31
+
+## Added
+- Implement macOS title-bar double-click actions for maximize or minimize in [PR](https://github.com/wailsapp/wails/pull/5853) by @taliesin-ai
+
+## Changed
+- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
+
+## Fixed
+- Keep WKWebView responsive during macOS zoom in [PR](https://github.com/wailsapp/wails/pull/5856) by @leaanthony
+- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
+
+## v3.0.0-alpha2.119 - 2026-07-27
+
+## Fixed
+- Update documentation for multiple languages to include architecture diagrams in [PR](https://github.com/wailsapp/wails/pull/5833) by @taliesin-ai
+
+## v3.0.0-alpha2.118 - 2026-07-26
+
+## Added
+- Provide default paths for icon generation inputs and outputs in [PR](https://github.com/wailsapp/wails/pull/5825) by @taliesin-ai
+- Add source entry modules to runtime package.json sideEffects in [PR](https://github.com/wailsapp/wails/pull/5797) by @savely-krasovsky
+- Add licence and provenance section to contributing guide in [PR](https://github.com/wailsapp/wails/pull/5816) by @taliesin-ai
+
+## Fixed
+- Apply scoped GTK4 frameless CSS to remove border radius in [PR](https://github.com/wailsapp/wails/pull/5800) by @savely-krasovsky
+- Handle cursor position failures gracefully on Windows for popup menus and screen enumeration in [PR](https://github.com/wailsapp/wails/pull/5789) by @wayneforrest
+- macOS open-file dialog filters extensions correctly and validates allowed files by suffix in [PR](https://github.com/wailsapp/wails/pull/5678) by @phergul
+- Guard Windows dark-mode initialization against nil API calls in [PR](https://github.com/wailsapp/wails/pull/5793) by @roachadam
+- Fix 32-bit build failure in the updater: the `maxArchiveTotalSize` constant (2 GiB) overflowed the platform `int` when passed to `fmt.Errorf` on `GOARCH=386`. It is now explicitly typed `int64`.
+- Fix a nil-pointer panic on startup when a window uses a Dark (or system-dark) title bar on Windows builds that do not load the dark-mode uxtheme APIs, such as Windows 10 1809 / Windows Server 2019 (build 17763). The `AllowDarkModeForWindow` calls in the window theme setup are now nil-guarded, matching the guard already used in `w32.SetMenuTheme`.
+
+## v3.0.0-alpha2.117 - 2026-07-08
+
+## Added
+- Implement custom hit-test logic for non-client regions on Windows in [PR](https://github.com/wailsapp/wails/pull/5462) by @savely-krasovsky
+
+## Changed
+- Configure WebView2 monitor-scale detection based on UseVisualHosting in [PR](https://github.com/wailsapp/wails/pull/5761) by @wayneforrest
+
+## v3.0.0-alpha2.116 - 2026-07-07
+
+## Added
+- Update FAQ documentation to focus on Wails v3 features and guidance in [PR](https://github.com/wailsapp/wails/pull/5763) by @taliesin-ai
+
+## v3.0.0-alpha2.115 - 2026-07-06
+
+## Fixed
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix crash on Windows when `WM_ERASEBKGND` paints a solid background during a minimise/restore transition where `GetClientRect` returns nil (guard reported by @sinspired in #5636)
+- Fix frontend bindings error always parses as text by @mbaklor in #5690
+- Fix Windows build failure when using the `server` build tag, caused by Windows GUI files missing the `!server` build constraint that the macOS and Linux equivalents already have (#5680)
+
+## v3.0.0-alpha2.114 - 2026-07-05
+
+## Added
+- Implement Update Manifest protocol and endpoint provider in [PR](https://github.com/wailsapp/wails/pull/5720) by @taliesin-ai
+
+## Changed
+- Fold the `webview2` binding into the v3 module as `v3/internal/webview2`, removing the standalone module, its nightly release/sync workflows, and the go.mod version dance (v3 is its only consumer) in [PR](https://github.com/wailsapp/wails/pull/5711) by @taliesin-ai
+
+## Fixed
+- Move WebView2 monitor-scale detection and DPI-change host resync fix to Unreleased section in [PR](https://github.com/wailsapp/wails/pull/5750) by @taliesin-ai
+- Update WebView2 COM marshaling for float64 and BOOL parameters in [PR](https://github.com/wailsapp/wails/pull/5741) by @wayneforrest
+- Prevent panic and nil dereference in Windows system tray icon updates and destruction in [PR](https://github.com/wailsapp/wails/pull/5703) by @wayneforrest
+- Fixes hidden windows not re-hiding correctly on Windows in [PR](https://github.com/wailsapp/wails/pull/5743) by @wayneforrest
+- Synchronize WebView2 controller visibility with window minimize/maximize/restore in [PR](https://github.com/wailsapp/wails/pull/5742) by @wayneforrest
+
+
+### Fixed
+
+- Re-enable WebView2 monitor-scale detection and gate host resync on DPI change in [PR](https://github.com/wailsapp/wails/pull/5734) by @taliesin-ai, based on the fix validated by @randalmurphal, with root-cause verification by @eleclin and hardware testing by @qq540491950
+## v3.0.0-alpha2.113 - 2026-07-04
+
+## Added
+- Add a warning when building a release AAB without `ANDROID_KEYSTORE_FILE` set (Google Play rejects debug-signed bundles) and document App Bundle packaging and signing in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+- Add Android App Bundle (AAB) packaging tasks (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) for Play Store submission — APK tasks remain for local/emulator testing in [PR](https://github.com/wailsapp/wails/pull/5728) by @mortenolsrud (fixes [#5726](https://github.com/wailsapp/wails/issues/5726))
+- Add Android physical device task targets and resume camera/location permissions in [PR](https://github.com/wailsapp/wails/pull/5735) by @taliesin-ai
+
+## Changed
+- Bump `webview2` to v1.0.28 ([release notes](https://github.com/wailsapp/wails/releases/tag/webview2%2Fv1.0.28)).
+- Bump the Android template `compileSdk`/`targetSdk` from 34 to 35, which Google Play requires for new app submissions in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+
+## Fixed
+- Fix baked avatar masks in sponsorkit in [PR](https://github.com/wailsapp/wails/pull/5745) by @leaanthony
+- Fix Android AVD auto-creation picking the wrong system image or cmdline-tools version due to lexicographic version sorting in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Fix the setup wizard suggesting an outdated Android NDK version (now 26.3.11579264, matching the documented requirement) in [PR](https://github.com/wailsapp/wails/pull/5730) by @taliesin-ai
+- Update French documentation for SvelteKit and options in [PR](https://github.com/wailsapp/wails/pull/5744) by @leaanthony
+- Fix SIGSEGV on macOS screen enumeration during display changes in [PR](https://github.com/wailsapp/wails/pull/5516) by @flofreud
+
+## v3.0.0-alpha2.112 - 2026-07-03
+
+## Added
+- Add Go-based contributors SVG generator and update docs/website credits pages in [PR](https://github.com/wailsapp/wails/pull/5724) by @taliesin-ai
+- Support mapping Go time.Time to JS Date or string in bindings in [PR](https://github.com/wailsapp/wails/pull/5398) by @fbbdev
+
+## Changed
+- Replace Node-based sponsor image pipeline with Go generator in [PR](https://github.com/wailsapp/wails/pull/5719) by @taliesin-ai
+
+## Fixed
+- Fix Android build asset dependency installation script in [PR](https://github.com/wailsapp/wails/pull/5729) by @taliesin-ai
+- Reject the U+0085 (NEXT LINE) control character in `ValidateAndSanitizeURL`, completing the whitespace coverage of the URL validator
+- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+- Add explicit Objective-C memory management for Cocoa objects across Darwin dialogs, menus, tray, and notifications in [PR](https://github.com/wailsapp/wails/pull/5714) by @taliesin-ai
+- Fixes Linux CGO backend bugs and system tray issues in [PR](https://github.com/wailsapp/wails/pull/5718) by @taliesin-ai
+
+## v3.0.0-alpha2.111 - 2026-07-01
+
+## Added
+- Add HappyTools to community showcase in [PR](https://github.com/wailsapp/wails/pull/5061) by @Aliuyanfeng
+- Add Indonesian locale support and comprehensive documentation in [PR](https://github.com/wailsapp/wails/pull/5643) by @triadmoko
+- Add DisableMenu option to WindowsWindow in [PR](https://github.com/wailsapp/wails/pull/4813) by @leaanthony
+
+## Changed
+- Update Taskfile template and CLI to dispatch build/package tasks with GOOS and ARCH in [PR](https://github.com/wailsapp/wails/pull/5617) by @leaanthony
+
+## Fixed
+- Fixes issue with mac window tabbing in [PR](https://github.com/wailsapp/wails/pull/5708) by @taliesin-ai
+
+## Removed
+- Remove German translated MDX files from contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5702) by @taliesin-ai
+
+## v3.0.0-alpha2.110 - 2026-06-30
+
+## Added
+- Implement macOS WebView reload and force reload, and add recovery for WebContent process termination in [PR](https://github.com/wailsapp/wails/pull/5129) by @wayneforrest
+- Add comprehensive German documentation for contributing, features, and guides in [PR](https://github.com/wailsapp/wails/pull/5396) by @leaanthony
+- Enhance notifications with sound, attachments, scheduling, and update API in [PR](https://github.com/wailsapp/wails/pull/5333) by @popaprozac
+
+## Fixed
+- Recalculate DWM frame on DPI change for frameless windows in [PR](https://github.com/wailsapp/wails/pull/4785) by @leaanthony
+- Fix DnD dropzone detection failing at non-100% scaling on Windows in [PR](https://github.com/wailsapp/wails/pull/4632) by @yulesxoxo
+
+## v3.0.0-alpha2.109 - 2026-06-29
+
+## Added
+- Add code samples to EventsEmit documentation in [PR](https://github.com/wailsapp/wails/pull/5026) by @iamhabbeboy
+- Add Windows WebView2 visual hosting option in [PR](https://github.com/wailsapp/wails/pull/5380) by @MerIijn
+- Add Klustr to community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5536) by @SametKUM
+- Add Kira to community showcase with new pages and changelog entry in [PR](https://github.com/wailsapp/wails/pull/5685) by @thiennguyen93
+- Add feedback section to MCP service guide in [PR](https://github.com/wailsapp/wails/pull/5694) by @taliesin-ai
+
+## Changed
+- Server mode now has a first-class production build, consistent with the desktop build tasks (#5693). `task build:server` builds a production binary by default (`-tags server,production`, `-trimpath`, stripped), and accepts `DEV=true` (development server), `OBFUSCATED=true` (garble) and `EXTRA_TAGS`. `task run:server` runs a development server. `Dockerfile.server` / `task build:docker` build the production server (`-tags server,production`) and the production frontend first; the image defaults to a pure-Go static build on distroless/static, with `CGO_ENABLED`, `GO_IMAGE` and `RUNTIME_IMAGE` exposed as overridable build args for CGO apps.
+
+## Fixed
+- Prevent crash when closing window with pending async calls in [PR](https://github.com/wailsapp/wails/pull/4435) by @leaanthony
+- Prevent window activation when opening hidden apps on Windows in [PR](https://github.com/wailsapp/wails/pull/5249) by @leaanthony
+- Ensure WebKit request metadata, response completion, and body stream handling run on the GTK main thread in [PR](https://github.com/wailsapp/wails/pull/5668) by @taliesin-ai
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+- Fix WebView2 content shrinking then disappearing after dragging a window across mixed-DPI monitors on Windows by re-asserting the controller bounds in the `WM_DPICHANGED` handler, mirroring the un-minimise DPI resync (#5677)
+
+## v3.0.0-alpha2.108 - 2026-06-28
+
+## Added
+- Add global (system-wide) keyboard shortcuts via `app.GlobalShortcut` (`Register`, `Unregister`, `UnregisterAll`, `IsRegistered`, `GetAll`). Shortcuts fire even when the application is not focused. Implemented natively per platform with no third party dependencies: Carbon hot keys on macOS, `RegisterHotKey` on Windows, `XGrabKey` on X11, and the XDG Desktop Portal global shortcuts interface on Wayland.
+- Add built-in MCP server: a Model Context Protocol server that starts automatically when the application is built with the `mcp` tag, letting LLM agents test and control a running Wails application — window control, DOM inspection, JavaScript evaluation, bound method calls, events and simulated mouse/keyboard input rendered with an animated on-screen cursor. No user code required: the `mcp` tag is added automatically by `wails3 build`/`wails3 dev` when `WAILS_MCP=1` is set. Configured entirely via environment variables (`WAILS_MCP_HOST`, `WAILS_MCP_PORT`, `WAILS_MCP_TIMEOUT`, `WAILS_MCP_HIDE_CURSOR`).
+
+## Fixed
+- Fix `Menu.Update()` not rebuilding the native menu on GTK4 Linux (#5659, independently diagnosed and fixed by @puneetdixit200 in #5539)
+- Fix crash enumerating macOS screens on display change by copying screen id/name strings and snapshotting the count (#5565, independently diagnosed and fixed by @x-haose in #5584)
+
+## v3.0.0-alpha2.107 - 2026-06-27
+
+## Added
+- Add experimental Wake documentation with sidebar navigation in [PR](https://github.com/wailsapp/wails/pull/5613) by @leaanthony
+
+## v3.0.0-alpha2.106 - 2026-06-24
+
+## Changed
+- Bump `webview2` to v1.0.27.
+  - ci(webview2): fix release build (cross-compile Windows + complete go.sum) (#5671)
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.26...webview2/v1.0.27
+- Remove go vet from webview2 release workflow cross-compilation in [PR](https://github.com/wailsapp/wails/pull/5672) by @taliesin-ai
+- Update auto-changelog OpenRouter model to google/gemini-2.5-flash-lite in [PR](https://github.com/wailsapp/wails/pull/5670) by @taliesin-ai
+- Bump `webview2` to v1.0.26.
+
+### Fixes
+  - **Recover from transient runtime COM errors instead of exiting** (#5658, #5580). `Chromium.errorCallback` previously called `os.Exit(1)` for *any* COM error, so a recoverable hiccup after startup killed the whole application. Runtime paths (`Resize`/`GetClientRect`, `Navigate`/`NavigateToString`, `Init`, `MessageReceived`, `PutZoomFactor`, `OpenDevToolsWindow`) now log and recover. In particular, a malformed/untrusted web message in `MessageReceived` is now dropped rather than taking the process down. This addresses the mixed-DPI monitor-crossing crash class (#5544, #5650). Environment/controller-creation paths remain fatal.
+  **Full diff:** https://github.com/wailsapp/wails/compare/webview2/v1.0.25...webview2/v1.0.26
+
+## Fixed
+- Fix release-webview2 workflow to correctly handle go.sum files in [PR](https://github.com/wailsapp/wails/pull/5671) by @taliesin-ai
+- Fix Linux GTK4 menu updates by clearing and rebuilding the native menu in [PR](https://github.com/wailsapp/wails/pull/5659) by @taliesin-ai
+
+## v3.0.0-alpha2.105 - 2026-06-21
+
+## Added
+- Add `application.System` for runtime platform detection from shared code: `System.IsMobile()` (iOS/Android), `System.IsDesktop()` (macOS/Windows/Linux), `System.IsServer()` (the `server` build tag), and `System.IsPlatform(application.PlatformMacOS|PlatformWindows|PlatformLinux|PlatformIOS|PlatformAndroid|PlatformServer)` to test a single target directly. It compiles on every target so you can branch without build tags. Matching frontend helpers (`System.IsMobile/IsDesktop/IsIOS/IsAndroid/...`) are available in `@wailsio/runtime`
+- Add a "Using Other Frontend Frameworks" guide showing how to drop your own Vite project into `frontend/` (covers Solid, Preact, Lit, SvelteKit, Qwik, Angular, etc.)
+- The `wails3 setup` wizard now checks the mobile (iOS/Android) toolchain — Xcode and the iOS Simulator runtime, JDK, Android SDK/NDK and emulator — with one-click install and copyable shell-config fixes where applicable
+- Generated projects ship a `frontend/.npmrc` setting a 7-day `minimum-release-age` to reduce exposure to freshly published (potentially compromised) packages (honoured by pnpm and bun; harmlessly ignored by npm)
+
+## Changed
+- Redesign all built-in starter templates with a new neon-mountain hero look (web, iOS and Android)
+- **TypeScript is now the default for starter templates and owns the bare template name.** `wails3 init` (no `-t`) scaffolds a TypeScript project; `-t vanilla`, `-t react`, `-t vue` and `-t svelte` are TypeScript, with JavaScript variants at `-t vanilla-js`, `-t react-js`, `-t vue-js` and `-t svelte-js`. Built-in templates declare their language with `typescript:` in `template.yaml`; community templates using the `-ts` suffix continue to work as a fallback
+- Redesign the `wails3 setup` wizard with the neon "digital Wails" theme (frosted-glass vibrancy over a mountain backdrop)
+
+## Fixed
+- Fix crash on Windows when restoring an app that was minimised long enough for WebView2 to suspend or its render/GPU process to be recycled. The minimise/restore DPI resync (#5544) now only touches the WebView2 controller when the window's DPI actually changed, avoiding fatal COM calls into a suspended controller on the common same-DPI restore (#5605)
+- Fix repeated native `SIGABRT`/`SIGSEGV` crashes (typically inside `g_object_unref` during the GTK main loop) on long-running Linux apps under frequent asset/media loads. The asset server completed `WebKitURISchemeRequest`s from worker goroutines, calling thread-unsafe WebKit2GTK functions off the GTK main thread; completion (`webkit_uri_scheme_request_finish_with_response`/`finish_error`) now runs on the main thread. Completes the partial fix in #5566. Affects both the GTK3 and GTK4/WebKitGTK 6.0 builds (#5631, #5557)
+- Fix intermittent `fatal error: invalid pointer found on stack` in `setupSignalHandlers` on Linux/GTK3. Window IDs passed as signal `user_data` were held in a Go `unsafe.Pointer` local, so the garbage collector aborted when it scanned the (non-pointer) value during a stack copy. The ID is now kept integer-typed (`uintptr_t`) on the Go side, back-porting to the legacy GTK3 path the same fix #4958 applied to the GTK4 path (which switched the C signal functions to `uintptr_t` to clear `-race`/checkptr errors) (#5631)
+
+## Removed
+- Remove the `react-swc`, `preact`, `lit`, `solid`, `qwik` and `sveltekit` starter templates (and their `-ts` variants). The supported built-in set is now `vanilla`, `react`, `vue` and `svelte` — each TypeScript by default, with `-js` JavaScript variants. Any other framework can still be used by [bringing your own frontend](https://v3.wails.io/guides/dev/frontend-frameworks) or via a custom template
+
+## v3.0.0-alpha2.104 - 2026-06-18
+
+## Fixed
+- Fix an iOS crash (SIGABRT) when a bound Go service method returns an empty string. The iOS asset response writer guarded the body pointer with `buf != nil` instead of its length, so a zero-length body made `&buf[0]` panic; it now guards on length, matching the desktop writers
+
+## v3.0.0-alpha2.103 - 2026-06-15
+
+## Changed
+- Move iOS and Android native features onto platform managers: call them via `application.IOS.*` and `application.Android.*` (e.g. `application.IOS.Haptic("medium")`, `application.Android.Share(payload)`) instead of the old `application.IOS*`/`application.Android*` free functions (#5602)
+- Rename mobile bridge events: cross-platform events now use the `common:*` prefix (e.g. `common:haptic`, `common:location`) and platform-exclusive events use `ios:*` / `android:*` (e.g. `ios:backgroundTask`, `android:foregroundService`); the `native:*` prefix is no longer used (#5602)
+
+## v3.0.0-alpha.102 - 2026-06-14
+
+## Added
+- Add experimental `wails3 setup` wizard for interactive project setup and dependency checking
+- Add `--json` flag to `wails3 doctor` for machine-readable output
+- Add signing status section to `wails3 doctor` command
+
+## Fixed
+- Fix npm detection on Linux to check PATH in addition to package manager
+
+## v3.0.0-alpha.101 - 2026-06-13
+
+## Added
+- iOS: native message dialogs (UIAlertController) and open file/files/directory dialogs (UIDocumentPickerViewController); save dialogs return an explicit error
+- iOS: clipboard support via UIPasteboard
+- iOS: real screen metrics via UIScreen (points, pixels, scale, safe-area work area)
+- iOS: device builds (`IOS_PLATFORM=device`), code-signing identity / provisioning profile / entitlements support, `.ipa` packaging, and `deploy-device` via devicectl
+- iOS: configurable minimum iOS version (`ios.minIOSVersion` in build/config.yml)
+- iOS: `wails3 doctor` reports Xcode and iOS SDK availability on macOS
+- iOS: system events — battery, network, theme, screen-lock and low-memory surface as `events.IOS.*` and platform-neutral `events.Common.*` application events
+- iOS: native mobile feature bridge (exported `application.IOS*`) — share sheet, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (Face ID/Touch ID), local notifications and Keychain secure storage
+- iOS: sensors & hardware — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and screen-capture detection
+- iOS: documentation (IOS.md and a docs-site guide)
+- Android: native message dialogs (AlertDialog) and open file/files dialogs (Storage Access Framework, imported as cache copies); open-directory and save dialogs return an explicit error
+- Android: clipboard support via ClipboardManager
+- Android: real screen metrics via WindowMetrics/DisplayMetrics (dp, pixels, scale, system-bar work area)
+- Android: haptics (`Android.Haptics.Vibrate`), device info (`Android.Device.Info`) and toast (`Android.Toast.Show`) runtime methods
+- Android: typed lifecycle events (`events.Android.*`, generated from events.txt) with `ActivityCreated` mapped to `Common.ApplicationStarted`
+- Android: build pipeline produces installable debug and release APKs (`android:run`, `android:package`, `android:package:fat`); release signing via the debug keystore by default or a real keystore through `ANDROID_KEYSTORE_*` env vars
+- Android: `wails3 doctor` reports the Android SDK, NDK and JDK
+- Android: system events — battery, network, theme, screen-lock and low-memory surface as `events.Android.*` and platform-neutral `events.Common.*` application events
+- Android: native mobile feature bridge (exported `application.Android*`) — share, open URL, keep-awake, torch, safe-area insets, brightness, app info, orientation lock, status bar, biometrics (BiometricPrompt), local notifications and EncryptedSharedPreferences secure storage
+- Android: sensors & hardware — haptics, one-shot geolocation, accelerometer, proximity, text-to-speech, storage info, power/battery state, network status, keyboard insets and FLAG_SECURE screen-capture blocking
+- Android: documentation (ANDROID.md and a docs-site guide)
+- Example: the `mobile` kitchen sink gains Mobile and Hardware tabs demonstrating the native feature bridge across iOS and Android (pill tabs wrap to multiple rows)
+- Mobile: battery — the accelerometer, proximity sensor, torch and the example's periodic clock are paused when the app is backgrounded and restored on return (Android keeps the process running in the background, and the torch is hardware state that persists on iOS), and Android system-event receivers are only registered while the app is in the foreground
+- iOS: camera capture — `application.IOSCapturePhoto`/`IOSCaptureVideo` (UIImagePickerController → a `native:capture` event with a base64 thumbnail)
+- iOS: background execution — `application.IOSBeginBackgroundTask`/`IOSEndBackgroundTask` (a UIApplication background-task window) and a configurable `ios.backgroundModes` (build/config.yml) that templates `UIBackgroundModes` into the generated Info.plist
+- Android: camera capture — `application.AndroidCapturePhoto`/`AndroidCaptureVideo` (system camera via FileProvider → a `native:capture` event)
+- Android: foreground service — `application.AndroidStartForegroundService`/`AndroidStopForegroundService` (a `WailsForegroundService` with an ongoing notification keeps the process alive for long-running background work)
+- Example: a Camera tab demonstrating photo/video capture and background execution (foreground service on Android, background-task window on iOS)
+
+## Fixed
+- Fix `getUserMedia` always failing with `NotAllowedError` on Linux: WebKitGTK denies permission requests nobody handles, and the `permission-request` signal was not connected. Camera/microphone are now handled per a new cross-platform `WebviewWindowOptions.Permissions` map (`map[PermissionType]Permission`), honored on both Linux (WebKitGTK) and Windows (WebView2). On Linux, which has no native prompt, camera/microphone default to allowed (restoring `getUserMedia`) and can be turned off with `PermissionDeny` (#5552)
+- iOS: `GOOS=ios` compiles again (exported `events.IOS`, mobile method-name stubs) and production-tagged builds compile (build-tag fixes in pkg/application and several services)
+- iOS: Go→JS events and ExecJS now work — the page no longer loads twice at startup and the `wails:runtime:ready` handshake can no longer be lost
+- iOS: `ApplicationDidFinishLaunching`/`ApplicationStarted` no longer race app startup; removed the fixed 2-second startup sleep
+- iOS: fixed a C-string leak on every Go→JS JavaScript execution
+- iOS: `hasListeners` now reflects real listener registration
+- iOS: framework debug logging is compiled out of production builds
+- Android: `GOOS=android` compiles again — defined `events.Android`, removed the out-of-bounds `events_android.go` listener array, added the mobile method-name stub, and stopped desktop-Linux files (`linux_cgo.*`, `events_linux.*`, `environment_linux.go`) leaking into Android builds
+- Android: JS→Go bindings now work — the WebView cannot deliver `fetch()` POST bodies to `shouldInterceptRequest`, so runtime calls route through a JavascriptInterface transport (`nativeHandleRuntimeCall`) instead of crashing on a nil request body
+- Android: `Screens.*` runtime calls return real data — the ScreenManager is now populated at startup (it was never wired, so `GetAll` returned nil)
+- Android: framework debug logging is compiled out of production builds and routes through logcat under the `Wails` tag in debug builds
+- Android: real `hasListeners` registry, JNI reference/exception handling, and a single-load page lifecycle (no double navigation)
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+- Fix intermittent fatal crash on macOS when reading screen information after a display change: the screen id and name stored pointers to autoreleased `UTF8String` buffers that could be freed before Go copied them (use-after-free). The strings are now `strdup`'d and freed after conversion, and screen enumeration runs in an explicit autorelease pool so it no longer leaks when called from Go goroutines (#5556)
+- Fix intermittent SIGSEGV on Linux when the assetserver closes a `WebKitURISchemeRequest`: the final `g_object_unref` ran on the assetserver goroutine, finalizing a WebKit GObject off the GTK main thread. The unref is now marshalled onto the GTK main context via `g_main_context_invoke` (#5557)
+
+## v3.0.0-alpha.100 - 2026-06-13
+
+## Added
+- Extend `MacWebviewPreferences` with additional WKWebView configuration options: `EnableAutoplayWithoutUserAction`, `AllowsAirPlayForMediaPlayback`, `AllowsMagnification`, `JavaScriptCanOpenWindowsAutomatically`, `MinimumFontSize`, and `ApplicationNameForUserAgent` (#5549)
+
+## Fixed
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5561)
+- Fix JS resize events not firing for frameless windows on Linux; fix scrollbar edge detection for frameless windows (#5368)
+- Fix updater on Windows failing with "invalid cross-device link" when the temp directory is on a different volume to the install directory (#5560)
+
+## v3.0.0-alpha.99 - 2026-06-10
+
+## Fixed
+- Fix `wails3 generate bindings` failing with "Access is denied" on Windows when the Vite dev server is running, by syncing generated files into the output directory instead of renaming over it (#5515)
+
 ## v3.0.0-alpha.98 - 2026-06-03
 
 ## Fixed

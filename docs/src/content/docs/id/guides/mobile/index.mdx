@@ -1,0 +1,169 @@
+---
+title: Ringkasan Mobile
+description: Build aplikasi iOS dan Android dari codebase Go yang sama dengan aplikasi desktop Anda
+sidebar:
+  order: 1
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Card, CardGrid, Aside, LinkCard } from '@astrojs/starlight/components';
+
+Wails v3 berjalan di **iOS dan Android** menggunakan `main.go` dan frontend yang sama dengan desktop. Tidak ada proyek mobile terpisah, tidak ada bridge code-sharing, dan tidak perlu rewrite: binary Go dikompilasi untuk target mobile dan WebView native merender frontend yang sudah ada.
+
+<CardGrid>
+  <Card title="iOS" icon="apple">
+    WKWebView + host UIKit. Aset disajikan via skema `wails://` kustom — tanpa port terbuka.
+    Membutuhkan **macOS** dengan Xcode lengkap.
+
+    [Panduan iOS →](/id/guides/mobile/ios)
+  </Card>
+  <Card title="Android" icon="seti:android">
+    Android WebView + `WebViewAssetLoader`. Go dikompilasi sebagai `libwails.so` via NDK.
+    Bekerja di macOS, Linux, dan Windows.
+
+    [Panduan Android →](/id/guides/mobile/android)
+  </Card>
+</CardGrid>
+
+## Lihat berjalan: contoh Kitchen Sink
+
+Cara terbaik memahami kemungkinannya adalah melihat **Kitchen Sink** — satu aplikasi Wails yang berjalan identik di iOS, Android, dan desktop dari satu codebase:
+
+<LinkCard
+  title="Mobile Kitchen Sink — GitHub"
+  description="Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · dan lainnya — semua dari satu main.go"
+  href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile"
+/>
+
+Contoh ini mendemonstrasikan setiap permukaan API mobile utama di 7 tab — dan juga berjalan di desktop. Tab **Mobile** dan **Hardware** disembunyikan di desktop via pengecekan platform di frontend; sisi Go tidak mendaftarkan handler untuk event mobile `common:*` saat di-build untuk desktop. Ini adalah pola yang direkomendasikan untuk mengirim satu codebase ke semua platform.
+
+| Tab | Platform | Yang ditampilkan |
+|---|---|---|
+| **Bindings** | semua | Panggilan service JS → Go mengembalikan nilai, struct, dan error |
+| **Events** | semua | Jam Go → JS, ping/pong JS → Go → JS, event sistem OS (baterai, jaringan, tema) |
+| **Dialogs** | semua | Dialog pesan native di setiap platform |
+| **System** | semua | Clipboard, metrik layar, info perangkat |
+| **Mobile** | iOS + Android | Share sheet, keep-awake, torch, brightness, biometrics, notifikasi lokal, secure storage |
+| **Hardware** | iOS + Android | Haptics, geolocation, accelerometer, proximity, text-to-speech |
+| **Native** | iOS + Android | iOS: haptics + toggle WKWebView · Android: vibrate + toast |
+
+Untuk menjalankannya sendiri:
+
+```bash
+git clone https://github.com/wailsapp/wails.git
+cd wails/v3/examples/mobile
+
+wails3 task ios:run        # iOS Simulator (macOS + Xcode diperlukan)
+wails3 task android:run    # Android Emulator
+wails3 task run            # Desktop
+```
+
+## Cara kerjanya
+
+Model aplikasi yang sama berlaku di setiap platform:
+
+1. **Backend Go** — service, event handler, dan logika aplikasi Anda dikompilasi tanpa perubahan untuk `GOOS=ios` dan `GOOS=android`.
+2. **Frontend** — HTML/JS/CSS yang persis sama. Paket `@wailsio/runtime` bekerja identik; service bindings, events, dialog, dan clipboard semua melewati transport in-process yang sama.
+3. **Host WebView** — di iOS `WKWebView` di dalam `UIViewController`; di Android `WebView` di dalam `Activity`. Wails menghubungkan message bridge secara otomatis.
+4. **Penyajian aset in-process** — aset disajikan langsung dari memori Go, bukan server localhost. Tanpa port terbuka, tanpa loopback, tanpa latency ekstra.
+
+Perilaku spesifik platform ada di file yang dilindungi `//go:build ios` atau `//go:build android`, menjaga kode bersama tetap bersih.
+
+## Prasyarat sekilas
+
+| Persyaratan | iOS | Android |
+|---|---|---|
+| Sistem operasi | macOS saja | macOS, Linux, Windows |
+| Toolchain | Xcode lengkap (bukan hanya CLI tools) | Android SDK + NDK 26.3.x + JDK |
+| Go | 1.25+ | 1.25+ |
+| npm | ✅ | ✅ |
+| Verifikasi dengan | `wails3 doctor` | `wails3 doctor` |
+
+<Aside type="tip">
+Jalankan `wails3 doctor` setelah menyiapkan toolchain — menampilkan persis apa yang ditemukan dan apa yang kurang untuk setiap platform.
+</Aside>
+
+## Yang didukung
+
+Kedua platform berbagi feature set inti yang sama:
+
+| Fitur | iOS | Android |
+|---|---|---|
+| Service bindings (JS → Go) | ✅ | ✅ |
+| Events (kedua arah) | ✅ | ✅ |
+| Dialog pesan | ✅ UIAlertController | ✅ AlertDialog |
+| Dialog buka file | ✅ UIDocumentPicker | ✅ Storage Access Framework |
+| Dialog simpan file | ❌ tulis ke sandbox | ❌ tulis ke sandbox |
+| Clipboard | ✅ UIPasteboard | ✅ ClipboardManager |
+| Screens / metrik safe-area | ✅ | ✅ |
+| Lifecycle events | ✅ `events.IOS.*` | ✅ `events.Android.*` |
+| Haptics | ✅ `IOS.Haptics.*` | ✅ `Android.Haptics.Vibrate` |
+| Info perangkat | ✅ `IOS.Device.Info()` | ✅ `Android.Device.Info()` |
+| Tab native (iOS) | ✅ UITabBar | — |
+| Pesan toast (Android) | — | ✅ `Android.Toast.Show` |
+| Beberapa window | ❌ window pertama saja | ❌ window pertama saja |
+| Geometri window / menu / tray | no-op disengaja | no-op disengaja |
+
+## Aturan build tag
+
+Dua aturan penting saat menulis kode kondisional platform:
+
+- **`ios` mengimplikasikan `darwin`** — file dengan tag `//go:build darwin` juga dikompilasi untuk iOS. Untuk target macOS saja, gunakan `//go:build darwin && !ios`.
+- **`android` mengimplikasikan `linux`** — file dengan tag `//go:build linux` juga dikompilasi untuk Android. Untuk target desktop-Linux saja, gunakan `//go:build linux && !android`.
+
+Saat runtime, `runtime.GOOS` mengembalikan `"ios"` dan `"android"` masing-masing.
+
+## Deteksi platform runtime
+
+Build tag untuk kode yang hanya dapat *dikompilasi* di platform tertentu. Untuk branching biasa
+di kode bersama, gunakan `application.System` — tersedia di setiap build
+(tanpa build tag) sehingga file yang sama bekerja di semua tempat:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+if application.System.IsMobile() {
+    // iOS or Android
+} else if application.System.IsDesktop() {
+    // macOS, Windows or Linux
+}
+
+// Or test a single target directly:
+if application.System.IsPlatform(application.PlatformIOS) {
+    // iOS only
+}
+```
+
+Tersedia: `IsMobile()`, `IsDesktop()`, `IsServer()` (build tag `server`), dan
+`IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)`.
+
+Frontend memiliki helper yang cocok di `@wailsio/runtime`:
+
+```js
+import { System } from "@wailsio/runtime";
+
+if (System.IsMobile()) { /* iOS or Android */ }
+if (System.IsIOS()) { /* … */ }      // also IsAndroid, IsMac, IsWindows, IsLinux, IsDesktop
+```
+
+## Langkah selanjutnya
+
+<CardGrid>
+  <Card title="Aplikasi Mobile Pertama Anda" icon="rocket">
+    Ambil aplikasi Wails desktop dan jalankan di iOS Simulator atau Android Emulator dalam hitungan menit.
+
+    [Mulai →](/id/guides/mobile/first-mobile-app)
+  </Card>
+  <Card title="Panduan iOS" icon="apple">
+    Setup toolchain iOS lengkap, simulator, build perangkat, penandatanganan, konfigurasi, dan referensi API.
+
+    [Panduan iOS →](/id/guides/mobile/ios)
+  </Card>
+  <Card title="Panduan Android" icon="seti:android">
+    Setup Android SDK/NDK lengkap, emulator, penandatanganan APK, packaging Play Store, dan referensi API.
+
+    [Panduan Android →](/id/guides/mobile/android)
+  </Card>
+</CardGrid>

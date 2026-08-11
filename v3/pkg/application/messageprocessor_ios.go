@@ -18,6 +18,10 @@ const (
 	IOSUserAgentSet                     = 8
 )
 
+// androidMethodNames is referenced by the shared messageprocessor debug logging;
+// it has no entries on iOS.
+var androidMethodNames = map[int]string{}
+
 var iosMethodNames = map[int]string{
 	IOSHapticsImpact:                    "Haptics.Impact",
 	IOSDeviceInfo:                       "Device.Info",

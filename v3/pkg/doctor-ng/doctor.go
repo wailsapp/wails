@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -84,12 +84,8 @@ func (d *Doctor) collectBuildInfo() error {
 
 	if found && wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
-		repo, err := git.PlainOpen(filepath.Join(wailsPackage.Replace.Path, ".."))
-		if err == nil {
-			head, err := repo.Head()
-			if err == nil {
-				wailsVersion += " (" + head.Hash().String()[:8] + ")"
-			}
+		if hash, err := git.HeadHash(filepath.Join(wailsPackage.Replace.Path, "..")); err == nil {
+			wailsVersion += " (" + hash + ")"
 		}
 	}
 

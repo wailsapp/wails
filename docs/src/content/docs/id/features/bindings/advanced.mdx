@@ -1,0 +1,343 @@
+---
+title: Binding Lanjutan
+description: Teknik binding lanjutan termasuk directive, injeksi kode, dan ID kustom
+sidebar:
+  order: 3
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Panduan ini membahas teknik lanjutan untuk menyesuaikan dan mengoptimalkan proses pembuatan binding di Wails v3.
+
+## Menyesuaikan Kode yang Dihasilkan dengan Directive
+
+### Menginjeksi Kode Kustom
+
+Directive `//wails:inject` memungkinkan Anda menginjeksi kode JavaScript/TypeScript kustom ke binding yang dihasilkan:
+
+```go
+//wails:inject console.log("Hello from Wails!");
+type MyService struct {}
+
+func (s *MyService) Greet(name string) string {
+    return "Hello, " + name
+}
+```
+
+Ini akan menginjeksi kode yang ditentukan ke file JavaScript/TypeScript yang dihasilkan untuk service `MyService`.
+
+Anda juga dapat menggunakan injeksi kondisional untuk menargetkan format output tertentu:
+
+```go
+//wails:inject j*:console.log("Hello JS!");  // JavaScript only
+//wails:inject t*:console.log("Hello TS!");  // TypeScript only
+```
+
+### Menyertakan File Tambahan
+
+Directive `//wails:include` memungkinkan Anda menyertakan file tambahan dengan binding yang dihasilkan:
+
+```go
+//wails:include js/*.js
+package mypackage
+```
+
+Directive ini biasanya digunakan dalam komentar dokumentasi paket untuk menyertakan file JavaScript/TypeScript tambahan dengan binding yang dihasilkan.
+
+### Menandai Tipe dan Metode Internal
+
+Directive `//wails:internal` menandai tipe atau metode sebagai internal, mencegahnya diekspor ke frontend:
+
+```go
+//wails:internal
+type InternalModel struct {
+    Field string
+}
+
+//wails:internal
+func (s *MyService) InternalMethod() {}
+```
+
+Ini berguna untuk tipe dan metode yang hanya digunakan secara internal oleh kode Go Anda dan tidak boleh diekspos ke frontend.
+
+### Mengabaikan Metode
+
+Directive `//wails:ignore` sepenuhnya mengabaikan metode selama pembuatan binding:
+
+```go
+//wails:ignore
+func (s *MyService) IgnoredMethod() {}
+```
+
+Ini mirip dengan `//wails:internal`, tetapi sepenuhnya mengabaikan metode alih-alih menandainya sebagai internal.
+
+### ID Metode Kustom
+
+Directive `//wails:id` menentukan ID kustom untuk metode, menimpa ID berbasis hash default:
+
+```go
+//wails:id 42
+func (s *MyService) CustomIDMethod() {}
+```
+
+Ini dapat berguna untuk menjaga kompatibilitas saat melakukan refactoring kode.
+
+## Bekerja dengan Tipe Kompleks
+
+### Struct Bersarang
+
+Generator binding menangani struct bersarang secara otomatis:
+
+```go
+type Address struct {
+    Street string
+    City   string
+    State  string
+    Zip    string
+}
+
+type Person struct {
+    Name    string
+    Address Address
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Address: Address{
+            Street: "123 Main St",
+            City:   "Anytown",
+            State:  "CA",
+            Zip:    "12345",
+        },
+    }
+}
+```
+
+Kode JavaScript/TypeScript yang dihasilkan akan menyertakan class untuk `Person` dan `Address`.
+
+### Map dan Slice
+
+Map dan slice juga ditangani secara otomatis:
+
+```go
+type Person struct {
+    Name       string
+    Attributes map[string]string
+    Friends    []string
+}
+
+func (s *MyService) GetPerson() Person {
+    return Person{
+        Name: "John Doe",
+        Attributes: map[string]string{
+            "hair": "brown",
+            "eyes": "blue",
+        },
+        Friends: []string{"Jane", "Bob", "Alice"},
+    }
+}
+```
+
+Di JavaScript, map direpresentasikan sebagai object dan slice sebagai array. Di TypeScript, map direpresentasikan sebagai `Record<K, V>` dan slice sebagai `T[]`.
+
+### Tipe Generik
+
+Generator binding mendukung tipe generik:
+
+```go
+type Result[T any] struct {
+    Data  T
+    Error string
+}
+
+func (s *MyService) GetResult() Result[string] {
+    return Result[string]{
+        Data:  "Hello, World!",
+        Error: "",
+    }
+}
+```
+
+Kode TypeScript yang dihasilkan akan menyertakan class generik untuk `Result`:
+
+```typescript
+export class Result<T> {
+    "Data": T;
+    "Error": string;
+
+    constructor(source: Partial<Result<T>> = {}) {
+        if (!("Data" in source)) {
+            this["Data"] = null as any;
+        }
+        if (!("Error" in source)) {
+            this["Error"] = "";
+        }
+
+        Object.assign(this, source);
+    }
+
+    static createFrom<T>(source: string | object = {}): Result<T> {
+        let parsedSource = typeof source === "string" ? JSON.parse(source) : source;
+        return new Result<T>(parsedSource as Partial<Result<T>>);
+    }
+}
+```
+
+### Interface
+
+Generator binding dapat menghasilkan interface TypeScript alih-alih class menggunakan flag `-i`:
+
+```bash
+wails3 generate bindings -ts -i
+```
+
+Ini akan menghasilkan interface TypeScript untuk semua model:
+
+```typescript
+export interface Person {
+    Name: string;
+    Attributes: Record<string, string>;
+    Friends: string[];
+}
+```
+
+## Mengoptimalkan Pembuatan Binding
+
+### Menggunakan Nama Alih-alih ID
+
+Secara default, generator binding menggunakan ID berbasis hash untuk panggilan metode. Anda dapat menggunakan flag `-names` untuk menggunakan nama:
+
+```bash
+wails3 generate bindings -names
+```
+
+Ini akan menghasilkan kode yang memanggil metode terikat berdasarkan nama **fully-qualified** (`<package>.<Service>.<Method>`) dan menggunakan nama parameter posisional `$0`, `$1`, …:
+
+```javascript
+export function Greet($0) {
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0);
+    return $resultPromise;
+}
+```
+
+Ini dapat membuat kode yang dihasilkan lebih mudah dibaca dan di-debug, tetapi mungkin sedikit kurang efisien.
+
+### Bundling Runtime
+
+Secara default, kode yang dihasilkan mengimpor runtime Wails dari paket npm `@wailsio/runtime`. Anda dapat menggunakan flag `-b` untuk membundel runtime dengan kode yang dihasilkan:
+
+```bash
+wails3 generate bindings -b
+```
+
+Ini akan menyertakan kode runtime langsung di file yang dihasilkan, menghilangkan kebutuhan paket npm.
+
+### Menonaktifkan File Index
+
+Jika Anda tidak memerlukan file index, Anda dapat menggunakan flag `-noindex` untuk menonaktifkan pembuatannya:
+
+```bash
+wails3 generate bindings -noindex
+```
+
+Ini berguna jika Anda lebih suka mengimpor service dan model langsung dari file masing-masing.
+
+## Contoh Dunia Nyata
+
+### Service Autentikasi
+
+Berikut contoh service autentikasi dengan directive kustom:
+
+```go
+package auth
+
+//wails:inject console.log("Auth service initialized");
+type AuthService struct {
+    // Private fields
+    users map[string]User
+}
+
+type User struct {
+    Username string
+    Email    string
+    Role     string
+}
+
+type LoginRequest struct {
+    Username string
+    Password string
+}
+
+type LoginResponse struct {
+    Success bool
+    User    User
+    Token   string
+    Error   string
+}
+
+// Login authenticates a user
+func (s *AuthService) Login(req LoginRequest) LoginResponse {
+    // Implementation...
+}
+
+// GetCurrentUser returns the current user
+func (s *AuthService) GetCurrentUser() User {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *AuthService) validateCredentials(username, password string) bool {
+    // Implementation...
+}
+```
+
+### Service Pemrosesan Data
+
+Berikut contoh service pemrosesan data dengan tipe generik:
+
+```go
+package data
+
+type ProcessingResult[T any] struct {
+    Data  T
+    Error string
+}
+
+type DataService struct {}
+
+// Process processes data and returns a result
+func (s *DataService) Process(data string) ProcessingResult[map[string]int] {
+    // Implementation...
+}
+
+// ProcessBatch processes multiple data items
+func (s *DataService) ProcessBatch(data []string) ProcessingResult[[]map[string]int] {
+    // Implementation...
+}
+
+// Internal helper method
+//wails:internal
+func (s *DataService) parseData(data string) (map[string]int, error) {
+    // Implementation...
+}
+```
+
+### Injeksi Kode Kondisional
+
+Berikut contoh injeksi kode kondisional untuk format output berbeda:
+
+```go
+//wails:inject j*:/**
+//wails:inject j*: * @param {string} arg
+//wails:inject j*: * @returns {Promise<void>}
+//wails:inject j*: */
+//wails:inject j*:export async function CustomMethod(arg) {
+//wails:inject t*:export async function CustomMethod(arg: string): Promise<void> {
+//wails:inject     await InternalMethod("Hello " + arg + "!");
+//wails:inject }
+type Service struct{}
+```
+
+Ini menginjeksi kode berbeda untuk output JavaScript dan TypeScript, memberikan anotasi tipe yang sesuai untuk setiap bahasa.

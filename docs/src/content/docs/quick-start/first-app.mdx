@@ -30,11 +30,13 @@ Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)
    cd myapp
    ```
 
-   This creates a new project with the default Vanilla + Vite template (plain HTML/CSS/JS with Vite bundler).
+   This creates a new project with the default Vanilla + Vite template (HTML/CSS/TypeScript with the Vite bundler).
 
    :::tip[Other Templates]
-   Try `-t react`, `-t vue`, or `-t svelte` for your preferred framework.
-   Run `wails3 init -l` to see all available templates.
+   Try `-t react`, `-t vue`, or `-t svelte` for your preferred framework. These are
+   TypeScript by default; for plain JavaScript use `-t vanilla-js` or `-t react-js`.
+   Run `wails3 init -l` to see all available templates, or
+   [bring your own frontend framework](/guides/dev/frontend-frameworks).
    :::
 
 2. **Understand the project structure**
@@ -46,11 +48,12 @@ Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/)
    ├── frontend/            # Your UI code
    │   ├── index.html       # HTML entry point
    │   ├── src/
-   │   │   └── main.js      # Frontend JavaScript
+   │   │   └── main.ts      # Frontend TypeScript
    │   ├── public/
    │   │   └── style.css    # Styles
    │   ├── package.json     # Frontend dependencies
-   │   └── vite.config.js   # Vite bundler config
+   │   ├── tsconfig.json    # TypeScript configuration
+   │   └── vite.config.ts   # Vite bundler config
    ├── build/               # Build configuration
    └── Taskfile.yml         # Build tasks
    ```

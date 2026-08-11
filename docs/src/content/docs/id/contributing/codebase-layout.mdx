@@ -1,0 +1,215 @@
+---
+title: Tata Letak Codebase
+description: Bagaimana repository Wails v3 diorganisasi dan bagaimana bagian-bagiannya saling terhubung
+sidebar:
+  order: 2
+---
+
+Wails v3 berada dalam **monorepo** yang berisi runtime framework, CLI,
+contoh, dokumentasi, dan tool-chain build.  
+Halaman ini memandu *struktur direktori* yang penting bagi siapa pun yang
+menggali internal.
+
+## Tampilan Tingkat Atas
+
+```
+wails/
+├── v3/               # ⬅️ Semua yang spesifik Wails v3 ada di sini
+├── v2/               # Implementasi legacy v2 (bisa diabaikan untuk pekerjaan v3)
+├── docs/             # Situs docs v3 berbasis Astro (halaman ini!)
+├── website/          # Situs v2 Docusaurus dan halaman marketing (situs utama)
+├── scripts/          # Skrip helper misc (mis. generator gambar sponsor)
+└── *.md              # File meta proyek (CHANGELOG, LICENSE, …)
+```
+
+Dari sini, kita zoom ke pohon **`v3/`**.
+
+## Root `v3/`
+
+```
+v3/
+├── cmd/          # Perintah yang dapat dikompilasi (saat ini hanya CLI wails3)
+├── internal/     # Implementasi framework (bukan API publik)
+├── pkg/          # Paket Go publik — permukaan API
+├── tasks/        # Utilitas release / generasi berbasis Taskfile
+├── wep/          # Proposal gaya RFC (Wails Enhancement Proposals)
+├── tests/        # Harness integration test
+├── go.mod
+└── go.sum
+```
+
+> Template proyek dikirim di bawah `internal/templates/` (satu folder per stack
+> framework plus `base/`, `_common/`, dan `ios/`). Tidak ada direktori
+> `v3/templates/` di tingkat atas.
+
+### Model Mental
+
+1. **`pkg/`** mengekspos *apa yang diimpor developer aplikasi*  
+2. **`internal/`** berisi *bagaimana keajaiban diimplementasikan*  
+3. **`cmd/wails3`** menggerakkan *siklus hidup proyek & build*  
+
+Semua yang lain mendukung ketiga pilar tersebut.
+
+---
+
+## `cmd/` – Perintah
+
+| Path | Catatan |
+|------|---------|
+| `v3/cmd/wails3` | **Entrypoint CLI**. `main.go` kecil mendelegasikan semua logika ke paket di `internal/commands`. |
+| `internal/commands/*` | Sub-perintah (init, dev, build, doctor, …). Masing-masing ada di file sendiri agar mudah ditemukan. |
+| `internal/commands/task_wrapper.go` | Menjembatani antara flag CLI dan pipeline build Taskfile. |
+
+CLI memiliki:
+
+* **Scaffolding proyek** (`init`, generasi template)  
+* **Orkestrasi dev server** (`dev`, live-reload)  
+* **Production build & packaging** (`build`, `package`, wrapper platform)  
+* **Diagnostik** (`doctor`)  
+
+---
+
+## `internal/` – Ruang Mesin
+
+```
+internal/
+├── assetserver/  # Melayani & meng-embed asset web
+├── buildinfo/    # Metadata build yang dapat direproduksi
+├── commands/     # Mekanisme CLI (lihat di atas)
+├── runtime/      # Glue build-tag + sumber runtime JS embedded
+├── generator/    # Analisis statis & generator binding
+├── templates/    # Template proyek (stack frontend)
+├── packager/     # Wrapper nfpm digunakan oleh `wails3 tool package`
+├── capabilities/ # Probing kemampuan OS host
+├── dbus/         # Helper D-Bus generik
+├── service/      # Scaffolding template service (`wails3 generate service`)
+└── ...           # [sub-paket helper lain: flags, hash, term, …]
+```
+
+### Sub-Paket Kunci
+
+| Paket | Tanggung Jawab | Tempat Terhubung |
+|---------|----------------|-------------------|
+| `runtime` | Menampung glue build-tag kecil `runtime{,_darwin,_linux,_windows,_android,_dev,_prod}.go` plus runtime JS embedded di bawah `runtime/desktop/`. Kode window/clipboard/dialog/tray per-OS sebenarnya ada di `pkg/application/*_{darwin,linux,windows}.go`. | Diimpor secara tidak langsung via `pkg/application`. |
+| `assetserver` | File server dual-mode:<br />• Dev: melayani dari disk & proxy Vite (`build_dev.go`)<br />• Prod: meng-embed asset via `go:embed` (`build_production.go`) | Diinisialisasi oleh `pkg/application` saat startup. |
+| `generator` | Mem-parse sumber Go untuk membangun **metadata binding** yang kemudian menghasilkan file stub TypeScript/JS dan konstanta event. Entry point: `generator.Generate` / `generator.Generator` di atas `collect/` + `render/`. | Dipicu oleh `wails3 generate bindings`. |
+| `packager` | Wrapper `nfpm` untuk memancarkan artefak Linux `deb`/`rpm`/`archlinux` (didorong oleh konfig nfpm `myapp.DEB`/`.RPM`/`.ARCHLINUX` di bawah `internal/commands/`). | Dipanggil oleh `wails3 tool package`. macOS DMG / Windows MSIX ada di bawah `internal/commands/{dmg,msix.go,webview2/}`. |
+
+Utilitas pendukung (mis. `s/`, `hash/`, `flags/`) menjaga concern internal tetap terpisah.
+
+---
+
+## `pkg/` – API Publik
+
+```
+pkg/
+├── application/  # API inti: App, window, menu, dialog, event, manager
+├── events/       # Konstanta event (Common/Mac/Windows/Linux) + generator
+├── services/     # Service bawaan opsional (notifications, kvstore, …)
+├── doctor-ng/    # Pemeriksaan `wails3 doctor-ng` gaya baru
+├── errs/         # Tipe error bersama
+├── icons/        # Ikon platform default
+├── mac/          # Helper khusus macOS
+└── w32/          # Helper Win32 Windows
+```
+
+> Tidak ada paket `pkg/runtime/`, `pkg/options/` atau `pkg/menu/`. Opsi
+> window/menu ada di samping `pkg/application` (mis. `WebviewWindowOptions`, `Menu`,
+> `MenuItem`), dan `assetserver/` ada di bawah `internal/`.
+
+`pkg/application` mem-bootstrap program Wails:
+
+```go
+func main() {
+    app := application.New(application.Options{
+        Name: "MyApp",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assetsFS),
+        },
+    })
+    window := app.Window.New()
+    window.SetTitle("Hello").SetSize(1024, 768)
+    _ = app.Run()
+}
+```
+
+Di balik layar:
+
+1. Menyambungkan glue build-tag `internal/runtime` dan kode per-OS di `pkg/application/`
+2. Menyiapkan instance `internal/assetserver`
+3. Mendaftarkan processor pesan berbasis binding
+4. Memasuki main thread OS
+
+---
+
+## `internal/templates/` – Blueprint Scaffolding
+
+`internal/templates/` mengirim **template dasar** (layout Go di bawah `base/`,
+`_common/`, `ios/`) dan **skin frontend** (`vanilla[-ts]`, `react[-ts]`,
+`react-swc[-ts]`, `lit[-ts]`, `preact[-ts]`, `qwik[-ts]`, `solid[-ts]`,
+`svelte[-ts]`, `sveltekit[-ts]`, `vue[-ts]`).
+
+Saat `wails3 init -t react`, CLI:
+
+1. Menyalin file Go `_common`
+2. Menggabungkan pak frontend yang diinginkan
+3. Menjalankan `go mod tidy` (dapat dilewati dengan `--skipgomodtidy`)
+
+Mengedit template **tidak** memengaruhi aplikasi yang sudah ada, hanya `init` mendatang. Contoh publik yang sebelumnya ada di bawah `v3/examples/` telah
+dihapus dari pohon — lihat https://github.com/wailsapp/wails/tree/master/v3
+untuk aplikasi contoh kanonik saat dipublikasikan ulang.
+
+---
+
+## `tasks/` – Otomasi Release
+
+Taskfile membungkus cross-compilation kompleks, version bumping, dan generasi
+changelog. Dikonsumsi secara programatik oleh `internal/commands/task.go`
+sehingga logika yang sama menggerakkan **CLI** dan **CI**.
+
+---
+
+## Bagaimana Bagian-Bagian Berinteraksi
+
+```d2
+direction: down
+CLI: "wails3 CLI"
+Generator: "internal/generator"
+AssetDev: "assetserver (dev)"
+Packager: "internal/packager"
+AppRuntime: {
+  label: "App runtime"
+  ApplicationPkg: "pkg.application"
+  InternalRuntime: "internal.runtime"
+  OSAPIs: "OS APIs"
+}
+CLI -> Generator: "build / generate"
+CLI -> AssetDev: "dev"
+CLI -> Packager: "package"
+Generator -> ApplicationPkg: "bindings"
+ApplicationPkg -> InternalRuntime
+InternalRuntime -> OSAPIs
+ApplicationPkg -> AssetDev
+```
+
+*CLI → generator → runtime* membentuk jalur inti dari **sumber** ke **aplikasi
+desktop yang berjalan**.
+
+---
+
+## Tips Orientasi
+
+| Perlu memahami… | Lihat… |
+|-----------------|----------|
+| Platform shim | `pkg/application/*_darwin.go`, `*_linux.go`, `*_windows.go` (window, clipboard, dialogs, systray, mainthread, events_common). Linux cgo: `pkg/application/linux_cgo*.go`. |
+| Protokol bridge | `pkg/application/messageprocessor*.go` |
+| Alur kerja asset | `internal/assetserver/` (`build_dev.go` vs `build_production.go`) |
+| Alur packaging | `internal/commands/{appimage,msix,dot_desktop,dmg/}.go`, `internal/packager/` |
+| Engine template | `internal/templates/` (`templates.Install`, `templates.GetDefaultTemplates`) |
+| Analisis statis | `internal/generator/{generate.go,collect/,render/}` |
+
+---
+
+Anda sekarang memiliki **peta mental** repository.  
+Gunakan bersama `ripgrep`, "Go to File/Symbol" IDE Anda, dan aplikasi contoh untuk
+menavigasi lebih dalam ke fitur apa pun. Happy hacking!

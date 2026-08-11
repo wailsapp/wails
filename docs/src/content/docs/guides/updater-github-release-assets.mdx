@@ -1,0 +1,71 @@
+---
+title: GitHub Release Assets for the Updater
+description: How the Wails updater selects application artifacts from GitHub Releases and avoids installer packages.
+---
+
+The GitHub Releases provider selects a release asset using the configured `AssetMatcher`. When `AssetMatcher` is `nil`, it uses `github.DefaultAssetMatcher`.
+
+## Default matching
+
+The default matcher looks for the current platform and architecture in each asset filename. It recognises common architecture aliases, including:
+
+- `amd64`, `x86_64`, and `x64`
+- `arm64` and `aarch64`
+- `386`, `i386`, `x86`, and `ia32`
+
+Sidecar files such as signatures and checksums are ignored.
+
+## Installer assets
+
+A GitHub Release may contain both the application binary used by the updater and a conventional installer intended for first-time installation. The default matcher ignores assets whose lowercase filename:
+
+- contains `-installer.`
+- contains `_installer.`
+- is exactly `installer.exe`
+
+For example, given these Windows assets:
+
+```text
+myapp-windows-amd64.exe
+myapp-windows-amd64-installer.exe
+```
+
+`DefaultAssetMatcher` selects `myapp-windows-amd64.exe` and ignores the installer. This prevents the updater from replacing the running application with an NSIS or similarly packaged installer executable.
+
+The check is deliberately narrow. Application names that merely contain the word `installer` remain valid, including:
+
+```text
+myinstaller.exe
+installer-tool-windows-amd64.exe
+myinstaller-windows-amd64.zip
+```
+
+## Custom naming schemes
+
+Configure `AssetMatcher` when your release assets do not follow the platform-and-architecture naming convention, or when you need different installer filtering:
+
+```go
+import (
+    "strings"
+
+    "github.com/wailsapp/wails/v3/pkg/updater"
+    "github.com/wailsapp/wails/v3/pkg/updater/providers/github"
+)
+
+gh, err := github.New(github.Config{
+    Repository: "myorg/myapp",
+    AssetMatcher: func(req updater.CheckRequest, assets []github.ReleaseAsset) int {
+        for i, asset := range assets {
+            name := strings.ToLower(asset.Name)
+            if strings.Contains(name, req.Platform) &&
+                strings.Contains(name, req.Arch) &&
+                !strings.Contains(name, "-setup.") {
+                return i
+            }
+        }
+        return -1
+    },
+})
+```
+
+A custom matcher completely replaces `DefaultAssetMatcher`, so it is responsible for excluding signatures, checksums, installers, and any other assets that should not be installed as an application update.

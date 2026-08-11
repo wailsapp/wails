@@ -117,6 +117,72 @@ func TestExpandTemplates(t *testing.T) {
 	require.Equal(t, "hello world", result)
 }
 
+func TestResolveIncludesInjectsTopLevelVarsIntoClonedTasks(t *testing.T) {
+	// Regression test: included file's top-level vars (e.g. CROSS_IMAGE) must be
+	// available in each cloned task's Vars map so preconditions and commands that
+	// reference {{.CROSS_IMAGE}} expand correctly at execution time.
+	dir := t.TempDir()
+
+	subDir := filepath.Join(dir, "sub")
+	require.NoError(t, os.MkdirAll(subDir, 0755))
+
+	require.NoError(t, os.WriteFile(filepath.Join(subDir, "Taskfile.yml"), []byte(`
+version: "3"
+vars:
+  CROSS_IMAGE: wails-cross
+  STATIC_VAR: from-include
+
+tasks:
+  build:
+    cmds:
+      - echo build
+  build:docker:
+    vars:
+      OWN_VAR: own-value
+    cmds:
+      - docker run {{.CROSS_IMAGE}}
+`), 0644))
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "Taskfile.yml"), []byte(`
+version: "3"
+includes:
+  linux:
+    taskfile: ./sub/Taskfile.yml
+tasks:
+  main:
+    cmds:
+      - echo main
+`), 0644))
+
+	tf, err := Parse(filepath.Join(dir, "Taskfile.yml"))
+	require.NoError(t, err)
+	require.NoError(t, ResolveIncludes(tf))
+
+	// Both cloned tasks must carry the included file's top-level vars.
+	buildTask, ok := tf.Tasks["linux:build"]
+	require.True(t, ok, "linux:build must exist after include resolution")
+	require.Contains(t, buildTask.Vars, "CROSS_IMAGE", "top-level included var must propagate to linux:build")
+	require.Equal(t, "wails-cross", buildTask.Vars["CROSS_IMAGE"].Static)
+
+	dockerTask, ok := tf.Tasks["linux:build:docker"]
+	require.True(t, ok, "linux:build:docker must exist after include resolution")
+	require.Contains(t, dockerTask.Vars, "CROSS_IMAGE", "top-level included var must propagate to linux:build:docker")
+	require.Equal(t, "wails-cross", dockerTask.Vars["CROSS_IMAGE"].Static)
+
+	// Task-level vars must take precedence over included file's top-level vars.
+	require.Contains(t, dockerTask.Vars, "OWN_VAR", "task-level vars must be retained")
+	require.Equal(t, "own-value", dockerTask.Vars["OWN_VAR"].Static)
+
+	// The injected vars must be deep-copied, not shared by pointer across cloned
+	// tasks: later in-place mutation (ResolveVars/ResolveAllVarShells) of one
+	// task's vars must not leak into the others that share the included file.
+	require.NotSame(t, buildTask.Vars["CROSS_IMAGE"], dockerTask.Vars["CROSS_IMAGE"],
+		"injected included vars must not be shared by pointer across cloned tasks")
+	buildTask.Vars["CROSS_IMAGE"].Static = "mutated"
+	require.Equal(t, "wails-cross", dockerTask.Vars["CROSS_IMAGE"].Static,
+		"mutating one cloned task's var must not affect another's")
+}
+
 func TestPopulateBuiltins(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "Taskfile.yml")

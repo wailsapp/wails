@@ -3,7 +3,7 @@
 package application
 
 import (
-	"github.com/go-git/go-git/v5"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"path/filepath"
@@ -53,12 +53,8 @@ func (a *App) logStartup() {
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
-		repo, err := git.PlainOpen(filepath.Join(wailsPackage.Replace.Path, ".."))
-		if err == nil {
-			head, err := repo.Head()
-			if err == nil {
-				wailsVersion += " (" + head.Hash().String()[:8] + ")"
-			}
+		if hash, err := git.HeadHash(filepath.Join(wailsPackage.Replace.Path, "..")); err == nil {
+			wailsVersion += " (" + hash + ")"
 		}
 	}
 	args = append(args, "Wails", wailsVersion)

@@ -3,10 +3,6 @@ title: クレジット
 description: Wailsを支える貢献者およびプロジェクトへの謝辞
 ---
 
-{/* 自動生成された貢献者ファイルのインポート */}
-
-import Contributors from "../../../assets/contributors.html";
-
 - [Lea Anthony](https://github.com/leaanthony) - プロジェクトオーナー、リード開発者
 - [Stffabi](https://github.com/stffabi) - テクニカルリード、開発者およびメンテナー
 - [Travis McLane](https://github.com/tmclane) - クロスコンパイル作業、MacOS テスト
@@ -24,11 +20,15 @@ import Contributors from "../../../assets/contributors.html";
         alt="ZSA"
     />
 </a>
-<img
-  src="https://wails.io/img/sponsors.svg"
-  style={{ margin: "auto", width: "100%", "max-width": "1600px;" }}
-  alt="Sponsors"
-/>
+{/* object (not img) so the per-sponsor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/sponsors.svg"
+  aria-label="Sponsors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/sponsors.svg" alt="Sponsors" style={{ width: "100%" }} />
+</object>
 特別感謝:
 <img
   src="/sponsors/jetbrains-grayscale.webp"
@@ -38,7 +38,15 @@ import Contributors from "../../../assets/contributors.html";
 
 ## 貢献者
 
-<Contributors />
+{/* object (not img) so the per-contributor links and hover effects inside the SVG work */}
+<object
+  type="image/svg+xml"
+  data="https://wails.io/img/contributors.svg"
+  aria-label="Wails contributors"
+  style={{ margin: "auto", width: "100%", maxWidth: "800px" }}
+>
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style={{ width: "100%" }} />
+</object>
 
 ## 特別言及
 

@@ -3,6 +3,12 @@ on:
     branches: ['master']
     paths:
       - 'v3/internal/runtime/desktop/@wailsio/runtime/**'
+      # Self-heal: if bundle bytes ever change on master without a matching
+      # source change, this rebuild overwrites them with source-derived output.
+      - 'v3/internal/assetserver/bundledassets/**'
+      # The runtime version is derived from this file, so a release that moves
+      # it must trigger a publish.
+      - 'v3/internal/version/version.txt'
       - '.github/workflows/publish-npm.yml'
   workflow_dispatch:
 
@@ -13,7 +19,7 @@ concurrency:
 jobs:
   detect:
     name: Detect committed changes
-    if: github.event_name != 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails' && github.event_name != 'workflow_dispatch'
     outputs:
       changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
     runs-on: ubuntu-latest
@@ -43,6 +49,8 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/compiled/main.js
             v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
             v3/internal/runtime/desktop/@wailsio/runtime/src/**
+            v3/internal/assetserver/bundledassets/**
+            v3/internal/version/version.txt
             v3/pkg/events/events.txt
             v3/tasks/events/**
 
@@ -50,13 +58,15 @@ jobs:
     name: Rebuild and publish
     needs: [detect]
     if: >-
-      !failure() && !cancelled()
+      github.repository == 'wailsapp/wails'
+      && !failure() && !cancelled()
       && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: write
       actions: read
       pull-requests: read
+      id-token: write # Required for npm Trusted Publishing (OIDC) + provenance
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -77,10 +87,16 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
+
+      - name: Upgrade npm for Trusted Publishing
+        # Trusted Publishing (OIDC) requires npm >= 11.5.1.
+        run: |
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
@@ -102,21 +118,102 @@ jobs:
           npm test
           npm run build
 
-      - name: Bump version
+      - name: Verify generated artifacts
+        # Fail the publish if (re)generation did not produce the expected
+        # outputs — both the npm package payload (dist/, gitignored, what gets
+        # published) and the tracked bundled runtime that is committed back to
+        # master below. A missing/empty file here means a silent build failure.
+        working-directory: v3
+        run: |
+          set -euo pipefail
+          required=(
+            "internal/assetserver/bundledassets/runtime.js"
+            "internal/assetserver/bundledassets/runtime.debug.js"
+            "internal/runtime/desktop/@wailsio/runtime/dist/runtime.js"
+          )
+          for f in "${required[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::expected generated artifact missing or empty: v3/$f"
+              exit 1
+            fi
+          done
+          echo "All expected runtime artifacts were generated."
+
+      - name: Set version from the CLI version file
         id: bump-version
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        # The npm package version is taken from v3/internal/version/version.txt,
+        # the same file go:embed puts into the CLI, so the runtime and the CLI
+        # always report the same version.
+        #
+        # This replaces `npm version prerelease`, which incremented the trailing
+        # numeric identifier with no knowledge of the release channel. That is
+        # how the two version series drifted apart: the CLI moved alpha ->
+        # alpha2 -> beta while npm kept counting alpha.N, so a beta CLI shipped
+        # next to an "alpha" runtime and every upgrading user had to be told
+        # that the mismatch was expected.
         run: |
-          echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < v3/internal/version/version.txt)"
+          VERSION="${VERSION#v}"
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::v3/internal/version/version.txt is empty"
+            exit 1
+          fi
+          cd v3/internal/runtime/desktop/@wailsio/runtime
+          npm --no-git-tag-version --allow-same-version version "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Runtime version set to $VERSION (from version.txt)"
 
-      - name: Commit changes
+      - name: Skip publish if this version is already on npm
+        id: already-published
+        # Lockstep means the version only moves when version.txt moves, so a run
+        # triggered by a runtime source change between releases would otherwise
+        # try to republish an existing version and fail. Regenerated assets are
+        # still committed below; only the publish is skipped.
         run: |
-          git add .
+          set -euo pipefail
+          VERSION="${{ steps.bump-version.outputs.version }}"
+          if npm view "@wailsio/runtime@${VERSION}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@wailsio/runtime@${VERSION} is already on npm; skipping publish. It will publish when version.txt next moves."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit regenerated runtime + version bump
+        # Commit ALL regenerated tracked files back to master, not just the
+        # version bump: the bundled runtime (internal/assetserver/bundledassets),
+        # generated events (v3/pkg/events/events.go) and TypeDoc output all come
+        # from `task runtime:build` and must stay in sync with the published
+        # package. dist/ is gitignored, so `git add -A` will not commit it.
+        run: |
+          git add -A
+          echo "Files committed back to master:"
+          git status --short
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
-          git push
+          # master moves while this job runs (nightly release, auto-changelog
+          # commits), so a bare push races and gets rejected — which aborts the
+          # job before `npm publish` and leaves npm stale. Rebase and retry;
+          # a real conflict still fails loudly without publishing.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "push rejected (attempt ${attempt}); rebasing onto current master"
+            git pull --rebase origin master
+            sleep $(( attempt * 5 ))
+          done
+          echo "::error::could not push the version bump after 5 attempts"
+          exit 1
 
-      - name: Publish npm package
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          package: v3/internal/runtime/desktop/@wailsio/runtime
-          access: public
-          token: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm package (Trusted Publishing / OIDC)
+        # No NODE_AUTH_TOKEN/NPM_TOKEN: npm exchanges the GitHub OIDC token for a
+        # short-lived publish credential. Provenance is attached automatically.
+        # Requires a Trusted Publisher to be configured for @wailsio/runtime on
+        # npmjs.com (repo: wailsapp/wails, workflow: publish-npm.yml).
+        if: steps.already-published.outputs.published != 'true'
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        # --tag latest: v3 ships prereleases as the default dist-tag, matching
+        # the templates' "@wailsio/runtime": "latest" pin. npm >= 11 requires an
+        # explicit --tag to publish a prerelease as latest.
+        run: npm publish --access public --tag latest

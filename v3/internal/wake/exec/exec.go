@@ -205,8 +205,17 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	if err := checkPreconditions(task); err != nil {
-		return err
+	// Preconditions are templated against the task's resolved vars (their `sh:`
+	// guards reference vars like .OBFUSCATED), so they need the merged map and
+	// must run before the up-to-date short-circuit below. Compute the map
+	// lazily: tasks without preconditions that turn out to be up-to-date skip
+	// the fixed-point expansion entirely.
+	var mergedVars map[string]*ast.Var
+	if len(task.Precondition) > 0 {
+		mergedVars = e.mergeVars(task, depVars)
+		if err := checkPreconditions(task, mergedVars); err != nil {
+			return err
+		}
 	}
 
 	if !e.Force && isUpToDate(task, e.Dir) {
@@ -215,7 +224,9 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	mergedVars := e.mergeVars(task, depVars)
+	if mergedVars == nil {
+		mergedVars = e.mergeVars(task, depVars)
+	}
 
 	// depRuns is shared across goroutines once the parallel dep fanout is
 	// in flight, so take e.mu for both the lazy-init and every read/write.

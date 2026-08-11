@@ -312,7 +312,11 @@ app := application.New(application.Options{
         // Save application state
         saveState()
 
-        // Close connections----------|--------------------------------|
+        // Close connections
+```
+
+| Plattform | Standard beim Schließen des letzten Fensters |
+|-----------|----------------------------------------------|
 | macOS | App bleibt aktiv (Menüleiste bleibt erhalten) |
 | Windows | App beendet sich |
 | Linux | App beendet sich |

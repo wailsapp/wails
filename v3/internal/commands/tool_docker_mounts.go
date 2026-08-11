@@ -8,27 +8,41 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"golang.org/x/mod/modfile"
 )
 
 // DockerMountsOptions holds options for the docker-mounts command.
 type DockerMountsOptions struct{}
 
-// HasCCOptions holds options for the has-cc command.
+// HasOptions holds options for the has command.
+type HasOptions struct {
+	Tool string `pos:"1" name:"tool" description:"Tool(s) to check for in PATH. Use | to check for any of multiple tools (e.g. gcc|clang)"`
+}
+
+// HasCCOptions holds options for the deprecated has-cc command.
 type HasCCOptions struct{}
 
-// ToolHasCC checks if a C compiler (gcc or clang) is available in PATH.
-// Outputs "true" or "false" for use in Taskfile sh: variables, replacing the
-// bash-only `command -v gcc` pattern which fails on Windows.
+// ToolHasCC is a deprecated alias for `wails3 tool has gcc|clang`.
 func ToolHasCC(_ *HasCCOptions) error {
+	buildwarnings.Add("tool has-cc", "wails3 tool has-cc is deprecated; update your Taskfile to use: wails3 tool has gcc|clang")
+	return ToolHas(&HasOptions{Tool: "gcc|clang"})
+}
+
+// ToolHas checks if a given tool (or any of several pipe-separated tools) is available in PATH.
+// Outputs "true" or "false" for use in Taskfile sh: variables.
+func ToolHas(opts *HasOptions) error {
 	DisableFooter = true
-	_, gccErr := exec.LookPath("gcc")
-	_, clangErr := exec.LookPath("clang")
-	if gccErr == nil || clangErr == nil {
-		fmt.Print("true")
-	} else {
-		fmt.Print("false")
+	if opts == nil || strings.TrimSpace(opts.Tool) == "" {
+		return fmt.Errorf("missing argument: specify a tool name (e.g. wails3 tool has gcc|clang)")
 	}
+	for _, name := range strings.Split(opts.Tool, "|") {
+		if _, err := exec.LookPath(strings.TrimSpace(name)); err == nil {
+			fmt.Print("true")
+			return nil
+		}
+	}
+	fmt.Print("false")
 	return nil
 }
 

@@ -77,14 +77,21 @@ var (
 )
 
 var (
-	gtkSignalToMenuItem map[uint]*MenuItem
-	mainThreadId        *C.GThread
+	// gtkSignalToMenuItem is written by attachMenuHandler from whichever
+	// goroutine builds the menu and read by menuActionActivated on the GTK
+	// main thread, so it must be lock-protected.
+	gtkSignalToMenuItem     map[uint]*MenuItem
+	gtkSignalToMenuItemLock sync.RWMutex
+	mainThreadId            *C.GThread
 )
 
 var (
-	registerURIScheme sync.Once
-	fixSignalHandlers sync.Once
+	registerURIScheme  sync.Once
+	fixSignalHandlers  sync.Once
+	framelessWindowCSS sync.Once
 )
+
+const framelessWindowClass = "wails-frameless"
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -127,8 +134,12 @@ func isOnMainThread() bool {
 
 // implementation below
 func appName() string {
+	// The returned string is owned by GLib (it must not be modified or freed)
+	// and may be NULL if no application name has been set.
 	name := C.g_get_application_name()
-	defer C.free(unsafe.Pointer(name))
+	if name == nil {
+		return ""
+	}
 	return C.GoString(name)
 }
 
@@ -155,6 +166,11 @@ func appRun(app pointer) error {
 	defer C.free(unsafe.Pointer(signal))
 	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, 0)
 	status := C.g_application_run(application, 0, nil)
+	// The GTK main loop has stopped. Tell the asset-server webview layer to stop
+	// marshalling WebKit calls onto it, so any request still being completed on a
+	// worker goroutine runs inline instead of blocking on a loop that is gone.
+	// See #5631.
+	webview.DisableMainThreadDispatch()
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
 
@@ -201,14 +217,12 @@ func (a *linuxApp) getCurrentWindowID() uint {
 
 func (a *linuxApp) getWindows() []pointer {
 	result := []pointer{}
+	// gtk_application_get_windows returns NULL when there are no windows.
 	windows := C.gtk_application_get_windows((*C.GtkApplication)(a.application))
-	for {
+	for ; windows != nil; windows = windows.next {
 		result = append(result, pointer(windows.data))
-		windows = windows.next
-		if windows == nil {
-			return result
-		}
 	}
+	return result
 }
 
 func (a *linuxApp) hideAllWindows() {
@@ -249,21 +263,36 @@ func clipboardSet(text string) {
 
 // Menu - GTK4 uses GMenu/GAction instead of GtkMenu
 
+// menuItemActions is written during menu construction (any goroutine) and read
+// from API goroutines (setChecked/setDisabled/accelerators), so it shares a
+// lock with its counter.
 var menuItemActionCounter uint32 = 0
 var menuItemActions = make(map[uint]string)
+var menuItemActionsLock sync.RWMutex
 var menuItemIds = make(map[pointer]uint)
 var menuItemIdsMutex sync.RWMutex
 
 func generateActionName(itemId uint) string {
+	menuItemActionsLock.Lock()
+	defer menuItemActionsLock.Unlock()
 	menuItemActionCounter++
 	name := fmt.Sprintf("action_%d", menuItemActionCounter)
 	menuItemActions[itemId] = name
 	return name
 }
 
+func lookupActionName(itemId uint) (string, bool) {
+	menuItemActionsLock.RLock()
+	defer menuItemActionsLock.RUnlock()
+	name, ok := menuItemActions[itemId]
+	return name, ok
+}
+
 //export menuActionActivated
 func menuActionActivated(id C.guint) {
+	gtkSignalToMenuItemLock.RLock()
 	item, ok := gtkSignalToMenuItem[uint(id)]
+	gtkSignalToMenuItemLock.RUnlock()
 	if !ok {
 		return
 	}
@@ -347,6 +376,24 @@ func menuAppend(parent *Menu, menu *MenuItem, hidden bool) {
 	}
 }
 
+// menuClear removes every item from the menu's native GMenu so that it can be
+// rebuilt from scratch on Menu.Update() (#5464). The per-menu append counter is
+// reset too, so rebuilt items get fresh 0-based positions (menuIndex is used by
+// menu_remove_item for hide/show). This mirrors the GTK3/purego menuClear.
+func menuClear(menu *Menu) {
+	if menu.impl == nil {
+		return
+	}
+	impl := menu.impl.(*linuxMenu)
+	if impl.native == nil {
+		return
+	}
+	C.g_menu_remove_all((*C.GMenu)(impl.native))
+	menuItemCountersLock.Lock()
+	delete(menuItemCounters, impl.native)
+	menuItemCountersLock.Unlock()
+}
+
 func menuBarNew() pointer {
 	gmenu := C.g_menu_new()
 	C.set_app_menu_model(gmenu)
@@ -380,7 +427,9 @@ func handleClick(idPtr unsafe.Pointer) {
 }
 
 func attachMenuHandler(item *MenuItem) uint {
+	gtkSignalToMenuItemLock.Lock()
 	gtkSignalToMenuItem[item.id] = item
+	gtkSignalToMenuItemLock.Unlock()
 	return item.id
 }
 
@@ -394,7 +443,7 @@ func menuItemChecked(widget pointer) bool {
 	if !exists {
 		return false
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return false
 	}
@@ -480,7 +529,7 @@ func menuItemSetChecked(widget pointer, checked bool) {
 	if !exists {
 		return
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -503,7 +552,7 @@ func menuItemSetDisabled(widget pointer, disabled bool) {
 	if !exists {
 		return
 	}
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -691,7 +740,7 @@ func setMenuItemAccelerator(itemId uint, accel *accelerator) {
 	}
 
 	// Look up the action name for this menu item
-	actionName, ok := menuItemActions[itemId]
+	actionName, ok := lookupActionName(itemId)
 	if !ok {
 		return
 	}
@@ -1065,13 +1114,15 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
-	var width, height C.int
-	C.gtk_window_get_default_size(w.gtkWindow(), &width, &height)
-	if width <= 0 || height <= 0 {
-		width = C.int(C.gtk_widget_get_width(w.gtkWidget()))
-		height = C.int(C.gtk_widget_get_height(w.gtkWidget()))
+	width := int(C.gtk_widget_get_width(w.gtkWidget()))
+	height := int(C.gtk_widget_get_height(w.gtkWidget()))
+	if width > 0 && height > 0 {
+		return width, height
 	}
-	return int(width), int(height)
+
+	var defaultWidth, defaultHeight C.int
+	C.gtk_window_get_default_size(w.gtkWindow(), &defaultWidth, &defaultHeight)
+	return int(defaultWidth), int(defaultHeight)
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
@@ -1115,6 +1166,17 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew). On GTK4 that only
+	// happens after the application's "activate" signal fires: WebviewWindow.Run
+	// sets w.impl and then blocks in waitForActivation *before* creating the
+	// widget, so there is a startup window in which w.impl != nil but w.window is
+	// still NULL. A window whose widget does not exist yet is, by definition, not
+	// visible; without this guard a visibility poll during that gap calls
+	// gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion and
+	// returns false anyway.
+	if w.window == nil {
+		return false
+	}
 	return C.gtk_widget_is_visible(w.gtkWidget()) != 0
 }
 
@@ -1161,6 +1223,17 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	c := NewCalloc()
 	defer c.Free()
 	manager := C.webkit_user_content_manager_new()
+	linuxBlobBodyShimSource := C.CString(linuxBlobBodyFetchShimJS)
+	linuxBlobBodyShim := C.webkit_user_script_new(
+		linuxBlobBodyShimSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
+	C.webkit_user_script_unref(linuxBlobBodyShim)
+	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
 	// WebKitGTK 6.0: register_script_message_handler signature changed
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"), nil)
 
@@ -1260,6 +1333,7 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
@@ -1305,6 +1379,34 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
+
+	className := C.CString(framelessWindowClass)
+	defer C.free(unsafe.Pointer(className))
+
+	if frameless {
+		display := C.gdk_display_get_default()
+		if display != nil {
+			framelessWindowCSS.Do(func() {
+				provider := C.gtk_css_provider_new()
+				css := C.CString("." + framelessWindowClass + " { border-radius: 0; }")
+				defer C.free(unsafe.Pointer(css))
+
+				C.gtk_css_provider_load_from_string(provider, css)
+				C.gtk_style_context_add_provider_for_display(
+					display,
+					(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
+					C.GTK_STYLE_PROVIDER_PRIORITY_APPLICATION,
+				)
+				C.g_object_unref(C.gpointer(provider))
+			})
+
+			C.gtk_widget_add_css_class(w.gtkWidget(), className)
+		}
+	} else {
+		C.gtk_widget_remove_css_class(w.gtkWidget(), className)
+	}
+
+	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
@@ -1457,6 +1559,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(wv, c.String("permission-request"), C.handlePermissionRequest, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, 0)
@@ -1468,8 +1571,8 @@ func handleCloseRequest(window *C.GtkWindow, data C.uintptr_t) C.gboolean {
 	return C.gboolean(1)
 }
 
-//export handleNotifyState
-func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t) {
+//export handleSurfaceSizeChanged
+func handleSurfaceSizeChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
 	windowId := uint(data)
 	window, ok := globalApplication.Window.GetByID(windowId)
 	if !ok || window == nil {
@@ -1481,11 +1584,45 @@ func handleNotifyState(object *C.GObject, pspec *C.GParamSpec, data C.uintptr_t)
 		return
 	}
 
-	if lw.isMaximised() {
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	width := int(C.gdk_surface_get_width(surface))
+	height := int(C.gdk_surface_get_height(surface))
+	if lw.lastWidth == width && lw.lastHeight == height {
+		return
 	}
-	if lw.isFullscreen() {
+	lw.lastWidth = width
+	lw.lastHeight = height
+	lw.resizeDebouncer(func() {
 		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+	})
+}
+
+//export handleSurfaceStateChanged
+func handleSurfaceStateChanged(object *C.GObject, _ *C.GParamSpec, data C.uintptr_t) {
+	windowID := uint(data)
+	window, ok := globalApplication.Window.GetByID(windowID)
+	if !ok || window == nil {
+		return
+	}
+
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
+		return
+	}
+
+	surface := (*C.GdkSurface)(unsafe.Pointer(object))
+	state := C.gdk_toplevel_get_state((*C.GdkToplevel)(unsafe.Pointer(surface)))
+	current := linuxWindowState{
+		minimised:  state&C.GDK_TOPLEVEL_STATE_MINIMIZED != 0,
+		maximised:  state&C.GDK_TOPLEVEL_STATE_MAXIMIZED != 0,
+		fullscreen: state&C.GDK_TOPLEVEL_STATE_FULLSCREEN != 0,
+	}
+	stateEvents := changedLinuxWindowStateEvents(lw.windowState, current, lw.stateObserved)
+	lw.windowState = current
+	lw.stateObserved = true
+
+	for _, eventType := range stateEvents {
+		processWindowEvent(C.uint(data), C.uint(eventType))
 	}
 }
 
@@ -1499,6 +1636,25 @@ func handleFocusEnter(controller *C.GtkEventController, data C.uintptr_t) C.gboo
 func handleFocusLeave(controller *C.GtkEventController, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
 	return C.gboolean(0)
+}
+
+//export handlePermissionRequest
+func handlePermissionRequest(wv *C.WebKitWebView, request *C.WebKitPermissionRequest, data C.uintptr_t) C.gboolean {
+	// WebKitGTK denies any permission request nobody handles, so without this
+	// getUserMedia always fails with NotAllowedError. Honour the window's
+	// Permissions for camera/microphone; leave every other request to WebKit's
+	// default handling (deny).
+	if C.is_user_media_permission_request(request) == 0 {
+		return C.gboolean(0)
+	}
+	needAudio := C.is_user_media_for_audio(request) != 0
+	needVideo := C.is_user_media_for_video(request) != 0
+	if allowMediaCapture(uint(data), needAudio, needVideo) {
+		C.webkit_permission_request_allow(request)
+	} else {
+		C.webkit_permission_request_deny(request)
+	}
+	return C.gboolean(1)
 }
 
 //export handleLoadChanged
@@ -1737,15 +1893,26 @@ func fileDialogCallback(requestID C.uint, files **C.char, count C.int, cancelled
 		return
 	}
 
+	// Copy the C strings before this callback returns: the caller frees them.
+	var paths []string
 	if count > 0 && files != nil {
 		slice := unsafe.Slice(files, int(count))
 		for _, cstr := range slice {
 			if cstr != nil {
-				ch <- C.GoString(cstr)
+				paths = append(paths, C.GoString(cstr))
 			}
 		}
 	}
-	close(ch)
+
+	// Deliver from a goroutine: this callback runs on the GTK main thread and
+	// the result channel has a fixed buffer, so sending inline would block the
+	// main loop (deadlocking the app) once a selection exceeds the buffer.
+	go func() {
+		for _, path := range paths {
+			ch <- path
+		}
+		close(ch)
+	}()
 }
 
 //export alertDialogCallback

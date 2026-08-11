@@ -176,8 +176,11 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 		return m.renderType(typ.Underlying(), quoted)
 	}
 
-	// Special case: application.Void renders as TS void
-	if m.collector.IsVoidAlias(typ.Obj()) {
+	// Handle special cases.
+	switch {
+	case m.collector.IsStdTime(typ.Obj()):
+		return m.TimeType, false
+	case m.collector.IsVoidAlias(typ.Obj()):
 		return "void", false
 	}
 

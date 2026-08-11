@@ -1,0 +1,210 @@
+---
+title: Permissions
+description: Control camera, microphone, geolocation and other capability requests from web content
+sidebar:
+  order: 3
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Web content that calls `navigator.mediaDevices.getUserMedia()`, the Geolocation API, or the Notifications API needs the host application to grant or deny those requests. Wails exposes a cross-platform `Permissions` map on `WebviewWindowOptions` that lets you control this declaratively — no platform-specific code required.
+
+## Quick Start
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "My App",
+    Permissions: map[application.PermissionType]application.Permission{
+        application.PermissionMicrophone: application.PermissionAllow,
+        application.PermissionCamera:     application.PermissionAllow,
+    },
+})
+```
+
+Camera and microphone requests from that window's web content are granted without a browser prompt.
+
+## Permission Types
+
+`PermissionType` (uint8) identifies a capability that web content can request.
+
+| Constant | Capability |
+|---|---|
+| `PermissionMicrophone` | `getUserMedia({audio: true})` |
+| `PermissionCamera` | `getUserMedia({video: true})` |
+| `PermissionGeolocation` | `navigator.geolocation` |
+| `PermissionNotifications` | `Notification.requestPermission()` |
+| `PermissionClipboardRead` | `navigator.clipboard.readText()` |
+
+## Permission Values
+
+`Permission` (uint8) is the policy applied to a given type.
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `PermissionDefault` | 0 | Use the platform's native handling (see below) |
+| `PermissionAllow` | 1 | Grant without prompting |
+| `PermissionDeny` | 2 | Deny without prompting |
+
+`PermissionDefault` is the zero value, so unset entries in the map behave as default.
+
+## Platform Behaviour
+
+Each platform handles `PermissionDefault` differently because their underlying webviews have different native behaviour.
+
+### Linux (WebKitGTK)
+
+WebKitGTK has **no native permission prompt**. Without a handler attached, it silently denies every request — which is why `getUserMedia` always returned `NotAllowedError` before this feature was added.
+
+Currently Wails handles **camera and microphone** requests on Linux. Geolocation, notifications, and clipboard read are not yet wired up and remain denied regardless of the policy you set.
+
+| Policy | Camera / Microphone | Geolocation, Notifications, Clipboard |
+|---|---|---|
+| `PermissionDefault` | **Allowed** (restores getUserMedia) | Always denied |
+| `PermissionAllow` | Allowed | Always denied (not yet implemented) |
+| `PermissionDeny` | Denied | Always denied |
+
+### Windows (WebView2)
+
+WebView2 has a native permission prompt and a per-kind permission API. All five capability types are fully supported.
+
+| Policy | Behaviour |
+|---|---|
+| `PermissionDefault` | WebView2 shows its native OS/browser permission prompt |
+| `PermissionAllow` | Granted silently |
+| `PermissionDeny` | Denied silently |
+
+**Important:** Before this feature existed, Wails called `SetGlobalPermission(Allow)` unconditionally — silently granting all capabilities. Now, when any entry is present in `Permissions`, that blanket grant is **not** set. Unset capabilities fall through to WebView2's native prompt instead of being auto-granted.
+
+This means if you configure `Permissions` at all on Windows, any capability you don't explicitly list will show a prompt rather than being silently allowed. Set the capabilities you need explicitly.
+
+### macOS (TCC)
+
+macOS manages camera, microphone, geolocation, and notification access through its system privacy framework. The OS prompt appears automatically the first time web content requests a capability, and the user's choice is remembered per-app in System Settings → Privacy & Security.
+
+This works correctly without any `Permissions` configuration. The map is **currently ignored on macOS** — all requests go through TCC regardless of what you set. The practical gap is that `PermissionDeny` has no effect on macOS: you cannot block a webview from using a capability that TCC has already granted at the system level.
+
+Ensure your `Info.plist` includes the appropriate usage description keys:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>Used for voice input</string>
+<key>NSCameraUsageDescription</key>
+<string>Used for video calls</string>
+```
+
+## Common Patterns
+
+### Media capture app
+
+Grant camera and microphone across all platforms:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionAllow,
+},
+```
+
+On **Linux** this explicitly allows both devices; other capabilities remain denied.  
+On **Windows** this allows both; any other capability you don't list will show a native prompt.  
+On **macOS** this has no effect; TCC handles everything.
+
+### Deny media capture on Linux
+
+Linux allows camera and microphone by default. To opt out:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionDeny,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+### Allow all capabilities on Windows
+
+To grant every capability without prompting:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone:    application.PermissionAllow,
+    application.PermissionCamera:        application.PermissionAllow,
+    application.PermissionGeolocation:   application.PermissionAllow,
+    application.PermissionNotifications: application.PermissionAllow,
+    application.PermissionClipboardRead: application.PermissionAllow,
+},
+```
+
+### Per-window policies
+
+Different windows can have different policies:
+
+```go
+// Main app window — full media access
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "App",
+    Permissions: map[application.PermissionType]application.Permission{
+        application.PermissionMicrophone: application.PermissionAllow,
+        application.PermissionCamera:     application.PermissionAllow,
+    },
+})
+
+// Settings window — no special capabilities
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Settings",
+    // No Permissions entry — uses platform defaults
+})
+
+// Embedded content window — deny media capture
+embeddedWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Embedded",
+    Permissions: map[application.PermissionType]application.Permission{
+        application.PermissionMicrophone: application.PermissionDeny,
+        application.PermissionCamera:     application.PermissionDeny,
+    },
+})
+```
+
+## Windows-Specific Override
+
+The per-window `Windows.Permissions` field (`map[CoreWebView2PermissionKind]CoreWebView2PermissionState`) still works and can override individual capabilities after the cross-platform map is applied. Use it when you need access to WebView2 permission kinds that have no cross-platform equivalent (e.g. `CoreWebView2PermissionKindOtherSensors`).
+
+```go
+Windows: application.WindowsWindow{
+    Permissions: map[application.CoreWebView2PermissionKind]application.CoreWebView2PermissionState{
+        application.CoreWebView2PermissionKindOtherSensors: application.CoreWebView2PermissionStateAllow,
+    },
+},
+```
+
+The evaluation order on Windows is:
+1. Cross-platform `Permissions` map (sets per-kind state via `SetPermission`)
+2. `Windows.Permissions` map (overrides individual kinds)
+3. For any kind not covered by either map: WebView2's native prompt (when a policy is configured) or auto-allow (when no policy is configured — the legacy behaviour)
+
+## Platform Support Matrix
+
+| Capability | Linux | Windows | macOS |
+|---|---|---|---|
+| Microphone | ✅ | ✅ | TCC only |
+| Camera | ✅ | ✅ | TCC only |
+| Geolocation | ❌ not yet | ✅ | TCC only |
+| Notifications | ❌ not yet | ✅ | TCC only |
+| Clipboard Read | ❌ not yet | ✅ | TCC only |
+
+## Troubleshooting
+
+**`getUserMedia` still fails on Linux after upgrading**
+
+Check that you have not explicitly set `PermissionMicrophone: PermissionDeny` or `PermissionCamera: PermissionDeny`. The default (unset) allows media capture on Linux.
+
+**Windows is prompting for permissions I didn't configure**
+
+Once any entry is present in `Permissions`, Wails no longer sets the blanket `Allow` grant. Capabilities you don't list will show WebView2's native prompt. Add explicit `PermissionAllow` entries for every capability your app uses.
+
+**macOS permissions aren't working**
+
+The `Permissions` map has no effect on macOS. Ensure your `Info.plist` includes the correct usage description keys (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc.) and that the user has granted access in System Settings → Privacy & Security.
+
+**Geolocation/notifications/clipboard have no effect on Linux**
+
+Only camera and microphone are currently handled on Linux. Support for other capability types is not yet implemented — they remain denied regardless of the policy you set.

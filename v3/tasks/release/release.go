@@ -52,7 +52,7 @@ func getUnreleasedChangelogTemplate() string {
 	return `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -502,6 +502,23 @@ func runRelease(opts releaseOptions) error {
 		return nil
 	}
 
+	// Resolve the repository and validate the token BEFORE touching any
+	// files: discovering a dead token after the version bump and changelog
+	// reset have been written (and committed) would leave local side effects
+	// even though nothing was pushed — both in CI and when run locally.
+	// Dry runs never push, so they need no token at all.
+	var repoSlug, token string
+	if !opts.dryRun {
+		repoSlug, err = resolveRepoSlug(repoDir)
+		if err != nil {
+			return fmt.Errorf("failed to determine repository slug: %w", err)
+		}
+		token, err = selectAPIToken(repoSlug)
+		if err != nil {
+			return err
+		}
+	}
+
 	originalVersionData, err := os.ReadFile(versionFile)
 	if err != nil {
 		return fmt.Errorf("failed to read version file: %w", err)
@@ -583,19 +600,6 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to commit release changes: %w", err)
 	}
 
-	repoSlug, err := resolveRepoSlug(repoDir)
-	if err != nil {
-		return fmt.Errorf("failed to determine repository slug: %w", err)
-	}
-
-	token := strings.TrimSpace(os.Getenv("WAILS_REPO_TOKEN"))
-	if token == "" {
-		token = strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
-	}
-	if token == "" {
-		return errors.New("WAILS_REPO_TOKEN (or GITHUB_TOKEN) must be set to push and create releases")
-	}
-
 	if err := git.push(opts.branch, repoSlug, token); err != nil {
 		return err
 	}
@@ -620,6 +624,80 @@ func runRelease(opts releaseOptions) error {
 	writeGitHubOutput("release_outcome", "success")
 	fmt.Println("🎉 Release completed successfully.")
 	return nil
+}
+
+// selectAPIToken picks the token used for git pushes and the GitHub REST
+// API, validating it against the API BEFORE anything is pushed. Discovering
+// a dead token after the version bump and tag have been pushed leaves a
+// half-released state (a tag with no GitHub release and a reset changelog),
+// which is exactly what happened when WAILS_REPO_TOKEN expired: git
+// operations still succeeded via the checkout step's persisted credentials,
+// then the release API call failed with 401.
+//
+// If WAILS_REPO_TOKEN fails validation and a different GITHUB_TOKEN is
+// available (the workflow passes github.token), it is used as a fallback so
+// the nightly release still ships — with a warning, since github.token
+// cannot trigger downstream workflows.
+func selectAPIToken(repoSlug string) (string, error) {
+	primary := strings.TrimSpace(os.Getenv("WAILS_REPO_TOKEN"))
+	fallback := strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
+	if primary == "" {
+		primary, fallback = fallback, ""
+	}
+	if primary == "" {
+		return "", errors.New("WAILS_REPO_TOKEN (or GITHUB_TOKEN) must be set to push and create releases")
+	}
+
+	err := validateToken(primary, repoSlug)
+	if err == nil {
+		return primary, nil
+	}
+	if fallback != "" && fallback != primary {
+		fmt.Printf("⚠️  WAILS_REPO_TOKEN failed API validation (%v) — falling back to GITHUB_TOKEN. The token is likely expired and should be rotated.\n", err)
+		if fbErr := validateToken(fallback, repoSlug); fbErr == nil {
+			return fallback, nil
+		} else {
+			return "", fmt.Errorf("WAILS_REPO_TOKEN failed validation (%v) and GITHUB_TOKEN fallback also failed: %w", err, fbErr)
+		}
+	}
+	return "", fmt.Errorf("token failed API validation before any push (nothing was released): %w", err)
+}
+
+// validateToken performs a cheap authenticated read against the repository
+// to prove the token is alive. An expired fine-grained PAT answers 401
+// "Requires authentication" here, the same way the release-creation call
+// would fail later.
+func validateToken(token, repoSlug string) error {
+	apiBase := strings.TrimSpace(os.Getenv("GITHUB_API_URL"))
+	if apiBase == "" {
+		apiBase = githubDefaultAPI
+	}
+	apiBase = strings.TrimSuffix(apiBase, "/")
+
+	endpoint := fmt.Sprintf("%s/repos/%s", apiBase, repoSlug)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create token validation request: %w", err)
+	}
+	setGitHubHeaders(req, token)
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to call GitHub API for token validation: %w", err)
+	}
+	defer resp.Body.Close()
+
+	switch {
+	case resp.StatusCode == http.StatusOK:
+		return nil
+	case resp.StatusCode == http.StatusUnauthorized:
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("GitHub API rejected the token (HTTP 401: %s) — expired or revoked?", strings.TrimSpace(string(body)))
+	default:
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("token validation returned HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	}
 }
 
 func applyChangelogUpdates(newVersion, changelogContent string) error {
@@ -652,10 +730,31 @@ func applyChangelogUpdates(newVersion, changelogContent string) error {
 	return nil
 }
 
+// releaseChannel derives the human-readable release channel from a version
+// string, e.g. "v3.0.0-beta.3" -> "Beta". It returns an empty string for
+// stable (non-prerelease) versions.
+func releaseChannel(version string) string {
+	switch {
+	case strings.Contains(version, "-beta"):
+		return "Beta"
+	case strings.Contains(version, "-rc"):
+		return "Release Candidate"
+	case strings.Contains(version, "-alpha"):
+		return "Alpha"
+	default:
+		return ""
+	}
+}
+
 func buildReleaseBody(version, changelogContent string) string {
 	trimmed := strings.TrimSpace(changelogContent)
+	channel := releaseChannel(version)
+	heading := fmt.Sprintf("## Wails v3 Release - %s", version)
+	if channel != "" {
+		heading = fmt.Sprintf("## Wails v3 %s Release - %s", channel, version)
+	}
 	sections := []string{
-		fmt.Sprintf("## Wails v3 Alpha Release - %s", version),
+		heading,
 		"",
 		trimmed,
 		"",
@@ -667,8 +766,17 @@ func buildReleaseBody(version, changelogContent string) string {
 		"```bash",
 		fmt.Sprintf("go install github.com/wailsapp/wails/v3/cmd/wails3@%s", version),
 		"```",
-		"",
-		"**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.",
+	}
+	switch channel {
+	case "Alpha":
+		sections = append(sections, "",
+			"**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.")
+	case "Beta":
+		sections = append(sections, "",
+			"**⚠️ Beta Warning:** This is pre-release software. The API is stable, but you may still encounter issues before the final 3.0 release.")
+	case "Release Candidate":
+		sections = append(sections, "",
+			"**⚠️ Release Candidate Warning:** This is pre-release software undergoing final validation before the stable release.")
 	}
 	return strings.Join(sections, "\n")
 }

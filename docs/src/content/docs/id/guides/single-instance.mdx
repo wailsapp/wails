@@ -1,0 +1,119 @@
+---
+title: Single Instance
+description: Membatasi aplikasi Anda hanya satu instance yang berjalan
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Single instance locking adalah mekanisme yang mencegah beberapa instance aplikasi Anda berjalan bersamaan.
+Fitur ini berguna untuk aplikasi yang dirancang untuk membuka file dari command line atau dari file explorer OS.
+
+
+## Penggunaan
+
+Untuk mengaktifkan fungsionalitas single instance di aplikasi Anda, berikan struct `SingleInstanceOptions` saat membuat aplikasi:
+
+```go
+app := application.New(application.Options{
+    // ... other options ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            log.Printf("Additional data: %v", data.AdditionalData)
+        },
+        // Optional: Pass additional data to second instance
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+Struct `SingleInstanceOptions` memiliki field berikut:
+
+- `UniqueID`: Pengidentifikasi unik untuk aplikasi Anda. Ini harus berupa string unik, biasanya dalam notasi reverse domain (misalnya, "com.company.appname").
+- `EncryptionKey`: Array 32-byte opsional untuk mengenkripsi data yang diteruskan antar instance menggunakan AES-256-GCM. Jika disediakan sebagai array non-zero, semua komunikasi antar instance akan dienkripsi.
+- `OnSecondInstanceLaunch`: Fungsi callback yang dipanggil ketika instance kedua aplikasi Anda diluncurkan. Callback menerima struct `SecondInstanceData` yang berisi:
+    - `Args`: Argumen command line yang diteruskan ke instance kedua
+    - `WorkingDir`: Working directory instance kedua
+    - `AdditionalData`: Data tambahan apa pun yang diteruskan dari instance kedua (jika disediakan)
+- `AdditionalData`: Map opsional pasangan key-value string yang akan diteruskan ke instance pertama ketika instance berikutnya diluncurkan
+
+:::danger[Warning]
+Fitur Single Instance mengimplementasikan protokol enkripsi opsional menggunakan AES-256-GCM. Tanpa enkripsi yang diaktifkan,
+data yang diteruskan antar instance tidak aman. Ketika menggunakan fitur single instance tanpa enkripsi,
+aplikasi Anda harus memperlakukan data apa pun yang diteruskan ke callback instance kedua sebagai tidak tepercaya.
+Anda harus memverifikasi bahwa argumen yang Anda terima valid dan tidak mengandung data berbahaya.
+:::
+
+### Komunikasi Aman
+
+Untuk mengaktifkan komunikasi aman antar instance, berikan encryption key 32-byte. Key ini harus sama untuk semua instance aplikasi Anda:
+
+```go
+// Define your encryption key (must be exactly 32 bytes)
+var encryptionKey = [32]byte{
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+}
+
+// Use the key in SingleInstanceOptions
+SingleInstance: &application.SingleInstanceOptions{
+    UniqueID: "com.myapp.unique-id",
+    // Enable encryption for instance communication
+    EncryptionKey: encryptionKey,
+    // ... other options ...
+}
+```
+
+:::tip[Security Best Practices]
+- Gunakan key unik untuk aplikasi Anda
+- Simpan key dengan aman jika memuatnya dari konfigurasi
+- Jangan gunakan key contoh di atas — buat key Anda sendiri!
+:::
+
+### Manajemen Window
+
+Ketika menangani peluncuran instance kedua, Anda sering ingin membawa window aplikasi ke depan. Anda dapat melakukannya menggunakan method `Focus()` pada window. Jika window Anda diminimalkan, Anda mungkin perlu memulihkannya terlebih dahulu:
+
+```go
+
+    var mainWindow *application.WebviewWindow
+
+    SingleInstance: &application.SingleInstanceOptions{
+        // Other options...
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Focus the window if needed
+            if mainWindow != nil {
+                mainWindow.Restore()
+                mainWindow.Focus()
+            }
+        },
+    }
+```
+
+## Cara kerjanya
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui shared window menggunakan [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        Single instance lock menggunakan [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Nama dbus dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+    </TabItem>
+</Tabs>

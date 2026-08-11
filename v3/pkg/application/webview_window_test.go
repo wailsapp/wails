@@ -136,3 +136,50 @@ func TestDisableSizeConstraintsDoesNotOverwriteSavedValues(t *testing.T) {
 		t.Errorf("savedMaxHeight overwritten = %d, want 768", w.savedMaxHeight)
 	}
 }
+
+func TestRestoreSavedSizeConstraintOptions(t *testing.T) {
+	w := &WebviewWindow{
+		options:          WebviewWindowOptions{},
+		savedMinWidth:    320,
+		savedMinHeight:   240,
+		savedMaxWidth:    1280,
+		savedMaxHeight:   720,
+		constraintsSaved: true,
+	}
+
+	if !w.restoreSavedSizeConstraintOptions() {
+		t.Fatal("restoreSavedSizeConstraintOptions should report restored constraints")
+	}
+
+	if w.options.MinWidth != 320 || w.options.MinHeight != 240 {
+		t.Fatalf("restored min constraints = %dx%d, want 320x240", w.options.MinWidth, w.options.MinHeight)
+	}
+	if w.options.MaxWidth != 1280 || w.options.MaxHeight != 720 {
+		t.Fatalf("restored max constraints = %dx%d, want 1280x720", w.options.MaxWidth, w.options.MaxHeight)
+	}
+	if w.constraintsSaved {
+		t.Fatal("constraintsSaved should be false after restoring")
+	}
+}
+
+func TestRestoreSavedSizeConstraintOptionsNoopWithoutSavedValues(t *testing.T) {
+	w := &WebviewWindow{
+		options: WebviewWindowOptions{
+			MinWidth:  200,
+			MinHeight: 100,
+			MaxWidth:  800,
+			MaxHeight: 600,
+		},
+	}
+
+	if w.restoreSavedSizeConstraintOptions() {
+		t.Fatal("restoreSavedSizeConstraintOptions should report no-op when nothing was saved")
+	}
+
+	if w.options.MinWidth != 200 || w.options.MinHeight != 100 {
+		t.Fatalf("min constraints changed unexpectedly to %dx%d", w.options.MinWidth, w.options.MinHeight)
+	}
+	if w.options.MaxWidth != 800 || w.options.MaxHeight != 600 {
+		t.Fatalf("max constraints changed unexpectedly to %dx%d", w.options.MaxWidth, w.options.MaxHeight)
+	}
+}

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"golang.org/x/mod/semver"
 )
 
 // setupTestEnvironment creates a proper directory structure for tests
@@ -499,6 +501,53 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 	}
 }
 
+// TestAlpha2OutranksStrayTuiTag is the core regression guard for the release-tag
+// fix. A manually-pushed v3.0.0-alpha.98-tui tag hijacked `go install ...@latest`:
+// semver splits the prerelease on dots into alpha + 98-tui, and the alphanumeric
+// "98-tui" outranks every numeric alpha.N, so newer alphas were skipped. Moving to
+// the alpha2.N series fixes it because the label "alpha2" > "alpha".
+//
+// We assert with golang.org/x/mod/semver — the exact comparator the go command
+// uses to resolve @latest — so this test fails if the chosen tag format ever stops
+// out-ranking the stray tag.
+func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
+	const (
+		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
+		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+	)
+
+	for _, v := range []string{strayTag, legacyLatest, nextTag} {
+		if !semver.IsValid(v) {
+			t.Fatalf("%q is not a valid semver version", v)
+		}
+	}
+
+	// Sanity: the bug actually exists — the stray tag really does outrank the
+	// legacy numeric alphas (otherwise the fix would be unnecessary).
+	if semver.Compare(strayTag, legacyLatest) <= 0 {
+		t.Fatalf("expected stray %s to outrank legacy %s (the bug); got Compare=%d",
+			strayTag, legacyLatest, semver.Compare(strayTag, legacyLatest))
+	}
+
+	// The fix: the new alpha2 tag must outrank BOTH the stray tag and the legacy
+	// latest, so `go install ...@latest` selects it.
+	if semver.Compare(nextTag, strayTag) <= 0 {
+		t.Errorf("alpha2 tag %s must outrank stray %s, but Compare=%d",
+			nextTag, strayTag, semver.Compare(nextTag, strayTag))
+	}
+	if semver.Compare(nextTag, legacyLatest) <= 0 {
+		t.Errorf("alpha2 tag %s must outrank legacy latest %s, but Compare=%d",
+			nextTag, legacyLatest, semver.Compare(nextTag, legacyLatest))
+	}
+
+	// And the alpha2 series keeps proper numeric ordering across the digit
+	// boundary (no lexical-string footgun like a dash-only format would have).
+	if semver.Compare("v3.0.0-alpha2.999", "v3.0.0-alpha2.1000") >= 0 {
+		t.Errorf("alpha2 series lost numeric ordering: alpha2.999 should be < alpha2.1000")
+	}
+}
+
 func TestUpdateVersion(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -514,6 +563,11 @@ func TestUpdateVersion(t *testing.T) {
 			name:            "Beta version increment",
 			currentVersion:  "v3.0.0-beta.5",
 			expectedVersion: "v3.0.0-beta.6",
+		},
+		{
+			name:            "First beta from staged beta.0",
+			currentVersion:  "v3.0.0-beta.0",
+			expectedVersion: "v3.0.0-beta.1",
 		},
 		{
 			name:            "RC version increment",
@@ -544,6 +598,20 @@ func TestUpdateVersion(t *testing.T) {
 			name:            "Alpha with large number",
 			currentVersion:  "v3.0.0-alpha.999",
 			expectedVersion: "v3.0.0-alpha.1000",
+		},
+		{
+			// The "alpha2" series outranks the legacy "alpha.*" tags in semver
+			// (label "alpha2" > "alpha"), while keeping a dotted numeric suffix so
+			// ordering stays numeric. The number continues from the legacy series
+			// (alpha.102 -> alpha2.102 -> alpha2.103). See version.txt.
+			name:            "Alpha2 series increment",
+			currentVersion:  "v3.0.0-alpha2.102",
+			expectedVersion: "v3.0.0-alpha2.103",
+		},
+		{
+			name:            "Alpha2 keeps numeric ordering at boundary",
+			currentVersion:  "v3.0.0-alpha2.999",
+			expectedVersion: "v3.0.0-alpha2.1000",
 		},
 	}
 
@@ -1039,5 +1107,68 @@ func TestCleanupWorkflow_ErrorHandling(t *testing.T) {
 
 	if string(content) != testContent {
 		t.Error("Original content was not restored after error")
+	}
+}
+
+// TestReleaseChannel verifies the channel label derived from a version string,
+// which drives the release-notes heading and warning wording.
+func TestReleaseChannel(t *testing.T) {
+	tests := []struct {
+		version string
+		want    string
+	}{
+		{"v3.0.0-alpha.40", "Alpha"},
+		{"v3.0.0-alpha2.114", "Alpha"},
+		{"v3.0.0-beta.1", "Beta"},
+		{"v3.0.0-rc.1", "Release Candidate"},
+		{"v3.0.0", ""},
+	}
+	for _, tt := range tests {
+		if got := releaseChannel(tt.version); got != tt.want {
+			t.Errorf("releaseChannel(%q) = %q, want %q", tt.version, got, tt.want)
+		}
+	}
+}
+
+// TestBuildReleaseBody verifies the release notes adapt their heading and
+// warning to the release channel encoded in the version string.
+func TestBuildReleaseBody(t *testing.T) {
+	changelog := "### Added\n- something new"
+
+	t.Run("alpha", func(t *testing.T) {
+		body := buildReleaseBody("v3.0.0-alpha2.115", changelog)
+		if !strings.Contains(body, "## Wails v3 Alpha Release - v3.0.0-alpha2.115") {
+			t.Errorf("alpha body missing Alpha heading:\n%s", body)
+		}
+		if !strings.Contains(body, "**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.") {
+			t.Errorf("alpha body missing Alpha warning:\n%s", body)
+		}
+		if strings.Contains(body, "Beta") {
+			t.Errorf("alpha body unexpectedly mentions Beta:\n%s", body)
+		}
+	})
+
+	t.Run("beta", func(t *testing.T) {
+		body := buildReleaseBody("v3.0.0-beta.1", changelog)
+		if !strings.Contains(body, "## Wails v3 Beta Release - v3.0.0-beta.1") {
+			t.Errorf("beta body missing Beta heading:\n%s", body)
+		}
+		if !strings.Contains(body, "**⚠️ Beta Warning:**") {
+			t.Errorf("beta body missing Beta warning:\n%s", body)
+		}
+		if strings.Contains(body, "Alpha") {
+			t.Errorf("beta body unexpectedly mentions Alpha:\n%s", body)
+		}
+		if !strings.Contains(body, "go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.1") {
+			t.Errorf("beta body missing install command:\n%s", body)
+		}
+	})
+}
+
+// TestFirstBetaIncrement pins the beta staging contract: version.txt is staged
+// at v3.0.0-beta.0 so the first released beta becomes v3.0.0-beta.1.
+func TestFirstBetaIncrement(t *testing.T) {
+	if got := computeNextVersion("v3.0.0-beta.0"); got != "v3.0.0-beta.1" {
+		t.Errorf("computeNextVersion(v3.0.0-beta.0) = %q, want v3.0.0-beta.1", got)
 	}
 }

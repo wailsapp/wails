@@ -1,0 +1,61 @@
+---
+title: Umpan Balik
+description: Cara memberikan umpan balik dan melaporkan masalah untuk Wails v3
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Kami menyambut (dan mendorong) umpan balik Anda! Harap cari issue atau diskusi yang sudah ada sebelum membuat yang baru. Berikut cara berkontribusi:
+
+<Tabs>
+  <TabItem label="Bug" icon="error">
+
+    Jika Anda menemukan bug, harap [buka issue](https://github.com/wailsapp/wails/issues/new/choose) di GitHub menggunakan template laporan bug.
+
+    - Jelaskan bug dengan jelas menggunakan contoh sederhana yang dapat direproduksi. Jika dokumentasi tidak jelas tentang apa yang _seharusnya_ terjadi, sertakan itu dalam laporan.
+    - Sertakan output `wails3 doctor` dalam laporan Anda.
+    - Jika bug adalah perilaku yang tidak selaras dengan dokumentasi saat ini, harap juga lakukan hal berikut:
+      - Perbarui contoh yang ada di direktori `v3/examples`, atau buat contoh baru yang jelas menunjukkan masalahnya.
+      - Buka [PR](https://github.com/wailsapp/wails/pulls) yang mereferensikan issue tersebut.
+
+    :::caution
+
+    _Ingat_, perilaku yang tidak terduga belum tentu bug — mungkin hanya tidak berperilaku seperti yang Anda harapkan. Gunakan `Saran` untuk hal tersebut.
+
+    :::
+
+    Anda juga dipersilakan mendiskusikan bug di channel [#v3](https://discord.gg/bdj28QNHmT) di Discord.
+
+  </TabItem>
+
+  <TabItem label="Perbaikan" icon="approve-check">
+
+    Jika Anda memiliki perbaikan untuk bug atau peningkatan dokumentasi, harap:
+
+    - Buka pull request di [repositori Wails](https://github.com/wailsapp/wails) mengikuti [panduan kontribusi](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
+    - Referensikan issue terkait dalam deskripsi PR.
+
+  </TabItem>
+
+  <TabItem label="Saran" icon="puzzle" id="abc">
+
+    Jika Anda memiliki permintaan fitur atau saran, harap [mulai diskusi](https://github.com/wailsapp/wails/discussions) di GitHub.
+
+    - Jelaskan fitur dan masalah yang diselesaikannya dengan jelas.
+    - Anda juga bebas mendiskusikan ide di channel [#v3](https://discord.gg/bdj28QNHmT) di Discord.
+
+  </TabItem>
+
+  <TabItem label="Upvote" icon="star">
+
+    - Tunjukkan dukungan untuk issue dan diskusi menggunakan reaksi :thumbsup: di GitHub.
+    - Harap _jangan_ hanya menambahkan komentar seperti "+1" atau "saya juga".
+    - Tambahkan komentar jika Anda memiliki kontribusi bermakna, seperti "bug ini juga memengaruhi build ARM" atau "Pendekatan lainnya adalah...".
+
+  </TabItem>
+
+</Tabs>
+
+Issue yang diketahui dan pekerjaan yang sedang berlangsung dapat ditemukan [di sini](https://github.com/orgs/wailsapp/projects/6).

@@ -617,6 +617,15 @@ const (
 	WM_DPICHANGED             = 0x02E0
 )
 
+// RegisterHotKey fsModifiers flags
+const (
+	MOD_ALT      = 0x0001
+	MOD_CONTROL  = 0x0002
+	MOD_SHIFT    = 0x0004
+	MOD_WIN      = 0x0008
+	MOD_NOREPEAT = 0x4000
+)
+
 const (
 	SC_SIZE         = 0xF000 // Resize the window
 	SC_MOVE         = 0xF010 // Move the window

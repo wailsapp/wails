@@ -1,4 +1,4 @@
-//go:build linux && !gtk3 && !server
+//go:build linux && !android && !gtk3 && !server
 
 #include "linux_cgo.h"
 
@@ -173,6 +173,18 @@ WebKitWebView* get_webview_from_content_manager(void *contentManager) {
 
 void signal_connect(void *widget, char *event, void *cb, uintptr_t data) {
     g_signal_connect(widget, event, cb, (gpointer)data);
+}
+
+int is_user_media_permission_request(WebKitPermissionRequest *request) {
+    return WEBKIT_IS_USER_MEDIA_PERMISSION_REQUEST(request) ? 1 : 0;
+}
+
+int is_user_media_for_audio(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_audio_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
+}
+
+int is_user_media_for_video(WebKitPermissionRequest *request) {
+    return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
 }
 
 // ============================================================================
@@ -387,13 +399,35 @@ void show_context_menu(GtkWidget *parent, GMenu *menu_model, int x, int y) {
 // Window event controllers (GTK4 style)
 // ============================================================================
 
+static void connect_window_surface_signals(GtkWidget *widget, gpointer data) {
+    GdkSurface *surface = gtk_native_get_surface(GTK_NATIVE(widget));
+    if (surface == NULL || !GDK_IS_TOPLEVEL(surface)) {
+        return;
+    }
+
+    g_signal_connect(surface, "notify::width", G_CALLBACK(handleSurfaceSizeChanged), data);
+    g_signal_connect(surface, "notify::height", G_CALLBACK(handleSurfaceSizeChanged), data);
+    g_signal_connect(surface, "notify::state", G_CALLBACK(handleSurfaceStateChanged), data);
+
+    handleSurfaceSizeChanged(G_OBJECT(surface), NULL, (uintptr_t)data);
+    handleSurfaceStateChanged(G_OBJECT(surface), NULL, (uintptr_t)data);
+}
+
+static void handle_window_realize(GtkWidget *widget, gpointer data) {
+    connect_window_surface_signals(widget, data);
+}
+
 void setupWindowEventControllers(GtkWindow *window, GtkWidget *webview, uintptr_t winID) {
     // Close request (replaces delete-event)
     g_signal_connect(window, "close-request", G_CALLBACK(handleCloseRequest), (gpointer)winID);
 
-    // Window state changes (maximize, fullscreen, etc)
-    g_signal_connect(window, "notify::maximized", G_CALLBACK(handleNotifyState), (gpointer)winID);
-    g_signal_connect(window, "notify::fullscreened", G_CALLBACK(handleNotifyState), (gpointer)winID);
+    // GdkSurface exposes actual configured size and all toplevel state changes.
+    // The surface is normally created when the GtkWindow is realised.
+    if (gtk_widget_get_realized(GTK_WIDGET(window))) {
+        connect_window_surface_signals(GTK_WIDGET(window), (gpointer)winID);
+    } else {
+        g_signal_connect(window, "realize", G_CALLBACK(handle_window_realize), (gpointer)winID);
+    }
 
     // Focus controller for window
     GtkEventController *focus_controller = gtk_event_controller_focus_new();
@@ -777,7 +811,10 @@ static gboolean on_message_dialog_close(GtkWindow *window, gpointer user_data) {
     int result = (data->cancel_button >= 0) ? data->cancel_button : -1;
     alertDialogCallback(data->request_id, result);
     message_dialog_cleanup(data);
-    return TRUE;
+    // FALSE lets GTK's default close-request handler destroy the window.
+    // Returning TRUE means "handled, don't close": the dialog would stay on
+    // screen forever with its buttons wired to the freed MessageDialogData.
+    return FALSE;
 }
 
 static gboolean on_message_dialog_key_pressed(GtkEventControllerKey *controller,
@@ -909,38 +946,44 @@ void show_message_dialog(GtkWindow *parent, const char *heading, const char *bod
 // Clipboard (async API for GTK4)
 // ============================================================================
 
-static char *clipboard_sync_result = NULL;
-static gboolean clipboard_sync_done = FALSE;
+// Per-call state: the nested g_main_context_iteration loop below can dispatch
+// arbitrary main-loop sources, including another clipboard_get_text_sync call.
+// With static globals the two calls would clobber each other's result/done
+// flags; with stack-allocated state each call completes independently.
+typedef struct {
+    char *result;
+    gboolean done;
+} ClipboardSyncData;
 
 static void on_clipboard_sync_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
+    ClipboardSyncData *data = (ClipboardSyncData *)user_data;
     GdkClipboard *clipboard = GDK_CLIPBOARD(source);
     GError *error = NULL;
 
-    clipboard_sync_result = gdk_clipboard_read_text_finish(clipboard, result, &error);
+    data->result = gdk_clipboard_read_text_finish(clipboard, result, &error);
 
     if (error != NULL) {
         DEBUG_LOG("clipboard read error: %s", error->message);
         g_error_free(error);
-        clipboard_sync_result = NULL;
+        data->result = NULL;
     }
-    clipboard_sync_done = TRUE;
+    data->done = TRUE;
 }
 
 char* clipboard_get_text_sync(void) {
     GdkDisplay *display = gdk_display_get_default();
     GdkClipboard *clipboard = gdk_display_get_clipboard(display);
-    
-    clipboard_sync_done = FALSE;
-    clipboard_sync_result = NULL;
-    
-    gdk_clipboard_read_text_async(clipboard, NULL, on_clipboard_sync_finish, NULL);
-    
+
+    ClipboardSyncData data = { NULL, FALSE };
+
+    gdk_clipboard_read_text_async(clipboard, NULL, on_clipboard_sync_finish, &data);
+
     GMainContext *ctx = g_main_context_default();
-    while (!clipboard_sync_done) {
+    while (!data.done) {
         g_main_context_iteration(ctx, TRUE);
     }
-    
-    return clipboard_sync_result;
+
+    return data.result;
 }
 
 void clipboard_free_text(char *text) {

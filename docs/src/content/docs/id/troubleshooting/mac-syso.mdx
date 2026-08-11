@@ -1,0 +1,23 @@
+---
+title: File Syso di macOS
+description: Troubleshoot error build file Syso di macOS
+---
+
+## Masalah
+
+Saat mencoba membangun aplikasi Wails di macOS, build gagal dengan error serupa berikut:
+
+```
+Error: Users/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.1.darwin-arm64/pkg/tool/darwin_arm64/link: running clang failed: exit status 1
+ld: unknown file type in '/private/var/folders/ml/x_tvfgn50_s7p67dm1ypcqqm0000gn/T/go-link-774134794/000000.o'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+
+## Mengapa ini terjadi?
+
+Saat membangun untuk Windows, Wails akan menghasilkan file `.syso` untuk ikon aplikasi, ikon window, dan ikon menu. File-file ini diperlukan agar aplikasi dapat dibangun di Windows.
+File `.syso` ini dapat ditemukan di direktori root proyek dan dapat menyebabkan masalah saat membangun untuk macOS.
+
+## Solusi
+
+Untuk memperbaiki masalah ini, Anda dapat menghapus file syso dari direktori root proyek atau jika Anda menghasilkannya sendiri, beri nama `wails_windows_<arch>.syso` misalnya `wails_windows_arm64.syso`.

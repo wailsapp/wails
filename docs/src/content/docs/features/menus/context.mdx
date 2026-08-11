@@ -6,6 +6,8 @@ sidebar:
 ---
 
 import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import contextMenuMacOS from "../../../../assets/screenshots/context-menu-macos.png";
 
 ## The Problem
 
@@ -19,6 +21,10 @@ Building context menus manually means handling mouse events, positioning, and pl
 ## The Wails Solution
 
 Wails provides **declarative context menus** using CSS properties. Associate menus with HTML elements, pass data, and handle clicks—all with native platform behaviour.
+
+<Image src={contextMenuMacOS} alt="A Wails custom context menu displayed over a webview on macOS" style="max-width: 900px; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+The menu is native to the platform while the element that opened it remains part of your webview. This macOS capture uses the example below's custom context-menu registration.
 
 ## Quick Start
 
@@ -719,7 +725,7 @@ contextMenu.Update()  // Add this!
   <Card title="Menu Patterns" icon="open-book">
     Common menu patterns and best practices.
     
-    [Learn More →](/guides/patterns/menus)
+    [Learn More →](/guides/menus)
   </Card>
 </CardGrid>
 

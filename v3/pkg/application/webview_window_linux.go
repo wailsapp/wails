@@ -8,9 +8,9 @@ import (
 
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/debounce"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -37,6 +37,8 @@ type linuxWebviewWindow struct {
 	accels        pointer
 	lastWidth     int
 	lastHeight    int
+	windowState   linuxWindowState
+	stateObserved bool
 	drag          dragInfo
 	lastX, lastY  int
 	gtkmenu       pointer
@@ -45,6 +47,51 @@ type linuxWebviewWindow struct {
 	moveDebouncer     func(func())
 	resizeDebouncer   func(func())
 	ignoreMouseEvents bool
+}
+
+type linuxWindowState struct {
+	minimised  bool
+	maximised  bool
+	fullscreen bool
+}
+
+func changedLinuxWindowStateEvents(previous, current linuxWindowState, observed bool) []events.WindowEventType {
+	var result []events.WindowEventType
+	if !observed {
+		if current.maximised {
+			result = append(result, events.Common.WindowMaximise)
+		}
+		if current.minimised {
+			result = append(result, events.Common.WindowMinimise)
+		}
+		if current.fullscreen {
+			result = append(result, events.Common.WindowFullscreen)
+		}
+		return result
+	}
+
+	if previous.maximised != current.maximised {
+		if current.maximised {
+			result = append(result, events.Common.WindowMaximise)
+		} else {
+			result = append(result, events.Common.WindowUnMaximise)
+		}
+	}
+	if previous.minimised != current.minimised {
+		if current.minimised {
+			result = append(result, events.Common.WindowMinimise)
+		} else {
+			result = append(result, events.Common.WindowUnMinimise)
+		}
+	}
+	if previous.fullscreen != current.fullscreen {
+		if current.fullscreen {
+			result = append(result, events.Common.WindowFullscreen)
+		} else {
+			result = append(result, events.Common.WindowUnFullscreen)
+		}
+	}
+	return result
 }
 
 var (
@@ -343,6 +390,18 @@ func (w *linuxWebviewWindow) run() {
 	if w.parent.options.BackgroundType != BackgroundTypeSolid {
 		w.setTransparent()
 		w.setBackgroundColour(w.parent.options.BackgroundColour)
+	} else if w.parent.options.BackgroundColour.Alpha == 255 {
+		// Pin the webview's base colour for a solid window with an explicit opaque
+		// background, here — before setURL() below starts the first paint. WebKitGTK
+		// latches the base as the accelerated-compositing clear colour at first
+		// composite and does NOT refresh it from a later set_background_color call,
+		// so a base left at the WebKitGTK default (opaque white) is briefly exposed
+		// whenever the compositor re-tiles during animation: a periodic light flash
+		// on a dark page. (The page's own runtime theme repaint arrives after that
+		// first composite, so it can't fix the already-latched clear colour — the
+		// colour must be set now.) A zero/non-opaque colour is left to the WebKitGTK
+		// default so a solid window is never made accidentally see-through.
+		w.setBackgroundColour(w.parent.options.BackgroundColour)
 	}
 
 	w.setFrameless(w.parent.options.Frameless)
@@ -384,6 +443,8 @@ func (w *linuxWebviewWindow) run() {
 		// Inject runtime core and EnableFileDrop flag together
 		js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
 		js += fmt.Sprintf("window._wails.flags.enableFileDrop=%v;", w.parent.options.EnableFileDrop)
+		js += fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", w.parent.options.Frameless)
+		js += fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", !w.parent.options.DisableResize)
 		w.execJS(js)
 	})
 	if w.parent.options.HTML != "" {
@@ -464,3 +525,5 @@ func (w *linuxWebviewWindow) hideMenuBar()                      {}
 func (w *linuxWebviewWindow) toggleMenuBar()                    {}
 func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
 func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}
+func (w *linuxWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
+}

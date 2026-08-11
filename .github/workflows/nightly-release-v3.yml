@@ -1,4 +1,4 @@
-name: Nightly Release v3-alpha
+name: Nightly Release v3
 
 on:
   schedule:
@@ -19,6 +19,7 @@ on:
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     env:
       GOWORK: "off"
     
@@ -55,7 +56,7 @@ jobs:
         
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
-    
+
     - name: Check for existing release tag
       id: check_tag
       run: |
@@ -89,52 +90,49 @@ jobs:
       run: |
         echo "🔍 Quick check for changes to determine if we should continue..."
         
-        # First check if we have unreleased changelog content
-        if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
-          echo "✅ Found unreleased changelog content, proceeding with release"
-          echo "has_changes=true" >> $GITHUB_OUTPUT
-          echo "should_continue=true" >> $GITHUB_OUTPUT
-          echo "reason=Found unreleased changelog content" >> $GITHUB_OUTPUT
-          exit 0
+        # Release bookkeeping can be committed after a tag is created. In
+        # particular, the auto-changelog workflow may add an entry to
+        # UNRELEASED_CHANGELOG.md after the release has already completed.
+        # That is not a new release input and must not create another nightly
+        # release on its own.
+        if CURRENT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null); then
+          LATEST_TAG="$CURRENT_TAG"
+          echo "Current commit has release tag: $LATEST_TAG"
+        else
+          # Only consider the active release series (alpha2/beta/rc): they
+          # outrank legacy alpha tags, and explicit patterns avoid stray tags
+          # such as v3.0.0-alpha.98-tui being selected as the baseline.
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" "v3.0.0-beta.*" "v3.0.0-rc.*" | sort -V | tail -1)
         fi
-        
-        # If no unreleased changelog content, check for git changes as fallback
-        echo "No unreleased changelog content found, checking for git changes..."
-        
-        # Check if current commit has a release tag
-        if git describe --tags --exact-match HEAD 2>/dev/null; then
-          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
-          echo "Current commit has release tag: $CURRENT_TAG"
-          
-          # For tagged commits, check if there are changes since the tag
-          COMMIT_COUNT=$(git rev-list ${CURRENT_TAG}..HEAD --count)
-          if [ "$COMMIT_COUNT" -eq 0 ]; then
+
+        if [ -z "$LATEST_TAG" ]; then
+          echo "No previous release found; a release is eligible if changelog content exists."
+          if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+            echo "reason=Unreleased changelog content with no previous release" >> $GITHUB_OUTPUT
+          else
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "should_continue=false" >> $GITHUB_OUTPUT
-            echo "reason=No changes since existing tag $CURRENT_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
+            echo "reason=No previous release and no unreleased changelog content" >> $GITHUB_OUTPUT
           fi
+        elif git diff --quiet "${LATEST_TAG}..HEAD" -- \
+          . \
+          ':(exclude)v3/internal/version/version.txt' \
+          ':(exclude)v3/UNRELEASED_CHANGELOG.md' \
+          ':(exclude)docs/src/content/docs/changelog.mdx' \
+          ':(exclude)v3/internal/runtime/desktop/@wailsio/runtime/package.json' \
+          ':(exclude)v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json'; then
+          echo "No release inputs changed since $LATEST_TAG; skipping release."
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "should_continue=false" >> $GITHUB_OUTPUT
+          echo "reason=Only release bookkeeping changed since $LATEST_TAG" >> $GITHUB_OUTPUT
         else
-          # No current tag, check against latest release
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No previous release found, proceeding with release"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          else
-            COMMIT_COUNT=$(git rev-list ${LATEST_TAG}..HEAD --count)
-            if [ "$COMMIT_COUNT" -gt 0 ]; then
-              echo "Found $COMMIT_COUNT commits since $LATEST_TAG"
-              echo "has_changes=true" >> $GITHUB_OUTPUT
-              echo "should_continue=true" >> $GITHUB_OUTPUT
-            else
-              echo "has_changes=false" >> $GITHUB_OUTPUT
-              echo "should_continue=false" >> $GITHUB_OUTPUT
-              echo "reason=No changes since latest release $LATEST_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-            fi
-          fi
+          CHANGE_COUNT=$(git rev-list "${LATEST_TAG}..HEAD" --count)
+          echo "Found release inputs in $CHANGE_COUNT commits since $LATEST_TAG"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+          echo "reason=Release inputs changed since $LATEST_TAG" >> $GITHUB_OUTPUT
         fi
     
     - name: Early exit - No changes detected
@@ -171,8 +169,13 @@ jobs:
         steps.quick_check.outputs.should_continue == 'true' || 
         github.event.inputs.force_release == 'true'
       env:
-        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
+        # against the API before pushing anything and falls back to
+        # GITHUB_TOKEN if the PAT is expired/revoked. Passing the same value
+        # for both (as before) made the fallback meaningless and an expired
+        # PAT produced a half-release: tag pushed, no GitHub release.
+        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         cd v3/tasks/release
         ARGS=()
@@ -180,6 +183,30 @@ jobs:
           ARGS+=(--dry-run)
         fi
         go run release.go "${ARGS[@]}"
+
+    # Tags created with GITHUB_TOKEN do not emit a push event that can trigger
+    # Release v3. Dispatch it explicitly so each published nightly also gets
+    # the platform binaries, checksums, and provenance attached to its release.
+    - name: Build and attach desktop artifacts
+      id: desktop_artifacts
+      if: steps.release.outcome == 'success' && steps.release.outputs.release_dry_run != 'true'
+      env:
+        GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+      run: |
+        tag="${{ steps.release.outputs.release_tag }}"
+        pre_release=false
+        if [[ "$tag" == *-* ]]; then
+          pre_release=true
+        fi
+
+        gh workflow run release-v3.yml \
+          --repo "${{ github.repository }}" \
+          --ref master \
+          -f tag="$tag" \
+          -f pre_release="$pre_release" \
+          -f draft=false
+        echo "dispatched=true" >> "$GITHUB_OUTPUT"
+        echo "Dispatched Release v3 for $tag"
 
     - name: Summary
       if: always()
@@ -198,6 +225,9 @@ jobs:
           echo "- **Mode:** ${{ steps.release.outputs.release_dry_run == 'true' && '🧪 Dry Run' || '🚀 Live release' }}" >> $GITHUB_STEP_SUMMARY
           if [ -n "${{ steps.release.outputs.release_url }}" ]; then
             echo "- **Release URL:** ${{ steps.release.outputs.release_url }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.desktop_artifacts.outputs.dispatched }}" == "true" ]; then
+            echo "- **Desktop artifacts:** Release v3 dispatched" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Changelog" >> $GITHUB_STEP_SUMMARY

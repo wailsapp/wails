@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
 
@@ -53,6 +54,7 @@ func parseCLIVars(args []string) map[string]string {
 var BuildSettings = map[string]string{}
 
 func fatal(message string) {
+	buildwarnings.FlushAndPrint()
 	term.Error(message)
 	os.Exit(1)
 }

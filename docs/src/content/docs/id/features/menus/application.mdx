@@ -1,0 +1,683 @@
+---
+title: Menu Aplikasi
+description: Buat menu bar native untuk aplikasi desktop Anda
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Masalahnya
+
+Aplikasi desktop profesional memerlukan menu bar—File, Edit, View, Help. Namun menu bekerja berbeda di setiap platform:
+- **macOS**: Menu bar global di bagian atas layar
+- **Windows**: Menu bar di title bar window
+- **Linux**: Bervariasi menurut desktop environment
+
+Membangun menu yang sesuai platform secara manual membosankan dan rentan error.
+
+## Solusi Wails
+
+Wails menyediakan **API terpadu** yang membuat menu native platform secara otomatis. Tulis sekali, dapatkan perilaku native di semua platform.
+
+{/* VISUAL PLACEHOLDER: Menu Bar Comparison
+Description: Three screenshots side-by-side showing the same Wails menu on:
+1. macOS - Global menu bar at top of screen with app name
+2. Windows - Menu bar in window title bar
+3. Linux (GNOME) - Menu bar in window
+All showing identical menu structure: File, Edit, View, Tools, Help
+Style: Clean screenshots with subtle borders, labels indicating platform
+*/}
+
+## Memulai Cepat
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Create menu
+    menu := app.NewMenu()
+
+    // Add standard menus (platform-appropriate)
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)  // macOS only
+    }
+    menu.AddRole(application.FileMenu)
+    menu.AddRole(application.EditMenu)
+    menu.AddRole(application.WindowMenu)
+    menu.AddRole(application.HelpMenu)
+
+    // Set the application menu
+    app.Menu.Set(menu)
+
+    // Create window with UseApplicationMenu to inherit the menu on Windows/Linux
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    app.Run()
+}
+```
+
+**Itu saja!** Anda sekarang memiliki menu native platform dengan item standar. Opsi `UseApplicationMenu` memastikan window Windows dan Linux menampilkan menu tanpa kode tambahan.
+
+## Membuat Menu
+
+### Pembuatan Menu Dasar
+
+```go
+// Create a new menu
+menu := app.NewMenu()
+
+// Add a top-level menu
+fileMenu := menu.AddSubmenu("File")
+
+// Add menu items
+fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+    // Handle New
+})
+
+fileMenu.Add("Open").OnClick(func(ctx *application.Context) {
+    // Handle Open
+})
+
+fileMenu.AddSeparator()
+
+fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+    app.Quit()
+})
+```
+
+### Mengatur Menu
+
+**Pendekatan yang direkomendasikan** — Gunakan `UseApplicationMenu` untuk konsistensi lintas platform:
+
+```go
+// Set the application menu once
+app.Menu.Set(menu)
+
+// Create windows that inherit the menu on Windows/Linux
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    UseApplicationMenu: true,  // Window uses the app menu
+})
+```
+
+Pendekatan ini:
+- Di **macOS**: Menu muncul di bagian atas layar (perilaku standar)
+- Di **Windows/Linux**: Setiap window dengan `UseApplicationMenu: true` menampilkan menu aplikasi
+
+**Detail spesifik platform:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **Menu bar global** (satu per aplikasi):
+
+    ```go
+    app.Menu.Set(menu)
+    ```
+
+    Menu muncul di bagian atas layar dan tetap ada bahkan saat semua window ditutup. Opsi `UseApplicationMenu` tidak berpengaruh di macOS karena semua aplikasi menggunakan menu global.
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **Menu bar per window**:
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    Setiap window dapat memiliki menu sendiri, atau mewarisi menu aplikasi. Menu muncul di title bar window.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Menu bar per window** (biasanya):
+
+    ```go
+    // Option 1: Use application menu (recommended)
+    app.Menu.Set(menu)
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    // Option 2: Set menu directly on window
+    window.SetMenu(menu)
+    ```
+
+    Perilaku bervariasi menurut desktop environment. Beberapa (seperti Unity) mendukung menu global.
+  </TabItem>
+</Tabs>
+
+:::tip[Sederhanakan Menu Lintas Platform]
+Menggunakan `UseApplicationMenu: true` menghilangkan kebutuhan kode spesifik platform seperti:
+```go
+// Old approach - no longer needed
+if runtime.GOOS == "darwin" {
+    app.Menu.Set(menu)
+} else {
+    window.SetMenu(menu)
+}
+```
+:::
+
+**Menu kustom per window:**
+
+Jika window memerlukan menu berbeda dari menu aplikasi, atur langsung:
+
+```go
+window.SetMenu(customMenu)  // Overrides UseApplicationMenu
+```
+
+## Role Menu
+
+Wails menyediakan **role menu yang telah ditentukan** yang membuat struktur menu sesuai platform secara otomatis.
+
+### Role yang Tersedia
+
+| Role | Deskripsi | Catatan Platform |
+|------|-------------|----------------|
+| `AppMenu` | Menu aplikasi dengan About, Preferences, Quit | **macOS saja** |
+| `FileMenu` | Operasi file (New, Open, Save, dll.) | Semua platform |
+| `EditMenu` | Pengeditan teks (Undo, Redo, Cut, Copy, Paste) | Semua platform |
+| `WindowMenu` | Manajemen window (Minimise, Zoom, dll.) | Semua platform |
+| `HelpMenu` | Bantuan dan informasi | Semua platform |
+
+### Menggunakan Role
+
+```go
+menu := app.NewMenu()
+
+// macOS: Add application menu
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)
+}
+
+// All platforms: Add standard menus
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+menu.AddRole(application.WindowMenu)
+menu.AddRole(application.HelpMenu)
+```
+
+**Yang Anda dapatkan:**
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    **AppMenu** (dengan nama app):
+    - About [App Name]
+    - Preferences... (⌘,)
+    - ---
+    - Services
+    - ---
+    - Hide [App Name] (⌘H)
+    - Hide Others (⌥⌘H)
+    - Show All
+    - ---
+    - Quit [App Name] (⌘Q)
+
+    **FileMenu**:
+    - New (⌘N)
+    - Open... (⌘O)
+    - ---
+    - Close Window (⌘W)
+
+    **EditMenu**:
+    - Undo (⌘Z)
+    - Redo (⇧⌘Z)
+    - ---
+    - Cut (⌘X)
+    - Copy (⌘C)
+    - Paste (⌘V)
+    - Select All (⌘A)
+
+    **WindowMenu**:
+    - Minimise (⌘M)
+    - Zoom
+    - ---
+    - Bring All to Front
+
+    **HelpMenu**:
+    - [App Name] Help
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    **FileMenu**:
+    - New (Ctrl+N)
+    - Open... (Ctrl+O)
+    - ---
+    - Exit (Alt+F4)
+
+    **EditMenu**:
+    - Undo (Ctrl+Z)
+    - Redo (Ctrl+Y)
+    - ---
+    - Cut (Ctrl+X)
+    - Copy (Ctrl+C)
+    - Paste (Ctrl+V)
+    - Select All (Ctrl+A)
+
+    **WindowMenu**:
+    - Minimise
+    - Maximise
+
+    **HelpMenu**:
+    - About [App Name]
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Mirip Windows, tetapi keyboard shortcut mungkin bervariasi menurut desktop environment.
+  </TabItem>
+</Tabs>
+
+### Menyesuaikan Menu Role
+
+`Menu.AddRole(role)` mengembalikan **menu receiver** (menu tingkat atas), **bukan** submenu role. Untuk menambahkan item ke submenu role, cari item role yang dimasukkan dengan `FindByRole` dan panggil `GetSubmenu()`:
+
+```go
+menu.AddRole(application.FileMenu)
+
+fileMenu := menu.FindByRole(application.FileMenu).GetSubmenu()
+fileMenu.Add("Import...").OnClick(handleImport)
+fileMenu.Add("Export...").OnClick(handleExport)
+```
+
+## Menu Kustom
+
+Buat menu sendiri untuk fitur spesifik aplikasi:
+
+```go
+// Add a custom top-level menu
+toolsMenu := menu.AddSubmenu("Tools")
+
+// Add items
+toolsMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+    showSettingsWindow()
+})
+
+toolsMenu.AddSeparator()
+
+// Add checkbox
+toolsMenu.AddCheckbox("Dark Mode", false).OnClick(func(ctx *application.Context) {
+    isDark := ctx.ClickedMenuItem().Checked()
+    setTheme(isDark)
+})
+
+// Add radio group
+toolsMenu.AddRadio("Small", true).OnClick(handleFontSize)
+toolsMenu.AddRadio("Medium", false).OnClick(handleFontSize)
+toolsMenu.AddRadio("Large", false).OnClick(handleFontSize)
+
+// Add submenu
+advancedMenu := toolsMenu.AddSubmenu("Advanced")
+advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
+```
+
+**Untuk tipe item menu lainnya**, lihat [Referensi Menu](/id/features/menus/reference).
+
+## Menu Dinamis
+
+Perbarui menu berdasarkan status aplikasi:
+
+### Aktifkan/Nonaktifkan Item
+
+```go
+var saveMenuItem *application.MenuItem
+
+func createMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    saveMenuItem = fileMenu.Add("Save")
+    saveMenuItem.SetEnabled(false)  // Initially disabled
+    saveMenuItem.OnClick(handleSave)
+    
+    app.Menu.Set(menu)
+}
+
+func onDocumentChanged() {
+    saveMenuItem.SetEnabled(hasUnsavedChanges())
+    menu.Update()  // Important!
+}
+```
+
+:::caution[Selalu Panggil menu.Update()]
+Setelah mengubah status menu (enable/disable, label, checked), **selalu panggil `menu.Update()`**. Ini sangat kritis di Windows di mana menu direkonstruksi.
+
+Lihat [Referensi Menu](/id/features/menus/reference#enabled-state) untuk detail.
+:::
+
+### Ubah Label
+
+```go
+updateMenuItem := menu.Add("Check for Updates")
+
+updateMenuItem.OnClick(func(ctx *application.Context) {
+    updateMenuItem.SetLabel("Checking...")
+    menu.Update()
+    
+    checkForUpdates()
+    
+    updateMenuItem.SetLabel("Check for Updates")
+    menu.Update()
+})
+```
+
+### Rebuild Menu
+
+Untuk perubahan besar, rebuild seluruh menu:
+
+```go
+func rebuildFileMenu() {
+    menu := app.NewMenu()
+    fileMenu := menu.AddSubmenu("File")
+    
+    fileMenu.Add("New").OnClick(handleNew)
+    fileMenu.Add("Open").OnClick(handleOpen)
+    
+    // Add recent files dynamically
+    if hasRecentFiles() {
+        recentMenu := fileMenu.AddSubmenu("Open Recent")
+        for _, file := range getRecentFiles() {
+            filePath := file  // Capture for closure
+            recentMenu.Add(filepath.Base(file)).OnClick(func(ctx *application.Context) {
+                openFile(filePath)
+            })
+        }
+        recentMenu.AddSeparator()
+        recentMenu.Add("Clear Recent").OnClick(clearRecentFiles)
+    }
+    
+    fileMenu.AddSeparator()
+    fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+        app.Quit()
+    })
+    
+    app.Menu.Set(menu)
+}
+```
+
+## Kontrol Window dari Menu
+
+Item menu dapat mengendalikan window:
+
+```go
+viewMenu := menu.AddSubmenu("View")
+
+// Toggle fullscreen
+viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
+    if window, ok := app.Window.GetByName("main"); ok {
+        window.ToggleFullscreen()
+    }
+})
+
+// Zoom controls
+viewMenu.Add("Zoom In").SetAccelerator("CmdOrCtrl++").OnClick(func(ctx *application.Context) {
+    // Increase zoom
+})
+
+viewMenu.Add("Zoom Out").SetAccelerator("CmdOrCtrl+-").OnClick(func(ctx *application.Context) {
+    // Decrease zoom
+})
+
+viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *application.Context) {
+    // Reset zoom
+})
+```
+
+**Dapatkan window aktif:**
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    window := application.Get().Window.Current() // the window the menu was invoked from
+    // Use window
+})
+```
+
+## Pertimbangan Spesifik Platform
+
+### macOS
+
+**Perilaku menu bar:**
+- Muncul di **bagian atas layar** (global)
+- Tetap ada saat semua window ditutup
+- Menu pertama **selalu menu aplikasi**
+- Gunakan `menu.AddRole(application.AppMenu)` untuk item standar
+
+**Lokasi standar:**
+- **About**: Menu aplikasi
+- **Preferences**: Menu aplikasi (⌘,)
+- **Quit**: Menu aplikasi (⌘Q)
+- **Help**: Menu Help
+
+**Contoh:**
+
+```go
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)  // Adds About, Preferences, Quit
+    
+    // Don't add Quit to File menu on macOS
+    // Don't add About to Help menu on macOS
+}
+```
+
+### Windows
+
+**Perilaku menu bar:**
+- Muncul di **title bar window**
+- Setiap window memiliki menu sendiri
+- Tidak ada menu aplikasi
+
+**Lokasi standar:**
+- **Exit**: Menu File (Alt+F4)
+- **Settings**: Menu Tools atau Edit
+- **About**: Menu Help
+
+**Contoh:**
+
+```go
+if runtime.GOOS == "windows" {
+    menu.AddRole(application.FileMenu) // Exit is added automatically
+    menu.AddRole(application.HelpMenu) // About is added automatically
+}
+```
+
+### Linux
+
+**Perilaku menu bar:**
+- Biasanya per-window (seperti Windows)
+- Beberapa DE mendukung menu global (Unity, GNOME dengan extension)
+- Tampilan bervariasi menurut desktop environment
+
+**Praktik terbaik:** Ikuti konvensi Windows, uji di DE target.
+
+## Contoh Lengkap
+
+Berikut struktur menu siap produksi:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    // Create and set menu
+    createMenu(app)
+
+    // Create main window with UseApplicationMenu for cross-platform menu support
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        UseApplicationMenu: true,
+    })
+
+    app.Run()
+}
+
+func createMenu(app *application.App) {
+    menu := app.NewMenu()
+
+    // Platform-specific application menu (macOS only)
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)
+    }
+
+    // File menu — AddRole returns the receiver menu, not the role submenu.
+    // To add items into the File submenu, look it up via FindByRole + GetSubmenu.
+    menu.AddRole(application.FileMenu)
+    fileMenu := menu.FindByRole(application.FileMenu).GetSubmenu()
+    fileMenu.Add("Import...").SetAccelerator("CmdOrCtrl+I").OnClick(handleImport)
+    fileMenu.Add("Export...").SetAccelerator("CmdOrCtrl+E").OnClick(handleExport)
+
+    // Edit menu
+    menu.AddRole(application.EditMenu)
+
+    // View menu
+    viewMenu := menu.AddSubmenu("View")
+    viewMenu.Add("Toggle Fullscreen").SetAccelerator("F11").OnClick(toggleFullscreen)
+    viewMenu.AddSeparator()
+    viewMenu.AddCheckbox("Show Sidebar", true).OnClick(toggleSidebar)
+    viewMenu.AddCheckbox("Show Toolbar", true).OnClick(toggleToolbar)
+
+    // Tools menu
+    toolsMenu := menu.AddSubmenu("Tools")
+    
+    // Settings location varies by platform
+    if runtime.GOOS == "darwin" {
+        // On macOS, Preferences is in Application menu (added by AppMenu role)
+    } else {
+        toolsMenu.Add("Settings").SetAccelerator("CmdOrCtrl+,").OnClick(showSettings)
+    }
+    
+    toolsMenu.AddSeparator()
+    toolsMenu.AddCheckbox("Dark Mode", false).OnClick(toggleDarkMode)
+
+    // Window menu
+    menu.AddRole(application.WindowMenu)
+
+    // Help menu
+    helpMenu := menu.AddRole(application.HelpMenu)
+    helpMenu.Add("Documentation").OnClick(openDocumentation)
+    
+    // About location varies by platform
+    if runtime.GOOS == "darwin" {
+        // On macOS, About is in Application menu (added by AppMenu role)
+    } else {
+        helpMenu.AddSeparator()
+        helpMenu.Add("About").OnClick(showAbout)
+    }
+
+    // Set the application menu
+    app.Menu.Set(menu)
+}
+
+func handleImport(ctx *application.Context) {
+    // Implementation
+}
+
+func handleExport(ctx *application.Context) {
+    // Implementation
+}
+
+func toggleFullscreen(ctx *application.Context) {
+    window := application.Get().Window.Current()
+    window.ToggleFullscreen()
+}
+
+func toggleSidebar(ctx *application.Context) {
+    // Implementation
+}
+
+func toggleToolbar(ctx *application.Context) {
+    // Implementation
+}
+
+func showSettings(ctx *application.Context) {
+    // Implementation
+}
+
+func toggleDarkMode(ctx *application.Context) {
+    isDark := ctx.ClickedMenuItem().Checked()
+    // Apply theme
+}
+
+func openDocumentation(ctx *application.Context) {
+    // Open browser
+}
+
+func showAbout(ctx *application.Context) {
+    // Show about dialog
+}
+```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- **Gunakan role menu** untuk menu standar (File, Edit, dll.)
+- **Ikuti konvensi platform** untuk struktur menu
+- **Tambahkan keyboard shortcut** ke aksi umum
+- **Panggil menu.Update()** setelah mengubah status menu
+- **Uji di semua platform** - perilaku bervariasi
+- **Jaga menu dangkal** - maksimum 2-3 level
+- **Gunakan label jelas** - "Save Project" bukan "Save"
+
+### ❌ Jangan
+
+- **Jangan hardcode shortcut platform** - Gunakan `CmdOrCtrl`
+- **Jangan taruh Quit di menu File di macOS** - Ada di menu Application
+- **Jangan taruh About di menu Help di macOS** - Ada di menu Application
+- **Jangan lupa menu.Update()** - Menu tidak akan berfungsi dengan benar
+- **Jangan nest terlalu dalam** - Pengguna akan tersesat
+- **Jangan gunakan jargon** - Jaga label ramah pengguna
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Referensi Menu" icon="document">
+    Referensi lengkap untuk tipe item menu dan properti.
+    
+    [Pelajari Selengkapnya →](/id/features/menus/reference)
+  </Card>
+
+  <Card title="Context Menu" icon="puzzle">
+    Buat context menu klik kanan.
+    
+    [Pelajari Selengkapnya →](/id/features/menus/context)
+  </Card>
+
+  <Card title="Menu System Tray" icon="star">
+    Tambahkan integrasi system tray/menu bar.
+    
+    [Pelajari Selengkapnya →](/id/features/menus/systray)
+  </Card>
+
+  <Card title="Pola Menu" icon="open-book">
+    Pola menu umum dan praktik terbaik.
+    
+    [Pelajari Selengkapnya →](/id/guides/menus)
+  </Card>
+</CardGrid>
+
+---
+
+**Pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).

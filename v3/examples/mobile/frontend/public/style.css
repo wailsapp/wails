@@ -1,0 +1,286 @@
+:root {
+    --bg: #1b2636;
+    --surface: #243049;
+    --surface-2: #2d3a57;
+    --text: #eef2f8;
+    --muted: #9fb0c8;
+    --accent: #e8453c;
+    --accent-2: #3b82f6;
+    --radius: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-text-size-adjust: 100%;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    /* min-height (not height): the document body grows past the viewport when a
+       pane is tall, so the NATIVE WKWebView scrollView is the real scroller and
+       the iOS Scroll/Bounce toggles act on something visible. An inner-overflow
+       scroller here would scroll independently of the native scrollView and make
+       those toggles do nothing. */
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 18px 12px;
+    flex-shrink: 0;
+}
+/* Fix the height and let the width follow so the logo keeps its 320×253 ratio. */
+.app-header .logo { height: 40px; width: auto; }
+.app-header h1 { margin: 0; font-size: 22px; }
+.subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.badge {
+    background: var(--accent-2);
+    color: #fff;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;             /* wrap onto multiple rows so each pill keeps a readable width */
+    gap: 6px;
+    padding: 0 12px 10px;
+    flex-shrink: 0;
+}
+.tab {
+    flex: 1 1 auto;             /* grow to fill the row, but never shrink below a legible size */
+    min-width: 92px;
+    border: none;
+    background: var(--surface);
+    color: var(--muted);
+    padding: 9px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.tab.active { background: var(--accent); color: #fff; }
+
+main {
+    flex: 1;                 /* fill the viewport on short panes so the footer sits at the bottom */
+    padding: 4px 16px 24px;
+}
+
+.pane { display: none; animation: fade 0.18s ease; }
+.pane.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+h2 { font-size: 16px; margin: 18px 0 8px; }
+.hint { color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
+code { background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+
+.row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.row .op { color: var(--muted); font-size: 18px; }
+
+input[type="text"], input[type="number"], input:not([type]) {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--surface-2);
+    color: var(--text);
+    padding: 11px 12px;
+    border-radius: var(--radius);
+    font-size: 16px;
+}
+input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
+
+.btn {
+    flex: 0 0 auto;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 11px 16px;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn:active { transform: scale(0.97); }
+.btn.primary { background: var(--accent); color: #fff; }
+
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+
+/* Bindings pane: give the Greet / Add / Divide buttons a uniform width so the
+   button column lines up and the input area to their left spans identically —
+   the single Greet input and the Add/Divide input pair share the same edges. */
+#pane-bindings .row .btn { flex: 0 0 92px; }
+
+.switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid var(--surface-2);
+    font-size: 15px;
+}
+.switch input { width: 20px; height: 20px; accent-color: var(--accent); }
+/* Bounce only manifests while scroll is enabled (a disabled UIScrollView ignores
+   drags), so the bounce toggle is dimmed and inert until scroll is turned on. */
+.switch.disabled { opacity: 0.45; }
+
+.clock {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 14px;
+}
+
+.output {
+    background: #0f1726;
+    color: #c8d6ec;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    margin: 12px 0 0;
+    min-height: 44px;
+}
+
+/* Per-control inline feedback: sits right under its control group, compact, and
+   stays hidden until it has a result so it doesn't add empty boxes. */
+.output.inline {
+    margin: 8px 0 4px;
+    padding: 8px 12px;
+    min-height: 0;
+    font-size: 12.5px;
+    border-left: 3px solid var(--sl-color-accent, #e8410a);
+}
+.output.inline:empty {
+    display: none;
+}
+
+.scroll-filler { margin-top: 8px; }
+.scroll-block {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.metrics-out { margin: 12px 0 0; }
+
+/* Rolling log of forwarded sys:* events */
+.event-log { margin: 10px 0 0; }
+.event-line {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 12px;
+    padding: 7px 2px;
+    border-bottom: 1px solid var(--surface-2);
+}
+.event-line:last-child { border-bottom: none; }
+.event-time { color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.event-name { font-weight: 600; flex-shrink: 0; }
+.event-detail { color: var(--muted); margin-left: auto; text-align: right; }
+.metric-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2px 14px;
+    margin-bottom: 10px;
+}
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--surface-2);
+    font-size: 14px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-key { color: var(--muted); }
+.metric-val { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
+.app-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 14px;
+    flex-shrink: 0;
+}
+
+/* Mobile-features brightness slider row */
+.range-label {
+    color: var(--muted);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent, #3b82f6);
+}
+
+/* Camera: Photo/Video pill toggle + switched capture (preview/playback) area */
+.pill-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface);
+    border-radius: 999px;
+    margin: 0 0 12px;
+}
+.pill-tab {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pill-tab.active { background: var(--accent); color: #fff; }
+
+.capture-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    margin-bottom: 12px;
+    background: #0f1726;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+/* No explicit display here, so the [hidden] attribute keeps controlling
+   visibility; the flex container blockifies whichever child is shown. */
+.capture-area img,
+.capture-area video {
+    width: 100%;
+    border-radius: var(--radius);
+}
+.capture-placeholder {
+    margin: 0;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+}
+.capture-btn { width: 100%; }

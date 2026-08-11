@@ -30,6 +30,9 @@ on:
     paths:
       - 'v3/internal/commands/build_assets/docker/Dockerfile.cross'
 
+permissions:
+  contents: read
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: wailsapp/wails-cross
@@ -37,11 +40,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      GOWORK: "off"
     permissions:
       contents: read
       packages: write
+    env:
+      GOWORK: "off"
     outputs:
       image_tag: ${{ steps.vars.outputs.image_version }}
 
@@ -114,6 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOWORK: "off"
+    permissions:
+      contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:

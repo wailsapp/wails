@@ -34,6 +34,11 @@ type commonEvents struct {
 	WindowZoomIn               WindowEventType
 	WindowZoomOut              WindowEventType
 	WindowZoomReset            WindowEventType
+	BatteryChanged             ApplicationEventType
+	NetworkChanged             ApplicationEventType
+	ScreenLocked               ApplicationEventType
+	ScreenUnlocked             ApplicationEventType
+	LowMemory                  ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -66,6 +71,11 @@ func newCommonEvents() commonEvents {
 		WindowZoomIn:               1049,
 		WindowZoomOut:              1050,
 		WindowZoomReset:            1051,
+		BatteryChanged:             1287,
+		NetworkChanged:             1288,
+		ScreenLocked:               1289,
+		ScreenUnlocked:             1290,
+		LowMemory:                  1291,
 	}
 }
 
@@ -244,6 +254,7 @@ type macEvents struct {
 	WindowZoomIn                                            WindowEventType
 	WindowZoomOut                                           WindowEventType
 	WindowZoomReset                                         WindowEventType
+	WebViewWebContentProcessDidTerminate                    WindowEventType
 }
 
 func newMacEvents() macEvents {
@@ -384,6 +395,7 @@ func newMacEvents() macEvents {
 		WindowZoomIn:                                            1198,
 		WindowZoomOut:                                           1199,
 		WindowZoomReset:                                         1200,
+		WebViewWebContentProcessDidTerminate:                    1267,
 	}
 }
 
@@ -485,7 +497,7 @@ func newWindowsEvents() windowsEvents {
 	}
 }
 
-var iOS = newIOSEvents()
+var IOS = newIOSEvents()
 
 type iosEvents struct {
 	ApplicationDidBecomeActive             ApplicationEventType
@@ -510,6 +522,11 @@ type iosEvents struct {
 	WebViewDidFinishNavigation             WindowEventType
 	WebViewDidFailNavigation               WindowEventType
 	WebViewDecidePolicyForNavigationAction WindowEventType
+	BatteryChanged                         ApplicationEventType
+	NetworkChanged                         ApplicationEventType
+	ThemeChanged                           ApplicationEventType
+	ScreenLocked                           ApplicationEventType
+	ScreenUnlocked                         ApplicationEventType
 }
 
 func newIOSEvents() iosEvents {
@@ -536,6 +553,49 @@ func newIOSEvents() iosEvents {
 		WebViewDidFinishNavigation:             1264,
 		WebViewDidFailNavigation:               1265,
 		WebViewDecidePolicyForNavigationAction: 1266,
+		BatteryChanged:                         1277,
+		NetworkChanged:                         1278,
+		ThemeChanged:                           1279,
+		ScreenLocked:                           1280,
+		ScreenUnlocked:                         1281,
+	}
+}
+
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+	ActivityCreated      ApplicationEventType
+	ActivityStarted      ApplicationEventType
+	ActivityResumed      ApplicationEventType
+	ActivityPaused       ApplicationEventType
+	ActivityStopped      ApplicationEventType
+	ActivityDestroyed    ApplicationEventType
+	ApplicationLowMemory ApplicationEventType
+	WebViewPageStarted   WindowEventType
+	WebViewPageFinished  WindowEventType
+	BatteryChanged       ApplicationEventType
+	NetworkChanged       ApplicationEventType
+	ThemeChanged         ApplicationEventType
+	ScreenLocked         ApplicationEventType
+	ScreenUnlocked       ApplicationEventType
+}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+		ActivityCreated:      1268,
+		ActivityStarted:      1269,
+		ActivityResumed:      1270,
+		ActivityPaused:       1271,
+		ActivityStopped:      1272,
+		ActivityDestroyed:    1273,
+		ApplicationLowMemory: 1274,
+		WebViewPageStarted:   1275,
+		WebViewPageFinished:  1276,
+		BatteryChanged:       1282,
+		NetworkChanged:       1283,
+		ThemeChanged:         1284,
+		ScreenLocked:         1285,
+		ScreenUnlocked:       1286,
 	}
 }
 
@@ -787,4 +847,29 @@ var eventToJS = map[uint]string{
 	1264: "ios:WebViewDidFinishNavigation",
 	1265: "ios:WebViewDidFailNavigation",
 	1266: "ios:WebViewDecidePolicyForNavigationAction",
+	1267: "mac:WebViewWebContentProcessDidTerminate",
+	1268: "android:ActivityCreated",
+	1269: "android:ActivityStarted",
+	1270: "android:ActivityResumed",
+	1271: "android:ActivityPaused",
+	1272: "android:ActivityStopped",
+	1273: "android:ActivityDestroyed",
+	1274: "android:ApplicationLowMemory",
+	1275: "android:WebViewPageStarted",
+	1276: "android:WebViewPageFinished",
+	1277: "ios:BatteryChanged",
+	1278: "ios:NetworkChanged",
+	1279: "ios:ThemeChanged",
+	1280: "ios:ScreenLocked",
+	1281: "ios:ScreenUnlocked",
+	1282: "android:BatteryChanged",
+	1283: "android:NetworkChanged",
+	1284: "android:ThemeChanged",
+	1285: "android:ScreenLocked",
+	1286: "android:ScreenUnlocked",
+	1287: "common:BatteryChanged",
+	1288: "common:NetworkChanged",
+	1289: "common:ScreenLocked",
+	1290: "common:ScreenUnlocked",
+	1291: "common:LowMemory",
 }

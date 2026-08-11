@@ -7,6 +7,24 @@ package webview
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
+
+static gboolean unref_request_on_main(gpointer data) {
+	if (data != NULL) {
+		g_object_unref(data);
+	}
+	return G_SOURCE_REMOVE;
+}
+
+// releaseRequestOnMainThread schedules the WebKitURISchemeRequest unref on the
+// GTK main context. Close() runs on the assetserver goroutine, and dropping
+// what may be the last reference finalizes a WebKit GObject — only safe on the
+// UI thread (see #5557).
+static void releaseRequestOnMainThread(WebKitURISchemeRequest *request) {
+	if (request == NULL) {
+		return;
+	}
+	g_main_context_invoke(NULL, unref_request_on_main, request);
+}
 */
 import "C"
 
@@ -36,7 +54,14 @@ type request struct {
 }
 
 func (r *request) URL() (string, error) {
-	return C.GoString(C.webkit_uri_scheme_request_get_uri(r.req)), nil
+	// Reading the URI touches the WebKit-owned request on the GTK main loop;
+	// this runs on a worker goroutine, so it must hop to the main thread.
+	// See mainthread_linux.go and issue #5631.
+	var uri string
+	invokeOnMainSync(func() {
+		uri = C.GoString(C.webkit_uri_scheme_request_get_uri(r.req))
+	})
+	return uri, nil
 }
 
 func (r *request) Method() (string, error) {
@@ -77,6 +102,6 @@ func (r *request) Close() error {
 		err = r.body.Close()
 	}
 	r.Response().Finish()
-	C.g_object_unref(C.gpointer(r.req))
+	C.releaseRequestOnMainThread(r.req)
 	return err
 }

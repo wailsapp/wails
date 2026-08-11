@@ -1,0 +1,257 @@
+---
+title: Sistem Template
+description: Cara Wails v3 mem-scaffold proyek baru, bagaimana template diorganisasi, dan cara membuat template Anda sendiri.
+sidebar:
+  order: 7
+---
+
+Wails mengirim **sistem template** yang memungkinkan `wails3 init` menghasilkan
+proyek siap dijalankan. Set framework yang sengaja kecil memiliki template
+bawaan (Vanilla, React, Vue, Svelte); framework lain dapat digunakan dengan
+[membawa frontend sendiri](/id/guides/dev/frontend-frameworks) atau menerbitkan
+[template kustom](/id/guides/advanced/custom-templates).
+
+Halaman ini mencakup:
+
+1. Layout direktori template
+2. Cara CLI memilih & merender template
+3. Membuat template baru langkah demi langkah
+4. Memperbarui atau meng-override template yang ada
+5. Troubleshooting dan praktik terbaik
+
+---
+
+## 1. Di Mana Template Berada
+
+```
+v3/internal/templates/
+├── _common/        # File disalin ke SETIAP proyek (Taskfile.yml, build/, dll.)
+├── base/           # Lapisan dasar "plain Go" backend-only (frontend/ + NEXTSTEPS.md)
+├── ios/            # Bootstrapper iOS
+├── vanilla/        vanilla-js/   # TypeScript (default) + varian JavaScript
+├── react/          react-js/     # TypeScript (default) + varian JavaScript
+├── vue/                          # TypeScript saja
+├── svelte/                       # TypeScript saja
+└── templates.go    # Registry + API Install/Get (tanpa auto-registration via embed)
+```
+
+* **`_common/`** — boilerplate universal (Taskfile, direktori `build/`,
+  infrastruktur bersama) digabung ke setiap proyek.
+* **`base/`** — sisi Go yang menjadi titik awal setiap template. Catatan: `base/`
+  sendiri **tidak** berisi `template.json`; file itu ada di dalam setiap
+  template spesifik framework.
+* **Folder framework** — berisi frontend (`frontend/`), konfig
+  framework, dan `template.json` yang mendeskripsikan metadata template.
+* Nama folder cocok dengan **template ID** yang Anda teruskan ke CLI
+  (`wails3 init -t react`).
+* **Konvensi bahasa:** TypeScript adalah default dan memiliki nama polos
+  (`react`); varian JavaScript, jika ada, disuffix `-js`
+  (`react-js`). Template bawaan mendeklarasikan bahasa mereka secara eksplisit dengan
+  `typescript: true|false` di `template.yaml`. Template komunitas mungkin masih menggunakan
+  suffix legacy `-ts`, yang dihormati sebagai fallback.
+
+> Seluruh direktori `internal/templates/` dikompilasi ke binary CLI
+> via `//go:embed *`, sehingga pengguna dapat scaffold proyek offline.
+
+---
+
+## 2. Cara `wails3 init` Menggunakan Template
+
+Rantai panggilan (tidak ada `cmd/wails3/init.go` — CLI di-wire langsung di
+`cmd/wails3/main.go`):
+
+```
+cmd/wails3/main.go             (clir wiring)
+       │
+       ▼
+internal/commands/init.go      Init(options *flags.Init) error
+       │
+       ▼
+internal/templates/templates.go
+       │   templates.Install(options)
+       │   templates.GetDefaultTemplates()
+       ▼
+gosod.New(template.FS).Extract(options.ProjectDir, data)   // ekstraksi file
+       │
+       ▼
+go mod tidy (kecuali --skipgomodtidy / -skipgomodtidy)
+```
+
+Tidak ada API `Template.Load()` / `Template.CopyTo()` / `Template.Validate()`
+— ekstraksi ditangani oleh `gosod` (`github.com/leaanthony/gosod`) terhadap
+`fs.FS` embedded.
+
+### Flag `wails3 init`
+
+Didefinisikan di `internal/flags/init.go`:
+
+| Flag | Tujuan | Default |
+|------|---------|---------|
+| `-p`              | Nama paket | `main` |
+| `-t`              | Nama template bawaan, path lokal, atau URL | `vanilla` |
+| `-n`              | Nama proyek | (kosong) |
+| `-d`              | Direktori proyek | `.` |
+| `-q`              | Suppress output konsol | false |
+| `-l`              | Daftar template | false |
+| `-skipgomodtidy`  | Lewati menjalankan `go mod tidy` setelah ekstraksi | false |
+| `-git`            | URL repository Git untuk diinisialisasi | (kosong) |
+| `-mod`            | Path modul Go (diturunkan dari `-git` jika tidak diset) | (kosong) |
+| `-s`              | Lewati peringatan saat menggunakan template remote | false |
+| `-productname` / `-productdescription` / `-productversion` / `-productcompany` / `-productcopyright` / `-productcomments` / `-productidentifier` | Metadata di-bake ke build asset yang dihasilkan | default masuk akal |
+
+**Tidak ada** alias long `-list` (`-l` saja) dan tidak ada `--help` per-template.
+
+### Substitusi
+
+Placeholder adalah directive template Go standar — `.` di depan adalah bagian dari
+aksesor field:
+
+| Placeholder | Contoh | Sumber |
+|-------------|---------|--------|
+| `{{.ProjectName}}` | `myapp` | flag `-n` / nama direktori |
+| `{{.ModulePath}}`  | `github.com/me/myapp` | flag `-mod` atau diturunkan dari `-git` |
+| `{{.WailsVersion}}`| `v3.0.0-…` | Konstanta compiled-in dari `internal/version` |
+| `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Metadata bake-time | flag `-product*` yang sesuai |
+
+Jika Anda membutuhkan placeholder baru, tambahkan field ke data template di
+`internal/templates/templates.go` dan field/flag yang cocok di
+`internal/flags/init.go` (atau set dari `internal/commands/init.go`).
+
+### Hook Post-Copy
+
+Setelah `gosod` selesai mengekstrak template, CLI menjalankan:
+
+```
+go mod tidy
+```
+
+kecuali Anda meneruskan `-skipgomodtidy`. Tidak ada langkah `task deps`.
+
+---
+
+## 3. Membuat Template Baru
+
+> Contoh: Tambahkan template **Solid**
+
+### 3.1 Folder & ID
+
+```
+internal/templates/solid/
+```
+
+Nama folder = template ID. Gunakan **kebab-case**.
+
+### 3.2 Set File Minimal
+
+```
+solid/
+├── template.yaml    # name, description, wailsVersion, typescript (wajib)
+├── frontend/        # Proyek web Anda (tanpa node_modules/dist)
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+└── ...              # File Go ekstra yang ingin diinjeksi template
+```
+
+Mulai dengan menyalin `react` dan memangkas file. Jangan lupa menulis
+`template.yaml` — set `typescript: true` untuk template TypeScript — `base/` adalah
+satu-satunya folder tanpanya.
+
+### 3.3 Perbarui Placeholder
+
+Cari/ganti nilai sampel literal dengan directive template Go, mis.:
+
+* `myapp` → `{{.ProjectName}}`
+* `github.com/you/myapp` → `{{.ModulePath}}`
+
+### 3.4 Wire Up
+
+Karena `templates.go` melewati FS embedded saat init, meletakkan folder baru
+di bawah `internal/templates/<id>/` umumnya cukup — tidak perlu panggilan
+registrasi manual. Jika Anda membutuhkan logika ekstra (validasi kustom,
+langkah post-copy), tambahkan ke `templates.Install` di
+`internal/templates/templates.go`.
+
+### 3.5 Tes
+
+```bash
+wails3 init -n demo -t solid
+cd demo
+wails3 dev
+```
+
+Pastikan:
+
+* Dev server start di port yang diterbitkan di `WAILS_VITE_PORT`
+* Binding yang dihasilkan muncul di bawah `frontend/bindings/...`
+* Hot-reload berfungsi
+
+---
+
+## 4. Memodifikasi Template yang Ada
+
+1. Edit file di bawah `internal/templates/<id>/`.
+2. Re-build CLI (`cd v3 && go build -o ../wails3 ./cmd/wails3`); directive
+   `//go:embed *` mengambil konten baru.
+3. Bump **versi dependensi** di `frontend/package.json` &
+   `Taskfile.yml`.
+4. Perbarui deskripsi `template.json` template jika perilaku berubah.
+
+### Penyesuaian Umum
+
+| Task | Di Mana |
+|------|-------|
+| Ubah port dev server | `frontend/vite.config.ts` — baca `WAILS_VITE_PORT` |
+| Tambah variabel lingkungan | `build/Taskfile.yml` atau `frontend/.env` |
+| Ganti package manager JS | Tukar `npm` → `pnpm`/`bun` di `build/Taskfile.yml` |
+
+---
+
+## 5. Tips Authoring Template
+
+* **Jaga frontend generik** — hindari mereferensikan global spesifik Wails;
+  `/wails/runtime.js` dilayani oleh asset server saat runtime.
+* **Tanpa artefak compiled** — kecualikan `node_modules`, `dist`, `.DS_Store` dari
+  direktori embedded (atau `.gitignore` agar tidak pernah di-commit).
+* **Dokumentasikan prasyarat** — versi Node, alat CLI ekstra, dll., di
+  `template.json` atau `NEXTSTEPS.md`.
+* **Hindari breaking change** — jika overhaul besar, buat template ID baru
+  daripada memutasi yang ada.
+
+---
+
+## 6. Troubleshooting
+
+| Gejala | Penyebab | Perbaikan |
+|---------|-------|-----|
+| `unknown template name` | Typo di `-t` atau template tidak embedded | Jalankan `wails3 init -l` untuk daftar template tersedia |
+| Placeholder tidak diganti | Menggunakan `{{ProjectName}}` bukan `{{.ProjectName}}` | Tambahkan `.` di depan (akses field template Go) |
+| Dev server membuka halaman kosong | Konfig Vite tidak membaca `WAILS_VITE_PORT` | Periksa `vite.config.ts` Anda |
+| Frontend gagal build di prod | Lupa path `base` Vite | Set `base: "./"` di `vite.config.ts` |
+
+---
+
+## 7. Peta File Sumber Kunci
+
+| File | Tanggung Jawab |
+|------|----------------|
+| `internal/templates/templates.go` | Embed template FS, mengekspos `Install(options *flags.Init) error`, `GetDefaultTemplates()`, `ValidTemplateName(name)` |
+| `internal/templates/<id>/**` | Konten template aktual |
+| `internal/commands/init.go` | Glue CLI: memilih template, mengisi metadata, memanggil `templates.Install` |
+| `internal/commands/generate_template.go` | `wails3 generate template` — utilitas untuk *mengekspor* proyek live kembali ke template (berguna untuk update) |
+| `internal/flags/init.go` | Definisi flag untuk `wails3 init` |
+
+---
+
+## 8. Rekap
+
+* Template ada di **`internal/templates/`** dan di-bake ke CLI via
+  `//go:embed *`.
+* `wails3 init -t <id>` mengekstrak template via `gosod` dan menjalankan
+  `go mod tidy` (dapat dilewati dengan `-skipgomodtidy`).
+* Membuat template sesederhana **membuat folder**, menambahkan file plus
+  `template.json`, dan menggunakan placeholder gaya `{{.ProjectName}}`.
+* Sistem **dapat diperluas** dan **self-contained** — sempurna untuk berbagi
+  stack kustom dengan tim atau komunitas Anda.
+
+Happy templating!

@@ -95,8 +95,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'master'
     timeout-minutes: 25
-    env:
-      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:
@@ -108,25 +106,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
-          cache-dependency-path: "v3/go.sum"
+          cache-dependency-path: |
+            v3/go.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -200,50 +196,42 @@ jobs:
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
     if: github.base_ref == 'master'
-    env:
-      GOWORK: "off"
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
-          - svelte
-          - svelte-ts
-          - vue
-          - vue-ts
-          - react
-          - react-ts
-          - preact
-          - preact-ts
-          - lit
-          - lit-ts
           - vanilla
-          - vanilla-ts
+          - vanilla-js
+          - react
+          - react-js
+          - vue
+          - vue-js
+          - svelte
+          - svelte-js
         go-version: [1.25]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
-          version: 1.0
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
-          cache-dependency-path: "v3/go.sum"
+          cache-dependency-path: |
+            v3/go.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2

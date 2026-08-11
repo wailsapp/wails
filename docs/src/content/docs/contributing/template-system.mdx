@@ -6,8 +6,10 @@ sidebar:
 ---
 
 Wails ships with a **template system** that lets `wails3 init` produce a
-ready-to-run project for any modern frontend stack (React, Svelte, Vue, Solid,
-Lit, Preact, Qwik, SvelteKit, Vanilla JS, …).
+ready-to-run project. A deliberately small set of frameworks have built-in
+templates (Vanilla, React, Vue, Svelte); any other framework can be used by
+[bringing your own frontend](/guides/dev/frontend-frameworks) or publishing a
+[custom template](/guides/advanced/custom-templates).
 
 This page covers:
 
@@ -26,16 +28,10 @@ v3/internal/templates/
 ├── _common/        # Files copied into EVERY project (Taskfile.yml, build/, etc.)
 ├── base/           # Backend-only "plain Go" base layer (frontend/ + NEXTSTEPS.md)
 ├── ios/            # iOS bootstrapper
-├── vanilla/        vanilla-ts/
-├── react/          react-ts/
-├── react-swc/      react-swc-ts/
-├── lit/            lit-ts/
-├── preact/         preact-ts/
-├── qwik/           qwik-ts/
-├── solid/          solid-ts/
-├── svelte/         svelte-ts/
-├── sveltekit/      sveltekit-ts/
-├── vue/            vue-ts/
+├── vanilla/        vanilla-js/   # TypeScript (default) + JavaScript variant
+├── react/          react-js/     # TypeScript (default) + JavaScript variant
+├── vue/                          # TypeScript only
+├── svelte/                       # TypeScript only
 └── templates.go    # Registry + Install/Get APIs (no auto-registration via embed)
 ```
 
@@ -47,7 +43,12 @@ v3/internal/templates/
 * **Framework folders** — contain the frontend (`frontend/`), framework
   config, and a `template.json` describing the template metadata.
 * Folder names match the **template ID** you pass to the CLI
-  (`wails3 init -t react-ts`).
+  (`wails3 init -t react`).
+* **Language convention:** TypeScript is the default and owns the bare name
+  (`react`); a JavaScript variant, where one exists, is suffixed `-js`
+  (`react-js`). Built-in templates declare their language explicitly with
+  `typescript: true|false` in `template.yaml`. Community templates may still use
+  the legacy `-ts` suffix, which is honoured as a fallback.
 
 > The whole `internal/templates/` directory is compiled into the CLI binary
 > via `//go:embed *`, so users can scaffold projects offline.
@@ -130,12 +131,12 @@ unless you pass `-skipgomodtidy`. There is no `task deps` step.
 
 ## 3. Creating a New Template
 
-> Example: Add **Qwik-TS** template
+> Example: Add a **Solid** template
 
 ### 3.1 Folder & ID
 
 ```
-internal/templates/qwik-ts/
+internal/templates/solid/
 ```
 
 The folder name = template ID. Keep it **kebab-case**.
@@ -143,8 +144,8 @@ The folder name = template ID. Keep it **kebab-case**.
 ### 3.2 Minimal File Set
 
 ```
-qwik-ts/
-├── template.json    # name, description, schema version (required)
+solid/
+├── template.yaml    # name, description, wailsVersion, typescript (required)
 ├── frontend/        # Your web project (no node_modules/dist)
 │   ├── src/
 │   ├── package.json
@@ -152,8 +153,9 @@ qwik-ts/
 └── ...              # Any extra Go files the template wants to inject
 ```
 
-Start by copying `react-ts` and pruning files. Don't forget to author a
-`template.json` — `base/` is the only folder without one.
+Start by copying `react` and pruning files. Don't forget to author a
+`template.yaml` — set `typescript: true` for a TypeScript template — `base/` is
+the only folder without one.
 
 ### 3.3 Update Placeholders
 
@@ -173,7 +175,7 @@ post-copy steps), add it to `templates.Install` in
 ### 3.5 Test
 
 ```bash
-wails3 init -n demo -t qwik-ts
+wails3 init -n demo -t solid
 cd demo
 wails3 dev
 ```

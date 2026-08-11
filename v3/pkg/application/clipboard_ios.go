@@ -2,6 +2,14 @@
 
 package application
 
+/*
+#include <stdlib.h>
+#include "application_ios.h"
+*/
+import "C"
+
+import "unsafe"
+
 type iosClipboardImpl struct{}
 
 func newClipboardImpl() clipboardImpl {
@@ -9,25 +17,17 @@ func newClipboardImpl() clipboardImpl {
 }
 
 func (c *iosClipboardImpl) setText(text string) bool {
-	// iOS clipboard implementation would go here
+	ctext := C.CString(text)
+	defer C.free(unsafe.Pointer(ctext))
+	C.ios_clipboard_set_text(ctext)
 	return true
 }
 
 func (c *iosClipboardImpl) text() (string, bool) {
-	// iOS clipboard implementation would go here
-	return "", false
-}
-
-// SetClipboardText sets the clipboard text on iOS
-func (c *ClipboardManager) SetClipboardText(text string) error {
-	// iOS clipboard implementation would go here
-	// For now, return nil as a placeholder
-	return nil
-}
-
-// GetClipboardText gets the clipboard text on iOS
-func (c *ClipboardManager) GetClipboardText() (string, error) {
-	// iOS clipboard implementation would go here
-	// For now, return empty string
-	return "", nil
+	ctext := C.ios_clipboard_get_text()
+	if ctext == nil {
+		return "", false
+	}
+	defer C.free(unsafe.Pointer(ctext))
+	return C.GoString(ctext), true
 }

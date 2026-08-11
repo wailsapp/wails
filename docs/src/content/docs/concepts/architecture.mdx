@@ -24,7 +24,7 @@ Wails App: {
     shape: sequence_diagram
     backend."Serves Static Web App"
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via WebKit"
+    frontend."Render Site via OS-native WebView"
   }
   Regular Communication: {
     shape: sequence_diagram
@@ -209,10 +209,12 @@ Wails Event System: {
   Event Driver: {
     shape: sequence_diagram
     window1."Subscribe to 'data-updated' events"
+    window2."Subscribe to 'data-updated' events"
     backend.a."App Emit('data-updated', data)"
     backend.a -> window1.a:"JSON Event Bus"
     backend.a -> window2:"JSON Event Bus"
     window1.a."Subscriber processes On('data-updated', handler)"
+    window2."Subscriber processes On('data-updated', handler)"
   }
 }
 ```
@@ -535,7 +537,7 @@ Style: Technical diagram with memory regions as boxes, clear labels, size indica
 - **Stream large files**: Don't load entirely into memory
 - **Clean up listeners**: Remove event listeners when done
 
-[Learn more about performance →](/guides/advanced/performance)
+[Learn more about performance →](/guides/performance)
 
 ## Security Model
 
@@ -594,7 +596,7 @@ Bridge -> Frontend: "Send response"
 - **Sanitise file paths** before file operations
 - **Rate limit** expensive operations
 
-[Learn more about security →](/guides/advanced/security)
+[Learn more about security →](/guides/security)
 
 ## Next Steps
 

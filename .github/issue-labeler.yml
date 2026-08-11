@@ -8,16 +8,15 @@ v2-only:
   - 'using v2'
   - 'master branch'
 
-v3-alpha:
+v3:
   - '\[v3\]'
   - '\(v3\)'
   - 'v3:'
-  - '\[v3-alpha\]'
-  - '\(v3-alpha\)'
+  - 'v3 beta'
   - 'version 3'
   - 'wails v3'
   - 'using v3'
-  - 'v3-alpha branch'
+  - 'releases/v3-beta branch'
 
 # Component labels
 webview2:
