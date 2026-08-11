@@ -418,13 +418,74 @@ describe("WailsSocket protocol handling", () => {
     }, 1000);
 });
 
+describe("JSONStream in desktop mode", () => {
+    it("decodes once for onmessage and distinct listeners", async () => {
+        const poll = deferred();
+        vi.stubGlobal("fetch", vi.fn((input) =>
+            String(input).endsWith("/poll") ? poll.promise : Promise.resolve(response(204))
+        ));
+
+        const { JSONStream } = await import("./stream");
+        const socket = JSONStream("json");
+        socket._opened();
+        const received = [];
+        socket.addEventListener("message", (event) => received.push(event.data));
+        socket.addEventListener("message", (event) => received.push(event.data));
+
+        const payload = new TextEncoder().encode('{"ok":true}');
+        socket._message(payload.buffer);
+
+        expect(received).toHaveLength(2);
+        expect(received[0]).toBe(received[1]);
+        socket._closed(1000, "", true);
+    });
+});
+
 describe("JSONStream in server mode", () => {
-    it("preserves addEventListener duplicate suppression while decoding", async () => {
-        class FakeSocket extends EventTarget {
-            binaryType = "blob";
-            send() {}
+    class FakeSocket {
+        binaryType = "blob";
+        listeners = new Map();
+
+        send() {}
+
+        addEventListener(type, listener) {
+            const listeners = this.listeners.get(type) ?? [];
+            if (!listeners.includes(listener)) listeners.push(listener);
+            this.listeners.set(type, listeners);
         }
 
+        removeEventListener(type, listener) {
+            const listeners = this.listeners.get(type) ?? [];
+            this.listeners.set(type, listeners.filter((candidate) => candidate !== listener));
+        }
+
+        dispatchEvent(event) {
+            for (const listener of [...(this.listeners.get(event.type) ?? [])]) {
+                if (typeof listener === "function") listener.call(this, event);
+                else listener.handleEvent(event);
+            }
+            return !event.defaultPrevented;
+        }
+    }
+
+    it("decodes once for onmessage and distinct listeners", async () => {
+        const native = new FakeSocket();
+        window._wails.streamFactory = () => native;
+
+        const { JSONStream } = await import("./stream");
+        const socket = JSONStream("json");
+        const received = [];
+        socket.onmessage = (event) => received.push(event.data);
+        socket.addEventListener("message", (event) => received.push(event.data));
+
+        const payload = new TextEncoder().encode('{"ok":true}');
+        native.dispatchEvent(new MessageEvent("message", { data: payload.buffer }));
+
+        expect(received).toHaveLength(2);
+        expect(received[0]).toBe(received[1]);
+    });
+
+    it("preserves addEventListener duplicate suppression while decoding", async () => {
         const native = new FakeSocket();
         window._wails.streamFactory = () => native;
 
@@ -439,5 +500,45 @@ describe("JSONStream in server mode", () => {
 
         expect(listener).toHaveBeenCalledTimes(1);
         expect(listener.mock.calls[0][0].data).toEqual({ ok: true });
+    });
+
+    it("preserves listener removal while decoding", async () => {
+        const native = new FakeSocket();
+        window._wails.streamFactory = () => native;
+
+        const { JSONStream } = await import("./stream");
+        const socket = JSONStream("json");
+        const listener = vi.fn();
+        socket.addEventListener("message", listener);
+        socket.removeEventListener("message", listener);
+
+        const payload = new TextEncoder().encode('{"ok":true}');
+        native.dispatchEvent(new MessageEvent("message", { data: payload.buffer }));
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it("emits one error and drops malformed JSON for every listener", async () => {
+        const native = new FakeSocket();
+        window._wails.streamFactory = () => native;
+
+        const { JSONStream } = await import("./stream");
+        const socket = JSONStream("json");
+        const first = vi.fn();
+        const second = vi.fn();
+        const handler = vi.fn();
+        const onerror = vi.fn();
+        socket.onmessage = handler;
+        socket.addEventListener("message", first);
+        socket.addEventListener("message", second);
+        socket.addEventListener("error", onerror);
+
+        const payload = new TextEncoder().encode("not json");
+        native.dispatchEvent(new MessageEvent("message", { data: payload.buffer }));
+
+        expect(handler).not.toHaveBeenCalled();
+        expect(first).not.toHaveBeenCalled();
+        expect(second).not.toHaveBeenCalled();
+        expect(onerror).toHaveBeenCalledTimes(1);
     });
 });

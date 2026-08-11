@@ -471,22 +471,31 @@ export function JSONStream(name: string): JSONSocket {
         native.binaryType = "arraybuffer";
 
         const wrapped = new WeakMap<object, EventListener>();
+        const decodedEvents = new WeakMap<Event, MessageEvent | null>();
         const add = native.addEventListener.bind(native);
         const remove = native.removeEventListener.bind(native);
+
+        const decodeEvent = (ev: Event): MessageEvent | null => {
+            if (decodedEvents.has(ev)) return decodedEvents.get(ev) ?? null;
+            try {
+                const value = parse((ev as MessageEvent).data);
+                const decoded = new MessageEvent("message", { data: value });
+                decodedEvents.set(ev, decoded);
+                return decoded;
+            } catch {
+                decodedEvents.set(ev, null);
+                native.dispatchEvent(new Event("error"));
+                return null;
+            }
+        };
 
         const decode = (listener: any): EventListener => {
             const existing = wrapped.get(listener as object);
             if (existing) return existing;
 
             const fn: EventListener = (ev) => {
-                let value: unknown;
-                try {
-                    value = parse((ev as MessageEvent).data);
-                } catch {
-                    native.dispatchEvent(new Event("error"));
-                    return;
-                }
-                const decoded = new MessageEvent("message", { data: value });
+                const decoded = decodeEvent(ev);
+                if (!decoded) return;
                 if (typeof listener === "function") listener.call(native, decoded);
                 else listener.handleEvent(decoded);
             };
