@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"go/ast"
 	"go/token"
 	"go/types"
 	"iter"
@@ -10,15 +11,23 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+// ServiceBinding describes a concrete service type discovered by the static
+// analyser and, when non-nil, the named interface that projects its frontend
+// binding surface.
+type ServiceBinding struct {
+	Type       *types.TypeName
+	Projection *types.TypeName
+}
+
 // FindServices scans the given packages for invocations
-// of the NewService function from the Wails application package.
+// of service registration functions from the Wails application package.
 //
 // Whenever one is found and the type of its unique argument
-// is a valid service type, the corresponding named type object
+// is a valid service type, the corresponding service binding
 // is fed into the returned iterator.
 //
 // Results are deduplicated, i.e. the iterator yields any given object at most once.
-func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) (iter.Seq[*types.TypeName], types.Object, error) {
+func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) (iter.Seq[*ServiceBinding], types.Object, error) {
 	type instanceInfo struct {
 		args *types.TypeList
 		pos  token.Position
@@ -147,10 +156,36 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 		}
 	}
 
-	// found tracks service types that have been found so far, for deduplication.
-	found := make(map[*types.TypeName]bool)
+	projected, err := findProjectedServices(pkgs, systemPaths, logger)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return func(yield func(*types.TypeName) bool) {
+	// found tracks service types that have been found so far, for deduplication.
+	found := make(map[*types.TypeName]*ServiceBinding)
+
+	return func(yield func(*ServiceBinding) bool) {
+		yieldBinding := func(binding *ServiceBinding) bool {
+			if previous := found[binding.Type]; previous != nil {
+				if previous.Projection != binding.Projection {
+					logger.Errorf(
+						"service type %s is registered with conflicting frontend binding projections",
+						binding.Type,
+					)
+				}
+				return true
+			}
+
+			found[binding.Type] = binding
+			return yield(binding)
+		}
+
+		for _, binding := range projected {
+			if !yieldBinding(binding) {
+				return
+			}
+		}
+
 		// Process targets.
 		for len(next) > 0 {
 			// Pop one target off the next list.
@@ -208,13 +243,165 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				}
 
 				// Record and yield type object.
-				if !found[named.Obj()] {
-					found[named.Obj()] = true
-					if !yield(named.Obj()) {
-						return
-					}
+				if !yieldBinding(&ServiceBinding{Type: named.Obj()}) {
+					return
 				}
 			}
 		}
 	}, registerEvent, nil
+}
+
+// findProjectedServices finds direct calls to NewServiceAs and
+// NewServiceAsWithOptions. Unlike NewService, the projection type argument is
+// an interface, so the concrete service type must be read from the call
+// argument's static type rather than from the generic instantiation alone.
+func findProjectedServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) ([]*ServiceBinding, error) {
+	var result []*ServiceBinding
+	badApplicationPackage := false
+
+	for _, pkg := range pkgs {
+		for _, file := range pkg.Syntax {
+			ast.Inspect(file, func(node ast.Node) bool {
+				if badApplicationPackage {
+					return false
+				}
+				call, ok := node.(*ast.CallExpr)
+				if !ok || len(call.Args) == 0 {
+					return true
+				}
+
+				ident := calledFunctionIdent(call.Fun)
+				if ident == nil {
+					return true
+				}
+				obj := pkg.TypesInfo.Uses[ident]
+				if obj == nil || obj.Pkg() == nil || obj.Pkg().Path() != systemPaths.ApplicationPackage {
+					return true
+				}
+				if obj.Name() != "NewServiceAs" && obj.Name() != "NewServiceAsWithOptions" {
+					return true
+				}
+
+				fn, ok := obj.(*types.Func)
+				if !ok {
+					return true
+				}
+				signature := fn.Type().(*types.Signature)
+				typeParams := signature.TypeParams()
+				wantParams := 1
+				if obj.Name() == "NewServiceAsWithOptions" {
+					wantParams = 2
+				}
+				if signature.Params().Len() != wantParams || signature.Results().Len() != 1 || typeParams == nil || typeParams.Len() != 1 {
+					badApplicationPackage = true
+					return false
+				}
+
+				instance, ok := pkg.TypesInfo.Instances[ident]
+				if !ok || instance.TypeArgs.Len() != 1 {
+					return true
+				}
+
+				position := pkg.Fset.Position(ident.Pos())
+				projection, ok := namedProjection(instance.TypeArgs.At(0))
+				if !ok {
+					// The implementation of NewServiceAsWithOptions delegates to
+					// NewServiceAs with an unresolved type parameter. Its concrete
+					// call sites are analysed separately.
+					if pkg.PkgPath != systemPaths.ApplicationPackage {
+						logger.Warningf("%s: ignoring service binding projection %s: expected a named interface", position, instance.TypeArgs.At(0))
+					}
+					return true
+				}
+
+				interfaceType := projection.Underlying().(*types.Interface).Complete()
+				for i := range interfaceType.NumMethods() {
+					if method := interfaceType.Method(i); !method.Exported() {
+						logger.Errorf("%s: service binding projection %s contains unexported method %s", position, projection, method.Name())
+						return true
+					}
+				}
+
+				argumentType := pkg.TypesInfo.TypeOf(call.Args[0])
+				service, ok := namedServicePointer(argumentType)
+				if !ok {
+					if pkg.PkgPath != systemPaths.ApplicationPackage {
+						logger.Warningf(
+							"%s: cannot determine concrete service type from projected service argument %s; pass a concrete service pointer directly",
+							position,
+							argumentType,
+						)
+					}
+					return true
+				}
+
+				if !types.AssignableTo(argumentType, projection) {
+					logger.Errorf("%s: service type %s does not implement binding projection %s", position, argumentType, projection)
+					return true
+				}
+
+				result = append(result, &ServiceBinding{Type: service.Obj(), Projection: projection.Obj()})
+				return true
+			})
+		}
+	}
+	if badApplicationPackage {
+		return nil, ErrBadApplicationPackage
+	}
+
+	return result, nil
+}
+
+func calledFunctionIdent(expr ast.Expr) *ast.Ident {
+	switch expr := expr.(type) {
+	case *ast.Ident:
+		return expr
+	case *ast.SelectorExpr:
+		return expr.Sel
+	case *ast.IndexExpr:
+		return calledFunctionIdent(expr.X)
+	case *ast.IndexListExpr:
+		return calledFunctionIdent(expr.X)
+	case *ast.ParenExpr:
+		return calledFunctionIdent(expr.X)
+	default:
+		return nil
+	}
+}
+
+func namedProjection(t types.Type) (*types.Named, bool) {
+	if t == nil {
+		return nil, false
+	}
+	named, ok := types.Unalias(t).(*types.Named)
+	if !ok {
+		return nil, false
+	}
+	named = named.Origin()
+	if _, ok := named.Underlying().(*types.Interface); !ok {
+		return nil, false
+	}
+	if params := named.TypeParams(); params != nil && params.Len() > 0 {
+		return nil, false
+	}
+	return named, true
+}
+
+func namedServicePointer(t types.Type) (*types.Named, bool) {
+	if t == nil {
+		return nil, false
+	}
+	pointer, ok := types.Unalias(t).(*types.Pointer)
+	if !ok {
+		return nil, false
+	}
+	named, ok := types.Unalias(pointer.Elem()).(*types.Named)
+	if !ok {
+		return nil, false
+	}
+	named = named.Origin()
+	if params := named.TypeParams(); params != nil && params.Len() > 0 {
+		return nil, false
+	}
+	return named, true
 }

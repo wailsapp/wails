@@ -132,7 +132,7 @@ func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bi
 
 // Add adds the given service to the bindings.
 func (b *Bindings) Add(service Service) error {
-	methods, err := getMethods(service.Instance())
+	methods, err := getMethods(service.Instance(), service.bindingProjection)
 	if err != nil {
 		return err
 	}
@@ -204,32 +204,57 @@ var ctxType = reflect.TypeFor[context.Context]()
 // getMethods returns the list of BoundMethod descriptors for the methods of the named pointer type provided by value.
 //
 // It returns an error if value is not a pointer to a named type, if a function value is supplied (binding functions is deprecated), or if a generic type is supplied.
-// The returned BoundMethod slice includes only exported methods that are not listed in internalServiceMethods. Each BoundMethod has its FQN, ID (computed from the FQN), Method reflect.Value, Inputs and Outputs populated, isVariadic cached from the method signature, and needsContext set when the first parameter is context.Context.
-func getMethods(value any) ([]*BoundMethod, error) {
+// The returned BoundMethod slice includes only exported methods that are not listed in internalServiceMethods and, when bindingProjection is non-nil, are declared by that interface. Each BoundMethod has its FQN, ID (computed from the FQN), Method reflect.Value, Inputs and Outputs populated, isVariadic cached from the method signature, and needsContext set when the first parameter is context.Context.
+func getMethods(value any, bindingProjection reflect.Type) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
 
 	// Check type
-	if !isNamed(value) {
-		if isFunction(value) {
+	valueType := reflect.TypeOf(value)
+	if valueType == nil {
+		return nil, errors.New("service instance is nil")
+	}
+	if valueType.Kind() != reflect.Pointer || valueType.Elem().Name() == "" {
+		if valueType.Kind() == reflect.Func {
 			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
 			return nil, fmt.Errorf("%s is a function, not a pointer to named type. Wails v2 has deprecated the binding of functions. Please define your functions as methods on a struct and bind a pointer to that struct", name)
 		}
-
-		return nil, fmt.Errorf("%s is not a pointer to named type", reflect.ValueOf(value).Type().String())
-	} else if !isPtr(value) {
-		return nil, fmt.Errorf("%s is a named type, not a pointer to named type", reflect.ValueOf(value).Type().String())
+		if valueType.Name() != "" {
+			return nil, fmt.Errorf("%s is a named type, not a pointer to named type", valueType)
+		}
+		return nil, fmt.Errorf("%s is not a pointer to named type", valueType)
 	}
 
 	// Process Named Type
 	namedValue := reflect.ValueOf(value)
-	ptrType := namedValue.Type()
+	ptrType := valueType
 	namedType := ptrType.Elem()
 	typeName := namedType.Name()
 	packagePath := namedType.PkgPath()
 
 	if strings.Contains(namedType.String(), "[") {
 		return nil, fmt.Errorf("%s.%s is a generic type. Generic bound types are not supported", packagePath, namedType.String())
+	}
+
+	var allowedMethods map[string]bool
+	if bindingProjection != nil {
+		if bindingProjection.Kind() != reflect.Interface || bindingProjection.Name() == "" {
+			return nil, fmt.Errorf("service binding projection %s is not a named interface", bindingProjection)
+		}
+		if !ptrType.Implements(bindingProjection) {
+			return nil, fmt.Errorf("service type %s does not implement binding projection %s", ptrType, bindingProjection)
+		}
+
+		allowedMethods = make(map[string]bool, bindingProjection.NumMethod())
+		for i := range bindingProjection.NumMethod() {
+			method := bindingProjection.Method(i)
+			if method.PkgPath != "" {
+				return nil, fmt.Errorf("service binding projection %s contains unexported method %s", bindingProjection, method.Name)
+			}
+			if !internalServiceMethods[method.Name] {
+				allowedMethods[method.Name] = true
+			}
+		}
 	}
 
 	// Process Methods
@@ -239,6 +264,9 @@ func getMethods(value any) ([]*BoundMethod, error) {
 		method := namedValue.Method(i)
 
 		if internalServiceMethods[methodName] {
+			continue
+		}
+		if allowedMethods != nil && !allowedMethods[methodName] {
 			continue
 		}
 
@@ -470,25 +498,4 @@ func defaultMarshalError(err error) []byte {
 		return nil
 	}
 	return result
-}
-
-// isPtr returns true if the value given is a pointer.
-func isPtr(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Ptr
-}
-
-// isFunction returns true if the given value is a function
-func isFunction(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Func
-}
-
-// isNamed returns true if the given value is of named type
-// or pointer to named type.
-func isNamed(value interface{}) bool {
-	rv := reflect.ValueOf(value)
-	if rv.Kind() == reflect.Ptr {
-		rv = rv.Elem()
-	}
-
-	return rv.Type().Name() != ""
 }
