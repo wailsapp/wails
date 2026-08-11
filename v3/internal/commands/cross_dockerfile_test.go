@@ -13,7 +13,15 @@ func TestCrossDockerfileMatchesLinuxSupportContract(t *testing.T) {
 
 	contents := string(dockerfile)
 	require.Contains(t, contents, "FROM golang:1.26-trixie")
-	require.Contains(t, contents, "pkg-config --atleast-version=4.14 gtk4")
+
+	for _, check := range []string{
+		"pkg-config --atleast-version=4.14 gtk4",
+		"pkg-config --exists webkitgtk-6.0",
+		"pkg-config --exists gtk+-3.0",
+		"pkg-config --exists webkit2gtk-4.1",
+	} {
+		require.True(t, strings.Contains(contents, check), "cross image must enforce %s", check)
+	}
 
 	for _, dependency := range []string{
 		"libgtk-4-dev",
