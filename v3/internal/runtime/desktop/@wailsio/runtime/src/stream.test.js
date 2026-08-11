@@ -36,6 +36,7 @@ function decodeBatch(body) {
 beforeEach(() => {
     vi.resetModules();
     window.sessionStorage.clear();
+    window.name = "";
     window._wails = {};
 });
 
@@ -95,6 +96,77 @@ describe("WailsSocket protocol handling", () => {
         expect(Number.isSafeInteger(generations[0])).toBe(true);
         expect(generations[0]).toBeGreaterThan(0);
         socket._closed(1000, "", true);
+    });
+
+    it("keeps generations monotonic when storage is blocked and the clock moves backwards", async () => {
+        const generations = [];
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return deferred().promise;
+            if (init.headers?.["x-wails-stream-kind"] === "1") {
+                generations.push(Number(init.headers["x-wails-stream-generation"]));
+            }
+            return Promise.resolve(response(204));
+        });
+        vi.stubGlobal("fetch", fetch);
+        vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+            throw new DOMException("storage disabled", "SecurityError");
+        });
+        vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+            throw new DOMException("storage disabled", "SecurityError");
+        });
+        window.name = "application-window";
+
+        vi.stubGlobal("performance", { timeOrigin: 2_000, now: () => 0 });
+        let runtime = await import("./stream");
+        const first = new runtime.WailsSocket("test");
+        await vi.waitFor(() => expect(generations).toHaveLength(1), { interval: 1, timeout: 100 });
+        first._closed(1000, "", true);
+
+        window._wails = {};
+        vi.resetModules();
+        vi.stubGlobal("performance", { timeOrigin: 1_000, now: () => 0 });
+        runtime = await import("./stream");
+        const second = new runtime.WailsSocket("test");
+        await vi.waitFor(() => expect(generations).toHaveLength(2), { interval: 1, timeout: 100 });
+        second._closed(1000, "", true);
+
+        expect(generations[1]).toBeGreaterThan(generations[0]);
+        expect(window.name.startsWith("application-window")).toBe(true);
+    });
+
+    it("keeps generations monotonic when storage becomes blocked between pages", async () => {
+        const generations = [];
+        const fetch = vi.fn((input, init = {}) => {
+            if (String(input).endsWith("/poll")) return deferred().promise;
+            if (init.headers?.["x-wails-stream-kind"] === "1") {
+                generations.push(Number(init.headers["x-wails-stream-generation"]));
+            }
+            return Promise.resolve(response(204));
+        });
+        vi.stubGlobal("fetch", fetch);
+        vi.stubGlobal("performance", { timeOrigin: 2_000, now: () => 0 });
+
+        let runtime = await import("./stream");
+        const first = new runtime.WailsSocket("test");
+        await vi.waitFor(() => expect(generations).toHaveLength(1), { interval: 1, timeout: 100 });
+        first._closed(1000, "", true);
+
+        vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+            throw new DOMException("storage disabled", "SecurityError");
+        });
+        vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+            throw new DOMException("storage disabled", "SecurityError");
+        });
+        window._wails = {};
+        vi.resetModules();
+        vi.stubGlobal("performance", { timeOrigin: 1_000, now: () => 0 });
+
+        runtime = await import("./stream");
+        const second = new runtime.WailsSocket("test");
+        await vi.waitFor(() => expect(generations).toHaveLength(2), { interval: 1, timeout: 100 });
+        second._closed(1000, "", true);
+
+        expect(generations[1]).toBeGreaterThan(generations[0]);
     });
 
     it("closes every connection on a truncated poll frame", async () => {

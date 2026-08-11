@@ -42,6 +42,32 @@ interface StreamGlobals {
 }
 
 const GENERATION_KEY = "__wails_stream_generation";
+const GENERATION_NAME_MARKER = "\u001f__wails_stream_generation__:";
+
+// window.name belongs to the browsing context rather than the Document, so it
+// survives a reload even when Web Storage is disabled. Preserve any name the
+// application assigned and reserve only a suffix for the Stream generation.
+function namedPageGeneration(): number {
+    try {
+        const marker = window.name.lastIndexOf(GENERATION_NAME_MARKER);
+        if (marker < 0) return 0;
+        const value = Number(window.name.slice(marker + GENERATION_NAME_MARKER.length));
+        return Number.isSafeInteger(value) && value > 0 ? value : 0;
+    } catch {
+        return 0;
+    }
+}
+
+function rememberNamedPageGeneration(generation: number): void {
+    try {
+        const marker = window.name.lastIndexOf(GENERATION_NAME_MARKER);
+        const applicationName = marker < 0 ? window.name : window.name.slice(0, marker);
+        window.name = applicationName + GENERATION_NAME_MARKER + generation;
+    } catch {
+        // Some embedded browser policies can deny access to the browsing
+        // context name. The time origin remains the last-resort fallback.
+    }
+}
 
 // Request arrival order is not page order: a request started just before a
 // navigation can reach Go after the replacement page's first request. Keep a
@@ -60,19 +86,27 @@ function nextPageGeneration(): number {
         ? performance.timeOrigin
         : Date.now();
     const pageTime = Math.max(1, Math.floor(origin * 1000));
+    let current = namedPageGeneration();
     try {
         const raw = window.sessionStorage.getItem(GENERATION_KEY);
-        const current = raw === null ? 0 : Number(raw);
-        const next = Number.isSafeInteger(current) && current >= 0 && current < Number.MAX_SAFE_INTEGER
-            ? Math.max(current + 1, pageTime)
-            : pageTime;
-        window.sessionStorage.setItem(GENERATION_KEY, String(next));
-        return next;
+        const stored = raw === null ? 0 : Number(raw);
+        if (Number.isSafeInteger(stored) && stored > current) current = stored;
     } catch {
-        // Storage can be disabled by policy. timeOrigin identifies this page
-        // and is chronological for successive navigations in the same webview.
-        return pageTime;
+        // Storage can be disabled by policy. window.name supplies the
+        // browsing-context counter in that case.
     }
+
+    const next = Number.isSafeInteger(current) && current >= 0 && current < Number.MAX_SAFE_INTEGER
+        ? Math.max(current + 1, pageTime)
+        : pageTime;
+    try {
+        window.sessionStorage.setItem(GENERATION_KEY, String(next));
+    } catch {
+        // The browsing-context fallback below is sufficient when storage is
+        // unavailable.
+    }
+    rememberNamedPageGeneration(next);
+    return next;
 }
 
 function streamGlobals(): StreamGlobals {
