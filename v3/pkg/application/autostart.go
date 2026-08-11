@@ -140,11 +140,11 @@ type AutostartOptions struct {
 type AutostartStrategy string
 
 const (
-	AutostartStrategyNone         AutostartStrategy = ""
-	AutostartStrategySMAppService AutostartStrategy = "smappservice"
-	AutostartStrategyLaunchAgent  AutostartStrategy = "launchagent"
-	AutostartStrategyRegistryRun  AutostartStrategy = "registry-run"
-	AutostartStrategyXDGAutostart AutostartStrategy = "xdg-autostart"
+	AutostartStrategyNone          AutostartStrategy = ""
+	AutostartStrategySMAppService  AutostartStrategy = "smappservice"
+	AutostartStrategyLaunchAgent   AutostartStrategy = "launchagent"
+	AutostartStrategyRegistryRun   AutostartStrategy = "registry-run"
+	AutostartStrategyXDGAutostart  AutostartStrategy = "xdg-autostart"
 )
 
 // AutostartStatus describes the current autostart registration.

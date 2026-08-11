@@ -82,8 +82,8 @@ import (
 )
 
 var (
-	errSMAppServiceUnavailable      = errors.New("SMAppService unavailable on this macOS")
-	errSMAppServiceNotRegistered    = errors.New("SMAppService not registered")
+	errSMAppServiceUnavailable    = errors.New("SMAppService unavailable on this macOS")
+	errSMAppServiceNotRegistered  = errors.New("SMAppService not registered")
 	errSMAppServiceRequiresApproval = errors.New("SMAppService requires user approval in System Settings")
 )
 

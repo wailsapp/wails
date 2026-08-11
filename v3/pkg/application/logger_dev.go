@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/mattn/go-isatty"
 	"github.com/wailsapp/wails/v3/internal/tint"
+	"github.com/mattn/go-isatty"
 )
 
 func DefaultLogger(level slog.Leveler) *slog.Logger {

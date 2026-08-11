@@ -18,10 +18,10 @@ func iosDeviceInfo() deviceInfo {
 }
 
 // Live mutation stubs
-func iosSetScrollEnabled(enabled bool)              {}
-func iosSetBounceEnabled(enabled bool)              {}
-func iosSetScrollIndicatorsEnabled(enabled bool)    {}
-func iosSetBackForwardGesturesEnabled(enabled bool) {}
-func iosSetLinkPreviewEnabled(enabled bool)         {}
-func iosSetInspectableEnabled(enabled bool)         {}
-func iosSetCustomUserAgent(ua string)               {}
+func iosSetScrollEnabled(enabled bool)                 {}
+func iosSetBounceEnabled(enabled bool)                 {}
+func iosSetScrollIndicatorsEnabled(enabled bool)       {}
+func iosSetBackForwardGesturesEnabled(enabled bool)    {}
+func iosSetLinkPreviewEnabled(enabled bool)            {}
+func iosSetInspectableEnabled(enabled bool)            {}
+func iosSetCustomUserAgent(ua string)                  {}
